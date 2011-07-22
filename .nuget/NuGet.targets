@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="NuGet.settings.targets"/>
+    
+    <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
+        <Exec Command="$(RestoreCommand)"
+              LogStandardErrorAsError="true"
+              Condition="Exists('$(PackagesConfig)')" />
+    </Target>
+
+    <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
+        <Exec Command="$(BuildCommand)"
+              LogStandardErrorAsError="true" />
+    </Target>
+</Project>

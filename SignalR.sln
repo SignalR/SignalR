@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Samples", "SignalR.Samples\SignalR.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SQLServer", "SignalR.SQLServer\SignalR.SQLServer.csproj", "{32D16B36-970E-4CF2-B954-78CB1833CBC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
