@@ -206,7 +206,7 @@
             },
 
             start: function (connection, onSuccess, onFailed) {
-                if ($.type(window.WebSocket) !== "object") {
+                if (!window.WebSocket) {
                     onFailed();
                     return;
                 }
