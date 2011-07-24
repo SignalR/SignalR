@@ -15,9 +15,7 @@ namespace SignalR.Samples.Hubs.Chat {
     public class Chat : Hub {
         private static readonly Dictionary<string, ChatUser> _users = new Dictionary<string, ChatUser>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, HashSet<string>> _userRooms = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        private static readonly Dictionary<string, ChatRoom> _rooms = new Dictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase) {
-            { "main", new ChatRoom() }
-        };
+        private static readonly Dictionary<string, ChatRoom> _rooms = new Dictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly List<IContentProvider> _contentProviders = new List<IContentProvider>() {
             new ImageContentProvider(),
@@ -197,7 +195,17 @@ namespace SignalR.Samples.Hubs.Chat {
                 }
                 else {
                     EnsureUser();
-                    if (commandName.Equals("join", StringComparison.OrdinalIgnoreCase)) {
+                    if (commandName.Equals("rooms", StringComparison.OrdinalIgnoreCase)) {
+                        var rooms = _rooms.Select(r => new {
+                            Name = r.Key,
+                            Count = r.Value.Users.Count
+                        });
+
+                        Caller.showRooms(rooms);
+
+                        return true;
+                    }
+                    else if (commandName.Equals("join", StringComparison.OrdinalIgnoreCase)) {
                         if (parts.Length == 1) {
                             throw new InvalidOperationException("Join which room?");
                         }
