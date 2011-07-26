@@ -39,6 +39,17 @@ $(function () {
         addMessage('Entered ' + room, 'notification');
     };
 
+    chat.showRooms = function (rooms) {
+        if (!rooms.length) {
+            addMessage('No rooms available', 'notification')
+        }
+        else {
+            $.each(rooms, function () {
+                addMessage(this.Name + ' (' + this.Count + ')');
+            });
+        }
+    };
+
     chat.addMessageContent = function (id, content) {
         var e = $('#m-' + id).append(content);
         updateUnread();
@@ -174,7 +185,7 @@ $(function () {
                     $.cookie('userid', '')
                     addMessage('Choose a name using "/nick nickname".', 'notification');
                 }
-                addMessage('After that, join a room using "/join roomname".', 'notification');
+                addMessage('After that, you can view rooms using "/rooms" and join a room using "/join roomname".', 'notification');
             });
     });
 });

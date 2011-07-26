@@ -127,9 +127,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)lib\AjaxMin.exe "$(ProjectDir)Scripts\SignalR.js" -out "$(ProjectDir)Scripts\SignalR.min.js" -clobber</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="AfterBuild">
+    <Exec Command="&quot;$(SolutionDir)lib\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\SignalR.js&quot; -out &quot;$(ProjectDir)Scripts\SignalR.min.js&quot; -clobber"
+          LogStandardErrorAsError="true" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
