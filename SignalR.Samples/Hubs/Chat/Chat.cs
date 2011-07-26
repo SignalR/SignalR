@@ -185,6 +185,8 @@ namespace SignalR.Samples.Hubs.Chat {
 
                             Caller.hash = newUser.Hash;
                             Caller.name = newUser.Name;
+
+                            Caller.changeUserName(oldUser, newUser);
                         }
                     }
                     else {
