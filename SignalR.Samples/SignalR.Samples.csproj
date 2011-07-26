@@ -68,6 +68,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\bg.jpg" />
+    <Content Include="Content\site.css" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
@@ -109,6 +111,7 @@
     <Content Include="Content\themes\smoothness\images\ui-icons_888888_256x240.png" />
     <Content Include="Content\themes\smoothness\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\themes\smoothness\jquery-ui-1.8.12.css" />
+    <Content Include="Default.aspx" />
     <Content Include="Hubs\DemoHub\index.htm" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
     <Content Include="Hubs\Chat\Chat.css" />
@@ -128,11 +131,16 @@
     <Content Include="Scripts\jquery-1.6.2.min.js" />
     <Content Include="Scripts\jquery-ui-1.8.13.js" />
     <Content Include="Scripts\jquery-ui-1.8.13.min.js" />
+    <Content Include="Scripts\jquery.color.js" />
     <Content Include="Scripts\jquery.cookie.js" />
+    <Content Include="Scripts\jquery.easing.1.3.js" />
+    <Content Include="Scripts\jquery.hoverMorph.js" />
     <Content Include="Scripts\jQuery.tmpl.js" />
     <Content Include="Scripts\jQuery.tmpl.min.js" />
+    <Content Include="Scripts\jquery.transform.js" />
     <Content Include="Scripts\json2.js" />
     <Content Include="Scripts\json2.min.js" />
+    <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\SignalR.js" />
     <Content Include="Scripts\SignalR.min.js" />
     <Content Include="Streaming\index.html" />
@@ -148,6 +156,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\Startup.cs" />
+    <Compile Include="Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Hubs\DemoHub\DemoHub.cs" />
     <Compile Include="Hubs\Chat\Chat.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\CollegeHumorContentProvider.cs" />
@@ -163,6 +178,20 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Raw\Raw.ashx.cs">
       <DependentUpon>Raw.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="SignalR.Master.cs">
+      <DependentUpon>SignalR.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SignalR.Master.designer.cs">
+      <DependentUpon>SignalR.Master</DependentUpon>
+    </Compile>
+    <Compile Include="SignalR.Samples.master.cs">
+      <DependentUpon>SignalR.Samples.master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SignalR.Samples.master.designer.cs">
+      <DependentUpon>SignalR.Samples.master</DependentUpon>
     </Compile>
     <Compile Include="Streaming\Streaming.ashx.cs">
       <DependentUpon>Streaming.ashx</DependentUpon>
@@ -194,6 +223,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Performance\Performance.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SignalR.Samples.master" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SignalR.Master" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
