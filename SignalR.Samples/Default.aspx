@@ -23,7 +23,7 @@
     <script src="Scripts/jquery.hoverMorph.js" type="text/javascript"></script>
     <script>
         $(function () {
-            $("#home li").hoverMorph({debug:false})
+            $("#home li").hoverMorph()
                 .click(function (e) {
                     if (e.target.tagName.toLowerCase() !== "a") {
                         document.location = $(this).find("a").attr("href");
