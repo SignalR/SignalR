@@ -13,6 +13,7 @@ namespace SignalR {
         private static readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
         private static long _messageId = 0;
+        private static object _idLocker = new object();
 
         private readonly Timer _timer;
 
@@ -21,12 +22,25 @@ namespace SignalR {
         }
 
         public Task Save(string key, object value) {
+            return Save(new Message(key, Interlocked.Increment(ref _messageId), value));
+        }
+
+        protected internal Task Save(Message message) {
+            var key = message.SignalKey;
             SafeSet<Message> list;
             if (!_items.TryGetValue(key, out list)) {
                 list = new SafeSet<Message>();
                 _items.TryAdd(key, list);
             }
-            list.Add(new Message(key, Interlocked.Increment(ref _messageId), value));
+            list.Add(message);
+            if (message.Id > _messageId) {
+                lock (_idLocker) {
+                    if (message.Id > _messageId) {
+                        _messageId = message.Id;
+                    }
+                }
+            }
+            
             return TaskAsyncHelper.Empty;
         }
 

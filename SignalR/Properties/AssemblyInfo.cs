@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -20,6 +21,8 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("960f3974-c967-4b92-b196-5747f9b49552")]
+
+[assembly: InternalsVisibleTo("SignalR.SQLServer")]
 
 // Version information for an assembly consists of the following four values:
 //

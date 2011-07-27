@@ -91,8 +91,6 @@ namespace SignalR.Infrastructure {
 
                 var proxyGenerator = new DefaultJavaScriptProxyGenerator(hubLocator);
                 Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator);
-
-                // TODO: Register ITransport implementations and resolve via the dependency resolver
             }
 
             public object GetService(Type serviceType) {

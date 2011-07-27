@@ -9,15 +9,15 @@ using SignalR.Infrastructure;
 
 namespace SignalR.SignalBuses {
     public class PeerToPeerHttpSignalBus : ISignalBus {
-        private static object _peerDiscoveryLocker = new object();
+        private static readonly object _peerDiscoveryLocker = new object();
         private readonly ConcurrentDictionary<string, SafeSet<EventHandler<SignaledEventArgs>>> _handlers = new ConcurrentDictionary<string, SafeSet<EventHandler<SignaledEventArgs>>>(StringComparer.OrdinalIgnoreCase);
         private readonly List<string> _peers = new List<string>();
         private bool _peersDiscovered = false;
 
         public PeerToPeerHttpSignalBus() : this(DependencyResolver.Resolve<IPeerUrlSource>()) { }
 
-        public PeerToPeerHttpSignalBus(IPeerUrlSource discoverer)
-            : this(discoverer.GetPeerUrls()) { }
+        public PeerToPeerHttpSignalBus(IPeerUrlSource peerUrlSource)
+            : this(peerUrlSource.GetPeerUrls()) { }
 
         public PeerToPeerHttpSignalBus(IEnumerable<string> peers) {
             _peers.AddRange(peers);
@@ -53,21 +53,25 @@ namespace SignalR.SignalBuses {
         protected virtual void PrepareRequest(WebRequest request) { }
 
         private void EnsurePeersDiscovered() {
-            if (_peersDiscovered) {
+            EnsurePeersDiscovered(ref _peersDiscovered, _peers, SignalReceiverHandler.HandlerName, Id, _peerDiscoveryLocker, PrepareRequest);
+        }
+
+        protected internal static void EnsurePeersDiscovered(ref bool peersDiscovered, ICollection<string> peers, string handlerName, Guid selfId, object locker, Action<WebRequest> requestPreparer) {
+            if (peersDiscovered) {
                 return;
             }
 
-            lock (_peerDiscoveryLocker) {
-                if (_peersDiscovered) {
+            lock (locker) {
+                if (peersDiscovered) {
                     return;
                 }
 
                 // Loop through peers and send the loopbackTest
-                var queryString = "?" + SignalReceiverHandler.QueryStringKeys.LoopbackTest + "=" + HttpUtility.UrlEncode(Id.ToString());
+                var queryString = "?" + SignalReceiverHandler.QueryStringKeys.LoopbackTest + "=" + HttpUtility.UrlEncode(selfId.ToString());
                 var peersToRemove = new List<string>();
-                Parallel.ForEach(_peers, peer => {
+                Parallel.ForEach(peers, peer => {
                     try {
-                        CreatePrepareAndSendRequestAsync(peer + SignalReceiverHandler.HandlerName + queryString)
+                        CreatePrepareAndSendRequestAsync(peer + handlerName + queryString, requestPreparer)
                             .ContinueWith(t => {
                                 if (t.Exception != null) {
                                     peersToRemove.Add(peer);
@@ -90,9 +94,9 @@ namespace SignalR.SignalBuses {
                     }
                 });
                 if (peersToRemove.Count > 0) {
-                    peersToRemove.ForEach(p => _peers.Remove(p));
+                    peersToRemove.ForEach(p => peers.Remove(p));
                 }
-                _peersDiscovered = true;
+                peersDiscovered = true;
             }
         }
 
@@ -100,7 +104,7 @@ namespace SignalR.SignalBuses {
             // Loop through peers and send the signal
             var queryString = "?" + SignalReceiverHandler.QueryStringKeys.EventKey + "=" + HttpUtility.UrlEncode(eventKey);
             Parallel.ForEach(_peers, (peer) => {
-                CreatePrepareAndSendRequestAsync(peer + SignalReceiverHandler.HandlerName + queryString)
+                CreatePrepareAndSendRequestAsync(peer + SignalReceiverHandler.HandlerName + queryString, PrepareRequest)
                     .ContinueWith(t => {
                         if (t.Exception == null) {
                             t.Result.Close();
@@ -109,9 +113,9 @@ namespace SignalR.SignalBuses {
             });
         }
 
-        private Task<WebResponse> CreatePrepareAndSendRequestAsync(string url) {
+        internal static Task<WebResponse> CreatePrepareAndSendRequestAsync(string url, Action<WebRequest> requestPreparer) {
             var request = HttpWebRequest.Create(url);
-            PrepareRequest(request);
+            requestPreparer(request);
             return request.GetResponseAsync();
         }
 

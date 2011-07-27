@@ -91,7 +91,6 @@
     <Compile Include="InProcessSignalBus.cs" />
     <Compile Include="SignalBuses\IPeerUrlSource.cs" />
     <Compile Include="SignalBuses\PeerToPeerHttpSignalBus.cs" />
-    <Compile Include="SignalBuses\PeerToPeerHttpSignalBusAppStart.cs" />
     <Compile Include="SignalBuses\SignalReceiverHandler.cs" />
     <Compile Include="SignalBuses\SignalReceiverModule.cs" />
     <Compile Include="SignaledEventArgs.cs" />
@@ -128,8 +127,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <Target Name="AfterBuild">
-    <Exec Command="&quot;$(SolutionDir)lib\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\SignalR.js&quot; -out &quot;$(ProjectDir)Scripts\SignalR.min.js&quot; -clobber"
-          LogStandardErrorAsError="true" />
+    <Exec Command="&quot;$(SolutionDir)lib\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\SignalR.js&quot; -out &quot;$(ProjectDir)Scripts\SignalR.min.js&quot; -clobber" LogStandardErrorAsError="true" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

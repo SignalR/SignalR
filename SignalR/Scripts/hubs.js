@@ -12,6 +12,22 @@
         callbackId = 0,
         callbacks = {};
 
+    // Array.prototype.map
+    if (!Array.prototype.hasOwnProperty('map')) {
+        Array.prototype.map = function (fun, thisp) {
+            var arr = this,
+                i,
+                length = arr.length,
+                result = [];
+            for (i = 0; i < length; i += 1) {
+                if (arr.hasOwnProperty(i)) {
+                    result[i] = fun.call(thisp, arr[i], i, arr);
+                }
+            }
+            return result;
+        };
+    }
+
     function executeCallback(hubName, fn, args, state) {
         var hub = hubs[hubName],
             method;
@@ -89,7 +105,7 @@
             methodArgs = $.type(callback) === "function"
                 ? args.slice(0, -1) // all but last
                 : args,
-            argValues = $.map(methodArgs, getArgValue),
+            argValues = methodArgs.map(getArgValue),
             data = { hub: hub._.hubName, action: methodName, data: argValues, state: hub.state, id: callbackId },
             d = $.Deferred(),
             cb = function (result) {

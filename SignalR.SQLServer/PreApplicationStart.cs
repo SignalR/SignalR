@@ -2,6 +2,7 @@
 using System.Web.Script.Serialization;
 using SignalR.Infrastructure;
 using SignalR.SQL;
+using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 
 [assembly: PreApplicationStartMethod(typeof(PreApplicationStart), "Start")]
 
@@ -13,6 +14,7 @@ namespace SignalR.SQL {
                 MaxJsonLength = 30 * 1024 * 1024
             });
             DependencyResolver.Register(typeof(IJsonSerializer), () => serializer);
+            DynamicModuleUtility.RegisterModule(typeof(MessageReceiverModule));
         }
 
     }
