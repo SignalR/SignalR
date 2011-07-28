@@ -66,14 +66,25 @@ namespace SignalR.Hubs {
             sb.AppendFormat("            _: {{").AppendLine();
             sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
             sb.AppendFormat("                serverMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
-            sb.AppendLine(  "                connection: function () { return window.signalR.hub; }");
+            sb.AppendLine("                connection: function () { return window.signalR.hub; }");
             sb.AppendFormat("            }},").AppendLine();
             sb.AppendFormat("            state: {{}}");
             if (methods.Any()) {
                 sb.Append(",");
             }
             bool first = true;
+
+            var propertyMethods = new HashSet<MethodInfo>();
+            foreach (var property in type.GetProperties()) {
+                propertyMethods.Add(property.GetGetMethod());
+                propertyMethods.Add(property.GetSetMethod());
+            }
+
             foreach (var method in methods) {
+                if (propertyMethods.Contains(method)) {
+                    continue;
+                }
+
                 if (!first) {
                     sb.Append(",").AppendLine();
                 }

@@ -113,6 +113,7 @@
     <Content Include="Content\themes\smoothness\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\themes\smoothness\jquery-ui-1.8.12.css" />
     <Content Include="Default.aspx" />
+    <Content Include="Hubs\Chat\knockout-latest.js" />
     <Content Include="Hubs\DemoHub\index.htm" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
     <Content Include="Hubs\Chat\Chat.css" />

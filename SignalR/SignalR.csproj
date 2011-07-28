@@ -56,6 +56,7 @@
     <Compile Include="CommandType.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
+    <Compile Include="Hubs\IHub.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />

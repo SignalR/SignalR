@@ -2,6 +2,6 @@
 
 namespace SignalR.Hubs {
     public interface IHubActivator {
-        Hub Create(Type hubType);
+        IHub Create(Type hubType);
     }
 }
