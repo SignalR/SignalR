@@ -99,7 +99,7 @@ namespace SignalR.Hubs {
             return Json.CamelCase(type.Name);
         }
 
-        protected virtual MethodInfo[] GetMethods(Type type) {
+        protected virtual IEnumerable<MethodInfo> GetMethods(Type type) {
             return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
         }
 
