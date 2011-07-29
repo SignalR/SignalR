@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.DemoHub {
+    [HubName("demo")]
     public class DemoHub : Hub {
         public Task<int> GetValue() {
             return Task.Factory.StartNew(() => {

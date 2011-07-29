@@ -62,7 +62,7 @@ namespace SignalR.Hubs {
             members.Add("serverMembers");
             members.Add("callbacks");
 
-            sb.AppendFormat("{0}: {{", GetTypeName(type)).AppendLine();
+            sb.AppendFormat("{0}: {{", GetHubName(type)).AppendLine();
             sb.AppendFormat("            _: {{").AppendLine();
             sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
             sb.AppendFormat("                serverMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
@@ -95,8 +95,8 @@ namespace SignalR.Hubs {
             sb.Append("        }");
         }
 
-        protected virtual string GetTypeName(Type type) {
-            return Json.CamelCase(type.Name);
+        protected virtual string GetHubName(Type type) {
+            return GetName<HubNameAttribute>(type, a => a.HubName, type.Name);
         }
 
         protected virtual IEnumerable<MethodInfo> GetMethods(Type type) {
@@ -108,9 +108,24 @@ namespace SignalR.Hubs {
             var parameterNames = parameters.Select(p => p.Name).ToList();
             parameterNames.Add("callback");
             sb.AppendLine();
-            sb.AppendFormat("            {0}: function ({1}) {{", Json.CamelCase(method.Name), Commas(parameterNames)).AppendLine();
+            sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
             sb.AppendFormat("                return serverCall(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
             sb.Append("            }");
+        }
+
+        private static string GetMethodName(MethodInfo method) {
+            return GetName<HubMethodNameAttribute>(method, a => a.MethodName, method.Name);
+        }
+
+        private static string GetName<T>(ICustomAttributeProvider source, Func<T, string> nameFunc, string baseName) {
+            var name = Json.CamelCase(baseName);
+            var attributes = source.GetCustomAttributes(typeof(T), false)
+                .Cast<T>()
+                .ToList();
+            if (attributes.Any()) {
+                name = nameFunc(attributes[0]);
+            }
+            return name;
         }
 
         private static string Commas(IEnumerable<string> values) {
