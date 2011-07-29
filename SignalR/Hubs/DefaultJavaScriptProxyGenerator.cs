@@ -96,7 +96,7 @@ namespace SignalR.Hubs {
         }
 
         protected virtual string GetHubName(Type type) {
-            return GetName<HubNameAttribute>(type, a => a.HubName, type.Name);
+            return GetAttributeValue<HubNameAttribute, string>(type, a => a.HubName) ?? Json.CamelCase(type.Name);
         }
 
         protected virtual IEnumerable<MethodInfo> GetMethods(Type type) {
@@ -114,18 +114,18 @@ namespace SignalR.Hubs {
         }
 
         private static string GetMethodName(MethodInfo method) {
-            return GetName<HubMethodNameAttribute>(method, a => a.MethodName, method.Name);
+            return GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName) ?? Json.CamelCase(method.Name);
         }
 
-        private static string GetName<T>(ICustomAttributeProvider source, Func<T, string> nameFunc, string baseName) {
-            var name = Json.CamelCase(baseName);
-            var attributes = source.GetCustomAttributes(typeof(T), false)
-                .Cast<T>()
+        private static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
+            where TAttribute : Attribute {
+            var attributes = source.GetCustomAttributes(typeof(TAttribute), false)
+                .Cast<TAttribute>()
                 .ToList();
             if (attributes.Any()) {
-                name = nameFunc(attributes[0]);
+                return valueGetter(attributes[0]);
             }
-            return name;
+            return default(TResult);
         }
 
         private static string Commas(IEnumerable<string> values) {
