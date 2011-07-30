@@ -22,7 +22,7 @@ using System.Runtime.CompilerServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("960f3974-c967-4b92-b196-5747f9b49552")]
 
-[assembly: InternalsVisibleTo("SignalR.SQLServer")]
+[assembly: InternalsVisibleTo("SignalR.ScaleOut")]
 
 // Version information for an assembly consists of the following four values:
 //

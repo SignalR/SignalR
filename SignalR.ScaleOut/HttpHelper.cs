@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SignalR {
+namespace SignalR.ScaleOut {
     public static class HttpHelper {
         public static Task<HttpWebResponse> PostAsync(string url) {
             return PostInternal(url, _ => { }, new Dictionary<string, string>());

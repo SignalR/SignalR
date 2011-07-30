@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using System.Diagnostics;
 
 namespace SignalR.Transports {
     internal class TransportHeartBeat {
@@ -12,7 +13,7 @@ namespace SignalR.Transports {
 
 
         private TransportHeartBeat() {
-            HeartBeatInterval = TimeSpan.FromSeconds(1);
+            HeartBeatInterval = TimeSpan.FromSeconds(30);
             // REVIEW: When to dispose the timer?
             _timer = new Timer(_ => Beat(),
                                null,
@@ -36,12 +37,17 @@ namespace SignalR.Transports {
         }
 
         private void Beat() {
-            Parallel.ForEach(_connections.GetSnapshot(), connection => {
-                if (!connection.IsAlive) {
-                    connection.Disconnect();
-                    _connections.Remove(connection);
-                }
-            });
+            try {
+                Parallel.ForEach(_connections.GetSnapshot(), (connection) => {
+                    if (!connection.IsAlive) {
+                        connection.Disconnect();
+                        _connections.Remove(connection);
+                    }
+                });
+            }
+            catch (Exception ex) {
+                Trace.TraceError("SignalR error during transport heart beat: {0}", ex);
+            }
         }
 
         private class ClientIdEqualityComparer : IEqualityComparer<ITrackingDisconnect> {

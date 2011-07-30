@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using SignalR.Hubs;
+using System.Threading.Tasks;
 
 namespace SignalR.Samples.Hubs.ShapeShare {
     public class ShapeShare : Hub {
@@ -46,7 +47,12 @@ namespace SignalR.Samples.Hubs.ShapeShare {
             var shape = Shape.Create(type);
             shape.ChangedBy = user;
             _shapes.Add(shape);
-            Clients.shapeAdded(shape);
+
+            Task task = Clients.shapeAdded(shape);
+            task.Wait();
+            if (task.Exception != null) {
+                throw task.Exception;
+            }
         }
 
         public void ChangeShape(string id, int x, int y, int w, int h) {
@@ -65,7 +71,11 @@ namespace SignalR.Samples.Hubs.ShapeShare {
             shape.Location.Y = y;
             shape.ChangedBy = user;
 
-            Clients.shapeChanged(shape);
+            Task task = Clients.shapeChanged(shape);
+            task.Wait();
+            if (task.Exception != null) {
+                throw task.Exception;
+            }
         }
 
         public void DeleteShape(string id) {

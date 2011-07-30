@@ -132,32 +132,33 @@ namespace SignalR {
 
         private Task<PersistentResponse> GetResponse(long messageId) {
             // Get all messages for the current set of signals
-            return GetMessages(messageId, Signals).ContinueWith(messageTask => {
-                if (!messageTask.Result.Any()) {
-                    return null;
-                }
+            return GetMessages(messageId, Signals)
+                .Success(messageTask => {
+                    if (!messageTask.Result.Any()) {
+                        return null;
+                    }
 
-                var response = new PersistentResponse();
+                    var response = new PersistentResponse();
 
-                var commands = messageTask.Result.Where(m => m.SignalKey.EndsWith(PersistentConnection.SignalrCommand));
+                    var commands = messageTask.Result.Where(m => m.SignalKey.EndsWith(PersistentConnection.SignalrCommand));
 
-                ProcessCommands(commands);
+                    ProcessCommands(commands);
 
-                messageId = messageTask.Result.Last().Id;
+                    messageId = messageTask.Result.Last().Id;
 
-                // Get the message values and the max message id we received
-                var messageValues = messageTask.Result.Except(commands)
-                                            .Select(m => m.Value)
-                                            .ToList();
+                    // Get the message values and the max message id we received
+                    var messageValues = messageTask.Result.Except(commands)
+                                                .Select(m => m.Value)
+                                                .ToList();
 
-                response.MessageId = messageId;
-                response.Messages = messageValues;
+                    response.MessageId = messageId;
+                    response.Messages = messageValues;
 
-                // Set the groups on the outgoing transport data
-                response.TransportData["Groups"] = _groups;
+                    // Set the groups on the outgoing transport data
+                    response.TransportData["Groups"] = _groups;
 
-                return response;
-            });
+                    return response;
+                });
         }
 
         private void ProcessCommands(IEnumerable<Message> messages) {
@@ -180,8 +181,9 @@ namespace SignalR {
 
         private Task SendMessage(string message, object value) {
             return _store.Save(message, value)
-                         .ContinueWith(_ => _signaler.Signal(message))
-                         .Unwrap();
+                         .Success(_ => _signaler.Signal(message))
+                         .Unwrap()
+                         .Catch();
         }
 
         private Task<IEnumerable<Message>> GetMessages(long id, IEnumerable<string> signals) {
@@ -195,9 +197,7 @@ namespace SignalR {
             }
 
             // Wait until all of the tasks are done before we return
-            return Task.Factory.ContinueWhenAll(
-                pendingMessagesTasks,
-                tasks => (IEnumerable<Message>)tasks.SelectMany(t => t.Result).ToList());
+            return pendingMessagesTasks.AllSucceeded(() => (IEnumerable<Message>)pendingMessagesTasks.SelectMany(t => t.Result).ToList());
         }
     }
 }

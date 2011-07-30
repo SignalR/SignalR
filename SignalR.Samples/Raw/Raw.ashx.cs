@@ -14,7 +14,9 @@ namespace SignalR.Samples.Raw {
                 _users[cookie.Value] = clientId;
             }
 
-            Connection.Broadcast(GetUser(clientId) + " joined").Wait();
+            Connection.Broadcast(GetUser(clientId) + " joined")
+                // Wait here to ensure we don't get our own joined message
+                .Wait();
         }
 
         protected override void OnDisconnect(string clientId) {

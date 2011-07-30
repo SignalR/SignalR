@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System;
 
-namespace SignalR {
+namespace SignalR.ScaleOut {
     internal static class SqlAsyncExtensions {
         internal static Task<SqlDataReader> ExecuteReaderAsync(this SqlCommand command) {
             return Task.Factory.FromAsync<SqlDataReader>(command.BeginExecuteReader, command.EndExecuteReader, null);
@@ -14,7 +14,7 @@ namespace SignalR {
 
         internal static Task<object> ExecuteScalarAsync(this SqlCommand command) {
             return command.ExecuteReaderAsync()
-                .ContinueWith<object>(t => {
+                .Success(t => {
                     var rdr = t.Result;
                     object result = null;
                     if (rdr.Read()) {
@@ -27,7 +27,7 @@ namespace SignalR {
         internal static Task<TResult> ExecuteScalarAsync<TResult>(this SqlCommand command) {
             Type type = Nullable.GetUnderlyingType(typeof(TResult)) ?? typeof(TResult);
             return command.ExecuteScalarAsync()
-                .ContinueWith<TResult>(t => (TResult)Convert.ChangeType(t.Result, type));
+                .Success(t => (TResult)Convert.ChangeType(t.Result, type));
         }
     }
 }

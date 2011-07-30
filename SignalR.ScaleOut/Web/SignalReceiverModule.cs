@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace SignalR.SignalBuses {
+namespace SignalR.Web {
     internal class SignalReceiverModule : IHttpModule {
 
         public void Init(HttpApplication context) {

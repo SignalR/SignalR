@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SignalR;
 using System.Web.Script.Serialization;
 
-namespace SignalR.SQL {
+namespace SignalR.ScaleOut {
     internal class JavaScriptSerializerAdapter : IJsonSerializer {
         private JavaScriptSerializer _serializer;
 

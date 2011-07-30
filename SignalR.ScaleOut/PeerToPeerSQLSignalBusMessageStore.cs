@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using SignalR.Infrastructure;
-using SignalR.SignalBuses;
+using SignalR.Web;
 
-namespace SignalR {
+namespace SignalR.ScaleOut {
     public class PeerToPeerSQLSignalBusMessageStore : IMessageStore, ISignalBus {
         private static readonly object _peerDiscoveryLocker = new object();
 
@@ -21,22 +23,13 @@ namespace SignalR {
         private bool _peersDiscovered = false;
         private string _connectionString;
 
-        public PeerToPeerSQLSignalBusMessageStore(string connectionString)
-            : this(connectionString, DependencyResolver.Resolve<IPeerUrlSource>()) {    
-        }
-
-        public PeerToPeerSQLSignalBusMessageStore(string connectionString, IPeerUrlSource peerUrlSource)
-            : this(connectionString, peerUrlSource.GetPeerUrls()) {
-        }
-
-        public PeerToPeerSQLSignalBusMessageStore(string connectionString, IEnumerable<string> peers) {
+        public PeerToPeerSQLSignalBusMessageStore(string connectionString) {
             if (String.IsNullOrEmpty(connectionString)) {
                 throw new ArgumentNullException("connectionString");
             }
 
             _connectionString = connectionString;
             MessageTableName = "[dbo].[SignalRMessages]";
-            _peers.AddRange(peers);
             Id = Guid.NewGuid();
         }
 
@@ -52,6 +45,16 @@ namespace SignalR {
             }
         }
 
+        private IPeerUrlSource PeerUrlSource {
+            get {
+                var source = DependencyResolver.Resolve<IPeerUrlSource>();
+                if (source == null) {
+                    throw new InvalidOperationException("No implementation of IPeerUrlSource is registered.");
+                }
+                return source;
+            }
+        }
+
         public string MessageTableName { get; set; }
 
         public Task<long?> GetLastId() {
@@ -61,17 +64,13 @@ namespace SignalR {
         public Task Save(string key, object value) {
             // Save it locally then broadcast to other peers
             return GetMessageId(key)
-                .ContinueWith(idTask => {
-                    if (idTask.Exception != null) {
-                        throw idTask.Exception;
-                    }
+                .Success(idTask => {
                     var message = new Message(key, idTask.Result, value);
                     return Task.Factory.ContinueWhenAll(new[] {
                             _store.Save(message),
                             SendMessageToPeers(message)
                         },
-                        _ => { }
-                    );
+                        _ => { });
                 })
                 .Unwrap();
         }
@@ -102,7 +101,7 @@ namespace SignalR {
             var message = Json.Parse<WireMessage>(payload).ToMessage();
             return message != null
                 ? _store.Save(message)
-                    .ContinueWith(t => _signalBus.Signal(message.SignalKey))
+                    .Success(t => _signalBus.Signal(message.SignalKey))
                     .Unwrap()
                 : TaskAsyncHelper.Empty;
         }
@@ -111,48 +110,49 @@ namespace SignalR {
         /// Override this method to prepare the request before it is sent to peers, e.g. to add authentication credentials
         /// </summary>
         /// <param name="request">The request being sent to peers</param>
-        protected virtual void PrepareRequest(WebRequest request) {
-            
-        }
+        protected virtual void PrepareRequest(WebRequest request) { }
 
         private Task<long> GetMessageId(string key) {
             var connection = CreateAndOpenConnection();
-            var transaction = connection.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted);
+            var transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted);
             var cmd = new SqlCommand(_getMessageIdSql.Replace("{TableName}", MessageTableName), connection, transaction);
             cmd.Parameters.AddWithValue("EventKey", key);
             return cmd.ExecuteScalarAsync<long>()
                 .ContinueWith(idTask => {
-                    if (idTask.Exception != null) {
-                        throw idTask.Exception;
-                    }
+                    // We purposely don't commit the transaction, we just wanted the ID anyway, not the record
                     connection.Close();
-                    //transaction.Rollback();
-                    return idTask.Result;
-                });
+                    return idTask;
+                })
+                .Unwrap();
         }
 
         private Task SendMessageToPeers(Message message) {
             EnsurePeersDiscovered();
+
+            if (!_peers.Any()) {
+                return TaskAsyncHelper.Empty;
+            }
+
             // Loop through peers and send the message
-            var queryString = "?" + SignalReceiverHandler.QueryStringKeys.EventKey + "=" + HttpUtility.UrlEncode(message.SignalKey);
-            return Task.Factory.StartNew(() =>
-                Parallel.ForEach(_peers, (peer) => {
-                    var data = new Dictionary<string, string> {
-                        { MessageReceiverHandler.Keys.Message, Json.Stringify(message) }
+            var queryString = "?" + PeerToPeerHelper.RequestKeys.EventKey + "=" + HttpUtility.UrlEncode(message.SignalKey);
+            var peerCallTasks = _peers.Select(peer => {
+                var data = new Dictionary<string, string> {
+                        { PeerToPeerHelper.RequestKeys.Message, Json.Stringify(message) }
                     };
-                    HttpHelper.PostAsync(peer + MessageReceiverHandler.HandlerName + queryString, PrepareRequest, data)
-                        .ContinueWith(requestTask => {
-                            if (requestTask.Exception == null) {
-                                requestTask.Result.Close();
-                            }
-                        })
-                        .Wait();
-                })
-            );
+                return HttpHelper.PostAsync(peer + MessageReceiverHandler.HandlerName + queryString, PrepareRequest, data)
+                    .ContinueWith(requestTask => {
+                        if (requestTask.Status == TaskStatus.RanToCompletion) {
+                            requestTask.Result.Close();
+                        }
+                    });
+            }).ToArray();
+
+            // REVIEW: We are waiting on peer sending here, and faulting if any fault. Not sure if that's what we want or not.
+            return peerCallTasks.AllSucceeded(() => { });
         }
 
         private void EnsurePeersDiscovered() {
-            PeerToPeerHttpSignalBus.EnsurePeersDiscovered(ref _peersDiscovered, _peers, MessageReceiverHandler.HandlerName, Id, _peerDiscoveryLocker, PrepareRequest);
+            PeerToPeerHelper.EnsurePeersDiscovered(ref _peersDiscovered, PeerUrlSource, _peers, MessageReceiverHandler.HandlerName, Id, _peerDiscoveryLocker, PrepareRequest);
         }
 
         private SqlConnection CreateAndOpenConnection() {

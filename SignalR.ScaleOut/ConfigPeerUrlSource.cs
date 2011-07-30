@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 
-namespace SignalR.SignalBuses {
+namespace SignalR.ScaleOut {
     public class ConfigPeerUrlSource : IPeerUrlSource {
         public static string ConfigKey = "SignalR:HttpPeers";
 

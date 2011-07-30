@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SignalR {
+namespace SignalR.ScaleOut {
     public interface IJsonSerializer : IJsonStringifier {
         object Parse(string json);
 

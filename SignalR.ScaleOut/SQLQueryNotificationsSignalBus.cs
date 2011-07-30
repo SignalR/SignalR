@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using System.Security.Permissions;
 using System.Threading.Tasks;
 
-namespace SignalR {
+namespace SignalR.ScaleOut {
     /// <summary>
     /// A signaler that uses SQL Server and Query Notifications to send signals between app-domains
     /// </summary>

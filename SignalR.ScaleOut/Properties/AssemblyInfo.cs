@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SignalR.SQLServer")]
-[assembly: AssemblyDescription("SQL Server signal bus and message stores for SignalR")]
+[assembly: AssemblyTitle("SignalR.ScaleOut")]
+[assembly: AssemblyDescription("Scale out signal buses and message stores for SignalR for use in web farms")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("SignalR.SQLServer")]
+[assembly: AssemblyProduct("SignalR")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

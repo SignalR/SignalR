@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Samples", "SignalR.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SQLServer", "SignalR.SQLServer\SignalR.SQLServer.csproj", "{32D16B36-970E-4CF2-B954-78CB1833CBC1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.ScaleOut", "SignalR.ScaleOut\SignalR.ScaleOut.csproj", "{32D16B36-970E-4CF2-B954-78CB1833CBC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

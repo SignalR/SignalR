@@ -78,7 +78,6 @@
     <Compile Include="ISignalBus.cs" />
     <Compile Include="JavaScriptSerializerAdapter.cs" />
     <Compile Include="Json.cs" />
-    <Compile Include="SignalBuses\WebRequestAsyncExtensions.cs" />
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Transports\ITrackingDisconnect.cs" />
@@ -87,12 +86,7 @@
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
-    <Compile Include="SignalBuses\ConfigPeerUrlSource.cs" />
     <Compile Include="InProcessSignalBus.cs" />
-    <Compile Include="SignalBuses\IPeerUrlSource.cs" />
-    <Compile Include="SignalBuses\PeerToPeerHttpSignalBus.cs" />
-    <Compile Include="SignalBuses\SignalReceiverHandler.cs" />
-    <Compile Include="SignalBuses\SignalReceiverModule.cs" />
     <Compile Include="SignaledEventArgs.cs" />
     <Compile Include="Signaler.cs" />
     <Compile Include="SignalResult.cs" />

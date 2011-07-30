@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Script.Serialization;
 using SignalR.Hubs;
-using SignalR.SignalBuses;
 
 namespace SignalR.Infrastructure {
     public static class DependencyResolver {
@@ -78,7 +77,7 @@ namespace SignalR.Infrastructure {
 
                 Register(typeof(IJsonStringifier), () => serialzier);
 
-                Register(typeof(IPeerUrlSource), () => new ConfigPeerUrlSource());
+                
                 Register(typeof(IActionResolver), () => new DefaultActionResolver());
                 Register(typeof(IHubActivator), () => new DefaultHubActivator());
                 Register(typeof(IHubFactory), () => new DefaultHubFactory());

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
-namespace SignalR {
+namespace SignalR.ScaleOut {
     public class SQLMessageStore : IMessageStore {
         private static readonly string _getLastIdSQL = "SELECT MAX([MessageId]) FROM {TableName}";
 
@@ -21,11 +21,11 @@ namespace SignalR {
         private static readonly string _getAllSinceSQL = _getAllSQL +
                                                          "AND [MessageId] > @MessageId";
 
-        private static readonly string _getAllSinceMultiEventKeysSQL = "SELECT [MessageId], COALESCE([SmallValue],[BigValue]) as [Value], [Created], [EventKey] " +
-                                                                       "FROM {TableName} m " +
-	                                                                   "    INNER JOIN [dbo].[SignalR_charlist_to_table](@EventKey, ',') k " +
-		                                                               "        ON m.[EventKey] = k.[nstr] " +
-                                                                       "WHERE m.[MessageId] > @MessageId";
+        //private static readonly string _getAllSinceMultiEventKeysSQL = "SELECT [MessageId], COALESCE([SmallValue],[BigValue]) as [Value], [Created], [EventKey] " +
+        //                                                               "FROM {TableName} m " +
+        //                                                               "    INNER JOIN [dbo].[SignalR_charlist_to_table](@EventKey, ',') k " +
+        //                                                               "        ON m.[EventKey] = k.[nstr] " +
+        //                                                               "WHERE m.[MessageId] > @MessageId";
 
         // Interval to wait before cleaning up old queries
         private static readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
