@@ -13,10 +13,10 @@ namespace SignalR.Samples.App_Start {
         public static void Start() {
             
             // Uncomment this for web farm support
-            var cs = ConfigurationManager.ConnectionStrings["SignalR"].ConnectionString;
-            var store = new PeerToPeerSQLSignalBusMessageStore(cs);
-            DependencyResolver.Register(typeof(ISignalBus), () => store);
-            DependencyResolver.Register(typeof(IMessageStore), () => store);
+            //var cs = ConfigurationManager.ConnectionStrings["SignalR"].ConnectionString;
+            //var store = new PeerToPeerSQLSignalBusMessageStore(cs);
+            //DependencyResolver.Register(typeof(ISignalBus), () => store);
+            //DependencyResolver.Register(typeof(IMessageStore), () => store);
 
             ThreadPool.QueueUserWorkItem(_ => {
                 var connection = Connection.GetConnection<Streaming.Streaming>();
