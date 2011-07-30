@@ -1,7 +1,7 @@
 ﻿$(function () {
 
-    signalR.demo.invoke = function (index) {
-        $('#msg').append('<li>' + index + ' client state index ->' + this.state.index + '</li>');
+    signalR.demoHub.invoke = function (index) {
+        $('#msg').append('<li>' + index + ' client state index ->' + this.index + '</li>');
     };
 
     signalR.hub.start(function () {
@@ -15,8 +15,8 @@
             Address: { Street: "One Microsoft Way", Zip: "98052" }
         };
 
-        signalR.demo.complexType(p, function () {
-            $('#value').html('Complex Type ->' + window.JSON.stringify(this.state.person));
+        signalR.demoHub.complexType(p, function () {
+            $('#value').html('Complex Type ->' + window.JSON.stringify(this.person));
         });
 
         signalR.demo.multipleCalls();

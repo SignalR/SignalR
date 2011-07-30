@@ -41,7 +41,7 @@ $(function () {
             .addClass(shape.Type)
             .attr("id", "s-" + shape.ID)
             .data("shapeId", shape.ID)
-            .append("<div class='user-info' id='u-" + shape.ID + "'>" + (shapeShare.state.user.Name === shape.ChangedBy.Name ? "" : "changed by " + shape.ChangedBy.Name) + "</div>");
+            .append("<div class='user-info' id='u-" + shape.ID + "'>" + (shapeShare.user.Name === shape.ChangedBy.Name ? "" : "changed by " + shape.ChangedBy.Name) + "</div>");
         return el;
     }
 
@@ -73,7 +73,7 @@ $(function () {
     };
 
     shapeShare.shapeChanged = function (shape) {
-        if (this.state.user.ID === shape.ChangedBy.ID) {
+        if (this.user.ID === shape.ChangedBy.ID) {
             $("#u-" + shape.ID).text("");
             return;
         }
@@ -125,9 +125,9 @@ $(function () {
         });
 
     $("#user").change(function () {
-        shapeShare.changeUserName(shapeShare.state.user.Name, $(this).val(), function () {
-            $.cookie("userName", shapeShare.state.user.Name, { expires: 30 })
-            $("#user").val(shapeShare.state.user.Name);
+        shapeShare.changeUserName(shapeShare.user.Name, $(this).val(), function () {
+            $.cookie("userName", shapeShare.user.Name, { expires: 30 })
+            $("#user").val(shapeShare.user.Name);
         });
     });
 
@@ -141,8 +141,8 @@ $(function () {
 
     signalR.hub.start(function () {
         shapeShare.join($.cookie("userName"), function () {
-            $.cookie("userName", shapeShare.state.user.Name, { expires: 30 });
-            $("#user").val(shapeShare.state.user.Name);
+            $.cookie("userName", shapeShare.user.Name, { expires: 30 });
+            $("#user").val(shapeShare.user.Name);
             load();
         });
     });

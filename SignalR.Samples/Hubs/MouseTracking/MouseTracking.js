@@ -1,7 +1,7 @@
 ﻿$(function () {
     // Pure client side hub
     signalR.mouseTracking.moveMouse = function (id, x, y) {
-        if (id == this.state.id) {
+        if (id == this.id) {
             return;
         }
 
@@ -27,7 +27,7 @@
 
                 $(document).mousemove(function (e) {
                     signalR.mouseTracking.move(e.pageX, e.pageY);
-                    updateCursor(signalR.mouseTracking.state.id, e.pageX, e.pageY);
+                    updateCursor(signalR.mouseTracking.id, e.pageX, e.pageY);
                 });
             });
         });

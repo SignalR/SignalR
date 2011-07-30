@@ -59,16 +59,15 @@ namespace SignalR.Hubs {
             var methods = GetMethods(type);
             var members = methods.Select(m => m.Name).ToList();
             members.Add("namespace");
-            members.Add("serverMembers");
+            members.Add("ignoreMembers");
             members.Add("callbacks");
 
             sb.AppendFormat("{0}: {{", GetHubName(type)).AppendLine();
             sb.AppendFormat("            _: {{").AppendLine();
             sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
-            sb.AppendFormat("                serverMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
+            sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
             sb.AppendLine("                connection: function () { return window.signalR.hub; }");
-            sb.AppendFormat("            }},").AppendLine();
-            sb.AppendFormat("            state: {{}}");
+            sb.AppendFormat("            }}").AppendLine();
             if (methods.Any()) {
                 sb.Append(",");
             }

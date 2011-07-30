@@ -83,8 +83,8 @@ $(function () {
         var e = $('#new-user-template').tmpl(data)
                                        .appendTo($('#users'));
 
-        if (!exists && this.state.name != user.Name) {
-            addMessage(user.Name + ' just entered ' + this.state.room, 'notification');
+        if (!exists && this.name != user.Name) {
+            addMessage(user.Name + ' just entered ' + this.room, 'notification');
             e.hide().fadeIn('slow');
         }
 
@@ -99,7 +99,7 @@ $(function () {
                 })
         );
 
-        if (oldUser.Name === this.state.name) {
+        if (oldUser.Name === this.name) {
             addMessage('Your name is now ' + newUser.Name, 'notification');
             updateCookie();
         }
@@ -117,12 +117,12 @@ $(function () {
     };
 
     chat.leave = function (user) {
-        if (this.state.id != user.Id) {
+        if (this.id != user.Id) {
             $('#u-' + user.Name).fadeOut('slow', function () {
                 $(this).remove();
             });
 
-            addMessage(user.Name + ' left ' + this.state.room, 'notification');
+            addMessage(user.Name + ' left ' + this.room, 'notification');
         }
     };
 
@@ -141,36 +141,36 @@ $(function () {
     });
 
     $(window).blur(function () {
-        chat.state.focus = false;
+        chat.focus = false;
     });
 
     $(window).focus(function () {
-        chat.state.focus = true;
-        chat.state.unread = 0;
+        chat.focus = true;
+        chat.unread = 0;
         document.title = 'SignalR Chat';
     });
 
     function updateUnread() {
-        if (!chat.state.focus) {
-            if (!chat.state.unread) {
-                chat.state.unread = 0;
+        if (!chat.focus) {
+            if (!chat.unread) {
+                chat.unread = 0;
             }
-            chat.state.unread++;
+            chat.unread++;
         }
         updateTitle();
     }
 
     function updateTitle() {
-        if (chat.state.unread == 0) {
+        if (chat.unread == 0) {
             document.title = 'SignalR Chat';
         }
         else {
-            document.title = 'SignalR Chat (' + chat.state.unread + ')';
+            document.title = 'SignalR Chat (' + chat.unread + ')';
         }
     }
 
     function updateCookie() {
-        $.cookie('userid', chat.state.id, { path: '/', expires: 30 });
+        $.cookie('userid', chat.id, { path: '/', expires: 30 });
     }
 
     addMessage('Welcome to the SignalR IRC clone', 'notification');

@@ -30,9 +30,10 @@
 
     function executeCallback(hubName, fn, args, state) {
         var hub = hubs[hubName],
-            method;
+                  method;
+
         if (hub) {
-            $.extend(hub.obj.state, state);
+            signalR.hub.processState(hubName, hub.obj, state);
 
             method = hub[fn];
             if (method) {
@@ -73,7 +74,7 @@
 
                         if (memberKey === "_" ||
                                 $.type(memberValue) !== "function" ||
-                                $.inArray(memberKey, obj._.serverMembers) >= 0) {
+                                $.inArray(memberKey, obj._.ignoreMembers) >= 0) {
                             continue;
                         }
 
@@ -99,6 +100,17 @@
                 ? null : a);
     }
 
+    function copy(obj, exclude) {
+        var newObj = {};
+        $.each(obj, function (key) {
+            if ($.inArray(key, exclude) == -1) {
+                newObj[key] = this;
+            }
+        });
+
+        return newObj;
+    }
+
     function serverCall(hub, methodName, args) {
         /// <param name="args" type="Array" />
         var callback = args[args.length - 1], // last argument
@@ -106,10 +118,11 @@
                 ? args.slice(0, -1) // all but last
                 : args,
             argValues = methodArgs.map(getArgValue),
-            data = { hub: hub._.hubName, action: methodName, data: argValues, state: hub.state, id: callbackId },
+            data = { hub: hub._.hubName, action: methodName, data: argValues, state: copy(hub, ["_"]), id: callbackId },
             d = $.Deferred(),
             cb = function (result) {
-                $.extend(hub.state, result.State);
+                signalR.hub.processState(hub._.hubName, hub, result.State);
+
                 if (result.Error) {
                     d.rejectWith(hub, [result.Error]);
                 } else {
@@ -167,4 +180,8 @@
             }
         });
 
-}(window.jQuery, window));
+    signalR.hub.processState = function (hubName, left, right) {
+        $.extend(left, right);
+    };
+
+} (window.jQuery, window));
