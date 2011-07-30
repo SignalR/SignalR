@@ -19,7 +19,7 @@ namespace SignalR.ScaleOut {
             internal static readonly string Ack = "ack";
         } 
         
-        public static void EnsurePeersDiscovered(ref bool peersDiscovered, IPeerUrlSource urls, ICollection<string> peers, string handlerName, Guid selfId, object locker, Action<WebRequest> requestPreparer) {
+        public static void EnsurePeersDiscovered(ref bool peersDiscovered, IPeerUrlSource urls, ICollection<string> peers, string handlerName, Guid selfId, object locker, Action<HttpWebRequest> requestPreparer) {
             if (peersDiscovered) {
                 return;
             }
@@ -65,10 +65,8 @@ namespace SignalR.ScaleOut {
             }
         }
 
-        public static Task<WebResponse> CreatePrepareAndSendRequestAsync(string url, Action<WebRequest> requestPreparer) {
-            var request = HttpWebRequest.Create(url);
-            requestPreparer(request);
-            return request.GetResponseAsync();
+        public static Task<HttpWebResponse> CreatePrepareAndSendRequestAsync(string url, Action<HttpWebRequest> requestPreparer) {
+            return HttpHelper.GetAsync(url, requestPreparer);
         }
     }
 }

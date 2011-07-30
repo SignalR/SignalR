@@ -7,6 +7,24 @@ using System.Threading.Tasks;
 
 namespace SignalR.ScaleOut {
     public static class HttpHelper {
+        public static Task<HttpWebResponse> GetAsync(this HttpWebRequest request) {
+            return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, iar => (HttpWebResponse)request.EndGetResponse(iar), null);
+        }
+
+        public static Task<Stream> GetRequestStreamAsync(this HttpWebRequest request) {
+            return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
+        }
+
+        public static Task<HttpWebResponse> GetAsync(string url) {
+            return GetAsync(url, _ => { });
+        }
+
+        public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer) {
+            var request = (HttpWebRequest)HttpWebRequest.Create(url);
+            requestPreparer(request);
+            return request.GetAsync();
+        }
+
         public static Task<HttpWebResponse> PostAsync(string url) {
             return PostInternal(url, _ => { }, new Dictionary<string, string>());
         }
@@ -36,8 +54,23 @@ namespace SignalR.ScaleOut {
             return tcs.Task;
         }
 
+        private static void ReadAsync(StringBuilder sb, Stream stream, TaskCompletionSource<string> tcs) {
+            byte[] buffer = new byte[1024 * 4];
+
+            stream.BeginRead(buffer, 0, buffer.Length - 1, ar => {
+                int read = stream.EndRead(ar);
+                sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
+
+                if (read < buffer.Length) {
+                    tcs.SetResult(sb.ToString());
+                }
+                else {
+                    ReadAsync(sb, stream, tcs);
+                }
+            }, null);
+        }
+
         private static Task<HttpWebResponse> PostInternal(string url, Action<WebRequest> requestPreparer, IDictionary<string, string> postData) {
-            var tcs = new TaskCompletionSource<HttpWebResponse>();
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
 
             requestPreparer(request);
@@ -61,45 +94,14 @@ namespace SignalR.ScaleOut {
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = buffer.LongLength;
 
-            request.BeginGetRequestStream(ar => {
-                try {
-                    using (Stream requestStream = request.EndGetRequestStream(ar)) {
-                        requestStream.Write(buffer, 0, buffer.Length);
-                    }
-                }
-                catch (Exception ex) {
-                    tcs.SetException(ex);
-                    return;
-                }
-
-                request.BeginGetResponse(iar => {
-                    try {
-                        tcs.SetResult((HttpWebResponse)request.EndGetResponse(iar));
-                    }
-                    catch (Exception ex) {
-                        tcs.SetException(ex);
-                    }
-                }, null);
-
-            }, null);
-
-            return tcs.Task;
-        }
-
-        private static void ReadAsync(StringBuilder sb, Stream stream, TaskCompletionSource<string> tcs) {
-            byte[] buffer = new byte[1024 * 4];
-
-            stream.BeginRead(buffer, 0, buffer.Length - 1, ar => {
-                int read = stream.EndRead(ar);
-                sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-
-                if (read < buffer.Length) {
-                    tcs.SetResult(sb.ToString());
-                }
-                else {
-                    ReadAsync(sb, stream, tcs);
-                }
-            }, null);
+            return request.GetRequestStreamAsync()
+                .Success(t => {
+                    t.Result.Write(buffer, 0, buffer.Length);
+                })
+                .Success(t => {
+                    return request.GetAsync();
+                })
+                .Unwrap();
         }
     }
 }

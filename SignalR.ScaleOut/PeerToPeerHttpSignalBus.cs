@@ -62,7 +62,7 @@ namespace SignalR.ScaleOut {
         /// Override this method to prepare the request before it is sent to peers, e.g. to add authentication credentials
         /// </summary>
         /// <param name="request">The request being sent to peers</param>
-        protected virtual void PrepareRequest(WebRequest request) { }
+        protected virtual void PrepareRequest(HttpWebRequest request) { }
 
         private void OnSignaled(string eventKey) {
             SafeSet<EventHandler<SignaledEventArgs>> handlers;
