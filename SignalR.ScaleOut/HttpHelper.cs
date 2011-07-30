@@ -47,29 +47,6 @@ namespace SignalR.ScaleOut {
             }
         }
 
-        private static Task<string> ReadAsync(this Stream stream) {
-            var tcs = new TaskCompletionSource<string>();
-            var sb = new StringBuilder(4096);
-            ReadAsync(sb, stream, tcs);
-            return tcs.Task;
-        }
-
-        private static void ReadAsync(StringBuilder sb, Stream stream, TaskCompletionSource<string> tcs) {
-            byte[] buffer = new byte[1024 * 4];
-
-            stream.BeginRead(buffer, 0, buffer.Length - 1, ar => {
-                int read = stream.EndRead(ar);
-                sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-
-                if (read < buffer.Length) {
-                    tcs.SetResult(sb.ToString());
-                }
-                else {
-                    ReadAsync(sb, stream, tcs);
-                }
-            }, null);
-        }
-
         private static Task<HttpWebResponse> PostInternal(string url, Action<WebRequest> requestPreparer, IDictionary<string, string> postData) {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
 
