@@ -1,6 +1,6 @@
 ﻿$(function () {
 
-    signalR.demoHub.invoke = function (index) {
+    signalR.demo.invoke = function (index) {
         $('#msg').append('<li>' + index + ' client state index ->' + this.index + '</li>');
     };
 
@@ -15,7 +15,7 @@
             Address: { Street: "One Microsoft Way", Zip: "98052" }
         };
 
-        signalR.demoHub.complexType(p, function () {
+        signalR.demo.complexType(p, function () {
             $('#value').html('Complex Type ->' + window.JSON.stringify(this.person));
         });
 
