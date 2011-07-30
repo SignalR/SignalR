@@ -1,6 +1,5 @@
-﻿
-namespace SignalR.Hubs {
-    public class Hub {
+﻿namespace SignalR.Hubs {
+    public abstract class Hub : IHub {
         public IClientAgent Agent { get; set; }
 
         public dynamic Clients {

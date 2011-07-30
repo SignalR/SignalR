@@ -10,7 +10,7 @@ namespace SignalR.Hubs {
             return from Assembly a in BuildManager.GetReferencedAssemblies()
                    where !a.GlobalAssemblyCache && !a.IsDynamic
                    from type in GetTypesSafe(a)
-                   where type.IsSubclassOf(typeof(Hub))
+                   where typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract
                    select type;
         }
 

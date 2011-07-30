@@ -56,24 +56,35 @@ namespace SignalR.Hubs {
 
         private void GenerateType(string serviceUrl, StringBuilder sb, Type type) {
             // Get public instance methods declared on this type only
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            var methods = GetMethods(type);
             var members = methods.Select(m => m.Name).ToList();
             members.Add("namespace");
             members.Add("serverMembers");
             members.Add("callbacks");
 
-            sb.AppendFormat("{0}: {{", Json.CamelCase(type.Name)).AppendLine();
+            sb.AppendFormat("{0}: {{", GetHubName(type)).AppendLine();
             sb.AppendFormat("            _: {{").AppendLine();
             sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
             sb.AppendFormat("                serverMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
-            sb.AppendLine(  "                connection: function () { return window.signalR.hub; }");
+            sb.AppendLine("                connection: function () { return window.signalR.hub; }");
             sb.AppendFormat("            }},").AppendLine();
             sb.AppendFormat("            state: {{}}");
             if (methods.Any()) {
                 sb.Append(",");
             }
             bool first = true;
+
+            var propertyMethods = new HashSet<MethodInfo>();
+            foreach (var property in type.GetProperties()) {
+                propertyMethods.Add(property.GetGetMethod());
+                propertyMethods.Add(property.GetSetMethod());
+            }
+
             foreach (var method in methods) {
+                if (propertyMethods.Contains(method)) {
+                    continue;
+                }
+
                 if (!first) {
                     sb.Append(",").AppendLine();
                 }
@@ -84,14 +95,37 @@ namespace SignalR.Hubs {
             sb.Append("        }");
         }
 
+        protected virtual string GetHubName(Type type) {
+            return GetAttributeValue<HubNameAttribute, string>(type, a => a.HubName) ?? Json.CamelCase(type.Name);
+        }
+
+        protected virtual IEnumerable<MethodInfo> GetMethods(Type type) {
+            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+        }
+
         private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method) {
             var parameters = method.GetParameters();
             var parameterNames = parameters.Select(p => p.Name).ToList();
             parameterNames.Add("callback");
             sb.AppendLine();
-            sb.AppendFormat("            {0}: function ({1}) {{", Json.CamelCase(method.Name), Commas(parameterNames)).AppendLine();
+            sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
             sb.AppendFormat("                return serverCall(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
             sb.Append("            }");
+        }
+
+        private static string GetMethodName(MethodInfo method) {
+            return GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName) ?? Json.CamelCase(method.Name);
+        }
+
+        private static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
+            where TAttribute : Attribute {
+            var attributes = source.GetCustomAttributes(typeof(TAttribute), false)
+                .Cast<TAttribute>()
+                .ToList();
+            if (attributes.Any()) {
+                return valueGetter(attributes[0]);
+            }
+            return default(TResult);
         }
 
         private static string Commas(IEnumerable<string> values) {

@@ -56,7 +56,7 @@ namespace SignalR.Hubs {
             var hubRequest = _serializer.Deserialize<HubRequest>(data);
 
             // Create the hub
-            Hub hub = _hubFactory.CreateHub(hubRequest.Hub);
+            IHub hub = _hubFactory.CreateHub(hubRequest.Hub);
 
             // Deserialize the parameter name value pairs so we can match it up with the method's parameters
             var parameters = hubRequest.Data;

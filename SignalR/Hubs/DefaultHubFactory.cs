@@ -19,7 +19,7 @@ namespace SignalR.Hubs {
             _hubActivator = hubActivator;
         }
 
-        public Hub CreateHub(string hubName) {
+        public IHub CreateHub(string hubName) {
             // Get the type name from the client
             Type type = BuildManager.GetType(hubName, throwOnError: false);
 
@@ -27,8 +27,8 @@ namespace SignalR.Hubs {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "Unable to find '{0}'.", hubName));
             }
 
-            if (!type.IsSubclassOf(typeof(Hub))) {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' is not a Hub.", type.FullName));
+            if (!typeof(IHub).IsAssignableFrom(type)) {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' is not an IHub.", type.FullName));
             }
 
             return _hubActivator.Create(type);
