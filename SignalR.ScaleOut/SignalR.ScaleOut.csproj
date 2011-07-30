@@ -8,7 +8,7 @@
     <ProjectGuid>{32D16B36-970E-4CF2-B954-78CB1833CBC1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SignalR</RootNamespace>
+    <RootNamespace>SignalR.ScaleOut</RootNamespace>
     <AssemblyName>SignalR.ScaleOut</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
