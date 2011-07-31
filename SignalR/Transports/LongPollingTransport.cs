@@ -37,7 +37,7 @@ namespace SignalR.Transports {
         private long? MessageId {
             get {
                 long messageId;
-                if (Int64.TryParse(_context.Request.Form["messageId"], out messageId)) {
+                if (Int64.TryParse(_context.Request["messageId"], out messageId)) {
                     return messageId;
                 }
                 return null;
