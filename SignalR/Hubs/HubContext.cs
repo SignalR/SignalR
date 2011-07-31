@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Security.Principal;
 using System.Web;
 
 namespace SignalR.Hubs {
@@ -16,9 +13,12 @@ namespace SignalR.Hubs {
         /// </summary>
         public HttpCookieCollection Cookies { get; private set; }
 
-        public HubContext(string clientId, HttpCookieCollection cookies) {
+        public IPrincipal User { get; private set; }
+
+        public HubContext(string clientId, HttpCookieCollection cookies, IPrincipal user) {
             ClientId = clientId;
             Cookies = cookies;
+            User = user;
         }
     }
 }

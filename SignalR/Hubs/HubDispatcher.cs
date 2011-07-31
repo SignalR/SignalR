@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
 using SignalR.Infrastructure;
+using System.Security.Principal;
 
 namespace SignalR.Hubs {
     public class HubDispatcher : PersistentConnection {
@@ -25,6 +26,7 @@ namespace SignalR.Hubs {
         private readonly IJavaScriptProxyGenerator _proxyGenerator;
         private readonly string _url;
         private HttpCookieCollection _cookies;
+        private IPrincipal _user;
 
         public HubDispatcher(string url)
             : this(DependencyResolver.Resolve<IHubFactory>(),
@@ -71,7 +73,7 @@ namespace SignalR.Hubs {
             string hubName = hub.GetType().FullName;
 
             var state = new TrackingDictionary(hubRequest.State);
-            hub.Context = new HubContext(clientId, _cookies);
+            hub.Context = new HubContext(clientId, _cookies, _user);
             hub.Caller = new SignalAgent(Connection, clientId, hubName, state);
             var agent = new ClientAgent(Connection, hubName);
             hub.Agent = agent;
@@ -124,7 +126,7 @@ namespace SignalR.Hubs {
                 }
             }
             catch (TargetInvocationException e) {
-                ProcessResult(state, null, hubRequest, e.GetBaseException());
+                ProcessResult(state, null, hubRequest, e);
             }
 
             return base.OnReceivedAsync(clientId, data);
@@ -139,6 +141,8 @@ namespace SignalR.Hubs {
             }
 
             _cookies = context.Request.Cookies;
+            _user = context.User;
+
             return base.ProcessRequestAsync(context);
         }
 

@@ -2,18 +2,17 @@
 
 namespace SignalR.Hubs {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public sealed class HubNameAttribute : Attribute {
-        private readonly string hubName;
-
+    public sealed class HubNameAttribute : Attribute {    
         public HubNameAttribute(string hubName) {
             if (String.IsNullOrEmpty(hubName)) {
                 throw new ArgumentNullException("hubName");
             }
-            this.hubName = hubName;
+            HubName = hubName;
         }
 
         public string HubName {
-            get { return hubName; }
+            get;
+            private set;
         }
     }
 }
