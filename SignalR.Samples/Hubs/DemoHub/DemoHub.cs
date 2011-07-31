@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hubs;
+using System;
 
 namespace SignalR.Samples.Hubs.DemoHub {
     [HubName("demo")]
@@ -9,6 +10,24 @@ namespace SignalR.Samples.Hubs.DemoHub {
             return Task.Factory.StartNew(() => {
                 Thread.Sleep(5000);
                 return 10;
+            });
+        }
+
+        public Task PlainTask() {
+            return Task.Factory.StartNew(() => {
+                Thread.Sleep(500);
+            });
+        }
+
+        public Task GenericTaskTypedAsPlain() {
+            return Task.Factory.StartNew(() => {
+                return 2 + 2;
+            });
+        }
+
+        public Task TaskWithException() {
+            return Task.Factory.StartNew(() => {
+                throw new Exception();
             });
         }
 

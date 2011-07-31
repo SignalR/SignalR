@@ -1,11 +1,12 @@
 ﻿$(function () {
+    var demo = signalR.demo;
 
-    signalR.demo.invoke = function (index) {
+    demo.invoke = function (index) {
         $('#msg').append('<li>' + index + ' client state index ->' + this.index + '</li>');
     };
 
     signalR.hub.start(function () {
-        signalR.demo.getValue(function (value) {
+        demo.getValue(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
 
@@ -15,10 +16,22 @@
             Address: { Street: "One Microsoft Way", Zip: "98052" }
         };
 
-        signalR.demo.complexType(p, function () {
+        demo.complexType(p, function () {
             $('#value').html('Complex Type ->' + window.JSON.stringify(this.person));
         });
 
-        signalR.demo.multipleCalls();
+        demo.multipleCalls();
+
+        demo.plainTask().done(function () {
+            $('#plainTask').html('Plain Task Result');
+        });
+
+        demo.genericTaskTypedAsPlain().done(function (result) {
+            $('#genericTaskTypedAsPlain').html(result);
+        });
+
+        demo.taskWithException().fail(function (e) {
+            $('#taskWithException').html(e);
+        });
     });
 });

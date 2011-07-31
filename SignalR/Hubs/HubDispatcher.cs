@@ -80,10 +80,14 @@ namespace SignalR.Hubs {
             try {
                 // Execute the method
                 object result = actionInfo.Method.Invoke(hub, actionInfo.Arguments);
-                Type returnType = actionInfo.Method.ReturnType;
+                Type returnType = result != null ? result.GetType() : actionInfo.Method.ReturnType;
+
                 if (typeof(Task).IsAssignableFrom(returnType)) {
                     var task = (Task)result;
-                    if (returnType.IsGenericType) {
+                    if (!returnType.IsGenericType) {
+                        return task.ContinueWith(t => ProcessResult(state, null, hubRequest, t.Exception));
+                    }
+                    else {
                         // Get the <T> in Task<T>
                         Type resultType = returnType.GetGenericArguments().Single();
 
@@ -100,13 +104,14 @@ namespace SignalR.Hubs {
                         var taskParameter = Expression.Parameter(returnType);
                         var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessResult", BindingFlags.NonPublic | BindingFlags.Instance);
                         var taskResult = Expression.Property(taskParameter, "Result");
+                        var taskException = Expression.Property(taskParameter, "Exception");
 
                         var body = Expression.Call(Expression.Constant(this),
                                                    processResultMethod,
                                                    Expression.Constant(state),
                                                    Expression.Convert(taskResult, typeof(object)),
                                                    Expression.Constant(hubRequest),
-                                                   Expression.Constant(null, typeof(Exception)));
+                                                   Expression.Convert(taskException, typeof(Exception)));
 
                         var lambda = Expression.Lambda(body, taskParameter);
 
@@ -142,7 +147,7 @@ namespace SignalR.Hubs {
                 State = state.GetChanges(),
                 Result = result,
                 Id = request.Id,
-                Error = error != null ? error.Message : null
+                Error = error != null ? error.GetBaseException().Message : null
             };
 
             Send(hubResult);
