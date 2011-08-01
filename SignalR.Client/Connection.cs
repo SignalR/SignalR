@@ -73,7 +73,7 @@ namespace SignalR.Client {
             return _transport.Send<T>(this, data);
         }        
 
-        internal void OnReceived(string message) {
+        internal void RaiseOnReceived(string message) {
             if (Received != null) {
                 Received(message);
             }

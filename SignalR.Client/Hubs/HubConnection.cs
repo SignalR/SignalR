@@ -12,17 +12,20 @@ using Newtonsoft.Json.Linq;
 
 namespace SignalR.Client.Hubs {
     public class HubConnection : Connection {
-        private readonly Dictionary<string, Tuple<Type, MethodInfo>> _actionMap = new Dictionary<string, Tuple<Type, MethodInfo>>(StringComparer.OrdinalIgnoreCase);
-        private readonly Lazy<IEnumerable<string>> _actions;
+        private readonly Dictionary<string, Dictionary<string, MethodInfo>> _hubs = new Dictionary<string, Dictionary<string, MethodInfo>>(StringComparer.OrdinalIgnoreCase);
+        private string _serializedRequestData;
 
-        public HubConnection(string baseUrl)
-            : base(baseUrl) {
-            _actions = new Lazy<IEnumerable<string>>(GetActions);
+        public HubConnection(string url)
+            : base(GetUrl(url)) {
         }
 
         public Func<Type, object> ObjectFactory { get; set; }
 
         public override Task Start() {
+            if (String.IsNullOrEmpty(_serializedRequestData)) {
+                ProcessAssemblies();
+            }
+
             Sending += OnSending;
             Received += OnReceived;
             return base.Start();
@@ -39,20 +42,20 @@ namespace SignalR.Client.Hubs {
         }
 
         private string OnSending() {
-            return JsonConvert.SerializeObject(_actions.Value);
+            return _serializedRequestData;
         }
 
         private void OnReceived(string message) {
-            var info = JsonConvert.DeserializeObject<HubInvocationInfo>(message);
-            Tuple<Type, MethodInfo> mapping;
-            if (_actionMap.TryGetValue(info.Action, out mapping)) {
-                Type hubType = mapping.Item1;
-                MethodInfo method = mapping.Item2;
+            var invocationInfo = JsonConvert.DeserializeObject<HubInvocationInfo>(message);
+            Dictionary<string, MethodInfo> methods;
+            if (_hubs.TryGetValue(invocationInfo.Hub, out methods)) {
+                MethodInfo method;
+                if (methods.TryGetValue(invocationInfo.Method, out method)) {
+                    ObjectFactory = ObjectFactory ?? Activator.CreateInstance;
 
-                ObjectFactory = ObjectFactory ?? Activator.CreateInstance;
-
-                var hub = ObjectFactory(hubType);
-                method.Invoke(hub, ResolveParameters(method, info.Args));
+                    var hubInstance = ObjectFactory(method.DeclaringType);
+                    method.Invoke(hubInstance, ResolveParameters(method, invocationInfo.Args));
+                }
             }
         }
 
@@ -76,7 +79,7 @@ namespace SignalR.Client.Hubs {
         }
 
 
-        private IEnumerable<string> GetActions() {
+        private void ProcessAssemblies() {
 #if !WINDOWS_PHONE
             foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) {
 #else
@@ -85,37 +88,56 @@ namespace SignalR.Client.Hubs {
                 var assemblyName = part.Source.Replace(".dll", String.Empty);
                 var a = Assembly.Load(assemblyName);
 #endif
-                foreach (var action in GetActions(a)) {
-                    yield return action;
-                }
+                ProcessAssembly(a);
             }
+
+            var requestData = new List<object>();
+            foreach (var item in _hubs) {
+                requestData.Add(new {
+                    Name = item.Key,
+                    Methods = item.Value.Keys
+                });
+            }
+
+            // Store the serialized version of this data since it never changes per app domain
+            _serializedRequestData = JsonConvert.SerializeObject(requestData);
         }
 
-        private IEnumerable<string> GetActions(Assembly assembly) {
+        private void ProcessAssembly(Assembly assembly) {
             foreach (var type in assembly.GetTypes()) {
                 var attr = (HubAttribute)type.GetCustomAttributes(typeof(HubAttribute), true).FirstOrDefault();
                 if (attr == null) {
                     continue;
                 }
 
-                foreach (var method in type.GetMethods()) {
-                    string action = attr.Type + "." + GetMessage(method);
-                    _actionMap[action] = Tuple.Create(type, method);
-                    yield return action;
+                Dictionary<string, MethodInfo> methods;
+                if (!_hubs.TryGetValue(attr.Type, out methods)) {
+                    methods = new Dictionary<string, MethodInfo>(StringComparer.OrdinalIgnoreCase);
+                    _hubs[attr.Type] = methods;
+                }
+
+                foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)) {
+                    var methodAttr = (HubMethodAttribute)method.GetCustomAttributes(typeof(HubMethodAttribute), true).FirstOrDefault();
+                    string name = method.Name;
+                    if (methodAttr != null) {
+                        name = methodAttr.Method;
+                    }
+                    methods[name] = method;
                 }
             }
         }
 
         private string GetMessage(MethodInfo method) {
-            var attr = (HubActionAttribute)method.GetCustomAttributes(typeof(HubActionAttribute), true).FirstOrDefault();
+            var attr = (HubMethodAttribute)method.GetCustomAttributes(typeof(HubMethodAttribute), true).FirstOrDefault();
             if (attr == null) {
                 return method.Name;
             }
-            return attr.Message;
+            return attr.Method;
         }
 
         public class HubInvocationInfo {
-            public string Action { get; set; }
+            public string Hub { get; set; }
+            public string Method { get; set; }
             public object[] Args { get; set; }
         }
 
@@ -142,11 +164,11 @@ namespace SignalR.Client.Hubs {
             }
         }
 #endif
-        private static string GetUrl(string baseUrl) {
-            if (!baseUrl.EndsWith("/")) {
-                baseUrl += "/";
+        private static string GetUrl(string url) {
+            if (!url.EndsWith("/")) {
+                url += "/";
             }
-            return baseUrl + "signalr";
+            return url + "signalr";
         }
     }
 }

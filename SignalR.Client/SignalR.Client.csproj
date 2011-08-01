@@ -53,11 +53,10 @@
       <Link>Infrastructure\TaskWrapperAsyncResult.cs</Link>
     </Compile>
     <Compile Include="Connection.cs" />
-    <Compile Include="Hubs\HubActionAttribute.cs" />
+    <Compile Include="Hubs\HubMethodAttribute.cs" />
     <Compile Include="Hubs\HubAttribute.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
     <Compile Include="Hubs\HubProxy.cs" />
-    <Compile Include="Hubs\HubRequest.cs" />
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

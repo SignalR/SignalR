@@ -102,7 +102,7 @@ namespace SignalR.Client.Transports {
                     if (messages.HasValues) {
                         foreach (var message in messages.Children()) {
                             try {
-                                connection.OnReceived(message.ToString());
+                                connection.RaiseOnReceived(message.ToString());
                             }
                             catch (Exception ex) {
                                 Debug.WriteLine("Failed to process message: {0}", ex);
