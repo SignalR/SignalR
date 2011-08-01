@@ -3,7 +3,7 @@
 /// <reference path="../../Scripts/jquery.cookie.js" />
 
 $(function () {
-    var chat = signalR.chat;
+    var chat = $.connection.chat;
 
     function clearMessages() {
         $('#messages').html('');
@@ -178,7 +178,7 @@ $(function () {
     $('#new-message').val('');
     $('#new-message').focus();
 
-    signalR.hub.start(function () {
+    $.connection.hub.start(function () {
         chat.join()
             .done(function (success) {
                 if (success === false) {

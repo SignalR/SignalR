@@ -3,12 +3,12 @@
     /// <param name="$" type="jQuery" />
     "use strict";
 
-    if (typeof (window.signalR) !== "function") {
-        throw "SignalR: SignalR is not loaded. Please ensure SignalR.js is referenced before ~/signalr/hubs.";
+    if (typeof ($.signalR) !== "function") {
+        throw "SignalR: SignalR is not loaded. Please ensure jquery.signalR.js is referenced before ~/signalr/hubs.";
     }
 
     var hubs = {},
-        signalR = window.signalR,
+        signalR = $.signalR,
         callbackId = 0,
         callbacks = {};
 

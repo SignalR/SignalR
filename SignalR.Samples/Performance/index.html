@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
     <script src="../Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
-    <script src="../Scripts/SignalR.js" type="text/javascript"></script>
+    <script src="../Scripts/jquery.signalR.js" type="text/javascript"></script>
     <script type="text/javascript">
         $(function () {
-            var connection = signalR('Performance.ashx');
+            var connection = $.connection('Performance.ashx');
                         
             connection.received(function (data) {
                 $('#messages').append('<li>' + data.data + '</li>');

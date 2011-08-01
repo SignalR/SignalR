@@ -145,8 +145,8 @@
     <Content Include="Scripts\json2.js" />
     <Content Include="Scripts\json2.min.js" />
     <Content Include="Scripts\remedial.js" />
-    <Content Include="Scripts\SignalR.js" />
-    <Content Include="Scripts\SignalR.min.js" />
+    <Content Include="Scripts\jquery.signalR.js" />
+    <Content Include="Scripts\jquery.signalR.min.js" />
     <Content Include="Streaming\index.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -272,7 +272,7 @@ xcopy /s /y "$(SolutionDir)packages\SqlServerCompact.4.0.8482.1\NativeBinaries\a
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="..\SignalR\Scripts\SignalR.js" DestinationFiles="Scripts\SignalR.js" />
-    <Copy SourceFiles="..\SignalR\Scripts\SignalR.min.js" DestinationFiles="Scripts\SignalR.min.js" />
+    <Copy SourceFiles="..\SignalR\Scripts\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
 </Project>

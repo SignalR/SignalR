@@ -1,5 +1,6 @@
 ﻿$(function () {
     // Pure client side hub
+    var signalR = $.connection;
     signalR.mouseTracking.moveMouse = function (id, x, y) {
         if (id == this.id) {
             return;

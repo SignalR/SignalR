@@ -1,11 +1,11 @@
 ﻿$(function () {
-    var demo = signalR.demo;
+    var demo = $.connection.demo;
 
     demo.invoke = function (index) {
         $('#msg').append('<li>' + index + ' client state index ->' + this.index + '</li>');
     };
 
-    signalR.hub.start(function () {
+    $.connection.hub.start(function () {
         demo.getValue(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });

@@ -82,7 +82,7 @@
                     );
                 }
             })
-            .hover(function () {
+            .hover(function () { // Over
                 var $el = $(this);
 
                 $el.data("morphing", true);
@@ -95,7 +95,7 @@
                 if (debug) {
                     $el.find("div.hoverMorphDebug").show();
                 }
-            }, function () {
+            }, function () { // Out
                 var $el = $(this),
                     $bg = $el.find("img.bg");
 

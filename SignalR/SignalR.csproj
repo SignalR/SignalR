@@ -115,8 +115,8 @@
     </None>
     <None Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <None Include="Scripts\jquery-1.6.2.js" />
-    <Content Include="Scripts\SignalR.min.js" />
-    <Content Include="Scripts\SignalR.js" />
+    <Content Include="Scripts\jquery.signalR.min.js" />
+    <Content Include="Scripts\jquery.signalR.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\hubs.js" />
@@ -124,7 +124,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <Target Name="AfterBuild">
-    <Exec Command="&quot;$(SolutionDir)lib\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\SignalR.js&quot; -out &quot;$(ProjectDir)Scripts\SignalR.min.js&quot; -clobber" LogStandardErrorAsError="true" />
+    <Exec Command="&quot;$(SolutionDir)lib\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\jquery.signalR.js&quot; -out &quot;$(ProjectDir)Scripts\jquery.signalR.min.js&quot; -clobber" LogStandardErrorAsError="true" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

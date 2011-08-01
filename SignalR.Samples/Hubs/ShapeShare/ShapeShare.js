@@ -7,7 +7,7 @@
 $(function () {
     'use strict';
 
-    var shapeShare = signalR.shapeShare;
+    var shapeShare = $.connection.shapeShare;
 
     function changeShape(el) {
         shapeShare.changeShape($(el).data("shapeId"), el.offsetLeft, el.offsetTop || 0, el.clientWidth, el.clientHeight);
@@ -139,7 +139,7 @@ $(function () {
         });
     }
 
-    signalR.hub.start(function () {
+    $.connection.hub.start(function () {
         shapeShare.join($.cookie("userName"), function () {
             $.cookie("userName", shapeShare.user.Name, { expires: 30 });
             $("#user").val(shapeShare.user.Name);

@@ -19,11 +19,11 @@
     <script src="../Scripts/jquery-1.6.2.min.js"></script>
     <script src="../Scripts/jquery.cookie.js" type="text/javascript"></script>
     <script src="../Scripts/json2.min.js" type="text/javascript"></script>
-    <script src="../Scripts/signalR.js"></script>
+    <script src="../Scripts/jquery.signalR.js"></script>
     <script>
         $(function () {
             "use strict";
-            var connection = signalR("Raw.ashx");
+            var connection = $.connection("Raw.ashx");
 
             connection.received(function (data) {
                 $("<li/>").html(window.JSON.stringify(data)).appendTo($("#messages"));

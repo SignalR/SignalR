@@ -66,7 +66,7 @@ namespace SignalR.Hubs {
             sb.AppendFormat("            _: {{").AppendLine();
             sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
             sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
-            sb.AppendLine("                connection: function () { return window.signalR.hub; }");
+            sb.AppendLine("                connection: function () { return signalR.hub; }");
             sb.AppendFormat("            }}").AppendLine();
             if (methods.Any()) {
                 sb.Append(",");
