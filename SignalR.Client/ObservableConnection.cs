@@ -1,26 +1,34 @@
 ﻿using System;
 
 namespace SignalR.Client {
-    public class ObservableConnection : IObservable<string> {
+    public class ObservableConnection<T> : IObservable<T> {
         private readonly Connection _connection;
-        public ObservableConnection(Connection connection) {
+        private readonly Func<string, T> _convert;
+        public ObservableConnection(Connection connection, Func<string, T> convert) {
             if (connection == null) {
                 throw new ArgumentNullException("connection");
             }
 
+            if (convert == null) {
+                throw new ArgumentNullException("converter");
+            }
+
+            _convert = convert;
             _connection = connection;
         }
 
-        public IDisposable Subscribe(IObserver<string> observer) {
-            return new DisposableConnection(_connection, observer);
+        public IDisposable Subscribe(IObserver<T> observer) {
+            return new DisposableConnection(_connection, _convert, observer);
         }
 
         private class DisposableConnection : IDisposable {
             private readonly Connection _connection;
-            private readonly IObserver<string> _observer;
+            private readonly Func<string, T> _convert;
+            private readonly IObserver<T> _observer;
 
-            public DisposableConnection(Connection connection, IObserver<string> observer) {
+            public DisposableConnection(Connection connection, Func<string, T> convert, IObserver<T> observer) {
                 _connection = connection;
+                _convert = convert;
                 _observer = observer;
 
                 _connection.Received += OnReceived;
@@ -28,7 +36,7 @@ namespace SignalR.Client {
             }
 
             private void OnReceived(string data) {
-                _observer.OnNext(data);
+                _observer.OnNext(_convert(data));
             }
 
             private void OnClosed() {
