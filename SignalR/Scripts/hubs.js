@@ -30,7 +30,7 @@
 
     function executeCallback(hubName, fn, args, state) {
         var hub = hubs[hubName],
-                  method;
+            method;
 
         if (hub) {
             signalR.hub.processState(hubName, hub.obj, state);
@@ -103,7 +103,7 @@
     function copy(obj, exclude) {
         var newObj = {};
         $.each(obj, function (key) {
-            if ($.inArray(key, exclude) == -1) {
+            if ($.inArray(key, exclude) === -1) {
                 newObj[key] = this;
             }
         });
@@ -184,4 +184,4 @@
         $.extend(left, right);
     };
 
-} (window.jQuery, window));
+}(window.jQuery, window));
