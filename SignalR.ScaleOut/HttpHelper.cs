@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SignalR.ScaleOut {
+namespace SignalR {
     public static class HttpHelper {
         public static Task<HttpWebResponse> GetAsync(this HttpWebRequest request) {
             return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, iar => (HttpWebResponse)request.EndGetResponse(iar), null);
