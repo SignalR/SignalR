@@ -6,7 +6,6 @@ using SignalR.Client.Transports;
 namespace SignalR.Client {
     public class Connection {
         public event Action<string> Received;
-        public event Func<string> Sending;
         public event Action Closed;
 
         private readonly IClientTransport _transport = new LongPollingTransport();
@@ -18,14 +17,16 @@ namespace SignalR.Client {
 
             Url = url;
         }
+        
+        public Func<string> Sending { get; set; }
 
         public string Url { get; private set; }
+        
+        public bool IsActive { get; private set; }
 
         internal long? MessageId { get; set; }
 
         internal string ClientId { get; set; }
-
-        public bool IsActive { get; private set; }
 
         public virtual Task Start() {
             if (IsActive) {
@@ -34,7 +35,8 @@ namespace SignalR.Client {
 
             IsActive = true;
 
-            string data = String.Empty;
+            string data = null;
+
             if (Sending != null) {
                 data = Sending();
             }
