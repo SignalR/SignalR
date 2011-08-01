@@ -36,6 +36,8 @@ namespace SignalR.Client.Transports {
                 }
                 finally {
                     if (task.IsFaulted) {
+                        connection.RaiseOnError(task.Exception.GetBaseException());
+
                         // If we can recover from this exception then sleep for 2 seconds
                         if (CanRecover(task.Exception)) {
                             Thread.Sleep(2000);
@@ -106,6 +108,7 @@ namespace SignalR.Client.Transports {
                             }
                             catch (Exception ex) {
                                 Debug.WriteLine("Failed to process message: {0}", ex);
+                                connection.RaiseOnError(ex);
                             }
                         }
                     }
@@ -114,6 +117,7 @@ namespace SignalR.Client.Transports {
             }
             catch (Exception ex) {
                 Debug.WriteLine("Failed to response: {0}", ex);
+                connection.RaiseOnError(ex);
             }
         }
     }

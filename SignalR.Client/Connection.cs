@@ -6,6 +6,7 @@ using SignalR.Client.Transports;
 namespace SignalR.Client {
     public class Connection {
         public event Action<string> Received;
+        public event Action<Exception> Error;
         public event Action Closed;
 
         private readonly IClientTransport _transport = new LongPollingTransport();
@@ -78,6 +79,12 @@ namespace SignalR.Client {
         internal void RaiseOnReceived(string message) {
             if (Received != null) {
                 Received(message);
+            }
+        }
+
+        internal void RaiseOnError(Exception error) {
+            if (Error != null) {
+                Error(error);
             }
         }
     }

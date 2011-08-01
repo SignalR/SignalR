@@ -33,6 +33,7 @@ namespace SignalR.Client {
 
                 _connection.Received += OnReceived;
                 _connection.Closed += OnClosed;
+                _connection.Error += OnError;
             }
 
             private void OnReceived(string data) {
@@ -43,9 +44,14 @@ namespace SignalR.Client {
                 _observer.OnCompleted();
             }
 
+            private void OnError(Exception error) {
+                _observer.OnError(error);
+            }
+
             public void Dispose() {
                 _connection.Closed -= OnClosed;
                 _connection.Received -= OnReceived;
+                _connection.Error -= OnError;
             }
         }
     }
