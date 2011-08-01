@@ -19,7 +19,7 @@ namespace SignalR.Client {
             Url = url;
         }
 
-        public string Url { get; set; }
+        public string Url { get; private set; }
 
         internal long? MessageId { get; set; }
 
