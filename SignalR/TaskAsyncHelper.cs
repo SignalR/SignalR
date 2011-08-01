@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace SignalR {
-    public static class TaskAsyncHelper {
+    internal static class TaskAsyncHelper {
         private static Task _empty = MakeEmpty();
 
         private static Task MakeEmpty() {

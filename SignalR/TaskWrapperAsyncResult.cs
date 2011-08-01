@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SignalR {
-    public sealed class TaskWrapperAsyncResult : IAsyncResult {
+    internal sealed class TaskWrapperAsyncResult : IAsyncResult {
         internal TaskWrapperAsyncResult(Task task, object asyncState) {
             Task = task;
             AsyncState = asyncState;
