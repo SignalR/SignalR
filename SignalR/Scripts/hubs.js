@@ -112,7 +112,6 @@
     }
 
     function serverCall(hub, methodName, args) {
-        /// <param name="args" type="Array" />
         var callback = args[args.length - 1], // last argument
             methodArgs = $.type(callback) === "function"
                 ? args.slice(0, -1) // all but last
