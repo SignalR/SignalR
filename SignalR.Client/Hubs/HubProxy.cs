@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-#if !WINDOWS_PHONE
 using System.Dynamic;
-#endif
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace SignalR.Client.Hubs {
-#if !WINDOWS_PHONE
     public class HubProxy : DynamicObject, IHubProxy {
-#else
-    public class HubProxy : IHubProxy {
-#endif
         private readonly string _hub;
-        private readonly Connection _client;
+        private readonly HubConnection _connection;
         private readonly Dictionary<string, object> _state = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _subscriptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public HubProxy(Connection client, string hub) {
-            _client = client;
+        internal event Action<HubInvocationInfo> MethodInvoked;
+
+        public HubProxy(HubConnection connection, string hub) {
+            _connection = connection;
             _hub = hub;
         }
 
@@ -30,6 +27,11 @@ namespace SignalR.Client.Hubs {
             set {
                 _state[name] = value;
             }
+        }
+
+        public IObservable<object[]> Subscribe(string eventName) {
+            _subscriptions.Add(eventName);
+            return new Hubservable(this, eventName);
         }
 
         public Task Invoke(string action, params object[] args) {
@@ -46,7 +48,7 @@ namespace SignalR.Client.Hubs {
 
             var value = JsonConvert.SerializeObject(hubData);
 
-            return _client.Send<HubResult<T>>(value).ContinueWith(task => {
+            return _connection.Send<HubResult<T>>(value).Success(task => {
                 if (task.Result != null) {
 
                     if (task.Result.Error != null) {
@@ -64,7 +66,6 @@ namespace SignalR.Client.Hubs {
             });
         }
 
-#if !WINDOWS_PHONE
         public override bool TrySetMember(SetMemberBinder binder, object value) {
             _state[binder.Name] = value;
             return true;
@@ -79,16 +80,29 @@ namespace SignalR.Client.Hubs {
             result = Invoke(binder.Name, args);
             return true;
         }
-#endif
 
-        public class HubData {
+        internal void OnReceived(HubInvocationInfo invocationInfo) {
+            if (MethodInvoked != null) {
+                MethodInvoked(invocationInfo);
+            }
+        }
+
+        internal IEnumerable<string> GetSubscriptions() {
+            return _subscriptions;
+        }
+
+        internal void RemoveEvent(string eventName) {
+            _subscriptions.Remove(eventName);
+        }
+
+        private class HubData {
             public Dictionary<string, object> State { get; set; }
             public object[] Data { get; set; }
             public string Action { get; set; }
             public string Hub { get; set; }
         }
 
-        public class HubResult<T> {
+        private class HubResult<T> {
             public T Result { get; set; }
             public string Error { get; set; }
             public IDictionary<string, object> State { get; set; }

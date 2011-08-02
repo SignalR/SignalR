@@ -56,11 +56,14 @@
     </Compile>
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="Hubs\HubInvocationInfo.cs" />
     <Compile Include="Hubs\HubMethodAttribute.cs" />
     <Compile Include="Hubs\HubAttribute.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
+    <Compile Include="Hubs\Hubservable.cs" />
     <Compile Include="Hubs\HubProxy.cs" />
     <Compile Include="Hubs\IHubProxy.cs" />
+    <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

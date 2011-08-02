@@ -1,6 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
-using SignalR.Client;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Client.Hubs {
     public static class ProxyExtensions {

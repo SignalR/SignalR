@@ -1,9 +1,11 @@
 ﻿using System;
+using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client {
     public class ObservableConnection<T> : IObservable<T> {
         private readonly Connection _connection;
         private readonly Func<string, T> _convert;
+
         public ObservableConnection(Connection connection, Func<string, T> convert) {
             if (connection == null) {
                 throw new ArgumentNullException("connection");
@@ -18,41 +20,27 @@ namespace SignalR.Client {
         }
 
         public IDisposable Subscribe(IObserver<T> observer) {
-            return new DisposableConnection(_connection, _convert, observer);
-        }
+            Action<string> received = data => {
+                observer.OnNext(_convert(data));
+            };
 
-        private class DisposableConnection : IDisposable {
-            private readonly Connection _connection;
-            private readonly Func<string, T> _convert;
-            private readonly IObserver<T> _observer;
+            Action closed = () => {
+                observer.OnCompleted();
+            };
 
-            public DisposableConnection(Connection connection, Func<string, T> convert, IObserver<T> observer) {
-                _connection = connection;
-                _convert = convert;
-                _observer = observer;
+            Action<Exception> error = ex => {
+                observer.OnError(ex);
+            };
 
-                _connection.Received += OnReceived;
-                _connection.Closed += OnClosed;
-                _connection.Error += OnError;
-            }
+            _connection.Received += received;
+            _connection.Closed += closed;
+            _connection.Error += error;
 
-            private void OnReceived(string data) {
-                _observer.OnNext(_convert(data));
-            }
-
-            private void OnClosed() {
-                _observer.OnCompleted();
-            }
-
-            private void OnError(Exception error) {
-                _observer.OnError(error);
-            }
-
-            public void Dispose() {
-                _connection.Closed -= OnClosed;
-                _connection.Received -= OnReceived;
-                _connection.Error -= OnError;
-            }
+            return new DisposableAction(() => {
+                _connection.Received -= received;
+                _connection.Closed -= closed;                
+                _connection.Error -= error;
+            });
         }
     }
 }
