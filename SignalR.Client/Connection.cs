@@ -12,7 +12,7 @@ namespace SignalR.Client {
         private readonly IClientTransport _transport = new LongPollingTransport();
 
         public Connection(string url) {
-            if (!url.StartsWith("/")) {
+            if (!url.EndsWith("/")) {
                 url += "/";
             }
 
