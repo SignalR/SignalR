@@ -1,6 +1,6 @@
 ﻿namespace SignalR.Transports {
     internal interface ITrackingDisconnect {
-        string ClientId { get;  }
+        string ClientId { get; }
         bool IsAlive { get; }
         void Disconnect();
     }

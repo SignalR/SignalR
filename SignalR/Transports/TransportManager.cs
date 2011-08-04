@@ -7,7 +7,7 @@ namespace SignalR.Transports {
         private static readonly ConcurrentDictionary<string, Func<HttpContextBase, ITransport>> _transports = new ConcurrentDictionary<string, Func<HttpContextBase, ITransport>>(StringComparer.OrdinalIgnoreCase);
 
         public static void Register(string transportName, Func<HttpContextBase, ITransport> transportFactory) {
-            _transports.TryAdd(transportName, transportFactory);            
+            _transports.TryAdd(transportName, transportFactory);
         }
 
         public static void Remove(string transportName) {

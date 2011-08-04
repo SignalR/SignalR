@@ -10,7 +10,7 @@ namespace SignalR {
     public class Signaler {
         private static readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>();
         private static readonly Signaler _instance = new Signaler();
-        
+
         public Signaler() {
             DefaultTimeout = TimeSpan.FromMinutes(2);
         }

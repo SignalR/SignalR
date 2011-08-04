@@ -2,8 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using SignalR.Hubs;
 using System.Threading.Tasks;
+using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.ShapeShare {
     public class ShapeShare : Hub {

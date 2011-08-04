@@ -18,11 +18,11 @@ namespace SignalR.Client {
 
             Url = url;
         }
-        
+
         public Func<string> Sending { get; set; }
 
         public string Url { get; private set; }
-        
+
         public bool IsActive { get; private set; }
 
         internal long? MessageId { get; set; }
@@ -41,7 +41,7 @@ namespace SignalR.Client {
             if (Sending != null) {
                 data = Sending();
             }
-            
+
             string negotiateUrl = Url + "negotiate";
 
             return HttpHelper.PostAsync(negotiateUrl).Success(task => {
@@ -56,7 +56,7 @@ namespace SignalR.Client {
         }
 
         public virtual void Stop() {
-            try {                
+            try {
                 _transport.Stop(this);
 
                 if (Closed != null) {
@@ -74,7 +74,7 @@ namespace SignalR.Client {
 
         public Task<T> Send<T>(string data) {
             return _transport.Send<T>(this, data);
-        }        
+        }
 
         internal void RaiseOnReceived(string message) {
             if (Received != null) {

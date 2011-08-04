@@ -1,6 +1,6 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
-using System;
 
 namespace SignalR.ScaleOut {
     internal static class SqlAsyncExtensions {

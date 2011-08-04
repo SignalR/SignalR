@@ -175,7 +175,7 @@ namespace SignalR {
         }
 
         private ITransport GetTransport(HttpContextBase context) {
-            return TransportManager.GetTransport(context) ?? 
+            return TransportManager.GetTransport(context) ??
                    new LongPollingTransport(context, _jsonStringifier);
         }
     }

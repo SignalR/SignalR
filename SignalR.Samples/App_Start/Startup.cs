@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.Threading;
-using SignalR.Infrastructure;
 using SignalR.Samples.App_Start;
-using SignalR.ScaleOut;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof(Startup), "Start")]
 
 namespace SignalR.Samples.App_Start {
     public class Startup {
         public static void Start() {
-            
+
             // Uncomment this for web farm support
             //var cs = ConfigurationManager.ConnectionStrings["SignalR"].ConnectionString;
             //var store = new PeerToPeerSQLSignalBusMessageStore(cs);

@@ -2,8 +2,8 @@
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SignalR;
 using SignalR.Hubs;
-using SignalR.Transports;
 using SignalR.Infrastructure;
+using SignalR.Transports;
 
 [assembly: PreApplicationStartMethod(typeof(PreApplicationStart), "Start")]
 

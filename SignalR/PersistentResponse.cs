@@ -3,7 +3,7 @@
 namespace SignalR {
     public class PersistentResponse {
         private readonly IDictionary<string, object> _transportData = new Dictionary<string, object>();
-        
+
         public long MessageId { get; set; }
         public IEnumerable<object> Messages { get; set; }
 

@@ -38,7 +38,7 @@ namespace SignalR.Client {
 
             return new DisposableAction(() => {
                 _connection.Received -= received;
-                _connection.Closed -= closed;                
+                _connection.Closed -= closed;
                 _connection.Error -= error;
             });
         }

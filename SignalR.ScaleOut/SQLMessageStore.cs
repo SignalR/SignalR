@@ -91,7 +91,7 @@ namespace SignalR.ScaleOut {
 
         public Task<IEnumerable<Message>> GetAll(string key) {
             return GetMessages(key, _getAllSQL.Replace("{TableName}", MessageTableName),
-                new [] { new SqlParameter("EventKey", key) }
+                new[] { new SqlParameter("EventKey", key) }
             );
         }
 

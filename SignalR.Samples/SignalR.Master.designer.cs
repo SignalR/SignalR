@@ -8,10 +8,10 @@
 //------------------------------------------------------------------------------
 
 namespace SignalR.Samples {
-    
-    
+
+
     public partial class SignalRMaster {
-        
+
         /// <summary>
         /// HeadContent control.
         /// </summary>
@@ -20,7 +20,7 @@ namespace SignalR.Samples {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.ContentPlaceHolder HeadContent;
-        
+
         /// <summary>
         /// MainContent control.
         /// </summary>

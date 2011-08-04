@@ -77,7 +77,7 @@ namespace SignalR.Infrastructure {
 
                 Register(typeof(IJsonStringifier), () => serialzier);
 
-                
+
                 Register(typeof(IActionResolver), () => new DefaultActionResolver());
                 Register(typeof(IHubActivator), () => new DefaultHubActivator());
                 Register(typeof(IHubFactory), () => new DefaultHubFactory());

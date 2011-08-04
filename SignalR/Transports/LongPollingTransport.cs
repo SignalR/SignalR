@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Infrastructure;
 
 namespace SignalR.Transports {
     public class LongPollingTransport : ITransport, ITrackingDisconnect {
@@ -71,7 +70,7 @@ namespace SignalR.Transports {
                     Received(data);
                 }
             }
-            else {                
+            else {
                 if (IsConnectRequest) {
                     // Since this is the first request, there's no data we need to retrieve so just wait
                     // on a message to come through

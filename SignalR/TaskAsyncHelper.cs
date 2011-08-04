@@ -16,7 +16,7 @@ namespace SignalR {
         public static Task Catch(this Task task) {
             return task.ContinueWith(t => {
                 if (t != null && t.IsFaulted) {
-                    var ex  = t.Exception;
+                    var ex = t.Exception;
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
                 }
                 return t;

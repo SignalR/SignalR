@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
-using System.Diagnostics;
 
 namespace SignalR.Transports {
     internal class TransportHeartBeat {

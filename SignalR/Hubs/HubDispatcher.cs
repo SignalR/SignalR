@@ -4,11 +4,11 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
 using SignalR.Infrastructure;
-using System.Security.Principal;
 
 namespace SignalR.Hubs {
     public class HubDispatcher : PersistentConnection {
@@ -178,7 +178,7 @@ namespace SignalR.Hubs {
             }
 
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, clientId));
-            
+
             return new Connection(_store, _signaler, null, clientId, hubSignals, groups);
         }
 

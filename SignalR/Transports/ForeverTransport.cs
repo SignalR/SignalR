@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Infrastructure;
 
 namespace SignalR.Transports {
     public class ForeverTransport : ITransport {

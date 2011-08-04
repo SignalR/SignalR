@@ -40,7 +40,7 @@ namespace SignalR {
                     }
                 }
             }
-            
+
             return TaskAsyncHelper.Empty;
         }
 

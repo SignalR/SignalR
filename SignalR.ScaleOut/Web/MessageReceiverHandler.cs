@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Web;
 using SignalR.ScaleOut;
 

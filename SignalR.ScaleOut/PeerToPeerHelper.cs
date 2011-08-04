@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Web;
 
 namespace SignalR.ScaleOut {
     internal static class PeerToPeerHelper {
@@ -17,8 +16,8 @@ namespace SignalR.ScaleOut {
         public static class ResponseValues {
             internal static readonly string Self = "self";
             internal static readonly string Ack = "ack";
-        } 
-        
+        }
+
         public static void EnsurePeersDiscovered(ref bool peersDiscovered, IPeerUrlSource urls, ICollection<string> peers, string handlerName, Guid selfId, object locker, Action<HttpWebRequest> requestPreparer) {
             if (peersDiscovered) {
                 return;

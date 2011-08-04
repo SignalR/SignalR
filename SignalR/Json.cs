@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Web.Script.Serialization;
 
 namespace SignalR {
     internal static class Json {
