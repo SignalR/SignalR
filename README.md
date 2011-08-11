@@ -1,3 +1,6 @@
+# LICENSE
+MIT License <http://www.opensource.org/licenses/mit-license.php>
+
 ## Server
     // Server url : http://localhost/myconnection.ashx
     public class MyConnection : PersistentConnection {
