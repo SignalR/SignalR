@@ -72,7 +72,7 @@ MIT License <http://www.opensource.org/licenses/mit-license.php>
 
 Import the magic script to generate the server side proxy
     <script src="/signalr/hubs" type="text/javascript"></script>
-
+    
     <script type="text/javascript">
     $(function () {
         // Proxy created on the fly
