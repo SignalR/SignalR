@@ -5,6 +5,10 @@
         $('#msg').append('<li>' + index + ' client state index ->' + this.index + '</li>');
     };
 
+    demo.signal = function (id) {
+        $('#dynamicTask').html('The dynamic task! ' + id);
+    };
+
     $.connection.hub.start(function () {
         demo.getValue(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
@@ -21,6 +25,10 @@
         });
 
         demo.multipleCalls();
+
+        demo.dynamicTask().fail(function () {
+            $('#dynamicTask').html('The dynamic task failed :(');
+        });
 
         demo.plainTask().done(function () {
             $('#plainTask').html('Plain Task Result');

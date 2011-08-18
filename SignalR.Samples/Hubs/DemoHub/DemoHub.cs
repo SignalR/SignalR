@@ -13,6 +13,10 @@ namespace SignalR.Samples.Hubs.DemoHub {
             });
         }
 
+        public Task DynamicTask() {
+            return Clients.signal(Guid.NewGuid());
+        }
+
         public Task PlainTask() {
             return Task.Factory.StartNew(() => {
                 Thread.Sleep(500);
