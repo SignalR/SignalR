@@ -63,7 +63,7 @@ namespace SignalR.Transports {
 
         public event Action<Exception> Error;
 
-        public Task ProcessRequest(IConnection connection) {
+        public Func<Task> ProcessRequest(IConnection connection) {
             if (IsSendRequest) {
                 if (Received != null) {
                     string data = _context.Request.Form["data"];
@@ -78,7 +78,8 @@ namespace SignalR.Transports {
                     if (Connected != null) {
                         Connected();
                     }
-                    return connection.ReceiveAsync().ContinueWith(t => {
+
+                    return () => connection.ReceiveAsync().ContinueWith(t => {
                         Send(t.Result);
                     });
                 }
@@ -87,7 +88,7 @@ namespace SignalR.Transports {
                     // If there is a message id then we receive with that id, which will either return
                     // immediately if there are already messages since that id, or wait until new
                     // messages come in and then return
-                    return connection.ReceiveAsync(MessageId.Value).ContinueWith(t => {
+                    return () => connection.ReceiveAsync(MessageId.Value).ContinueWith(t => {
                         // Messages have arrived so let's return
                         Send(t.Result);
                         return TaskAsyncHelper.Empty;

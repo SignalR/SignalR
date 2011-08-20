@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
 
@@ -7,21 +8,21 @@ namespace SignalR.Samples.Raw {
         private static readonly Dictionary<string, string> _users = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _clients = new Dictionary<string, string>();
 
-        protected override void OnConnected(HttpContextBase context, string clientId) {
+        protected override Task OnConnectedAsync(HttpContextBase context, string clientId) {
             var cookie = context.Request.Cookies["user"];
             if (cookie != null) {
                 _clients[clientId] = cookie.Value;
                 _users[cookie.Value] = clientId;
             }
 
-            Connection.Broadcast(GetUser(clientId) + " joined")
-                // Wait here to ensure we don't get our own joined message
-                .Wait();
+            string user = GetUser(clientId);
+
+            return Connection.Broadcast(user + " joined");
         }
 
-        protected override void OnDisconnect(string clientId) {
-            Connection.Broadcast(GetUser(clientId) + " disconnected");
+        protected override Task OnDisconnectAsync(string clientId) {
             _users.Remove(clientId);
+            return Connection.Broadcast(GetUser(clientId) + " disconnected");
         }
 
         protected override void OnReceived(string clientId, string data) {

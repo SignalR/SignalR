@@ -7,7 +7,7 @@ namespace SignalR.Transports {
         event Action Connected;
         event Action Disconnected;
         event Action<Exception> Error;
-        Task ProcessRequest(IConnection connection);
+        Func<Task> ProcessRequest(IConnection connection);
         void Send(object value);
     }
 }

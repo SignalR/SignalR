@@ -20,7 +20,7 @@ namespace SignalR.Transports {
 
         public event Action<Exception> Error;
 
-        public Task ProcessRequest(IConnection connection) {
+        public Func<Task> ProcessRequest(IConnection connection) {
             if (_context.Request.Path.EndsWith("/send")) {
                 string data = _context.Request["data"];
                 if (Received != null) {
@@ -36,7 +36,7 @@ namespace SignalR.Transports {
                 connection.ReceiveTimeout = TimeSpan.FromTicks(Int32.MaxValue - 1);
                 _context.Response.BufferOutput = false;
                 _context.Response.Buffer = false;
-                return ProcessMessages(connection);
+                return () => ProcessMessages(connection);
             }
 
             return null;

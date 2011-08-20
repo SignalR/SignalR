@@ -67,9 +67,9 @@ namespace SignalR {
 
                 Connection = CreateConnection(clientId, groups, contextBase);
 
-                // Wire up the events we needs
+                // Wire up the events we need
                 _transport.Connected += () => {
-                    OnConnected(contextBase, clientId);
+                    task = OnConnectedAsync(contextBase, clientId);
                 };
 
                 _transport.Received += (data) => {
@@ -77,17 +77,20 @@ namespace SignalR {
                 };
 
                 _transport.Error += (e) => {
-                    OnError(e);
+                    task = OnErrorAsync(e);
                 };
 
                 _transport.Disconnected += () => {
-                    OnDisconnect(clientId);
+                    task = OnDisconnectAsync(clientId);
                 };
 
-                var processRequestTask = _transport.ProcessRequest(Connection);
+                Func<Task> processRequestTask = _transport.ProcessRequest(Connection);
 
                 if (processRequestTask != null) {
-                    return processRequestTask;
+                    if (task != null) {
+                        return task.Success(_ => processRequestTask()).Unwrap();
+                    }
+                    return processRequestTask();
                 }
             }
 
@@ -112,16 +115,31 @@ namespace SignalR {
 
         protected virtual void OnConnected(HttpContextBase context, string clientId) { }
 
-        protected virtual Task OnReceivedAsync(string clientId, string data) {
-            OnReceived(clientId, data);
+        protected virtual Task OnConnectedAsync(HttpContextBase context, string clientId) {
+            OnConnected(context, clientId);
             return TaskAsyncHelper.Empty;
         }
 
         protected virtual void OnReceived(string clientId, string data) { }
 
+        protected virtual Task OnReceivedAsync(string clientId, string data) {
+            OnReceived(clientId, data);
+            return TaskAsyncHelper.Empty;
+        }
+
         protected virtual void OnDisconnect(string clientId) { }
 
+        protected virtual Task OnDisconnectAsync(string clientId) {
+            OnDisconnect(clientId);
+            return TaskAsyncHelper.Empty;
+        }
+
         protected virtual void OnError(Exception e) { }
+
+        protected virtual Task OnErrorAsync(Exception e) {
+            OnError(e);
+            return TaskAsyncHelper.Empty;
+        }
 
         public void Send(object value) {
             _transport.Send(value);
