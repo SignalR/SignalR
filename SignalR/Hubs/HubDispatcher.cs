@@ -101,9 +101,13 @@ namespace SignalR.Hubs {
                                             let parameter = methodParameters[0]
                                             where parameter.ParameterType.IsGenericType &&
                                                   typeof(Action<>) == parameter.ParameterType.GetGenericTypeDefinition()
-                                            select m).FirstOrDefault();
+                                            select new {
+                                                Method = m,
+                                                ArgType = parameter.ParameterType.GetGenericArguments()[0]
+                                            })
+                                            .FirstOrDefault();
 
-                        var taskParameter = Expression.Parameter(returnType);
+                        var taskParameter = Expression.Parameter(continueWith.ArgType);
                         var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessResult", BindingFlags.NonPublic | BindingFlags.Instance);
                         var taskResult = Expression.Property(taskParameter, "Result");
                         var taskException = Expression.Property(taskParameter, "Exception");
@@ -117,7 +121,7 @@ namespace SignalR.Hubs {
 
                         var lambda = Expression.Lambda(body, taskParameter);
 
-                        var call = Expression.Call(Expression.Constant(task), continueWith, lambda);
+                        var call = Expression.Call(Expression.Constant(task, continueWith.ArgType), continueWith.Method, lambda);
                         return Expression.Lambda<Func<Task>>(call).Compile()();
                     }
                 }
