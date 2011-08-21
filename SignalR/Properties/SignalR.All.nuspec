@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>SignalR</id>
+    <version>$version$</version>
+    <authors>David Fowler and Damian Edwards</authors>
+    <licenseUrl>https://github.com/SignalR/SignalR/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/SignalR/SignalR</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A client and server side library for ASP.NET that provides messaging and an abstraction over a persistant connection.</description>
+    <dependencies>
+        <dependency id="SignalR.Server" version="$version$" />
+        <dependency id="SignalR.Js" version="$version$" />
+    </dependencies>
+  </metadata>
+</package>

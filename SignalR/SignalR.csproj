@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;STABLE_VERSION</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -49,6 +49,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CommandType.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
@@ -112,8 +115,8 @@
     </None>
     <None Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <None Include="Scripts\jquery-1.6.2.js" />
-    <Content Include="Scripts\jquery.signalR.min.js" />
-    <Content Include="Scripts\jquery.signalR.js" />
+    <None Include="Scripts\jquery.signalR.min.js" />
+    <None Include="Scripts\jquery.signalR.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\hubs.js" />

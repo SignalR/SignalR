@@ -19,7 +19,7 @@
 
         <!-- Commands -->
         <RestoreCommand>"$(NuGetExePath)" install "$(PackagesConfig)" -source $(PackageSources) -o "$(PackagesDir)"</RestoreCommand>
-        <BuildCommand>"$(NuGetExePath)" pack "$(ProjectPath)" -p Configuration=$(Configuration) -o "$(PackageOutputDir)"</BuildCommand>
+        <BuildCommand>"$(NuGetExePath)" pack "$(ProjectPath)" -p Configuration=$(Configuration) -o "$(PackageOutputDir)" -symbols -verbose</BuildCommand>
 
         <!-- Make the build depend on restore packages -->
         <BuildDependsOn Condition="$(RestorePackages) == 'true'">

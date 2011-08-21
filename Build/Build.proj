@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+        <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
+        <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+        <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
+        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <MajorVersion>0</MajorVersion>
+        <MinorVersion>5</MinorVersion>
+        <Version>$(MajorVersion).$(MinorVersion)</Version>
+    </PropertyGroup>
+
+    <Target Name="Go" DependsOnTargets="Build; BuildPackages">
+    </Target>
+    
+    <Target Name="CreateOutputDir">
+        <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
+    </Target>
+    
+    <Target Name="Build" DependsOnTargets="CreateOutputDir">
+        <MSBuild Projects="$(ProjectRoot)\SignalR.sln" Targets="Build" Properties="Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+    </Target>
+    
+    <Target Name="BuildPackages">
+        <ItemGroup>
+            <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
+            <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
+        </ItemGroup>
+        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -basePath &quot;$(ProjectRoot)\SignalR&quot; -Verbose" 
+              LogStandardErrorAsError="true" />
+        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -exclude **\*.cs -Verbose"
+              LogStandardErrorAsError="true" />
+    </Target>
+</Project>
