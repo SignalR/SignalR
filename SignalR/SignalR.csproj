@@ -53,11 +53,13 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CommandType.cs" />
+    <Compile Include="DefaultPersistentConnectionFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
+    <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
@@ -82,6 +84,8 @@
     <Compile Include="ISignalBus.cs" />
     <Compile Include="JavaScriptSerializerAdapter.cs" />
     <Compile Include="Json.cs" />
+    <Compile Include="Routing\PersistentRouteHandler.cs" />
+    <Compile Include="Routing\RouteExtensions.cs" />
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Transports\ITrackingDisconnect.cs" />

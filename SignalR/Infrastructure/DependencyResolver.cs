@@ -9,7 +9,7 @@ namespace SignalR.Infrastructure {
         private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
         private static IDependencyResolver _resolver;
 
-        private static IDependencyResolver Current {
+        internal static IDependencyResolver Current {
             get { return _resolver ?? _defaultResolver; }
         }
 
@@ -87,6 +87,9 @@ namespace SignalR.Infrastructure {
 
                 var signalBus = new InProcessSignalBus();
                 Register(typeof(ISignalBus), () => signalBus);
+
+                var pesistentConnectionFactory =new DefaultPersistentConnectionFactory();
+                Register(typeof(IPersistentConnectionFactory), () => pesistentConnectionFactory);
 
                 var minifier = new NullJavaScriptMinifier();
 

@@ -28,7 +28,7 @@ namespace SignalR.Hubs {
             }
 
             if (!typeof(IHub).IsAssignableFrom(type)) {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' is not an IHub.", type.FullName));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' does not implement {1}.", type.FullName, typeof(IHub).FullName));
             }
 
             return _hubActivator.Create(type);
