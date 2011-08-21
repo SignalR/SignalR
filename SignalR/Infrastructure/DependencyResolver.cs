@@ -88,7 +88,9 @@ namespace SignalR.Infrastructure {
                 var signalBus = new InProcessSignalBus();
                 Register(typeof(ISignalBus), () => signalBus);
 
-                var proxyGenerator = new DefaultJavaScriptProxyGenerator(hubLocator);
+                var minifier = new NullJavaScriptMinifier();
+
+                var proxyGenerator = new DefaultJavaScriptProxyGenerator(hubLocator, (IJavaScriptMinifier)GetService(typeof(IJavaScriptMinifier)) ?? minifier);
                 Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator);
             }
 

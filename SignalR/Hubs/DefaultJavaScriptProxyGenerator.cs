@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web;
-using Microsoft.Ajax.Utilities;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hubs {
     public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator {
@@ -16,9 +16,11 @@ namespace SignalR.Hubs {
         private const string ScriptResource = "SignalR.Scripts.hubs.js";
 
         private readonly IHubLocator _hubLocator;
+        private readonly IJavaScriptMinifier _javascriptMinifier;
 
-        public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator) {
+        public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator, IJavaScriptMinifier javascriptMinifier) {
             _hubLocator = hubLocator;
+            _javascriptMinifier = javascriptMinifier;
         }
 
         public string GenerateProxy(HttpContextBase context, string serviceUrl) {
@@ -45,8 +47,7 @@ namespace SignalR.Hubs {
             script = script.Replace("/*hubs*/", hubs.ToString());
 
             if (!context.IsDebuggingEnabled) {
-                var minifier = new Minifier();
-                script = minifier.MinifyJavaScript(script);
+                script = _javascriptMinifier.Minify(script);
             }
 
             _scriptCache.TryAdd(serviceUrl, script);
