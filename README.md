@@ -23,6 +23,8 @@ Global.asax
 
 ## Server
     // Server url : http://localhost/myconnection.ashx or http://localhost/echo (Routing)
+    using SignalR;
+    
     public class MyConnection : PersistentConnection {
         protected override void OnReceived(string clientId, string data) {
             // Broadcast data to all clients
