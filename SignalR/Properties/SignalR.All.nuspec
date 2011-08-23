@@ -3,7 +3,7 @@
   <metadata>
     <id>SignalR</id>
     <version>$version$</version>
-    <authors>David Fowler and Damian Edwards</authors>
+    <authors>David Fowler, Damian Edwards</authors>
     <licenseUrl>https://github.com/SignalR/SignalR/blob/master/LICENSE.md</licenseUrl>
     <projectUrl>https://github.com/SignalR/SignalR</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
