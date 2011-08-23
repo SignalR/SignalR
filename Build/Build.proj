@@ -10,7 +10,7 @@
     
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
-        <MinorVersion>5</MinorVersion>
+        <MinorVersion>2</MinorVersion>
         <Version>$(MajorVersion).$(MinorVersion)</Version>
     </PropertyGroup>
 
