@@ -109,7 +109,7 @@ HTML:
         
         // Declare a function on the chat hub so the server can invoke it
         chat.addMessage = function(message) {
-            $('#messages').append('<li>' + data + '</li>');
+            $('#messages').append('<li>' + message + '</li>');
         };
         
         $("#broadcast").click(function () {
