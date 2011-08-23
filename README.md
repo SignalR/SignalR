@@ -2,9 +2,20 @@
 MIT License <http://www.opensource.org/licenses/mit-license.php>
 
 # RAW Connection API
+## Server
+Create a class the derives from PersistentConnection:
 
-## Creating a handler
-Create a handler (ashx) for your connection or use Routing to hook up your handler:
+    using SignalR;
+    
+    public class MyConnection : PersistentConnection {
+        protected override void OnReceived(string clientId, string data) {
+            // Broadcast data to all clients
+            Connection.Broadcast(data);
+        }
+    }
+
+## Setup Routing
+Make a route for your connection:
 
 Global.asax
 
@@ -16,18 +27,6 @@ Global.asax
         protected void Application_Start(object sender, EventArgs e) {
             // Register the route for chat
             RouteTable.Routes.MapConnection<MyConnection>("echo", "echo/{*operation}");
-        }
-    }
-
-
-## Server
-    // Server url : http://localhost/myconnection.ashx or http://localhost/echo (Routing)
-    using SignalR;
-    
-    public class MyConnection : PersistentConnection {
-        protected override void OnReceived(string clientId, string data) {
-            // Broadcast data to all clients
-            Connection.Broadcast(data);
         }
     }
 
