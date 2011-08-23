@@ -38,6 +38,8 @@ Add these scripts to your page:
     <script src="Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
     <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
 
+HTML:
+
     <script type="text/javascript">
     $(function () {
         var connection = $.connection('echo');
@@ -98,7 +100,9 @@ Import the magic script to generate the server side proxy
     <script src="Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
     <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
     <script src="/signalr/hubs" type="text/javascript"></script>
-    
+   
+HTML:
+
     <script type="text/javascript">
     $(function () {
         // Proxy created on the fly
