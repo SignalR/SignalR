@@ -8,9 +8,9 @@ Create a class the derives from PersistentConnection:
     using SignalR;
     
     public class MyConnection : PersistentConnection {
-        protected override void OnReceived(string clientId, string data) {
+        protected override Task OnReceivedAsync(string clientId, string data) {
             // Broadcast data to all clients
-            Connection.Broadcast(data);
+            return Connection.Broadcast(data);
         }
     }
 
