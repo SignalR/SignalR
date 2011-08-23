@@ -3,8 +3,26 @@ MIT License <http://www.opensource.org/licenses/mit-license.php>
 
 # RAW Connection API
 
+## Creating a handler
+Create a handler (ashx) for your connection or use Routing to hook up your handler:
+
+Global.asax
+
+    using System;
+    using System.Web.Routing;
+    using SignalR.Routing;
+
+    public class Global : System.Web.HttpApplication {
+        protected void Application_Start(object sender, EventArgs e) {
+            // Register the route for chat
+            RouteTable.Routes.MapConnection<MyConnection>("echo", "echo/{*operation}");
+        }
+    }
+
+
+
 ## Server
-    // Server url : http://localhost/myconnection.ashx
+    // Server url : http://localhost/myconnection.ashx or http://localhost/echo (Routing)
     public class MyConnection : PersistentConnection {
         protected override void OnReceived(string clientId, string data) {
             // Broadcast data to all clients
@@ -17,7 +35,7 @@ MIT License <http://www.opensource.org/licenses/mit-license.php>
     
     <script type="text/javascript">
     $(function () {
-        var connection = $.connection('myconnection.ashx');
+        var connection = $.connection('echo');
 
         connection.received(function (data) {
             $('<li/>').html(data).appendTo($('#messages'));
@@ -39,7 +57,7 @@ MIT License <http://www.opensource.org/licenses/mit-license.php>
     
 ### C# (Events)
     
-    var connection = new Connection("http://localhost/myconnection.ashx");
+    var connection = new Connection("http://localhost/echo");
     connection.Received += data => {
         Console.WriteLine(data);
     };
@@ -49,7 +67,7 @@ MIT License <http://www.opensource.org/licenses/mit-license.php>
     
 ### C# (IObservable)
     
-    var connection = new Connection("http://localhost/myconnection.ashx");
+    var connection = new Connection("http://localhost/echo");
     connection.AsObservable()
               .Subscribe(Console.WriteLine);
     
