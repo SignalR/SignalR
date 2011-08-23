@@ -44,7 +44,7 @@ HTML:
         var connection = $.connection('echo');
 
         connection.received(function (data) {
-            $('<li/>').html(data).appendTo($('#messages'));
+            $('#messages').append('<li>' + data + '</li>');
         });
         
         connection.start();
