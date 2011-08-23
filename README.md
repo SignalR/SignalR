@@ -1,6 +1,18 @@
 # LICENSE
 MIT License <http://www.opensource.org/licenses/mit-license.php>
 
+## Get it on NuGet!
+SignalR is broken up into a few package on NuGet:
+[SignalR](http://nuget.org/List/Packages/SignalR) - A meta package that brings in SignalR.Server and SignalR.Js (you should install this)
+[SignalR.Server](http://nuget.org/List/Packages/SignalR.Server) - Server side components needed to build SignalR endpoints
+[SignalR.Js](http://nuget.org/List/Packages/SignalR.Js) - Javascript client for SignalR
+[SignalR.Client](http://nuget.org/List/Packages/SignalR.Client) - .NET client for SignalR
+[SignalR.Ninject](http://nuget.org/List/Packages/SignalR.Ninject) - Ninject dependeny resolver for SignalR
+
+To get started:
+
+    Install-Package SignalR
+
 # RAW Connection API
 ## Server
 Create a class the derives from PersistentConnection:
