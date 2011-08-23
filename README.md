@@ -20,7 +20,6 @@ Global.asax
     }
 
 
-
 ## Server
     // Server url : http://localhost/myconnection.ashx or http://localhost/echo (Routing)
     using SignalR;
@@ -34,7 +33,11 @@ Global.asax
 
 ## Client
 ### Javascript
-    
+Add these scripts to your page:
+
+    <script src="Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
+
     <script type="text/javascript">
     $(function () {
         var connection = $.connection('echo');
@@ -91,6 +94,9 @@ Global.asax
 ### Javascript
 
 Import the magic script to generate the server side proxy
+
+    <script src="Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
     <script src="/signalr/hubs" type="text/javascript"></script>
     
     <script type="text/javascript">
@@ -100,7 +106,7 @@ Import the magic script to generate the server side proxy
         
         // Declare a function on the chat hub so the server can invoke it
         chat.addMessage = function(message) {
-            $('<li/>').html(data).appendTo($('#messages'));
+            $('#messages').append('<li>' + data + '</li>');
         };
         
         $("#broadcast").click(function () {
