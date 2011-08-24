@@ -207,6 +207,10 @@
             start: function (connection, onSuccess, onFailed) {
                 var url,
                     opened = false;
+                
+                if (window.MozWebSocket) {
+                    window.WebSocket = window.MozWebSocket;
+                }
 
                 if (!window.WebSocket) {
                     onFailed();
