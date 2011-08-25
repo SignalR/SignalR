@@ -12,7 +12,7 @@ using SignalR.Hubs;
 using SignalR.Samples.Hubs.Chat.ContentProviders;
 
 namespace SignalR.Samples.Hubs.Chat {
-    public class Chat : Hub {
+    public class Chat : Hub, IDisconnect {
         private static readonly Dictionary<string, ChatUser> _users = new Dictionary<string, ChatUser>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, HashSet<string>> _userRooms = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, ChatRoom> _rooms = new Dictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase);
@@ -101,8 +101,8 @@ namespace SignalR.Samples.Hubs.Chat {
             }
         }
 
-        public void Disconnect(string id) {
-            ChatUser user = _users.Values.FirstOrDefault(u => u.Id == id);
+        public void Disconnect() {
+            ChatUser user = _users.Values.FirstOrDefault(u => u.ClientId == Context.ClientId);
             if (user != null) {
                 _users.Remove(user.Name);
 
@@ -166,7 +166,8 @@ namespace SignalR.Samples.Hubs.Chat {
                             var newUser = new ChatUser {
                                 Name = newUserName,
                                 Hash = GetMD5Hash(newUserName),
-                                Id = oldUser.Id
+                                Id = oldUser.Id,
+                                ClientId = oldUser.ClientId
                             };
 
                             _users[newUserName] = newUser;

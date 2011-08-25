@@ -58,6 +58,7 @@
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
+    <Compile Include="Hubs\IDisconnect.cs" />
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />

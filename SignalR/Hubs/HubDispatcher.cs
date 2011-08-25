@@ -25,6 +25,8 @@ namespace SignalR.Hubs {
         private readonly IActionResolver _actionResolver;
         private readonly IJavaScriptProxyGenerator _proxyGenerator;
         private readonly string _url;
+        private readonly IHubLocator _hubLocator;
+
         private HttpCookieCollection _cookies;
         private IPrincipal _user;
 
@@ -35,6 +37,7 @@ namespace SignalR.Hubs {
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
                    DependencyResolver.Resolve<IJsonStringifier>(),
+                   DependencyResolver.Resolve<IHubLocator>(),
                    url) {
         }
 
@@ -44,6 +47,7 @@ namespace SignalR.Hubs {
                              IActionResolver actionResolver,
                              IJavaScriptProxyGenerator proxyGenerator,
                              IJsonStringifier jsonStringifier,
+                             IHubLocator hubLocator,
                              string url)
             : base(signaler, store, jsonStringifier) {
             _hubFactory = hubFactory;
@@ -51,6 +55,7 @@ namespace SignalR.Hubs {
             _signaler = signaler;
             _actionResolver = actionResolver;
             _proxyGenerator = proxyGenerator;
+            _hubLocator = hubLocator;
             _url = VirtualPathUtility.ToAbsolute(url);
         }
 
@@ -148,6 +153,28 @@ namespace SignalR.Hubs {
             _user = context.User;
 
             return base.ProcessRequestAsync(context);
+        }
+
+        protected override void OnDisconnect(string clientId) {
+            // Loop over each hub and call disconnect (if the hub supports it)
+            foreach (Type type in _hubLocator.GetHubs()) {
+                string hubName = type.FullName;
+                IHub hub = _hubFactory.CreateHub(hubName);
+
+                var disconnect = hub as IDisconnect;
+                if (disconnect != null) {
+                    // REVIEW: We don't have any client state here since we're calling this from the server.
+                    // Will this match user expectations?
+                    var state = new TrackingDictionary();
+                    hub.Context = new HubContext(clientId, _cookies, _user);
+                    hub.Caller = new SignalAgent(Connection, clientId, hubName, state);
+                    var agent = new ClientAgent(Connection, hubName);
+                    hub.Agent = agent;
+                    hub.GroupManager = agent;
+
+                    disconnect.Disconnect();
+                }
+            }
         }
 
         private void ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error) {
