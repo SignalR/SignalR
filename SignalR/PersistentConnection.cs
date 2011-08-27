@@ -63,6 +63,12 @@ namespace SignalR {
                 _transport = GetTransport(contextBase);
 
                 string clientId = contextBase.Request["clientId"];
+
+                // If there's no client id then this is a bad request
+                if (String.IsNullOrEmpty(clientId)) {
+                    throw new InvalidOperationException("Protcol error: Missing client id.");
+                }
+
                 IEnumerable<string> groups = GetGroups(contextBase);
 
                 Connection = CreateConnection(clientId, groups, contextBase);
