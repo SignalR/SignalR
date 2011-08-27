@@ -87,6 +87,7 @@ namespace SignalR.Samples.Hubs.Chat {
                         foreach (var task in tasks) {
                             if (task.IsFaulted) {
                                 Trace.TraceError(task.Exception.GetBaseException().Message);
+                                continue;
                             }
 
                             if (String.IsNullOrEmpty(task.Result)) {
