@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -84,6 +85,10 @@ namespace SignalR.Samples.Hubs.Chat {
                     var contentTasks = links.Select(ExtractContent).ToArray();
                     Task.Factory.ContinueWhenAll(contentTasks, tasks => {
                         foreach (var task in tasks) {
+                            if (task.IsFaulted) {
+                                Trace.TraceError(task.Exception.GetBaseException().Message);
+                            }
+
                             if (String.IsNullOrEmpty(task.Result)) {
                                 continue;
                             }
@@ -348,7 +353,7 @@ namespace SignalR.Samples.Hubs.Chat {
         private void EnsureUser() {
             string name = Caller.name;
             if (String.IsNullOrEmpty(name) || !_users.ContainsKey(name)) {
-                throw new InvalidOperationException("No name choson. Pick a name using '/nick nickname'.");
+                throw new InvalidOperationException("You don't have a name. Pick a name using '/nick nickname'.");
             }
         }
 
