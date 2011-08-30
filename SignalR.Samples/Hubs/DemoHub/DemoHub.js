@@ -9,6 +9,10 @@
         $('#dynamicTask').html('The dynamic task! ' + id);
     };
 
+    demo.fromArbitraryCode = function (value) {
+        $('#arbitraryCode').html('Sending ' + value + ' from arbitrary code without the hub itself!');
+    };
+
     $.connection.hub.start(function () {
         demo.getValue(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
