@@ -11,7 +11,7 @@
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
         <MinorVersion>2</MinorVersion>
-        <BuildVersion>1</BuildVersion>
+        <BuildVersion>2</BuildVersion>
         <Version>$(MajorVersion).$(MinorVersion).$(BuildVersion)</Version>
     </PropertyGroup>
 
