@@ -11,7 +11,8 @@
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
         <MinorVersion>2</MinorVersion>
-        <Version>$(MajorVersion).$(MinorVersion)</Version>
+        <BuildVersion>1</BuildVersion>
+        <Version>$(MajorVersion).$(MinorVersion).$(BuildVersion)</Version>
     </PropertyGroup>
 
     <Target Name="Go" DependsOnTargets="Build; BuildPackages">
