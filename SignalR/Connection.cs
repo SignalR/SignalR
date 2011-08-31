@@ -144,7 +144,7 @@ namespace SignalR {
 
                     ProcessCommands(commands);
 
-                    messageId = messageTask.Result.Last().Id;
+                    messageId = messageTask.Result.Max(p => p.Id);
 
                     // Get the message values and the max message id we received
                     var messageValues = messageTask.Result.Except(commands)

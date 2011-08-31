@@ -13,10 +13,10 @@ namespace SignalR.Samples.Hubs.DemoHub {
             });
         }
 
-        public void StuffWithGroups() {
-            Thread.Sleep(100);
+        public void AddToGroups() {
             AddToGroup("foo");
-            Caller.foo("ok");
+            AddToGroup("bar");
+            Caller.groupAdded();
         }
 
         public Task DynamicTask() {
