@@ -207,7 +207,7 @@
             start: function (connection, onSuccess, onFailed) {
                 var url,
                     opened = false;
-                
+
                 if (window.MozWebSocket) {
                     window.WebSocket = window.MozWebSocket;
                 }
@@ -301,7 +301,14 @@
                                 if (data) {
                                     if (data.Messages) {
                                         $.each(data.Messages, function () {
-                                            $(instance).trigger("onReceived", [this]);
+                                            try {
+                                                $(instance).trigger("onReceived", [this]);
+                                            }
+                                            catch (e) {
+                                                if (console && console.log) {
+                                                    console.log('Error raising received ' + e);
+                                                }
+                                            }
                                         });
                                     }
                                     instance.messageId = data.MessageId;
@@ -330,10 +337,13 @@
                                 }, 2 * 1000);
                             }
                         });
-                    }(connection));
+                    } (connection));
 
                     // Now connected
-                    onSuccess();
+                    // There's no good way know when the long poll has actually started so 
+                    // we and assume it only takes around 150ms (max) to start connection 
+                    // to start.
+                    setTimeout(onSuccess, 150);
 
                 }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
             },
@@ -391,4 +401,4 @@
 
     $.connection = $.signalR = signalR;
 
-}(window.jQuery, window));
+} (window.jQuery, window));

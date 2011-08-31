@@ -19,6 +19,10 @@ namespace SignalR.Samples.Hubs.DemoHub {
             Caller.groupAdded();
         }
 
+        public void DoSomethingAndCallError() {
+            Clients.errorInCallback();
+        }
+
         public Task DynamicTask() {
             return Clients.signal(Guid.NewGuid());
         }

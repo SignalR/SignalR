@@ -17,7 +17,14 @@
         $('#groupAdded').append('Group Added');
     };
 
+    demo.errorInCallback = function () {
+        var o = null;
+        o.doIt();
+    };
+
     $.connection.hub.start(function () {
+        demo.doSomethingAndCallError();
+        
         demo.getValue(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
