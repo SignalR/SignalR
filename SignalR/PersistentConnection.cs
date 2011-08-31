@@ -151,25 +151,25 @@ namespace SignalR {
             _transport.Send(value);
         }
 
-        public void Send(string clientId, object value) {
-            Connection.Broadcast(clientId, value);
+        public Task Send(string clientId, object value) {
+            return Connection.Broadcast(clientId, value);
         }
 
-        public void SendToGroup(string groupName, object value) {
-            Connection.Broadcast(CreateQualifiedName(groupName), value);
+        public Task SendToGroup(string groupName, object value) {
+            return Connection.Broadcast(CreateQualifiedName(groupName), value);
         }
 
-        public void AddToGroup(string clientId, string groupName) {
+        public Task AddToGroup(string clientId, string groupName) {
             groupName = CreateQualifiedName(groupName);
-            SendCommand(clientId, CommandType.AddToGroup, groupName);
+            return SendCommand(clientId, CommandType.AddToGroup, groupName);
         }
 
-        public void RemoveFromGroup(string clientId, string groupName) {
+        public Task RemoveFromGroup(string clientId, string groupName) {
             groupName = CreateQualifiedName(groupName);
-            SendCommand(clientId, CommandType.RemoveFromGroup, groupName);
+            return SendCommand(clientId, CommandType.RemoveFromGroup, groupName);
         }
 
-        private void SendCommand(string clientId, CommandType type, object value) {
+        private Task SendCommand(string clientId, CommandType type, object value) {
             string signal = clientId + "." + SignalrCommand;
 
             var groupCommand = new SignalCommand {
@@ -177,7 +177,7 @@ namespace SignalR {
                 Value = value
             };
 
-            Connection.Broadcast(signal, groupCommand);
+            return Connection.Broadcast(signal, groupCommand);
         }
 
         private string CreateQualifiedName(string groupName) {

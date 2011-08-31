@@ -13,12 +13,12 @@ namespace SignalR.Hubs {
         public HubContext Context { get; set; }
         public IGroupManager GroupManager { get; set; }
 
-        public void AddToGroup(string groupName) {
-            GroupManager.AddToGroup(Context.ClientId, groupName);
+        public Task AddToGroup(string groupName) {
+            return GroupManager.AddToGroup(Context.ClientId, groupName);
         }
 
-        public void RemoveFromGroup(string groupName) {
-            GroupManager.RemoveFromGroup(Context.ClientId, groupName);
+        public Task RemoveFromGroup(string groupName) {
+            return GroupManager.RemoveFromGroup(Context.ClientId, groupName);
         }
 
         public static Task Invoke<T>(string method, params object[] args) where T : IHub {

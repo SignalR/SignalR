@@ -43,17 +43,17 @@ namespace SignalR.Hubs {
             return connection.Broadcast(signal, invocation);
         }
 
-        public void AddToGroup(string clientId, string groupName) {
+        public Task AddToGroup(string clientId, string groupName) {
             groupName = _hubName + "." + groupName;
-            SendCommand(clientId, CommandType.AddToGroup, groupName);
+           return  SendCommand(clientId, CommandType.AddToGroup, groupName);
         }
 
-        public void RemoveFromGroup(string clientId, string groupName) {
+        public Task RemoveFromGroup(string clientId, string groupName) {
             groupName = _hubName + "." + groupName;
-            SendCommand(clientId, CommandType.RemoveFromGroup, groupName);
+            return SendCommand(clientId, CommandType.RemoveFromGroup, groupName);
         }
 
-        private void SendCommand(string clientId, CommandType commandType, object commandValue) {
+        private Task SendCommand(string clientId, CommandType commandType, object commandValue) {
             string signal = _hubName + "." + clientId + "." + PersistentConnection.SignalrCommand;
 
             var groupCommand = new SignalCommand {
@@ -61,7 +61,7 @@ namespace SignalR.Hubs {
                 Value = commandValue
             };
 
-            _connection.Broadcast(signal, groupCommand);
+            return _connection.Broadcast(signal, groupCommand);
         }
     }
 }

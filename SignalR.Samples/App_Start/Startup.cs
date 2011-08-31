@@ -17,20 +17,20 @@ namespace SignalR.Samples.App_Start {
             //DependencyResolver.Register(typeof(ISignalBus), () => store);
             //DependencyResolver.Register(typeof(IMessageStore), () => store);
 
-            ThreadPool.QueueUserWorkItem(_ => {
-                var connection = Connection.GetConnection<Streaming.Streaming>();
-                var demoClients = Hub.GetClients<DemoHub>();
-                while (true) {
-                    try {
-                        connection.Broadcast(DateTime.Now.ToString());
-                        demoClients.fromArbitraryCode(DateTime.Now.ToString());
-                    }
-                    catch (Exception ex) {
-                        Trace.TraceError("SignalR error thrown in Streaming broadcast: {0}", ex);
-                    }
-                    Thread.Sleep(2000);
-                }
-            });
+            //ThreadPool.QueueUserWorkItem(_ => {
+            //    var connection = Connection.GetConnection<Streaming.Streaming>();
+            //    var demoClients = Hub.GetClients<DemoHub>();
+            //    while (true) {
+            //        try {
+            //            connection.Broadcast(DateTime.Now.ToString());
+            //            demoClients.fromArbitraryCode(DateTime.Now.ToString());
+            //        }
+            //        catch (Exception ex) {
+            //            Trace.TraceError("SignalR error thrown in Streaming broadcast: {0}", ex);
+            //        }
+            //        Thread.Sleep(2000);
+            //    }
+            //});
         }
     }
 }
