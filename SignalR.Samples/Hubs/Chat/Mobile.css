@@ -1,0 +1,23 @@
+﻿#messages, #users {
+    margin: 0;
+}
+
+#messages .ui-li, #users .ui-li {
+    font-weight: normal;
+}
+
+#users .ui-li-icon {
+    -webkit-background-clip: border-box;
+    -moz-background-clip: border-box;
+    background-clip: border;
+}
+#users .ui-li-icon.ui-corner-tl {
+    -moz-border-radius-topleft: 0;
+    -webkit-border-top-left-radius: 0;
+    border-top-left-radius: 0;
+}
+#users .ui-li-icon.ui-corner-bl {
+    -moz-border-radius-bottomleft: 0;
+    -webkit-border-bottom-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
