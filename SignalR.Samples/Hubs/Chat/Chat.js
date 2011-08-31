@@ -41,7 +41,7 @@ $(function () {
 
     chat.showRooms = function (rooms) {
         if (!rooms.length) {
-            addMessage('No rooms available', 'notification')
+            addMessage('No rooms available', 'notification');
         }
         else {
             $.each(rooms, function () {
@@ -182,7 +182,7 @@ $(function () {
         chat.join()
             .done(function (success) {
                 if (success === false) {
-                    $.cookie('userid', '')
+                    $.cookie('userid', '');
                     addMessage('Choose a name using "/nick nickname".', 'notification');
                 }
                 addMessage('After that, you can view rooms using "/rooms" and join a room using "/join roomname".', 'notification');
