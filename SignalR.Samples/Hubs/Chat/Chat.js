@@ -9,12 +9,24 @@ $(function () {
         $('#messages').html('');
     }
 
+    function refreshMessages() { refreshList($('#messages')); }
+
     function clearUsers() {
         $('#users').html('');
     }
 
+    function refreshUsers() { refreshList($('#users')); }
+
+    function refreshList(list) {
+        if (list.is('.ui-listview')) {
+            list.listview('refresh');
+        }
+    }
+
     function addMessage(content, type) {
         var e = $('<li/>').html(content).appendTo($('#messages'));
+        refreshMessages();
+
         if (type) {
             e.addClass(type);
         }
@@ -32,6 +44,7 @@ $(function () {
                 $.each(users, function () {
                     chat.addUser(this, true);
                 });
+                refreshUsers();
 
                 $('#new-message').focus();
             });
@@ -52,6 +65,7 @@ $(function () {
 
     chat.addMessageContent = function (id, content) {
         var e = $('#m-' + id).append(content);
+        refreshMessages();
         updateUnread();
         e[0].scrollIntoView();
     };
@@ -65,6 +79,7 @@ $(function () {
 
         var e = $('#new-message-template').tmpl(data)
                                           .appendTo($('#messages'));
+        refreshMessages();
         updateUnread();
         e[0].scrollIntoView();
     };
@@ -82,6 +97,7 @@ $(function () {
 
         var e = $('#new-user-template').tmpl(data)
                                        .appendTo($('#users'));
+        refreshUsers();
 
         if (!exists && this.name != user.Name) {
             addMessage(user.Name + ' just entered ' + this.room, 'notification');
@@ -98,6 +114,7 @@ $(function () {
                     hash: newUser.Hash
                 })
         );
+        refreshUsers();
 
         if (oldUser.Name === this.name) {
             addMessage('Your name is now ' + newUser.Name, 'notification');
