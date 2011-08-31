@@ -116,7 +116,7 @@ $(function () {
         );
         refreshUsers();
 
-        if (oldUser.Name === this.name) {
+        if (newUser.Name === this.name) {
             addMessage('Your name is now ' + newUser.Name, 'notification');
             updateCookie();
         }
