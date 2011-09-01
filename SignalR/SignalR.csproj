@@ -85,6 +85,7 @@
     <Compile Include="ISignalBus.cs" />
     <Compile Include="JavaScriptSerializerAdapter.cs" />
     <Compile Include="Json.cs" />
+    <Compile Include="Routing\IncomingOnlyRouteConstraint.cs" />
     <Compile Include="Routing\PersistentRouteHandler.cs" />
     <Compile Include="Routing\RouteExtensions.cs" />
     <Compile Include="SignalCommand.cs" />
