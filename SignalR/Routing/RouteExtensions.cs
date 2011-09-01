@@ -10,6 +10,8 @@ namespace SignalR.Routing {
 
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type) {
             var route = new Route(url, new PersistentRouteHandler(DependencyResolver.Current, type));
+            route.Constraints = new RouteValueDictionary();
+            route.Constraints.Add("PersistentConnectionConstraint", new IncomingOnlyRouteConstraint());
             routes.Add(name, route);
             return route;
         }
