@@ -67,7 +67,7 @@ namespace SignalR {
             var timerKey = Guid.NewGuid().ToString();
 
             onSignaled = (source, e) => {
-                SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, e.EventKey, canceled: false, timedOut: false);
+                SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, e.EventKey, eventKeys, canceled: false, timedOut: false);
             };
 
             foreach (var eventKey in eventKeys) {
@@ -75,11 +75,11 @@ namespace SignalR {
             }
 
             if (cancellationToken != CancellationToken.None) {
-                cancellationToken.Register(() => SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, eventKey: null, canceled: true, timedOut: false));
+                cancellationToken.Register(() => SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, signaledEventKey: null, eventKeys: eventKeys, canceled: true, timedOut: false));
             }
 
             var timer = new Timer(
-                        _ => SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, eventKey: null, canceled: false, timedOut: true),
+                        _ => SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, signaledEventKey: null, eventKeys: eventKeys, canceled: false, timedOut: true),
                         null,
                         timeout,
                         timeout);
@@ -95,14 +95,15 @@ namespace SignalR {
             ref bool handlerCalled,
             TaskCompletionSource<SignalResult> tcs,
             string timerKey,
-            string eventKey,
+            string signaledEventKey,
+            IEnumerable<string> eventKeys,
             bool canceled,
             bool timedOut) {
             lock (locker) {
                 if (!handlerCalled) {
                     handlerCalled = true;
 
-                    if (!String.IsNullOrEmpty(eventKey)) {
+                    foreach (var eventKey in eventKeys) {
                         SignalBus.RemoveHandler(eventKey, handler);
                     }
 
@@ -110,7 +111,7 @@ namespace SignalR {
                         tcs.SetCanceled();
                     }
                     else {
-                        tcs.SetResult(new SignalResult { TimedOut = timedOut, EventKey = eventKey });
+                        tcs.SetResult(new SignalResult { TimedOut = timedOut, EventKey = signaledEventKey });
                     }
 
                     Timer timer;
