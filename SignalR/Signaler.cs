@@ -34,7 +34,7 @@ namespace SignalR
 			}
 		}
 
-		public virtual TimeSpan DefaultTimeout { get; set; }
+		public TimeSpan DefaultTimeout { get; set; }
 
 		public virtual Task Signal(string eventKey)
 		{
@@ -78,7 +78,6 @@ namespace SignalR
 
 			var signalAction = new SafeHandleEventAndSetResultAction(SignalBus,tcs, timerKey, eventKeys);
 
-		
 			foreach (var eventKey in eventKeys)
 			{
 				SignalBus.AddHandler(eventKey, signalAction.Handler);
@@ -106,8 +105,7 @@ namespace SignalR
 				locker = new object();
 				Handler = (sender, args) =>
 				{
-					signaledEventKey = args.EventKey;
-					SafeHandleEventAndSetResult();
+					SafeHandleEventAndSetResult( args.EventKey);
 				};
 				Tcs = tcs;
 				this.signalBus = signalBus;
@@ -124,8 +122,6 @@ namespace SignalR
 			private readonly ISignalBus signalBus;
 			private readonly string timerKey;
 
-			private string signaledEventKey;
-
 			private readonly IEnumerable<string> eventKeys;
 
 			private bool canceled;
@@ -134,11 +130,11 @@ namespace SignalR
 
 			private bool handlerCalled;
 
-			private void SafeHandleEventAndSetResult()
+			private void SafeHandleEventAndSetResult(string signaledEventKey)
 			{
 				lock (locker)
 				{
-					if (!handlerCalled) 
+					if (handlerCalled) 
 						return;
 					
 					handlerCalled = true;
@@ -168,13 +164,13 @@ namespace SignalR
 			public void SetCanceled()
 			{
 				canceled = true;
-				SafeHandleEventAndSetResult();
+				SafeHandleEventAndSetResult(null);
 			}
 
 			public void SetTimedOut(object state)
 			{
 				timedOut = true;
-				SafeHandleEventAndSetResult();
+				SafeHandleEventAndSetResult(null);
 			}
 		}
 
