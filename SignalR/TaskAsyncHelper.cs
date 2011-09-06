@@ -35,47 +35,25 @@ namespace SignalR {
         }
 
         public static Task Success(this Task task, Action<Task> successor) {
-            var tcs = new TaskCompletionSource<object>();
-            task.ContinueWith(_ => {
-                if (task.IsCanceled) {
-                    tcs.TrySetCanceled();
+            return task.ContinueWith(_ =>
+            {
+            	if (task.IsCanceled || task.IsFaulted)
+                {
+                	return task;
                 }
-                else if (task.IsFaulted) {
-                    tcs.TrySetException(task.Exception.InnerExceptions);
-                }
-                else {
-                    try {
-                        successor(task);
-                        tcs.TrySetResult(null);
-                    }
-                    catch (Exception ex) {
-                        tcs.TrySetException(ex);
-                    }
-                }
-            });
-            return tcs.Task;
+            	return Task.Factory.StartNew(() => successor(task));
+            }).Unwrap();
         }
 
         public static Task Success<TResult>(this Task<TResult> task, Action<Task<TResult>> successor) {
-            var tcs = new TaskCompletionSource<object>();
-            task.ContinueWith(_ => {
-                if (task.IsCanceled) {
-                    tcs.TrySetCanceled();
-                }
-                else if (task.IsFaulted) {
-                    tcs.TrySetException(task.Exception.InnerExceptions);
-                }
-                else {
-                    try {
-                        successor(task);
-                        tcs.TrySetResult(null);
-                    }
-                    catch (Exception ex) {
-                        tcs.TrySetException(ex);
-                    }
-                }
-            });
-            return tcs.Task;
+			return task.ContinueWith(_ =>
+			{
+				if (task.IsCanceled || task.IsFaulted)
+				{
+					return task;
+				}
+				return Task.Factory.StartNew(() => successor(task));
+			}).Unwrap();
         }
 
         public static Task<TResult> Success<TResult>(this Task task, Func<Task, TResult> successor) {
