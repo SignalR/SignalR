@@ -88,64 +88,47 @@ namespace SignalR {
 
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
         {
-        	return Task.Factory.ContinueWhenAll(tasks, _ =>
-        	{
-        		var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
-        		if (cancelledTask != null)
-        			throw new TaskCanceledException();
-
-        		var allExceptions =
-        			tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
-
-        		if (allExceptions.Count > 0)
-        		{
-        			throw new AggregateException(allExceptions);
-        		}
-
-        		return Task.Factory.StartNew(continuation);
-
-        	}).Unwrap();
+        	return AllSucceeded(tasks, _ => continuation());
         }
 
         public static Task AllSucceeded(this Task[] tasks, Action<Task[]> continuation) {
-            var tcs = new TaskCompletionSource<object>();
-            Task.Factory.ContinueWhenAll(tasks, _ => {
-                var allExceptions = tasks.Where(task => task.IsFaulted || task.IsCanceled).SelectMany(task => task.Exception.InnerExceptions).ToList();
+			return Task.Factory.ContinueWhenAll(tasks, _ =>
+			{
+				var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
+				if (cancelledTask != null)
+					throw new TaskCanceledException();
 
-                if (allExceptions.Count > 0) {
-                    tcs.TrySetException(allExceptions);
-                }
-                else {
-                    try {
-                        continuation(tasks);
-                        tcs.TrySetResult(null);
-                    }
-                    catch (Exception ex) {
-                        tcs.TrySetException(ex);
-                    }
-                }
-            });
-            return tcs.Task;
+				var allExceptions =
+					tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
+
+				if (allExceptions.Count > 0)
+				{
+					throw new AggregateException(allExceptions);
+				}
+
+				return Task.Factory.StartNew(() => continuation(tasks));
+
+			}).Unwrap();
         }
 
         public static Task<T> AllSucceeded<T>(this Task[] tasks, Func<T> continuation) {
-            var tcs = new TaskCompletionSource<T>();
-            Task.Factory.ContinueWhenAll(tasks, _ => {
-                var allExceptions = tasks.Where(task => task.IsFaulted || task.IsCanceled).SelectMany(task => task.Exception.InnerExceptions).ToList();
+			return Task.Factory.ContinueWhenAll(tasks, _ =>
+			{
+				var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
+				if (cancelledTask != null)
+					throw new TaskCanceledException();
 
-                if (allExceptions.Count > 0) {
-                    tcs.TrySetException(allExceptions);
-                }
-                else {
-                    try {
-                        tcs.TrySetResult(continuation());
-                    }
-                    catch (Exception ex) {
-                        tcs.TrySetException(ex);
-                    }
-                }
-            });
-            return tcs.Task;
+				var allExceptions =
+					tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
+
+				if (allExceptions.Count > 0)
+				{
+					throw new AggregateException(allExceptions);
+				}
+
+				return Task.Factory.StartNew(continuation);
+
+			}).Unwrap();
         }
 
         public static Task<T> FromResult<T>(T value) {
