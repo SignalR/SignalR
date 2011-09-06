@@ -194,14 +194,12 @@ namespace SignalR {
                 return null;
             }
 
-            var retVal = new TaskWrapperAsyncResult(task, state);
-
             if (callback != null) {
                 // The callback needs the same argument that the Begin method returns, which is our special wrapper, not the original Task.
-                task.ContinueWith(_ => callback(retVal));
+                task.ContinueWith(t => callback(t));
             }
 
-            return retVal;
+            return task;
         }
 
         public static void EndTask(IAsyncResult ar) {
@@ -213,8 +211,8 @@ namespace SignalR {
             // 1. Make sure the underlying Task actually *is* complete.
             // 2. If the Task encountered an exception, observe it here.
             // (The Wait method handles both of those.)
-            var castResult = (TaskWrapperAsyncResult)ar;
-            castResult.Task.Wait();
+			using (var task = (Task)ar)
+				task.Wait();
         }
     }
 }
