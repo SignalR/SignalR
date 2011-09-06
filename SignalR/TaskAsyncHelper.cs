@@ -57,24 +57,18 @@ namespace SignalR {
         }
 
         public static Task<TResult> Success<TResult>(this Task task, Func<Task, TResult> successor) {
-            var tcs = new TaskCompletionSource<TResult>();
-            task.ContinueWith(_ => {
-                if (task.IsCanceled) {
-                    tcs.TrySetCanceled();
-                }
-                else if (task.IsFaulted) {
-                    tcs.TrySetException(task.Exception.InnerExceptions);
-                }
-                else {
-                    try {
-                        tcs.TrySetResult(successor(task));
-                    }
-                    catch (Exception ex) {
-                        tcs.TrySetException(ex);
-                    }
-                }
-            });
-            return tcs.Task;
+			return task.ContinueWith(_ =>
+			{
+				if (task.IsFaulted)
+				{
+					return FromError<TResult>(task.Exception);
+				}
+				if(task.IsCanceled)
+				{
+					return Cancelled<TResult>();
+				}
+				return Task.Factory.StartNew(() => successor(task));
+			}).Unwrap();
         }
 
         public static Task<TResult> Success<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor) {
@@ -166,5 +160,18 @@ namespace SignalR {
             return tcs.Task;
         }
 
+    	private static Task<T> FromError<T>(Exception e)
+		{
+			var tcs = new TaskCompletionSource<T>();
+			tcs.SetException(e);
+			return tcs.Task;
+		}
+
+    	private static Task<T> Cancelled<T>()
+		{
+			var tcs = new TaskCompletionSource<T>();
+			tcs.SetCanceled();
+			return tcs.Task;
+		}
     }
 }
