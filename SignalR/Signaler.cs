@@ -6,120 +6,177 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
-namespace SignalR {
-    public class Signaler {
-        private static readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>();
-        private static readonly Signaler _instance = new Signaler();
+namespace SignalR
+{
+	public class Signaler
+	{
+		private static readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>();
+		private static readonly Signaler _instance = new Signaler();
 
-        public Signaler() {
-            DefaultTimeout = TimeSpan.FromMinutes(2);
-        }
+		public Signaler()
+		{
+			DefaultTimeout = TimeSpan.FromMinutes(2);
+		}
 
-        public static Signaler Instance {
-            get {
-                return _instance;
-            }
-        }
+		public static Signaler Instance
+		{
+			get
+			{
+				return _instance;
+			}
+		}
 
-        public virtual ISignalBus SignalBus {
-            get {
-                return DependencyResolver.Resolve<ISignalBus>();
-            }
-        }
+		public virtual ISignalBus SignalBus
+		{
+			get
+			{
+				return DependencyResolver.Resolve<ISignalBus>();
+			}
+		}
 
-        public virtual TimeSpan DefaultTimeout { get; set; }
+		public virtual TimeSpan DefaultTimeout { get; set; }
 
-        public virtual Task Signal(string eventKey) {
-            return SignalBus.Signal(eventKey);
-        }
+		public virtual Task Signal(string eventKey)
+		{
+			return SignalBus.Signal(eventKey);
+		}
 
-        public virtual Task<SignalResult> Subscribe(string eventKey) {
-            return Subscribe(DefaultTimeout, eventKey);
-        }
+		public virtual Task<SignalResult> Subscribe(string eventKey)
+		{
+			return Subscribe(DefaultTimeout, eventKey);
+		}
 
-        public virtual Task<SignalResult> Subscribe(IEnumerable<string> eventKeys) {
-            return Subscribe(eventKeys.ToArray());
-        }
+		public virtual Task<SignalResult> Subscribe(IEnumerable<string> eventKeys)
+		{
+			return Subscribe(eventKeys.ToArray());
+		}
 
-        public virtual Task<SignalResult> Subscribe(TimeSpan timeout, string eventKey) {
-            return Subscribe(timeout, new[] { eventKey });
-        }
+		public virtual Task<SignalResult> Subscribe(TimeSpan timeout, string eventKey)
+		{
+			return Subscribe(timeout, new[] { eventKey });
+		}
 
-        public virtual Task<SignalResult> Subscribe(params string[] eventKeys) {
-            return Subscribe(DefaultTimeout, eventKeys);
-        }
+		public virtual Task<SignalResult> Subscribe(params string[] eventKeys)
+		{
+			return Subscribe(DefaultTimeout, eventKeys);
+		}
 
-        public virtual Task<SignalResult> Subscribe(TimeSpan timeout, IEnumerable<string> eventKeys) {
-            return Subscribe(timeout, CancellationToken.None, eventKeys);
-        }
+		public virtual Task<SignalResult> Subscribe(TimeSpan timeout, IEnumerable<string> eventKeys)
+		{
+			return Subscribe(timeout, CancellationToken.None, eventKeys);
+		}
 
-        public virtual Task<SignalResult> Subscribe(TimeSpan timeout, CancellationToken cancellationToken, IEnumerable<string> eventKeys) {
-            return Subscribe(timeout, cancellationToken, eventKeys.ToArray());
-        }
+		public virtual Task<SignalResult> Subscribe(TimeSpan timeout, CancellationToken cancellationToken, IEnumerable<string> eventKeys)
+		{
+			return Subscribe(timeout, cancellationToken, eventKeys.ToArray());
+		}
 
-        public virtual Task<SignalResult> Subscribe(TimeSpan timeout, CancellationToken cancellationToken, params string[] eventKeys) {
-            var tcs = new TaskCompletionSource<SignalResult>();
+		public virtual Task<SignalResult> Subscribe(TimeSpan timeout, CancellationToken cancellationToken, params string[] eventKeys)
+		{
+			var tcs = new TaskCompletionSource<SignalResult>();
+			var timerKey = Guid.NewGuid().ToString();
 
-            var handlerCalled = false;
-            var handlerLock = new object();
+			var signalAction = new SafeHandleEventAndSetResultAction(SignalBus,tcs, timerKey, eventKeys);
 
-            EventHandler<SignaledEventArgs> onSignaled = null;
-            var timerKey = Guid.NewGuid().ToString();
+		
+			foreach (var eventKey in eventKeys)
+			{
+				SignalBus.AddHandler(eventKey, signalAction.Handler);
+			}
 
-            onSignaled = (source, e) => {
-                SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, e.EventKey, eventKeys, canceled: false, timedOut: false);
-            };
+			if (cancellationToken != CancellationToken.None)
+			{
+				cancellationToken.Register(signalAction.SetCanceled);
+			}
 
-            foreach (var eventKey in eventKeys) {
-                SignalBus.AddHandler(eventKey, onSignaled);
-            }
+			var timer = new Timer(signalAction.SetTimedOut,
+						null,
+						timeout,
+						timeout);
 
-            if (cancellationToken != CancellationToken.None) {
-                cancellationToken.Register(() => SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, signaledEventKey: null, eventKeys: eventKeys, canceled: true, timedOut: false));
-            }
+			_timers.TryAdd(timerKey, timer);
 
-            var timer = new Timer(
-                        _ => SafeHandleEventAndSetResult(handlerLock, onSignaled, ref handlerCalled, tcs, timerKey, signaledEventKey: null, eventKeys: eventKeys, canceled: false, timedOut: true),
-                        null,
-                        timeout,
-                        timeout);
+			return tcs.Task;
+		}
 
-            _timers.TryAdd(timerKey, timer);
+		private class SafeHandleEventAndSetResultAction
+		{
+			public SafeHandleEventAndSetResultAction(ISignalBus signalBus,TaskCompletionSource<SignalResult> tcs, string timerKey, IEnumerable<string> eventKeys)
+			{
+				locker = new object();
+				Handler = (sender, args) =>
+				{
+					signaledEventKey = args.EventKey;
+					SafeHandleEventAndSetResult();
+				};
+				Tcs = tcs;
+				this.signalBus = signalBus;
+				this.timerKey = timerKey;
+				this.eventKeys = eventKeys;
+			}
 
-            return tcs.Task;
-        }
+			private readonly object locker;
 
-        private void SafeHandleEventAndSetResult(
-            object locker,
-            EventHandler<SignaledEventArgs> handler,
-            ref bool handlerCalled,
-            TaskCompletionSource<SignalResult> tcs,
-            string timerKey,
-            string signaledEventKey,
-            IEnumerable<string> eventKeys,
-            bool canceled,
-            bool timedOut) {
-            lock (locker) {
-                if (!handlerCalled) {
-                    handlerCalled = true;
+			public EventHandler<SignaledEventArgs> Handler { get; private set; }
 
-                    foreach (var eventKey in eventKeys) {
-                        SignalBus.RemoveHandler(eventKey, handler);
-                    }
+			private TaskCompletionSource<SignalResult> Tcs { get; set; }
 
-                    if (canceled) {
-                        tcs.SetCanceled();
-                    }
-                    else {
-                        tcs.SetResult(new SignalResult { TimedOut = timedOut, EventKey = signaledEventKey });
-                    }
+			private readonly ISignalBus signalBus;
+			private readonly string timerKey;
 
-                    Timer timer;
-                    if (_timers.TryRemove(timerKey, out timer)) {
-                        timer.Dispose();
-                    }
-                }
-            }
-        }
-    }
+			private string signaledEventKey;
+
+			private readonly IEnumerable<string> eventKeys;
+
+			private bool canceled;
+
+			private bool timedOut;
+
+			private bool handlerCalled;
+
+			private void SafeHandleEventAndSetResult()
+			{
+				lock (locker)
+				{
+					if (!handlerCalled) 
+						return;
+					
+					handlerCalled = true;
+
+					foreach (var eventKey in eventKeys)
+					{
+						signalBus.RemoveHandler(eventKey, Handler);
+					}
+
+					if (canceled)
+					{
+						Tcs.SetCanceled();
+					}
+					else
+					{
+						Tcs.SetResult(new SignalResult { TimedOut = timedOut, EventKey = signaledEventKey });
+					}
+
+					Timer timer;
+					if (_timers.TryRemove(timerKey, out timer))
+					{
+						timer.Dispose();
+					}
+				}
+			}
+
+			public void SetCanceled()
+			{
+				canceled = true;
+				SafeHandleEventAndSetResult();
+			}
+
+			public void SetTimedOut(object state)
+			{
+				timedOut = true;
+				SafeHandleEventAndSetResult();
+			}
+		}
+
+	}
 }
