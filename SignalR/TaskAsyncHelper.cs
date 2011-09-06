@@ -166,31 +166,5 @@ namespace SignalR {
             return tcs.Task;
         }
 
-        public static IAsyncResult BeginTask(Func<Task> taskFunc, AsyncCallback callback, object state) {
-            Task task = taskFunc();
-            if (task == null) {
-                return null;
-            }
-
-            if (callback != null) {
-                // The callback needs the same argument that the Begin method returns, which is our special wrapper, not the original Task.
-                task.ContinueWith(t => callback(t));
-            }
-
-            return task;
-        }
-
-        public static void EndTask(IAsyncResult ar) {
-            if (ar == null) {
-                throw new ArgumentNullException("ar");
-            }
-
-            // The End* method doesn't actually perform any actual work, but we do need to maintain two invariants:
-            // 1. Make sure the underlying Task actually *is* complete.
-            // 2. If the Task encountered an exception, observe it here.
-            // (The Wait method handles both of those.)
-			using (var task = (Task)ar)
-				task.Wait();
-        }
     }
 }

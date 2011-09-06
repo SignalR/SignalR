@@ -14,12 +14,22 @@ namespace SignalR.Web {
 
         public abstract Task ProcessRequestAsync(HttpContext context);
 
-        IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData) {
-            return TaskAsyncHelper.BeginTask(() => ProcessRequestAsync(context), cb, extraData);
+        IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
+        {
+        	var task = ProcessRequestAsync(context);
+        	if (cb != null) {
+        		task.ContinueWith(_ => cb(task));
+        	}
+        	return task;
         }
 
         void IHttpAsyncHandler.EndProcessRequest(IAsyncResult result) {
-            TaskAsyncHelper.EndTask(result);
+        	// The End* method doesn't actually perform any actual work, but we do need to maintain two invariants:
+        	// 1. Make sure the underlying Task actually *is* complete.
+        	// 2. If the Task encountered an exception, observe it here.
+        	// (The Wait method handles both of those.)
+        	using (var task = (Task)result)
+        		task.Wait();
         }
     }
 }
