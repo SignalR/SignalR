@@ -101,7 +101,6 @@
     <Compile Include="Signaler.cs" />
     <Compile Include="SignalResult.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
-    <Compile Include="TaskWrapperAsyncResult.cs" />
     <Compile Include="Hubs\TrackingDictionary.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="Hubs\IActionResolver.cs" />
