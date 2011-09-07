@@ -82,66 +82,61 @@ namespace SignalR {
         }
 
         private class SafeHandleEventAndSetResultAction {
+            private readonly object _locker;
+            private readonly ISignalBus _signalBus;
+            private readonly string _timerKey;
+            private readonly IEnumerable<string> _eventKeys;
+            private bool _canceled;
+            private bool _timedOut;
+            private bool _handlerCalled;
+
             public SafeHandleEventAndSetResultAction(ISignalBus signalBus, TaskCompletionSource<SignalResult> tcs, string timerKey, IEnumerable<string> eventKeys) {
-                locker = new object();
+                _locker = new object();
                 Handler = (sender, args) => {
                     SafeHandleEventAndSetResult(args.EventKey);
                 };
                 Tcs = tcs;
-                this.signalBus = signalBus;
-                this.timerKey = timerKey;
-                this.eventKeys = eventKeys;
+                _signalBus = signalBus;
+                _timerKey = timerKey;
+                _eventKeys = eventKeys;
             }
-
-            private readonly object locker;
 
             public EventHandler<SignaledEventArgs> Handler { get; private set; }
 
             private TaskCompletionSource<SignalResult> Tcs { get; set; }
 
-            private readonly ISignalBus signalBus;
-            private readonly string timerKey;
-
-            private readonly IEnumerable<string> eventKeys;
-
-            private bool canceled;
-
-            private bool timedOut;
-
-            private bool handlerCalled;
-
             private void SafeHandleEventAndSetResult(string signaledEventKey) {
-                lock (locker) {
-                    if (handlerCalled)
+                lock (_locker) {
+                    if (_handlerCalled)
                         return;
 
-                    handlerCalled = true;
+                    _handlerCalled = true;
 
-                    foreach (var eventKey in eventKeys) {
-                        signalBus.RemoveHandler(eventKey, Handler);
+                    foreach (var eventKey in _eventKeys) {
+                        _signalBus.RemoveHandler(eventKey, Handler);
                     }
 
-                    if (canceled) {
+                    if (_canceled) {
                         Tcs.SetCanceled();
                     }
                     else {
-                        Tcs.SetResult(new SignalResult { TimedOut = timedOut, EventKey = signaledEventKey });
+                        Tcs.SetResult(new SignalResult { TimedOut = _timedOut, EventKey = signaledEventKey });
                     }
 
                     Timer timer;
-                    if (_timers.TryRemove(timerKey, out timer)) {
+                    if (_timers.TryRemove(_timerKey, out timer)) {
                         timer.Dispose();
                     }
                 }
             }
 
             public void SetCanceled() {
-                canceled = true;
+                _canceled = true;
                 SafeHandleEventAndSetResult(null);
             }
 
             public void SetTimedOut(object state) {
-                timedOut = true;
+                _timedOut = true;
                 SafeHandleEventAndSetResult(null);
             }
         }
