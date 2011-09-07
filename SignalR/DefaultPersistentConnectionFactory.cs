@@ -9,7 +9,7 @@ namespace SignalR {
                 throw new ArgumentNullException("connectionType");
             }
 
-            var connection = (DependencyResolver.Resolve(connectionType) ?? 
+            var connection = (DependencyResolver.Resolve(connectionType) ??
                               Activator.CreateInstance(connectionType)) as PersistentConnection;
 
             if (connection == null) {

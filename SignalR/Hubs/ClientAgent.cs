@@ -45,7 +45,7 @@ namespace SignalR.Hubs {
 
         public Task AddToGroup(string clientId, string groupName) {
             groupName = _hubName + "." + groupName;
-           return  SendCommand(clientId, CommandType.AddToGroup, groupName);
+            return SendCommand(clientId, CommandType.AddToGroup, groupName);
         }
 
         public Task RemoveFromGroup(string clientId, string groupName) {

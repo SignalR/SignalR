@@ -132,36 +132,34 @@ namespace SignalR {
 
         private Task<PersistentResponse> GetResponse(long messageId) {
             // Get all messages for the current set of signals
-        	return GetMessages(messageId, Signals)
-        		.Success(messageTask =>
-        		{
-        			var results = messageTask.Result;
-        			if (!results.Any())
-        			{
-        				return null;
-        			}
+            return GetMessages(messageId, Signals)
+                .Success(messageTask => {
+                    var results = messageTask.Result;
+                    if (!results.Any()) {
+                        return null;
+                    }
 
-        			var response = new PersistentResponse();
+                    var response = new PersistentResponse();
 
-        			var commands = results.Where(m => m.SignalKey.EndsWith(PersistentConnection.SignalrCommand));
+                    var commands = results.Where(m => m.SignalKey.EndsWith(PersistentConnection.SignalrCommand));
 
-        			ProcessCommands(commands);
+                    ProcessCommands(commands);
 
-        			messageId = results.Max(p => p.Id);
+                    messageId = results.Max(p => p.Id);
 
-        			// Get the message values and the max message id we received
-        			var messageValues = results.Except(commands)
-        				.Select(m => m.Value)
-        				.ToList();
+                    // Get the message values and the max message id we received
+                    var messageValues = results.Except(commands)
+                        .Select(m => m.Value)
+                        .ToList();
 
-        			response.MessageId = messageId;
-        			response.Messages = messageValues;
+                    response.MessageId = messageId;
+                    response.Messages = messageValues;
 
-        			// Set the groups on the outgoing transport data
-        			response.TransportData["Groups"] = _groups;
+                    // Set the groups on the outgoing transport data
+                    response.TransportData["Groups"] = _groups;
 
-        			return response;
-        		});
+                    return response;
+                });
         }
 
         private void ProcessCommands(IEnumerable<Message> messages) {

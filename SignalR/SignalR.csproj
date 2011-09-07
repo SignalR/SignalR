@@ -89,6 +89,7 @@
     <Compile Include="Routing\PersistentRouteHandler.cs" />
     <Compile Include="Routing\RouteExtensions.cs" />
     <Compile Include="SignalCommand.cs" />
+    <Compile Include="TaskWrapperAsyncResult.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Transports\ITrackingDisconnect.cs" />
     <Compile Include="Transports\ITransport.cs" />

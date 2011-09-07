@@ -88,7 +88,7 @@ namespace SignalR.Infrastructure {
                 var signalBus = new InProcessSignalBus();
                 Register(typeof(ISignalBus), () => signalBus);
 
-                var pesistentConnectionFactory =new DefaultPersistentConnectionFactory();
+                var pesistentConnectionFactory = new DefaultPersistentConnectionFactory();
                 Register(typeof(IPersistentConnectionFactory), () => pesistentConnectionFactory);
 
                 var minifier = new NullJavaScriptMinifier();
