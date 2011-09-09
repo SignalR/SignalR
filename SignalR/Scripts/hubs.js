@@ -102,9 +102,10 @@
 
     function copy(obj, exclude) {
         var newObj = {};
-        $.each(obj, function (key) {
+        $.each(obj, function (key, value) {
             if ($.inArray(key, exclude) === -1) {
-                newObj[key] = this;
+                // We don't use "this" because browser suck!
+                newObj[key] = value;
             }
         });
 
