@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hubs {
     public class DefaultActionResolver : IActionResolver {
         public ActionInfo ResolveAction(Type hubType, string actionName, object[] parameters) {
             // Get all methods
-            var candidates = hubType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
+            var candidates = ReflectionHelper.GetExportedHubMethods(hubType)
                                  .Where(m => m.Name.Equals(actionName, StringComparison.OrdinalIgnoreCase))
                                  .Where(m => ParametersAreCompatible(m.GetParameters(), parameters))
                                  .ToList();

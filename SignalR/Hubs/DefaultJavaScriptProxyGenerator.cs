@@ -74,17 +74,7 @@ namespace SignalR.Hubs {
             }
             bool first = true;
 
-            var propertyMethods = new HashSet<MethodInfo>();
-            foreach (var property in type.GetProperties()) {
-                propertyMethods.Add(property.GetGetMethod());
-                propertyMethods.Add(property.GetSetMethod());
-            }
-
-            foreach (var method in methods) {
-                if (propertyMethods.Contains(method)) {
-                    continue;
-                }
-
+            foreach (var method in methods) {                
                 if (!first) {
                     sb.Append(",").AppendLine();
                 }
@@ -100,7 +90,7 @@ namespace SignalR.Hubs {
         }
 
         protected virtual IEnumerable<MethodInfo> GetMethods(Type type) {
-            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            return ReflectionHelper.GetExportedHubMethods(type);
         }
 
         private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method) {
