@@ -198,7 +198,7 @@ namespace SignalR {
             }
 
             // Wait until all of the tasks are done before we return
-            return pendingMessagesTasks.AllSucceeded(() => (IEnumerable<Message>)pendingMessagesTasks.SelectMany(t => t.Result).ToList());
+            return pendingMessagesTasks.AllSucceeded(() => (IEnumerable<Message>)pendingMessagesTasks.SelectMany(t => t.Result).OrderBy(m => m.Id).ToList());
         }
     }
 }
