@@ -6,10 +6,17 @@ namespace SignalR.Transports {
     public class LongPollingTransport : ITransport, ITrackingDisconnect {
         private readonly IJsonStringifier _jsonStringifier;
         private readonly HttpContextBase _context;
+        private readonly ITransportHeartBeat _heartBeat;
 
-        public LongPollingTransport(HttpContextBase context, IJsonStringifier json) {
+        public LongPollingTransport(HttpContextBase context, IJsonStringifier json)
+            : this(context, json, TransportHeartBeat.Instance) {
+
+        }
+
+        public LongPollingTransport(HttpContextBase context, IJsonStringifier json, ITransportHeartBeat heartBeat) {
             _context = context;
             _jsonStringifier = json;
+            _heartBeat = heartBeat;
         }
 
         /// <summary>
@@ -74,7 +81,7 @@ namespace SignalR.Transports {
                 if (IsConnectRequest) {
                     // Since this is the first request, there's no data we need to retrieve so just wait
                     // on a message to come through
-                    TransportHeartBeat.Instance.AddConnection(this);
+                    _heartBeat.AddConnection(this);
                     if (Connected != null) {
                         Connected();
                     }
@@ -84,7 +91,7 @@ namespace SignalR.Transports {
                     });
                 }
                 else if (MessageId != null) {
-                    TransportHeartBeat.Instance.AddConnection(this);
+                    _heartBeat.AddConnection(this);
                     // If there is a message id then we receive with that id, which will either return
                     // immediately if there are already messages since that id, or wait until new
                     // messages come in and then return
@@ -99,19 +106,19 @@ namespace SignalR.Transports {
             return null;
         }
 
-        public void Send(PersistentResponse response) {
-            TransportHeartBeat.Instance.RemoveConnection(this);
+        public virtual void Send(PersistentResponse response) {
+            _heartBeat.RemoveConnection(this);
 
             AddTransportData(response);
             Send((object)response);
         }
 
-        public void Send(object value) {
+        public virtual void Send(object value) {
             _context.Response.ContentType = Json.MimeType;
             _context.Response.Write(_jsonStringifier.Stringify(value));
         }
 
-        public void Disconnect() {
+        public virtual void Disconnect() {
             if (Disconnected != null) {
                 Disconnected();
             }

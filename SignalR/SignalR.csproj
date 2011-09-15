@@ -93,6 +93,7 @@
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Transports\ITrackingDisconnect.cs" />
     <Compile Include="Transports\ITransport.cs" />
+    <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\TransportHeartBeat.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />

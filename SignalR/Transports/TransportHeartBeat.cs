@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports {
-    internal class TransportHeartBeat {
+    public class TransportHeartBeat : ITransportHeartBeat {
         private readonly static TransportHeartBeat _instance = new TransportHeartBeat();
         private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ClientIdEqualityComparer());
         private readonly Timer _timer;
