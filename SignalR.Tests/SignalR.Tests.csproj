@@ -48,6 +48,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InProcessMessageStoreTest.cs" />
     <Compile Include="LongPollingTransportTest.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

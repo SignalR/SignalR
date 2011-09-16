@@ -10,33 +10,39 @@ namespace SignalR {
     public class InProcessMessageStore : IMessageStore {
         private readonly ConcurrentDictionary<string, SafeSet<Message>> _items = new ConcurrentDictionary<string, SafeSet<Message>>(StringComparer.OrdinalIgnoreCase);
         // Interval to wait before cleaning up expired items
-        private static readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
-        private static long _messageId = 0;
-        private static object _idLocker = new object();
+        private long _lastMessageId = 0;
+        private readonly object _idLocker = new object();
+        private bool _gcRunning;
 
         private readonly Timer _timer;
 
-        public InProcessMessageStore() {
-            _timer = new Timer(RemoveExpiredEntries, null, _cleanupInterval, _cleanupInterval);
+        public InProcessMessageStore()
+            : this(garbageCollectMessages: true) {
+        }
+
+        internal InProcessMessageStore(bool garbageCollectMessages) {
+            if (garbageCollectMessages) {
+                _timer = new Timer(RemoveExpiredEntries, null, _cleanupInterval, _cleanupInterval);
+            }
         }
 
         public Task Save(string key, object value) {
-            return Save(new Message(key, Interlocked.Increment(ref _messageId), value));
+            var message = new Message(key, Interlocked.Increment(ref _lastMessageId), value);
+            return Save(message);
         }
 
         protected internal Task Save(Message message) {
             var key = message.SignalKey;
-            SafeSet<Message> list;
-            if (!_items.TryGetValue(key, out list)) {
-                list = new SafeSet<Message>();
-                _items.TryAdd(key, list);
-            }
+
+            var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
             list.Add(message);
-            if (message.Id > _messageId) {
+
+            if (message.Id > _lastMessageId) {
                 lock (_idLocker) {
-                    if (message.Id > _messageId) {
-                        _messageId = message.Id;
+                    if (message.Id > _lastMessageId) {
+                        _lastMessageId = message.Id;
                     }
                 }
             }
@@ -45,22 +51,22 @@ namespace SignalR {
         }
 
         public Task<IEnumerable<Message>> GetAllSince(string key, long id) {
+            if (id > _lastMessageId) {
+                id = 0;
+            }
+
             var items = GetAllCore(key).Where(item => item.Id > id)
                                        .OrderBy(item => item.Id);
-            return TaskAsyncHelper.FromResult<IEnumerable<Message>>(items);
 
+            return TaskAsyncHelper.FromResult<IEnumerable<Message>>(items);
         }
 
         public Task<long?> GetLastId() {
-            if (_messageId > 0) {
-                return TaskAsyncHelper.FromResult<long?>(_messageId);
+            if (_lastMessageId > 0) {
+                return TaskAsyncHelper.FromResult<long?>(_lastMessageId);
             }
 
             return TaskAsyncHelper.FromResult<long?>(null);
-        }
-
-        public Task<IEnumerable<Message>> GetAll(string key) {
-            return TaskAsyncHelper.FromResult(GetAllCore(key));
         }
 
         private IEnumerable<Message> GetAllCore(string key) {
@@ -73,6 +79,12 @@ namespace SignalR {
         }
 
         private void RemoveExpiredEntries(object state) {
+            if (_gcRunning) {
+                return;
+            }
+
+            _gcRunning = true;
+
             // Take a snapshot of the entries
             var entries = _items.ToList();
 
@@ -84,6 +96,8 @@ namespace SignalR {
                     }
                 }
             }
+
+            _gcRunning = false;
         }
     }
 }

@@ -12,6 +12,7 @@ namespace SignalR {
         private readonly string _clientId;
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
+        private readonly object _lockObj = new object();
 
         public Connection(IMessageStore store,
                           Signaler signaler,
@@ -187,7 +188,7 @@ namespace SignalR {
                          .Catch();
         }
 
-        private Task<IEnumerable<Message>> GetMessages(long id, IEnumerable<string> signals) {
+        private Task<IEnumerable<Message>> GetMessages(long id, IEnumerable<string> signals) {            
             var pendingMessagesTasks = (from signal in signals
                                         select _store.GetAllSince(signal, id)).ToArray();
 

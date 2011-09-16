@@ -89,12 +89,6 @@ namespace SignalR.ScaleOut {
                 });
         }
 
-        public Task<IEnumerable<Message>> GetAll(string key) {
-            return GetMessages(key, _getAllSQL.Replace("{TableName}", MessageTableName),
-                new[] { new SqlParameter("EventKey", key) }
-            );
-        }
-
         public Task<IEnumerable<Message>> GetAllSince(string key, long id) {
             return _queries.GetOrAdd(Tuple.Create(id, key),
                 GetMessages(key, _getAllSinceSQL.Replace("{TableName}", MessageTableName),

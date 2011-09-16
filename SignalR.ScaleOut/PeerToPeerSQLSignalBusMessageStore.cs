@@ -75,10 +75,6 @@ namespace SignalR.ScaleOut {
                 .Unwrap();
         }
 
-        public Task<IEnumerable<Message>> GetAll(string key) {
-            return _store.GetAll(key);
-        }
-
         public Task<IEnumerable<Message>> GetAllSince(string key, long id) {
             return _store.GetAllSince(key, id);
         }
