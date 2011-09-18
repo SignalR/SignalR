@@ -5,11 +5,23 @@ using Xunit;
 namespace SignalR.Tests {
     public class DefaultActionResolverTest {
         [Fact]
-        public void ResolveActionOnlyFindsMethodsOnDeclaredType() {
+        public void ResolveActionExcludeHubMethods() {
             var resolver = new DefaultActionResolver();
-            var actionInfo = resolver.ResolveAction(typeof(TestHub), "AddToGroup", new object[] { "admin" });
+            var actionInfo1 = resolver.ResolveAction(typeof(TestHub), "AddToGroup", new object[] { "admin" });
+            var actionInfo2 = resolver.ResolveAction(typeof(TestHub), "RemoveFromGroup", new object[] { "admin" });
 
-            Assert.Null(actionInfo);
+            Assert.Null(actionInfo1);
+            Assert.Null(actionInfo2);
+        }
+
+        [Fact]
+        public void ResolveActionOnDerivedHubFindsMethodOnBasedType() {
+            var resolver = new DefaultActionResolver();
+            var actionInfo = resolver.ResolveAction(typeof(TestDerivedHub), "Foo", new object[] { });
+
+            Assert.NotNull(actionInfo);
+            Assert.Equal("Foo", actionInfo.Method.Name);
+            Assert.Equal(0, actionInfo.Arguments.Length);
         }
 
         [Fact]
@@ -19,7 +31,7 @@ namespace SignalR.Tests {
 
             Assert.Null(actionInfo);
         }
-        
+
         [Fact]
         public void ResolveActionExcludesPropetiesOnBaseTypes() {
             var resolver = new DefaultActionResolver();
@@ -56,7 +68,7 @@ namespace SignalR.Tests {
             Assert.Equal(1, actionInfo.Method.GetParameters().Length);
             Assert.Equal(1, actionInfo.Arguments.Length);
         }
-        
+
         [Fact]
         public void ResolveActionBindsComplexArgumentsWithDictionary() {
             var resolver = new DefaultActionResolver();
@@ -78,6 +90,12 @@ namespace SignalR.Tests {
             Assert.NotNull(complex.Address);
             Assert.Equal("The street", complex.Address.Street);
             Assert.Equal(34567, complex.Address.Zip);
+        }
+
+        private class TestDerivedHub : TestHub {
+            public void FooDerived() {
+                Foo();
+            }
         }
 
         private class TestHub : Hub {
