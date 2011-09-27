@@ -10,15 +10,15 @@ namespace SignalR.Autofac.App_Start {
         /// Starts the application
         /// </summary>
         public static void Start() {
-            IContainer kernel = CreateKernel();
-            DependencyResolver.SetResolver(new AutofacDependencyResolver(kernel));
+            IContainer container = CreateContainer();
+            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
         }
 
         /// <summary>
-        /// Creates the kernel that will manage your application.
+        /// Creates the container that will manage your application.
         /// </summary>
-        /// <returns>The created kernel.</returns>
-        private static IContainer CreateKernel()
+        /// <returns>The created container.</returns>
+        private static IContainer CreateContainer()
         {
             var builder = new ContainerBuilder();
             RegisterServices(builder);
@@ -28,7 +28,7 @@ namespace SignalR.Autofac.App_Start {
         /// <summary>
         /// Load your modules or register your services here!
         /// </summary>
-        /// <param name="kernel">The kernel.</param>
+        /// <param name="kernel">The container builder</param>
         private static void RegisterServices(ContainerBuilder builder) {
         }
     }

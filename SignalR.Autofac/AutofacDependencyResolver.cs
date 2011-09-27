@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autofac;
-using SignalR.Infrastructure;
 using Autofac.Core;
+using SignalR.Infrastructure;
 
 namespace SignalR.Autofac {
     public class AutofacDependencyResolver : IDependencyResolver {

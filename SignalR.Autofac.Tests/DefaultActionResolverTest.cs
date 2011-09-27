@@ -1,9 +1,9 @@
-﻿using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using Xunit;
+using System.Linq;
 using Autofac;
 using SignalR.Autofac;
-using System;
+using Xunit;
 
 namespace SignalR.Tests
 {
