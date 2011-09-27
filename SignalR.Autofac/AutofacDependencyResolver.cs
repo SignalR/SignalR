@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Autofac;
 using SignalR.Infrastructure;
+using Autofac.Core;
 
 namespace SignalR.Autofac {
     public class AutofacDependencyResolver : IDependencyResolver {
@@ -21,18 +22,29 @@ namespace SignalR.Autofac {
         }
 
         public IEnumerable<object> GetServices(Type serviceType) {
-            // TODO: i forget the trick to create the type i want
-            return null;
+            Type genericType = typeof(IEnumerable<>);
+            Type specialisedType = genericType.MakeGenericType(serviceType);
+            return _container.Resolve(specialisedType) as IEnumerable<object>;
         }
 
         public void Register(Type serviceType, IEnumerable<Func<object>> activators) {
             var builder = new ContainerBuilder();
-            // TODO: get the rules right
+
+            foreach (var a in activators)
+            {
+                builder.Register(c => a())
+                   .As(new TypedService(serviceType));
+            }
+            
             builder.Update(_container);
         }
 
         public void Register(Type serviceType, Func<object> activator) {
             var builder = new ContainerBuilder();
+
+            builder.Register(c => activator())
+                   .As(new TypedService(serviceType));
+            
             // TODO: get the rules right
             builder.Update(_container);
         }
