@@ -19,8 +19,7 @@ namespace SignalR.Autofac.App_Start {
         /// Creates the container that will manage your application.
         /// </summary>
         /// <returns>The created container.</returns>
-        private static IContainer CreateContainer()
-        {
+        private static IContainer CreateContainer() {
             var builder = new ContainerBuilder();
             RegisterServices(builder);
             return builder.Build();

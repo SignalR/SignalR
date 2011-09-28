@@ -30,8 +30,7 @@ namespace SignalR.Autofac {
         public void Register(Type serviceType, IEnumerable<Func<object>> activators) {
             var builder = new ContainerBuilder();
 
-            foreach (var a in activators)
-            {
+            foreach (var a in activators) {
                 builder.Register(c => a())
                    .As(new TypedService(serviceType));
             }

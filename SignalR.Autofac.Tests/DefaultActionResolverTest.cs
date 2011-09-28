@@ -10,8 +10,7 @@ namespace SignalR.Tests
     public class DefaultActionResolverTest
     {
         [Fact]
-        public void GetService_WithNoRegistrations_ReturnsDefaultValue()
-        {
+        public void GetService_WithNoRegistrations_ReturnsDefaultValue() {
             // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
@@ -24,8 +23,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetService_WithSingleRegistration_ReturnsNotNull()
-        {
+        public void GetService_WithSingleRegistration_ReturnsNotNull() {
             // arrange
             var builder = new ContainerBuilder();
             builder.RegisterType<SimpleType>().AsImplementedInterfaces();
@@ -39,8 +37,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetServices_WithUnrelatedFuncs_ReturnsEmptyList()
-        {
+        public void GetServices_WithUnrelatedFuncs_ReturnsEmptyList() {
             // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
@@ -58,8 +55,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetService_WithNoRegistration_ReturnsNull()
-        {
+        public void GetService_WithNoRegistration_ReturnsNull() {
             // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
@@ -72,8 +68,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetServices_WithTwoRegistration_ReturnsTwoEntities()
-        {
+        public void GetServices_WithTwoRegistration_ReturnsTwoEntities() {
             // arrange
             var builder = new ContainerBuilder();
             builder.RegisterType<SimpleType>().AsImplementedInterfaces();
@@ -88,8 +83,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetServices_WithOneRegistration_ReturnsOneEntities()
-        {
+        public void GetServices_WithOneRegistration_ReturnsOneEntities() {
             // arrange
             var builder = new ContainerBuilder();
             builder.RegisterType<SimpleType>().AsImplementedInterfaces();
@@ -103,8 +97,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetServices_WithNoRegistrations_ReturnsEmptyList()
-        {
+        public void GetServices_WithNoRegistrations_ReturnsEmptyList() {
             // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
@@ -117,8 +110,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void Register_WithOneFunc_ReturnsNotNullResult()
-        {
+        public void Register_WithOneFunc_ReturnsNotNullResult() {
             // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
@@ -132,8 +124,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void Register_WithOneFunc_ReturnsDistinctItemsEachTime()
-        {
+        public void Register_WithOneFunc_ReturnsDistinctItemsEachTime() {
             // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
