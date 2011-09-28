@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using SignalR.Infrastructure;
+using SignalR.Autofac;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof($rootnamespace$.App_Start.AutofacSignalR), "Start")]
 

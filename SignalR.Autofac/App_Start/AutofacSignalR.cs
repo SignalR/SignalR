@@ -1,6 +1,7 @@
 ﻿#if !PACKAGE_BUILD
 using Autofac;
 using SignalR.Infrastructure;
+using SignalR.Autofac;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof(SignalR.Autofac.App_Start.AutofacSignalR), "Start")]
 
