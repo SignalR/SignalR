@@ -39,7 +39,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetServices_WithOtherRegistrations_ReturnsEmptyList()
+        public void GetServices_WithUnrelatedFuncs_ReturnsEmptyList()
         {
             // arrange
             var builder = new ContainerBuilder();
@@ -103,7 +103,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void GetServices_WithNoRegistration_ReturnsEmptyList()
+        public void GetServices_WithNoRegistrations_ReturnsEmptyList()
         {
             // arrange
             var builder = new ContainerBuilder();
@@ -117,7 +117,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void Register_WithOneRegistration_ReturnsNotNullResult()
+        public void Register_WithOneFunc_ReturnsNotNullResult()
         {
             // arrange
             var builder = new ContainerBuilder();
@@ -132,7 +132,7 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void Register_WithOneRegistration_ReturnsDistinctItemsEachTime()
+        public void Register_WithOneFunc_ReturnsDistinctItemsEachTime()
         {
             // arrange
             var builder = new ContainerBuilder();
