@@ -12,10 +12,12 @@ namespace SignalR.Tests
         [Fact]
         public void GetService_WithNoRegistrations_ReturnsDefaultValue()
         {
+            // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+
+            // act
             var entity = resolver.GetService(typeof(ISomeType));
 
             Assert.Equal(default(ISomeType), entity);
@@ -24,23 +26,46 @@ namespace SignalR.Tests
         [Fact]
         public void GetService_WithSingleRegistration_ReturnsNotNull()
         {
+            // arrange
             var builder = new ContainerBuilder();
             builder.RegisterType<SimpleType>().AsImplementedInterfaces();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+
+            // act
             var entity = resolver.GetService(typeof(ISomeType));
 
             Assert.NotNull(entity);
         }
 
         [Fact]
-        public void GetService_WithNoRegistration_ReturnsNull()
+        public void GetServices_WithOtherRegistrations_ReturnsEmptyList()
         {
+            // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+
+            var registrations = new List<Func<object>>();
+            registrations.Add(() => new SimpleType());
+            registrations.Add(() => new AnotherType());
+            resolver.Register(typeof(ISomeType), registrations);
+
+            // act
+            var result = resolver.GetServices(typeof(INotUsed));
+
+            Assert.False(result.Any());
+        }
+
+        [Fact]
+        public void GetService_WithNoRegistration_ReturnsNull()
+        {
+            // arrange
+            var builder = new ContainerBuilder();
+            var container = builder.Build();
+            var resolver = new AutofacDependencyResolver(container);
+
+            // act
             var entity = resolver.GetService(typeof(ISomeType));
 
             Assert.Null(entity);
@@ -49,12 +74,14 @@ namespace SignalR.Tests
         [Fact]
         public void GetServices_WithTwoRegistration_ReturnsTwoEntities()
         {
+            // arrange
             var builder = new ContainerBuilder();
             builder.RegisterType<SimpleType>().AsImplementedInterfaces();
             builder.RegisterType<AnotherType>().AsImplementedInterfaces();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+
+            // act
             var result = resolver.GetServices(typeof(ISomeType));
 
             Assert.True(result.Count() == 2);
@@ -63,11 +90,13 @@ namespace SignalR.Tests
         [Fact]
         public void GetServices_WithOneRegistration_ReturnsOneEntities()
         {
+            // arrange
             var builder = new ContainerBuilder();
             builder.RegisterType<SimpleType>().AsImplementedInterfaces();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+
+            // act
             var result = resolver.GetServices(typeof(ISomeType));
 
             Assert.True(result.Count() == 1);
@@ -76,23 +105,26 @@ namespace SignalR.Tests
         [Fact]
         public void GetServices_WithNoRegistration_ReturnsEmptyList()
         {
+            // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+            
+            // act 
             var result = resolver.GetServices(typeof(ISomeType));
 
             Assert.False(result.Any());
         }
 
-
         [Fact]
         public void Register_WithOneRegistration_ReturnsNotNullResult()
         {
+            // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+
+            // act
             resolver.Register(typeof(ISomeType), () => new SimpleType());
             var result = resolver.GetService(typeof(ISomeType));
 
@@ -102,35 +134,21 @@ namespace SignalR.Tests
         [Fact]
         public void Register_WithOneRegistration_ReturnsDistinctItemsEachTime()
         {
+            // arrange
             var builder = new ContainerBuilder();
             var container = builder.Build();
-
             var resolver = new AutofacDependencyResolver(container);
+            
+            // act
             resolver.Register(typeof(ISomeType), () => new SimpleType());
             var firstSet = resolver.GetService(typeof(ISomeType));
             var secondSet = resolver.GetService(typeof(ISomeType));
 
             Assert.NotSame(firstSet, secondSet);
         }
-
-        [Fact]
-        public void Register_WithTwoRegistrations_ReturnsTwoEntities()
-        {
-            var builder = new ContainerBuilder();
-            var container = builder.Build();
-
-            var registrations = new List<Func<object>>();
-            registrations.Add(() => new SimpleType());
-            registrations.Add(() => new AnotherType());
-
-            var resolver = new AutofacDependencyResolver(container);
-            resolver.Register(typeof(ISomeType), registrations);
-            var result = resolver.GetServices(typeof(ISomeType));
-
-            Assert.True(result.Count() == 2);
-        }
-
     }
+
+    public interface INotUsed { }
 
     public interface ISomeType { }
 

@@ -45,7 +45,6 @@ namespace SignalR.Autofac {
             builder.Register(c => activator())
                    .As(new TypedService(serviceType));
             
-            // TODO: get the rules right
             builder.Update(_container);
         }
     }
