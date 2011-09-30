@@ -144,7 +144,16 @@
         /*hubs*/
     });
 
-    signalR.hub = signalR("{serviceUrl}")
+    var serviceUrl = '{serviceUrl}';
+    var scripts = document.getElementsByTagName('script');
+    $.each(scripts, function () {
+        var index = this.src.indexOf(serviceUrl + '/hubs');
+        if (index > -1) { // this is the hubs script
+            serviceUrl = this.src.substring(0, index) + serviceUrl;
+        }
+    });
+    
+    signalR.hub = signalR(serviceUrl)
         .starting(function () {
             updateClientMembers(signalR);
         })
