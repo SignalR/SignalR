@@ -5,3 +5,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription("An ASP.NET library for authoring SignalR services.")]
 [assembly: InternalsVisibleTo("SignalR.ScaleOut")]
 [assembly: InternalsVisibleTo("SignalR.Tests")]
+[assembly: InternalsVisibleTo("SignalR.Redis")]
