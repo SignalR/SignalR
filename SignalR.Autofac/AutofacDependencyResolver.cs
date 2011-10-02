@@ -9,9 +9,9 @@ namespace SignalR.Autofac {
         private readonly IContainer _container;
 
         public AutofacDependencyResolver(IContainer container) {
-            if (container == null)
+            if (container == null) {
                 throw new ArgumentNullException("container");
-
+            }
             _container = container;
         }
 
