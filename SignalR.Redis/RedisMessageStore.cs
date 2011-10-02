@@ -28,55 +28,51 @@ namespace SignalR.Redis
 
         public Task<long?> GetLastId()
         {
-            long id;
-
-            var val = _redisConnection.Strings.GetString(_database, MessageIdKey, true).Result;
-            if (Int64.TryParse(val, out id))
-            {
-                return Task.Factory.StartNew(() => (long?)id);
-            }
-
-            return TaskAsyncHelper.FromResult<long?>(id);
+            return _redisConnection.Strings.GetString(_database, MessageIdKey)
+                .ContinueWith(t =>
+                                  {
+                                      long id;
+                                      Int64.TryParse(t.Result, out id);
+                                      return (long?)id;
+                                  });
         }
 
         public Task Save(string key, object value)
         {
-            var nextId = _redisConnection.Strings.Increment(_database, MessageIdKey, queueJump: true).Result;
-            var message = new ProtoMessage
-            {
-                Created = DateTime.Now,
-                SignalKey = key,
-                Id = nextId,
-                Value = _jsonSerializer.Stringify(value)
-            };
-
-            _redisConnection.SortedSets.Add(_database,
-                                            MessagesKey,
-                                            message.Serialize(),
-                                            message.Id,
-                                            true).Wait();
-
-            return TaskAsyncHelper.Empty;
+            return _redisConnection.Strings.Increment(_database, MessageIdKey)
+                .ContinueWith(t =>
+                                  {
+                                      var message = new ProtoMessage
+                                                        {
+                                                            Created = DateTime.Now,
+                                                            SignalKey = key,
+                                                            Id = t.Result,
+                                                            Value = _jsonSerializer.Stringify(value)
+                                                        };
+                                      _redisConnection.SortedSets.Add(_database,
+                                                                      MessagesKey,
+                                                                      message.Serialize(),
+                                                                      message.Id);
+                                  });
         }
 
         public Task<IEnumerable<Message>> GetAllSince(string key, long id)
         {
-            var resultProtoMessages = _redisConnection.SortedSets.Range(_database,
-                                                                   MessagesKey,
-                                                                   (double)id,
-                                                                   (double)long.MaxValue, 
-                                                                   queueJump: true, 
-                                                                   minInclusive: false)
-                .Result
-                .Select(o => ProtoMessage.Deserialize(o.Key));
-
-            var resultMessages = resultProtoMessages
-                .Select(o => new Message(o.SignalKey,
-                                         o.Id,
-                                         o.SignalKey.EndsWith(PersistentConnection.SignalrCommand) ? _jsonSerializer.Parse<SignalCommand>(o.Value) : _jsonSerializer.Parse(o.Value),
-                                         o.Created));
-
-            return TaskAsyncHelper.FromResult(resultMessages);
+            return _redisConnection.SortedSets.Range(_database,
+                                                     MessagesKey,
+                                                     (double) id,
+                                                     (double) long.MaxValue,
+                                                     minInclusive: false)
+                .ContinueWith(t =>
+                              t.Result
+                                  .Select(o => ProtoMessage.Deserialize(o.Key))
+                                  .Select(o => new Message(o.SignalKey,
+                                                           o.Id,
+                                                           o.SignalKey.EndsWith(
+                                                               PersistentConnection.SignalrCommand)
+                                                               ? _jsonSerializer.Parse<SignalCommand>(o.Value)
+                                                               : _jsonSerializer.Parse(o.Value),
+                                                           o.Created)));
         }
     }
 
