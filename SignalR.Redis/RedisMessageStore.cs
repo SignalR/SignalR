@@ -36,9 +36,7 @@ namespace SignalR.Redis
                 return Task.Factory.StartNew(() => (long?)id);
             }
 
-            var tcs = new TaskCompletionSource<long?>();
-            tcs.SetResult(id);
-            return tcs.Task;
+            return TaskAsyncHelper.FromResult<long?>(id);
         }
 
         public Task Save(string key, object value)
@@ -58,9 +56,7 @@ namespace SignalR.Redis
                                             message.Id,
                                             true).Wait();
 
-            var tcs = new TaskCompletionSource<object>();
-            tcs.SetResult(null);
-            return tcs.Task;
+            return TaskAsyncHelper.Empty;
         }
 
         public Task<IEnumerable<Message>> GetAllSince(string key, long id)
@@ -80,9 +76,7 @@ namespace SignalR.Redis
                                          o.SignalKey.EndsWith(PersistentConnection.SignalrCommand) ? _jsonSerializer.Parse<SignalCommand>(o.Value) : _jsonSerializer.Parse(o.Value),
                                          o.Created));
 
-            var tcs = new TaskCompletionSource<IEnumerable<Message>>();
-            tcs.SetResult(resultMessages);
-            return tcs.Task;
+            return TaskAsyncHelper.FromResult(resultMessages);
         }
     }
 
