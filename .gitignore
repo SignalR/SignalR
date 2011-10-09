@@ -16,3 +16,4 @@ _ReSharper.*/
 packages/*
 Kudu.Services.Web/App_Data/*
 artifacts/*
+msbuild.log
