@@ -34,6 +34,7 @@ namespace SignalR.Hubs {
             : this(DependencyResolver.Resolve<IHubFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
                    Signaler.Instance,
+                   DependencyResolver.Resolve<IClientIdFactory>(),
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
                    DependencyResolver.Resolve<IJsonStringifier>(),
@@ -44,12 +45,13 @@ namespace SignalR.Hubs {
         public HubDispatcher(IHubFactory hubFactory,
                              IMessageStore store,
                              Signaler signaler,
+                             IClientIdFactory clientIdFactory,
                              IActionResolver actionResolver,
                              IJavaScriptProxyGenerator proxyGenerator,
                              IJsonStringifier jsonStringifier,
                              IHubLocator hubLocator,
                              string url)
-            : base(signaler, store, jsonStringifier) {
+            : base(signaler, clientIdFactory, store, jsonStringifier) {
             _hubFactory = hubFactory;
             _store = store;
             _signaler = signaler;

@@ -95,6 +95,9 @@ namespace SignalR.Infrastructure {
 
                 var proxyGenerator = new DefaultJavaScriptProxyGenerator(hubLocator, (IJavaScriptMinifier)GetService(typeof(IJavaScriptMinifier)) ?? minifier);
                 Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator);
+
+                var clientIdFactory = new GuidClientIdFactory();
+                Register(typeof(IClientIdFactory), () => clientIdFactory);
             }
 
             public object GetService(Type serviceType) {

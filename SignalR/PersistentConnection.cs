@@ -14,19 +14,23 @@ namespace SignalR {
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
         private readonly IJsonStringifier _jsonStringifier;
+        private readonly IClientIdFactory _clientIdFactory;
 
         protected ITransport _transport;
 
         protected PersistentConnection()
             : this(Signaler.Instance,
+                   DependencyResolver.Resolve<IClientIdFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
                    DependencyResolver.Resolve<IJsonStringifier>()) {
         }
 
         protected PersistentConnection(Signaler signaler,
+                                       IClientIdFactory clientIdFactory,
                                        IMessageStore store,
                                        IJsonStringifier jsonStringifier) {
             _signaler = signaler;
+            _clientIdFactory = clientIdFactory;
             _store = store;
             _jsonStringifier = jsonStringifier;
         }
@@ -50,16 +54,16 @@ namespace SignalR {
 
         public override Task ProcessRequestAsync(HttpContext context) {
             Task task = null;
+            var contextBase = new HttpContextWrapper(context);
 
             if (IsNegotiationRequest(context.Request)) {
                 context.Response.ContentType = Json.MimeType;
                 context.Response.Write(_jsonStringifier.Stringify(new {
                     Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
-                    ClientId = Guid.NewGuid().ToString("d")
+                    ClientId = _clientIdFactory.CreateClientId(contextBase)
                 }));
             }
             else {
-                var contextBase = new HttpContextWrapper(context);
                 _transport = GetTransport(contextBase);
 
                 string clientId = contextBase.Request["clientId"];
