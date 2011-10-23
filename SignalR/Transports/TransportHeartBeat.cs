@@ -10,22 +10,30 @@ namespace SignalR.Transports {
         private readonly static TransportHeartBeat _instance = new TransportHeartBeat();
         private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ClientIdEqualityComparer());
         private readonly Timer _timer;
-
+        private TimeSpan _heartBeatInterval;
 
         private TransportHeartBeat() {
-            HeartBeatInterval = TimeSpan.FromSeconds(30);
+            _heartBeatInterval = TimeSpan.FromSeconds(30);
             // REVIEW: When to dispose the timer?
             _timer = new Timer(_ => Beat(),
                                null,
-                               HeartBeatInterval,
-                               HeartBeatInterval);
+                               _heartBeatInterval,
+                               _heartBeatInterval);
         }
 
         public static TransportHeartBeat Instance {
             get { return _instance; }
         }
 
-        public TimeSpan HeartBeatInterval { get; set; }
+        public TimeSpan HeartBeatInterval {
+            get { return _heartBeatInterval; }
+            set {
+                _heartBeatInterval = value;
+                if(_timer != null)
+                    _timer.Change(_heartBeatInterval, _heartBeatInterval);
+            }
+        }           
+        
 
         public void AddConnection(ITrackingDisconnect connection) {
             _connections.Remove(connection);
