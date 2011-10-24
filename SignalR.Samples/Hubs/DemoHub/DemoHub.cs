@@ -45,6 +45,15 @@ namespace SignalR.Samples.Hubs.DemoHub {
             });
         }
 
+        public void SimpleArray(int[] nums) {
+            foreach (var n in nums) {               
+            }
+        }
+
+        public void ComplexArray(Person[] people) {
+
+        }
+
         public Person ComplexType(Person p) {
             Caller.person = p;
             return p;

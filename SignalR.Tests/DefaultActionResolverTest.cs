@@ -92,6 +92,49 @@ namespace SignalR.Tests {
             Assert.Equal(34567, complex.Address.Zip);
         }
 
+        [Fact]
+        public void ResolveActionBindsSimpleArrayArgument() {
+            var resolver = new DefaultActionResolver();
+
+            var actionInfo = resolver.ResolveAction(typeof(TestHub),
+                                                    "MethodWithArray",
+                                                    new object[] { new object[] { 1, 2, 3 } });
+
+            Assert.NotNull(actionInfo);
+            var args = actionInfo.Arguments[0] as int[];
+            Assert.Equal(1, args[0]);
+            Assert.Equal(2, args[1]);
+            Assert.Equal(3, args[2]);
+        }
+
+        [Fact]
+        public void ResolveActionBindsComplexArrayArgument() {
+            var resolver = new DefaultActionResolver();
+            var arg = new Dictionary<string, object> {
+                { "Age", 1 },
+                { "Address",  new Dictionary<string, object> {
+                                { "Street",  "The street" },
+                                { "Zip", 34567 }
+                              } 
+                }
+            };
+
+
+            var actionInfo = resolver.ResolveAction(typeof(TestHub),
+                                                    "MethodWithArrayOfComplete",
+                                                    new object[] { new object[] { arg } });
+
+            Assert.NotNull(actionInfo);
+            var complexArray = actionInfo.Arguments[0] as Complex[];
+            Assert.Equal(1, complexArray.Length);
+            var complex = complexArray[0];
+            Assert.NotNull(complex);
+            Assert.Equal(1, complex.Age);
+            Assert.NotNull(complex.Address);
+            Assert.Equal("The street", complex.Address.Street);
+            Assert.Equal(34567, complex.Address.Zip);
+        }
+
         private class TestDerivedHub : TestHub {
             public void FooDerived() {
                 Foo();
@@ -113,6 +156,14 @@ namespace SignalR.Tests {
             }
 
             public void Bar(int x) {
+
+            }
+
+            public void MethodWithArray(int[] values) {
+
+            }
+
+            public void MethodWithArrayOfComplete(Complex[] complexes) {
 
             }
 

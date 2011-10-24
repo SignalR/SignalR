@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Web.Script.Serialization;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs {
     public class DefaultActionResolver : IActionResolver {
+        private JavaScriptSerializer _serializer = new JavaScriptSerializer();
+
         public ActionInfo ResolveAction(Type hubType, string actionName, object[] parameters) {
             // Get all methods
             var candidates = ReflectionHelper.GetExportedHubMethods(hubType)
@@ -39,23 +41,8 @@ namespace SignalR.Hubs {
                                  .ToArray();
         }
 
-        private object Bind(IDictionary<string, object> dictionaryValue, Type type) {
-            object obj = Activator.CreateInstance(type);
-            foreach (var property in type.GetProperties()) {
-                object value;
-                if (dictionaryValue.TryGetValue(property.Name, out value)) {
-                    property.SetValue(obj, Bind(value, property.PropertyType), null);
-                }
-            }
-            return obj;
-        }
-
         private object Bind(object value, Type type) {
-            var dictionaryValue = value as IDictionary<string, object>;
-            if (dictionaryValue != null) {
-                return Bind(new Dictionary<string, object>(dictionaryValue, StringComparer.OrdinalIgnoreCase), type);
-            }
-            return Convert.ChangeType(value, type);
+            return _serializer.ConvertToType(value, type);
         }
     }
 }

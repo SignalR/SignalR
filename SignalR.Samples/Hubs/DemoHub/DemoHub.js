@@ -24,7 +24,7 @@
 
     $.connection.hub.start(function () {
         demo.doSomethingAndCallError();
-        
+
         demo.getValue(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
@@ -40,6 +40,14 @@
         });
 
         demo.multipleCalls();
+
+        demo.simpleArray([5, 5, 6]).done(function () {
+            $('#simpleArray').html('Simple array works!');
+        });
+
+        demo.complexArray([p, p, p]).done(function () {
+            $('#complexArray').html('Complex array works!');
+        });
 
         demo.dynamicTask().fail(function () {
             $('#dynamicTask').html('The dynamic task failed :(');
