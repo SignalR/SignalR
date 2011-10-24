@@ -10,5 +10,5 @@
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyConfiguration("")]
 
-[assembly: AssemblyVersion("0.3.3.0")]
+[assembly: AssemblyVersion("0.3.4.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
