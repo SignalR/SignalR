@@ -29,11 +29,12 @@ namespace SignalR.Transports {
             get { return _heartBeatInterval; }
             set {
                 _heartBeatInterval = value;
-                if(_timer != null)
+                if (_timer != null) {
                     _timer.Change(_heartBeatInterval, _heartBeatInterval);
+                }
             }
-        }           
-        
+        }
+
 
         public void AddConnection(ITrackingDisconnect connection) {
             _connections.Remove(connection);
