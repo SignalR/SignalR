@@ -6,6 +6,8 @@
         <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
         <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
         <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+        <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
+        <XunitPath>$(ToolsPath)xunit\</XunitPath>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -13,8 +15,19 @@
         <MinorVersion>3</MinorVersion>
         <Version>$(MajorVersion).$(MinorVersion).4</Version>
     </PropertyGroup>
+    
+    <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
+               TaskName="Xunit.Runner.MSBuild.xunit" />
+               
+    <ItemGroup>
+        <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
+    </ItemGroup>
 
-    <Target Name="Go" DependsOnTargets="Build; BuildPackages">
+    <Target Name="Go" DependsOnTargets="Build; RunTests; BuildPackages">
+    </Target>
+    
+    <Target Name="RunTests">
+        <xunit Assembly="%(TestProjects.FullPath)" />
     </Target>
     
     <Target Name="CreateOutputDir">
