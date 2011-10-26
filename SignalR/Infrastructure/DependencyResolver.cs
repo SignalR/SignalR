@@ -67,16 +67,15 @@ namespace SignalR.Infrastructure {
             private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
 
             internal DefaultDependencyResolver() {
-                var store = new InProcessMessageStore();
+                var store = new Lazy<InProcessMessageStore>(() => new InProcessMessageStore());
 
-                Register(typeof(IMessageStore), () => store);
+                Register(typeof(IMessageStore), () => store.Value);
 
                 var serialzier = new JavaScriptSerializerAdapter(new JavaScriptSerializer {
                     MaxJsonLength = 30 * 1024 * 1024
                 });
 
                 Register(typeof(IJsonStringifier), () => serialzier);
-
 
                 Register(typeof(IActionResolver), () => new DefaultActionResolver());
                 Register(typeof(IHubActivator), () => new DefaultHubActivator());
