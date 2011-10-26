@@ -30,5 +30,9 @@ namespace SignalR.Infrastructure {
             object _;
             _items.TryRemove(item, out _);
         }
+
+        public bool Any() {
+            return _items.Any();
+        }
     }
 }

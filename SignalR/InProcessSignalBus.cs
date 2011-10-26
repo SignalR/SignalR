@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
@@ -12,7 +13,7 @@ namespace SignalR {
 
         private void OnSignaled(string eventKey) {
             SafeSet<EventHandler<SignaledEventArgs>> handlers;
-            if (_handlers.TryGetValue(eventKey, out handlers)) {
+            if (_handlers.TryGetValue(eventKey, out handlers) && handlers.Any()) {
                 Parallel.ForEach(handlers.GetSnapshot(), handler => handler(this, new SignaledEventArgs(eventKey)));
             }
         }
