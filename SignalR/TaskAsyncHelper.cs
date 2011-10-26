@@ -3,22 +3,30 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SignalR {
-    internal static class TaskAsyncHelper {
-        private static Task MakeEmpty() {
+namespace SignalR
+{
+    internal static class TaskAsyncHelper
+    {
+        private static Task MakeEmpty()
+        {
             return FromResult<object>(null);
         }
 
-        public static Task Empty {
-            get {
+        public static Task Empty
+        {
+            get
+            {
                 // we have to return a new one every time, other wise the task will be disposed
                 return MakeEmpty();
             }
         }
 
-        public static Task Catch(this Task task) {
-            return task.ContinueWith(t => {
-                if (t != null && t.IsFaulted) {
+        public static Task Catch(this Task task)
+        {
+            return task.ContinueWith(t =>
+            {
+                if (t != null && t.IsFaulted)
+                {
                     var ex = t.Exception;
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
                 }
@@ -26,9 +34,12 @@ namespace SignalR {
             }).Unwrap();
         }
 
-        public static Task<T> Catch<T>(this Task<T> task) {
-            return task.ContinueWith(t => {
-                if (t != null && t.IsFaulted) {
+        public static Task<T> Catch<T>(this Task<T> task)
+        {
+            return task.ContinueWith(t =>
+            {
+                if (t != null && t.IsFaulted)
+                {
                     var ex = t.Exception;
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
                 }
@@ -37,54 +48,71 @@ namespace SignalR {
             .Unwrap();
         }
 
-        public static Task Success(this Task task, Action<Task> successor) {
-            return task.ContinueWith(_ => {
-                if (task.IsCanceled || task.IsFaulted) {
+        public static Task Success(this Task task, Action<Task> successor)
+        {
+            return task.ContinueWith(_ =>
+            {
+                if (task.IsCanceled || task.IsFaulted)
+                {
                     return task;
                 }
                 return Task.Factory.StartNew(() => successor(task));
             }).Unwrap();
         }
 
-        public static Task Success<TResult>(this Task<TResult> task, Action<Task<TResult>> successor) {
-            return task.ContinueWith(_ => {
-                if (task.IsCanceled || task.IsFaulted) {
+        public static Task Success<TResult>(this Task<TResult> task, Action<Task<TResult>> successor)
+        {
+            return task.ContinueWith(_ =>
+            {
+                if (task.IsCanceled || task.IsFaulted)
+                {
                     return task;
                 }
                 return Task.Factory.StartNew(() => successor(task));
             }).Unwrap();
         }
 
-        public static Task<TResult> Success<TResult>(this Task task, Func<Task, TResult> successor) {
-            return task.ContinueWith(_ => {
-                if (task.IsFaulted) {
+        public static Task<TResult> Success<TResult>(this Task task, Func<Task, TResult> successor)
+        {
+            return task.ContinueWith(_ =>
+            {
+                if (task.IsFaulted)
+                {
                     return FromError<TResult>(task.Exception);
                 }
-                if (task.IsCanceled) {
+                if (task.IsCanceled)
+                {
                     return Cancelled<TResult>();
                 }
                 return Task.Factory.StartNew(() => successor(task));
             }).Unwrap();
         }
 
-        public static Task<TResult> Success<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor) {
-            return task.ContinueWith(_ => {
-                if (task.IsFaulted) {
+        public static Task<TResult> Success<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor)
+        {
+            return task.ContinueWith(_ =>
+            {
+                if (task.IsFaulted)
+                {
                     return FromError<TResult>(task.Exception);
                 }
-                if (task.IsCanceled) {
+                if (task.IsCanceled)
+                {
                     return Cancelled<TResult>();
                 }
                 return Task.Factory.StartNew(() => successor(task));
             }).Unwrap();
         }
 
-        public static Task AllSucceeded(this Task[] tasks, Action continuation) {
+        public static Task AllSucceeded(this Task[] tasks, Action continuation)
+        {
             return AllSucceeded(tasks, _ => continuation());
         }
 
-        public static Task AllSucceeded(this Task[] tasks, Action<Task[]> continuation) {
-            return Task.Factory.ContinueWhenAll(tasks, _ => {
+        public static Task AllSucceeded(this Task[] tasks, Action<Task[]> continuation)
+        {
+            return Task.Factory.ContinueWhenAll(tasks, _ =>
+            {
                 var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
                 if (cancelledTask != null)
                     throw new TaskCanceledException();
@@ -92,7 +120,8 @@ namespace SignalR {
                 var allExceptions =
                     tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
 
-                if (allExceptions.Count > 0) {
+                if (allExceptions.Count > 0)
+                {
                     throw new AggregateException(allExceptions);
                 }
 
@@ -101,8 +130,10 @@ namespace SignalR {
             }).Unwrap();
         }
 
-        public static Task<T> AllSucceeded<T>(this Task[] tasks, Func<T> continuation) {
-            return Task.Factory.ContinueWhenAll(tasks, _ => {
+        public static Task<T> AllSucceeded<T>(this Task[] tasks, Func<T> continuation)
+        {
+            return Task.Factory.ContinueWhenAll(tasks, _ =>
+            {
                 var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
                 if (cancelledTask != null)
                     throw new TaskCanceledException();
@@ -110,7 +141,8 @@ namespace SignalR {
                 var allExceptions =
                     tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
 
-                if (allExceptions.Count > 0) {
+                if (allExceptions.Count > 0)
+                {
                     throw new AggregateException(allExceptions);
                 }
 
@@ -119,19 +151,22 @@ namespace SignalR {
             }).Unwrap();
         }
 
-        public static Task<T> FromResult<T>(T value) {
+        public static Task<T> FromResult<T>(T value)
+        {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetResult(value);
             return tcs.Task;
         }
 
-        private static Task<T> FromError<T>(Exception e) {
+        private static Task<T> FromError<T>(Exception e)
+        {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetException(e);
             return tcs.Task;
         }
 
-        private static Task<T> Cancelled<T>() {
+        private static Task<T> Cancelled<T>()
+        {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetCanceled();
             return tcs.Task;

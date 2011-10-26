@@ -3,14 +3,18 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
 
-namespace SignalR.Samples.Raw {
-    public class Raw : PersistentConnection {
+namespace SignalR.Samples.Raw
+{
+    public class Raw : PersistentConnection
+    {
         private static readonly Dictionary<string, string> _users = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _clients = new Dictionary<string, string>();
 
-        protected override Task OnConnectedAsync(HttpContextBase context, string clientId) {
+        protected override Task OnConnectedAsync(HttpContextBase context, string clientId)
+        {
             var cookie = context.Request.Cookies["user"];
-            if (cookie != null) {
+            if (cookie != null)
+            {
                 _clients[clientId] = cookie.Value;
                 _users[cookie.Value] = clientId;
             }
@@ -20,25 +24,30 @@ namespace SignalR.Samples.Raw {
             return Connection.Broadcast(user + " joined");
         }
 
-        protected override Task OnDisconnectAsync(string clientId) {
+        protected override Task OnDisconnectAsync(string clientId)
+        {
             _users.Remove(clientId);
             return Connection.Broadcast(GetUser(clientId) + " disconnected");
         }
 
-        protected override void OnReceived(string clientId, string data) {
+        protected override void OnReceived(string clientId, string data)
+        {
             var serializer = new JavaScriptSerializer();
             var message = serializer.Deserialize<Message>(data);
 
-            switch (message.Type) {
+            switch (message.Type)
+            {
                 case MessageType.Broadcast:
-                    Connection.Broadcast(new {
+                    Connection.Broadcast(new
+                    {
                         type = MessageType.Broadcast,
                         from = GetUser(clientId),
                         data = message.Value
                     });
                     break;
                 case MessageType.Send:
-                    Send(new {
+                    Send(new
+                    {
                         type = MessageType.Send,
                         from = GetUser(clientId),
                         data = message.Value
@@ -48,7 +57,8 @@ namespace SignalR.Samples.Raw {
                     string name = message.Value;
                     _clients[clientId] = name;
                     _users[name] = clientId;
-                    Send(new {
+                    Send(new
+                    {
                         type = MessageType.Join,
                         data = message.Value
                     });
@@ -58,7 +68,8 @@ namespace SignalR.Samples.Raw {
                     string user = parts[0];
                     string msg = parts[1];
                     string id = GetClient(user);
-                    Send(id, new {
+                    Send(id, new
+                    {
                         from = GetUser(clientId),
                         data = msg
                     });
@@ -80,23 +91,28 @@ namespace SignalR.Samples.Raw {
             }
         }
 
-        private string GetUser(string clientId) {
+        private string GetUser(string clientId)
+        {
             string user;
-            if (!_clients.TryGetValue(clientId, out user)) {
+            if (!_clients.TryGetValue(clientId, out user))
+            {
                 return clientId;
             }
             return user;
         }
 
-        private string GetClient(string user) {
+        private string GetClient(string user)
+        {
             string clientId;
-            if (_users.TryGetValue(user, out clientId)) {
+            if (_users.TryGetValue(user, out clientId))
+            {
                 return clientId;
             }
             return null;
         }
 
-        enum MessageType {
+        enum MessageType
+        {
             Send,
             Broadcast,
             Join,
@@ -106,7 +122,8 @@ namespace SignalR.Samples.Raw {
             SendToGroup
         }
 
-        class Message {
+        class Message
+        {
             public MessageType Type { get; set; }
             public string Value { get; set; }
         }

@@ -4,18 +4,24 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace SignalR.Samples.Hubs.Chat.ContentProviders {
-    public abstract class EmbedContentProvider : IContentProvider {
-        public virtual Regex MediaUrlRegex {
-            get {
+namespace SignalR.Samples.Hubs.Chat.ContentProviders
+{
+    public abstract class EmbedContentProvider : IContentProvider
+    {
+        public virtual Regex MediaUrlRegex
+        {
+            get
+            {
                 return null;
             }
         }
         public abstract IEnumerable<string> Domains { get; }
         public abstract string MediaFormatSting { get; }
 
-        protected virtual IEnumerable<object> ExtractParameters(Uri responseUri) {
-            if (MediaUrlRegex != null) {
+        protected virtual IEnumerable<object> ExtractParameters(Uri responseUri)
+        {
+            if (MediaUrlRegex != null)
+            {
                 return MediaUrlRegex.Match(responseUri.AbsoluteUri)
                                     .Groups
                                     .Cast<Group>()
@@ -26,10 +32,13 @@ namespace SignalR.Samples.Hubs.Chat.ContentProviders {
             return null;
         }
 
-        public string GetContent(HttpWebResponse response) {
-            if (Domains.Any(d => response.ResponseUri.AbsoluteUri.StartsWith(d, StringComparison.OrdinalIgnoreCase))) {
+        public string GetContent(HttpWebResponse response)
+        {
+            if (Domains.Any(d => response.ResponseUri.AbsoluteUri.StartsWith(d, StringComparison.OrdinalIgnoreCase)))
+            {
                 var args = ExtractParameters(response.ResponseUri);
-                if (args == null || !args.Any()) {
+                if (args == null || !args.Any())
+                {
                     return null;
                 }
 

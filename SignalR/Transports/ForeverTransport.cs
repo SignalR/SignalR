@@ -2,12 +2,15 @@
 using System.Threading.Tasks;
 using System.Web;
 
-namespace SignalR.Transports {
-    public class ForeverTransport : ITransport {
+namespace SignalR.Transports
+{
+    public class ForeverTransport : ITransport
+    {
         private readonly IJsonStringifier _jsonStringifier;
         private readonly HttpContextBase _context;
 
-        public ForeverTransport(HttpContextBase context, IJsonStringifier jsonStringifier) {
+        public ForeverTransport(HttpContextBase context, IJsonStringifier jsonStringifier)
+        {
             _context = context;
             _jsonStringifier = jsonStringifier;
         }
@@ -20,15 +23,20 @@ namespace SignalR.Transports {
 
         public event Action<Exception> Error;
 
-        public Func<Task> ProcessRequest(IConnection connection) {
-            if (_context.Request.Path.EndsWith("/send")) {
+        public Func<Task> ProcessRequest(IConnection connection)
+        {
+            if (_context.Request.Path.EndsWith("/send"))
+            {
                 string data = _context.Request["data"];
-                if (Received != null) {
+                if (Received != null)
+                {
                     Received(data);
                 }
             }
-            else {
-                if (Connected != null) {
+            else
+            {
+                if (Connected != null)
+                {
                     Connected();
                 }
 
@@ -42,21 +50,26 @@ namespace SignalR.Transports {
             return null;
         }
 
-        private Task ProcessMessages(IConnection connection) {
-            if (_context.Response.IsClientConnected) {
-                return connection.ReceiveAsync().ContinueWith(t => {
+        private Task ProcessMessages(IConnection connection)
+        {
+            if (_context.Response.IsClientConnected)
+            {
+                return connection.ReceiveAsync().ContinueWith(t =>
+                {
                     Send(t.Result);
                     return ProcessMessages(connection);
                 }).Unwrap();
             }
 
-            if (Disconnected != null) {
+            if (Disconnected != null)
+            {
                 Disconnected();
             }
             return TaskAsyncHelper.Empty;
         }
 
-        public void Send(object value) {
+        public void Send(object value)
+        {
             _context.Response.Write(_jsonStringifier.Stringify(value));
         }
     }

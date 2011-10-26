@@ -7,10 +7,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SignalR.Samples.SignalRSamples {
+namespace SignalR.Samples.SignalRSamples
+{
 
 
-    public partial class SignalRSamples {
+    public partial class SignalRSamples
+    {
 
         /// <summary>
         /// HeadContent control.

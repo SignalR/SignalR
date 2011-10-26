@@ -1,10 +1,13 @@
 ﻿using System.Linq;
 using Xunit;
 
-namespace SignalR.Tests {
-    public class InProcessMessageStoreTest {
+namespace SignalR.Tests
+{
+    public class InProcessMessageStoreTest
+    {
         [Fact]
-        public void GetAllSinceReturnsAllMessagesAfterIdOrderedById() {
+        public void GetAllSinceReturnsAllMessagesAfterIdOrderedById()
+        {
             var store = new InProcessMessageStore(garbageCollectMessages: false);
 
             store.Save("a", "1").Wait();
@@ -18,22 +21,26 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void GetAllSinceReturnsAllMessagesIfIdGreaterThanMaxId() {
+        public void GetAllSinceReturnsAllMessagesIfIdGreaterThanMaxId()
+        {
             var store = new InProcessMessageStore(garbageCollectMessages: false);
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 10; i++)
+            {
                 store.Save("a", i).Wait();
             }
 
             var messages = store.GetAllSince("a", 100).Result.ToList();
             Assert.Equal(10, messages.Count);
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 10; i++)
+            {
                 Assert.Equal(i, messages[i].Value);
             }
         }
 
         [Fact]
-        public void GetLastIdReturnsMaxMessageId() {
+        public void GetLastIdReturnsMaxMessageId()
+        {
             var store = new InProcessMessageStore(garbageCollectMessages: false);
 
             store.Save("a", "1").Wait();

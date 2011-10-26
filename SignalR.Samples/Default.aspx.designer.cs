@@ -7,9 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SignalR.Samples {
+namespace SignalR.Samples
+{
 
 
-    public partial class _Default {
+    public partial class _Default
+    {
     }
 }

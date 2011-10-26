@@ -3,16 +3,20 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Client.Transports;
 
-namespace SignalR.Client {
-    public class Connection {
+namespace SignalR.Client
+{
+    public class Connection
+    {
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
 
         private readonly IClientTransport _transport = new LongPollingTransport();
 
-        public Connection(string url) {
-            if (!url.EndsWith("/")) {
+        public Connection(string url)
+        {
+            if (!url.EndsWith("/"))
+            {
                 url += "/";
             }
 
@@ -29,8 +33,10 @@ namespace SignalR.Client {
 
         public string ClientId { get; set; }
 
-        public virtual Task Start() {
-            if (IsActive) {
+        public virtual Task Start()
+        {
+            if (IsActive)
+            {
                 return TaskAsyncHelper.Empty;
             }
 
@@ -38,13 +44,15 @@ namespace SignalR.Client {
 
             string data = null;
 
-            if (Sending != null) {
+            if (Sending != null)
+            {
                 data = Sending();
             }
 
             string negotiateUrl = Url + "negotiate";
 
-            return HttpHelper.PostAsync(negotiateUrl).Success(task => {
+            return HttpHelper.PostAsync(negotiateUrl).Success(task =>
+            {
                 string raw = task.Result.ReadAsString();
 
                 var negotiationResponse = JsonConvert.DeserializeObject<NegotiationResponse>(raw);
@@ -55,35 +63,45 @@ namespace SignalR.Client {
             });
         }
 
-        public virtual void Stop() {
-            try {
+        public virtual void Stop()
+        {
+            try
+            {
                 _transport.Stop(this);
 
-                if (Closed != null) {
+                if (Closed != null)
+                {
                     Closed();
                 }
             }
-            finally {
+            finally
+            {
                 IsActive = false;
             }
         }
 
-        public Task Send(string data) {
+        public Task Send(string data)
+        {
             return Send<object>(data);
         }
 
-        public Task<T> Send<T>(string data) {
+        public Task<T> Send<T>(string data)
+        {
             return _transport.Send<T>(this, data);
         }
 
-        internal void RaiseOnReceived(string message) {
-            if (Received != null) {
+        internal void RaiseOnReceived(string message)
+        {
+            if (Received != null)
+            {
                 Received(message);
             }
         }
 
-        internal void RaiseOnError(Exception error) {
-            if (Error != null) {
+        internal void RaiseOnError(Exception error)
+        {
+            if (Error != null)
+            {
                 Error(error);
             }
         }

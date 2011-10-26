@@ -2,10 +2,13 @@
 using SignalR.Hubs;
 using Xunit;
 
-namespace SignalR.Tests {
-    public class DefaultActionResolverTest {
+namespace SignalR.Tests
+{
+    public class DefaultActionResolverTest
+    {
         [Fact]
-        public void ResolveActionExcludeHubMethods() {
+        public void ResolveActionExcludeHubMethods()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo1 = resolver.ResolveAction(typeof(TestHub), "AddToGroup", new object[] { "admin" });
             var actionInfo2 = resolver.ResolveAction(typeof(TestHub), "RemoveFromGroup", new object[] { "admin" });
@@ -15,7 +18,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionOnDerivedHubFindsMethodOnBasedType() {
+        public void ResolveActionOnDerivedHubFindsMethodOnBasedType()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo = resolver.ResolveAction(typeof(TestDerivedHub), "Foo", new object[] { });
 
@@ -25,7 +29,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionExcludesPropertiesOnDeclaredType() {
+        public void ResolveActionExcludesPropertiesOnDeclaredType()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo = resolver.ResolveAction(typeof(TestHub), "get_Value", new object[] { });
 
@@ -33,7 +38,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionExcludesPropetiesOnBaseTypes() {
+        public void ResolveActionExcludesPropetiesOnBaseTypes()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo = resolver.ResolveAction(typeof(TestHub), "get_Clients", new object[] { });
 
@@ -41,7 +47,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionLocatesPublicMethodsOnHub() {
+        public void ResolveActionLocatesPublicMethodsOnHub()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo = resolver.ResolveAction(typeof(TestHub), "Foo", new object[] { });
 
@@ -51,7 +58,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionReturnsNullIfMethodAmbiguous() {
+        public void ResolveActionReturnsNullIfMethodAmbiguous()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo = resolver.ResolveAction(typeof(TestHub), "Bar", new object[] { 1 });
 
@@ -59,7 +67,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionPicksMethodWithMatchingArguments() {
+        public void ResolveActionPicksMethodWithMatchingArguments()
+        {
             var resolver = new DefaultActionResolver();
             var actionInfo = resolver.ResolveAction(typeof(TestHub), "Foo", new object[] { 1 });
 
@@ -70,7 +79,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionBindsComplexArgumentsWithDictionary() {
+        public void ResolveActionBindsComplexArgumentsWithDictionary()
+        {
             var resolver = new DefaultActionResolver();
             var arg = new Dictionary<string, object> {
                 { "Age", 1 },
@@ -93,7 +103,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionBindsSimpleArrayArgument() {
+        public void ResolveActionBindsSimpleArrayArgument()
+        {
             var resolver = new DefaultActionResolver();
 
             var actionInfo = resolver.ResolveAction(typeof(TestHub),
@@ -108,7 +119,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ResolveActionBindsComplexArrayArgument() {
+        public void ResolveActionBindsComplexArrayArgument()
+        {
             var resolver = new DefaultActionResolver();
             var arg = new Dictionary<string, object> {
                 { "Age", 1 },
@@ -135,49 +147,61 @@ namespace SignalR.Tests {
             Assert.Equal(34567, complex.Address.Zip);
         }
 
-        private class TestDerivedHub : TestHub {
-            public void FooDerived() {
+        private class TestDerivedHub : TestHub
+        {
+            public void FooDerived()
+            {
                 Foo();
             }
         }
 
-        private class TestHub : Hub {
+        private class TestHub : Hub
+        {
             public int Value { get; set; }
 
-            public void Foo() {
+            public void Foo()
+            {
             }
 
-            public void Foo(int x) {
-
-            }
-
-            public void Bar(double d) {
-
-            }
-
-            public void Bar(int x) {
+            public void Foo(int x)
+            {
 
             }
 
-            public void MethodWithArray(int[] values) {
+            public void Bar(double d)
+            {
 
             }
 
-            public void MethodWithArrayOfComplete(Complex[] complexes) {
+            public void Bar(int x)
+            {
 
             }
 
-            public void MethodWithComplex(Complex complex) {
+            public void MethodWithArray(int[] values)
+            {
+
+            }
+
+            public void MethodWithArrayOfComplete(Complex[] complexes)
+            {
+
+            }
+
+            public void MethodWithComplex(Complex complex)
+            {
 
             }
         }
 
-        public class Complex {
+        public class Complex
+        {
             public int Age { get; set; }
             public Address Address { get; set; }
         }
 
-        public class Address {
+        public class Address
+        {
             public string Street { get; set; }
             public int Zip { get; set; }
         }

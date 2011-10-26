@@ -5,34 +5,43 @@ using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hubs;
 
-namespace SignalR.Samples.Hubs.ShapeShare {
-    public class ShapeShare : Hub {
+namespace SignalR.Samples.Hubs.ShapeShare
+{
+    public class ShapeShare : Hub
+    {
         private static ConcurrentDictionary<string, User> _users = new ConcurrentDictionary<string, User>(StringComparer.OrdinalIgnoreCase);
         private static List<Shape> _shapes = new List<Shape>();
         private static Random _userNameGenerator = new Random();
 
-        public IEnumerable<Shape> GetShapes() {
+        public IEnumerable<Shape> GetShapes()
+        {
             return _shapes;
         }
 
-        public void Join(string userName) {
+        public void Join(string userName)
+        {
             User user = null;
-            if (string.IsNullOrWhiteSpace(userName)) {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
                 user = new User();
-                do {
+                do
+                {
                     user.Name = "User" + _userNameGenerator.Next(1000);
                 } while (!_users.TryAdd(user.Name, user));
             }
-            else if (!_users.TryGetValue(userName, out user)) {
+            else if (!_users.TryGetValue(userName, out user))
+            {
                 user = new User { Name = userName };
                 _users.TryAdd(userName, user);
             }
             Caller.user = user;
         }
 
-        public void ChangeUserName(string currentUserName, string newUserName) {
+        public void ChangeUserName(string currentUserName, string newUserName)
+        {
             User user;
-            if (!string.IsNullOrEmpty(newUserName) && _users.TryGetValue(currentUserName, out user)) {
+            if (!string.IsNullOrEmpty(newUserName) && _users.TryGetValue(currentUserName, out user))
+            {
                 user.Name = newUserName;
                 User oldUser;
                 _users.TryRemove(currentUserName, out oldUser);
@@ -42,7 +51,8 @@ namespace SignalR.Samples.Hubs.ShapeShare {
             }
         }
 
-        public void CreateShape(string type = "rectangle") {
+        public void CreateShape(string type = "rectangle")
+        {
             var user = _users[Caller.user["Name"]];
             var shape = Shape.Create(type);
             shape.ChangedBy = user;
@@ -50,16 +60,19 @@ namespace SignalR.Samples.Hubs.ShapeShare {
 
             Task task = Clients.shapeAdded(shape);
             task.Wait();
-            if (task.Exception != null) {
+            if (task.Exception != null)
+            {
                 throw task.Exception;
             }
         }
 
-        public void ChangeShape(string id, int x, int y, int w, int h) {
+        public void ChangeShape(string id, int x, int y, int w, int h)
+        {
             if (w <= 0 || h <= 0) return;
 
             var shape = FindShape(id);
-            if (shape == null) {
+            if (shape == null)
+            {
                 return;
             }
 
@@ -73,14 +86,17 @@ namespace SignalR.Samples.Hubs.ShapeShare {
 
             Task task = Clients.shapeChanged(shape);
             task.Wait();
-            if (task.Exception != null) {
+            if (task.Exception != null)
+            {
                 throw task.Exception;
             }
         }
 
-        public void DeleteShape(string id) {
+        public void DeleteShape(string id)
+        {
             var shape = FindShape(id);
-            if (shape == null) {
+            if (shape == null)
+            {
                 return;
             }
 
@@ -89,7 +105,8 @@ namespace SignalR.Samples.Hubs.ShapeShare {
             Clients.shapeDeleted(id);
         }
 
-        public void DeleteAllShapes() {
+        public void DeleteAllShapes()
+        {
             var shapes = _shapes.Select(s => new { id = s.ID }).ToList();
 
             _shapes.Clear();
@@ -97,21 +114,25 @@ namespace SignalR.Samples.Hubs.ShapeShare {
             Clients.shapesDeleted(shapes);
         }
 
-        private Shape FindShape(string id) {
+        private Shape FindShape(string id)
+        {
             return _shapes.Find(s => s.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
     }
 
-    public class User {
+    public class User
+    {
         public string ID { get; private set; }
         public string Name { get; set; }
 
-        public User() {
+        public User()
+        {
             ID = Guid.NewGuid().ToString("d");
         }
     }
 
-    public abstract class Shape {
+    public abstract class Shape
+    {
         public string ID { get; private set; }
         public Point Location { get; set; }
         public virtual int Width { get; set; }
@@ -119,13 +140,16 @@ namespace SignalR.Samples.Hubs.ShapeShare {
         public string Type { get { return GetType().Name.ToLower(); } }
         public User ChangedBy { get; set; }
 
-        public Shape() {
+        public Shape()
+        {
             ID = Guid.NewGuid().ToString("d");
             Location = new Point(20, 20);
         }
 
-        public static Shape Create(string type) {
-            switch (type) {
+        public static Shape Create(string type)
+        {
+            switch (type)
+            {
                 case "picture":
                     return new Picture();
                 case "circle":
@@ -139,74 +163,93 @@ namespace SignalR.Samples.Hubs.ShapeShare {
         }
     }
 
-    public abstract class WidthHeightFixed : Shape {
-        public override int Height {
-            get {
+    public abstract class WidthHeightFixed : Shape
+    {
+        public override int Height
+        {
+            get
+            {
                 return base.Height;
             }
-            set {
+            set
+            {
                 base.Height = value;
                 base.Width = value;
             }
         }
 
-        public override int Width {
-            get {
+        public override int Width
+        {
+            get
+            {
                 return base.Width;
             }
-            set {
+            set
+            {
                 base.Width = value;
                 base.Height = value;
             }
         }
     }
 
-    public class Rectangle : Shape {
+    public class Rectangle : Shape
+    {
         public Rectangle()
-            : base() {
+            : base()
+        {
             Width = 160;
             Height = 100;
         }
     }
 
-    public class Square : WidthHeightFixed {
+    public class Square : WidthHeightFixed
+    {
         public Square()
-            : base() {
+            : base()
+        {
             Width = 100;
         }
     }
 
-    public class Circle : WidthHeightFixed {
-        public int Radius {
+    public class Circle : WidthHeightFixed
+    {
+        public int Radius
+        {
             get { return base.Width / 2; }
-            set {
+            set
+            {
                 base.Height = value * 2;
                 base.Width = value * 2;
             }
         }
 
         public Circle()
-            : base() {
+            : base()
+        {
             Width = 100;
         }
     }
 
-    public class Picture : Shape {
+    public class Picture : Shape
+    {
         public string Src { get; set; }
 
         public Picture()
-            : base() {
+            : base()
+        {
             Src = "http://www.w3.org/html/logo/badge/html5-badge-h-css3-semantics.png";
             Width = 165;
             Height = 64;
         }
     }
 
-    public class Point {
+    public class Point
+    {
         public int X { get; set; }
         public int Y { get; set; }
 
-        public Point(int x, int y) {
+        public Point(int x, int y)
+        {
             X = x;
             Y = y;
         }

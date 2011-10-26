@@ -7,11 +7,15 @@ using SignalR.Web;
 
 [assembly: PreApplicationStartMethod(typeof(PreApplicationStart), "Start")]
 
-namespace SignalR.ScaleOut {
-    public static class PreApplicationStart {
+namespace SignalR.ScaleOut
+{
+    public static class PreApplicationStart
+    {
 
-        public static void Start() {
-            var serializer = new JavaScriptSerializerAdapter(new JavaScriptSerializer {
+        public static void Start()
+        {
+            var serializer = new JavaScriptSerializerAdapter(new JavaScriptSerializer
+            {
                 MaxJsonLength = 30 * 1024 * 1024
             });
             DependencyResolver.Register(typeof(IPeerUrlSource), () => new ConfigPeerUrlSource());

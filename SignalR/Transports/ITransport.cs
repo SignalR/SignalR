@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SignalR.Transports {
-    public interface ITransport {
+namespace SignalR.Transports
+{
+    public interface ITransport
+    {
         event Action<string> Received;
         event Action Connected;
         event Action Disconnected;

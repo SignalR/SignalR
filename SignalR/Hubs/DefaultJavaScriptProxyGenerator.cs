@@ -8,8 +8,10 @@ using System.Text;
 using System.Web;
 using SignalR.Infrastructure;
 
-namespace SignalR.Hubs {
-    public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator {
+namespace SignalR.Hubs
+{
+    public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator
+    {
         private static readonly Lazy<string> _template = new Lazy<string>(GetTemplate);
         private static readonly ConcurrentDictionary<string, string> _scriptCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -18,14 +20,17 @@ namespace SignalR.Hubs {
         private readonly IHubLocator _hubLocator;
         private readonly IJavaScriptMinifier _javascriptMinifier;
 
-        public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator, IJavaScriptMinifier javascriptMinifier) {
+        public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator, IJavaScriptMinifier javascriptMinifier)
+        {
             _hubLocator = hubLocator;
             _javascriptMinifier = javascriptMinifier;
         }
 
-        public string GenerateProxy(HttpContextBase context, string serviceUrl) {
+        public string GenerateProxy(HttpContextBase context, string serviceUrl)
+        {
             string script;
-            if (_scriptCache.TryGetValue(serviceUrl, out script)) {
+            if (_scriptCache.TryGetValue(serviceUrl, out script))
+            {
                 return script;
             }
 
@@ -35,8 +40,10 @@ namespace SignalR.Hubs {
 
             var hubs = new StringBuilder();
             var first = true;
-            foreach (var type in _hubLocator.GetHubs()) {
-                if (!first) {
+            foreach (var type in _hubLocator.GetHubs())
+            {
+                if (!first)
+                {
                     hubs.AppendLine(",");
                     hubs.Append("        ");
                 }
@@ -46,7 +53,8 @@ namespace SignalR.Hubs {
 
             script = script.Replace("/*hubs*/", hubs.ToString());
 
-            if (!context.IsDebuggingEnabled) {
+            if (!context.IsDebuggingEnabled)
+            {
                 script = _javascriptMinifier.Minify(script);
             }
 
@@ -55,7 +63,8 @@ namespace SignalR.Hubs {
             return script;
         }
 
-        private void GenerateType(string serviceUrl, StringBuilder sb, Type type) {
+        private void GenerateType(string serviceUrl, StringBuilder sb, Type type)
+        {
             // Get public instance methods declared on this type only
             var methods = GetMethods(type);
             var members = methods.Select(m => m.Name).ToList();
@@ -69,13 +78,16 @@ namespace SignalR.Hubs {
             sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
             sb.AppendLine("                connection: function () { return signalR.hub; }");
             sb.AppendFormat("            }}").AppendLine();
-            if (methods.Any()) {
+            if (methods.Any())
+            {
                 sb.Append(",");
             }
             bool first = true;
 
-            foreach (var method in methods) {                
-                if (!first) {
+            foreach (var method in methods)
+            {
+                if (!first)
+                {
                     sb.Append(",").AppendLine();
                 }
                 GenerateMethod(serviceUrl, sb, type, method);
@@ -85,15 +97,18 @@ namespace SignalR.Hubs {
             sb.Append("        }");
         }
 
-        protected virtual string GetHubName(Type type) {
+        protected virtual string GetHubName(Type type)
+        {
             return GetAttributeValue<HubNameAttribute, string>(type, a => a.HubName) ?? Json.CamelCase(type.Name);
         }
 
-        protected virtual IEnumerable<MethodInfo> GetMethods(Type type) {
+        protected virtual IEnumerable<MethodInfo> GetMethods(Type type)
+        {
             return ReflectionHelper.GetExportedHubMethods(type);
         }
 
-        private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method) {
+        private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method)
+        {
             var parameters = method.GetParameters();
             var parameterNames = parameters.Select(p => p.Name).ToList();
             parameterNames.Add("callback");
@@ -103,32 +118,40 @@ namespace SignalR.Hubs {
             sb.Append("            }");
         }
 
-        private static string GetMethodName(MethodInfo method) {
+        private static string GetMethodName(MethodInfo method)
+        {
             return GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName) ?? Json.CamelCase(method.Name);
         }
 
         private static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
-            where TAttribute : Attribute {
+            where TAttribute : Attribute
+        {
             var attributes = source.GetCustomAttributes(typeof(TAttribute), false)
                 .Cast<TAttribute>()
                 .ToList();
-            if (attributes.Any()) {
+            if (attributes.Any())
+            {
                 return valueGetter(attributes[0]);
             }
             return default(TResult);
         }
 
-        private static string Commas(IEnumerable<string> values) {
+        private static string Commas(IEnumerable<string> values)
+        {
             return Commas(values, v => v);
         }
 
-        private static string Commas<T>(IEnumerable<T> values, Func<T, string> selector) {
+        private static string Commas<T>(IEnumerable<T> values, Func<T, string> selector)
+        {
             return String.Join(", ", values.Select(selector));
         }
 
-        private static string GetTemplate() {
-            using (Stream resourceStream = typeof(DefaultJavaScriptProxyGenerator).Assembly.GetManifestResourceStream(ScriptResource)) {
-                using (var reader = new StreamReader(resourceStream)) {
+        private static string GetTemplate()
+        {
+            using (Stream resourceStream = typeof(DefaultJavaScriptProxyGenerator).Assembly.GetManifestResourceStream(ScriptResource))
+            {
+                using (var reader = new StreamReader(resourceStream))
+                {
                     return reader.ReadToEnd();
                 }
             }

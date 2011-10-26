@@ -7,9 +7,12 @@ using SignalR.Samples.Hubs.DemoHub;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof(Startup), "Start")]
 
-namespace SignalR.Samples.App_Start {
-    public class Startup {
-        public static void Start() {
+namespace SignalR.Samples.App_Start
+{
+    public class Startup
+    {
+        public static void Start()
+        {
 
             // Uncomment this for web farm support
             //var cs = ConfigurationManager.ConnectionStrings["SignalR"].ConnectionString;
@@ -17,15 +20,19 @@ namespace SignalR.Samples.App_Start {
             //DependencyResolver.Register(typeof(ISignalBus), () => store);
             //DependencyResolver.Register(typeof(IMessageStore), () => store);
 
-            ThreadPool.QueueUserWorkItem(_ => {
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
                 var connection = Connection.GetConnection<Streaming.Streaming>();
                 var demoClients = Hub.GetClients<DemoHub>();
-                while (true) {
-                    try {
+                while (true)
+                {
+                    try
+                    {
                         connection.Broadcast(DateTime.Now.ToString());
                         demoClients.fromArbitraryCode(DateTime.Now.ToString());
                     }
-                    catch (Exception ex) {
+                    catch (Exception ex)
+                    {
                         Trace.TraceError("SignalR error thrown in Streaming broadcast: {0}", ex);
                     }
                     Thread.Sleep(2000);

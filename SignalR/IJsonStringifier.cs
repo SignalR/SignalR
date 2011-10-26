@@ -1,6 +1,8 @@
 ﻿
-namespace SignalR {
-    public interface IJsonStringifier {
+namespace SignalR
+{
+    public interface IJsonStringifier
+    {
         string Stringify(object obj);
     }
 }

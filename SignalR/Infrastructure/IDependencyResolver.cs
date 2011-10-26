@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SignalR.Infrastructure {
-    public interface IDependencyResolver {
+namespace SignalR.Infrastructure
+{
+    public interface IDependencyResolver
+    {
         object GetService(Type serviceType);
         IEnumerable<object> GetServices(Type serviceType);
         void Register(Type serviceType, Func<object> activator);

@@ -4,10 +4,13 @@ using Moq;
 using SignalR.Transports;
 using Xunit;
 
-namespace SignalR.Tests {
-    public class LongPollingTransportTest {
+namespace SignalR.Tests
+{
+    public class LongPollingTransportTest
+    {
         [Fact]
-        public void ExtractsClientIdFromRequest() {
+        public void ExtractsClientIdFromRequest()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m["clientId"]).Returns("1");
@@ -20,7 +23,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void IsAliveReturnsTrueIfClientIsConnected() {
+        public void IsAliveReturnsTrueIfClientIsConnected()
+        {
             var context = new Mock<HttpContextBase>();
             var response = new Mock<HttpResponseBase>();
             response.Setup(m => m.IsClientConnected).Returns(true);
@@ -33,7 +37,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void DisconnectRaisedDisconnectEvent() {
+        public void DisconnectRaisedDisconnectEvent()
+        {
             var context = new Mock<HttpContextBase>();
             var response = new Mock<HttpResponseBase>();
             response.Setup(m => m.IsClientConnected).Returns(false);
@@ -43,7 +48,8 @@ namespace SignalR.Tests {
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
 
             var eventRaised = false;
-            transport.Disconnected += () => {
+            transport.Disconnected += () =>
+            {
                 eventRaised = true;
             };
 
@@ -52,7 +58,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ConnectRequestAddsConnectionToHeartBeat() {
+        public void ConnectRequestAddsConnectionToHeartBeat()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m.Path).Returns("/foo/connect");
@@ -68,7 +75,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ConnectRequestRaisesConnectEvent() {
+        public void ConnectRequestRaisesConnectEvent()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m.Path).Returns("/foo/connect");
@@ -80,7 +88,8 @@ namespace SignalR.Tests {
             var connection = new Mock<IConnection>();
             bool eventRaised = false;
 
-            transport.Connected += () => {
+            transport.Connected += () =>
+            {
                 eventRaised = true;
             };
 
@@ -89,7 +98,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ConnectRequestCallsReceiveOnConnectionThenSend() {
+        public void ConnectRequestCallsReceiveOnConnectionThenSend()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
@@ -116,7 +126,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void RequestWithMessageIdCallsReceiveOnConnectionThenSend() {
+        public void RequestWithMessageIdCallsReceiveOnConnectionThenSend()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
@@ -144,7 +155,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void ProcessRequestReturnsNullIfRequestWithMalformedMessageId() {
+        public void ProcessRequestReturnsNullIfRequestWithMalformedMessageId()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
@@ -164,7 +176,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void SendSetsContentTypeAndWritesSerializedResponse() {
+        public void SendSetsContentTypeAndWritesSerializedResponse()
+        {
             var obj = new { A = 1 };
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
@@ -185,7 +198,8 @@ namespace SignalR.Tests {
         }
 
         [Fact]
-        public void SendRequestRaisesOnReceived() {
+        public void SendRequestRaisesOnReceived()
+        {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m.Path).Returns("/foo/send");
@@ -199,7 +213,8 @@ namespace SignalR.Tests {
             var connection = new Mock<IConnection>();
             bool eventRaised = false;
 
-            transport.Received += data => {
+            transport.Received += data =>
+            {
                 eventRaised = true;
                 Assert.Equal(data, "some data");
             };

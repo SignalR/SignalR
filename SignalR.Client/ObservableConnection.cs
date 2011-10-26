@@ -1,17 +1,22 @@
 ﻿using System;
 using SignalR.Client.Infrastructure;
 
-namespace SignalR.Client {
-    public class ObservableConnection<T> : IObservable<T> {
+namespace SignalR.Client
+{
+    public class ObservableConnection<T> : IObservable<T>
+    {
         private readonly Connection _connection;
         private readonly Func<string, T> _convert;
 
-        public ObservableConnection(Connection connection, Func<string, T> convert) {
-            if (connection == null) {
+        public ObservableConnection(Connection connection, Func<string, T> convert)
+        {
+            if (connection == null)
+            {
                 throw new ArgumentNullException("connection");
             }
 
-            if (convert == null) {
+            if (convert == null)
+            {
                 throw new ArgumentNullException("converter");
             }
 
@@ -19,16 +24,20 @@ namespace SignalR.Client {
             _connection = connection;
         }
 
-        public IDisposable Subscribe(IObserver<T> observer) {
-            Action<string> received = data => {
+        public IDisposable Subscribe(IObserver<T> observer)
+        {
+            Action<string> received = data =>
+            {
                 observer.OnNext(_convert(data));
             };
 
-            Action closed = () => {
+            Action closed = () =>
+            {
                 observer.OnCompleted();
             };
 
-            Action<Exception> error = ex => {
+            Action<Exception> error = ex =>
+            {
                 observer.OnError(ex);
             };
 
@@ -36,7 +45,8 @@ namespace SignalR.Client {
             _connection.Closed += closed;
             _connection.Error += error;
 
-            return new DisposableAction(() => {
+            return new DisposableAction(() =>
+            {
                 _connection.Received -= received;
                 _connection.Closed -= closed;
                 _connection.Error -= error;

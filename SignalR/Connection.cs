@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
-namespace SignalR {
-    public class Connection : IConnection {
+namespace SignalR
+{
+    public class Connection : IConnection
+    {
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
         private readonly string _baseSignal;
@@ -24,7 +26,8 @@ namespace SignalR {
                    baseSignal,
                    clientId,
                    signals,
-                   Enumerable.Empty<string>()) {
+                   Enumerable.Empty<string>())
+        {
         }
 
         public Connection(IMessageStore store,
@@ -32,7 +35,8 @@ namespace SignalR {
                           string baseSignal,
                           string clientId,
                           IEnumerable<string> signals,
-                          IEnumerable<string> groups) {
+                          IEnumerable<string> groups)
+        {
             _store = store;
             _signaler = signaler;
             _baseSignal = baseSignal;
@@ -41,51 +45,63 @@ namespace SignalR {
             _groups = new HashSet<string>(groups);
         }
 
-        public TimeSpan ReceiveTimeout {
-            get {
+        public TimeSpan ReceiveTimeout
+        {
+            get
+            {
                 return _signaler.DefaultTimeout;
             }
-            set {
+            set
+            {
                 _signaler.DefaultTimeout = value;
             }
         }
 
-        private IEnumerable<string> Signals {
-            get {
+        private IEnumerable<string> Signals
+        {
+            get
+            {
                 return _signals.Concat(_groups);
             }
         }
 
-        public virtual Task Broadcast(object value) {
+        public virtual Task Broadcast(object value)
+        {
             return Broadcast(_baseSignal, value);
         }
 
-        public virtual Task Broadcast(string message, object value) {
+        public virtual Task Broadcast(string message, object value)
+        {
             return SendMessage(message, value);
         }
 
-        public Task Send(object value) {
+        public Task Send(object value)
+        {
             return SendMessage(_clientId, value);
         }
 
-        public Task<PersistentResponse> ReceiveAsync() {
+        public Task<PersistentResponse> ReceiveAsync()
+        {
             // Get the last message id then wait for new messages to arrive
             return _store.GetLastId()
                          .ContinueWith(storeTask => WaitForSignal(storeTask.Result))
                          .Unwrap();
         }
 
-        public Task<PersistentResponse> ReceiveAsync(long messageId) {
+        public Task<PersistentResponse> ReceiveAsync(long messageId)
+        {
             // Get all messages for this message id, or wait until new messages if there are none
             return GetResponse(messageId).ContinueWith(task => ProcessReceive(task, messageId))
                                          .Unwrap();
         }
 
-        public static IConnection GetConnection<T>() where T : PersistentConnection {
+        public static IConnection GetConnection<T>() where T : PersistentConnection
+        {
             return GetConnection(typeof(T).FullName);
         }
 
-        public static IConnection GetConnection(string connectionType) {
+        public static IConnection GetConnection(string connectionType)
+        {
             return new Connection(DependencyResolver.Resolve<IMessageStore>(),
                                   Signaler.Instance,
                                   connectionType,
@@ -93,9 +109,11 @@ namespace SignalR {
                                   new[] { connectionType });
         }
 
-        private Task<PersistentResponse> ProcessReceive(Task<PersistentResponse> responseTask, long? messageId = null) {
+        private Task<PersistentResponse> ProcessReceive(Task<PersistentResponse> responseTask, long? messageId = null)
+        {
             // No messages to return so we need to subscribe until we have something
-            if (responseTask.Result == null) {
+            if (responseTask.Result == null)
+            {
                 return WaitForSignal(messageId);
             }
 
@@ -103,22 +121,27 @@ namespace SignalR {
             return responseTask;
         }
 
-        private Task<PersistentResponse> WaitForSignal(long? messageId = null) {
+        private Task<PersistentResponse> WaitForSignal(long? messageId = null)
+        {
             // Wait for a signal to get triggered and return with a response
             return _signaler.Subscribe(Signals)
                             .ContinueWith(task => ProcessSignal(task, messageId))
                             .Unwrap();
         }
 
-        private Task<PersistentResponse> ProcessSignal(Task<SignalResult> signalTask, long? messageId = null) {
-            if (signalTask.Result.TimedOut) {
+        private Task<PersistentResponse> ProcessSignal(Task<SignalResult> signalTask, long? messageId = null)
+        {
+            if (signalTask.Result.TimedOut)
+            {
                 // If we timed out waiting for a signal we have a message id then return null
                 PersistentResponse response = null;
 
                 // Otherwise ee need to return 0 so that the next request we'll get all messages
                 // on the next try
-                if (messageId == null) {
-                    response = new PersistentResponse {
+                if (messageId == null)
+                {
+                    response = new PersistentResponse
+                    {
                         MessageId = 0
                     };
                 }
@@ -131,12 +154,15 @@ namespace SignalR {
             return GetResponse(messageId ?? 0);
         }
 
-        private Task<PersistentResponse> GetResponse(long messageId) {
+        private Task<PersistentResponse> GetResponse(long messageId)
+        {
             // Get all messages for the current set of signals
             return GetMessages(messageId, Signals)
-                .Success(messageTask => {
+                .Success(messageTask =>
+                {
                     var results = messageTask.Result;
-                    if (!results.Any()) {
+                    if (!results.Any())
+                    {
                         return WaitForSignal(messageId);
                     }
 
@@ -164,14 +190,18 @@ namespace SignalR {
                 .Unwrap();
         }
 
-        private void ProcessCommands(IEnumerable<Message> messages) {
-            foreach (var message in messages) {
+        private void ProcessCommands(IEnumerable<Message> messages)
+        {
+            foreach (var message in messages)
+            {
                 var command = message.Value as SignalCommand;
-                if (command == null) {
+                if (command == null)
+                {
                     continue;
                 }
 
-                switch (command.Type) {
+                switch (command.Type)
+                {
                     case CommandType.AddToGroup:
                         _groups.Add((string)command.Value);
                         break;
@@ -182,20 +212,23 @@ namespace SignalR {
             }
         }
 
-        private Task SendMessage(string message, object value) {
+        private Task SendMessage(string message, object value)
+        {
             return _store.Save(message, value)
                          .Success(_ => _signaler.Signal(message))
                          .Unwrap()
                          .Catch();
         }
 
-        private Task<IEnumerable<Message>> GetMessages(long id, IEnumerable<string> signals) {            
+        private Task<IEnumerable<Message>> GetMessages(long id, IEnumerable<string> signals)
+        {
             var pendingMessagesTasks = (from signal in signals
                                         select _store.GetAllSince(signal, id)).ToArray();
 
             // If there are no pending messages, we need to shortcut since ContinueWhenAll
             // blows up for empty arrays.
-            if (!pendingMessagesTasks.Any()) {
+            if (!pendingMessagesTasks.Any())
+            {
                 return TaskAsyncHelper.FromResult(Enumerable.Empty<Message>());
             }
 

@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
-namespace SignalR.ScaleOut {
-    public class SQLMessageStore : IMessageStore {
+namespace SignalR.ScaleOut
+{
+    public class SQLMessageStore : IMessageStore
+    {
         private static readonly string _getLastIdSQL = "SELECT MAX([MessageId]) FROM {TableName}";
 
         private static readonly string _saveSQL = "INSERT INTO {TableName} (EventKey, SmallValue, BigValue, Created) " +
@@ -34,8 +36,10 @@ namespace SignalR.ScaleOut {
 
         private readonly Timer _timer;
 
-        public SQLMessageStore(string connectionString) {
-            if (String.IsNullOrEmpty(connectionString)) {
+        public SQLMessageStore(string connectionString)
+        {
+            if (String.IsNullOrEmpty(connectionString))
+            {
                 throw new ArgumentNullException("connectionString");
             }
 
@@ -45,10 +49,13 @@ namespace SignalR.ScaleOut {
             _timer = new Timer(RemoveOldQueries, null, _cleanupInterval, _cleanupInterval);
         }
 
-        private IJsonSerializer Json {
-            get {
+        private IJsonSerializer Json
+        {
+            get
+            {
                 var json = DependencyResolver.Resolve<IJsonSerializer>();
-                if (json == null) {
+                if (json == null)
+                {
                     throw new InvalidOperationException("No implementation of IJsonSerializer is registered.");
                 }
                 return json;
@@ -58,46 +65,55 @@ namespace SignalR.ScaleOut {
         public virtual string ConnectionString { get; private set; }
         public virtual string MessageTableName { get; set; }
 
-        public Task<long?> GetLastId() {
+        public Task<long?> GetLastId()
+        {
             var connection = CreateAndOpenConnection();
             var transaction = connection.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted);
             var cmd = new SqlCommand(_getLastIdSQL.Replace("{TableName}", MessageTableName), connection, transaction);
 
             return cmd.ExecuteScalarAsync<long?>()
-                .ContinueWith(t => {
+                .ContinueWith(t =>
+                {
                     connection.Close();
                     return t.Result;
                 });
         }
 
-        public Task Save(string key, object value) {
+        public Task Save(string key, object value)
+        {
             var connection = CreateAndOpenConnection();
             var cmd = new SqlCommand(_saveSQL.Replace("{TableName}", MessageTableName), connection);
             var json = Json.Stringify(value);
             cmd.Parameters.AddWithValue("EventKey", key);
-            if (json.Length <= 2000) {
+            if (json.Length <= 2000)
+            {
                 cmd.Parameters.AddWithValue("SmallValue", json);
                 cmd.Parameters.AddWithValue("BigValue", DBNull.Value);
             }
-            else {
+            else
+            {
                 cmd.Parameters.AddWithValue("SmallValue", DBNull.Value);
                 cmd.Parameters.AddWithValue("BigValue", json);
             }
             return cmd.ExecuteNonQueryAsync()
-                .ContinueWith(t => {
+                .ContinueWith(t =>
+                {
                     connection.Close();
                 });
         }
 
-        public Task<IEnumerable<Message>> GetAllSince(string key, long id) {
+        public Task<IEnumerable<Message>> GetAllSince(string key, long id)
+        {
             return _queries.GetOrAdd(Tuple.Create(id, key),
                 GetMessages(key, _getAllSinceSQL.Replace("{TableName}", MessageTableName),
                     new[] {
                         new SqlParameter("EventKey", key),
                         new SqlParameter("MessageId", id)
                     }
-                ).ContinueWith(t => {
-                    if (t.Exception != null || !t.Result.Any()) {
+                ).ContinueWith(t =>
+                {
+                    if (t.Exception != null || !t.Result.Any())
+                    {
                         // Remove from queries
                         Task<IEnumerable<Message>> removedQuery;
                         _queries.TryRemove(Tuple.Create(id, key), out removedQuery);
@@ -107,16 +123,19 @@ namespace SignalR.ScaleOut {
             );
         }
 
-        private Task<IEnumerable<Message>> GetMessages(string key, string sql, SqlParameter[] parameters) {
+        private Task<IEnumerable<Message>> GetMessages(string key, string sql, SqlParameter[] parameters)
+        {
             var connection = CreateAndOpenConnection();
             var transaction = connection.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted);
             var cmd = new SqlCommand(sql, connection, transaction);
             cmd.Parameters.AddRange(parameters);
             return cmd.ExecuteReaderAsync()
-                .ContinueWith<IEnumerable<Message>>(t => {
+                .ContinueWith<IEnumerable<Message>>(t =>
+                {
                     var rdr = t.Result;
                     var messages = new List<Message>();
-                    while (rdr.Read()) {
+                    while (rdr.Read())
+                    {
                         messages.Add(new Message(
                             signalKey: key,
                             id: rdr.GetInt64(0),
@@ -129,20 +148,25 @@ namespace SignalR.ScaleOut {
                 });
         }
 
-        private SqlConnection CreateAndOpenConnection() {
+        private SqlConnection CreateAndOpenConnection()
+        {
             var connection = new SqlConnection(ConnectionString);
             connection.Open();
             return connection;
         }
 
-        private void RemoveOldQueries(object state) {
+        private void RemoveOldQueries(object state)
+        {
             // Take a snapshot of the queries
             var queries = _queries.ToList();
 
             // Remove all the expired ones
-            foreach (var query in queries) {
-                if (query.Value.IsCompleted) {
-                    if (query.Value.Result.All(m => m.Expired)) {
+            foreach (var query in queries)
+            {
+                if (query.Value.IsCompleted)
+                {
+                    if (query.Value.Result.All(m => m.Expired))
+                    {
                         Task<IEnumerable<Message>> removed;
                         _queries.TryRemove(query.Key, out removed);
                     }

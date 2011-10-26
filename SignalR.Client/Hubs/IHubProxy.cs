@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SignalR.Client.Hubs {
-    public interface IHubProxy {
+namespace SignalR.Client.Hubs
+{
+    public interface IHubProxy
+    {
         object this[string name] { get; set; }
 
         IObservable<object[]> Subscribe(string eventName);

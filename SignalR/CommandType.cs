@@ -1,5 +1,7 @@
-﻿namespace SignalR {
-    internal enum CommandType {
+﻿namespace SignalR
+{
+    internal enum CommandType
+    {
         AddToGroup,
         RemoveFromGroup
     }

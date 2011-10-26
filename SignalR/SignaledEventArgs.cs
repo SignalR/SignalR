@@ -1,10 +1,13 @@
 ﻿using System;
 
-namespace SignalR {
-    public class SignaledEventArgs : EventArgs {
+namespace SignalR
+{
+    public class SignaledEventArgs : EventArgs
+    {
         public string EventKey { get; private set; }
 
-        public SignaledEventArgs(string eventKey) {
+        public SignaledEventArgs(string eventKey)
+        {
             EventKey = eventKey;
         }
     }

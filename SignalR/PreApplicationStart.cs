@@ -7,9 +7,12 @@ using SignalR.Transports;
 
 [assembly: PreApplicationStartMethod(typeof(PreApplicationStart), "Start")]
 
-namespace SignalR {
-    public static class PreApplicationStart {
-        public static void Start() {
+namespace SignalR
+{
+    public static class PreApplicationStart
+    {
+        public static void Start()
+        {
             DynamicModuleUtility.RegisterModule(typeof(HubModule));
 
             TransportManager.Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonStringifier>()));

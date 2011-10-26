@@ -4,12 +4,16 @@ using System.Linq;
 using System.Reflection;
 using SignalR.Hubs;
 
-namespace SignalR.Infrastructure {
-    internal static class ReflectionHelper {
+namespace SignalR.Infrastructure
+{
+    internal static class ReflectionHelper
+    {
         private static readonly Type[] _excludeTypes = new[] { typeof(IHub), typeof(Hub), typeof(object) };
 
-        internal static IEnumerable<MethodInfo> GetExportedHubMethods(Type type) {
-            if (!typeof(IHub).IsAssignableFrom(type)) {
+        internal static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
+        {
+            if (!typeof(IHub).IsAssignableFrom(type))
+            {
                 return Enumerable.Empty<MethodInfo>();
             }
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SignalR {
-    public interface IConnection {
+namespace SignalR
+{
+    public interface IConnection
+    {
         TimeSpan ReceiveTimeout { get; set; }
 
         Task Send(object value);

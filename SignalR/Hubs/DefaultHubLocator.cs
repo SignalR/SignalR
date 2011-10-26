@@ -4,9 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Compilation;
 
-namespace SignalR.Hubs {
-    public class DefaultHubLocator : IHubLocator {
-        public IEnumerable<Type> GetHubs() {
+namespace SignalR.Hubs
+{
+    public class DefaultHubLocator : IHubLocator
+    {
+        public IEnumerable<Type> GetHubs()
+        {
             return from Assembly a in BuildManager.GetReferencedAssemblies()
                    where !a.GlobalAssemblyCache && !a.IsDynamic
                    from type in GetTypesSafe(a)
@@ -14,11 +17,14 @@ namespace SignalR.Hubs {
                    select type;
         }
 
-        private IEnumerable<Type> GetTypesSafe(Assembly a) {
-            try {
+        private IEnumerable<Type> GetTypesSafe(Assembly a)
+        {
+            try
+            {
                 return a.GetTypes();
             }
-            catch {
+            catch
+            {
                 return Enumerable.Empty<Type>();
             }
         }

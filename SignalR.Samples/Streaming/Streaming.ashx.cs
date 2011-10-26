@@ -1,5 +1,7 @@
 ﻿
-namespace SignalR.Samples.Streaming {
-    public class Streaming : PersistentConnection {
+namespace SignalR.Samples.Streaming
+{
+    public class Streaming : PersistentConnection
+    {
     }
 }

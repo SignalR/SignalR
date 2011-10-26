@@ -2,27 +2,34 @@
 using System.Threading.Tasks;
 using System.Web;
 
-namespace SignalR.Web {
-    public abstract class HttpTaskAsyncHandler : IHttpAsyncHandler {
-        public virtual bool IsReusable {
+namespace SignalR.Web
+{
+    public abstract class HttpTaskAsyncHandler : IHttpAsyncHandler
+    {
+        public virtual bool IsReusable
+        {
             get { return false; }
         }
 
-        public virtual void ProcessRequest(HttpContext context) {
+        public virtual void ProcessRequest(HttpContext context)
+        {
             throw new NotSupportedException();
         }
 
         public abstract Task ProcessRequestAsync(HttpContext context);
 
-        IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData) {
+        IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
+        {
             Task task = ProcessRequestAsync(context);
-            if (task == null) {
+            if (task == null)
+            {
                 return null;
             }
 
             var retVal = new TaskWrapperAsyncResult(task, extraData);
 
-            if (cb != null) {
+            if (cb != null)
+            {
                 // The callback needs the same argument that the Begin method returns, which is our special wrapper, not the original Task.
                 task.ContinueWith(_ => cb(retVal));
             }
@@ -30,8 +37,10 @@ namespace SignalR.Web {
             return retVal;
         }
 
-        void IHttpAsyncHandler.EndProcessRequest(IAsyncResult result) {
-            if (result == null) {
+        void IHttpAsyncHandler.EndProcessRequest(IAsyncResult result)
+        {
+            if (result == null)
+            {
                 throw new ArgumentNullException("result");
             }
 

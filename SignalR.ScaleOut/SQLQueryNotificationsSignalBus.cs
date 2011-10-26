@@ -4,11 +4,13 @@ using System.Data.SqlClient;
 using System.Security.Permissions;
 using System.Threading.Tasks;
 
-namespace SignalR.ScaleOut {
+namespace SignalR.ScaleOut
+{
     /// <summary>
     /// A signaler that uses SQL Server and Query Notifications to send signals between app-domains
     /// </summary>
-    public class SQLQueryNotificationsSignalBus : ISignalBus {
+    public class SQLQueryNotificationsSignalBus : ISignalBus
+    {
         private static readonly string _getSignalsSQL = "SELECT [SignalID], [EventKey], [LastSignaledAt] " +
                                                                 "FROM {TableName} " +
                                                                 "WHERE [LastSignaledAt] > @LastSignaledAt";
@@ -28,8 +30,10 @@ namespace SignalR.ScaleOut {
         private object _ensureSqlDependencyListeningLocker = new object();
         private object _ensureSqlConnectionLocker = new object();
 
-        public SQLQueryNotificationsSignalBus(string connectionString) {
-            if (String.IsNullOrEmpty(connectionString)) {
+        public SQLQueryNotificationsSignalBus(string connectionString)
+        {
+            if (String.IsNullOrEmpty(connectionString))
+            {
                 throw new ArgumentNullException("connectionString");
             }
 
@@ -42,13 +46,16 @@ namespace SignalR.ScaleOut {
         public virtual string SignalTableName { get; set; }
 
         public event EventHandler<SignaledEventArgs> Signaled;
-        private void OnSignaled(string eventKey) {
-            if (Signaled != null) {
+        private void OnSignaled(string eventKey)
+        {
+            if (Signaled != null)
+            {
                 Signaled(this, new SignaledEventArgs(eventKey));
             }
         }
 
-        public virtual Task Signal(string eventKey) {
+        public virtual Task Signal(string eventKey)
+        {
             return InsertUpdateSignal(eventKey);
 
             // Maybe we can immediately raise event here too
@@ -56,17 +63,22 @@ namespace SignalR.ScaleOut {
         }
 
         // TODO: Not sure this is even needed, or we can do it automatically
-        public void StopSqlDependencyListener() {
-            if (_sqlDependencyListenerStarted) {
-                lock (_ensureSqlDependencyListeningLocker) {
-                    if (_sqlDependencyListenerStarted) {
+        public void StopSqlDependencyListener()
+        {
+            if (_sqlDependencyListenerStarted)
+            {
+                lock (_ensureSqlDependencyListeningLocker)
+                {
+                    if (_sqlDependencyListenerStarted)
+                    {
                         SqlDependency.Stop(ConnectionString);
                     }
                 }
             }
         }
 
-        protected virtual Task InsertUpdateSignal(string eventKey) {
+        protected virtual Task InsertUpdateSignal(string eventKey)
+        {
             var connection = CreateAndOpenConnection();
             var command = connection.CreateCommand();
             // UPSERT statement (http://weblogs.sqlteam.com/dang/archive/2009/01/31/UPSERT-Race-Condition-With-MERGE.aspx)
@@ -76,12 +88,14 @@ namespace SignalR.ScaleOut {
                 .ContinueWith(_ => connection.Close());
         }
 
-        private void StartListeningForQueryNotification() {
+        private void StartListeningForQueryNotification()
+        {
             EnsureSqlDependencyListening();
             var connection = CreateAndOpenConnection();
             var command = BuildQueryCommand(connection);
             var sd = new SqlDependency(command);
-            sd.OnChange += (sender, e) => {
+            sd.OnChange += (sender, e) =>
+            {
                 ProcessSignalReceived();
                 StartListeningForQueryNotification();
             };
@@ -89,7 +103,8 @@ namespace SignalR.ScaleOut {
                 .ContinueWith(_ => connection.Close());
         }
 
-        private void ProcessSignalReceived() {
+        private void ProcessSignalReceived()
+        {
             // Get event keys for signals since last signal received and update last signal ID
             var connection = CreateAndOpenConnection();
             var command = BuildQueryCommand(connection);
@@ -97,18 +112,22 @@ namespace SignalR.ScaleOut {
             var eventKeys = new HashSet<string>();
 
             Task.Factory.FromAsync<SqlDataReader>(command.BeginExecuteReader, command.EndExecuteReader, null)
-                .ContinueWith(t => {
+                .ContinueWith(t =>
+                {
                     var rdr = t.Result;
-                    while (rdr.Read()) {
+                    while (rdr.Read())
+                    {
                         //lastSignalIdInResult = rdr.GetInt32(0);
-                        if (rdr.GetDateTime(2) > lastSignaledAtInResult) {
+                        if (rdr.GetDateTime(2) > lastSignaledAtInResult)
+                        {
                             lastSignaledAtInResult = rdr.GetDateTime(2);
                         }
                         eventKeys.Add(rdr.GetString(1));
                     }
                     rdr.Close();
 
-                    foreach (var key in eventKeys) {
+                    foreach (var key in eventKeys)
+                    {
                         OnSignaled(key);
                     }
                     _lastSignaledAt = lastSignaledAtInResult;
@@ -116,7 +135,8 @@ namespace SignalR.ScaleOut {
                 });
         }
 
-        private SqlCommand BuildQueryCommand(SqlConnection connection) {
+        private SqlCommand BuildQueryCommand(SqlConnection connection)
+        {
             var command = connection.CreateCommand();
             command.CommandText = _getSignalsSQL.Replace("{TableName}", SignalTableName);
             //command.Parameters.AddWithValue("LastSignalID", _lastSignalID);
@@ -124,10 +144,14 @@ namespace SignalR.ScaleOut {
             return command;
         }
 
-        private void EnsureSqlDependencyListening() {
-            if (!_sqlDependencyListenerStarted) {
-                lock (_ensureSqlDependencyListeningLocker) {
-                    if (!_sqlDependencyListenerStarted) {
+        private void EnsureSqlDependencyListening()
+        {
+            if (!_sqlDependencyListenerStarted)
+            {
+                lock (_ensureSqlDependencyListeningLocker)
+                {
+                    if (!_sqlDependencyListenerStarted)
+                    {
                         SqlDependency.Start(ConnectionString);
                         var perm = new SqlClientPermission(PermissionState.Unrestricted);
                         perm.Demand();
@@ -137,17 +161,20 @@ namespace SignalR.ScaleOut {
             }
         }
 
-        private SqlConnection CreateAndOpenConnection() {
+        private SqlConnection CreateAndOpenConnection()
+        {
             var connection = new SqlConnection(ConnectionString);
             connection.Open();
             return connection;
         }
 
-        public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler) {
+        public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        {
             Signaled += handler;
         }
 
-        public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler) {
+        public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        {
             Signaled -= handler;
         }
     }

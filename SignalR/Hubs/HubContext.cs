@@ -1,8 +1,10 @@
 ﻿using System.Security.Principal;
 using System.Web;
 
-namespace SignalR.Hubs {
-    public class HubContext {
+namespace SignalR.Hubs
+{
+    public class HubContext
+    {
         /// <summary>
         /// Gets the client id of the calling client.
         /// </summary>
@@ -15,7 +17,8 @@ namespace SignalR.Hubs {
 
         public IPrincipal User { get; private set; }
 
-        public HubContext(string clientId, HttpCookieCollection cookies, IPrincipal user) {
+        public HubContext(string clientId, HttpCookieCollection cookies, IPrincipal user)
+        {
             ClientId = clientId;
             Cookies = cookies;
             User = user;

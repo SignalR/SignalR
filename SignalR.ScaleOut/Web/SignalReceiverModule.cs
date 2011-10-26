@@ -1,12 +1,17 @@
 ﻿using System.Web;
 
-namespace SignalR.Web {
-    internal class SignalReceiverModule : IHttpModule {
+namespace SignalR.Web
+{
+    internal class SignalReceiverModule : IHttpModule
+    {
 
-        public void Init(HttpApplication context) {
-            context.PostResolveRequestCache += (sender, e) => {
+        public void Init(HttpApplication context)
+        {
+            context.PostResolveRequestCache += (sender, e) =>
+            {
                 // Remap to SignalReceiverHandler
-                if (context.Request.AppRelativeCurrentExecutionFilePath.StartsWith("~/" + SignalReceiverHandler.HandlerName)) {
+                if (context.Request.AppRelativeCurrentExecutionFilePath.StartsWith("~/" + SignalReceiverHandler.HandlerName))
+                {
                     var handler = new SignalReceiverHandler();
                     context.Context.RemapHandler(handler);
                 }
