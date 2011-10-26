@@ -22,7 +22,7 @@ namespace SignalR {
             : this(garbageCollectMessages: true) {
         }
 
-        internal InProcessMessageStore(bool garbageCollectMessages) {
+        public InProcessMessageStore(bool garbageCollectMessages) {
             if (garbageCollectMessages) {
                 _timer = new Timer(RemoveExpiredEntries, null, _cleanupInterval, _cleanupInterval);
             }

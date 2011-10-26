@@ -137,7 +137,7 @@ namespace SignalR {
                 .Success(messageTask => {
                     var results = messageTask.Result;
                     if (!results.Any()) {
-                        return null;
+                        return WaitForSignal(messageId);
                     }
 
                     var response = new PersistentResponse();
@@ -159,8 +159,9 @@ namespace SignalR {
                     // Set the groups on the outgoing transport data
                     response.TransportData["Groups"] = _groups;
 
-                    return response;
-                });
+                    return TaskAsyncHelper.FromResult(response);
+                })
+                .Unwrap();
         }
 
         private void ProcessCommands(IEnumerable<Message> messages) {
