@@ -25,9 +25,9 @@ namespace SignalR.Client {
 
         public bool IsActive { get; private set; }
 
-        internal long? MessageId { get; set; }
+        public long? MessageId { get; set; }
 
-        internal string ClientId { get; set; }
+        public string ClientId { get; set; }
 
         public virtual Task Start() {
             if (IsActive) {
