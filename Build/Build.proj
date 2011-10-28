@@ -43,9 +43,9 @@
             <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
             <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
         </ItemGroup>
-        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -basePath &quot;$(ProjectRoot)\SignalR&quot; -Verbose" 
+        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -basePath &quot;$(ProjectRoot)\SignalR&quot;" 
               LogStandardErrorAsError="true" />
-        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -exclude **\*.cs -Verbose"
+        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -exclude **\*.cs"
               LogStandardErrorAsError="true" />
     </Target>
 </Project>
