@@ -86,12 +86,17 @@ namespace SignalR
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
+#if !WINDOWS_PHONE
             request.ContentLength = buffer.LongLength;
+#endif
 
             return request.GetRequestStreamAsync()
                 .Success(t =>
                 {
                     t.Result.Write(buffer, 0, buffer.Length);
+#if WINDOWS_PHONE
+                    t.Result.Close();
+#endif
                 })
                 .Success(t =>
                 {
