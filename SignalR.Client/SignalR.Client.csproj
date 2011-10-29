@@ -57,18 +57,15 @@
     </Compile>
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
-    <Compile Include="Hubs\HubInvocationInfo.cs" />
-    <Compile Include="Hubs\HubMethodAttribute.cs" />
-    <Compile Include="Hubs\HubAttribute.cs" />
+    <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
-    <Compile Include="Hubs\Hubservable.cs" />
     <Compile Include="Hubs\HubProxy.cs" />
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Hubs\ProxyExtensions.cs" />
+    <Compile Include="Hubs\HubProxyExtensions.cs" />
     <Compile Include="Transports\IClientTransport.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
   </ItemGroup>

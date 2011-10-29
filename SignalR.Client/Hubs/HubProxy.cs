@@ -8,17 +8,15 @@ namespace SignalR.Client.Hubs
 {
     public class HubProxy : DynamicObject, IHubProxy
     {
-        private readonly string _hub;
+        private readonly string _hubName;
         private readonly HubConnection _connection;
         private readonly Dictionary<string, object> _state = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-        private readonly HashSet<string> _subscriptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Action<object[]>> _subscriptions = new Dictionary<string, Action<object[]>>(StringComparer.OrdinalIgnoreCase);
 
-        internal event Action<HubInvocationInfo> MethodInvoked;
-
-        public HubProxy(HubConnection connection, string hub)
+        public HubProxy(HubConnection connection, string hubName)
         {
             _connection = connection;
-            _hub = hub;
+            _hubName = hubName;
         }
 
         public object this[string name]
@@ -35,10 +33,29 @@ namespace SignalR.Client.Hubs
             }
         }
 
-        public IObservable<object[]> Subscribe(string eventName)
+        public void Subscribe(string eventName, Action<object[]> subscription)
         {
-            _subscriptions.Add(eventName);
-            return new Hubservable(this, eventName);
+            if (eventName == null)
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (subscription == null)
+            {
+                throw new ArgumentNullException("subscription");
+            }
+
+            _subscriptions.Add(eventName, subscription);
+        }
+
+        public void Unsubscribe(string eventName)
+        {
+            if (eventName == null)
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            _subscriptions.Remove(eventName);
         }
 
         public Task Invoke(string action, params object[] args)
@@ -50,7 +67,7 @@ namespace SignalR.Client.Hubs
         {
             var hubData = new HubData
             {
-                Hub = _hub,
+                Hub = _hubName,
                 Action = action,
                 Data = args,
                 State = _state
@@ -62,7 +79,6 @@ namespace SignalR.Client.Hubs
             {
                 if (task.Result != null)
                 {
-
                     if (task.Result.Error != null)
                     {
                         throw new InvalidOperationException(task.Result.Error);
@@ -98,24 +114,20 @@ namespace SignalR.Client.Hubs
             return true;
         }
 
-        internal void OnReceived(HubInvocationInfo invocationInfo)
+        public void InvokeMethod(string eventName, object[] args)
         {
-            if (MethodInvoked != null)
+            Action<object[]> subscription;
+            if (_subscriptions.TryGetValue(eventName, out subscription))
             {
-                MethodInvoked(invocationInfo);
+                subscription(args);
             }
         }
 
-        internal IEnumerable<string> GetSubscriptions()
+        public IEnumerable<string> GetSubscriptions()
         {
-            return _subscriptions;
+            return _subscriptions.Keys;
         }
-
-        internal void RemoveEvent(string eventName)
-        {
-            _subscriptions.Remove(eventName);
-        }
-
+        
         private class HubData
         {
             public Dictionary<string, object> State { get; set; }

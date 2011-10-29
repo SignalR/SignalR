@@ -28,13 +28,13 @@ namespace SignalR.Client.Hubs
             base.Stop();
         }
 
-        public IHubProxy CreateProxy(string hub)
+        public IHubProxy CreateProxy(string hubName)
         {
             HubProxy hubProxy;
-            if (!_hubs.TryGetValue(hub, out hubProxy))
+            if (!_hubs.TryGetValue(hubName, out hubProxy))
             {
-                hubProxy = new HubProxy(this, hub);
-                _hubs[hub] = hubProxy;
+                hubProxy = new HubProxy(this, hubName);
+                _hubs[hubName] = hubProxy;
             }
             return hubProxy;
         }
@@ -52,12 +52,12 @@ namespace SignalR.Client.Hubs
 
         private void OnReceived(string message)
         {
-            var invocationInfo = JsonConvert.DeserializeObject<HubInvocationInfo>(message);
+            var invocation = JsonConvert.DeserializeObject<HubInvocation>(message);
 
             HubProxy hubProxy;
-            if (_hubs.TryGetValue(invocationInfo.Hub, out hubProxy))
+            if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
             {
-                hubProxy.OnReceived(invocationInfo);
+                hubProxy.InvokeMethod(invocation.Method, invocation.Args);
             }
         }
 
