@@ -54,6 +54,7 @@ namespace SignalR.Client.Hubs
             });
         }
 
+#if !WINDOWS_PHONE
         public static void On<T1, T2, T3, T4, T5>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5> subscription)
         {
             proxy.Subscribe(eventName, args =>
@@ -92,7 +93,7 @@ namespace SignalR.Client.Hubs
                              Convert<T7>(args[6]));
             });
         }
-
+#endif
         private static T Convert<T>(object obj)
         {
             if (obj == null)

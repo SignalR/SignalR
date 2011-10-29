@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+#if !WINDOWS_PHONE
 using System.Dynamic;
+#endif
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace SignalR.Client.Hubs
 {
-    public class HubProxy : DynamicObject, IHubProxy
+    public class HubProxy :
+#if !WINDOWS_PHONE
+        DynamicObject, 
+#endif
+ IHubProxy
     {
         private readonly string _hubName;
         private readonly HubConnection _connection;
@@ -45,7 +51,7 @@ namespace SignalR.Client.Hubs
                 throw new ArgumentNullException("subscription");
             }
 
-            _subscriptions.Add(eventName, subscription);
+            _subscriptions[eventName] = subscription;
         }
 
         public void Unsubscribe(string eventName)
@@ -58,17 +64,22 @@ namespace SignalR.Client.Hubs
             _subscriptions.Remove(eventName);
         }
 
-        public Task Invoke(string action, params object[] args)
+        public Task Invoke(string method, params object[] args)
         {
-            return Invoke<object>(action, args);
+            return Invoke<object>(method, args);
         }
 
-        public Task<T> Invoke<T>(string action, params object[] args)
+        public Task<T> Invoke<T>(string method, params object[] args)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException("method");
+            }
+
             var hubData = new HubData
             {
                 Hub = _hubName,
-                Action = action,
+                Action = method,
                 Data = args,
                 State = _state
             };
@@ -96,6 +107,7 @@ namespace SignalR.Client.Hubs
             });
         }
 
+#if !WINDOWS_PHONE
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             _state[binder.Name] = value;
@@ -113,6 +125,7 @@ namespace SignalR.Client.Hubs
             result = Invoke(binder.Name, args);
             return true;
         }
+#endif
 
         public void InvokeMethod(string eventName, object[] args)
         {
@@ -127,7 +140,7 @@ namespace SignalR.Client.Hubs
         {
             return _subscriptions.Keys;
         }
-        
+
         private class HubData
         {
             public Dictionary<string, object> State { get; set; }

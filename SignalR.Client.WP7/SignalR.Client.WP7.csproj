@@ -63,6 +63,21 @@
     <Compile Include="..\SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubConnection.cs">
+      <Link>Hubs\HubConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubInvocation.cs">
+      <Link>Hubs\HubInvocation.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubProxy.cs">
+      <Link>Hubs\HubProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubProxyExtensions.cs">
+      <Link>Hubs\HubProxyExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\IHubProxy.cs">
+      <Link>Hubs\IHubProxy.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
     </Compile>
