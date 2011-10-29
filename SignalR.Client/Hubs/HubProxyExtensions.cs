@@ -28,7 +28,7 @@ namespace SignalR.Client.Hubs
         {
             proxy.Subscribe(eventName, args =>
             {
-                subscription(Convert<T1>(args[0]), 
+                subscription(Convert<T1>(args[0]),
                              Convert<T2>(args[1]));
             });
         }
@@ -37,8 +37,8 @@ namespace SignalR.Client.Hubs
         {
             proxy.Subscribe(eventName, args =>
             {
-                subscription(Convert<T1>(args[0]), 
-                             Convert<T2>(args[1]), 
+                subscription(Convert<T1>(args[0]),
+                             Convert<T2>(args[1]),
                              Convert<T3>(args[2]));
             });
         }
@@ -47,9 +47,9 @@ namespace SignalR.Client.Hubs
         {
             proxy.Subscribe(eventName, args =>
             {
-                subscription(Convert<T1>(args[0]), 
-                             Convert<T2>(args[1]), 
-                             Convert<T3>(args[2]), 
+                subscription(Convert<T1>(args[0]),
+                             Convert<T2>(args[1]),
+                             Convert<T3>(args[2]),
                              Convert<T4>(args[3]));
             });
         }
@@ -59,10 +59,10 @@ namespace SignalR.Client.Hubs
         {
             proxy.Subscribe(eventName, args =>
             {
-                subscription(Convert<T1>(args[0]), 
-                             Convert<T2>(args[1]), 
-                             Convert<T3>(args[2]), 
-                             Convert<T4>(args[3]), 
+                subscription(Convert<T1>(args[0]),
+                             Convert<T2>(args[1]),
+                             Convert<T3>(args[2]),
+                             Convert<T4>(args[3]),
                              Convert<T5>(args[4]));
             });
         }
@@ -93,7 +93,13 @@ namespace SignalR.Client.Hubs
                              Convert<T7>(args[6]));
             });
         }
+
+        public static IObservable<object[]> AsObservable(this IHubProxy proxy, string eventName)
+        {
+            return new Hubservable(proxy, eventName);
+        }
 #endif
+
         private static T Convert<T>(object obj)
         {
             if (obj == null)

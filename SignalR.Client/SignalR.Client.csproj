@@ -60,6 +60,7 @@
     <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
     <Compile Include="Hubs\HubProxy.cs" />
+    <Compile Include="Hubs\Hubservable.cs" />
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="NegotiationResponse.cs" />
