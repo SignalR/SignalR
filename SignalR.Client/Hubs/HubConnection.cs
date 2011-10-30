@@ -57,7 +57,7 @@ namespace SignalR.Client.Hubs
             HubProxy hubProxy;
             if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
             {
-                hubProxy.InvokeMethod(invocation.Method, invocation.Args);
+                hubProxy.InvokeEvent(invocation.Method, invocation.Args);
             }
         }
 

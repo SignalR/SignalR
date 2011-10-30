@@ -5,7 +5,7 @@ using SignalR.Client.Transports;
 
 namespace SignalR.Client
 {
-    public class Connection
+    public class Connection : IConnection
     {
         public event Action<string> Received;
         public event Action<Exception> Error;

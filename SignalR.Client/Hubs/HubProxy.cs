@@ -15,11 +15,11 @@ namespace SignalR.Client.Hubs
  IHubProxy
     {
         private readonly string _hubName;
-        private readonly HubConnection _connection;
+        private readonly IConnection _connection;
         private readonly Dictionary<string, object> _state = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>(StringComparer.OrdinalIgnoreCase);
 
-        public HubProxy(HubConnection connection, string hubName)
+        public HubProxy(IConnection connection, string hubName)
         {
             _connection = connection;
             _hubName = hubName;
@@ -88,9 +88,13 @@ namespace SignalR.Client.Hubs
                     }
 
                     HubResult<T> hubResult = task.Result;
-                    foreach (var pair in hubResult.State)
+
+                    if (hubResult.State != null)
                     {
-                        this[pair.Key] = pair.Value;
+                        foreach (var pair in hubResult.State)
+                        {
+                            this[pair.Key] = pair.Value;
+                        }
                     }
 
                     return hubResult.Result;
@@ -119,7 +123,7 @@ namespace SignalR.Client.Hubs
         }
 #endif
 
-        public void InvokeMethod(string eventName, object[] args)
+        public void InvokeEvent(string eventName, object[] args)
         {
             Subscription eventObj;
             if (_subscriptions.TryGetValue(eventName, out eventObj))
@@ -139,13 +143,6 @@ namespace SignalR.Client.Hubs
             public object[] Data { get; set; }
             public string Action { get; set; }
             public string Hub { get; set; }
-        }
-
-        private class HubResult<T>
-        {
-            public T Result { get; set; }
-            public string Error { get; set; }
-            public IDictionary<string, object> State { get; set; }
         }
     }
 }
