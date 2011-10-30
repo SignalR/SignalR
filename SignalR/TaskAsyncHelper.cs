@@ -7,6 +7,8 @@ namespace SignalR
 {
     internal static class TaskAsyncHelper
     {
+        private static readonly Task _emptyTask = MakeEmpty();
+
         private static Task MakeEmpty()
         {
             return FromResult<object>(null);
@@ -16,8 +18,7 @@ namespace SignalR
         {
             get
             {
-                // we have to return a new one every time, other wise the task will be disposed
-                return MakeEmpty();
+                return _emptyTask;
             }
         }
 
