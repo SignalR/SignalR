@@ -9,11 +9,7 @@ namespace SignalR.Client.Hubs
         public static T GetValue<T>(this IHubProxy proxy, string name)
         {
             object value = proxy[name];
-            if (value is JObject && typeof(T) != typeof(JObject))
-            {
-                return JsonConvert.DeserializeObject<T>(value.ToString());
-            }
-            return (T)value;
+            return Convert<T>(value);
         }
 
         public static Subscription On(this IHubProxy proxy, string eventName, Action onData)
