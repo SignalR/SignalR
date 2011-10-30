@@ -78,6 +78,9 @@
     <Compile Include="..\SignalR.Client\Hubs\IHubProxy.cs">
       <Link>Hubs\IHubProxy.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\Subscription.cs">
+      <Link>Hubs\Subscription.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
     </Compile>

@@ -16,14 +16,12 @@ namespace SignalR.Client.Hubs
 
         public IDisposable Subscribe(IObserver<object[]> observer)
         {
-            _proxy.Subscribe(_eventName, args =>
-            {
-                observer.OnNext(args);
-            });
+            var subscription = _proxy.Subscribe(_eventName);
+            subscription.Data += observer.OnNext;
 
             return new DisposableAction(() =>
             {
-                _proxy.Unsubscribe(_eventName);
+                subscription.Data -= observer.OnNext;
             });
         }
     }

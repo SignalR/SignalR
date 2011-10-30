@@ -11,87 +11,108 @@ namespace SignalR.Client.Hubs
             object value = proxy[name];
             if (value is JObject && typeof(T) != typeof(JObject))
             {
-                return JsonConvert.DeserializeObject<T>(((JObject)value).ToString());
+                return JsonConvert.DeserializeObject<T>(value.ToString());
             }
             return (T)value;
         }
 
-        public static void On<T>(this IHubProxy proxy, string eventName, Action<T> subscription)
+        public static Subscription On<T>(this IHubProxy proxy, string eventName, Action<T> onData)
         {
-            proxy.Subscribe(eventName, args =>
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
             {
-                subscription(Convert<T>(args[0]));
-            });
+                onData(Convert<T>(args[0]));
+            };
+
+            return subscription;
         }
 
-        public static void On<T1, T2>(this IHubProxy proxy, string eventName, Action<T1, T2> subscription)
+        public static Subscription On<T1, T2>(this IHubProxy proxy, string eventName, Action<T1, T2> onData)
         {
-            proxy.Subscribe(eventName, args =>
+            Subscription subscription = proxy.Subscribe(eventName);
+
+            subscription.Data += args =>
             {
-                subscription(Convert<T1>(args[0]),
-                             Convert<T2>(args[1]));
-            });
+                onData(Convert<T1>(args[0]),
+                       Convert<T2>(args[1]));
+            };
+
+            return subscription;
         }
 
-        public static void On<T1, T2, T3>(this IHubProxy proxy, string eventName, Action<T1, T2, T3> subscription)
+        public static Subscription On<T1, T2, T3>(this IHubProxy proxy, string eventName, Action<T1, T2, T3> onData)
         {
-            proxy.Subscribe(eventName, args =>
-            {
-                subscription(Convert<T1>(args[0]),
-                             Convert<T2>(args[1]),
-                             Convert<T3>(args[2]));
-            });
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
+        {
+            onData(Convert<T1>(args[0]),
+                   Convert<T2>(args[1]),
+                   Convert<T3>(args[2]));
+        };
+
+            return subscription;
         }
 
-        public static void On<T1, T2, T3, T4>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4> subscription)
+        public static Subscription On<T1, T2, T3, T4>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4> onData)
         {
-            proxy.Subscribe(eventName, args =>
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
             {
-                subscription(Convert<T1>(args[0]),
-                             Convert<T2>(args[1]),
-                             Convert<T3>(args[2]),
-                             Convert<T4>(args[3]));
-            });
+                onData(Convert<T1>(args[0]),
+                       Convert<T2>(args[1]),
+                       Convert<T3>(args[2]),
+                       Convert<T4>(args[3]));
+            };
+            return subscription;
         }
 
 #if !WINDOWS_PHONE
-        public static void On<T1, T2, T3, T4, T5>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5> subscription)
+        public static Subscription On<T1, T2, T3, T4, T5>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5> onData)
         {
-            proxy.Subscribe(eventName, args =>
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
             {
-                subscription(Convert<T1>(args[0]),
-                             Convert<T2>(args[1]),
-                             Convert<T3>(args[2]),
-                             Convert<T4>(args[3]),
-                             Convert<T5>(args[4]));
-            });
+                onData(Convert<T1>(args[0]),
+                       Convert<T2>(args[1]),
+                       Convert<T3>(args[2]),
+                       Convert<T4>(args[3]),
+                       Convert<T5>(args[4]));
+            };
+
+            return subscription;
         }
 
-        public static void On<T1, T2, T3, T4, T5, T6>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5, T6> subscription)
+        public static Subscription On<T1, T2, T3, T4, T5, T6>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5, T6> onData)
         {
-            proxy.Subscribe(eventName, args =>
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
             {
-                subscription(Convert<T1>(args[0]),
-                             Convert<T2>(args[1]),
-                             Convert<T3>(args[2]),
-                             Convert<T4>(args[3]),
-                             Convert<T5>(args[4]),
-                             Convert<T6>(args[5]));
-            });
+                onData(Convert<T1>(args[0]),
+                       Convert<T2>(args[1]),
+                       Convert<T3>(args[2]),
+                       Convert<T4>(args[3]),
+                       Convert<T5>(args[4]),
+                       Convert<T6>(args[5]));
+            };
+
+            return subscription;
         }
 
-        public static void On<T1, T2, T3, T4, T5, T6, T7>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5, T6, T7> subscription)
+        public static Subscription On<T1, T2, T3, T4, T5, T6, T7>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5, T6, T7> onData)
         {
-            proxy.Subscribe(eventName, args =>
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
             {
-                subscription(Convert<T1>(args[0]),
-                             Convert<T2>(args[1]),
-                             Convert<T3>(args[2]),
-                             Convert<T4>(args[3]),
-                             Convert<T5>(args[4]),
-                             Convert<T6>(args[5]),
-                             Convert<T7>(args[6]));
-            });
+                onData(Convert<T1>(args[0]),
+                       Convert<T2>(args[1]),
+                       Convert<T3>(args[2]),
+                       Convert<T4>(args[3]),
+                       Convert<T5>(args[4]),
+                       Convert<T6>(args[5]),
+                       Convert<T7>(args[6]));
+            };
+
+            return subscription;
         }
 
         public static IObservable<object[]> Observe(this IHubProxy proxy, string eventName)
@@ -99,7 +120,6 @@ namespace SignalR.Client.Hubs
             return new Hubservable(proxy, eventName);
         }
 #endif
-
         private static T Convert<T>(object obj)
         {
             if (obj == null)

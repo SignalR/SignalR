@@ -62,6 +62,7 @@
     <Compile Include="Hubs\HubProxy.cs" />
     <Compile Include="Hubs\Hubservable.cs" />
     <Compile Include="Hubs\IHubProxy.cs" />
+    <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />

@@ -10,14 +10,14 @@ namespace SignalR.Client.Hubs
 {
     public class HubProxy :
 #if !WINDOWS_PHONE
-        DynamicObject, 
+ DynamicObject,
 #endif
  IHubProxy
     {
         private readonly string _hubName;
         private readonly HubConnection _connection;
         private readonly Dictionary<string, object> _state = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, Action<object[]>> _subscriptions = new Dictionary<string, Action<object[]>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>(StringComparer.OrdinalIgnoreCase);
 
         public HubProxy(HubConnection connection, string hubName)
         {
@@ -39,30 +39,21 @@ namespace SignalR.Client.Hubs
             }
         }
 
-        public void Subscribe(string eventName, Action<object[]> subscription)
+        public Subscription Subscribe(string eventName)
         {
             if (eventName == null)
             {
                 throw new ArgumentNullException("eventName");
             }
 
-            if (subscription == null)
+            Subscription subscription;
+            if (!_subscriptions.TryGetValue(eventName, out subscription))
             {
-                throw new ArgumentNullException("subscription");
+                subscription = new Subscription();
+                _subscriptions.Add(eventName, subscription);
             }
 
-            // REVIEW: Should we allow multiple subscribers?
-            _subscriptions[eventName] = subscription;
-        }
-
-        public void Unsubscribe(string eventName)
-        {
-            if (eventName == null)
-            {
-                throw new ArgumentNullException("eventName");
-            }
-
-            _subscriptions.Remove(eventName);
+            return subscription;
         }
 
         public Task Invoke(string method, params object[] args)
@@ -130,10 +121,10 @@ namespace SignalR.Client.Hubs
 
         public void InvokeMethod(string eventName, object[] args)
         {
-            Action<object[]> subscription;
-            if (_subscriptions.TryGetValue(eventName, out subscription))
+            Subscription eventObj;
+            if (_subscriptions.TryGetValue(eventName, out eventObj))
             {
-                subscription(args);
+                eventObj.OnData(args);
             }
         }
 
