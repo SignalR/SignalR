@@ -94,7 +94,7 @@ namespace SignalR.Client.Hubs
             });
         }
 
-        public static IObservable<object[]> AsObservable(this IHubProxy proxy, string eventName)
+        public static IObservable<object[]> Observe(this IHubProxy proxy, string eventName)
         {
             return new Hubservable(proxy, eventName);
         }

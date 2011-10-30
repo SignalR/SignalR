@@ -51,6 +51,7 @@ namespace SignalR.Client.Hubs
                 throw new ArgumentNullException("subscription");
             }
 
+            // REVIEW: Should we allow multiple subscribers?
             _subscriptions[eventName] = subscription;
         }
 
