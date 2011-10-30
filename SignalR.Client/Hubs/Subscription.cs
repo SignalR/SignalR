@@ -12,6 +12,6 @@ namespace SignalR.Client.Hubs
             {
                 Data(data);
             }
-        }
+        } 
     }
 }
