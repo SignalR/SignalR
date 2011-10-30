@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,7 +97,7 @@ namespace SignalR
 
         private void RemoveExpiredEntries(object state)
         {
-            if (_gcRunning)
+            if (_gcRunning || Debugger.IsAttached)
             {
                 return;
             }
