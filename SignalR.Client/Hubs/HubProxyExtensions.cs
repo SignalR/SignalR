@@ -16,6 +16,17 @@ namespace SignalR.Client.Hubs
             return (T)value;
         }
 
+        public static Subscription On(this IHubProxy proxy, string eventName, Action onData)
+        {
+            Subscription subscription = proxy.Subscribe(eventName);
+            subscription.Data += args =>
+            {
+                onData();
+            };
+
+            return subscription;
+        }
+
         public static Subscription On<T>(this IHubProxy proxy, string eventName, Action<T> onData)
         {
             Subscription subscription = proxy.Subscribe(eventName);
