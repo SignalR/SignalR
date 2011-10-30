@@ -52,11 +52,18 @@ namespace SignalR.Client.Hubs
 
         private void OnReceived(string message)
         {
-            var invocation = JsonConvert.DeserializeObject<HubInvocation>(message);
-
+            var invocation = JsonConvert.DeserializeObject<HubInvocation>(message);            
             HubProxy hubProxy;
             if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
             {
+                if (invocation.State != null)
+                {
+                    foreach (var state in invocation.State)
+                    {
+                        hubProxy[state.Key] = state.Value;
+                    }
+                }
+
                 hubProxy.InvokeEvent(invocation.Method, invocation.Args);
             }
         }
