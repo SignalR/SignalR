@@ -41,7 +41,6 @@ namespace SignalR.Client.Hubs
         public static Subscription On<T1, T2>(this IHubProxy proxy, string eventName, Action<T1, T2> onData)
         {
             Subscription subscription = proxy.Subscribe(eventName);
-
             subscription.Data += args =>
             {
                 onData(Convert<T1>(args[0]),
@@ -55,11 +54,11 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
             subscription.Data += args =>
-        {
-            onData(Convert<T1>(args[0]),
-                   Convert<T2>(args[1]),
-                   Convert<T3>(args[2]));
-        };
+            {
+                onData(Convert<T1>(args[0]),
+                       Convert<T2>(args[1]),
+                       Convert<T3>(args[2]));
+            };
 
             return subscription;
         }
@@ -74,6 +73,7 @@ namespace SignalR.Client.Hubs
                        Convert<T3>(args[2]),
                        Convert<T4>(args[3]));
             };
+
             return subscription;
         }
 
