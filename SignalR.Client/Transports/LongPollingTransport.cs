@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -24,7 +25,8 @@ namespace SignalR.Client.Transports
                 { "data", data },
                 { "messageId", Convert.ToString(connection.MessageId) },
                 { "clientId", connection.ClientId },
-                { "transport", "longPolling" }
+                { "transport", "longPolling" },
+                { "groups", String.Join(",", connection.Groups.ToArray()) }
             };
 
             HttpHelper.PostAsync(url, parameters).ContinueWith(task =>
@@ -46,7 +48,7 @@ namespace SignalR.Client.Transports
                 {
                     if (task.IsFaulted)
                     {
-                        connection.RaiseOnError(task.Exception.GetBaseException());
+                        connection.OnError(task.Exception.GetBaseException());
 
                         // If we can recover from this exception then sleep for 2 seconds
                         if (CanRecover(task.Exception))
@@ -121,32 +123,41 @@ namespace SignalR.Client.Transports
             try
             {
                 JObject result = JObject.Parse(response);
-                JToken messages = result["Messages"];
+                var messages = result["Messages"] as JArray;
 
                 if (messages != null)
                 {
-                    if (messages.HasValues)
+                    foreach (var message in messages)
                     {
-                        foreach (var message in messages.Children())
+                        try
                         {
-                            try
-                            {
-                                connection.RaiseOnReceived(message.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine("Failed to process message: {0}", ex);
-                                connection.RaiseOnError(ex);
-                            }
+                            connection.OnReceived(message.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine("Failed to process message: {0}", ex);
+                            connection.OnError(ex);
                         }
                     }
+
                     connection.MessageId = result["MessageId"].Value<long>();
+
+                    var transportData = result["TransportData"] as JObject;
+
+                    if (transportData != null)
+                    {
+                        var groups = (JArray)transportData["Groups"];
+                        if (groups != null)
+                        {
+                            connection.Groups = groups.Select(token => token.Value<string>());
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Failed to response: {0}", ex);
-                connection.RaiseOnError(ex);
+                connection.OnError(ex);
             }
         }
     }

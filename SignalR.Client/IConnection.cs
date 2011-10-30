@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalR.Client
@@ -8,6 +9,7 @@ namespace SignalR.Client
         bool IsActive { get; }
         long? MessageId { get; set; }
         Func<string> Sending { get; set; }
+        IEnumerable<string> Groups { get; }
         string ClientId { get; }
         string Url { get; }
 

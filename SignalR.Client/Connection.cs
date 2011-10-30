@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Client.Transports;
@@ -21,7 +23,10 @@ namespace SignalR.Client
             }
 
             Url = url;
+            Groups = Enumerable.Empty<string>();
         }
+
+        public IEnumerable<string> Groups { get; internal set; }
 
         public Func<string> Sending { get; set; }
 
@@ -90,7 +95,7 @@ namespace SignalR.Client
             return _transport.Send<T>(this, data);
         }
 
-        internal void RaiseOnReceived(string message)
+        internal void OnReceived(string message)
         {
             if (Received != null)
             {
@@ -98,7 +103,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void RaiseOnError(Exception error)
+        internal void OnError(Exception error)
         {
             if (Error != null)
             {
