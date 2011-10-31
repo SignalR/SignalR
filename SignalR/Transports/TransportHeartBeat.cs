@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -11,12 +12,14 @@ namespace SignalR.Transports
     {
         private readonly static TransportHeartBeat _instance = new TransportHeartBeat();
         private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ClientIdEqualityComparer());
+        private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>();
         private readonly Timer _timer;
         private TimeSpan _heartBeatInterval;
 
         private TransportHeartBeat()
         {
-            _heartBeatInterval = TimeSpan.FromSeconds(30);
+            _heartBeatInterval = TimeSpan.FromSeconds(10);
+
             // REVIEW: When to dispose the timer?
             _timer = new Timer(_ => Beat(),
                                null,
@@ -45,13 +48,23 @@ namespace SignalR.Transports
 
         public void AddConnection(ITrackingDisconnect connection)
         {
+            // Remove and re-add the connection so we have the correct object reference
             _connections.Remove(connection);
             _connections.Add(connection);
         }
 
         public void RemoveConnection(ITrackingDisconnect connection)
         {
+            // Remove the connection and associated metadata
             _connections.Remove(connection);
+            DateTime removed;
+            _connectionMetadata.TryRemove(connection, out removed);
+        }
+
+        public void MarkConnection(ITrackingDisconnect connection)
+        {
+            // Mark this time this connection was used
+            _connectionMetadata[connection] = DateTime.UtcNow;
         }
 
         private void Beat()
@@ -62,8 +75,24 @@ namespace SignalR.Transports
                 {
                     if (!connection.IsAlive)
                     {
+                        DateTime lastUsed;
+                        if (_connectionMetadata.TryGetValue(connection, out lastUsed))
+                        {
+                            // Calculate how long this connection has been inactive
+                            var elapsed = DateTime.UtcNow - lastUsed;
+
+                            // The threshold for disconnect is the long poll delay + (potential network issues)
+                            var threshold = TimeSpan.FromMilliseconds(LongPollingTransport.LongPollDelay) +
+                                            TimeSpan.FromSeconds(2); // yes this is a magic number :)
+
+                            if (elapsed < threshold)
+                            {
+                                return;
+                            }
+                        }
+
                         connection.Disconnect();
-                        _connections.Remove(connection);
+                        RemoveConnection(connection);
                     }
                 });
             }

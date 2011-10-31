@@ -133,6 +133,8 @@ namespace SignalR.Transports
 
         public virtual void Send(PersistentResponse response)
         {
+            _heartBeat.MarkConnection(this);
+
             AddTransportData(response);
             Send((object)response);
         }
