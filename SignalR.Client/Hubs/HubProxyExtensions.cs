@@ -74,6 +74,11 @@ namespace SignalR.Client.Hubs
         }
 
 #if !WINDOWS_PHONE
+        public static Subscription On(this IHubProxy proxy, string eventName, Action<dynamic> onData)
+        {
+            return On<dynamic>(proxy, eventName, onData);
+        }
+
         public static Subscription On<T1, T2, T3, T4, T5>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5> onData)
         {
             Subscription subscription = proxy.Subscribe(eventName);
