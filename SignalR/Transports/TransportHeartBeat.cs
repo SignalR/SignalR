@@ -83,7 +83,7 @@ namespace SignalR.Transports
 
                             // The threshold for disconnect is the long poll delay + (potential network issues)
                             var threshold = TimeSpan.FromMilliseconds(LongPollingTransport.LongPollDelay) +
-                                            TimeSpan.FromSeconds(5); // yes this is a magic number :)
+                                            TimeSpan.FromSeconds(10); // yes this is a magic number :)
 
                             if (elapsed < threshold)
                             {
