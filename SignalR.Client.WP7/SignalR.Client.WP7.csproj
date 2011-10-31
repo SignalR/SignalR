@@ -66,6 +66,9 @@
     <Compile Include="..\SignalR.Client\Hubs\HubConnection.cs">
       <Link>Hubs\HubConnection.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubData.cs">
+      <Link>Hubs\HubData.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubInvocation.cs">
       <Link>Hubs\HubInvocation.cs</Link>
     </Compile>
@@ -74,6 +77,9 @@
     </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubProxyExtensions.cs">
       <Link>Hubs\HubProxyExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubRegistrationData.cs">
+      <Link>Hubs\HubRegistrationData.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubResult.cs">
       <Link>Hubs\HubResult.cs</Link>

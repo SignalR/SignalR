@@ -41,7 +41,7 @@ namespace SignalR.Client.Hubs
 
         private string OnSending()
         {
-            var data = _hubs.Select(p => new
+            var data = _hubs.Select(p => new HubRegistrationData
             {
                 Name = p.Key,
                 Methods = p.Value.GetSubscriptions()
@@ -52,7 +52,7 @@ namespace SignalR.Client.Hubs
 
         private void OnReceived(string message)
         {
-            var invocation = JsonConvert.DeserializeObject<HubInvocation>(message);            
+            var invocation = JsonConvert.DeserializeObject<HubInvocation>(message);
             HubProxy hubProxy;
             if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
             {

@@ -136,13 +136,5 @@ namespace SignalR.Client.Hubs
         {
             return _subscriptions.Keys;
         }
-
-        private class HubData
-        {
-            public Dictionary<string, object> State { get; set; }
-            public object[] Data { get; set; }
-            public string Action { get; set; }
-            public string Hub { get; set; }
-        }
     }
 }
