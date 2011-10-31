@@ -117,7 +117,6 @@ namespace SignalR.Tests
             transport.Object.ProcessRequest(connection.Object)().Wait();
 
             heartBeat.Verify(m => m.AddConnection(transport.Object), Times.Once());
-            heartBeat.Verify(m => m.RemoveConnection(transport.Object), Times.Once());
             connection.Verify(m => m.ReceiveAsync(), Times.Once());
             transport.Verify(m => m.Send(persistentResponse), Times.Once());
             response.VerifySet(m => m.ContentType = "application/json");
@@ -146,7 +145,6 @@ namespace SignalR.Tests
             transport.Object.ProcessRequest(connection.Object)().Wait();
 
             heartBeat.Verify(m => m.AddConnection(transport.Object), Times.Once());
-            heartBeat.Verify(m => m.RemoveConnection(transport.Object), Times.Once());
             connection.Verify(m => m.ReceiveAsync(20), Times.Once());
             transport.Verify(m => m.Send(persistentResponse), Times.Once());
             response.VerifySet(m => m.ContentType = "application/json");

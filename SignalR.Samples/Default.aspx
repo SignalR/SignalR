@@ -10,6 +10,7 @@
             <li class="raw"><a href="Raw/"><p class="title">Raw Connection</p></a></li>
             <li class="streaming"><a href="Streaming/"><p class="title">Streaming</p></a></li>
             <li class="demo-hub"><a href="Hubs/DemoHub/"><p class="title">Demo Hub</p></a></li>
+            <li class="status"><a href="Hubs/ConnectDisconnect/"><p class="title">Connection Status</p></a></li>
             <li class="chat"><a href="Hubs/Chat/"><p class="title">Chat</p></a></li>
             <li class="mouse-tracking"><a href="Hubs/MouseTracking/"><p class="title">Mouse Tracking</p></a></li>
             <li class="shape-share"><a href="Hubs/ShapeShare/"><p class="title">Shape Share</p></a></li>

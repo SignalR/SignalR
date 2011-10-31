@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" /> 
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -115,6 +115,8 @@
     <Content Include="Default.aspx" />
     <Content Include="Hubs\Chat\Mobile.css" />
     <Content Include="Hubs\Chat\mobile.htm" />
+    <Content Include="Hubs\ConnectDisconnect\Status.js" />
+    <Content Include="Hubs\ConnectDisconnect\index.htm" />
     <Content Include="Hubs\DemoHub\index.htm" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
     <Content Include="Hubs\Chat\Chat.css" />
@@ -166,6 +168,7 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
     <Compile Include="Hubs\DemoHub\DemoHub.cs" />
     <Compile Include="Hubs\Chat\Chat.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\CollegeHumorContentProvider.cs" />
