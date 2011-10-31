@@ -139,7 +139,7 @@ namespace SignalR.Client.Hubs
                 return default(T);
             }
 
-            if (typeof(T) == typeof(string) && obj is string)
+            if (typeof(T).IsAssignableFrom(obj.GetType()))
             {
                 return (T)obj;
             }
