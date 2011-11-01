@@ -19,6 +19,7 @@ namespace SignalR.Transports
         private TransportHeartBeat()
         {
             _heartBeatInterval = TimeSpan.FromSeconds(10);
+            DisconnectTimeout = TimeSpan.FromSeconds(10);
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(_ => Beat(),
@@ -45,6 +46,11 @@ namespace SignalR.Transports
             }
         }
 
+        public TimeSpan DisconnectTimeout
+        {
+            get;
+            set;
+        }
 
         public void AddConnection(ITrackingDisconnect connection)
         {
@@ -83,7 +89,7 @@ namespace SignalR.Transports
 
                             // The threshold for disconnect is the long poll delay + (potential network issues)
                             var threshold = TimeSpan.FromMilliseconds(LongPollingTransport.LongPollDelay) +
-                                            TimeSpan.FromSeconds(10); // yes this is a magic number :)
+                                            DisconnectTimeout;
 
                             if (elapsed < threshold)
                             {
