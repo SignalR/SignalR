@@ -122,7 +122,13 @@ namespace SignalR.Client.Transports
 
             try
             {
-                JObject result = JObject.Parse(response);
+                var result = JValue.Parse(response);
+
+                if (!result.HasValues)
+                {
+                    return;
+                }
+
                 var messages = result["Messages"] as JArray;
 
                 if (messages != null)
