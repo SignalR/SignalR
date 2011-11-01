@@ -223,7 +223,7 @@
 
                     $(connection).trigger("onSending");
                     if (connection.data) {
-                        url += "?data=" + connection.data + "&transport=webSockets&clientId=" + connection.clientId;
+                        url += "?connectionData=" + connection.data + "&transport=webSockets&clientId=" + connection.clientId;
                     } else {
                         url += "?transport=webSockets&clientId=" + connection.clientId;
                     }
@@ -291,7 +291,7 @@
                             data: {
                                 clientId: instance.clientId,
                                 messageId: messageId,
-                                data: instance.data,
+                                connectionData: instance.data,
                                 transport: "longPolling",
                                 groups: (instance.groups || []).toString()
                             },

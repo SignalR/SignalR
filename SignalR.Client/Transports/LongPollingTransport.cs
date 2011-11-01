@@ -22,7 +22,7 @@ namespace SignalR.Client.Transports
             }
 
             var parameters = new Dictionary<string, string> {
-                { "data", data },
+                { "connectionData", data },
                 { "messageId", Convert.ToString(connection.MessageId) },
                 { "clientId", connection.ClientId },
                 { "transport", "longPolling" },

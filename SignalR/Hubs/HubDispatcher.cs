@@ -213,23 +213,14 @@ namespace SignalR.Hubs
 
         protected override IConnection CreateConnection(string clientId, IEnumerable<string> groups, HttpContextBase context)
         {
-            string data = context.Request["data"];
+            string data = context.Request["connectionData"];
 
             if (String.IsNullOrEmpty(data))
             {
                 return base.CreateConnection(clientId, groups, context);
             }
 
-            IEnumerable<ClientHubInfo> clientHubInfo = null;
-
-            try
-            {
-                clientHubInfo = _serializer.Deserialize<IEnumerable<ClientHubInfo>>(data);
-            }
-            catch
-            {
-
-            }
+            var clientHubInfo = _serializer.Deserialize<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {
