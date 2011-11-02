@@ -65,6 +65,16 @@
             $('#taskWithException').html(e);
         });
 
+        demo.overload().done(function () {
+            $('#overloads').html('Void Overload called');
+
+            window.setTimeout(function () {
+                demo.overload(1).done(function (n) {
+                    $('#overloads').html('Overload with return value called =>' + n);
+                });
+            }, 1000);
+        });
+
         demo.addToGroups();
     });
 });

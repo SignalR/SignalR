@@ -86,6 +86,16 @@ namespace SignalR.Samples.Hubs.DemoHub
             }
         }
 
+        public void Overload()
+        {
+
+        }
+
+        public int Overload(int n)
+        {
+            return n;
+        }
+
         public class Person
         {
             public string Name { get; set; }

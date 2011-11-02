@@ -77,11 +77,16 @@ namespace SignalR.Hubs
             sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
             sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
             sb.AppendLine("                connection: function () { return signalR.hub; }");
-            sb.AppendFormat("            }}").AppendLine();
+            sb.AppendFormat("            }}");
             if (methods.Any())
             {
-                sb.Append(",");
+                sb.Append(",").AppendLine();
             }
+            else
+            {
+                sb.AppendLine();
+            }
+
             bool first = true;
 
             foreach (var method in methods)
@@ -104,7 +109,13 @@ namespace SignalR.Hubs
 
         protected virtual IEnumerable<MethodInfo> GetMethods(Type type)
         {
-            return ReflectionHelper.GetExportedHubMethods(type);
+            // Pick the overload with the minimum number of arguments
+            return from method in ReflectionHelper.GetExportedHubMethods(type)
+                   group method by method.Name into overloads
+                   let overload = (from overload in overloads
+                                   orderby overload.GetParameters().Length
+                                   select overload).FirstOrDefault()
+                   select overload;
         }
 
         private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method)
