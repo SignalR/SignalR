@@ -60,6 +60,11 @@ namespace SignalR.Client
             {
                 string raw = task.Result.ReadAsString();
 
+                if (raw == null)
+                {
+                    throw new InvalidOperationException("Failed to negotiate");
+                }
+
                 var negotiationResponse = JsonConvert.DeserializeObject<NegotiationResponse>(raw);
 
                 ClientId = negotiationResponse.ClientId;

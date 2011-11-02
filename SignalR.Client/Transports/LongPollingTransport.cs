@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,17 +48,17 @@ namespace SignalR.Client.Transports
                 {
                     if (task.IsFaulted)
                     {
-                        connection.OnError(task.Exception.GetBaseException());
+                        // Get the underlying exception
+                        Exception exception = task.Exception.GetBaseException();
 
-                        // If we can recover from this exception then sleep for 2 seconds
-                        if (CanRecover(task.Exception))
+                        // Raise on error
+                        connection.OnError(exception);
+
+                        // If the connection is still active after raising the error event wait for 2 seconds
+                        // before polling again so we aren't hammering the server
+                        if (connection.IsActive)
                         {
                             Thread.Sleep(2000);
-                        }
-                        else
-                        {
-                            // If we couldn't recover then we need to stop the connection
-                            connection.Stop();
                         }
                     }
 
@@ -96,21 +96,6 @@ namespace SignalR.Client.Transports
 
         public void Stop(Connection connection)
         {
-        }
-
-        private bool CanRecover(Exception exception)
-        {
-            var webException = exception.GetBaseException() as WebException;
-            if (webException != null)
-            {
-                var httpResponse = (HttpWebResponse)webException.Response;
-                if (httpResponse != null &&
-                    httpResponse.StatusCode != HttpStatusCode.InternalServerError)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private static void ProcessResponse(Connection connection, string response)

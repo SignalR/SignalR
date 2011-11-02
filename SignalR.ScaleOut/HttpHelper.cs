@@ -9,7 +9,7 @@ namespace SignalR
 {
     internal static class HttpHelper
     {
-        public static Task<HttpWebResponse> GetAsync(this HttpWebRequest request)
+        public static Task<HttpWebResponse> GetResponseAsync(this HttpWebRequest request)
         {
             return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, iar => (HttpWebResponse)request.EndGetResponse(iar), null);
         }
@@ -28,7 +28,7 @@ namespace SignalR
         {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
             requestPreparer(request);
-            return request.GetAsync();
+            return request.GetResponseAsync();
         }
 
         public static Task<HttpWebResponse> PostAsync(string url)
@@ -41,26 +41,35 @@ namespace SignalR
             return PostInternal(url, _ => { }, postData);
         }
 
-        public static Task<HttpWebResponse> PostAsync(string url, Action<WebRequest> requestPreparer, IDictionary<string, string> postData)
+        public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             return PostInternal(url, requestPreparer, postData);
         }
 
         public static string ReadAsString(this HttpWebResponse response)
         {
-            using (response)
+            try
             {
-                using (Stream stream = response.GetResponseStream())
+                using (response)
                 {
-                    using (var reader = new StreamReader(stream))
+                    using (Stream stream = response.GetResponseStream())
                     {
-                        return reader.ReadToEnd();
+                        using (var reader = new StreamReader(stream))
+                        {
+                            return reader.ReadToEnd();
+                        }
                     }
                 }
             }
+            catch(IOException)
+            {
+                // This happens when the connection is closed while reading from the response stream or something
+                // similar
+                return null;
+            }
         }
 
-        private static Task<HttpWebResponse> PostInternal(string url, Action<WebRequest> requestPreparer, IDictionary<string, string> postData)
+        private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
 
@@ -94,13 +103,11 @@ namespace SignalR
                 .Success(t =>
                 {
                     t.Result.Write(buffer, 0, buffer.Length);
-#if WINDOWS_PHONE
                     t.Result.Close();
-#endif
                 })
                 .Success(t =>
                 {
-                    return request.GetAsync();
+                    return request.GetResponseAsync();
                 })
                 .Unwrap();
         }
