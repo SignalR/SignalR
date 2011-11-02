@@ -16,15 +16,15 @@ namespace SignalR.Client.Hubs
 
         public override Task Start()
         {
-            Sending += OnSending;
-            Received += OnReceived;
+            Sending += OnConnectionSending;
+            Received += OnConnectionReceived;
             return base.Start();
         }
 
         public override void Stop()
         {
-            Sending -= OnSending;
-            Received -= OnReceived;
+            Sending -= OnConnectionSending;
+            Received -= OnConnectionReceived;
             base.Stop();
         }
 
@@ -39,7 +39,7 @@ namespace SignalR.Client.Hubs
             return hubProxy;
         }
 
-        private string OnSending()
+        private string OnConnectionSending()
         {
             var data = _hubs.Select(p => new HubRegistrationData
             {
@@ -50,7 +50,7 @@ namespace SignalR.Client.Hubs
             return JsonConvert.SerializeObject(data);
         }
 
-        private void OnReceived(string message)
+        private void OnConnectionReceived(string message)
         {
             var invocation = JsonConvert.DeserializeObject<HubInvocation>(message);
             HubProxy hubProxy;
