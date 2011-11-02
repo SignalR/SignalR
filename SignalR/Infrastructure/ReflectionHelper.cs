@@ -28,5 +28,19 @@ namespace SignalR.Infrastructure
                                 .Where(m => !_excludeTypes.Contains(m.DeclaringType));
 
         }
+
+        internal static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
+            where TAttribute : Attribute
+        {
+            var attributes = source.GetCustomAttributes(typeof(TAttribute), false)
+                .Cast<TAttribute>()
+                .ToList();
+            if (attributes.Any())
+            {
+                return valueGetter(attributes[0]);
+            }
+            return default(TResult);
+        }
+
     }
 }

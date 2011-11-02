@@ -29,6 +29,7 @@ namespace SignalR.Hubs
         private readonly IJavaScriptProxyGenerator _proxyGenerator;
         private readonly string _url;
         private readonly IHubLocator _hubLocator;
+        private readonly IHubTypeResolver _hubTypeResolver;
 
         private HttpCookieCollection _cookies;
         private IPrincipal _user;
@@ -42,6 +43,7 @@ namespace SignalR.Hubs
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
                    DependencyResolver.Resolve<IJsonStringifier>(),
                    DependencyResolver.Resolve<IHubLocator>(),
+                   DependencyResolver.Resolve<IHubTypeResolver>(),
                    url)
         {
         }
@@ -54,6 +56,7 @@ namespace SignalR.Hubs
                              IJavaScriptProxyGenerator proxyGenerator,
                              IJsonStringifier jsonStringifier,
                              IHubLocator hubLocator,
+                             IHubTypeResolver hubTypeResolver,
                              string url)
             : base(signaler, clientIdFactory, store, jsonStringifier)
         {
@@ -63,6 +66,7 @@ namespace SignalR.Hubs
             _actionResolver = actionResolver;
             _proxyGenerator = proxyGenerator;
             _hubLocator = hubLocator;
+            _hubTypeResolver = hubTypeResolver;
             _url = VirtualPathUtility.ToAbsolute(url);
         }
 
@@ -238,6 +242,17 @@ namespace SignalR.Hubs
                 hubInfo.CreateQualifiedName(clientId),
                 hubInfo.CreateQualifiedName(clientId) + "." + PersistentConnection.SignalrCommand
             };
+
+            // Try to find the associated hub type
+            Type hubType = _hubTypeResolver.ResolveType(hubInfo.Name);
+
+            if (hubType == null)
+            {
+                throw new InvalidOperationException(String.Format("Unable to resolve hub {0}.", hubInfo.Name));
+            }
+
+            // Set the full type name
+            hubInfo.Name = hubType.FullName;
 
             // Create the signals for hubs
             return hubInfo.Methods.Select(hubInfo.CreateQualifiedName)

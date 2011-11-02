@@ -102,6 +102,9 @@ namespace SignalR.Infrastructure
                 var hubLocator = new DefaultHubLocator();
                 Register(typeof(IHubLocator), () => hubLocator);
 
+                var hubTypeResolver = new Lazy<DefaultHubTypeResolver>(() => new DefaultHubTypeResolver());
+                Register(typeof(IHubTypeResolver), () => hubTypeResolver.Value);
+
                 var signalBus = new InProcessSignalBus();
                 Register(typeof(ISignalBus), () => signalBus);
 

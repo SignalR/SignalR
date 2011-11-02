@@ -1,33 +1,41 @@
 ﻿using System;
 using System.Globalization;
-using System.Web.Compilation;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
     public class DefaultHubFactory : IHubFactory
     {
-        private IHubActivator _hubActivator;
+        private readonly IHubActivator _hubActivator;
+        private readonly IHubTypeResolver _hubTypeResolver;
 
         public DefaultHubFactory()
-            : this(DependencyResolver.Resolve<IHubActivator>())
+            : this(DependencyResolver.Resolve<IHubActivator>(),
+                   DependencyResolver.Resolve<IHubTypeResolver>())
         {
 
         }
 
-        public DefaultHubFactory(IHubActivator hubActivator)
+        public DefaultHubFactory(IHubActivator hubActivator, IHubTypeResolver hubTypeResolver)
         {
             if (hubActivator == null)
             {
                 throw new ArgumentNullException("hubActivator");
             }
+
+            if (hubTypeResolver == null)
+            {
+                throw new ArgumentNullException("hubTypeResolver");
+            }
+
             _hubActivator = hubActivator;
+            _hubTypeResolver = hubTypeResolver;
         }
 
         public IHub CreateHub(string hubName)
         {
             // Get the type name from the client
-            Type type = BuildManager.GetType(hubName, throwOnError: false);
+            Type type = _hubTypeResolver.ResolveType(hubName);
 
             if (type == null)
             {

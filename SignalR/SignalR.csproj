@@ -57,11 +57,13 @@
     <Compile Include="DefaultPersistentConnectionFactory.cs" />
     <Compile Include="GuidClientIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
+    <Compile Include="Hubs\DefaultHubTypeResolver.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IDisconnect.cs" />
     <Compile Include="Hubs\IHub.cs" />
+    <Compile Include="Hubs\IHubTypeResolver.cs" />
     <Compile Include="IClientIdFactory.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
