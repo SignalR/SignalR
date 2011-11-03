@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,14 +51,19 @@ namespace SignalR.Client.Transports
                         // Get the underlying exception
                         Exception exception = task.Exception.GetBaseException();
 
-                        // Raise on error
-                        connection.OnError(exception);
-
-                        // If the connection is still active after raising the error event wait for 2 seconds
-                        // before polling again so we aren't hammering the server
-                        if (connection.IsActive)
+                        // Sometimes a connection might have been closed by the server before we get to write anything
+                        // so just try again and don't raise OnError.
+                        if (!(exception is IOException))
                         {
-                            Thread.Sleep(2000);
+                            // Raise on error
+                            connection.OnError(exception);
+
+                            // If the connection is still active after raising the error event wait for 2 seconds
+                            // before polling again so we aren't hammering the server
+                            if (connection.IsActive)
+                            {
+                                Thread.Sleep(2000);
+                            }
                         }
                     }
 
