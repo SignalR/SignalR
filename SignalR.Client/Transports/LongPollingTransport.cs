@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -12,6 +13,9 @@ namespace SignalR.Client.Transports
 {
     public class LongPollingTransport : IClientTransport
     {
+        private HttpWebRequest _pollingRequest;
+        private readonly object _lockObj = new object();
+
         public void Start(Connection connection, string data)
         {
             string url = connection.Url;
@@ -29,8 +33,26 @@ namespace SignalR.Client.Transports
                 { "groups", String.Join(",", connection.Groups.ToArray()) }
             };
 
-            HttpHelper.PostAsync(url, connection.PrepareRequest, parameters).ContinueWith(task =>
+            Action<HttpWebRequest> prepareRequest = request =>
             {
+                // Setup the user agent along with any other defaults
+                connection.PrepareRequest(request);
+
+                lock (_lockObj)
+                {
+                    // Keep track of the pending request just in case we need to cancel it.
+                    _pollingRequest = request;
+                }
+            };
+
+            HttpHelper.PostAsync(url, prepareRequest, parameters).ContinueWith(task =>
+            {
+                lock (_lockObj)
+                {
+                    // Clear the pending request
+                    _pollingRequest = null;
+                }
+
                 try
                 {
                     if (!task.IsFaulted)
@@ -46,14 +68,19 @@ namespace SignalR.Client.Transports
                 }
                 finally
                 {
+                    bool requestAborted = false;
+
                     if (task.IsFaulted)
                     {
                         // Get the underlying exception
                         Exception exception = task.Exception.GetBaseException();
 
+                        // Figure out if the request was aborted
+                        requestAborted = IsRequestAborted(exception);
+
                         // Sometimes a connection might have been closed by the server before we get to write anything
                         // so just try again and don't raise OnError.
-                        if (!(exception is IOException))
+                        if (!requestAborted && !(exception is IOException))
                         {
                             // Raise on error
                             connection.OnError(exception);
@@ -67,13 +94,19 @@ namespace SignalR.Client.Transports
                         }
                     }
 
-                    // Only continue if the connection is still active
-                    if (connection.IsActive)
+                    // Only continue if the connection is still active and wasn't aborted
+                    if (!requestAborted && connection.IsActive)
                     {
                         Start(connection, data);
                     }
                 }
             });
+        }
+
+        private static bool IsRequestAborted(Exception exception)
+        {
+            var webException = exception as WebException;
+            return (webException != null && webException.Status == WebExceptionStatus.RequestCanceled);
         }
 
         public Task<T> Send<T>(Connection connection, string data)
@@ -101,6 +134,24 @@ namespace SignalR.Client.Transports
 
         public void Stop(Connection connection)
         {
+            if (_pollingRequest != null)
+            {
+                lock (_lockObj)
+                {
+                    if (_pollingRequest != null)
+                    {
+                        try
+                        {
+                            _pollingRequest.Abort();
+                            _pollingRequest = null;
+                        }
+                        catch (NotImplementedException)
+                        {
+                            // If this isn't implemented then do nothing
+                        }
+                    }
+                }
+            }
         }
 
         private static void ProcessResponse(Connection connection, string response)
