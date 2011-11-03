@@ -12,7 +12,7 @@ namespace SignalR.Transports
     {
         private readonly static TransportHeartBeat _instance = new TransportHeartBeat();
         private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ClientIdEqualityComparer());
-        private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>();
+        private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>(new ClientIdEqualityComparer());
         private readonly Timer _timer;
         private TimeSpan _heartBeatInterval;
 
@@ -57,6 +57,10 @@ namespace SignalR.Transports
             // Remove and re-add the connection so we have the correct object reference
             _connections.Remove(connection);
             _connections.Add(connection);
+
+            // Remove the metadata for new connections
+            DateTime removed;
+            _connectionMetadata.TryRemove(connection, out removed);
         }
 
         public void RemoveConnection(ITrackingDisconnect connection)
