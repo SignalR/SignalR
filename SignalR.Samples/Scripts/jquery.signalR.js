@@ -206,7 +206,8 @@
 
             start: function (connection, onSuccess, onFailed) {
                 var url,
-                    opened = false;
+                    opened = false,
+                    protocol;
 
                 if (window.MozWebSocket) {
                     window.WebSocket = window.MozWebSocket;
@@ -228,7 +229,9 @@
                         url += "?transport=webSockets&clientId=" + connection.clientId;
                     }
 
-                    connection.socket = new window.WebSocket("ws://" + url);
+                    protocol = document.location.protocol === "https:" ? "wss://" : "ws://";
+
+                    connection.socket = new window.WebSocket(protocol + url);
                     connection.socket.onopen = function () {
                         opened = true;
                         if (onSuccess) {
@@ -240,7 +243,11 @@
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
-                            }
+                            } 
+                        } else if (typeof event.wasClean != 'undefined' && event.wasClean === false) {
+                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                            $(connection).trigger('onError');
                         }
                         connection.socket = null;
                     };

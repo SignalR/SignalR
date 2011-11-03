@@ -243,11 +243,11 @@
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
-                            } else if (!event.wasClean) {
-                                // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                                // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                                $(connection).trigger('onError', event);
-                            }
+                            } 
+                        } else if (typeof event.wasClean != 'undefined' && event.wasClean === false) {
+                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                            $(connection).trigger('onError');
                         }
                         connection.socket = null;
                     };
