@@ -41,6 +41,11 @@ namespace SignalR
             return PostInternal(url, _ => { }, postData);
         }
 
+        public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer)
+        {
+            return PostInternal(url, requestPreparer, new Dictionary<string, string>());
+        }
+
         public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             return PostInternal(url, requestPreparer, postData);
@@ -61,7 +66,7 @@ namespace SignalR
                     }
                 }
             }
-            catch(IOException)
+            catch (IOException)
             {
                 // This happens when the connection is closed while reading from the response stream or something
                 // similar

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -29,7 +28,7 @@ namespace SignalR.Client.Transports
                 { "groups", String.Join(",", connection.Groups.ToArray()) }
             };
 
-            HttpHelper.PostAsync(url, parameters).ContinueWith(task =>
+            HttpHelper.PostAsync(url, connection.PrepareRequest, parameters).ContinueWith(task =>
             {
                 try
                 {
@@ -81,7 +80,7 @@ namespace SignalR.Client.Transports
                 { "transport" , "longPolling" }
             };
 
-            return HttpHelper.PostAsync(url, postData).Success(task =>
+            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Success(task =>
             {
                 string raw = task.Result.ReadAsString();
 

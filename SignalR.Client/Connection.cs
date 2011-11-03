@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Client.Transports;
@@ -56,7 +58,7 @@ namespace SignalR.Client
 
             string negotiateUrl = Url + "negotiate";
 
-            return HttpHelper.PostAsync(negotiateUrl).Success(task =>
+            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Success(task =>
             {
                 string raw = task.Result.ReadAsString();
 
@@ -114,6 +116,17 @@ namespace SignalR.Client
             {
                 Error(error);
             }
+        }
+
+        internal void PrepareRequest(HttpWebRequest request)
+        {
+            request.UserAgent = CreateUserAgentString("SignalR.Client");
+        }
+
+        private static string CreateUserAgentString(string client)
+        {
+            var version = typeof(Connection).Assembly.GetName().Version;
+            return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, version, Environment.OSVersion);
         }
     }
 }
