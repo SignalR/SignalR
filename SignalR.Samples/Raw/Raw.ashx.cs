@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
@@ -21,13 +22,13 @@ namespace SignalR.Samples.Raw
 
             string user = GetUser(clientId);
 
-            return Connection.Broadcast(user + " joined");
+            return Connection.Broadcast(DateTime.Now + ": " + user + " joined");
         }
 
         protected override Task OnDisconnectAsync(string clientId)
         {
             _users.Remove(clientId);
-            return Connection.Broadcast(GetUser(clientId) + " disconnected");
+            return Connection.Broadcast(DateTime.Now + ": " + GetUser(clientId) + " disconnected");
         }
 
         protected override void OnReceived(string clientId, string data)
