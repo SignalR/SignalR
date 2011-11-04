@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -66,10 +67,10 @@ namespace SignalR
                     }
                 }
             }
-            catch (IOException)
+            catch(Exception ex)
             {
-                // This happens when the connection is closed while reading from the response stream or something
-                // similar
+                Debug.WriteLine("Failed to read resonse: {0}", ex);
+                // Swallow exceptions when reading the response stream and just try again.
                 return null;
             }
         }
