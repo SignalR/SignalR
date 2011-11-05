@@ -14,6 +14,9 @@ SignalR is broken up into a few package on NuGet:
 
 * [SignalR.Ninject](http://nuget.org/List/Packages/SignalR.Ninject) - Ninject dependeny resolver for SignalR
 
+## Documentation
+https://github.com/SignalR/SignalR/wiki
+
 
 To get started:
 
