@@ -18,6 +18,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Tests", "SignalR.Tests\SignalR.Tests.csproj", "{FBA09237-84CC-4383-BD12-CDF58E4020E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7", "SignalR.Client.WP7\SignalR.Client.WP7.csproj", "{2D23C742-9886-4079-A70F-05C7E4401969}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C} = {1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP71", "SignalR.Client.WP71\SignalR.Client.WP71.csproj", "{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +54,10 @@ Global
 		{2D23C742-9886-4079-A70F-05C7E4401969}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D23C742-9886-4079-A70F-05C7E4401969}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D23C742-9886-4079-A70F-05C7E4401969}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
