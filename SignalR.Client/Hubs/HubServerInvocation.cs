@@ -2,8 +2,8 @@
 
 namespace SignalR.Client.Hubs
 {
-    // Consolidate this and HubInvocation (they're the same just have slightly different property names)
-    public class HubData
+    // Consolidate this and HubClientInvocation (they're the same just have slightly different property names)
+    public class HubServerInvocation
     {
         public string Hub { get; set; }
         public string Action { get; set; }

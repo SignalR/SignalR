@@ -2,7 +2,7 @@
 
 namespace SignalR.Client.Hubs
 {
-    public class HubInvocation
+    public class HubClientInvocation
     {
         public string Hub { get; set; }
         public string Method { get; set; }
