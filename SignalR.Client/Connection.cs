@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Client.Transports;
@@ -120,12 +121,16 @@ namespace SignalR.Client
 
         internal void PrepareRequest(HttpWebRequest request)
         {
+#if WINDOWS_PHONE
+            request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
+#else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
+#endif
         }
 
         private static string CreateUserAgentString(string client)
         {
-            var version = typeof(Connection).Assembly.GetName().Version;
+            var version = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, version, Environment.OSVersion);
         }
     }
