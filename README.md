@@ -14,3 +14,6 @@ it dead easy and handles all the heavy lifting for you.
 
 ## LICENSE
 [MIT License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
+
+## Building the source
+After cloning the repository, run build.cmd.
