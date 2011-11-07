@@ -9,10 +9,11 @@ namespace SignalR
 {
     public class Signaler
     {
-        // REVIEW: Should we make this configurable?
-        private static readonly TimeSpan _timeOutInterval = TimeSpan.FromSeconds(10);
+        private static TimeSpan _timeOutInterval;
+        private static TimeSpan _defaultTimeOut;
+
         private static readonly object _timeOutCreationLock = new object();
-        private static readonly SafeSet<TimeoutInfo> _timeOutInfos = new SafeSet<TimeoutInfo>();
+        private static readonly SafeSet<SafeHandleEventAndSetResultAction> _signalActions = new SafeSet<SafeHandleEventAndSetResultAction>();
         private static bool _timeOutCheckRunning;
 
         // Timer that runs on an interval to check for Subscription timeouts
@@ -41,7 +42,26 @@ namespace SignalR
             }
         }
 
-        public TimeSpan DefaultTimeout { get; set; }
+        public TimeSpan DefaultTimeout
+        {
+            get
+            {
+                return _defaultTimeOut;
+            }
+            set
+            {
+                _defaultTimeOut = value;
+
+                // Make the interval run for 1/2 the default timeout
+                _timeOutInterval = TimeSpan.FromSeconds(value.TotalSeconds / 2);
+
+                if (_timeOutTimer != null)
+                {
+                    // TODO: Adjust interval based on all timeouts
+                    _timeOutTimer.Change(TimeSpan.Zero, _timeOutInterval);
+                }
+            }
+        }
 
         public virtual Task Signal(string eventKey)
         {
@@ -82,10 +102,7 @@ namespace SignalR
         {
             var tcs = new TaskCompletionSource<SignalResult>();
 
-            // Make sure the timer that checks for Subscription timeouts is running
-            EnsureTimeoutTimer();
-
-            var signalAction = new SafeHandleEventAndSetResultAction(SignalBus, tcs, eventKeys);
+            var signalAction = new SafeHandleEventAndSetResultAction(SignalBus, tcs, eventKeys, timeout);
 
             foreach (var eventKey in eventKeys)
             {
@@ -97,10 +114,10 @@ namespace SignalR
                 cancellationToken.Register(signalAction.SetCanceled);
             }
 
-            // Create a new timeout info for this event
-            var timeOutInfo = new TimeoutInfo(signalAction, DateTime.UtcNow, timeout);
+            _signalActions.Add(signalAction);
 
-            _timeOutInfos.Add(timeOutInfo);
+            // Make sure the timer that checks for Subscription timeouts is running
+            EnsureTimeoutTimer();
 
             return tcs.Task;
         }
@@ -113,7 +130,7 @@ namespace SignalR
                 {
                     if (_timeOutTimer == null)
                     {
-                        _timeOutTimer = new Timer(_ => CheckTimeouts(), null, TimeSpan.Zero, _timeOutInterval);
+                        _timeOutTimer = new Timer(_ => CheckTimeouts(), null, _timeOutInterval, _timeOutInterval);
                     }
                 }
             }
@@ -128,15 +145,12 @@ namespace SignalR
 
             _timeOutCheckRunning = true;
 
-            foreach (TimeoutInfo timeoutInfo in _timeOutInfos.GetSnapshot())
+            foreach (var signalAction in _signalActions.GetSnapshot())
             {
-                if (timeoutInfo.TimedOut)
+                if (signalAction.TimeoutInfo.TimedOut)
                 {
                     // If we timed out the call the SetTimedOut method to complete the task
-                    timeoutInfo.SignalAction.SetTimedOut();
-
-                    // Remove this timeout info from the list
-                    _timeOutInfos.Remove(timeoutInfo);
+                    signalAction.SetTimedOut();
                 }
             }
 
@@ -146,20 +160,20 @@ namespace SignalR
         private class TimeoutInfo
         {
             private readonly DateTime _subscriptionTime;
-            private readonly TimeSpan _timeout;
+            private readonly TimeSpan _timeOut;
 
             public TimeoutInfo(SafeHandleEventAndSetResultAction signalAction,
                                DateTime subscriptionTime,
                                TimeSpan timeout)
             {
                 SignalAction = signalAction;
+                _timeOut = timeout;
                 _subscriptionTime = subscriptionTime;
-                _timeout = timeout;
             }
 
             public SafeHandleEventAndSetResultAction SignalAction { get; private set; }
 
-            private TimeSpan Elapsed
+            public TimeSpan Elapsed
             {
                 get
                 {
@@ -171,7 +185,7 @@ namespace SignalR
             {
                 get
                 {
-                    return Elapsed > _timeout;
+                    return Elapsed >= _timeOut;
                 }
             }
         }
@@ -185,9 +199,13 @@ namespace SignalR
             private bool _timedOut;
             private bool _handlerCalled;
 
-            public SafeHandleEventAndSetResultAction(ISignalBus signalBus, TaskCompletionSource<SignalResult> tcs, IEnumerable<string> eventKeys)
+            public SafeHandleEventAndSetResultAction(ISignalBus signalBus,
+                                                     TaskCompletionSource<SignalResult> tcs,
+                                                     IEnumerable<string> eventKeys,
+                                                     TimeSpan timeout)
             {
                 _locker = new object();
+                TimeoutInfo = new TimeoutInfo(this, DateTime.UtcNow, timeout);
                 Handler = (sender, args) =>
                 {
                     SafeHandleEventAndSetResult(args.EventKey);
@@ -198,6 +216,8 @@ namespace SignalR
             }
 
             public EventHandler<SignaledEventArgs> Handler { get; private set; }
+
+            public TimeoutInfo TimeoutInfo { get; private set; }
 
             private TaskCompletionSource<SignalResult> Tcs { get; set; }
 
@@ -223,8 +243,14 @@ namespace SignalR
                     }
                     else
                     {
-                        Tcs.SetResult(new SignalResult { TimedOut = _timedOut, EventKey = signaledEventKey });
+                        Tcs.SetResult(new SignalResult
+                        {
+                            TimedOut = _timedOut,
+                            EventKey = signaledEventKey
+                        });
                     }
+
+                    _signalActions.Remove(this);
                 }
             }
 

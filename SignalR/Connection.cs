@@ -133,25 +133,29 @@ namespace SignalR
         {
             if (signalTask.Result.TimedOut)
             {
-                // If we timed out waiting for a signal we have a message id then return null
-                PersistentResponse response = null;
-
-                // Otherwise ee need to return 0 so that the next request we'll get all messages
-                // on the next try
-                if (messageId == null)
+                var response = new PersistentResponse
                 {
-                    response = new PersistentResponse
-                    {
-                        MessageId = 0
-                    };
-                }
+                    MessageId = messageId ?? 0
+                };
 
                 // Return a task wrapping the result
                 return TaskAsyncHelper.FromResult(response);
             }
 
             // Get the response for this message id
-            return GetResponse(messageId ?? 0);
+            return GetResponse(messageId ?? 0).Success(task =>
+            {
+                if (task.Result == null)
+                {
+                    // If there's no messages an empty response with the message id
+                    return new PersistentResponse
+                    {
+                        MessageId = messageId ?? 0
+                    };
+                }
+
+                return task.Result;
+            });
         }
 
         private Task<PersistentResponse> GetResponse(long messageId)
@@ -163,7 +167,7 @@ namespace SignalR
                     var results = messageTask.Result;
                     if (!results.Any())
                     {
-                        return WaitForSignal(messageId);
+                        return null;
                     }
 
                     var response = new PersistentResponse();
@@ -185,9 +189,8 @@ namespace SignalR
                     // Set the groups on the outgoing transport data
                     response.TransportData["Groups"] = _groups;
 
-                    return TaskAsyncHelper.FromResult(response);
-                })
-                .Unwrap();
+                    return response;
+                });
         }
 
         private void ProcessCommands(IEnumerable<Message> messages)
