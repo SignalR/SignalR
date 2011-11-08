@@ -133,29 +133,26 @@ namespace SignalR
         {
             if (signalTask.Result.TimedOut)
             {
-                var response = new PersistentResponse
-                {
-                    MessageId = messageId ?? 0
-                };
+                PersistentResponse response = GetEmptyResponse(messageId);
 
                 // Return a task wrapping the result
                 return TaskAsyncHelper.FromResult(response);
             }
 
             // Get the response for this message id
-            return GetResponse(messageId ?? 0).Success(task =>
-            {
-                if (task.Result == null)
-                {
-                    // If there's no messages an empty response with the message id
-                    return new PersistentResponse
-                    {
-                        MessageId = messageId ?? 0
-                    };
-                }
+            return GetResponse(messageId ?? 0).Success(task => task.Result ?? GetEmptyResponse(messageId));
+        }
 
-                return task.Result;
-            });
+        private PersistentResponse GetEmptyResponse(long? messageId)
+        {
+            var response = new PersistentResponse
+            {
+                MessageId = messageId ?? 0
+            };
+
+            PopulateResponseState(response);
+
+            return response;
         }
 
         private Task<PersistentResponse> GetResponse(long messageId)
@@ -186,8 +183,7 @@ namespace SignalR
                     response.MessageId = messageId;
                     response.Messages = messageValues;
 
-                    // Set the groups on the outgoing transport data
-                    response.TransportData["Groups"] = _groups;
+                    PopulateResponseState(response);
 
                     return response;
                 });
@@ -237,6 +233,12 @@ namespace SignalR
 
             // Wait until all of the tasks are done before we return
             return pendingMessagesTasks.AllSucceeded(() => (IEnumerable<Message>)pendingMessagesTasks.SelectMany(t => t.Result).OrderBy(m => m.Id).ToList());
+        }
+
+        private void PopulateResponseState(PersistentResponse response)
+        {
+            // Set the groups on the outgoing transport data
+            response.TransportData["Groups"] = _groups;
         }
     }
 }
