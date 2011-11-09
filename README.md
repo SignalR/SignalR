@@ -19,4 +19,4 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 After cloning the repository, run build.cmd.
 
 ## Questions?
-The SignalR team hangs out in the aspnet room at http://chatapp.apphb.com.
+The SignalR team hangs out in the **aspnet** room at http://chatapp.apphb.com.
