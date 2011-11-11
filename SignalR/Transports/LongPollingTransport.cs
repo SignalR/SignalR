@@ -23,6 +23,10 @@ namespace SignalR.Transports
             _heartBeat = heartBeat;
         }
 
+        // Static events intended for use when measuring performance
+        public static event Action<string> Sending;
+        public static event Action<string> Receiving;
+
         /// <summary>
         /// The number of milliseconds to tell the browser to wait before restablishing a
         /// long poll connection after data is sent from the server. Defaults to 0.
@@ -90,10 +94,17 @@ namespace SignalR.Transports
         {
             if (IsSendRequest)
             {
-                if (Received != null)
+                if (Received != null || Receiving != null)
                 {
                     string data = _context.Request.Form["data"];
-                    Received(data);
+                    if (Receiving != null)
+                    {
+                        Receiving(data);
+                    }
+                    if (Received != null)
+                    {
+                        Received(data);
+                    }
                 }
             }
             else
@@ -141,8 +152,13 @@ namespace SignalR.Transports
 
         public virtual void Send(object value)
         {
+            var payload = _jsonStringifier.Stringify(value);
+            if (Sending != null)
+            {
+                Sending(payload);
+            }
             _context.Response.ContentType = Json.MimeType;
-            _context.Response.Write(_jsonStringifier.Stringify(value));
+            _context.Response.Write(payload);
         }
 
         public virtual void Disconnect()

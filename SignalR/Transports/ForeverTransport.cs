@@ -15,6 +15,10 @@ namespace SignalR.Transports
             _jsonStringifier = jsonStringifier;
         }
 
+        // Static events intended for use when measuring performance
+        public static event Action<string> Sending;
+        public static event Action<string> Receiving;
+
         public event Action<string> Received;
 
         public event Action Connected;
@@ -27,10 +31,17 @@ namespace SignalR.Transports
         {
             if (_context.Request.Path.EndsWith("/send"))
             {
-                string data = _context.Request["data"];
-                if (Received != null)
+                if (Received != null || Receiving != null)
                 {
-                    Received(data);
+                    string data = _context.Request.Form["data"];
+                    if (Receiving != null)
+                    {
+                        Receiving(data);
+                    }
+                    if (Received != null)
+                    {
+                        Received(data);
+                    }
                 }
             }
             else
@@ -70,7 +81,12 @@ namespace SignalR.Transports
 
         public void Send(object value)
         {
-            _context.Response.Write(_jsonStringifier.Stringify(value));
+            var payload = _jsonStringifier.Stringify(value);
+            if (Sending != null)
+            {
+                Sending(payload);
+            }
+            _context.Response.Write(payload);
         }
     }
 }

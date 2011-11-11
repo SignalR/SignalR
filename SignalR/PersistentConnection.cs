@@ -39,6 +39,12 @@ namespace SignalR
             _jsonStringifier = jsonStringifier;
         }
 
+        // Static events intended for use when measuring performance
+        public static event Action Sending;
+        public static event Action Receiving;
+        public static event Action<string> ClientConnected;
+        public static event Action<string> ClientDisconnected;
+
         public override bool IsReusable
         {
             get
@@ -148,6 +154,7 @@ namespace SignalR
 
         protected virtual Task OnConnectedAsync(HttpContextBase context, string clientId)
         {
+            OnClientConnected(clientId);
             OnConnected(context, clientId);
             return TaskAsyncHelper.Empty;
         }
@@ -156,6 +163,7 @@ namespace SignalR
 
         protected virtual Task OnReceivedAsync(string clientId, string data)
         {
+            OnReceiving();
             OnReceived(clientId, data);
             return TaskAsyncHelper.Empty;
         }
@@ -164,6 +172,7 @@ namespace SignalR
 
         protected virtual Task OnDisconnectAsync(string clientId)
         {
+            OnClientDisconnected(clientId);
             OnDisconnect(clientId);
             return TaskAsyncHelper.Empty;
         }
@@ -178,16 +187,19 @@ namespace SignalR
 
         public void Send(object value)
         {
+            OnSending();
             _transport.Send(value);
         }
 
         public Task Send(string clientId, object value)
         {
+            OnSending();
             return Connection.Broadcast(clientId, value);
         }
 
         public Task SendToGroup(string groupName, object value)
         {
+            OnSending();
             return Connection.Broadcast(CreateQualifiedName(groupName), value);
         }
 
@@ -242,6 +254,38 @@ namespace SignalR
         {
             return TransportManager.GetTransport(context) ??
                    new LongPollingTransport(context, _jsonStringifier);
+        }
+
+        private static void OnSending()
+        {
+            if (Sending != null)
+            {
+                Sending();
+            }
+        }
+
+        private static void OnReceiving()
+        {
+            if (Receiving != null)
+            {
+                Receiving();
+            }
+        }
+
+        private static void OnClientConnected(string id)
+        {
+            if (ClientConnected != null)
+            {
+                ClientConnected(id);
+            }
+        }
+
+        private static void OnClientDisconnected(string id)
+        {
+            if (ClientDisconnected != null)
+            {
+                ClientDisconnected(id);
+            }
         }
     }
 }
