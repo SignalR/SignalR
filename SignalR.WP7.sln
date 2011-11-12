@@ -1,11 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Samples", "SignalR.Samples\SignalR.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.ScaleOut", "SignalR.ScaleOut\SignalR.ScaleOut.csproj", "{32D16B36-970E-4CF2-B954-78CB1833CBC1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client", "SignalR.Client\SignalR.Client.csproj", "{EB46B9C6-EE37-48F9-835E-E49580E40E0A}"
 EndProject
@@ -15,7 +11,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{1E4BA77C
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Tests", "SignalR.Tests\SignalR.Tests.csproj", "{FBA09237-84CC-4383-BD12-CDF58E4020E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7", "SignalR.Client.WP7\SignalR.Client.WP7.csproj", "{2D23C742-9886-4079-A70F-05C7E4401969}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C} = {1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP71", "SignalR.Client.WP71\SignalR.Client.WP71.csproj", "{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,26 +24,22 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D23C742-9886-4079-A70F-05C7E4401969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D23C742-9886-4079-A70F-05C7E4401969}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D23C742-9886-4079-A70F-05C7E4401969}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D23C742-9886-4079-A70F-05C7E4401969}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
