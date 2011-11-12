@@ -35,7 +35,14 @@
     </Target>
     
     <Target Name="Build" DependsOnTargets="CreateOutputDir">
-        <MSBuild Projects="$(ProjectRoot)\SignalR.sln" Targets="Build" Properties="Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+        <MSBuild Projects="$(ProjectRoot)\SignalR.sln" 
+                 Targets="Build" 
+                 Properties="Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+                 
+        <MSBuild Projects="$(ProjectRoot)\SignalR.WP7.sln" 
+                 Targets="Build" 
+                 Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
+                 Properties="Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
     </Target>
     
     <Target Name="BuildPackages">
