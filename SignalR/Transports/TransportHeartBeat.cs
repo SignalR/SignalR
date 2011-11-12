@@ -19,7 +19,7 @@ namespace SignalR.Transports
         private TransportHeartBeat()
         {
             _heartBeatInterval = TimeSpan.FromSeconds(10);
-            DisconnectTimeout = TimeSpan.FromSeconds(10);
+            DisconnectTimeout = TimeSpan.FromSeconds(20);
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(_ => Beat(),
