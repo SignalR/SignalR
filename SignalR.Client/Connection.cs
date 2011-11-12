@@ -29,6 +29,8 @@ namespace SignalR.Client
             Groups = Enumerable.Empty<string>();
         }
 
+        public ICredentials Credentials { get; set; }
+
         public IEnumerable<string> Groups { get; internal set; }
 
         public Func<string> Sending { get; set; }
@@ -126,6 +128,10 @@ namespace SignalR.Client
 #else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
 #endif
+            if (Credentials != null)
+            {
+                request.Credentials = Credentials;
+            }
         }
 
         private static string CreateUserAgentString(string client)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace SignalR.Client
@@ -12,6 +13,8 @@ namespace SignalR.Client
         IEnumerable<string> Groups { get; }
         string ClientId { get; }
         string Url { get; }
+
+        ICredentials Credentials { get; set; }
 
         event Action Closed;
         event Action<Exception> Error;
