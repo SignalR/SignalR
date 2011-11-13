@@ -101,8 +101,15 @@ namespace SignalR.Transports
                             }
                         }
 
-                        connection.Disconnect();
-                        RemoveConnection(connection);
+                        try
+                        {
+                            connection.Disconnect();
+                        }
+                        finally
+                        {
+                            // Remove the connection from the list
+                            RemoveConnection(connection);
+                        }
                     }
                 });
             }
