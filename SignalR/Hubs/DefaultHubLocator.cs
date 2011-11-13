@@ -8,7 +8,14 @@ namespace SignalR.Hubs
 {
     public class DefaultHubLocator : IHubLocator
     {
+        private readonly Lazy<IEnumerable<Type>> _hubs = new Lazy<IEnumerable<Type>>(GetAllHubs);
+
         public IEnumerable<Type> GetHubs()
+        {
+            return _hubs.Value;
+        }
+
+        public static IEnumerable<Type> GetAllHubs()
         {
             return from Assembly a in BuildManager.GetReferencedAssemblies()
                    where !a.GlobalAssemblyCache && !a.IsDynamic
@@ -17,7 +24,7 @@ namespace SignalR.Hubs
                    select type;
         }
 
-        private IEnumerable<Type> GetTypesSafe(Assembly a)
+        private static IEnumerable<Type> GetTypesSafe(Assembly a)
         {
             try
             {

@@ -180,7 +180,7 @@ namespace SignalR.Hubs
         protected override void OnDisconnect(string clientId)
         {
             // Loop over each hub and call disconnect (if the hub supports it)
-            foreach (Type type in _hubLocator.GetHubs())
+            foreach (Type type in GetDisconnectTypes())
             {
                 string hubName = type.FullName;
                 IHub hub = _hubFactory.CreateHub(hubName);
@@ -200,6 +200,14 @@ namespace SignalR.Hubs
                     disconnect.Disconnect();
                 }
             }
+        }
+
+        private IEnumerable<Type> GetDisconnectTypes()
+        {
+            // Get types that implement IDisconnect
+            return from type in _hubLocator.GetHubs()
+                   where typeof(IDisconnect).IsAssignableFrom(type)
+                   select type;
         }
 
         private void ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
