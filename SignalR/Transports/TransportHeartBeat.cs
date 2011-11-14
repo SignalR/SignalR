@@ -15,6 +15,7 @@ namespace SignalR.Transports
         private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>(new ClientIdEqualityComparer());
         private readonly Timer _timer;
         private TimeSpan _heartBeatInterval;
+        private bool _running;
 
         private TransportHeartBeat()
         {
@@ -63,7 +64,7 @@ namespace SignalR.Transports
             _connectionMetadata.TryRemove(connection, out removed);
         }
 
-        public void RemoveConnection(ITrackingDisconnect connection)
+        private void RemoveConnection(ITrackingDisconnect connection)
         {
             // Remove the connection and associated metadata
             _connections.Remove(connection);
@@ -79,12 +80,22 @@ namespace SignalR.Transports
 
         private void Beat()
         {
+            if (_running)
+            {
+                Debug.WriteLine("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
+                return;
+            }
+
+            _running = true;
             try
             {
                 Parallel.ForEach(_connections.GetSnapshot(), (connection) =>
                 {
                     if (!connection.IsAlive)
                     {
+                        // The transport is currently disconnected, it could just be reconnecting though
+                        // so we need to check it's last active time to see if it's over the disconnect
+                        // threshold
                         DateTime lastUsed;
                         if (_connectionMetadata.TryGetValue(connection, out lastUsed))
                         {
@@ -92,6 +103,8 @@ namespace SignalR.Transports
                             var elapsed = DateTime.UtcNow - lastUsed;
 
                             // The threshold for disconnect is the long poll delay + (potential network issues)
+                            // TODO: Refactor to not take a dependency on LongPollingTransport here, might want to
+                            //       re-use this for other transports, e.g. ForeverTransport
                             var threshold = TimeSpan.FromMilliseconds(LongPollingTransport.LongPollDelay) +
                                             DisconnectTimeout;
 
@@ -117,6 +130,7 @@ namespace SignalR.Transports
             {
                 Trace.TraceError("SignalR error during transport heart beat: {0}", ex);
             }
+            _running = true;
         }
 
         private class ClientIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
