@@ -17,11 +17,11 @@ namespace SignalR.Hubs
 
         public static IEnumerable<Type> GetAllHubs()
         {
-            return from Assembly a in BuildManager.GetReferencedAssemblies()
-                   where !a.GlobalAssemblyCache && !a.IsDynamic
-                   from type in GetTypesSafe(a)
-                   where typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract
-                   select type;
+            return (from Assembly a in BuildManager.GetReferencedAssemblies()
+                    where !a.GlobalAssemblyCache && !a.IsDynamic
+                    from type in GetTypesSafe(a)
+                    where typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract
+                    select type).ToList();
         }
 
         private static IEnumerable<Type> GetTypesSafe(Assembly a)
