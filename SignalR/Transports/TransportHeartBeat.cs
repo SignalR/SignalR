@@ -87,6 +87,7 @@ namespace SignalR.Transports
             }
 
             _running = true;
+
             try
             {
                 Parallel.ForEach(_connections.GetSnapshot(), (connection) =>
@@ -130,7 +131,8 @@ namespace SignalR.Transports
             {
                 Trace.TraceError("SignalR error during transport heart beat: {0}", ex);
             }
-            _running = true;
+
+            _running = false;
         }
 
         private class ClientIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
