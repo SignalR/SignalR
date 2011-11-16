@@ -15,7 +15,7 @@ namespace SignalR.Tests
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m["clientId"]).Returns("1");
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
 
@@ -29,7 +29,7 @@ namespace SignalR.Tests
             var response = new Mock<HttpResponseBase>();
             response.Setup(m => m.IsClientConnected).Returns(true);
             context.Setup(m => m.Response).Returns(response.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
 
@@ -43,7 +43,7 @@ namespace SignalR.Tests
             var response = new Mock<HttpResponseBase>();
             response.Setup(m => m.IsClientConnected).Returns(false);
             context.Setup(m => m.Response).Returns(response.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
 
@@ -65,7 +65,7 @@ namespace SignalR.Tests
             request.Setup(m => m.Path).Returns("/foo/connect");
             request.Setup(m => m["clientId"]).Returns("1");
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
             var connection = new Mock<IConnection>();
@@ -82,7 +82,7 @@ namespace SignalR.Tests
             request.Setup(m => m.Path).Returns("/foo/connect");
             request.Setup(m => m["clientId"]).Returns("1");
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
             var connection = new Mock<IConnection>();
@@ -107,7 +107,7 @@ namespace SignalR.Tests
             request.Setup(m => m["clientId"]).Returns("1");
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new Mock<LongPollingTransport>(context.Object, json.Object, heartBeat.Object) { CallBase = true };
             var connection = new Mock<IConnection>();
@@ -135,7 +135,7 @@ namespace SignalR.Tests
             request.Setup(m => m["messageId"]).Returns("20");
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new Mock<LongPollingTransport>(context.Object, json.Object, heartBeat.Object) { CallBase = true };
             var connection = new Mock<IConnection>();
@@ -163,7 +163,7 @@ namespace SignalR.Tests
             request.Setup(m => m["messageId"]).Returns("fff");
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
             var connection = new Mock<IConnection>();
@@ -184,7 +184,7 @@ namespace SignalR.Tests
             request.Setup(m => m["clientId"]).Returns("1");
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             json.Setup(m => m.Stringify(obj)).Returns("A=1");
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
@@ -205,7 +205,7 @@ namespace SignalR.Tests
             form["data"] = "some data";
             request.Setup(m => m.Form).Returns(form);
             context.Setup(m => m.Request).Returns(request.Object);
-            var json = new Mock<IJsonStringifier>();
+            var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
             var connection = new Mock<IConnection>();

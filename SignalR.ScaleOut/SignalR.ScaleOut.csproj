@@ -51,7 +51,6 @@
     </Compile>
     <Compile Include="ConfigPeerUrlSource.cs" />
     <Compile Include="HttpHelper.cs" />
-    <Compile Include="IJsonSerializer.cs" />
     <Compile Include="IPeerUrlSource.cs" />
     <Compile Include="JavaScriptSerializerAdapter.cs" />
     <Compile Include="PeerToPeerHelper.cs" />

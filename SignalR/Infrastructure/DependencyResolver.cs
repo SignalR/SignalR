@@ -88,12 +88,12 @@ namespace SignalR.Infrastructure
 
                 Register(typeof(IMessageStore), () => store.Value);
 
-                var serialzier = new JavaScriptSerializerAdapter(new JavaScriptSerializer
+                var serializer = new JavaScriptSerializerAdapter(new JavaScriptSerializer
                 {
                     MaxJsonLength = 30 * 1024 * 1024
                 });
 
-                Register(typeof(IJsonStringifier), () => serialzier);
+                Register(typeof(IJsonSerializer), () => serializer);
 
                 Register(typeof(IActionResolver), () => new DefaultActionResolver());
                 Register(typeof(IHubActivator), () => new DefaultHubActivator());

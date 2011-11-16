@@ -15,7 +15,7 @@ namespace SignalR
 
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
-        private readonly IJsonStringifier _jsonStringifier;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IClientIdFactory _clientIdFactory;
 
         protected ITransport _transport;
@@ -24,19 +24,19 @@ namespace SignalR
             : this(Signaler.Instance,
                    DependencyResolver.Resolve<IClientIdFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
-                   DependencyResolver.Resolve<IJsonStringifier>())
+                   DependencyResolver.Resolve<IJsonSerializer>())
         {
         }
 
         protected PersistentConnection(Signaler signaler,
                                        IClientIdFactory clientIdFactory,
                                        IMessageStore store,
-                                       IJsonStringifier jsonStringifier)
+                                       IJsonSerializer jsonSerializer)
         {
             _signaler = signaler;
             _clientIdFactory = clientIdFactory;
             _store = store;
-            _jsonStringifier = jsonStringifier;
+            _jsonSerializer = jsonSerializer;
         }
 
         // Static events intended for use when measuring performance
@@ -75,7 +75,7 @@ namespace SignalR
             if (IsNegotiationRequest(context.Request))
             {
                 context.Response.ContentType = Json.MimeType;
-                context.Response.Write(_jsonStringifier.Stringify(new
+                context.Response.Write(_jsonSerializer.Stringify(new
                 {
                     Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
                     ClientId = _clientIdFactory.CreateClientId(contextBase)
@@ -147,7 +147,7 @@ namespace SignalR
                 clientId + "." + SignalrCommand
             };
 
-            return new Connection(_store, _signaler, DefaultSignal, clientId, signals, groups);
+            return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, clientId, signals, groups);
         }
 
         protected virtual void OnConnected(HttpContextBase context, string clientId) { }
@@ -253,7 +253,7 @@ namespace SignalR
         private ITransport GetTransport(HttpContextBase context)
         {
             return TransportManager.GetTransport(context) ??
-                   new LongPollingTransport(context, _jsonStringifier);
+                   new LongPollingTransport(context, _jsonSerializer);
         }
 
         private static void OnSending()

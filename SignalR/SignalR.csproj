@@ -65,6 +65,7 @@
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="Hubs\IHubTypeResolver.cs" />
     <Compile Include="IClientIdFactory.cs" />
+    <Compile Include="IJsonSerializer.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
@@ -82,7 +83,6 @@
     <Compile Include="Hubs\IHubFactory.cs" />
     <Compile Include="Hubs\IHubLocator.cs" />
     <Compile Include="Hubs\SignalAgent.cs" />
-    <Compile Include="IJsonStringifier.cs" />
     <Compile Include="Infrastructure\DependencyResolver.cs" />
     <Compile Include="Infrastructure\NullJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\IDependencyResolver.cs" />

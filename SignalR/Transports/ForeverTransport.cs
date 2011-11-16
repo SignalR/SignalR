@@ -6,13 +6,13 @@ namespace SignalR.Transports
 {
     public class ForeverTransport : ITransport
     {
-        private readonly IJsonStringifier _jsonStringifier;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly HttpContextBase _context;
 
-        public ForeverTransport(HttpContextBase context, IJsonStringifier jsonStringifier)
+        public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
         {
             _context = context;
-            _jsonStringifier = jsonStringifier;
+            _jsonSerializer = jsonSerializer;
         }
 
         // Static events intended for use when measuring performance
@@ -81,7 +81,7 @@ namespace SignalR.Transports
 
         public void Send(object value)
         {
-            var payload = _jsonStringifier.Stringify(value);
+            var payload = _jsonSerializer.Stringify(value);
             if (Sending != null)
             {
                 Sending(payload);

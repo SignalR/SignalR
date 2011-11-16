@@ -10,6 +10,7 @@ namespace SignalR
     {
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly string _baseSignal;
         private readonly string _clientId;
         private readonly HashSet<string> _signals;
@@ -17,11 +18,13 @@ namespace SignalR
         private readonly object _lockObj = new object();
 
         public Connection(IMessageStore store,
+                          IJsonSerializer jsonSerializer,
                           Signaler signaler,
                           string baseSignal,
                           string clientId,
                           IEnumerable<string> signals)
             : this(store,
+                   jsonSerializer,
                    signaler,
                    baseSignal,
                    clientId,
@@ -31,6 +34,7 @@ namespace SignalR
         }
 
         public Connection(IMessageStore store,
+                          IJsonSerializer jsonSerializer,
                           Signaler signaler,
                           string baseSignal,
                           string clientId,
@@ -38,6 +42,7 @@ namespace SignalR
                           IEnumerable<string> groups)
         {
             _store = store;
+            _jsonSerializer = jsonSerializer;
             _signaler = signaler;
             _baseSignal = baseSignal;
             _clientId = clientId;
@@ -103,6 +108,7 @@ namespace SignalR
         public static IConnection GetConnection(string connectionType)
         {
             return new Connection(DependencyResolver.Resolve<IMessageStore>(),
+                                  DependencyResolver.Resolve<IJsonSerializer>(),
                                   Signaler.Instance,
                                   connectionType,
                                   null,
@@ -193,12 +199,12 @@ namespace SignalR
         {
             foreach (var message in messages)
             {
-                var command = message.Value as SignalCommand;
+                var command = GetCommand(message);
                 if (command == null)
                 {
                     continue;
                 }
-
+                
                 switch (command.Type)
                 {
                     case CommandType.AddToGroup:
@@ -209,6 +215,26 @@ namespace SignalR
                         break;
                 }
             }
+        }
+
+        private SignalCommand GetCommand(Message message)
+        {
+            var command = message.Value as SignalCommand;
+
+            // Optimization for in memory message store
+            if (command != null)
+            {
+                return command;
+            }
+
+            // Otherwise deserialize the message value
+            string value = message.Value as string;
+            if (value == null)
+            {
+                return null;
+            }
+
+            return _jsonSerializer.Parse<SignalCommand>(value);
         }
 
         private Task SendMessage(string message, object value)

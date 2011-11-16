@@ -6,20 +6,20 @@ namespace SignalR.Transports
 {
     public class LongPollingTransport : ITransport, ITrackingDisconnect
     {
-        private readonly IJsonStringifier _jsonStringifier;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly HttpContextBase _context;
         private readonly ITransportHeartBeat _heartBeat;
 
-        public LongPollingTransport(HttpContextBase context, IJsonStringifier json)
-            : this(context, json, TransportHeartBeat.Instance)
+        public LongPollingTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+            : this(context, jsonSerializer, TransportHeartBeat.Instance)
         {
 
         }
 
-        public LongPollingTransport(HttpContextBase context, IJsonStringifier json, ITransportHeartBeat heartBeat)
+        public LongPollingTransport(HttpContextBase context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
             _context = context;
-            _jsonStringifier = json;
+            _jsonSerializer = jsonSerializer;
             _heartBeat = heartBeat;
         }
 
@@ -152,7 +152,7 @@ namespace SignalR.Transports
 
         public virtual void Send(object value)
         {
-            var payload = _jsonStringifier.Stringify(value);
+            var payload = _jsonSerializer.Stringify(value);
             if (Sending != null)
             {
                 Sending(payload);

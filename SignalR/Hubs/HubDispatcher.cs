@@ -30,6 +30,7 @@ namespace SignalR.Hubs
         private readonly string _url;
         private readonly IHubLocator _hubLocator;
         private readonly IHubTypeResolver _hubTypeResolver;
+        private readonly IJsonSerializer _jsonSerializer;
 
         private HttpCookieCollection _cookies;
         private IPrincipal _user;
@@ -41,7 +42,7 @@ namespace SignalR.Hubs
                    DependencyResolver.Resolve<IClientIdFactory>(),
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
-                   DependencyResolver.Resolve<IJsonStringifier>(),
+                   DependencyResolver.Resolve<IJsonSerializer>(),
                    DependencyResolver.Resolve<IHubLocator>(),
                    DependencyResolver.Resolve<IHubTypeResolver>(),
                    url)
@@ -54,14 +55,15 @@ namespace SignalR.Hubs
                              IClientIdFactory clientIdFactory,
                              IActionResolver actionResolver,
                              IJavaScriptProxyGenerator proxyGenerator,
-                             IJsonStringifier jsonStringifier,
+                             IJsonSerializer jsonSerializer,
                              IHubLocator hubLocator,
                              IHubTypeResolver hubTypeResolver,
                              string url)
-            : base(signaler, clientIdFactory, store, jsonStringifier)
+            : base(signaler, clientIdFactory, store, jsonSerializer)
         {
             _hubFactory = hubFactory;
             _store = store;
+            _jsonSerializer = jsonSerializer;
             _signaler = signaler;
             _actionResolver = actionResolver;
             _proxyGenerator = proxyGenerator;
@@ -241,7 +243,7 @@ namespace SignalR.Hubs
 
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, clientId));
 
-            return new Connection(_store, _signaler, null, clientId, hubSignals, groups);
+            return new Connection(_store, _jsonSerializer, _signaler, null, clientId, hubSignals, groups);
         }
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string clientId)
