@@ -12,6 +12,10 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 
     Install-Package SignalR
 
+## Get a sample on NuGet, straight into your app!
+
+	Install-Package SignalR.Sample
+	
 ## LICENSE
 [MIT License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
 
