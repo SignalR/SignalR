@@ -123,10 +123,14 @@ namespace SignalR.Client
 
         internal void PrepareRequest(HttpWebRequest request)
         {
+#if SILVERLIGHT
+            // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
+#else
 #if WINDOWS_PHONE
             request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
 #else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
+#endif
 #endif
             if (Credentials != null)
             {

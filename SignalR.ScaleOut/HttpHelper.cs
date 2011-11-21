@@ -101,7 +101,7 @@ namespace SignalR
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
-#if !WINDOWS_PHONE
+#if !WINDOWS_PHONE && !SILVERLIGHT
             request.ContentLength = buffer.LongLength;
 #endif
 
