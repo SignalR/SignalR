@@ -29,7 +29,7 @@ namespace SignalR
                 if (t != null && t.IsFaulted)
                 {
                     var ex = t.Exception;
-#if !WINDOWS_PHONE
+#if !WINDOWS_PHONE && !SILVERLIGHT
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
                 }
@@ -44,7 +44,7 @@ namespace SignalR
                 if (t != null && t.IsFaulted)
                 {
                     var ex = t.Exception;
-#if !WINDOWS_PHONE
+#if !WINDOWS_PHONE && !SILVERLIGHT
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
                 }

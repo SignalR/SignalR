@@ -43,6 +43,11 @@
                  Targets="Build" 
                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
                  Properties="Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+
+        <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln" 
+                 Targets="Build" 
+                 Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0')"
+                 Properties="Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
     </Target>
     
     <Target Name="BuildPackages">
