@@ -82,36 +82,41 @@
             };
 
             window.setTimeout(function () {
-                $.post(connection.url + '/negotiate', {}, function (res) {
-                    connection.appRelativeUrl = res.Url;
-                    connection.clientId = res.ClientId;
+                $.ajax(connection.url + '/negotiate', {
+                    global: false,
+                    type: "POST",
+                    data: {},
+                    success: function (res) {
+                        connection.appRelativeUrl = res.Url;
+                        connection.clientId = res.ClientId;
 
-                    $(connection).trigger("onStarting");
+                        $(connection).trigger("onStarting");
 
-                    var transports = [],
-                        supportedTransports = [];
+                        var transports = [],
+                            supportedTransports = [];
 
-                    $.each(signalR.transports, function (key) {
-                        supportedTransports.push(key);
-                    });
-
-                    if ($.isArray(config.transport)) {
-                        // ordered list provided
-                        $.each(config.transport, function () {
-                            var transport = this;
-                            if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
-                                transports.push($.type(transport) === "string" ? "" + transport : transport);
-                            }
+                        $.each(signalR.transports, function (key) {
+                            supportedTransports.push(key);
                         });
-                    } else if ($.type(config.transport) === "object" ||
-                                   $.inArray(config.transport, supportedTransports) >= 0) {
-                        // specific transport provided, as object or a named transport, e.g. "longPolling"
-                        transports.push(config.transport);
-                    } else { // default "auto"
-                        transports = supportedTransports;
-                    }
 
-                    initialize(transports);
+                        if ($.isArray(config.transport)) {
+                            // ordered list provided
+                            $.each(config.transport, function () {
+                                var transport = this;
+                                if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
+                                    transports.push($.type(transport) === "string" ? "" + transport : transport);
+                                }
+                            });
+                        } else if ($.type(config.transport) === "object" ||
+                                       $.inArray(config.transport, supportedTransports) >= 0) {
+                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                            transports.push(config.transport);
+                        } else { // default "auto"
+                            transports = supportedTransports;
+                        }
+
+                        initialize(transports);
+                    }
                 });
             }, 0);
 
@@ -294,6 +299,7 @@
                             url = instance.url + (connect ? "/connect" : "");
 
                         instance.pollXhr = $.ajax(url, {
+                            global: false,
                             type: "POST",
                             data: {
                                 clientId: instance.clientId,
@@ -361,6 +367,7 @@
                 /// <param name="data" type="String">The data to send</param>
                 /// <param name="callback" type="Function">A callback to be invoked when the send has completed</param>
                 $.ajax(connection.url + '/send', {
+                    global: false,
                     type: "POST",
                     dataType: "json",
                     data: {
