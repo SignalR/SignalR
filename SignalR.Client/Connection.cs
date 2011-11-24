@@ -12,6 +12,8 @@ namespace SignalR.Client
 {
     public class Connection : IConnection
     {
+        private static Version _assemblyVersion;
+
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
@@ -140,8 +142,12 @@ namespace SignalR.Client
 
         private static string CreateUserAgentString(string client)
         {
-            var version = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
-            return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, version, Environment.OSVersion);
+            if (_assemblyVersion == null)
+            {
+                _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
+            }
+
+            return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
         }
     }
 }
