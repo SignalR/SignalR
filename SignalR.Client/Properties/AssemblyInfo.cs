@@ -6,3 +6,4 @@
 [assembly: AssemblyTitle("SignalR.Client")]
 [assembly: AssemblyDescription(".NET client for SignalR")]
 
+[assembly: AssemblyVersion("0.3.7.0")]
