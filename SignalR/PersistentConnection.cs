@@ -90,7 +90,7 @@ namespace SignalR
                 // If there's no client id then this is a bad request
                 if (String.IsNullOrEmpty(clientId))
                 {
-                    throw new InvalidOperationException("Protcol error: Missing client id.");
+                    throw new InvalidOperationException("Protocol error: Missing client id.");
                 }
 
                 IEnumerable<string> groups = GetGroups(contextBase);

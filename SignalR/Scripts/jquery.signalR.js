@@ -13,7 +13,10 @@
         throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
     }
 
-    var signalR, _connection;
+    var signalR, _connection,
+        log = (typeof (console) !== "undefined" && console && console.log)
+            ? console.log
+            : $.noop;
 
     signalR = function (url) {
         /// <summary>Creates a new SignalR connection for the given url</summary>
@@ -311,76 +314,6 @@
             }
         },
 
-        foreverFrame: {
-            start: function (connection, onSuccess, onFailed) {
-                var frameId = (transportLogic.foreverFrame.count += 1),
-                    url = connection.url + "/connect",
-                    frame = $("<iframe data-signalr-connection-id='" + connection.clientId + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
-
-                $(connection).trigger("onSending");
-
-                // Build the url
-                if (connection.data) {
-                    url += "?connectionData=" + connection.data + "&transport=foreverFrame&clientId=" + window.escape(connection.clientId);
-                } else {
-                    url += "?transport=foreverFrame&clientId=" + window.escape(connection.clientId);
-                }
-
-                url += "&frameId=" + frameId;
-
-                frame.prop("src", url);
-                transportLogic.foreverFrame.connections[frameId] = connection;
-
-                frame.bind("load", function () {
-                    // TODO: The frame has finished loading (timeout or error), we need to refresh it
-                    //var src = this.src.replace("/connect", "") + "&messageId=" + connection.messageId;
-                    //this.src = src;
-                    console.log("SignalR: forever frame iframe load event fired");
-                })
-
-                $("body").append(frame);
-                connection.frame = frame;
-                connection.frameId = frameId;
-                if (onSuccess) {
-                    onSuccess();
-                }
-            },
-
-            send: function (connection, data) {
-                transportLogic.ajaxSend(connection, data, "foreverFrame");
-            },
-
-            receive: function (connection, data) {
-                if (data) {
-                    if (data.Messages) {
-                        $.each(data.Messages, function () {
-                            try {
-                                $(connection).trigger("onReceived", [this]);
-                            }
-                            catch (e) {
-                                if (console && console.log) {
-                                    console.log('Error raising received ' + e);
-                                }
-                            }
-                        });
-                    }
-                    connection.messageId = data.MessageId;
-                    connection.groups = data.TransportData.Groups;
-                }
-            },
-
-            stop: function (connection) {
-                if (connection.frame) {
-                    connection.frame.remove();
-                    delete transportLogic.foreverFrame.connections[connection.frameId];
-                }
-            },
-
-            getConnection: function (id) {
-                return transportLogic.foreverFrame.connections[id];
-            }
-        },
-
         longPolling: {
             start: function (connection, onSuccess, onFailed) {
                 /// <summary>Starts the long polling connection</summary>
@@ -423,9 +356,7 @@
                                                 $(instance).trigger("onReceived", [this]);
                                             }
                                             catch (e) {
-                                                if (console && console.log) {
-                                                    console.log('Error raising received ' + e);
-                                                }
+                                                log('Error raising received ' + e);
                                             }
                                         });
                                     }
@@ -477,6 +408,84 @@
                 if (connection.pollXhr) {
                     connection.pollXhr.abort();
                     connection.pollXhr = null;
+                }
+            }
+        },
+
+        foreverFrame: {
+            start: function (connection, onSuccess, onFailed) {
+                var frameId = (transportLogic.foreverFrame.count += 1),
+                    url = connection.url + "/connect",
+                    frame = $("<iframe data-signalr-connection-id='" + connection.clientId + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
+
+                $(connection).trigger("onSending");
+
+                // Build the url
+                if (connection.data) {
+                    url += "?connectionData=" + connection.data + "&transport=foreverFrame&clientId=" + window.escape(connection.clientId);
+                } else {
+                    url += "?transport=foreverFrame&clientId=" + window.escape(connection.clientId);
+                }
+
+                url += "&frameId=" + frameId;
+
+                frame.prop("src", url);
+                transportLogic.foreverFrame.connections[frameId] = connection;
+
+                frame.bind("load", function () {
+                    // TODO: The frame has finished loading (timeout or error), we need to refresh it
+                    // TODO: Detect if an error was written to the iframe html and delay 
+                    //var src = this.src.replace("/connect", "") + "&messageId=" + connection.messageId;
+                    //this.src = src;
+                    log("SignalR: forever frame iframe load event fired");
+                })
+
+                connection.frame = frame;
+                connection.frameId = frameId;
+
+                if (onSuccess) {
+                    connection.onSuccess = onSuccess;
+                }
+
+                $("body").append(frame);
+            },
+
+            send: function (connection, data) {
+                transportLogic.ajaxSend(connection, data, "foreverFrame");
+            },
+
+            receive: function (connection, data) {
+                // TODO: Factor this out and reuse for all transports
+                if (data) {
+                    if (data.Messages) {
+                        $.each(data.Messages, function () {
+                            try {
+                                $(connection).trigger("onReceived", [this]);
+                            }
+                            catch (e) {
+                                log('Error raising received ' + e);
+                            }
+                        });
+                    }
+                    connection.messageId = data.MessageId;
+                    connection.groups = data.TransportData.Groups;
+                }
+            },
+
+            stop: function (connection) {
+                if (connection.frame) {
+                    connection.frame.remove();
+                    delete transportLogic.foreverFrame.connections[connection.frameId];
+                }
+            },
+
+            getConnection: function (id) {
+                return transportLogic.foreverFrame.connections[id];
+            },
+
+            started: function (connection) {
+                if (connection.onSuccess) {
+                    connection.onSuccess();
                 }
             }
         }

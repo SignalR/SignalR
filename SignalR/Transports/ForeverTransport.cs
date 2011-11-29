@@ -47,19 +47,16 @@ namespace SignalR.Transports
 
         public Func<Task> ProcessRequest(IConnection connection)
         {
-            if (_context.Request.Path.EndsWith("/send"))
+            if (Context.Request.Path.EndsWith("/send"))
             {
-                if (Received != null || Receiving != null)
+                string data = _context.Request.Form["data"];
+                if (Receiving != null)
+                {                    
+                    Receiving(data);
+                }
+                if (Received != null)
                 {
-                    string data = _context.Request.Form["data"];
-                    if (Receiving != null)
-                    {
-                        Receiving(data);
-                    }
-                    if (Received != null)
-                    {
-                        Received(data);
-                    }
+                    Received(data);
                 }
             }
             else
@@ -70,7 +67,7 @@ namespace SignalR.Transports
                 }
 
                 InitializeResponse(connection);
-                
+
                 return () => ProcessMessages(connection);
             }
 
@@ -86,13 +83,19 @@ namespace SignalR.Transports
         {
             // Don't timeout and never buffer any output
             connection.ReceiveTimeout = TimeSpan.FromTicks(Int32.MaxValue - 1);
-            Context.Response.BufferOutput = false;
-            Context.Response.Buffer = false;
+
+            // This forces the IIS compression module to leave this response alone.
+            // If we don't do this, it will buffer the response to suit its own compression
+            // logic, resulting in partial messages being sent to the client when we flush.
+            Context.Request.Headers.Remove("Accept-Encoding");
+
+            Context.Response.CacheControl = "no-cache";
+            Context.Response.AddHeader("Connection", "keep-alive");
         }
 
         private Task ProcessMessages(IConnection connection)
         {
-            if (_context.Response.IsClientConnected)
+            if (Context.Response.IsClientConnected)
             {
                 return connection.ReceiveAsync().ContinueWith(t =>
                 {
@@ -117,7 +120,8 @@ namespace SignalR.Transports
         {
             var payload = _jsonSerializer.Stringify(value);
             OnSending(payload);
-            _context.Response.Write(payload);
+            Context.Response.Write(payload);
+            Context.Response.Flush();
         }
     }
 }
