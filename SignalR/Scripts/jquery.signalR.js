@@ -202,6 +202,37 @@
     signalR.fn.init.prototype = signalR.fn;
 
     // Transports
+    var transportLogic = {
+        ajaxSend: function (connection, data, transport) {
+            $.ajax(connection.url + '/send', {
+                global: false,
+                type: "POST",
+                dataType: "json",
+                data: {
+                    data: data,
+                    transport: transport,
+                    clientId: connection.clientId
+                },
+                success: function (result) {
+                    if (result) {
+                        $(connection).trigger("onReceived", [result]);
+                    }
+                },
+                error: function (errData, textStatus) {
+                    if (textStatus === "abort") {
+                        return;
+                    }
+                    $(connection).trigger("onError", [errData]);
+                }
+            });
+        },
+
+        foreverFrame: {
+            count: 0,
+            connections: {}
+        }
+    };
+
     signalR.transports = {
 
         webSockets: {
@@ -248,7 +279,7 @@
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
-                            } 
+                            }
                         } else if (typeof event.wasClean != 'undefined' && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
@@ -280,6 +311,76 @@
             }
         },
 
+        foreverFrame: {
+            start: function (connection, onSuccess, onFailed) {
+                var frameId = (transportLogic.foreverFrame.count += 1),
+                    url = connection.url + "/connect",
+                    frame = $("<iframe data-signalr-connection-id='" + connection.clientId + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
+
+                $(connection).trigger("onSending");
+
+                // Build the url
+                if (connection.data) {
+                    url += "?connectionData=" + connection.data + "&transport=foreverFrame&clientId=" + window.escape(connection.clientId);
+                } else {
+                    url += "?transport=foreverFrame&clientId=" + window.escape(connection.clientId);
+                }
+
+                url += "&frameId=" + frameId;
+
+                frame.prop("src", url);
+                transportLogic.foreverFrame.connections[frameId] = connection;
+
+                frame.bind("load", function () {
+                    // TODO: The frame has finished loading (timeout or error), we need to refresh it
+                    //var src = this.src.replace("/connect", "") + "&messageId=" + connection.messageId;
+                    //this.src = src;
+                    console.log("SignalR: forever frame iframe load event fired");
+                })
+
+                $("body").append(frame);
+                connection.frame = frame;
+                connection.frameId = frameId;
+                if (onSuccess) {
+                    onSuccess();
+                }
+            },
+
+            send: function (connection, data) {
+                transportLogic.ajaxSend(connection, data, "foreverFrame");
+            },
+
+            receive: function (connection, data) {
+                if (data) {
+                    if (data.Messages) {
+                        $.each(data.Messages, function () {
+                            try {
+                                $(connection).trigger("onReceived", [this]);
+                            }
+                            catch (e) {
+                                if (console && console.log) {
+                                    console.log('Error raising received ' + e);
+                                }
+                            }
+                        });
+                    }
+                    connection.messageId = data.MessageId;
+                    connection.groups = data.TransportData.Groups;
+                }
+            },
+
+            stop: function (connection) {
+                if (connection.frame) {
+                    connection.frame.remove();
+                    delete transportLogic.foreverFrame.connections[connection.frameId];
+                }
+            },
+
+            getConnection: function (id) {
+                return transportLogic.foreverFrame.connections[id];
+            }
+        },
+
         longPolling: {
             start: function (connection, onSuccess, onFailed) {
                 /// <summary>Starts the long polling connection</summary>
@@ -300,7 +401,9 @@
 
                         instance.pollXhr = $.ajax(url, {
                             global: false,
+
                             type: "POST",
+
                             data: {
                                 clientId: instance.clientId,
                                 messageId: messageId,
@@ -308,7 +411,9 @@
                                 transport: "longPolling",
                                 groups: (instance.groups || []).toString()
                             },
+
                             dataType: "json",
+
                             success: function (data) {
                                 var delay = 0;
                                 if (data) {
@@ -338,6 +443,7 @@
                                     poll(instance);
                                 }
                             },
+
                             error: function (data, textStatus) {
                                 if (textStatus === "abort") {
                                     return;
@@ -362,31 +468,7 @@
             },
 
             send: function (connection, data) {
-                /// <summary>Sends data over this connection</summary>
-                /// <param name="connection" type="signalR">The SignalR connection to send data over</param>
-                /// <param name="data" type="String">The data to send</param>
-                /// <param name="callback" type="Function">A callback to be invoked when the send has completed</param>
-                $.ajax(connection.url + '/send', {
-                    global: false,
-                    type: "POST",
-                    dataType: "json",
-                    data: {
-                        data: data,
-                        transport: "longPolling",
-                        clientId: connection.clientId
-                    },
-                    success: function (result) {
-                        if (result) {
-                            $(connection).trigger("onReceived", [result]);
-                        }
-                    },
-                    error: function (data, textStatus) {
-                        if (textStatus === "abort") {
-                            return;
-                        }
-                        $(connection).trigger("onError", [data]);
-                    }
-                });
+                transportLogic.ajaxSend(connection, data, "longPolling");
             },
 
             stop: function (connection) {

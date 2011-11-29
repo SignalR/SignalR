@@ -15,6 +15,24 @@ namespace SignalR.Transports
             _jsonSerializer = jsonSerializer;
         }
 
+        protected IJsonSerializer JsonSerializer
+        {
+            get { return _jsonSerializer; }
+        }
+
+        protected HttpContextBase Context
+        {
+            get { return _context; }
+        }
+
+        protected virtual void OnSending(string payload)
+        {
+            if (Sending != null)
+            {
+                Sending(payload);
+            }
+        }
+
         // Static events intended for use when measuring performance
         public static event Action<string> Sending;
         public static event Action<string> Receiving;
@@ -46,19 +64,30 @@ namespace SignalR.Transports
             }
             else
             {
-                if (Connected != null)
+                if (IsConnectRequest && Connected != null)
                 {
                     Connected();
                 }
 
-                // Don't timeout and never buffer any output
-                connection.ReceiveTimeout = TimeSpan.FromTicks(Int32.MaxValue - 1);
-                _context.Response.BufferOutput = false;
-                _context.Response.Buffer = false;
+                InitializeResponse(connection);
+                
                 return () => ProcessMessages(connection);
             }
 
             return null;
+        }
+
+        protected virtual bool IsConnectRequest
+        {
+            get { return true; }
+        }
+
+        protected virtual void InitializeResponse(IConnection connection)
+        {
+            // Don't timeout and never buffer any output
+            connection.ReceiveTimeout = TimeSpan.FromTicks(Int32.MaxValue - 1);
+            Context.Response.BufferOutput = false;
+            Context.Response.Buffer = false;
         }
 
         private Task ProcessMessages(IConnection connection)
@@ -79,13 +108,15 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        public void Send(object value)
+        public virtual void Send(PersistentResponse response)
+        {
+            Send((object)response);
+        }
+
+        public virtual void Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
-            if (Sending != null)
-            {
-                Sending(payload);
-            }
+            OnSending(payload);
             _context.Response.Write(payload);
         }
     }
