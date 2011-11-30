@@ -317,6 +317,7 @@
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).trigger('onError');
+                            // TODO: Support reconnect attempt here, need to ensure last message id, groups, and connection data go up on reconnect
                         }
                         connection.socket = null;
                     };
