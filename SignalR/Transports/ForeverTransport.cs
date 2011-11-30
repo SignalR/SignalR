@@ -8,7 +8,7 @@ namespace SignalR.Transports
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly HttpContextBase _context;
-
+        
         public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
         {
             _context = context;
@@ -23,6 +23,12 @@ namespace SignalR.Transports
         protected HttpContextBase Context
         {
             get { return _context; }
+        }
+
+        protected long? LastMessageId
+        {
+            get;
+            set;
         }
 
         protected virtual void OnSending(string payload)
@@ -68,7 +74,7 @@ namespace SignalR.Transports
 
                 InitializeResponse(connection);
 
-                return () => ProcessMessages(connection);
+                return () => ProcessMessages(connection, LastMessageId);
             }
 
             return null;
@@ -82,7 +88,7 @@ namespace SignalR.Transports
         protected virtual void InitializeResponse(IConnection connection)
         {
             // Don't timeout and never buffer any output
-            connection.ReceiveTimeout = TimeSpan.FromTicks(Int32.MaxValue - 1);
+            connection.ReceiveTimeout = TimeSpan.FromDays(1);
 
             // This forces the IIS compression module to leave this response alone.
             // If we don't do this, it will buffer the response to suit its own compression
@@ -93,17 +99,23 @@ namespace SignalR.Transports
             Context.Response.AddHeader("Connection", "keep-alive");
         }
 
-        private Task ProcessMessages(IConnection connection)
+        private Task ProcessMessages(IConnection connection, long? lastMessageId)
         {
             if (Context.Response.IsClientConnected)
             {
-                return connection.ReceiveAsync().ContinueWith(t =>
+                var responseTask = lastMessageId == null
+                    ? connection.ReceiveAsync()
+                    : connection.ReceiveAsync(lastMessageId.Value);
+
+                return responseTask.ContinueWith(t =>
                 {
+                    LastMessageId = t.Result.MessageId;
                     Send(t.Result);
-                    return ProcessMessages(connection);
+                    return ProcessMessages(connection, LastMessageId);
                 }).Unwrap();
             }
 
+            // Client is no longer connected
             if (Disconnected != null)
             {
                 Disconnected();

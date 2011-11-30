@@ -4,33 +4,51 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-namespace SignalR.Transports {
-    public class ServerSentEventsTransport : ForeverTransport {
-        public ServerSentEventsTransport(HttpContextBase context, IJsonStringifier jsonStringifier)
-            : base(context, jsonStringifier) {
+namespace SignalR.Transports
+{
+    public class ServerSentEventsTransport : ForeverTransport
+    {
+        public ServerSentEventsTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+            : base(context, jsonSerializer)
+        {
 
         }
 
-        protected override void InitializeResponse(IConnection connection) {
+        protected override void InitializeResponse(IConnection connection)
+        {
+            long lastMessageId;
+            if (long.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))
+            {
+                LastMessageId = lastMessageId;
+            }
+
             base.InitializeResponse(connection);
+
             Context.Response.ContentType = "text/event-stream";
-            Context.Response.CacheControl = "no-cache";
-            Context.Response.AddHeader("Connection", "keep-alive");
-            Context.Response.Write("data:initialized\n\n");
+
+            Context.Response.Write("data: initialized\n\n");
             Context.Response.Flush();
         }
 
-        protected override void Send(PersistentResponse response) {
-            Context.Response.Write("id:" + response.MessageId + "\n");
-            Context.Response.Flush();
-            
-            Context.Response.Write("data:" +
-                String.Join("\ndata:", JsonStringifier.Stringify(response).Split(new [] { "\r\n" }, StringSplitOptions.None))
-                + "\n\n");
-            Context.Response.Flush();
+        protected override bool IsConnectRequest
+        {
+            get
+            {
+                return Context.Request.Headers["Last-Event-ID"] == null;
+            }
+        }
 
-            Context.Response.Write("\n\n");
-            Context.Response.Flush();
+        public override void Send(PersistentResponse response)
+        {
+            if (Context.Response.IsClientConnected)
+            {
+                Context.Response.Write("id: " + response.MessageId + "\n");
+                Context.Response.Write("data: " + JsonSerializer.Stringify(response) + "\n\n");
+                if (Context.Response.IsClientConnected)
+                {
+                    Context.Response.Flush();
+                }
+            }
         }
     }
 }
