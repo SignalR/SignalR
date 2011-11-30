@@ -206,6 +206,17 @@
 
     // Transports
     var transportLogic = {
+
+        getUrl: function (connection, transport) {
+            var url = connection.url + "/connect";
+            if (connection.data) {
+                url += "?connectionData=" + connection.data + "&transport=" + transport + "&clientId=" + window.escape(connection.clientId);
+            } else {
+                url += "?transport=" + transport + "&clientId=" + window.escape(connection.clientId);
+            }
+            return url;
+        },
+
         ajaxSend: function (connection, data, transport) {
             $.ajax(connection.url + '/send', {
                 global: false,
@@ -230,6 +241,23 @@
             });
         },
 
+        processMessages: function (connection, data) {
+            if (data) {
+                if (data.Messages) {
+                    $.each(data.Messages, function () {
+                        try {
+                            $(connection).trigger("onReceived", [this]);
+                        }
+                        catch (e) {
+                            log('Error raising received ' + e);
+                        }
+                    });
+                }
+                connection.messageId = data.MessageId;
+                connection.groups = data.TransportData.Groups;
+            }
+        },
+
         foreverFrame: {
             count: 0,
             connections: {}
@@ -239,6 +267,8 @@
     signalR.transports = {
 
         webSockets: {
+            name: "webSockets",
+
             send: function (connection, data) {
                 connection.socket.send(data);
             },
@@ -315,10 +345,12 @@
         },
 
         serverSentEvents: {
+            name: "serverSentEvents",
+
             start: function (connection, onSuccess, onFailed) {
                 var that = this,
                     opened = false,
-                    url = connection.url + "/connect";
+                    url;
 
                 if (connection.eventSource) {
                     connection.stop();
@@ -330,40 +362,26 @@
                 }
 
                 $(connection).trigger("onSending");
-                if (connection.data) {
-                    url += "?connectionData=" + connection.data + "&transport=serverSentEvents&clientId=" + connection.clientId;
-                } else {
-                    url += "?transport=serverSentEvents&clientId=" + connection.clientId;
-                }
+
+                url = transportLogic.getUrl(connection, this.name);
 
                 connection.eventSource = new window.EventSource(url);
 
                 connection.eventSource.addEventListener("open", function (e) {
                     // opened
-                    //opened = true;
-                    //onSuccess();
+                    opened = true;
+                    onSuccess();
                 }, false);
 
                 connection.eventSource.addEventListener("message", function (e) {
                     // process messages
                     log("SignalR: EventSource message received - " + e.data);
                     if (e.data === "initialized") {
-                        if (!opened) {
-                            opened = true;
-                            onSuccess();
-                        }
                         return;
                     }
                     var data = window.JSON.parse(e.data);
-                    if (data) {
-                        if (data.Messages) {
-                            $.each(data.Messages, function () {
-                                $(connection).trigger("onReceived", [this]);
-                            });
-                        } else {
-                            $(connection).trigger("onReceived", [data]);
-                        }
-                    }
+                    transportLogic.processMessages(connection, data);
+                    // TODO: persist the groups and connection data in a cookie
                 }, false);
 
                 connection.eventSource.addEventListener("error", function (e) {
@@ -383,7 +401,7 @@
             },
 
             send: function (connection, data) {
-                transportLogic.ajaxSend(connection, data, "serverSentEvents");
+                transportLogic.ajaxSend(connection, data, this.name);
             },
 
             stop: function (connection) {
@@ -395,20 +413,17 @@
         },
 
         foreverFrame: {
+            name: "foreverFrame",
+
             start: function (connection, onSuccess, onFailed) {
                 var frameId = (transportLogic.foreverFrame.count += 1),
-                    url = connection.url + "/connect",
+                    url,
                     frame = $("<iframe data-signalr-connection-id='" + connection.clientId + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
 
                 $(connection).trigger("onSending");
 
                 // Build the url
-                if (connection.data) {
-                    url += "?connectionData=" + connection.data + "&transport=foreverFrame&clientId=" + window.escape(connection.clientId);
-                } else {
-                    url += "?transport=foreverFrame&clientId=" + window.escape(connection.clientId);
-                }
-
+                url = transportLogic.getUrl(connection, this.name);
                 url += "&frameId=" + frameId;
 
                 frame.prop("src", url);
@@ -418,7 +433,7 @@
                     log("SignalR: forever frame iframe load event fired");
                     // TODO: The frame has finished loading (timeout or error), we need to refresh it
                     window.setTimeout(function () {
-                        var src = this.src.replace("/connect", "") + "&messageId=" + connection.messageId;
+                        var src = this.src.replace("/connect", "") + "&messageId=" + connection.messageId + "&groups=" + connection.groups;
                         this.src = src;
                     }, 2000);
                 })
@@ -437,23 +452,7 @@
                 transportLogic.ajaxSend(connection, data, "foreverFrame");
             },
 
-            receive: function (connection, data) {
-                // TODO: Factor this out and reuse for all transports
-                if (data) {
-                    if (data.Messages) {
-                        $.each(data.Messages, function () {
-                            try {
-                                $(connection).trigger("onReceived", [this]);
-                            }
-                            catch (e) {
-                                log('Error raising received ' + e);
-                            }
-                        });
-                    }
-                    connection.messageId = data.MessageId;
-                    connection.groups = data.TransportData.Groups;
-                }
-            },
+            receive: transportLogic.processMessages,
 
             stop: function (connection) {
                 if (connection.frame) {
@@ -474,6 +473,8 @@
         },
 
         longPolling: {
+            name: "longPolling",
+
             start: function (connection, onSuccess, onFailed) {
                 /// <summary>Starts the long polling connection</summary>
                 /// <param name="connection" type="signalR">The SignalR connection to start</param>
@@ -508,22 +509,9 @@
 
                             success: function (data) {
                                 var delay = 0;
-                                if (data) {
-                                    if (data.Messages) {
-                                        $.each(data.Messages, function () {
-                                            try {
-                                                $(instance).trigger("onReceived", [this]);
-                                            }
-                                            catch (e) {
-                                                log('Error raising received ' + e);
-                                            }
-                                        });
-                                    }
-                                    instance.messageId = data.MessageId;
-                                    if ($.type(data.TransportData.LongPollDelay) === "number") {
-                                        delay = data.TransportData.LongPollDelay;
-                                    }
-                                    instance.groups = data.TransportData.Groups;
+                                transportLogic.processMessages(instance, data);
+                                if (data && $.type(data.TransportData.LongPollDelay) === "number") {
+                                    delay = data.TransportData.LongPollDelay;
                                 }
                                 if (delay > 0) {
                                     window.setTimeout(function () {

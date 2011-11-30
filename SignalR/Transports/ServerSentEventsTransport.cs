@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Web;
 
 namespace SignalR.Transports
@@ -40,14 +37,11 @@ namespace SignalR.Transports
 
         public override void Send(PersistentResponse response)
         {
+            Context.Response.Write("id: " + response.MessageId + "\n");
+            Context.Response.Write("data: " + JsonSerializer.Stringify(response) + "\n\n");
             if (Context.Response.IsClientConnected)
             {
-                Context.Response.Write("id: " + response.MessageId + "\n");
-                Context.Response.Write("data: " + JsonSerializer.Stringify(response) + "\n\n");
-                if (Context.Response.IsClientConnected)
-                {
-                    Context.Response.Flush();
-                }
+                Context.Response.Flush();
             }
         }
     }

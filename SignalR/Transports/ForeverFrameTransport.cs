@@ -70,7 +70,10 @@ namespace SignalR.Transports
                 Context.Response.Write(String.Format(_debugTemplate, payload));
             }
 
-            Context.Response.Flush();
+            if (Context.Response.IsClientConnected)
+            {
+                Context.Response.Flush();
+            }
         }
     }
 }

@@ -87,7 +87,7 @@ namespace SignalR.Transports
 
         protected virtual void InitializeResponse(IConnection connection)
         {
-            // Don't timeout and never buffer any output
+            // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
 
             // This forces the IIS compression module to leave this response alone.
