@@ -374,7 +374,7 @@
 
                 connection.eventSource.addEventListener("message", function (e) {
                     // process messages
-                    log("SignalR: EventSource message received - " + e.data);
+                    //log("SignalR: EventSource message received - " + e.data);
                     if (e.data === "initialized") {
                         return;
                     }
@@ -384,12 +384,12 @@
                 }, false);
 
                 connection.eventSource.addEventListener("error", function (e) {
+                    if (!opened) {
+                        onFailed();
+                    }
                     if (e.eventPhase == EventSource.CLOSED) {
                         // connection closed
                         log("SignalR: EventSource closed");
-                        if (!opened) {
-                            onFailed();
-                        }
                         that.stop();
                     } else {
                         // connection error
