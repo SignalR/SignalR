@@ -2,7 +2,7 @@ $(function () {
     var status = $.connection.status;
 
     status.joined = function (id, when) {
-        if ($.connection.hub.clientId === id) {
+        if ($.connection.hub.id === id) {
             addMessage(id, 'blue');    
         }
         

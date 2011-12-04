@@ -22,7 +22,7 @@
         o.doIt();
     };
 
-    $.connection.hub.start(function () {
+    $.connection.hub.start({transport: "auto"}, function () {
         demo.doSomethingAndCallError();
 
         demo.getValue(function (value) {

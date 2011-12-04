@@ -78,7 +78,7 @@ namespace SignalR
         private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
-
+            
             requestPreparer(request);
 
             var sb = new StringBuilder();

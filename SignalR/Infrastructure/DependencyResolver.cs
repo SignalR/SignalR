@@ -88,10 +88,7 @@ namespace SignalR.Infrastructure
 
                 Register(typeof(IMessageStore), () => store.Value);
 
-                var serializer = new JavaScriptSerializerAdapter(new JavaScriptSerializer
-                {
-                    MaxJsonLength = 30 * 1024 * 1024
-                });
+                var serializer = new JsonConvertAdapter();
 
                 Register(typeof(IJsonSerializer), () => serializer);
 
@@ -116,8 +113,8 @@ namespace SignalR.Infrastructure
                 var proxyGenerator = new DefaultJavaScriptProxyGenerator(hubLocator, (IJavaScriptMinifier)GetService(typeof(IJavaScriptMinifier)) ?? minifier);
                 Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator);
 
-                var clientIdFactory = new GuidClientIdFactory();
-                Register(typeof(IClientIdFactory), () => clientIdFactory);
+                var connectionIdFactory = new GuidConnectionIdFactory();
+                Register(typeof(IConnectionIdFactory), () => connectionIdFactory);
             }
 
             public object GetService(Type serviceType)

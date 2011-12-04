@@ -19,12 +19,12 @@ namespace SignalR.Hubs
 
         public Task AddToGroup(string groupName)
         {
-            return GroupManager.AddToGroup(Context.ClientId, groupName);
+            return GroupManager.AddToGroup(Context.ConnectionId, groupName);
         }
 
         public Task RemoveFromGroup(string groupName)
         {
-            return GroupManager.RemoveFromGroup(Context.ClientId, groupName);
+            return GroupManager.RemoveFromGroup(Context.ConnectionId, groupName);
         }
 
         public static Task Invoke<T>(string method, params object[] args) where T : IHub

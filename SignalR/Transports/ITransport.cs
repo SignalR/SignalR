@@ -11,5 +11,6 @@ namespace SignalR.Transports
         event Action<Exception> Error;
         Func<Task> ProcessRequest(IConnection connection);
         void Send(object value);
+        string ConnectionId { get; }
     }
 }

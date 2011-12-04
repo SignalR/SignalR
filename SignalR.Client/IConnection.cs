@@ -11,7 +11,7 @@ namespace SignalR.Client
         long? MessageId { get; set; }
         Func<string> Sending { get; set; }
         IEnumerable<string> Groups { get; }
-        string ClientId { get; }
+        string ConnectionId { get; }
         string Url { get; }
 
         ICredentials Credentials { get; set; }

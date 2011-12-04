@@ -9,17 +9,19 @@ namespace SignalR.Tests
     public class LongPollingTransportTest
     {
         [Fact]
-        public void ExtractsClientIdFromRequest()
+        public void ExtractsConnectionIdFromRequest()
         {
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
-            request.Setup(m => m["clientId"]).Returns("1");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
             var transport = new LongPollingTransport(context.Object, json.Object, heartBeat.Object);
 
-            Assert.Equal("1", transport.ClientId);
+            Assert.Equal("1", transport.ConnectionId);
         }
 
         [Fact]
@@ -63,7 +65,9 @@ namespace SignalR.Tests
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m.Path).Returns("/foo/connect");
-            request.Setup(m => m["clientId"]).Returns("1");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
@@ -80,7 +84,9 @@ namespace SignalR.Tests
             var context = new Mock<HttpContextBase>();
             var request = new Mock<HttpRequestBase>();
             request.Setup(m => m.Path).Returns("/foo/connect");
-            request.Setup(m => m["clientId"]).Returns("1");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();
             var heartBeat = new Mock<ITransportHeartBeat>();
@@ -104,7 +110,9 @@ namespace SignalR.Tests
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
             request.Setup(m => m.Path).Returns("/foo/connect");
-            request.Setup(m => m["clientId"]).Returns("1");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();
@@ -131,8 +139,10 @@ namespace SignalR.Tests
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
             request.Setup(m => m.Path).Returns("/foo");
-            request.Setup(m => m["clientId"]).Returns("1");
-            request.Setup(m => m["messageId"]).Returns("20");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            qs["messageId"] = "20";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();
@@ -159,8 +169,10 @@ namespace SignalR.Tests
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
             request.Setup(m => m.Path).Returns("/foo");
-            request.Setup(m => m["clientId"]).Returns("1");
-            request.Setup(m => m["messageId"]).Returns("fff");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            qs["messageId"] = "fff";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();
@@ -181,7 +193,9 @@ namespace SignalR.Tests
             var request = new Mock<HttpRequestBase>();
             var response = new Mock<HttpResponseBase>();
             request.Setup(m => m.Path).Returns("/foo/");
-            request.Setup(m => m["clientId"]).Returns("1");
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
             context.Setup(m => m.Response).Returns(response.Object);
             context.Setup(m => m.Request).Returns(request.Object);
             var json = new Mock<IJsonSerializer>();

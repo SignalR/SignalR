@@ -15,6 +15,8 @@ namespace SignalR.Client.Transports
     {
         private HttpWebRequest _pollingRequest;
         private readonly object _lockObj = new object();
+        private const string _receiveQs = "?transport=longPolling&connectionId={0}&messageId={1}&groups={2}&connectionData={3}";
+        private const string _sendQs = "?transport=longPolling&connectionId={0}";
 
         public void Start(Connection connection, string data)
         {
@@ -25,13 +27,11 @@ namespace SignalR.Client.Transports
                 url += "connect";
             }
 
-            var parameters = new Dictionary<string, string> {
-                { "connectionData", data },
-                { "messageId", Convert.ToString(connection.MessageId) },
-                { "clientId", connection.ClientId },
-                { "transport", "longPolling" },
-                { "groups", String.Join(",", connection.Groups.ToArray()) }
-            };
+            url += String.Format(_receiveQs,
+                                 Uri.EscapeDataString(connection.ConnectionId),
+                                 Convert.ToString(connection.MessageId),
+                                 Uri.EscapeDataString(String.Join(",", connection.Groups.ToArray())),
+                                 data);
 
             Action<HttpWebRequest> prepareRequest = request =>
             {
@@ -45,7 +45,7 @@ namespace SignalR.Client.Transports
                 }
             };
 
-            HttpHelper.PostAsync(url, prepareRequest, parameters).ContinueWith(task =>
+            HttpHelper.PostAsync(url, prepareRequest).ContinueWith(task =>
             {
                 lock (_lockObj)
                 {
@@ -113,10 +113,10 @@ namespace SignalR.Client.Transports
         {
             string url = connection.Url + "send";
 
+            url += String.Format(_sendQs, connection.ConnectionId);
+
             var postData = new Dictionary<string, string> {
-                { "data", data },
-                { "clientId", connection.ClientId },
-                { "transport" , "longPolling" }
+                { "data", data }
             };
 
             return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Success(task =>

@@ -40,7 +40,7 @@ namespace SignalR.Samples.Hubs.Chat
             if (user != null)
             {
                 // Update the users's client id mapping
-                user.ClientId = Context.ClientId;
+                user.ConnectionId = Context.ConnectionId;
 
                 // Set some client state
                 Caller.id = user.Id;
@@ -123,7 +123,7 @@ namespace SignalR.Samples.Hubs.Chat
 
         public void Disconnect()
         {
-            ChatUser user = _users.Values.FirstOrDefault(u => u.ClientId == Context.ClientId);
+            ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
                 _users.Remove(user.Name);
@@ -203,7 +203,7 @@ namespace SignalR.Samples.Hubs.Chat
                                 Name = newUserName,
                                 Hash = GetMD5Hash(newUserName),
                                 Id = oldUser.Id,
-                                ClientId = oldUser.ClientId
+                                ConnectionId = oldUser.ConnectionId
                             };
 
                             _users[newUserName] = newUser;
@@ -325,7 +325,7 @@ namespace SignalR.Samples.Hubs.Chat
                             throw new InvalidOperationException(String.Format("What did you want to say to '{0}'.", to));
                         }
 
-                        string recipientId = _users[to].ClientId;
+                        string recipientId = _users[to].ConnectionId;
                         // Send a message to the sender and the sendee                        
                         Clients[recipientId].sendPrivateMessage(name, to, messageText);
                         Caller.sendPrivateMessage(name, to, messageText);
@@ -374,7 +374,7 @@ namespace SignalR.Samples.Hubs.Chat
         private ChatUser AddUser(string newUserName)
         {
             var user = new ChatUser(newUserName, GetMD5Hash(newUserName));
-            user.ClientId = Context.ClientId;
+            user.ConnectionId = Context.ConnectionId;
             _users[newUserName] = user;
             _userRooms[newUserName] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -472,7 +472,7 @@ namespace SignalR.Samples.Hubs.Chat
         [Serializable]
         public class ChatUser
         {
-            public string ClientId { get; set; }
+            public string ConnectionId { get; set; }
             public string Id { get; set; }
             public string Name { get; set; }
             public string Hash { get; set; }

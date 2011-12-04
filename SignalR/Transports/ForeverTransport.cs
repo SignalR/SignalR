@@ -31,6 +31,14 @@ namespace SignalR.Transports
             set;
         }
 
+        public string ConnectionId
+        {
+            get
+            {
+                return _context.Request.QueryString["connectionId"];
+            }
+        }
+
         protected virtual void OnSending(string payload)
         {
             if (Sending != null)

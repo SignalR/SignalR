@@ -43,7 +43,7 @@ namespace SignalR.Client
 
         public long? MessageId { get; set; }
 
-        public string ClientId { get; set; }
+        public string ConnectionId { get; set; }
 
         public virtual Task Start()
         {
@@ -74,7 +74,7 @@ namespace SignalR.Client
 
                 var negotiationResponse = JsonConvert.DeserializeObject<NegotiationResponse>(raw);
 
-                ClientId = negotiationResponse.ClientId;
+                ConnectionId = negotiationResponse.ConnectionId;
 
                 _transport.Start(this, data);
             });

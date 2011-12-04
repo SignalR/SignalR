@@ -16,25 +16,25 @@ namespace SignalR
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IClientIdFactory _clientIdFactory;
+        private readonly IConnectionIdFactory _connectionIdFactory;
 
         protected ITransport _transport;
 
         protected PersistentConnection()
             : this(Signaler.Instance,
-                   DependencyResolver.Resolve<IClientIdFactory>(),
+                   DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
                    DependencyResolver.Resolve<IJsonSerializer>())
         {
         }
 
         protected PersistentConnection(Signaler signaler,
-                                       IClientIdFactory clientIdFactory,
+                                       IConnectionIdFactory connectionIdFactory,
                                        IMessageStore store,
                                        IJsonSerializer jsonSerializer)
         {
             _signaler = signaler;
-            _clientIdFactory = clientIdFactory;
+            _connectionIdFactory = connectionIdFactory;
             _store = store;
             _jsonSerializer = jsonSerializer;
         }
@@ -78,34 +78,34 @@ namespace SignalR
                 context.Response.Write(_jsonSerializer.Stringify(new
                 {
                     Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
-                    ClientId = _clientIdFactory.CreateClientId(contextBase)
+                    ConnectionId = _connectionIdFactory.CreateConnectionId(contextBase)
                 }));
             }
             else
             {
                 _transport = GetTransport(contextBase);
 
-                string clientId = contextBase.Request["clientId"];
+                string connectionId = _transport.ConnectionId;
 
-                // If there's no client id then this is a bad request
-                if (String.IsNullOrEmpty(clientId))
+                // If there's no connection id then this is a bad request
+                if (String.IsNullOrEmpty(connectionId))
                 {
-                    throw new InvalidOperationException("Protocol error: Missing client id.");
+                    throw new InvalidOperationException("Protocol error: Missing connection id.");
                 }
 
                 IEnumerable<string> groups = GetGroups(contextBase);
 
-                Connection = CreateConnection(clientId, groups, contextBase);
+                Connection = CreateConnection(connectionId, groups, contextBase);
 
                 // Wire up the events we need
                 _transport.Connected += () =>
                 {
-                    task = OnConnectedAsync(contextBase, clientId);
+                    task = OnConnectedAsync(contextBase, connectionId);
                 };
 
                 _transport.Received += (data) =>
                 {
-                    task = OnReceivedAsync(clientId, data);
+                    task = OnReceivedAsync(connectionId, data);
                 };
 
                 _transport.Error += (e) =>
@@ -115,7 +115,7 @@ namespace SignalR
 
                 _transport.Disconnected += () =>
                 {
-                    task = OnDisconnectAsync(clientId);
+                    task = OnDisconnectAsync(connectionId);
                 };
 
                 Func<Task> processRequestTask = _transport.ProcessRequest(Connection);
@@ -133,47 +133,47 @@ namespace SignalR
             return task ?? TaskAsyncHelper.Empty;
         }
 
-        protected virtual IConnection CreateConnection(string clientId, IEnumerable<string> groups, HttpContextBase context)
+        protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
         {
-            string groupValue = context.Request["groups"] ?? String.Empty;
+            string groupValue = context.Request.QueryStringOrForm("groups") ?? String.Empty;
 
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
-            // 2. The client id (so we can message this particular connection)
-            // 3. client id + SIGNALRCOMMAND -> for built in commands that we need to process
+            // 2. The connection id (so we can message this particular connection)
+            // 3. connection id + SIGNALRCOMMAND -> for built in commands that we need to process
             var signals = new string[] {
                 DefaultSignal,
-                clientId,
-                clientId + "." + SignalrCommand
+                connectionId,
+                connectionId + "." + SignalrCommand
             };
 
-            return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, clientId, signals, groups);
+            return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
         }
 
-        protected virtual void OnConnected(HttpContextBase context, string clientId) { }
+        protected virtual void OnConnected(HttpContextBase context, string connectionId) { }
 
-        protected virtual Task OnConnectedAsync(HttpContextBase context, string clientId)
+        protected virtual Task OnConnectedAsync(HttpContextBase context, string connectionId)
         {
-            OnClientConnected(clientId);
-            OnConnected(context, clientId);
+            OnClientConnected(connectionId);
+            OnConnected(context, connectionId);
             return TaskAsyncHelper.Empty;
         }
 
-        protected virtual void OnReceived(string clientId, string data) { }
+        protected virtual void OnReceived(string connectionId, string data) { }
 
-        protected virtual Task OnReceivedAsync(string clientId, string data)
+        protected virtual Task OnReceivedAsync(string connectionId, string data)
         {
             OnReceiving();
-            OnReceived(clientId, data);
+            OnReceived(connectionId, data);
             return TaskAsyncHelper.Empty;
         }
 
-        protected virtual void OnDisconnect(string clientId) { }
+        protected virtual void OnDisconnect(string connectionId) { }
 
-        protected virtual Task OnDisconnectAsync(string clientId)
+        protected virtual Task OnDisconnectAsync(string connectionId)
         {
-            OnClientDisconnected(clientId);
-            OnDisconnect(clientId);
+            OnClientDisconnected(connectionId);
+            OnDisconnect(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
@@ -191,10 +191,10 @@ namespace SignalR
             _transport.Send(value);
         }
 
-        public Task Send(string clientId, object value)
+        public Task Send(string connectionId, object value)
         {
             OnSending();
-            return Connection.Broadcast(clientId, value);
+            return Connection.Broadcast(connectionId, value);
         }
 
         public Task SendToGroup(string groupName, object value)
@@ -203,21 +203,21 @@ namespace SignalR
             return Connection.Broadcast(CreateQualifiedName(groupName), value);
         }
 
-        public Task AddToGroup(string clientId, string groupName)
+        public Task AddToGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
-            return SendCommand(clientId, CommandType.AddToGroup, groupName);
+            return SendCommand(connectionId, CommandType.AddToGroup, groupName);
         }
 
-        public Task RemoveFromGroup(string clientId, string groupName)
+        public Task RemoveFromGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
-            return SendCommand(clientId, CommandType.RemoveFromGroup, groupName);
+            return SendCommand(connectionId, CommandType.RemoveFromGroup, groupName);
         }
 
-        private Task SendCommand(string clientId, CommandType type, object value)
+        private Task SendCommand(string connectionId, CommandType type, object value)
         {
-            string signal = clientId + "." + SignalrCommand;
+            string signal = connectionId + "." + SignalrCommand;
 
             var groupCommand = new SignalCommand
             {
@@ -235,7 +235,7 @@ namespace SignalR
 
         private IEnumerable<string> GetGroups(HttpContextBase context)
         {
-            string groupValue = context.Request["groups"];
+            string groupValue = context.Request.QueryStringOrForm("groups");
 
             if (String.IsNullOrEmpty(groupValue))
             {

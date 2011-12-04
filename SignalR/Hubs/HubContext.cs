@@ -6,9 +6,9 @@ namespace SignalR.Hubs
     public class HubContext
     {
         /// <summary>
-        /// Gets the client id of the calling client.
+        /// Gets the connection id of the calling client.
         /// </summary>
-        public string ClientId { get; private set; }
+        public string ConnectionId { get; private set; }
 
         /// <summary>
         /// Gets the cookies for the request
@@ -17,9 +17,9 @@ namespace SignalR.Hubs
 
         public IPrincipal User { get; private set; }
 
-        public HubContext(string clientId, HttpCookieCollection cookies, IPrincipal user)
+        public HubContext(string connectionId, HttpCookieCollection cookies, IPrincipal user)
         {
-            ClientId = clientId;
+            ConnectionId = connectionId;
             Cookies = cookies;
             User = user;
         }

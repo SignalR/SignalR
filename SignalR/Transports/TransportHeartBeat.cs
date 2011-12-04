@@ -11,8 +11,8 @@ namespace SignalR.Transports
     public class TransportHeartBeat : ITransportHeartBeat
     {
         private readonly static TransportHeartBeat _instance = new TransportHeartBeat();
-        private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ClientIdEqualityComparer());
-        private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>(new ClientIdEqualityComparer());
+        private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ConnectionIdEqualityComparer());
+        private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>(new ConnectionIdEqualityComparer());
         private readonly Timer _timer;
         private TimeSpan _heartBeatInterval;
         private bool _running;
@@ -135,16 +135,16 @@ namespace SignalR.Transports
             _running = false;
         }
 
-        private class ClientIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
+        private class ConnectionIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
         {
             public bool Equals(ITrackingDisconnect x, ITrackingDisconnect y)
             {
-                return String.Equals(x.ClientId, y.ClientId, StringComparison.OrdinalIgnoreCase);
+                return String.Equals(x.ConnectionId, y.ConnectionId, StringComparison.OrdinalIgnoreCase);
             }
 
             public int GetHashCode(ITrackingDisconnect obj)
             {
-                return obj.ClientId.GetHashCode();
+                return obj.ConnectionId.GetHashCode();
             }
         }
     }

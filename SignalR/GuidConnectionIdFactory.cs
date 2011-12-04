@@ -3,9 +3,9 @@ using System.Web;
 
 namespace SignalR
 {
-    public class GuidClientIdFactory : IClientIdFactory
+    public class GuidConnectionIdFactory : IConnectionIdFactory
     {
-        public string CreateClientId(HttpContextBase context)
+        public string CreateConnectionId(HttpContextBase context)
         {
             return Guid.NewGuid().ToString("d");
         }

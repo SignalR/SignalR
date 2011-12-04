@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Web;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -21,7 +22,7 @@ namespace SignalR.Transports
 
         internal static ITransport GetTransport(HttpContextBase contextBase)
         {
-            string transportName = contextBase.Request["transport"];
+            string transportName = contextBase.Request.QueryString["transport"];
 
             if (String.IsNullOrEmpty(transportName))
             {

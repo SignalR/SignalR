@@ -33,14 +33,6 @@ namespace SignalR.Transports
             _isDebug = context.IsDebuggingEnabled;
         }
 
-        protected string ClientID
-        {
-            get
-            {
-                return Context.Request.QueryString["clientID"];
-            }
-        }
-
         protected override bool IsConnectRequest
         {
             get

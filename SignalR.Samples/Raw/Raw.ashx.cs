@@ -11,27 +11,27 @@ namespace SignalR.Samples.Raw
         private static readonly Dictionary<string, string> _users = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _clients = new Dictionary<string, string>();
 
-        protected override Task OnConnectedAsync(HttpContextBase context, string clientId)
+        protected override Task OnConnectedAsync(HttpContextBase context, string connectionId)
         {
             var cookie = context.Request.Cookies["user"];
             if (cookie != null)
             {
-                _clients[clientId] = cookie.Value;
-                _users[cookie.Value] = clientId;
+                _clients[connectionId] = cookie.Value;
+                _users[cookie.Value] = connectionId;
             }
 
-            string user = GetUser(clientId);
+            string user = GetUser(connectionId);
 
             return Connection.Broadcast(DateTime.Now + ": " + user + " joined");
         }
 
-        protected override Task OnDisconnectAsync(string clientId)
+        protected override Task OnDisconnectAsync(string connectionId)
         {
-            _users.Remove(clientId);
-            return Connection.Broadcast(DateTime.Now + ": " + GetUser(clientId) + " disconnected");
+            _users.Remove(connectionId);
+            return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
         }
 
-        protected override void OnReceived(string clientId, string data)
+        protected override void OnReceived(string connectionId, string data)
         {
             var serializer = new JavaScriptSerializer();
             var message = serializer.Deserialize<Message>(data);
@@ -42,7 +42,7 @@ namespace SignalR.Samples.Raw
                     Connection.Broadcast(new
                     {
                         type = MessageType.Broadcast,
-                        from = GetUser(clientId),
+                        from = GetUser(connectionId),
                         data = message.Value
                     });
                     break;
@@ -50,14 +50,14 @@ namespace SignalR.Samples.Raw
                     Send(new
                     {
                         type = MessageType.Send,
-                        from = GetUser(clientId),
+                        from = GetUser(connectionId),
                         data = message.Value
                     });
                     break;
                 case MessageType.Join:
                     string name = message.Value;
-                    _clients[clientId] = name;
-                    _users[name] = clientId;
+                    _clients[connectionId] = name;
+                    _users[name] = connectionId;
                     Send(new
                     {
                         type = MessageType.Join,
@@ -71,15 +71,15 @@ namespace SignalR.Samples.Raw
                     string id = GetClient(user);
                     Send(id, new
                     {
-                        from = GetUser(clientId),
+                        from = GetUser(connectionId),
                         data = msg
                     });
                     break;
                 case MessageType.AddToGroup:
-                    AddToGroup(clientId, message.Value);
+                    AddToGroup(connectionId, message.Value);
                     break;
                 case MessageType.RemoveFromGroup:
-                    RemoveFromGroup(clientId, message.Value);
+                    RemoveFromGroup(connectionId, message.Value);
                     break;
                 case MessageType.SendToGroup:
                     var parts2 = message.Value.Split('|');
@@ -92,22 +92,22 @@ namespace SignalR.Samples.Raw
             }
         }
 
-        private string GetUser(string clientId)
+        private string GetUser(string connectionId)
         {
             string user;
-            if (!_clients.TryGetValue(clientId, out user))
+            if (!_clients.TryGetValue(connectionId, out user))
             {
-                return clientId;
+                return connectionId;
             }
             return user;
         }
 
         private string GetClient(string user)
         {
-            string clientId;
-            if (_users.TryGetValue(user, out clientId))
+            string connectionId;
+            if (_users.TryGetValue(user, out connectionId))
             {
-                return clientId;
+                return connectionId;
             }
             return null;
         }

@@ -10,12 +10,12 @@ namespace SignalR.Samples.Performance
     {
         private static int _connectedClients;
 
-        protected override void OnConnected(HttpContextBase context, string clientId)
+        protected override void OnConnected(HttpContextBase context, string connectionId)
         {
             Interlocked.Increment(ref _connectedClients);
         }
 
-        protected override void OnReceived(string clientId, string data)
+        protected override void OnReceived(string connectionId, string data)
         {
             if (data == "reset")
             {
@@ -27,7 +27,7 @@ namespace SignalR.Samples.Performance
             }
         }
 
-        protected override void OnDisconnect(string clientId)
+        protected override void OnDisconnect(string connectionId)
         {
             Interlocked.Decrement(ref _connectedClients);
         }

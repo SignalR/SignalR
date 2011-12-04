@@ -37,6 +37,9 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.4.0.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -54,7 +57,7 @@
     </Compile>
     <Compile Include="CommandType.cs" />
     <Compile Include="DefaultPersistentConnectionFactory.cs" />
-    <Compile Include="GuidClientIdFactory.cs" />
+    <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
     <Compile Include="Hubs\DefaultHubTypeResolver.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
@@ -63,9 +66,10 @@
     <Compile Include="Hubs\IDisconnect.cs" />
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="Hubs\IHubTypeResolver.cs" />
-    <Compile Include="IClientIdFactory.cs" />
+    <Compile Include="IConnectionIdFactory.cs" />
     <Compile Include="IJsonSerializer.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
+    <Compile Include="Infrastructure\RequestHelpers.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
@@ -88,7 +92,7 @@
     <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
     <Compile Include="ISignalBus.cs" />
-    <Compile Include="JavaScriptSerializerAdapter.cs" />
+    <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="Routing\IncomingOnlyRouteConstraint.cs" />
     <Compile Include="Routing\PersistentRouteHandler.cs" />

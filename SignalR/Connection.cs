@@ -12,7 +12,7 @@ namespace SignalR
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly string _baseSignal;
-        private readonly string _clientId;
+        private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
         private readonly object _lockObj = new object();
@@ -21,13 +21,13 @@ namespace SignalR
                           IJsonSerializer jsonSerializer,
                           Signaler signaler,
                           string baseSignal,
-                          string clientId,
+                          string connectionId,
                           IEnumerable<string> signals)
             : this(store,
                    jsonSerializer,
                    signaler,
                    baseSignal,
-                   clientId,
+                   connectionId,
                    signals,
                    Enumerable.Empty<string>())
         {
@@ -37,7 +37,7 @@ namespace SignalR
                           IJsonSerializer jsonSerializer,
                           Signaler signaler,
                           string baseSignal,
-                          string clientId,
+                          string connectionId,
                           IEnumerable<string> signals,
                           IEnumerable<string> groups)
         {
@@ -45,7 +45,7 @@ namespace SignalR
             _jsonSerializer = jsonSerializer;
             _signaler = signaler;
             _baseSignal = baseSignal;
-            _clientId = clientId;
+            _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
             _groups = new HashSet<string>(groups);
         }
@@ -82,7 +82,7 @@ namespace SignalR
 
         public Task Send(object value)
         {
-            return SendMessage(_clientId, value);
+            return SendMessage(_connectionId, value);
         }
 
         public Task<PersistentResponse> ReceiveAsync()

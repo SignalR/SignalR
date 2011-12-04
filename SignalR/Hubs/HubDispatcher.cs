@@ -39,7 +39,7 @@ namespace SignalR.Hubs
             : this(DependencyResolver.Resolve<IHubFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
                    Signaler.Instance,
-                   DependencyResolver.Resolve<IClientIdFactory>(),
+                   DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
                    DependencyResolver.Resolve<IJsonSerializer>(),
@@ -52,14 +52,14 @@ namespace SignalR.Hubs
         public HubDispatcher(IHubFactory hubFactory,
                              IMessageStore store,
                              Signaler signaler,
-                             IClientIdFactory clientIdFactory,
+                             IConnectionIdFactory connectionIdFactory,
                              IActionResolver actionResolver,
                              IJavaScriptProxyGenerator proxyGenerator,
                              IJsonSerializer jsonSerializer,
                              IHubLocator hubLocator,
                              IHubTypeResolver hubTypeResolver,
                              string url)
-            : base(signaler, clientIdFactory, store, jsonSerializer)
+            : base(signaler, connectionIdFactory, store, jsonSerializer)
         {
             _hubFactory = hubFactory;
             _store = store;
@@ -72,7 +72,7 @@ namespace SignalR.Hubs
             _url = VirtualPathUtility.ToAbsolute(url);
         }
 
-        protected override Task OnReceivedAsync(string clientId, string data)
+        protected override Task OnReceivedAsync(string connectionId, string data)
         {
             var hubRequest = _serializer.Deserialize<HubRequest>(data);
 
@@ -93,8 +93,8 @@ namespace SignalR.Hubs
             string hubName = hub.GetType().FullName;
 
             var state = new TrackingDictionary(hubRequest.State);
-            hub.Context = new HubContext(clientId, _cookies, _user);
-            hub.Caller = new SignalAgent(Connection, clientId, hubName, state);
+            hub.Context = new HubContext(connectionId, _cookies, _user);
+            hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
             var agent = new ClientAgent(Connection, hubName);
             hub.Agent = agent;
             hub.GroupManager = agent;
@@ -160,7 +160,7 @@ namespace SignalR.Hubs
                 ProcessResult(state, null, hubRequest, e);
             }
 
-            return base.OnReceivedAsync(clientId, data);
+            return base.OnReceivedAsync(connectionId, data);
         }
 
         public override Task ProcessRequestAsync(HttpContext context)
@@ -179,7 +179,7 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
-        protected override void OnDisconnect(string clientId)
+        protected override void OnDisconnect(string connectionId)
         {
             // Loop over each hub and call disconnect (if the hub supports it)
             foreach (Type type in GetDisconnectTypes())
@@ -193,8 +193,8 @@ namespace SignalR.Hubs
                     // REVIEW: We don't have any client state here since we're calling this from the server.
                     // Will this match user expectations?
                     var state = new TrackingDictionary();
-                    hub.Context = new HubContext(clientId, _cookies, _user);
-                    hub.Caller = new SignalAgent(Connection, clientId, hubName, state);
+                    hub.Context = new HubContext(connectionId, _cookies, _user);
+                    hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
                     var agent = new ClientAgent(Connection, hubName);
                     hub.Agent = agent;
                     hub.GroupManager = agent;
@@ -225,32 +225,32 @@ namespace SignalR.Hubs
             Send(hubResult);
         }
 
-        protected override IConnection CreateConnection(string clientId, IEnumerable<string> groups, HttpContextBase context)
+        protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
         {
-            string data = context.Request["connectionData"];
+            string data = context.Request.QueryStringOrForm("connectionData");
 
             if (String.IsNullOrEmpty(data))
             {
-                return base.CreateConnection(clientId, groups, context);
+                return base.CreateConnection(connectionId, groups, context);
             }
 
             var clientHubInfo = _serializer.Deserialize<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {
-                return base.CreateConnection(clientId, groups, context);
+                return base.CreateConnection(connectionId, groups, context);
             }
 
-            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, clientId));
+            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId));
 
-            return new Connection(_store, _jsonSerializer, _signaler, null, clientId, hubSignals, groups);
+            return new Connection(_store, _jsonSerializer, _signaler, null, connectionId, hubSignals, groups);
         }
 
-        private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string clientId)
+        private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
             var clientSignals = new[] { 
-                hubInfo.CreateQualifiedName(clientId),
-                hubInfo.CreateQualifiedName(clientId) + "." + PersistentConnection.SignalrCommand
+                hubInfo.CreateQualifiedName(connectionId),
+                hubInfo.CreateQualifiedName(connectionId) + "." + PersistentConnection.SignalrCommand
             };
 
             // Try to find the associated hub type

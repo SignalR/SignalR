@@ -2,10 +2,10 @@
 
 namespace SignalR.Client
 {
-    [DebuggerDisplay("{ClientId} {Url}")]
+    [DebuggerDisplay("{ConnectionId} {Url}")]
     public class NegotiationResponse
     {
-        public string ClientId { get; set; }
+        public string ConnectionId { get; set; }
         public string Url { get; set; }
     }
 }

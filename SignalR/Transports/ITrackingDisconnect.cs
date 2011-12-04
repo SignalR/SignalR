@@ -2,7 +2,7 @@
 {
     public interface ITrackingDisconnect
     {
-        string ClientId { get; }
+        string ConnectionId { get; }
         bool IsAlive { get; }
         void Disconnect();
     }
