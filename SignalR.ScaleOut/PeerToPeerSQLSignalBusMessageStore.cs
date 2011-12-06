@@ -183,6 +183,12 @@ namespace SignalR.ScaleOut
             connection.Open();
             return connection;
         }
+
+
+        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, long id)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class WireMessage

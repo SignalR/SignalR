@@ -37,9 +37,15 @@ namespace SignalR
         public Task Save(string key, object value)
         {
             var message = new Message(key, Interlocked.Increment(ref _lastMessageId), value);
-            return Save(message);
+            var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
+            list.Add(message);
+            
+            return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Called from scale-out message stores only
+        /// </summary>
         protected internal Task Save(Message message)
         {
             var key = message.SignalKey;
@@ -59,6 +65,19 @@ namespace SignalR
             }
 
             return TaskAsyncHelper.Empty;
+        }
+
+        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, long id)
+        {
+            if (id > _lastMessageId)
+            {
+                id = 0;
+            }
+
+            var items = keys.SelectMany(k => GetAllCore(k).Where(item => item.Id > id))
+                            .OrderBy(item => item.Id);
+
+            return TaskAsyncHelper.FromResult<IOrderedEnumerable<Message>>(items);
         }
 
         public Task<IEnumerable<Message>> GetAllSince(string key, long id)

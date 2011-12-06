@@ -28,11 +28,8 @@ namespace SignalR
 
         public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
         {
-            _handlers.AddOrUpdate(eventKey, new SafeSet<EventHandler<SignaledEventArgs>>(new[] { handler }), (key, list) =>
-            {
-                list.Add(handler);
-                return list;
-            });
+            var list = _handlers.GetOrAdd(eventKey, _ => new SafeSet<EventHandler<SignaledEventArgs>>());
+            list.Add(handler);
         }
 
         public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)

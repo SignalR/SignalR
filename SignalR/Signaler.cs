@@ -223,6 +223,12 @@ namespace SignalR
 
             private void SafeHandleEventAndSetResult(string signaledEventKey)
             {
+                // Only want to handle the signaled event once, then remove the handler from the bus
+                if (_handlerCalled)
+                {
+                    return;
+                }
+
                 lock (_locker)
                 {
                     if (_handlerCalled)
@@ -231,27 +237,27 @@ namespace SignalR
                     }
 
                     _handlerCalled = true;
-
-                    foreach (var eventKey in _eventKeys)
-                    {
-                        _signalBus.RemoveHandler(eventKey, Handler);
-                    }
-
-                    if (_canceled)
-                    {
-                        Tcs.SetCanceled();
-                    }
-                    else
-                    {
-                        Tcs.SetResult(new SignalResult
-                        {
-                            TimedOut = _timedOut,
-                            EventKey = signaledEventKey
-                        });
-                    }
-
-                    _signalActions.Remove(this);
                 }
+
+                foreach (var eventKey in _eventKeys)
+                {
+                    _signalBus.RemoveHandler(eventKey, Handler);
+                }
+
+                if (_canceled)
+                {
+                    Tcs.SetCanceled();
+                }
+                else
+                {
+                    Tcs.SetResult(new SignalResult
+                    {
+                        TimedOut = _timedOut,
+                        EventKey = signaledEventKey
+                    });
+                }
+
+                _signalActions.Remove(this);
             }
 
             public void SetCanceled()

@@ -245,20 +245,10 @@ namespace SignalR
                          .Catch();
         }
 
-        private Task<IEnumerable<Message>> GetMessages(long id, IEnumerable<string> signals)
+        private Task<List<Message>> GetMessages(long id, IEnumerable<string> signals)
         {
-            var pendingMessagesTasks = (from signal in signals
-                                        select _store.GetAllSince(signal, id)).ToArray();
-
-            // If there are no pending messages, we need to shortcut since ContinueWhenAll
-            // blows up for empty arrays.
-            if (!pendingMessagesTasks.Any())
-            {
-                return TaskAsyncHelper.FromResult(Enumerable.Empty<Message>());
-            }
-
-            // Wait until all of the tasks are done before we return
-            return pendingMessagesTasks.AllSucceeded(() => (IEnumerable<Message>)pendingMessagesTasks.SelectMany(t => t.Result).OrderBy(m => m.Id).ToList());
+            return _store.GetAllSince(signals, id)
+                .Success(task => task.Result.ToList());
         }
 
         private void PopulateResponseState(PersistentResponse response)
