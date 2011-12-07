@@ -94,7 +94,7 @@ namespace SignalR
                     continue;
                 }
 
-                sb.AppendFormat("{0}={1}", pair.Key, Uri.EscapeUriString(pair.Value));
+                sb.AppendFormat("{0}={1}", pair.Key, Uri.EscapeDataString(pair.Value));
             }
 
             byte[] buffer = Encoding.UTF8.GetBytes(sb.ToString());
