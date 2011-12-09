@@ -115,7 +115,7 @@ namespace SignalR.Transports
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
 
-                return responseTask.ContinueWith(t =>
+                return responseTask.Success(t =>
                 {
                     LastMessageId = t.Result.MessageId;
                     Send(t.Result);

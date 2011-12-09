@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using System.Threading;
 
 namespace SignalR
 {
@@ -10,14 +11,26 @@ namespace SignalR
     /// </summary>
     public class InProcessSignalBus : ISignalBus
     {
-        private readonly ConcurrentDictionary<string, SafeSet<EventHandler<SignaledEventArgs>>> _handlers = new ConcurrentDictionary<string, SafeSet<EventHandler<SignaledEventArgs>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>> _handlers = new ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>>();
 
         private void OnSignaled(string eventKey)
         {
-            SafeSet<EventHandler<SignaledEventArgs>> handlers;
-            if (_handlers.TryGetValue(eventKey, out handlers) && handlers.Any())
+            CustomStack<EventHandler<SignaledEventArgs>> handlers;
+            if (_handlers.TryGetValue(eventKey, out handlers))
             {
-                Parallel.ForEach(handlers.GetSnapshot(), handler => handler(this, new SignaledEventArgs(eventKey)));
+                var delegates = handlers.GetAllAndClear();
+                if (delegates != null)
+                {
+                    Parallel.ForEach(delegates,
+                        item =>
+                        {
+                            var callback = item as EventHandler<SignaledEventArgs>;
+                            if (callback != null)
+                            {
+                                callback.Invoke(this, new SignaledEventArgs(eventKey));
+                            }
+                        });
+                }
             }
         }
 
@@ -28,17 +41,17 @@ namespace SignalR
 
         public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
         {
-            var list = _handlers.GetOrAdd(eventKey, _ => new SafeSet<EventHandler<SignaledEventArgs>>());
-            list.Add(handler);
+            if (handler == null)
+            {
+                throw new ArgumentNullException("handler");
+            }
+            var delegates = _handlers.GetOrAdd(eventKey, _ => new CustomStack<EventHandler<SignaledEventArgs>>());
+            delegates.Add(handler);
         }
 
         public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
         {
-            SafeSet<EventHandler<SignaledEventArgs>> handlers;
-            if (_handlers.TryGetValue(eventKey, out handlers))
-            {
-                handlers.Remove(handler);
-            }
+            // Don't need to do anything as our handlers are cleared automatically by CustomStack
         }
     }
 }

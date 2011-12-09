@@ -239,6 +239,8 @@ namespace SignalR
                     _handlerCalled = true;
                 }
 
+                // TODO: Change this to SignalBus.RemoveHandler(IEnumerable<string> eventKeys, Func handler)
+                //       Let the individual SignalBus implementations deal with how do that
                 foreach (var eventKey in _eventKeys)
                 {
                     _signalBus.RemoveHandler(eventKey, Handler);

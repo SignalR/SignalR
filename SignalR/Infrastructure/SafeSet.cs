@@ -25,7 +25,8 @@ namespace SignalR.Infrastructure
 
         public IEnumerable<T> GetSnapshot()
         {
-            return _items.Select(x => x.Key);
+            // The Keys property locks, so Select instead
+            return _items.Select(item => item.Key);
         }
 
         public void Add(T item)
@@ -42,6 +43,11 @@ namespace SignalR.Infrastructure
         public bool Any()
         {
             return _items.Any();
+        }
+
+        public long Count
+        {
+            get { return _items.Count; }
         }
     }
 }

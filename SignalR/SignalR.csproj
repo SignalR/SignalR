@@ -68,6 +68,7 @@
     <Compile Include="Hubs\IHubTypeResolver.cs" />
     <Compile Include="IConnectionIdFactory.cs" />
     <Compile Include="IJsonSerializer.cs" />
+    <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Infrastructure\RequestHelpers.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />

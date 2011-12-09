@@ -34,6 +34,11 @@ namespace SignalR
             }
         }
 
+        public long CurrentMessageCount()
+        {
+            return _items.Sum(kvp => kvp.Value.Count);
+        }
+
         public Task Save(string key, object value)
         {
             var message = new Message(key, Interlocked.Increment(ref _lastMessageId), value);

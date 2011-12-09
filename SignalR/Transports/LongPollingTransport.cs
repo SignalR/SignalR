@@ -119,7 +119,7 @@ namespace SignalR.Transports
                         Connected();
                     }
 
-                    return () => connection.ReceiveAsync().ContinueWith(t =>
+                    return () => connection.ReceiveAsync().Success(t =>
                     {
                         Send(t.Result);
                     });
@@ -130,7 +130,7 @@ namespace SignalR.Transports
                     // If there is a message id then we receive with that id, which will either return
                     // immediately if there are already messages since that id, or wait until new
                     // messages come in and then return
-                    return () => connection.ReceiveAsync(MessageId.Value).ContinueWith(t =>
+                    return () => connection.ReceiveAsync(MessageId.Value).Success(t =>
                     {
                         // Messages have arrived so let's return
                         Send(t.Result);
@@ -163,6 +163,7 @@ namespace SignalR.Transports
 
         public virtual void Disconnect()
         {
+            // TODO: Force connection to close by sending a command signal
             if (Disconnected != null)
             {
                 Disconnected();

@@ -95,18 +95,31 @@ namespace SignalR
 
         public static Task<TResult> Success<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor)
         {
-            return task.ContinueWith(_ =>
+            switch (task.Status)
             {
-                if (task.IsFaulted)
-                {
+                case TaskStatus.Faulted:
                     return FromError<TResult>(task.Exception);
-                }
-                if (task.IsCanceled)
-                {
+
+                case TaskStatus.Canceled:
                     return Cancelled<TResult>();
-                }
-                return Task.Factory.StartNew(() => successor(task));
-            }).Unwrap();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod<TResult>(() => successor(task));
+
+                default:
+                    return task.ContinueWith(_ =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            return FromError<TResult>(task.Exception);
+                        }
+                        if (task.IsCanceled)
+                        {
+                            return Cancelled<TResult>();
+                        }
+                        return FromResult<TResult>(successor(task));
+                    }).Unwrap();
+            }
         }
 
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
@@ -154,6 +167,18 @@ namespace SignalR
                 return Task.Factory.StartNew(continuation);
 
             }).Unwrap();
+        }
+
+        public static Task<T> FromMethod<T>(Func<T> func)
+        {
+            try
+            {
+                return FromResult<T>(func());
+            }
+            catch (Exception ex)
+            {
+                return FromError<T>(ex);
+            }
         }
 
         public static Task<T> FromResult<T>(T value)

@@ -50,6 +50,10 @@ namespace SignalR
             _groups = new HashSet<string>(groups);
         }
 
+        // These static events are used for performance monitoring
+        public static event EventHandler WaitingForSignal;
+        public static event EventHandler MessagesPending;
+
         public TimeSpan ReceiveTimeout
         {
             get
@@ -89,14 +93,14 @@ namespace SignalR
         {
             // Get the last message id then wait for new messages to arrive
             return _store.GetLastId()
-                         .ContinueWith(storeTask => WaitForSignal(storeTask.Result))
+                         .Success(storeTask => WaitForSignal(storeTask.Result))
                          .Unwrap();
         }
 
         public Task<PersistentResponse> ReceiveAsync(long messageId)
         {
             // Get all messages for this message id, or wait until new messages if there are none
-            return GetResponse(messageId).ContinueWith(task => ProcessReceive(task, messageId))
+            return GetResponse(messageId).Success(task => ProcessReceive(task, messageId))
                                          .Unwrap();
         }
 
@@ -120,10 +124,19 @@ namespace SignalR
             // No messages to return so we need to subscribe until we have something
             if (responseTask.Result == null)
             {
+                // There are no messages pending, so wait for a signal
+                if (WaitingForSignal != null)
+                {
+                    WaitingForSignal(this, EventArgs.Empty);
+                }
                 return WaitForSignal(messageId);
             }
 
-            // Return the task as is
+            // There were messages in the response, return the task as is
+            if (MessagesPending != null)
+            {
+                MessagesPending(this, EventArgs.Empty);
+            }
             return responseTask;
         }
 
@@ -131,7 +144,7 @@ namespace SignalR
         {
             // Wait for a signal to get triggered and return with a response
             return _signaler.Subscribe(Signals)
-                            .ContinueWith(task => ProcessSignal(task, messageId))
+                            .Success(task => ProcessSignal(task, messageId))
                             .Unwrap();
         }
 
@@ -179,7 +192,7 @@ namespace SignalR
 
                     ProcessCommands(commands);
 
-                    messageId = results.Max(p => p.Id);
+                    messageId = results[results.Count - 1].Id;
 
                     // Get the message values and the max message id we received
                     var messageValues = results.Except(commands)
