@@ -16,11 +16,11 @@ namespace SignalR.Web
             throw new NotSupportedException();
         }
 
-        public abstract Task ProcessRequestAsync(HttpContext context);
+        public abstract Task ProcessRequestAsync(HttpContextBase context);
 
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
-            Task task = ProcessRequestAsync(context);
+            Task task = ProcessRequestAsync(new HttpContextWrapper(context));
             if (task == null)
             {
                 return null;

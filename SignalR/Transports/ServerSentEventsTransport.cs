@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Web;
+using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -11,7 +13,7 @@ namespace SignalR.Transports
 
         }
 
-        protected override void InitializeResponse(IConnection connection)
+        protected override Task InitializeResponse(IConnection connection)
         {
             long lastMessageId;
             if (long.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))
@@ -19,12 +21,12 @@ namespace SignalR.Transports
                 LastMessageId = lastMessageId;
             }
 
-            base.InitializeResponse(connection);
-
-            Context.Response.ContentType = "text/event-stream";
-
-            Context.Response.Write("data: initialized\n\n");
-            Context.Response.Flush();
+            return base.InitializeResponse(connection)
+                .Success(_ =>
+                {
+                    Context.Response.ContentType = "text/event-stream";
+                    return Context.Response.WriteAsync("data: initialized\n\n");
+                }).FastUnwrap();
         }
 
         protected override bool IsConnectRequest
@@ -35,14 +37,13 @@ namespace SignalR.Transports
             }
         }
 
-        public override void Send(PersistentResponse response)
+        public override Task Send(PersistentResponse response)
         {
-            Context.Response.Write("id: " + response.MessageId + "\n");
-            Context.Response.Write("data: " + JsonSerializer.Stringify(response) + "\n\n");
             if (Context.Response.IsClientConnected)
             {
-                Context.Response.Flush();
+                return Context.Response.WriteAsync("id: " + response.MessageId + "\n" + "data: " + JsonSerializer.Stringify(response) + "\n\n");
             }
+            return TaskAsyncHelper.Empty;
         }
     }
 }

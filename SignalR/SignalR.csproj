@@ -71,6 +71,7 @@
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Infrastructure\RequestHelpers.cs" />
+    <Compile Include="Infrastructure\ResponseHelpers.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />

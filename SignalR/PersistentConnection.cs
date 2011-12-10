@@ -67,23 +67,22 @@ namespace SignalR
             }
         }
 
-        public override Task ProcessRequestAsync(HttpContext context)
+        public override Task ProcessRequestAsync(HttpContextBase context)
         {
             Task task = null;
-            var contextBase = new HttpContextWrapper(context);
-
+            
             if (IsNegotiationRequest(context.Request))
             {
                 context.Response.ContentType = Json.MimeType;
                 context.Response.Write(_jsonSerializer.Stringify(new
                 {
                     Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
-                    ConnectionId = _connectionIdFactory.CreateConnectionId(contextBase)
+                    ConnectionId = _connectionIdFactory.CreateConnectionId(context)
                 }));
             }
             else
             {
-                _transport = GetTransport(contextBase);
+                _transport = GetTransport(context);
 
                 string connectionId = _transport.ConnectionId;
 
@@ -93,14 +92,14 @@ namespace SignalR
                     throw new InvalidOperationException("Protocol error: Missing connection id.");
                 }
 
-                IEnumerable<string> groups = GetGroups(contextBase);
+                IEnumerable<string> groups = GetGroups(context);
 
-                Connection = CreateConnection(connectionId, groups, contextBase);
+                Connection = CreateConnection(connectionId, groups, context);
 
                 // Wire up the events we need
                 _transport.Connected += () =>
                 {
-                    task = OnConnectedAsync(contextBase, connectionId);
+                    task = OnConnectedAsync(context, connectionId);
                 };
 
                 _transport.Received += (data) =>
@@ -124,7 +123,7 @@ namespace SignalR
                 {
                     if (task != null)
                     {
-                        return task.Success(_ => processRequestTask()).Unwrap();
+                        return task.Success(_ => processRequestTask()).FastUnwrap();
                     }
                     return processRequestTask();
                 }
@@ -185,10 +184,10 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        public void Send(object value)
+        public Task Send(object value)
         {
             OnSending();
-            _transport.Send(value);
+            return _transport.Send(value);
         }
 
         public Task Send(string connectionId, object value)
@@ -245,7 +244,7 @@ namespace SignalR
             return groupValue.Split(',');
         }
 
-        private bool IsNegotiationRequest(HttpRequest httpRequest)
+        private bool IsNegotiationRequest(HttpRequestBase httpRequest)
         {
             return httpRequest.Path.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
         }

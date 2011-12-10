@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web;
+using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -12,7 +14,7 @@ namespace SignalR.Transports
                                              "<title>SignalR Forever Frame Transport Stream</title></head>\r\n" +
                                              "<body>\r\n" +
                                              "<script>\r\n" +
-                                             //"    debugger;\r\n"+
+            //"    debugger;\r\n"+
                                              "    var $ = window.parent.jQuery,\r\n" +
                                              "        ff = $.signalR.transports.foreverFrame,\r\n" +
                                              "        c = ff.getConnection('{0}'),\r\n" +
@@ -41,31 +43,30 @@ namespace SignalR.Transports
             }
         }
 
-        protected override void InitializeResponse(IConnection connection)
+        protected override Task InitializeResponse(IConnection connection)
         {
-            base.InitializeResponse(connection);
-            
-            Context.Response.Write(String.Format(_initTemplate, Context.Request.QueryString["frameId"]));
-            Context.Response.Flush();
+            return base.InitializeResponse(connection)
+                .Success(_ => Context.Response.WriteAsync(
+                    String.Format(_initTemplate, Context.Request.QueryString["frameId"])))
+                .FastUnwrap();
         }
 
-        public override void Send(PersistentResponse response)
+        public override Task Send(PersistentResponse response)
         {
-            var payload = JsonSerializer.Stringify(response);
-            OnSending(payload);
+            var data = JsonSerializer.Stringify(response);
+            OnSending(data);
 
-            var script = String.Format(_sendTemplate, payload);
-            Context.Response.Write(script);
-
+            var payload = String.Format(_sendTemplate, data);
             if (_isDebug)
             {
-                Context.Response.Write(String.Format(_debugTemplate, payload));
+                payload += (String.Format(_debugTemplate, data));
             }
 
             if (Context.Response.IsClientConnected)
             {
-                Context.Response.Flush();
+                return Context.Response.WriteAsync(payload);
             }
+            return TaskAsyncHelper.Empty;
         }
     }
 }

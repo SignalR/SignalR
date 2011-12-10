@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Web;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -119,10 +120,9 @@ namespace SignalR.Transports
                         Connected();
                     }
 
-                    return () => connection.ReceiveAsync().Success(t =>
-                    {
-                        Send(t.Result);
-                    });
+                    return () => connection.ReceiveAsync()
+                        .Success(t => Send(t.Result))
+                        .FastUnwrap();
                 }
                 else if (MessageId != null)
                 {
@@ -133,24 +133,23 @@ namespace SignalR.Transports
                     return () => connection.ReceiveAsync(MessageId.Value).Success(t =>
                     {
                         // Messages have arrived so let's return
-                        Send(t.Result);
-                        return TaskAsyncHelper.Empty;
-                    }).Unwrap();
+                        return Send(t.Result);
+                    }).FastUnwrap();
                 }
             }
 
             return null;
         }
 
-        public virtual void Send(PersistentResponse response)
+        public virtual Task Send(PersistentResponse response)
         {
             _heartBeat.MarkConnection(this);
 
             AddTransportData(response);
-            Send((object)response);
+            return Send((object)response);
         }
 
-        public virtual void Send(object value)
+        public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
             if (Sending != null)
@@ -158,7 +157,7 @@ namespace SignalR.Transports
                 Sending(payload);
             }
             _context.Response.ContentType = Json.MimeType;
-            _context.Response.Write(payload);
+            return _context.Response.WriteAsync(payload);
         }
 
         public virtual void Disconnect()

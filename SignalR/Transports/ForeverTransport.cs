@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Web;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -80,9 +81,9 @@ namespace SignalR.Transports
                     Connected();
                 }
 
-                InitializeResponse(connection);
-
-                return () => ProcessMessages(connection, LastMessageId);
+                return () => InitializeResponse(connection)
+                    .Success( _ => ProcessMessages(connection, LastMessageId))
+                    .FastUnwrap();
             }
 
             return null;
@@ -93,18 +94,22 @@ namespace SignalR.Transports
             get { return true; }
         }
 
-        protected virtual void InitializeResponse(IConnection connection)
+        protected virtual Task InitializeResponse(IConnection connection)
         {
             // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
 
             // This forces the IIS compression module to leave this response alone.
             // If we don't do this, it will buffer the response to suit its own compression
-            // logic, resulting in partial messages being sent to the client when we flush.
+            // logic, resulting in partial messages being sent to the client.
             Context.Request.Headers.Remove("Accept-Encoding");
 
+            Context.Response.Buffer = false;
+            Context.Response.BufferOutput = false;
             Context.Response.CacheControl = "no-cache";
             Context.Response.AddHeader("Connection", "keep-alive");
+
+            return TaskAsyncHelper.Empty;
         }
 
         private Task ProcessMessages(IConnection connection, long? lastMessageId)
@@ -118,9 +123,10 @@ namespace SignalR.Transports
                 return responseTask.Success(t =>
                 {
                     LastMessageId = t.Result.MessageId;
-                    Send(t.Result);
-                    return ProcessMessages(connection, LastMessageId);
-                }).Unwrap();
+                    return Send(t.Result)
+                        .Success(_ => ProcessMessages(connection, LastMessageId))
+                        .FastUnwrap();
+                }).FastUnwrap();
             }
 
             // Client is no longer connected
@@ -131,17 +137,16 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        public virtual void Send(PersistentResponse response)
+        public virtual Task Send(PersistentResponse response)
         {
-            Send((object)response);
+            return Send((object)response);
         }
 
-        public virtual void Send(object value)
+        public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
             OnSending(payload);
-            Context.Response.Write(payload);
-            Context.Response.Flush();
+            return Context.Response.WriteAsync(payload);
         }
     }
 }

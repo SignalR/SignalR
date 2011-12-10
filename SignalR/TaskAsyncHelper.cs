@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace SignalR
 {
@@ -34,7 +35,7 @@ namespace SignalR
 #endif
                 }
                 return t;
-            }).Unwrap();
+            }).FastUnwrap();
         }
 
         public static Task<T> Catch<T>(this Task<T> task)
@@ -50,47 +51,87 @@ namespace SignalR
                 }
                 return t;
             })
-            .Unwrap();
+            .FastUnwrap();
         }
 
         public static Task Success(this Task task, Action<Task> successor)
         {
-            return task.ContinueWith(_ =>
+            switch (task.Status)
             {
-                if (task.IsCanceled || task.IsFaulted)
-                {
-                    return task;
-                }
-                return Task.Factory.StartNew(() => successor(task));
-            }).Unwrap();
+                case TaskStatus.Faulted:
+                    return FromError(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Cancelled();
+
+                case TaskStatus.RanToCompletion:
+                    successor(task);
+                    return Empty;
+
+                default:
+                    return task.ContinueWith(_ =>
+                    {
+                        if (task.IsCanceled || task.IsFaulted)
+                        {
+                            return task;
+                        }
+                        return Task.Factory.StartNew(() => successor(task));
+                    }).FastUnwrap();
+            }
         }
 
         public static Task Success<TResult>(this Task<TResult> task, Action<Task<TResult>> successor)
         {
-            return task.ContinueWith(_ =>
+            switch (task.Status)
             {
-                if (task.IsCanceled || task.IsFaulted)
-                {
-                    return task;
-                }
-                return Task.Factory.StartNew(() => successor(task));
-            }).Unwrap();
+                case TaskStatus.Faulted:
+                    return FromError<TResult>(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Cancelled<TResult>();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, task);
+
+                default:
+                    return task.ContinueWith(_ =>
+                    {
+                        if (task.IsCanceled || task.IsFaulted)
+                        {
+                            return task;
+                        }
+                        return Task.Factory.StartNew(() => successor(task));
+                    }).FastUnwrap();
+            }
         }
 
         public static Task<TResult> Success<TResult>(this Task task, Func<Task, TResult> successor)
         {
-            return task.ContinueWith(_ =>
+            switch (task.Status)
             {
-                if (task.IsFaulted)
-                {
+                case TaskStatus.Faulted:
                     return FromError<TResult>(task.Exception);
-                }
-                if (task.IsCanceled)
-                {
+
+                case TaskStatus.Canceled:
                     return Cancelled<TResult>();
-                }
-                return Task.Factory.StartNew(() => successor(task));
-            }).Unwrap();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod<TResult>(() => successor(task));
+
+                default:
+                    return task.ContinueWith(_ =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            return FromError<TResult>(task.Exception);
+                        }
+                        if (task.IsCanceled)
+                        {
+                            return Cancelled<TResult>();
+                        }
+                        return Task.Factory.StartNew(() => successor(task));
+                    }).FastUnwrap();
+            }
         }
 
         public static Task<TResult> Success<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor)
@@ -118,8 +159,20 @@ namespace SignalR
                             return Cancelled<TResult>();
                         }
                         return FromResult<TResult>(successor(task));
-                    }).Unwrap();
+                    }).FastUnwrap();
             }
+        }
+
+        public static Task FastUnwrap(this Task<Task> task)
+        {
+            var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
+            return innerTask ?? task.Unwrap();
+        }
+
+        public static Task<T> FastUnwrap<T>(this Task<Task<T>> task)
+        {
+            var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
+            return innerTask ?? task.Unwrap();
         }
 
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
@@ -145,7 +198,7 @@ namespace SignalR
 
                 return Task.Factory.StartNew(() => continuation(tasks));
 
-            }).Unwrap();
+            }).FastUnwrap();
         }
 
         public static Task<T> AllSucceeded<T>(this Task[] tasks, Func<T> continuation)
@@ -166,7 +219,20 @@ namespace SignalR
 
                 return Task.Factory.StartNew(continuation);
 
-            }).Unwrap();
+            }).FastUnwrap();
+        }
+
+        public static Task FromMethod<T>(Action<T> func, T arg)
+        {
+            try
+            {
+                func(arg);
+                return Empty;
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
         }
 
         public static Task<T> FromMethod<T>(Func<T> func)
@@ -188,10 +254,42 @@ namespace SignalR
             return tcs.Task;
         }
 
+        public static TaskContinueWithMethod GetContinueWith(Type taskType)
+        {
+            var continueWith = (from m in taskType.GetMethods()
+                                let methodParameters = m.GetParameters()
+                                where m.Name.Equals("ContinueWith", StringComparison.OrdinalIgnoreCase) &&
+                                    methodParameters.Length == 1
+                                let parameter = methodParameters[0]
+                                where parameter.ParameterType.IsGenericType &&
+                                typeof(Func<,>) == parameter.ParameterType.GetGenericTypeDefinition()
+                                select new TaskContinueWithMethod
+                                {
+                                    Method = m.MakeGenericMethod(typeof(Task)),
+                                    Type = parameter.ParameterType.GetGenericArguments()[0]
+                                })
+                .FirstOrDefault();
+            return continueWith;
+        }
+
+        private static Task FromError(Exception e)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetException(e);
+            return tcs.Task;
+        }
+
         private static Task<T> FromError<T>(Exception e)
         {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetException(e);
+            return tcs.Task;
+        }
+
+        private static Task Cancelled()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetCanceled();
             return tcs.Task;
         }
 
@@ -200,6 +298,12 @@ namespace SignalR
             var tcs = new TaskCompletionSource<T>();
             tcs.SetCanceled();
             return tcs.Task;
+        }
+
+        internal class TaskContinueWithMethod
+        {
+            public MethodInfo Method { get; set; }
+            public Type Type { get; set; }
         }
     }
 }

@@ -434,7 +434,7 @@
                     that.reconnect(connection);
                 });
 
-                connection.frame = frame;
+                connection.frame = frame[0];
                 connection.frameId = frameId;
 
                 if (onSuccess) {

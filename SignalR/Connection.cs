@@ -94,14 +94,14 @@ namespace SignalR
             // Get the last message id then wait for new messages to arrive
             return _store.GetLastId()
                          .Success(storeTask => WaitForSignal(storeTask.Result))
-                         .Unwrap();
+                         .FastUnwrap();
         }
 
         public Task<PersistentResponse> ReceiveAsync(long messageId)
         {
             // Get all messages for this message id, or wait until new messages if there are none
             return GetResponse(messageId).Success(task => ProcessReceive(task, messageId))
-                                         .Unwrap();
+                                         .FastUnwrap();
         }
 
         public static IConnection GetConnection<T>() where T : PersistentConnection
@@ -145,7 +145,7 @@ namespace SignalR
             // Wait for a signal to get triggered and return with a response
             return _signaler.Subscribe(Signals)
                             .Success(task => ProcessSignal(task, messageId))
-                            .Unwrap();
+                            .FastUnwrap();
         }
 
         private Task<PersistentResponse> ProcessSignal(Task<SignalResult> signalTask, long? messageId = null)
@@ -254,7 +254,7 @@ namespace SignalR
         {
             return _store.Save(message, value)
                          .Success(_ => _signaler.Signal(message))
-                         .Unwrap()
+                         .FastUnwrap()
                          .Catch();
         }
 

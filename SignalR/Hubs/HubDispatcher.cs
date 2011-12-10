@@ -98,6 +98,7 @@ namespace SignalR.Hubs
             var agent = new ClientAgent(Connection, hubName);
             hub.Agent = agent;
             hub.GroupManager = agent;
+            Task resultTask;
 
             try
             {
@@ -110,7 +111,8 @@ namespace SignalR.Hubs
                     var task = (Task)result;
                     if (!returnType.IsGenericType)
                     {
-                        return task.ContinueWith(t => ProcessResult(state, null, hubRequest, t.Exception));
+                        return task.ContinueWith(t => ProcessResult(state, null, hubRequest, t.Exception))
+                            .FastUnwrap();
                     }
                     else
                     {
@@ -118,21 +120,9 @@ namespace SignalR.Hubs
                         Type resultType = returnType.GetGenericArguments().Single();
 
                         // Get the correct ContinueWith overload
-                        var continueWith = (from m in task.GetType().GetMethods()
-                                            let methodParameters = m.GetParameters()
-                                            where m.Name.Equals("ContinueWith", StringComparison.OrdinalIgnoreCase) &&
-                                                  methodParameters.Length == 1
-                                            let parameter = methodParameters[0]
-                                            where parameter.ParameterType.IsGenericType &&
-                                                  typeof(Action<>) == parameter.ParameterType.GetGenericTypeDefinition()
-                                            select new
-                                            {
-                                                Method = m,
-                                                ArgType = parameter.ParameterType.GetGenericArguments()[0]
-                                            })
-                                            .FirstOrDefault();
+                        var continueWith = TaskAsyncHelper.GetContinueWith(task.GetType());
 
-                        var taskParameter = Expression.Parameter(continueWith.ArgType);
+                        var taskParameter = Expression.Parameter(continueWith.Type);
                         var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessResult", BindingFlags.NonPublic | BindingFlags.Instance);
                         var taskResult = Expression.Property(taskParameter, "Result");
                         var taskException = Expression.Property(taskParameter, "Exception");
@@ -146,31 +136,32 @@ namespace SignalR.Hubs
 
                         var lambda = Expression.Lambda(body, taskParameter);
 
-                        var call = Expression.Call(Expression.Constant(task, continueWith.ArgType), continueWith.Method, lambda);
-                        return Expression.Lambda<Func<Task>>(call).Compile()();
+                        var call = Expression.Call(Expression.Constant(task, continueWith.Type), continueWith.Method, lambda);
+                        return Expression.Lambda<Func<Task<Task>>>(call).Compile()().FastUnwrap();
                     }
                 }
                 else
                 {
-                    ProcessResult(state, result, hubRequest, null);
+                    resultTask = ProcessResult(state, result, hubRequest, null);
                 }
             }
             catch (TargetInvocationException e)
             {
-                ProcessResult(state, null, hubRequest, e);
+                resultTask = ProcessResult(state, null, hubRequest, e);
             }
 
-            return base.OnReceivedAsync(connectionId, data);
+            return resultTask
+                .ContinueWith(_ => base.OnReceivedAsync(connectionId, data))
+                .FastUnwrap();
         }
 
-        public override Task ProcessRequestAsync(HttpContext context)
+        public override Task ProcessRequestAsync(HttpContextBase context)
         {
             // Generate the proxy
             if (context.Request.Path.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "application/x-javascript";
-                context.Response.Write(_proxyGenerator.GenerateProxy(new HttpContextWrapper(context), _url));
-                return TaskAsyncHelper.Empty;
+                return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(context, _url));
             }
 
             _cookies = context.Request.Cookies;
@@ -212,7 +203,7 @@ namespace SignalR.Hubs
                    select type;
         }
 
-        private void ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
+        private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
         {
             var hubResult = new HubResult
             {
@@ -222,7 +213,7 @@ namespace SignalR.Hubs
                 Error = error != null ? error.GetBaseException().Message : null
             };
 
-            Send(hubResult);
+            return Send(hubResult);
         }
 
         protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
