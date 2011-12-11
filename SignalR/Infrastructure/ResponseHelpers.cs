@@ -10,14 +10,7 @@ namespace SignalR.Infrastructure
         {
             var bytes = UTF8Encoding.UTF8.GetBytes(s);
             return Task.Factory.FromAsync(
-                (cb, state) => {
-                    if (response.IsClientConnected)
-                    {
-                        return response.OutputStream.BeginWrite(bytes, 0, bytes.Length, cb, state);
-                    }
-                    cb(TaskAsyncHelper.Empty);
-                    return TaskAsyncHelper.Empty;
-                },
+                (cb, state) => response.OutputStream.BeginWrite(bytes, 0, bytes.Length, cb, state),
                 response.OutputStream.EndWrite,
                 null);
         }

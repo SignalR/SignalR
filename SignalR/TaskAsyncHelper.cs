@@ -25,33 +25,69 @@ namespace SignalR
 
         public static Task Catch(this Task task)
         {
-            return task.ContinueWith(t =>
+            if (task == null)
             {
-                if (t != null && t.IsFaulted)
-                {
-                    var ex = t.Exception;
+                return task;
+            }
+
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled();
+
+                case TaskStatus.RanToCompletion:
+                    return task;
+
+                default:
+                    return task.ContinueWith(t =>
+                    {
+                        if (t != null && t.IsFaulted)
+                        {
+                            var ex = t.Exception;
 #if !WINDOWS_PHONE && !SILVERLIGHT
-                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
+                            Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
-                }
-                return t;
-            }).FastUnwrap();
+                        }
+                        return t;
+                    }).FastUnwrap();
+            }
         }
 
         public static Task<T> Catch<T>(this Task<T> task)
         {
-            return task.ContinueWith(t =>
+            if (task == null)
             {
-                if (t != null && t.IsFaulted)
-                {
-                    var ex = t.Exception;
+                return task;
+            }
+
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError<T>(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled<T>();
+
+                case TaskStatus.RanToCompletion:
+                    return task;
+
+                default:
+                    return task.ContinueWith(t =>
+                    {
+                        if (t != null && t.IsFaulted)
+                        {
+                            var ex = t.Exception;
 #if !WINDOWS_PHONE && !SILVERLIGHT
-                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
+                            Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
-                }
-                return t;
-            })
-            .FastUnwrap();
+                        }
+                        return t;
+                    })
+                    .FastUnwrap();
+            }
         }
 
         public static Task Success(this Task task, Action<Task> successor)
@@ -62,7 +98,7 @@ namespace SignalR
                     return FromError(task.Exception);
 
                 case TaskStatus.Canceled:
-                    return Cancelled();
+                    return Canceled();
 
                 case TaskStatus.RanToCompletion:
                     successor(task);
@@ -88,7 +124,7 @@ namespace SignalR
                     return FromError<TResult>(task.Exception);
 
                 case TaskStatus.Canceled:
-                    return Cancelled<TResult>();
+                    return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, task);
@@ -113,7 +149,7 @@ namespace SignalR
                     return FromError<TResult>(task.Exception);
 
                 case TaskStatus.Canceled:
-                    return Cancelled<TResult>();
+                    return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod<TResult>(() => successor(task));
@@ -127,7 +163,7 @@ namespace SignalR
                         }
                         if (task.IsCanceled)
                         {
-                            return Cancelled<TResult>();
+                            return Canceled<TResult>();
                         }
                         return Task.Factory.StartNew(() => successor(task));
                     }).FastUnwrap();
@@ -142,7 +178,7 @@ namespace SignalR
                     return FromError<TResult>(task.Exception);
 
                 case TaskStatus.Canceled:
-                    return Cancelled<TResult>();
+                    return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod<TResult>(() => successor(task));
@@ -156,7 +192,7 @@ namespace SignalR
                         }
                         if (task.IsCanceled)
                         {
-                            return Cancelled<TResult>();
+                            return Canceled<TResult>();
                         }
                         return FromResult<TResult>(successor(task));
                     }).FastUnwrap();
@@ -286,14 +322,14 @@ namespace SignalR
             return tcs.Task;
         }
 
-        private static Task Cancelled()
+        private static Task Canceled()
         {
             var tcs = new TaskCompletionSource<object>();
             tcs.SetCanceled();
             return tcs.Task;
         }
 
-        private static Task<T> Cancelled<T>()
+        private static Task<T> Canceled<T>()
         {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetCanceled();

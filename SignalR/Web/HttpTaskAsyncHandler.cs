@@ -21,12 +21,14 @@ namespace SignalR.Web
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
             Task task = ProcessRequestAsync(new HttpContextWrapper(context));
+            var retVal = new TaskWrapperAsyncResult(task, extraData);
+
             if (task == null)
             {
-                return null;
+                // No task, so just call the AsyncCallback and end the request
+                cb(retVal);
+                return retVal;
             }
-
-            var retVal = new TaskWrapperAsyncResult(task, extraData);
 
             if (cb != null)
             {

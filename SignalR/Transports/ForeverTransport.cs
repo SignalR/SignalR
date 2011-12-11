@@ -116,6 +116,8 @@ namespace SignalR.Transports
         {
             if (Context.Response.IsClientConnected)
             {
+                // responseTask will either subscribe and wait for a signal then return new messages,
+                // or return immediately with messages that were pending
                 var responseTask = lastMessageId == null
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
@@ -144,7 +146,7 @@ namespace SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            var payload = _jsonSerializer.Stringify(value);
+            var payload = JsonSerializer.Stringify(value);
             OnSending(payload);
             return Context.Response.WriteAsync(payload);
         }

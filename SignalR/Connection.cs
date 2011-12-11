@@ -159,7 +159,8 @@ namespace SignalR
             }
 
             // Get the response for this message id
-            return GetResponse(messageId ?? 0).Success(task => task.Result ?? GetEmptyResponse(messageId));
+            return GetResponse(messageId ?? 0)
+                .Success(task => task.Result ?? GetEmptyResponse(messageId));
         }
 
         private PersistentResponse GetEmptyResponse(long? messageId)
@@ -186,21 +187,17 @@ namespace SignalR
                         return null;
                     }
 
-                    var response = new PersistentResponse();
-
-                    var commands = results.Where(m => m.SignalKey.EndsWith(PersistentConnection.SignalrCommand));
-
-                    ProcessCommands(commands);
-
+                    // Get last message ID
                     messageId = results[results.Count - 1].Id;
 
-                    // Get the message values and the max message id we received
-                    var messageValues = results.Except(commands)
-                        .Select(m => m.Value)
-                        .ToList();
+                    // Do a single sweep through the results to process commands and extract values
+                    var messageValues = ProcessResults(results);
 
-                    response.MessageId = messageId;
-                    response.Messages = messageValues;
+                    var response = new PersistentResponse
+                    {
+                        MessageId = messageId,
+                        Messages = messageValues
+                    };
 
                     PopulateResponseState(response);
 
@@ -208,25 +205,39 @@ namespace SignalR
                 });
         }
 
-        private void ProcessCommands(IEnumerable<Message> messages)
+        private List<object> ProcessResults(List<Message> source)
         {
-            foreach (var message in messages)
+            var messageValues = new List<object>();
+            foreach (var message in source)
             {
-                var command = GetCommand(message);
-                if (command == null)
+                if (message.SignalKey.EndsWith(PersistentConnection.SignalrCommand))
                 {
-                    continue;
+                    ProcessCommand(message);
                 }
+                else
+                {
+                    messageValues.Add(message.Value);
+                }
+            }
+            return messageValues;
+        }
+
+        private void ProcessCommand(Message message)
+        {
+            var command = GetCommand(message);
+            if (command == null)
+            {
+                return;
+            }
                 
-                switch (command.Type)
-                {
-                    case CommandType.AddToGroup:
-                        _groups.Add((string)command.Value);
-                        break;
-                    case CommandType.RemoveFromGroup:
-                        _groups.Remove((string)command.Value);
-                        break;
-                }
+            switch (command.Type)
+            {
+                case CommandType.AddToGroup:
+                    _groups.Add((string)command.Value);
+                    break;
+                case CommandType.RemoveFromGroup:
+                    _groups.Remove((string)command.Value);
+                    break;
             }
         }
 
