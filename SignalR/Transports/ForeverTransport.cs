@@ -82,7 +82,7 @@ namespace SignalR.Transports
                 }
 
                 return () => InitializeResponse(connection)
-                    .Success( _ => ProcessMessages(connection, LastMessageId))
+                    .Then( _ => ProcessMessages(connection, LastMessageId))
                     .FastUnwrap();
             }
 
@@ -122,11 +122,11 @@ namespace SignalR.Transports
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
 
-                return responseTask.Success(t =>
+                return responseTask.Then(t =>
                 {
                     LastMessageId = t.Result.MessageId;
                     return Send(t.Result)
-                        .Success(_ => ProcessMessages(connection, LastMessageId))
+                        .Then(_ => ProcessMessages(connection, LastMessageId))
                         .FastUnwrap();
                 }).FastUnwrap();
             }

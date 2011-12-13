@@ -106,12 +106,12 @@ namespace SignalR
 #endif
 
             return request.GetRequestStreamAsync()
-                .Success(t =>
+                .Then(t =>
                 {
                     t.Result.Write(buffer, 0, buffer.Length);
                     t.Result.Close();
                 })
-                .Success(t =>
+                .Then(t =>
                 {
                     return request.GetResponseAsync();
                 })

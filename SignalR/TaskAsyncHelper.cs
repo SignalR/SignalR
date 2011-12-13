@@ -39,7 +39,7 @@ namespace SignalR
             return task;
         }
 
-        public static Task Success(this Task task, Action<Task> successor)
+        public static Task Then(this Task task, Action<Task> successor)
         {
             switch (task.Status)
             {
@@ -57,7 +57,7 @@ namespace SignalR
             }
         }
 
-        public static Task Success<TResult>(this Task<TResult> task, Action<Task<TResult>> successor)
+        public static Task Then<TResult>(this Task<TResult> task, Action<Task<TResult>> successor)
         {
             switch (task.Status)
             {
@@ -75,7 +75,7 @@ namespace SignalR
             }
         }
 
-        public static Task<TResult> Success<TResult>(this Task task, Func<Task, TResult> successor)
+        public static Task<TResult> Then<TResult>(this Task task, Func<Task, TResult> successor)
         {
             switch (task.Status)
             {
@@ -93,7 +93,7 @@ namespace SignalR
             }
         }
 
-        public static Task<TResult> Success<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor)
+        public static Task<TResult> Then<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor)
         {
             switch (task.Status)
             {

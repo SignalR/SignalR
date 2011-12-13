@@ -123,13 +123,13 @@ namespace SignalR
                 {
                     if (task != null)
                     {
-                        return task.Success(_ => processRequestTask()).FastUnwrap().Catch();
+                        return task.Then(_ => processRequestTask()).FastUnwrap();
                     }
-                    return processRequestTask().Catch();
+                    return processRequestTask();
                 }
             }
 
-            return task.Catch() ?? TaskAsyncHelper.Empty;
+            return task ?? TaskAsyncHelper.Empty;
         }
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)

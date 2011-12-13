@@ -11,7 +11,8 @@ namespace SignalR
     /// </summary>
     public class InProcessSignalBus : ISignalBus
     {
-        private readonly ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>> _handlers = new ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>>();
+        private readonly ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>> _handlers =
+            new ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>>();
 
         private void OnSignaled(string eventKey)
         {

@@ -119,7 +119,7 @@ namespace SignalR.Client.Transports
                 { "data", data }
             };
 
-            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Success(task =>
+            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Then(task =>
             {
                 string raw = task.Result.ReadAsString();
 

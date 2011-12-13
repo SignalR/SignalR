@@ -19,7 +19,7 @@ namespace SignalR.ScaleOut
         internal static Task<object> ExecuteScalarAsync(this SqlCommand command)
         {
             return command.ExecuteReaderAsync()
-                .Success(t =>
+                .Then(t =>
                 {
                     var rdr = t.Result;
                     object result = null;
@@ -35,7 +35,7 @@ namespace SignalR.ScaleOut
         {
             Type type = Nullable.GetUnderlyingType(typeof(TResult)) ?? typeof(TResult);
             return command.ExecuteScalarAsync()
-                .Success(t => (TResult)Convert.ChangeType(t.Result, type));
+                .Then(t => (TResult)Convert.ChangeType(t.Result, type));
         }
     }
 }

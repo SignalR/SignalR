@@ -63,7 +63,7 @@ namespace SignalR.Client
 
             string negotiateUrl = Url + "negotiate";
 
-            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Success(task =>
+            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(task =>
             {
                 string raw = task.Result.ReadAsString();
 

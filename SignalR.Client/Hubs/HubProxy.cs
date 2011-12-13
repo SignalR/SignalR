@@ -78,7 +78,7 @@ namespace SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
-            return _connection.Send<HubResult<T>>(value).Success(task =>
+            return _connection.Send<HubResult<T>>(value).Then(task =>
             {
                 if (task.Result != null)
                 {

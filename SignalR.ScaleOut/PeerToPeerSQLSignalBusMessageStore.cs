@@ -76,7 +76,7 @@ namespace SignalR.ScaleOut
         {
             // Save it locally then broadcast to other peers
             return GetMessageId(key)
-                .Success(idTask =>
+                .Then(idTask =>
                 {
                     var message = new Message(key, idTask.Result, value);
                     return Task.Factory.ContinueWhenAll(new[] {
@@ -115,7 +115,7 @@ namespace SignalR.ScaleOut
             var message = Json.Parse<WireMessage>(payload).ToMessage();
             return message != null
                 ? _store.Save(message)
-                    .Success(t => _signalBus.Signal(message.SignalKey))
+                    .Then(t => _signalBus.Signal(message.SignalKey))
                     .Unwrap()
                 : TaskAsyncHelper.Empty;
         }

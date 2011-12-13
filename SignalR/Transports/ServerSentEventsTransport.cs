@@ -22,7 +22,7 @@ namespace SignalR.Transports
             }
 
             return base.InitializeResponse(connection)
-                .Success(_ =>
+                .Then(_ =>
                 {
                     Context.Response.ContentType = "text/event-stream";
                     return Context.Response.WriteAsync("data: initialized\n\n");
