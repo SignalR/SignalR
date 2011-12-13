@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
-using System.Threading;
 
 namespace SignalR
 {

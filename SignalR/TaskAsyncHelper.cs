@@ -148,26 +148,6 @@ namespace SignalR
             });
         }
 
-        public static Task<T> AllSucceeded<T>(this Task[] tasks, Func<T> continuation)
-        {
-            return Task.Factory.ContinueWhenAll(tasks, _ =>
-            {
-                var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
-                if (cancelledTask != null)
-                    throw new TaskCanceledException();
-
-                var allExceptions =
-                    tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
-
-                if (allExceptions.Count > 0)
-                {
-                    throw new AggregateException(allExceptions);
-                }
-
-                return continuation();
-            });
-        }
-
         public static Task FromMethod<T>(Action<T> func, T arg)
         {
             try
