@@ -7,7 +7,7 @@ using System.Threading;
 namespace SignalR
 {
     /// <summary>
-    /// An in-memory signaler that signals directly on an incoming signal
+    /// An in-memory signal bus that signals directly on an incoming signal
     /// </summary>
     public class InProcessSignalBus : ISignalBus
     {
@@ -21,15 +21,13 @@ namespace SignalR
                 var delegates = handlers.GetAllAndClear();
                 if (delegates != null)
                 {
-                    Parallel.ForEach(delegates,
-                        item =>
+                    foreach (var callback in delegates)
+                    {
+                        if (callback != null)
                         {
-                            var callback = item as EventHandler<SignaledEventArgs>;
-                            if (callback != null)
-                            {
-                                callback.Invoke(this, new SignaledEventArgs(eventKey));
-                            }
-                        });
+                            callback.Invoke(this, new SignaledEventArgs(eventKey));
+                        }
+                    }
                 }
             }
         }
