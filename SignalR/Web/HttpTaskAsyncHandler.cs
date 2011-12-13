@@ -25,9 +25,8 @@ namespace SignalR.Web
 
             if (task == null)
             {
-                // No task, so just call the AsyncCallback and end the request
-                cb(retVal);
-                return retVal;
+                // No task, so just let ASP.NET deal with it
+                return null;
             }
 
             if (cb != null)
