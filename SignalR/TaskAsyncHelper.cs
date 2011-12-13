@@ -75,6 +75,29 @@ namespace SignalR
             }
         }
 
+        public static Task<TResult> Then<T1, T2, TResult>(this Task task, Func<T1, T2, TResult> successor, T1 arg1, T2 arg2)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError<TResult>(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled<TResult>();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, arg1, arg2);
+
+                default:
+                    return ThenWithArgs(task, successor, arg1, arg2);
+            }
+        }
+
+        private static Task<TResult> ThenWithArgs<T1, T2, TResult>(Task task, Func<T1, T2, TResult> successor, T1 arg1, T2 arg2)
+        {
+            return task.ContinueWith(t => successor(arg1, arg2), TaskContinuationOptions.OnlyOnRanToCompletion);
+        }
+
         public static Task<TResult> Then<TResult>(this Task task, Func<Task, TResult> successor)
         {
             switch (task.Status)
@@ -158,18 +181,6 @@ namespace SignalR
             catch (Exception ex)
             {
                 return FromError(ex);
-            }
-        }
-
-        public static Task<T> FromMethod<T>(Func<T> func)
-        {
-            try
-            {
-                return FromResult<T>(func());
-            }
-            catch (Exception ex)
-            {
-                return FromError<T>(ex);
             }
         }
 

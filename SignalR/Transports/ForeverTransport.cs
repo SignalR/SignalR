@@ -118,15 +118,15 @@ namespace SignalR.Transports
             {
                 // responseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
-                var responseTask = lastMessageId == null
+                var receiveAsyncTask = lastMessageId == null
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
 
-                return responseTask.Then(t =>
+                return receiveAsyncTask.Then(t =>
                 {
                     LastMessageId = t.Result.MessageId;
                     return Send(t.Result)
-                        .Then(_ => ProcessMessages(connection, LastMessageId))
+                        .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
                         .FastUnwrap();
                 }).FastUnwrap();
             }
