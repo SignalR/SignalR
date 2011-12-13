@@ -93,15 +93,16 @@ namespace SignalR
         {
             // Get the last message id then wait for new messages to arrive
             return _store.GetLastId()
-                         .Then(storeTask => WaitForSignal(storeTask.Result))
+                         .Then(id => WaitForSignal(id))
                          .FastUnwrap();
         }
 
         public Task<PersistentResponse> ReceiveAsync(long messageId)
         {
             // Get all messages for this message id, or wait until new messages if there are none
-            return GetResponse(messageId).Then(task => ProcessReceive(task, messageId))
-                                         .FastUnwrap();
+            return GetResponse(messageId)
+                .Then((t, id) => ProcessReceive(t, id), messageId)
+                .FastUnwrap();
         }
 
         public static IConnection GetConnection<T>() where T : PersistentConnection
@@ -125,10 +126,6 @@ namespace SignalR
             if (responseTask.Result == null)
             {
                 // There are no messages pending, so wait for a signal
-                if (WaitingForSignal != null)
-                {
-                    WaitingForSignal(this, EventArgs.Empty);
-                }
                 return WaitForSignal(messageId);
             }
 
@@ -142,9 +139,14 @@ namespace SignalR
 
         private Task<PersistentResponse> WaitForSignal(long? messageId = null)
         {
+            if (WaitingForSignal != null)
+            {
+                WaitingForSignal(this, EventArgs.Empty);
+            }
+
             // Wait for a signal to get triggered and return with a response
             return _signaler.Subscribe(Signals)
-                            .Then(task => ProcessSignal(task.Result, messageId))
+                            .Then((result, id) => ProcessSignal(result, id), messageId)
                             .FastUnwrap();
         }
 
@@ -160,7 +162,7 @@ namespace SignalR
 
             // Get the response for this message id
             return GetResponse(messageId ?? 0)
-                .Then(task => task.Result ?? GetEmptyResponse(messageId));
+                .Then<PersistentResponse, long?>((response, id) => response ?? GetEmptyResponse(id), messageId);
         }
 
         private PersistentResponse GetEmptyResponse(long? messageId)
@@ -179,19 +181,18 @@ namespace SignalR
         {
             // Get all messages for the current set of signals
             return GetMessages(messageId, Signals)
-                .Then(messageTask =>
+                .Then<List<Message>, long, PersistentResponse>((messages, id) =>
                 {
-                    var results = messageTask.Result;
-                    if (!results.Any())
+                    if (!messages.Any())
                     {
                         return null;
                     }
 
                     // Get last message ID
-                    messageId = results[results.Count - 1].Id;
+                    messageId = messages[messages.Count - 1].Id;
 
                     // Do a single sweep through the results to process commands and extract values
-                    var messageValues = ProcessResults(results);
+                    var messageValues = ProcessResults(messages);
 
                     var response = new PersistentResponse
                     {
@@ -202,7 +203,7 @@ namespace SignalR
                     PopulateResponseState(response);
 
                     return response;
-                });
+                }, messageId);
         }
 
         private List<object> ProcessResults(List<Message> source)
@@ -264,7 +265,7 @@ namespace SignalR
         private Task SendMessage(string message, object value)
         {
             return _store.Save(message, value)
-                         .Then(_ => _signaler.Signal(message))
+                         .Then(m => _signaler.Signal(m), message)
                          .FastUnwrap()
                          .Catch();
         }
@@ -272,7 +273,7 @@ namespace SignalR
         private Task<List<Message>> GetMessages(long id, IEnumerable<string> signals)
         {
             return _store.GetAllSince(signals, id)
-                .Then(task => task.Result.ToList());
+                .Then(messages => messages.ToList());
         }
 
         private void PopulateResponseState(PersistentResponse response)

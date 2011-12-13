@@ -74,7 +74,7 @@ namespace SignalR
             if (IsNegotiationRequest(context.Request))
             {
                 context.Response.ContentType = Json.MimeType;
-                context.Response.Write(_jsonSerializer.Stringify(new
+                return context.Response.WriteAsync(_jsonSerializer.Stringify(new
                 {
                     Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
                     ConnectionId = _connectionIdFactory.CreateConnectionId(context)
@@ -123,7 +123,7 @@ namespace SignalR
                 {
                     if (task != null)
                     {
-                        return task.Then(_ => processRequestTask()).FastUnwrap();
+                        return task.Then(processRequestTask).FastUnwrap();
                     }
                     return processRequestTask();
                 }

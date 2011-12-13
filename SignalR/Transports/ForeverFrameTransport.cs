@@ -46,7 +46,7 @@ namespace SignalR.Transports
         protected override Task InitializeResponse(IConnection connection)
         {
             return base.InitializeResponse(connection)
-                .Then(_ => Context.Response.WriteAsync(String.Format(_initTemplate, Context.Request.QueryString["frameId"])))
+                .Then(initScript => Context.Response.WriteAsync(initScript), String.Format(_initTemplate, Context.Request.QueryString["frameId"]))
                 .FastUnwrap();
         }
 

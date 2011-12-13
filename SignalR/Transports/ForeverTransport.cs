@@ -64,15 +64,7 @@ namespace SignalR.Transports
         {
             if (Context.Request.Path.EndsWith("/send"))
             {
-                string data = _context.Request.Form["data"];
-                if (Receiving != null)
-                {                    
-                    Receiving(data);
-                }
-                if (Received != null)
-                {
-                    Received(data);
-                }
+                ProcessSendRequest();
             }
             else
             {
@@ -81,12 +73,30 @@ namespace SignalR.Transports
                     Connected();
                 }
 
-                return () => InitializeResponse(connection)
-                    .Then( _ => ProcessMessages(connection, LastMessageId))
-                    .FastUnwrap();
+                return ProcessReceiveRequest(connection);
             }
 
             return null;
+        }
+
+        private void ProcessSendRequest()
+        {
+            string data = _context.Request.Form["data"];
+            if (Receiving != null)
+            {
+                Receiving(data);
+            }
+            if (Received != null)
+            {
+                Received(data);
+            }
+        }
+
+        private Func<Task> ProcessReceiveRequest(IConnection connection)
+        {
+            return () => InitializeResponse(connection)
+                    .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
+                    .FastUnwrap();
         }
 
         protected virtual bool IsConnectRequest
@@ -122,10 +132,10 @@ namespace SignalR.Transports
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
 
-                return receiveAsyncTask.Then(t =>
+                return receiveAsyncTask.Then(response =>
                 {
-                    LastMessageId = t.Result.MessageId;
-                    return Send(t.Result)
+                    LastMessageId = response.MessageId;
+                    return Send(response)
                         .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
                         .FastUnwrap();
                 }).FastUnwrap();

@@ -121,7 +121,7 @@ namespace SignalR.Transports
                     }
 
                     return () => connection.ReceiveAsync()
-                        .Then(t => Send(t.Result))
+                        .Then(new Func<PersistentResponse, Task>(response => Send(response)))
                         .FastUnwrap();
                 }
                 else if (MessageId != null)
@@ -130,11 +130,9 @@ namespace SignalR.Transports
                     // If there is a message id then we receive with that id, which will either return
                     // immediately if there are already messages since that id, or wait until new
                     // messages come in and then return
-                    return () => connection.ReceiveAsync(MessageId.Value).Then(t =>
-                    {
-                        // Messages have arrived so let's return
-                        return Send(t.Result);
-                    }).FastUnwrap();
+                    return () => connection.ReceiveAsync(MessageId.Value)
+                        .Then(new Func<PersistentResponse, Task>(response => Send(response)))
+                        .FastUnwrap();
                 }
             }
 
