@@ -144,13 +144,13 @@ namespace SignalR
         {
             // Wait for a signal to get triggered and return with a response
             return _signaler.Subscribe(Signals)
-                            .Then(task => ProcessSignal(task, messageId))
+                            .Then(task => ProcessSignal(task.Result, messageId))
                             .FastUnwrap();
         }
 
-        private Task<PersistentResponse> ProcessSignal(Task<SignalResult> signalTask, long? messageId = null)
+        private Task<PersistentResponse> ProcessSignal(SignalResult result, long? messageId = null)
         {
-            if (signalTask.Result.TimedOut)
+            if (result.TimedOut)
             {
                 PersistentResponse response = GetEmptyResponse(messageId);
 
