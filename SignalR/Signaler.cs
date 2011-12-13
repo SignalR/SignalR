@@ -192,6 +192,7 @@ namespace SignalR
 
         private class SafeHandleEventAndSetResultAction
         {
+            private static SignalResult _timedOutResult = new SignalResult { TimedOut = true };
             private readonly object _locker;
             private readonly ISignalBus _signalBus;
             private readonly IEnumerable<string> _eventKeys;
@@ -240,7 +241,7 @@ namespace SignalR
                 }
 
                 // TODO: Change this to SignalBus.RemoveHandler(IEnumerable<string> eventKeys, Func handler)
-                //       Let the individual SignalBus implementations deal with how do that
+                //       Let the individual SignalBus implementations deal with how to do that
                 foreach (var eventKey in _eventKeys)
                 {
                     _signalBus.RemoveHandler(eventKey, Handler);
@@ -250,11 +251,14 @@ namespace SignalR
                 {
                     Tcs.SetCanceled();
                 }
+                else if (_timedOut)
+                {
+                    Tcs.SetResult(_timedOutResult);
+                }
                 else
                 {
                     Tcs.SetResult(new SignalResult
                     {
-                        TimedOut = _timedOut,
                         EventKey = signaledEventKey
                     });
                 }
