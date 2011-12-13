@@ -209,10 +209,7 @@ namespace SignalR
             {
                 _locker = new object();
                 TimeoutInfo = new TimeoutInfo(this, DateTime.UtcNow, timeout);
-                Handler = (sender, args) =>
-                {
-                    SafeHandleEventAndSetResult(args.EventKey);
-                };
+                Handler = SafeHandleEventAndSetResult;
                 Tcs = tcs;
                 _signalBus = signalBus;
                 _eventKeys = eventKeys;
@@ -224,6 +221,11 @@ namespace SignalR
             public TimeoutInfo TimeoutInfo { get; private set; }
 
             private TaskCompletionSource<SignalResult> Tcs { get; set; }
+
+            private void SafeHandleEventAndSetResult(object source, SignaledEventArgs args)
+            {
+                SafeHandleEventAndSetResult(args.EventKey);
+            }
 
             private void SafeHandleEventAndSetResult(string signaledEventKey)
             {
