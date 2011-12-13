@@ -8,11 +8,9 @@ namespace SignalR.Infrastructure
     {
         public static Task WriteAsync(this HttpResponseBase response, string s)
         {
-            var bytes = UTF8Encoding.UTF8.GetBytes(s);
-            return Task.Factory.FromAsync(
-                (cb, state) => response.OutputStream.BeginWrite(bytes, 0, bytes.Length, cb, state),
-                response.OutputStream.EndWrite,
-                null);
+            // The OutputStream on HttpResponse/HttpReponseBase does not implement a true async write,
+            // so we're just going to do it on a new Task here.
+            return Task.Factory.StartNew(() => response.Write(s));
         }
     }
 }
