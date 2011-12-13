@@ -12,12 +12,12 @@ namespace SignalR
         private static TimeSpan _timeOutInterval;
         private static TimeSpan _defaultTimeOut;
 
-        private static readonly object _timeOutCreationLock = new object();
-        private static readonly SafeSet<SafeHandleEventAndSetResultAction> _signalActions = new SafeSet<SafeHandleEventAndSetResultAction>();
-        private static bool _timeOutCheckRunning;
+        private readonly object _timeOutCreationLock = new object();
+        private readonly SafeSet<SafeHandleEventAndSetResultAction> _signalActions = new SafeSet<SafeHandleEventAndSetResultAction>();
+        private bool _timeOutCheckRunning;
 
         // Timer that runs on an interval to check for Subscription timeouts
-        private static Timer _timeOutTimer;
+        private Timer _timeOutTimer;
 
         private static readonly Signaler _instance = new Signaler();
 
@@ -102,7 +102,7 @@ namespace SignalR
         {
             var tcs = new TaskCompletionSource<SignalResult>();
 
-            var signalAction = new SafeHandleEventAndSetResultAction(SignalBus, tcs, eventKeys, timeout);
+            var signalAction = new SafeHandleEventAndSetResultAction(SignalBus, tcs, eventKeys, timeout, action => _signalActions.Remove(action));
 
             foreach (var eventKey in eventKeys)
             {
@@ -122,7 +122,7 @@ namespace SignalR
             return tcs.Task;
         }
 
-        private static void EnsureTimeoutTimer()
+        private void EnsureTimeoutTimer()
         {
             if (_timeOutTimer == null)
             {
@@ -136,7 +136,7 @@ namespace SignalR
             }
         }
 
-        private static void CheckTimeouts()
+        private void CheckTimeouts()
         {
             if (_timeOutCheckRunning)
             {
@@ -199,11 +199,13 @@ namespace SignalR
             private bool _canceled;
             private bool _timedOut;
             private bool _handlerCalled;
+            private Action<SafeHandleEventAndSetResultAction> _removeCallback;
 
             public SafeHandleEventAndSetResultAction(ISignalBus signalBus,
                                                      TaskCompletionSource<SignalResult> tcs,
                                                      IEnumerable<string> eventKeys,
-                                                     TimeSpan timeout)
+                                                     TimeSpan timeout,
+                                                     Action<SafeHandleEventAndSetResultAction> removeCallback)
             {
                 _locker = new object();
                 TimeoutInfo = new TimeoutInfo(this, DateTime.UtcNow, timeout);
@@ -214,6 +216,7 @@ namespace SignalR
                 Tcs = tcs;
                 _signalBus = signalBus;
                 _eventKeys = eventKeys;
+                _removeCallback = removeCallback;
             }
 
             public EventHandler<SignaledEventArgs> Handler { get; private set; }
@@ -263,7 +266,7 @@ namespace SignalR
                     });
                 }
 
-                _signalActions.Remove(this);
+                _removeCallback(this);
             }
 
             public void SetCanceled()
