@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using System.Diagnostics;
 
 namespace SignalR
 {
@@ -130,31 +131,41 @@ namespace SignalR
                 {
                     if (_timeOutTimer == null)
                     {
-                        _timeOutTimer = new Timer(_ => CheckTimeouts(), null, _timeOutInterval, _timeOutInterval);
+                        _timeOutTimer = new Timer(CheckTimeouts, null, _timeOutInterval, _timeOutInterval);
                     }
                 }
             }
         }
 
-        private void CheckTimeouts()
+        private void CheckTimeouts(object state)
         {
-            if (_timeOutCheckRunning)
+            try
             {
-                return;
-            }
-
-            _timeOutCheckRunning = true;
-
-            foreach (var signalAction in _signalActions.GetSnapshot())
-            {
-                if (signalAction.TimeoutInfo.TimedOut)
+                if (_timeOutCheckRunning)
                 {
-                    // If we timed out the call the SetTimedOut method to complete the task
-                    signalAction.SetTimedOut();
+                    return;
+                }
+
+                _timeOutCheckRunning = true;
+
+                foreach (var signalAction in _signalActions.GetSnapshot())
+                {
+                    if (signalAction.TimeoutInfo.TimedOut)
+                    {
+                        // If we timed out the call the SetTimedOut method to complete the task
+                        signalAction.SetTimedOut();
+                    }
                 }
             }
-
-            _timeOutCheckRunning = false;
+            catch (Exception ex)
+            {
+                // Exception on bg thread, bad! Log and swallow to stop the process exploding
+                Trace.TraceError("Error during Signaler timeout checking on background thread: {0}", ex);
+            }
+            finally
+            {
+                _timeOutCheckRunning = false;
+            }
         }
 
         private class TimeoutInfo

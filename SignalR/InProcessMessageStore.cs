@@ -121,29 +121,39 @@ namespace SignalR
 
         private void RemoveExpiredEntries(object state)
         {
-            if (_gcRunning || Debugger.IsAttached)
+            try
             {
-                return;
-            }
-
-            _gcRunning = true;
-
-            // Take a snapshot of the entries
-            var entries = _items.ToList();
-
-            // Remove all the expired ones
-            foreach (var entry in entries)
-            {
-                foreach (var item in entry.Value.GetSnapshot())
+                if (_gcRunning || Debugger.IsAttached)
                 {
-                    if (item.Expired)
+                    return;
+                }
+
+                _gcRunning = true;
+
+                // Take a snapshot of the entries
+                var entries = _items.ToList();
+
+                // Remove all the expired ones
+                foreach (var entry in entries)
+                {
+                    foreach (var item in entry.Value.GetSnapshot())
                     {
-                        entry.Value.Remove(item);
+                        if (item.Expired)
+                        {
+                            entry.Value.Remove(item);
+                        }
                     }
                 }
             }
-
-            _gcRunning = false;
+            catch (Exception ex)
+            {
+                // Exception on bg thread, bad! Log and swallow to stop the process exploding
+                Trace.TraceError("Error during InProcessMessageStore clean up on background thread: {0}", ex);
+            }
+            finally
+            {
+                _gcRunning = false;
+            }
         }
     }
 }

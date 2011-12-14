@@ -23,7 +23,7 @@ namespace SignalR.Transports
             DisconnectTimeout = TimeSpan.FromSeconds(20);
 
             // REVIEW: When to dispose the timer?
-            _timer = new Timer(_ => Beat(),
+            _timer = new Timer(Beat,
                                null,
                                _heartBeatInterval,
                                _heartBeatInterval);
@@ -78,18 +78,18 @@ namespace SignalR.Transports
             _connectionMetadata[connection] = DateTime.UtcNow;
         }
 
-        private void Beat()
+        private void Beat(object state)
         {
-            if (_running)
-            {
-                Debug.WriteLine("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
-                return;
-            }
-
-            _running = true;
-
             try
             {
+                if (_running)
+                {
+                    Trace.TraceInformation("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
+                    return;
+                }
+
+                _running = true;
+
                 Parallel.ForEach(_connections.GetSnapshot(), (connection) =>
                 {
                     if (!connection.IsAlive)
@@ -129,10 +129,12 @@ namespace SignalR.Transports
             }
             catch (Exception ex)
             {
-                Trace.TraceError("SignalR error during transport heart beat: {0}", ex);
+                Trace.TraceError("SignalR error during transport heart beat on background thread: {0}", ex);
             }
-
-            _running = false;
+            finally
+            {
+                _running = false;
+            }
         }
 
         private class ConnectionIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
