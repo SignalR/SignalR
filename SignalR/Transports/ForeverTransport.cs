@@ -5,15 +5,24 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
-    public class ForeverTransport : ITransport
+    public class ForeverTransport : ITransport, ITrackingDisconnect
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly HttpContextBase _context;
-        
+        private readonly ITransportHeartBeat _heartBeat;
+        private bool _disconnected = false;
+
         public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+            : this(context, jsonSerializer, TransportHeartBeat.Instance)
+        {
+
+        }
+
+        public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;
+            _heartBeat = heartBeat;
         }
 
         protected IJsonSerializer JsonSerializer
@@ -40,8 +49,14 @@ namespace SignalR.Transports
             }
         }
 
+        public bool IsAlive
+        {
+            get { return Context.Response.IsClientConnected; }
+        }
+
         protected virtual void OnSending(string payload)
         {
+            _heartBeat.MarkConnection(this);
             if (Sending != null)
             {
                 Sending(payload);
@@ -73,10 +88,36 @@ namespace SignalR.Transports
                     Connected();
                 }
 
+                _heartBeat.AddConnection(this);
+
                 return ProcessReceiveRequest(connection);
             }
 
             return null;
+        }
+
+        public virtual Task Send(PersistentResponse response)
+        {
+            _heartBeat.MarkConnection(this);
+            return Send((object)response);
+        }
+
+        public virtual Task Send(object value)
+        {
+            var data = JsonSerializer.Stringify(value);
+            OnSending(data);
+            return Context.Response.WriteAsync(data);
+        }
+
+        public void Disconnect()
+        {
+            if (!_disconnected && Disconnected != null)
+            {
+                Disconnected();
+            }
+            _disconnected = true;
+            // TODO: Send a disconnect command via the IConnection instance to queue it for the client
+            //       in case they reconnect, and break the receive loop to end this request properly.
         }
 
         private void ProcessSendRequest()
@@ -124,9 +165,9 @@ namespace SignalR.Transports
 
         private Task ProcessMessages(IConnection connection, long? lastMessageId)
         {
-            if (Context.Response.IsClientConnected)
+            if (!_disconnected && Context.Response.IsClientConnected)
             {
-                // responseTask will either subscribe and wait for a signal then return new messages,
+                // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = lastMessageId == null
                     ? connection.ReceiveAsync()
@@ -142,23 +183,10 @@ namespace SignalR.Transports
             }
 
             // Client is no longer connected
-            if (Disconnected != null)
-            {
-                Disconnected();
-            }
+            Disconnect();
+
+            // Nothing to do, return empty task to force the request to end
             return TaskAsyncHelper.Empty;
-        }
-
-        public virtual Task Send(PersistentResponse response)
-        {
-            return Send((object)response);
-        }
-
-        public virtual Task Send(object value)
-        {
-            var payload = JsonSerializer.Stringify(value);
-            OnSending(payload);
-            return Context.Response.WriteAsync(payload);
         }
     }
 }

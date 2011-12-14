@@ -16,10 +16,10 @@ namespace SignalR.Transports
                                              "<script>\r\n" +
             //"    debugger;\r\n"+
                                              "    var $ = window.parent.jQuery,\r\n" +
-                                             "        ff = $.signalR.transports.foreverFrame,\r\n" +
-                                             "        c = ff.getConnection('{0}'),\r\n" +
-                                             "        r = ff.receive;\r\n" +
-                                             "    ff.started(c);" +
+                                             "        ff = $ ? $.signalR.transports.foreverFrame : null,\r\n" +
+                                             "        c =  ff ? ff.getConnection('{0}') : null,\r\n" +
+                                             "        r = ff ? ff.receive : function() {{}};\r\n" +
+                                             "    ff ? ff.started(c) : '';" +
                                              "</script>";
 
         private const string _sendTemplate = "<script>r(c, {0});</script>\r\n";
@@ -28,7 +28,6 @@ namespace SignalR.Transports
 
         private readonly bool _isDebug;
 
-        // TODO: Add heartbeat support for disconnect
         public ForeverFrameTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
             : base(context, jsonSerializer)
         {
@@ -43,29 +42,29 @@ namespace SignalR.Transports
             }
         }
 
-        protected override Task InitializeResponse(IConnection connection)
-        {
-            return base.InitializeResponse(connection)
-                .Then(initScript => Context.Response.WriteAsync(initScript), String.Format(_initTemplate, Context.Request.QueryString["frameId"]))
-                .FastUnwrap();
-        }
-
         public override Task Send(PersistentResponse response)
         {
             var data = JsonSerializer.Stringify(response);
             OnSending(data);
 
-            var payload = String.Format(_sendTemplate, data);
+            var script = String.Format(_sendTemplate, data);
             if (_isDebug)
             {
-                payload += (String.Format(_debugTemplate, data));
+                script += (String.Format(_debugTemplate, data));
             }
 
             if (Context.Response.IsClientConnected)
             {
-                return Context.Response.WriteAsync(payload);
+                return Context.Response.WriteAsync(script);
             }
             return TaskAsyncHelper.Empty;
+        }
+
+        protected override Task InitializeResponse(IConnection connection)
+        {
+            return base.InitializeResponse(connection)
+                .Then(initScript => Context.Response.WriteAsync(initScript), String.Format(_initTemplate, Context.Request.QueryString["frameId"]))
+                .FastUnwrap();
         }
     }
 }
