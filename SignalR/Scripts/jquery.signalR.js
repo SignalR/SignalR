@@ -99,6 +99,10 @@
                             supportedTransports = [];
 
                         $.each(signalR.transports, function (key) {
+                            if (key === "webSockets" && !res.TryWebSockets) {
+                                // Server said don't even try WebSockets, but keep processing the loop
+                                return true;
+                            }
                             supportedTransports.push(key);
                         });
 

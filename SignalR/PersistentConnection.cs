@@ -17,6 +17,8 @@ namespace SignalR
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IConnectionIdFactory _connectionIdFactory;
+        private readonly Lazy<bool> _hasAcceptWebSocketRequest =
+            new Lazy<bool>(() => typeof(HttpContextBase).GetMethod("AcceptWebSocketRequest") != null);
 
         protected ITransport _transport;
 
@@ -67,6 +69,14 @@ namespace SignalR
             }
         }
 
+        private bool ClientShouldTryWebSockets
+        {
+            get
+            {
+                return _hasAcceptWebSocketRequest.Value;
+            }
+        }
+
         public override Task ProcessRequestAsync(HttpContextBase context)
         {
             Task task = null;
@@ -77,7 +87,8 @@ namespace SignalR
                 return context.Response.WriteAsync(_jsonSerializer.Stringify(new
                 {
                     Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
-                    ConnectionId = _connectionIdFactory.CreateConnectionId(context)
+                    ConnectionId = _connectionIdFactory.CreateConnectionId(context),
+                    TryWebSockets = ClientShouldTryWebSockets
                 }));
             }
             else
