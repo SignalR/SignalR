@@ -11,8 +11,6 @@ namespace SignalR
 {
     public abstract class PersistentConnection : HttpTaskAsyncHandler, IGroupManager
     {
-        internal const string SignalrCommand = "__SIGNALRCOMMAND__";
-
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
@@ -154,7 +152,7 @@ namespace SignalR
             var signals = new string[] {
                 DefaultSignal,
                 connectionId,
-                connectionId + "." + SignalrCommand
+                connectionId + "." + SignalCommand.SignalrCommand
             };
 
             return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
@@ -216,26 +214,21 @@ namespace SignalR
         public Task AddToGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
-            return SendCommand(connectionId, CommandType.AddToGroup, groupName);
+            return Connection.SendCommand(new SignalCommand
+            {
+                Type = CommandType.AddToGroup,
+                Value = groupName
+            });
         }
 
         public Task RemoveFromGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
-            return SendCommand(connectionId, CommandType.RemoveFromGroup, groupName);
-        }
-
-        private Task SendCommand(string connectionId, CommandType type, object value)
-        {
-            string signal = connectionId + "." + SignalrCommand;
-
-            var groupCommand = new SignalCommand
+            return Connection.SendCommand(new SignalCommand
             {
-                Type = type,
-                Value = value
-            };
-
-            return Connection.Broadcast(signal, groupCommand);
+                Type = CommandType.RemoveFromGroup,
+                Value = groupName
+            });
         }
 
         private string CreateQualifiedName(string groupName)

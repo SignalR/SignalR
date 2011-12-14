@@ -133,10 +133,13 @@
             /// <summary>Adds a callback that will be invoked before the connection is started</summary>
             /// <param name="callback" type="Function">A callback function to execute when the connection is starting</param>
             /// <returns type="signalR" />
-            var connection = this;
+            var connection = this,
+                $connection = $(connection);
 
-            $(connection).bind("onStarting", function (e, data) {
+            $connection.bind("onStarting", function (e, data) {
                 callback.call(connection);
+                // Unbind immediately, we don't want to call this callback again
+                $connection.unbind("onStarting");
             });
 
             return connection;
@@ -201,6 +204,9 @@
                 connection.transport = null;
             }
 
+            delete connection.messageId;
+            delete connection.groups;
+
             return connection;
         }
     };
@@ -245,6 +251,12 @@
 
         processMessages: function (connection, data) {
             if (data) {
+                if (data.Disconnect) {
+                    // Disconnected by the server, need to reconnect
+                    connection.stop()
+                        .start();
+                }
+
                 if (data.Messages) {
                     $.each(data.Messages, function () {
                         try {

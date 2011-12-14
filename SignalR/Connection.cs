@@ -16,6 +16,7 @@ namespace SignalR
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
         private readonly object _lockObj = new object();
+        private bool _disconnected;
 
         public Connection(IMessageStore store,
                           IJsonSerializer jsonSerializer,
@@ -79,9 +80,9 @@ namespace SignalR
             return Broadcast(_baseSignal, value);
         }
 
-        public virtual Task Broadcast(string message, object value)
+        public virtual Task Broadcast(string key, object value)
         {
-            return SendMessage(message, value);
+            return SendMessage(key, value);
         }
 
         public Task Send(object value)
@@ -103,6 +104,11 @@ namespace SignalR
             return GetResponse(messageId)
                 .Then((t, id) => ProcessReceive(t, id), messageId)
                 .FastUnwrap();
+        }
+
+        public Task SendCommand(SignalCommand command)
+        {
+            return SendMessage(_connectionId + "." + SignalCommand.SignalrCommand, command);
         }
 
         public static IConnection GetConnection<T>() where T : PersistentConnection
@@ -185,6 +191,7 @@ namespace SignalR
                 {
                     if (!messages.Any())
                     {
+                        // No messages, not even commands
                         return null;
                     }
 
@@ -197,7 +204,8 @@ namespace SignalR
                     var response = new PersistentResponse
                     {
                         MessageId = messageId,
-                        Messages = messageValues
+                        Messages = messageValues,
+                        Disconnect = _disconnected
                     };
 
                     PopulateResponseState(response);
@@ -211,7 +219,7 @@ namespace SignalR
             var messageValues = new List<object>();
             foreach (var message in source)
             {
-                if (message.SignalKey.EndsWith(PersistentConnection.SignalrCommand))
+                if (message.SignalKey.EndsWith(SignalCommand.SignalrCommand))
                 {
                     ProcessCommand(message);
                 }
@@ -225,7 +233,7 @@ namespace SignalR
 
         private void ProcessCommand(Message message)
         {
-            var command = GetCommand(message);
+            var command = message.GetCommand();
             if (command == null)
             {
                 return;
@@ -239,33 +247,16 @@ namespace SignalR
                 case CommandType.RemoveFromGroup:
                     _groups.Remove((string)command.Value);
                     break;
+                case CommandType.Disconnect:
+                    _disconnected = true;
+                    break;
             }
         }
 
-        private SignalCommand GetCommand(Message message)
+        private Task SendMessage(string key, object value)
         {
-            var command = message.Value as SignalCommand;
-
-            // Optimization for in memory message store
-            if (command != null)
-            {
-                return command;
-            }
-
-            // Otherwise deserialize the message value
-            string value = message.Value as string;
-            if (value == null)
-            {
-                return null;
-            }
-
-            return _jsonSerializer.Parse<SignalCommand>(value);
-        }
-
-        private Task SendMessage(string message, object value)
-        {
-            return _store.Save(message, value)
-                         .Then(m => _signaler.Signal(m), message)
+            return _store.Save(key, value)
+                         .Then(k => _signaler.Signal(k), key)
                          .FastUnwrap()
                          .Catch();
         }
@@ -282,6 +273,10 @@ namespace SignalR
             if (_groups.Any())
             {
                 response.TransportData["Groups"] = _groups;
+            }
+            if (_disconnected)
+            {
+                response.TransportData["Disconnected"] = true;
             }
         }
     }

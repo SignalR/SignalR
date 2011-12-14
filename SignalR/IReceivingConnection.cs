@@ -9,5 +9,7 @@ namespace SignalR
 
         Task<PersistentResponse> ReceiveAsync();
         Task<PersistentResponse> ReceiveAsync(long messageId);
+
+        Task SendCommand(SignalCommand command);
     }
 }

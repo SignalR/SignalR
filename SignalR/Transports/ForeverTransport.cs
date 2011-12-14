@@ -10,6 +10,7 @@ namespace SignalR.Transports
         private readonly IJsonSerializer _jsonSerializer;
         private readonly HttpContextBase _context;
         private readonly ITransportHeartBeat _heartBeat;
+        private IReceivingConnection _connection;
         private bool _disconnected = false;
 
         public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
@@ -77,6 +78,8 @@ namespace SignalR.Transports
 
         public Func<Task> ProcessRequest(IReceivingConnection connection)
         {
+            _connection = connection;
+
             if (Context.Request.Path.EndsWith("/send"))
             {
                 ProcessSendRequest();
@@ -116,8 +119,12 @@ namespace SignalR.Transports
                 Disconnected();
             }
             _disconnected = true;
-            // TODO: Send a disconnect command via the IConnection instance to queue it for the client
-            //       in case they reconnect, and break the receive loop to end this request properly.
+            _connection.SendCommand(
+                new SignalCommand
+                {
+                    Type = CommandType.Disconnect,
+                    ExpiresAfter = TimeSpan.FromMinutes(30)
+                });
         }
 
         private void ProcessSendRequest()
@@ -176,9 +183,11 @@ namespace SignalR.Transports
                 return receiveAsyncTask.Then(response =>
                 {
                     LastMessageId = response.MessageId;
-                    return Send(response)
-                        .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
-                        .FastUnwrap();
+                    return response.Disconnect
+                        ? Send(response)
+                        : Send(response)
+                            .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
+                            .FastUnwrap();
                 }).FastUnwrap();
             }
 

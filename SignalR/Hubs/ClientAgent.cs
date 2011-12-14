@@ -67,7 +67,7 @@ namespace SignalR.Hubs
 
         private Task SendCommand(string connectionId, CommandType commandType, object commandValue)
         {
-            string signal = _hubName + "." + connectionId + "." + PersistentConnection.SignalrCommand;
+            string signal = _hubName + "." + connectionId + "." + SignalCommand.SignalrCommand;
 
             var groupCommand = new SignalCommand
             {

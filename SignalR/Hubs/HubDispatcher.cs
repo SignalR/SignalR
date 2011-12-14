@@ -241,7 +241,7 @@ namespace SignalR.Hubs
         {
             var clientSignals = new[] { 
                 hubInfo.CreateQualifiedName(connectionId),
-                hubInfo.CreateQualifiedName(connectionId) + "." + PersistentConnection.SignalrCommand
+                hubInfo.CreateQualifiedName(connectionId) + "." + SignalCommand.SignalrCommand
             };
 
             // Try to find the associated hub type
