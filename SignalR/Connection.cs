@@ -6,7 +6,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class Connection : IConnection
+    public class Connection : IConnection, IReceivingConnection
     {
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;

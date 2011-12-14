@@ -33,7 +33,7 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        protected override Task InitializeResponse(IConnection connection)
+        protected override Task InitializeResponse(IReceivingConnection connection)
         {
             long lastMessageId;
             if (long.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))

@@ -93,6 +93,7 @@
     <Compile Include="Infrastructure\IDependencyResolver.cs" />
     <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
+    <Compile Include="IReceivingConnection.cs" />
     <Compile Include="ISignalBus.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />

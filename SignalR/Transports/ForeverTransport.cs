@@ -75,7 +75,7 @@ namespace SignalR.Transports
 
         public event Action<Exception> Error;
 
-        public Func<Task> ProcessRequest(IConnection connection)
+        public Func<Task> ProcessRequest(IReceivingConnection connection)
         {
             if (Context.Request.Path.EndsWith("/send"))
             {
@@ -133,7 +133,7 @@ namespace SignalR.Transports
             }
         }
 
-        private Func<Task> ProcessReceiveRequest(IConnection connection)
+        private Func<Task> ProcessReceiveRequest(IReceivingConnection connection)
         {
             return () => InitializeResponse(connection)
                     .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
@@ -145,7 +145,7 @@ namespace SignalR.Transports
             get { return true; }
         }
 
-        protected virtual Task InitializeResponse(IConnection connection)
+        protected virtual Task InitializeResponse(IReceivingConnection connection)
         {
             // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
@@ -163,7 +163,7 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessMessages(IConnection connection, long? lastMessageId)
+        private Task ProcessMessages(IReceivingConnection connection, long? lastMessageId)
         {
             if (!_disconnected && Context.Response.IsClientConnected)
             {

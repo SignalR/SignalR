@@ -91,7 +91,7 @@ namespace SignalR.Transports
 
         public event Action<Exception> Error;
 
-        public Func<Task> ProcessRequest(IConnection connection)
+        public Func<Task> ProcessRequest(IReceivingConnection connection)
         {
             if (IsSendRequest)
             {
