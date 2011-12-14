@@ -90,7 +90,7 @@ namespace SignalR.Transports
 
                 _running = true;
 
-                Parallel.ForEach(_connections.GetSnapshot(), (connection) =>
+                foreach (var connection in _connections.GetSnapshot())
                 {
                     if (!connection.IsAlive)
                     {
@@ -111,7 +111,7 @@ namespace SignalR.Transports
 
                             if (elapsed < threshold)
                             {
-                                return;
+                                continue;
                             }
                         }
 
@@ -125,7 +125,7 @@ namespace SignalR.Transports
                             RemoveConnection(connection);
                         }
                     }
-                });
+                }
             }
             catch (Exception ex)
             {
