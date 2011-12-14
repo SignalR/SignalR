@@ -279,7 +279,10 @@ namespace SignalR
         private void PopulateResponseState(PersistentResponse response)
         {
             // Set the groups on the outgoing transport data
-            response.TransportData["Groups"] = _groups;
+            if (_groups.Any())
+            {
+                response.TransportData["Groups"] = _groups;
+            }
         }
     }
 }
