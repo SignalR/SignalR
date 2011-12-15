@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using SignalR.Infrastructure;
@@ -43,6 +45,21 @@ namespace SignalR.Transports
         public TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromMilliseconds(LongPollDelay); }
+        }
+
+        public IEnumerable<string> Groups
+        {
+            get
+            {
+                string groupValue = _context.Request.QueryStringOrForm("groups");
+
+                if (String.IsNullOrEmpty(groupValue))
+                {
+                    return Enumerable.Empty<string>();
+                }
+
+                return groupValue.Split(',');
+            }
         }
 
         private bool IsConnectRequest

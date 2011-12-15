@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalR.Transports
@@ -10,6 +11,7 @@ namespace SignalR.Transports
         event Action Disconnected;
         event Action<Exception> Error;
         Func<Task> ProcessRequest(IReceivingConnection connection);
+        IEnumerable<string> Groups { get; }
         Task Send(object value);
         string ConnectionId { get; }
     }
