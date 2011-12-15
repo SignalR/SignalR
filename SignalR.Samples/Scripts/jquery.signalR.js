@@ -255,6 +255,7 @@
                     // Disconnected by the server, need to reconnect
                     connection.stop()
                         .start();
+                    return;
                 }
 
                 if (data.Messages) {
