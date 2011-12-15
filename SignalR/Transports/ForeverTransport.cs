@@ -11,7 +11,7 @@ namespace SignalR.Transports
         private readonly HttpContextBase _context;
         private readonly ITransportHeartBeat _heartBeat;
         private IReceivingConnection _connection;
-        private bool _disconnected = false;
+        private bool _disconnected;
 
         public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
             : this(context, jsonSerializer, TransportHeartBeat.Instance)
@@ -132,26 +132,6 @@ namespace SignalR.Transports
                 });
         }
 
-        private void ProcessSendRequest()
-        {
-            string data = _context.Request.Form["data"];
-            if (Receiving != null)
-            {
-                Receiving(data);
-            }
-            if (Received != null)
-            {
-                Received(data);
-            }
-        }
-
-        private Func<Task> ProcessReceiveRequest(IReceivingConnection connection)
-        {
-            return () => InitializeResponse(connection)
-                    .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
-                    .FastUnwrap();
-        }
-
         protected virtual bool IsConnectRequest
         {
             get { return true; }
@@ -175,6 +155,26 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
+        private void ProcessSendRequest()
+        {
+            string data = _context.Request.Form["data"];
+            if (Receiving != null)
+            {
+                Receiving(data);
+            }
+            if (Received != null)
+            {
+                Received(data);
+            }
+        }
+
+        private Func<Task> ProcessReceiveRequest(IReceivingConnection connection)
+        {
+            return () => InitializeResponse(connection)
+                    .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
+                    .FastUnwrap();
+        }
+
         private Task ProcessMessages(IReceivingConnection connection, long? lastMessageId)
         {
             if (!_disconnected && Context.Response.IsClientConnected)
@@ -188,6 +188,8 @@ namespace SignalR.Transports
                 return receiveAsyncTask.Then(response =>
                 {
                     LastMessageId = response.MessageId;
+                    // If the response has the Disconnect flag, just send the response and exit the loop,
+                    // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
                     return response.Disconnect
                         ? Send(response)
                         : Send(response)
