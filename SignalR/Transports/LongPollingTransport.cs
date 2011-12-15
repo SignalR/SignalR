@@ -10,6 +10,8 @@ namespace SignalR.Transports
         private readonly IJsonSerializer _jsonSerializer;
         private readonly HttpContextBase _context;
         private readonly ITransportHeartBeat _heartBeat;
+        private IReceivingConnection _connection;
+        private bool _disconnected;
 
         public LongPollingTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
             : this(context, jsonSerializer, TransportHeartBeat.Instance)
@@ -98,46 +100,21 @@ namespace SignalR.Transports
 
         public Func<Task> ProcessRequest(IReceivingConnection connection)
         {
+            _connection = connection;
+
             if (IsSendRequest)
             {
-                if (Received != null || Receiving != null)
-                {
-                    string data = _context.Request.Form["data"];
-                    if (Receiving != null)
-                    {
-                        Receiving(data);
-                    }
-                    if (Received != null)
-                    {
-                        Received(data);
-                    }
-                }
+                ProcessSendRequest();
             }
             else
             {
                 if (IsConnectRequest)
                 {
-                    // Since this is the first request, there's no data we need to retrieve so just wait
-                    // on a message to come through
-                    _heartBeat.AddConnection(this);
-                    if (Connected != null)
-                    {
-                        Connected();
-                    }
-
-                    return () => connection.ReceiveAsync()
-                        .Then(new Func<PersistentResponse, Task>(response => Send(response)))
-                        .FastUnwrap();
+                    return ProcessConnectRequest(connection);
                 }
                 else if (MessageId != null)
                 {
-                    _heartBeat.AddConnection(this);
-                    // If there is a message id then we receive with that id, which will either return
-                    // immediately if there are already messages since that id, or wait until new
-                    // messages come in and then return
-                    return () => connection.ReceiveAsync(MessageId.Value)
-                        .Then(new Func<PersistentResponse, Task>(response => Send(response)))
-                        .FastUnwrap();
+                    return ProcessReceiveRequest(connection);
                 }
             }
 
@@ -165,11 +142,64 @@ namespace SignalR.Transports
 
         public virtual void Disconnect()
         {
-            // TODO: Force connection to close by sending a command signal
-            if (Disconnected != null)
+            if (!_disconnected && Disconnected != null)
             {
                 Disconnected();
             }
+
+            _disconnected = true;
+            
+            // Force connection to close by sending a command signal
+            _connection.SendCommand(
+                new SignalCommand
+                {
+                    Type = CommandType.Disconnect,
+                    ExpiresAfter = TimeSpan.FromMinutes(30)
+                });
+        }
+
+
+        private void ProcessSendRequest()
+        {
+            if (Received != null || Receiving != null)
+            {
+                string data = _context.Request.Form["data"];
+                if (Receiving != null)
+                {
+                    Receiving(data);
+                }
+                if (Received != null)
+                {
+                    Received(data);
+                }
+            }
+        }
+
+        private Func<Task> ProcessConnectRequest(IReceivingConnection connection)
+        {
+            // Since this is the first request, there's no data we need to retrieve so just wait
+            // on a message to come through
+            _heartBeat.AddConnection(this);
+            if (Connected != null)
+            {
+                Connected();
+            }
+
+            // ReceiveAsync() will async wait until a message arrives then return
+            return () => connection.ReceiveAsync()
+                .Then(new Func<PersistentResponse, Task>(response => Send(response)))
+                .FastUnwrap();
+        }
+
+        private Func<Task> ProcessReceiveRequest(IReceivingConnection connection)
+        {
+            _heartBeat.AddConnection(this);
+            // If there is a message id then we receive with that id, which will either return
+            // immediately if there are already messages since that id, or wait until new
+            // messages come in and then return
+            return () => connection.ReceiveAsync(MessageId.Value)
+                .Then(new Func<PersistentResponse, Task>(response => Send(response)))
+                .FastUnwrap();
         }
 
         private PersistentResponse AddTransportData(PersistentResponse response)
