@@ -55,6 +55,11 @@ namespace SignalR.Transports
             get { return Context.Response.IsClientConnected; }
         }
 
+        public virtual TimeSpan DisconnectThreshold
+        {
+            get { return TimeSpan.FromSeconds(5); }
+        }
+
         protected virtual void OnSending(string payload)
         {
             _heartBeat.MarkConnection(this);

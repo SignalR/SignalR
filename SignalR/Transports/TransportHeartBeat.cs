@@ -103,11 +103,8 @@ namespace SignalR.Transports
                             // Calculate how long this connection has been inactive
                             var elapsed = DateTime.UtcNow - lastUsed;
 
-                            // The threshold for disconnect is the long poll delay + (potential network issues)
-                            // TODO: Refactor to not take a dependency on LongPollingTransport here, might want to
-                            //       re-use this for other transports, e.g. ForeverTransport
-                            var threshold = TimeSpan.FromMilliseconds(LongPollingTransport.LongPollDelay) +
-                                            DisconnectTimeout;
+                            // The threshold for disconnect is the transport threshold + (potential network issues)
+                            var threshold = connection.DisconnectThreshold + DisconnectTimeout;
 
                             if (elapsed < threshold)
                             {

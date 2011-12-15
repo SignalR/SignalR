@@ -38,6 +38,11 @@ namespace SignalR.Transports
             set;
         }
 
+        public TimeSpan DisconnectThreshold
+        {
+            get { return TimeSpan.FromMilliseconds(LongPollDelay); }
+        }
+
         private bool IsConnectRequest
         {
             get
