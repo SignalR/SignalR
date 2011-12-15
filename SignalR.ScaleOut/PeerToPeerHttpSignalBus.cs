@@ -55,13 +55,17 @@ namespace SignalR.ScaleOut
             });
         }
 
-        public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
             SafeSet<EventHandler<SignaledEventArgs>> handlers;
-            if (_handlers.TryGetValue(eventKey, out handlers))
+            foreach (var eventKey in eventKeys)
             {
-                handlers.Remove(handler);
+                if (_handlers.TryGetValue(eventKey, out handlers))
+                {
+                    handlers.Remove(handler);
+                }
             }
+            handlers = null;
         }
 
         protected internal virtual void SignalReceived(string eventKey)

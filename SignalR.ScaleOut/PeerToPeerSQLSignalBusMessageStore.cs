@@ -98,9 +98,9 @@ namespace SignalR.ScaleOut
             _signalBus.AddHandler(eventKey, handler);
         }
 
-        public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
-            _signalBus.RemoveHandler(eventKey, handler);
+            _signalBus.RemoveHandler(eventKeys, handler);
         }
 
         public Task Signal(string eventKey)

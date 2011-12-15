@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using System.Collections.Generic;
 
 namespace SignalR
 {
@@ -43,11 +44,11 @@ namespace SignalR
             {
                 throw new ArgumentNullException("handler");
             }
-            var delegates = _handlers.GetOrAdd(eventKey, _ => new CustomStack<EventHandler<SignaledEventArgs>>());
-            delegates.Add(handler);
+            var handlers = _handlers.GetOrAdd(eventKey, _ => new CustomStack<EventHandler<SignaledEventArgs>>());
+            handlers.Add(handler);
         }
 
-        public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
             // Don't need to do anything as our handlers are cleared automatically by CustomStack
         }

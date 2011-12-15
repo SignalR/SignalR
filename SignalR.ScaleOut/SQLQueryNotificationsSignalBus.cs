@@ -173,7 +173,7 @@ namespace SignalR.ScaleOut
             Signaled += handler;
         }
 
-        public void RemoveHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
             Signaled -= handler;
         }
