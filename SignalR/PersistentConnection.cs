@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using SignalR.Infrastructure;
@@ -78,7 +77,7 @@ namespace SignalR
 
         public override Task ProcessRequestAsync(HttpContextBase context)
         {
-            Task task = null;
+            Task transportEventTask = null;
             
             if (IsNegotiationRequest(context.Request))
             {
@@ -102,37 +101,36 @@ namespace SignalR
             // Wire up the events we need
             _transport.Connected += () =>
             {
-                task = OnConnectedAsync(context, connectionId);
+                transportEventTask = OnConnectedAsync(context, connectionId);
             };
 
             _transport.Received += (data) =>
             {
-                task = OnReceivedAsync(connectionId, data);
+                transportEventTask = OnReceivedAsync(connectionId, data);
             };
 
             _transport.Error += (e) =>
             {
-                task = OnErrorAsync(e);
+                transportEventTask = OnErrorAsync(e);
             };
 
             _transport.Disconnected += () =>
             {
-                task = OnDisconnectAsync(connectionId);
+                transportEventTask = OnDisconnectAsync(connectionId);
             };
 
-            Func<Task> processRequestTask = _transport.ProcessRequest(Connection);
+            Func<Task> transportProcessRequest = _transport.ProcessRequest(Connection);
 
-            if (processRequestTask != null)
+            if (transportProcessRequest != null)
             {
-                if (task != null)
+                if (transportEventTask != null)
                 {
-                    return task.Then(processRequestTask).FastUnwrap();
+                    return transportEventTask.Then(transportProcessRequest).FastUnwrap();
                 }
-                return processRequestTask();
+                return transportProcessRequest();
             }
             
-
-            return task ?? TaskAsyncHelper.Empty;
+            return transportEventTask ?? TaskAsyncHelper.Empty;
         }
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
@@ -247,7 +245,7 @@ namespace SignalR
         private ITransport GetTransport(HttpContextBase context)
         {
             return TransportManager.GetTransport(context) ??
-                   new LongPollingTransport(context, _jsonSerializer);
+                new LongPollingTransport(context, _jsonSerializer);
         }
 
         private static void OnSending()
