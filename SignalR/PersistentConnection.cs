@@ -137,8 +137,6 @@ namespace SignalR
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
         {
-            string groupValue = context.Request.QueryStringOrForm("groups") ?? String.Empty;
-
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
