@@ -18,3 +18,4 @@ Kudu.Services.Web/App_Data/*
 artifacts/*
 msbuild.log
 PublishProfiles/
+*.psess
