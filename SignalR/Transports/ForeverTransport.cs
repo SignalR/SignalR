@@ -194,6 +194,13 @@ namespace SignalR.Transports
 
         private Task ProcessMessages(IReceivingConnection connection, long? lastMessageId)
         {
+            var tcs = new TaskCompletionSource<object>();
+            ProcessMessagesImpl(tcs, connection, lastMessageId);
+            return tcs.Task;
+        }
+
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, long? lastMessageId)
+        {
             if (!_disconnected && Context.Response.IsClientConnected)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
@@ -202,24 +209,44 @@ namespace SignalR.Transports
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
 
-                return receiveAsyncTask.Then(response =>
+                receiveAsyncTask.Then(response =>
                 {
                     LastMessageId = response.MessageId;
                     // If the response has the Disconnect flag, just send the response and exit the loop,
                     // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
-                    return response.Disconnect
-                        ? Send(response)
-                        : Send(response)
-                            .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
-                            .FastUnwrap();
-                }).FastUnwrap();
+                    Task sendTask = Send(response);
+                    if (response.Disconnect)
+                    {
+                        // Signal the tcs when the task is done
+                        return sendTask.Then(tcs => tcs.SetResult(null), taskCompletetionSource);
+                    }
+
+                    // Continue the receive loop
+                    return sendTask.Then((conn, id) => ProcessMessagesImpl(taskCompletetionSource, conn, id), connection, LastMessageId);
+                })
+                .FastUnwrap().ContinueWith(t =>
+                {
+                    if (t.IsCanceled)
+                    {
+                        taskCompletetionSource.SetCanceled();
+                    }
+                    else if (t.IsFaulted)
+                    {
+                        taskCompletetionSource.SetException(t.Exception);
+                    }
+                },
+                TaskContinuationOptions.ExecuteSynchronously & TaskContinuationOptions.NotOnRanToCompletion);
+
+                // Stop execution here
+                return;
             }
 
             // Client is no longer connected
             Disconnect();
 
-            // Nothing to do, return empty task to force the request to end
-            return TaskAsyncHelper.Empty;
+            // We're done
+            taskCompletetionSource.SetResult(null);
+            return;
         }
     }
 }
