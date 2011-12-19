@@ -54,7 +54,7 @@ namespace SignalR
 
             _command = new Lazy<SignalCommand>(() =>
             {
-                if (!signalKey.EndsWith(SignalCommand.SignalrCommand))
+                if (!SignalCommand.IsCommand(this))
                 {
                     return null;
                 }

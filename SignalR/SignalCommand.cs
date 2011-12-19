@@ -4,7 +4,17 @@ namespace SignalR
 {
     public class SignalCommand
     {
-        internal const string SignalrCommand = "__SIGNALRCOMMAND__";
+        private const string SignalrCommand = "__SIGNALRCOMMAND__";
+
+        internal static string AddCommandSuffix(string eventKey)
+        {
+            return eventKey + "." + SignalrCommand;
+        }
+
+        internal static bool IsCommand(Message message)
+        {
+            return message.SignalKey.EndsWith(SignalrCommand, StringComparison.OrdinalIgnoreCase);
+        }
 
         public CommandType Type { get; set; }
         public object Value { get; set; }

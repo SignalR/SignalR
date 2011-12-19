@@ -108,7 +108,7 @@ namespace SignalR
 
         public Task SendCommand(SignalCommand command)
         {
-            return SendMessage(_connectionId + "." + SignalCommand.SignalrCommand, command);
+            return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
         }
 
         public static IConnection GetConnection<T>() where T : PersistentConnection
@@ -219,7 +219,7 @@ namespace SignalR
             var messageValues = new List<object>();
             foreach (var message in source)
             {
-                if (message.SignalKey.EndsWith(SignalCommand.SignalrCommand))
+                if (SignalCommand.IsCommand(message))
                 {
                     ProcessCommand(message);
                 }

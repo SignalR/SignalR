@@ -142,7 +142,7 @@ namespace SignalR
             var signals = new string[] {
                 DefaultSignal,
                 connectionId,
-                connectionId + "." + SignalCommand.SignalrCommand
+                SignalCommand.AddCommandSuffix(connectionId)
             };
 
             return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
