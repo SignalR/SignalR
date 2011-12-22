@@ -26,4 +26,4 @@ If the SignalR.Samples csproj won't load when opening the solution in Visual Stu
 download [Web Platform Installer](http://www.microsoft.com/web/downloads/platform.aspx) and install IIS Express.
 
 ## Questions?
-The SignalR team hangs out in the **signalr** room at http://chatapp.apphb.com.
+The SignalR team hangs out in the [signalr](http://jabbr.net/#/rooms/signalr) room at on [JabbR](http://jabbr.net/).
