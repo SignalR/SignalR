@@ -97,6 +97,7 @@
     <Compile Include="ISignalBus.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
+    <Compile Include="AspNet\PersistentConnectionHandler.cs" />
     <Compile Include="Routing\IncomingOnlyRouteConstraint.cs" />
     <Compile Include="Routing\PersistentRouteHandler.cs" />
     <Compile Include="Routing\RouteExtensions.cs" />

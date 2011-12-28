@@ -7,7 +7,7 @@
     <script src="../Scripts/jquery.signalR.js" type="text/javascript"></script>
     <script type="text/javascript">
         $(function () {
-            var connection = $.connection('Streaming.ashx');
+            var connection = $.connection('streaming');
 
             connection.received(function (data) {
                 $('#messages').append('<li>' + data + '</li>');

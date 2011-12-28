@@ -37,5 +37,13 @@ namespace SignalR.Transports
 
             return null;
         }
+
+        public static void InitializeDefaultTransports()
+        {
+            Register("foreverFrame", context => new ForeverFrameTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            Register("serverSentEvents", context => new ServerSentEventsTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            Register("forever", context => new ForeverTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+        }
     }
 }

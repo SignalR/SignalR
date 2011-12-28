@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Web;
+using SignalR.Aspet;
 
 namespace SignalR.Hubs
 {
@@ -15,7 +16,8 @@ namespace SignalR.Hubs
                 if (app.Request.AppRelativeCurrentExecutionFilePath.StartsWith(Url, StringComparison.OrdinalIgnoreCase) &&
                     !Path.GetExtension(app.Request.AppRelativeCurrentExecutionFilePath).Equals(".js", StringComparison.OrdinalIgnoreCase))
                 {
-                    var handler = new HubDispatcher(Url);
+                    var dispatcher = new HubDispatcher(Url);
+                    var handler = new PersistentConnectionHandler(dispatcher);
 
                     app.Context.RemapHandler(handler);
                 }

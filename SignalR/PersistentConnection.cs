@@ -4,11 +4,10 @@ using System.Threading.Tasks;
 using System.Web;
 using SignalR.Infrastructure;
 using SignalR.Transports;
-using SignalR.Web;
 
 namespace SignalR
 {
-    public abstract class PersistentConnection : HttpTaskAsyncHandler, IGroupManager
+    public abstract class PersistentConnection : IGroupManager
     {
         private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
             new Lazy<bool>(() => typeof(HttpContextBase).GetMethod("AcceptWebSocketRequest") != null);
@@ -45,14 +44,6 @@ namespace SignalR
         public static event Action<string> ClientConnected;
         public static event Action<string> ClientDisconnected;
 
-        public override bool IsReusable
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public IConnection Connection
         {
             get;
@@ -75,15 +66,15 @@ namespace SignalR
             }
         }
 
-        public override Task ProcessRequestAsync(HttpContextBase context)
+        public virtual Task ProcessRequestAsync(HttpContextBase context)
         {
             Task transportEventTask = null;
-            
+
             if (IsNegotiationRequest(context.Request))
             {
                 return ProcessNegotiationRequest(context);
             }
-            
+
             _transport = GetTransport(context);
 
             string connectionId = _transport.ConnectionId;
@@ -129,7 +120,7 @@ namespace SignalR
                 }
                 return transportProcessRequest();
             }
-            
+
             return transportEventTask ?? TaskAsyncHelper.Empty;
         }
 

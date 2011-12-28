@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Web.Routing;
 using SignalR.Hubs;
+using SignalR.Routing;
 using SignalR.Samples.App_Start;
 using SignalR.Samples.Hubs.DemoHub;
 
@@ -38,6 +40,9 @@ namespace SignalR.Samples.App_Start
                     Thread.Sleep(2000);
                 }
             });
+
+            RouteTable.Routes.MapConnection<Raw.Raw>("raw", "raw/{*operation}");
+            RouteTable.Routes.MapConnection<Streaming.Streaming>("streaming", "streaming/{*operation}");
         }
     }
 }
