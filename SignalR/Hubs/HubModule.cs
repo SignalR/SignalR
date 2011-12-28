@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Web;
-using SignalR.Aspet;
+using SignalR.Aspnet;
 
 namespace SignalR.Hubs
 {

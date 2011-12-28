@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Web;
 using SignalR.Web;
 
-namespace SignalR.Aspet
+namespace SignalR.Aspnet
 {
     internal class PersistentConnectionHandler : HttpTaskAsyncHandler
     {
