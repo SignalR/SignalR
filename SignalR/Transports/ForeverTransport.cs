@@ -101,7 +101,7 @@ namespace SignalR.Transports
         {
             _connection = connection;
 
-            if (_context.Request.Path.EndsWith("/send"))
+            if (_context.Request.Url.LocalPath.EndsWith("/send"))
             {
                 ProcessSendRequest();
             }

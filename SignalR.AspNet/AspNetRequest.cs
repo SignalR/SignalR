@@ -19,11 +19,11 @@ namespace SignalR.AspNet
             }
         }
 
-        public string Path
+        public Uri Url
         {
             get
             {
-                return _request.Path;
+                return _request.Url;
             }
         }
 

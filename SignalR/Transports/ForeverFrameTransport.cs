@@ -34,7 +34,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return Context.Request.Path.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 

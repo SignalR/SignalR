@@ -194,7 +194,7 @@ namespace SignalR
             context.Response.ContentType = Json.MimeType;
             return context.Response.WriteAsync(_jsonSerializer.Stringify(new
             {
-                Url = context.Request.Path.Replace("/negotiate", ""),
+                Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request),
                 TryWebSockets = context.SupportsWebSockets()
             }));
@@ -207,7 +207,7 @@ namespace SignalR
 
         private bool IsNegotiationRequest(IRequest request)
         {
-            return request.Path.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
+            return request.Url.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
         }
 
         private ITransport GetTransport(HostContext context)

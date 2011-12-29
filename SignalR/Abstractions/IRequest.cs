@@ -1,10 +1,11 @@
 ﻿using System.Collections.Specialized;
+using System;
 
 namespace SignalR.Abstractions
 {
     public interface IRequest
     {
-        string Path { get; }
+        Uri Url { get; }
         NameValueCollection QueryString { get; }
         NameValueCollection Headers { get; }
         NameValueCollection Form { get; }

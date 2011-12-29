@@ -159,7 +159,7 @@ namespace SignalR.Hubs
         public override Task ProcessRequestAsync(HostContext context)
         {
             // Generate the proxy
-            if (context.Request.Path.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
+            if (context.Request.Url.LocalPath.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "application/x-javascript";
                 return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(_url));

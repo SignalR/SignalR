@@ -65,7 +65,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _context.Request.Path.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+                return _context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -73,7 +73,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _context.Request.Path.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
+                return _context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
             }
         }
 
