@@ -19,7 +19,14 @@ namespace SignalR.AspNet
             var request = new AspNetRequest(context.Request);
             var response = new AspNetResponse(context.Request, context.Response);
             var hostContext = new HostContext(request, response, context.User);
-            hostContext.Items["IsDebuggingEnabled"] = context.IsDebuggingEnabled;
+
+            // Set the debugging flag
+            hostContext.Items["debugMode"] = context.IsDebuggingEnabled;
+
+            // Stick the context in here so transports or other asp.net specific logic can
+            // grab at it.
+            hostContext.Items["aspnet.context"] = context;
+
             return _connection.ProcessRequestAsync(hostContext);
         }
     }

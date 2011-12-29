@@ -14,7 +14,7 @@
 
         public static bool IsDebuggingEnabled(this HostContext context)
         {
-            return context.GetValue<bool>("IsDebuggingEnabled");
+            return context.GetValue<bool>("debugMode");
         }
     }
 }
