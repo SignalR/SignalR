@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Web.Routing;
 
-namespace SignalR.Routing
+namespace SignalR.AspNet.Routing
 {
     public class IncomingOnlyRouteConstraint : IRouteConstraint
     {

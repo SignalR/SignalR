@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Web;
 using System.Web.Routing;
-using SignalR.AspNet;
 using SignalR.Infrastructure;
 
-namespace SignalR.Routing
+namespace SignalR.AspNet.Routing
 {
     public class PersistentRouteHandler : IRouteHandler
     {
@@ -20,8 +19,8 @@ namespace SignalR.Routing
         public IHttpHandler GetHttpHandler(RequestContext requestContext)
         {
             var factory = (IPersistentConnectionFactory)_resolver.GetService(typeof(IPersistentConnectionFactory));
-            PersistentConnection connection = factory.CreateInstance(requestContext, _handlerType);
-            return new PersistentConnectionHandler(connection);
+            PersistentConnection connection = factory.CreateInstance(_handlerType);
+            return new AspNetHost(connection);
         }
     }
 }

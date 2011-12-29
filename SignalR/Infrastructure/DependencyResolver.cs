@@ -11,7 +11,7 @@ namespace SignalR.Infrastructure
         private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
         private static IDependencyResolver _resolver;
 
-        internal static IDependencyResolver Current
+        public static IDependencyResolver Current
         {
             get { return _resolver ?? _defaultResolver; }
         }

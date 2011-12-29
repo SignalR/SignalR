@@ -66,7 +66,7 @@ namespace SignalR.Hubs
             }
         }
 
-        public Type ResolveType(string hubName)
+        public virtual Type ResolveType(string hubName)
         {
             Type type;
             if (_hubCache.TryGetValue(hubName, out type))
@@ -75,7 +75,7 @@ namespace SignalR.Hubs
             }
 
             // Fallback to the build manager
-            return BuildManager.GetType(hubName, throwOnError: true);
+            return null;
         }
     }
 }

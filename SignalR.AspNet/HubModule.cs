@@ -16,10 +16,10 @@ namespace SignalR.AspNet
                 if (app.Request.AppRelativeCurrentExecutionFilePath.StartsWith(Url, StringComparison.OrdinalIgnoreCase) &&
                     !Path.GetExtension(app.Request.AppRelativeCurrentExecutionFilePath).Equals(".js", StringComparison.OrdinalIgnoreCase))
                 {
-                    var dispatcher = new HubDispatcher(VirtualPathUtility.ToAbsolute(Url));
-                    var handler = new PersistentConnectionHandler(dispatcher);
+                    var connection = new HubDispatcher(VirtualPathUtility.ToAbsolute(Url));
+                    var host = new AspNetHost(connection);
 
-                    app.Context.RemapHandler(handler);
+                    app.Context.RemapHandler(host);
                 }
             };
         }

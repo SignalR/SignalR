@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Compilation;
+using SignalR.Hubs;
 
-namespace SignalR.Hubs
+namespace SignalR.AspNet
 {
-    public class DefaultHubLocator : IHubLocator
+    public class BuildManagerTypeLocator : IHubLocator
     {
         private readonly Lazy<IEnumerable<Type>> _hubs = new Lazy<IEnumerable<Type>>(GetAllHubs);
 
@@ -17,8 +18,7 @@ namespace SignalR.Hubs
 
         public static IEnumerable<Type> GetAllHubs()
         {
-            // This only happens once and is cached for the lifetime of the appdomain
-            return (from Assembly a in AppDomain.CurrentDomain.GetAssemblies()
+            return (from Assembly a in BuildManager.GetReferencedAssemblies()
                     where !a.GlobalAssemblyCache && !a.IsDynamic
                     from type in GetTypesSafe(a)
                     where typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract

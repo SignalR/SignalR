@@ -5,11 +5,11 @@ using SignalR.Web;
 
 namespace SignalR.AspNet
 {
-    public class PersistentConnectionHandler : HttpTaskAsyncHandler
+    public class AspNetHost : HttpTaskAsyncHandler
     {
         private readonly PersistentConnection _connection;
 
-        public PersistentConnectionHandler(PersistentConnection connection)
+        public AspNetHost(PersistentConnection connection)
         {
             _connection = connection;
         }

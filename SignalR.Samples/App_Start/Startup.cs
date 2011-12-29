@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
+using SignalR.AspNet.Routing;
 using SignalR.Hubs;
-using SignalR.Routing;
 using SignalR.Samples.App_Start;
 using SignalR.Samples.Hubs.DemoHub;
 
@@ -15,7 +15,6 @@ namespace SignalR.Samples.App_Start
     {
         public static void Start()
         {
-
             // Uncomment this for web farm support
             //var cs = ConfigurationManager.ConnectionStrings["SignalR"].ConnectionString;
             //var store = new PeerToPeerSQLSignalBusMessageStore(cs);

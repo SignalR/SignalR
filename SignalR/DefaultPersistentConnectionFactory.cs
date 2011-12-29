@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Web.Routing;
 using SignalR.Infrastructure;
 
 namespace SignalR
 {
     public class DefaultPersistentConnectionFactory : IPersistentConnectionFactory
     {
-        public PersistentConnection CreateInstance(RequestContext requestContext, Type connectionType)
+        public PersistentConnection CreateInstance(Type connectionType)
         {
             if (connectionType == null)
             {

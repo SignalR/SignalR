@@ -74,6 +74,6 @@ namespace SignalR.AspNet
         {
             get;
             private set;
-        }        
+        }
     }
 }
