@@ -16,5 +16,10 @@
         {
             return context.GetValue<bool>("debugMode");
         }
+
+        public static bool SupportsWebSockets(this HostContext context)
+        {
+            return context.GetValue<bool>("supportsWebSockets");
+        }
     }
 }

@@ -7,9 +7,6 @@ namespace SignalR.AspNet
 {
     public class AspNetRequest : IRequest
     {
-        private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
-            new Lazy<bool>(() => typeof(HttpContextBase).GetMethod("AcceptWebSocketRequest") != null);
-
         private readonly HttpRequestBase _request;
 
         public AspNetRequest(HttpRequestBase request)
@@ -27,22 +24,6 @@ namespace SignalR.AspNet
             get
             {
                 return _request.Path;
-            }
-        }
-
-        public string LocalPath
-        {
-            get
-            {
-                return _request.AppRelativeCurrentExecutionFilePath;
-            }
-        }
-
-        public bool SupportsWebSockets
-        {
-            get
-            {
-                return _hasAcceptWebSocketRequest.Value;
             }
         }
 

@@ -206,9 +206,9 @@ namespace SignalR
             context.Response.ContentType = Json.MimeType;
             return context.Response.WriteAsync(_jsonSerializer.Stringify(new
             {
-                Url = context.Request.LocalPath.Replace("/negotiate", ""),
+                Url = context.Request.Path.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request),
-                TryWebSockets = context.Request.SupportsWebSockets
+                TryWebSockets = context.SupportsWebSockets()
             }));
         }
 
