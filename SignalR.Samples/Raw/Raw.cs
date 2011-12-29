@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
+using SignalR.Abstractions;
 
 namespace SignalR.Samples.Raw
 {
@@ -11,13 +12,13 @@ namespace SignalR.Samples.Raw
         private static readonly Dictionary<string, string> _users = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _clients = new Dictionary<string, string>();
 
-        protected override Task OnConnectedAsync(HttpContextBase context, string connectionId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            var cookie = context.Request.Cookies["user"];
-            if (cookie != null)
+            var userName = request.Cookies["user"];
+            if (!String.IsNullOrEmpty(userName))
             {
-                _clients[connectionId] = cookie.Value;
-                _users[cookie.Value] = connectionId;
+                _clients[connectionId] = userName;
+                _users[userName] = connectionId;
             }
 
             string user = GetUser(connectionId);

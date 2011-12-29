@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Web;
+using SignalR.Abstractions;
 
 namespace SignalR
 {
     public class GuidConnectionIdFactory : IConnectionIdFactory
     {
-        public string CreateConnectionId(HttpContextBase context)
+        public string CreateConnectionId(IRequest request)
         {
             return Guid.NewGuid().ToString("d");
         }

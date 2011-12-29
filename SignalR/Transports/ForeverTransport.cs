@@ -1,27 +1,26 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.Web;
-using SignalR.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using SignalR.Abstractions;
 
 namespace SignalR.Transports
 {
     public class ForeverTransport : ITransport, ITrackingDisconnect
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly HttpContextBase _context;
+        private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
         private IReceivingConnection _connection;
         private bool _disconnected;
 
-        public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+        public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer)
             : this(context, jsonSerializer, TransportHeartBeat.Instance)
         {
 
         }
 
-        public ForeverTransport(HttpContextBase context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
+        public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;
@@ -33,7 +32,7 @@ namespace SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        protected HttpContextBase Context
+        protected HostContext Context
         {
             get { return _context; }
         }
@@ -54,7 +53,7 @@ namespace SignalR.Transports
 
         public bool IsAlive
         {
-            get { return Context.Response.IsClientConnected; }
+            get { return _context.Response.IsClientConnected; }
         }
 
         public virtual TimeSpan DisconnectThreshold
@@ -102,7 +101,7 @@ namespace SignalR.Transports
         {
             _connection = connection;
 
-            if (Context.Request.Path.EndsWith("/send"))
+            if (_context.Request.Path.EndsWith("/send"))
             {
                 ProcessSendRequest();
             }
@@ -131,7 +130,7 @@ namespace SignalR.Transports
         {
             var data = JsonSerializer.Stringify(value);
             OnSending(data);
-            return Context.Response.WriteAsync(data);
+            return _context.Response.WriteAsync(data);
         }
 
         public void Disconnect()
@@ -159,15 +158,7 @@ namespace SignalR.Transports
             // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
 
-            // This forces the IIS compression module to leave this response alone.
-            // If we don't do this, it will buffer the response to suit its own compression
-            // logic, resulting in partial messages being sent to the client.
-            Context.Request.Headers.Remove("Accept-Encoding");
-
-            Context.Response.Buffer = false;
-            Context.Response.BufferOutput = false;
-            Context.Response.CacheControl = "no-cache";
-            Context.Response.AddHeader("Connection", "keep-alive");
+            _context.Response.Buffer = false;
 
             return TaskAsyncHelper.Empty;
         }
@@ -179,6 +170,7 @@ namespace SignalR.Transports
             {
                 Receiving(data);
             }
+
             if (Received != null)
             {
                 Received(data);
@@ -201,7 +193,7 @@ namespace SignalR.Transports
 
         private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, long? lastMessageId)
         {
-            if (!_disconnected && Context.Response.IsClientConnected)
+            if (!_disconnected && _context.Response.IsClientConnected)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending

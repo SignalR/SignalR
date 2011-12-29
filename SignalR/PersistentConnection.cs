@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web;
+using SignalR.Abstractions;
 using SignalR.Infrastructure;
 using SignalR.Transports;
 
@@ -9,9 +9,6 @@ namespace SignalR
 {
     public abstract class PersistentConnection : IGroupManager
     {
-        private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
-            new Lazy<bool>(() => typeof(HttpContextBase).GetMethod("AcceptWebSocketRequest") != null);
-
         private readonly Signaler _signaler;
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
@@ -58,15 +55,7 @@ namespace SignalR
             }
         }
 
-        private bool ClientShouldTryWebSockets
-        {
-            get
-            {
-                return _hasAcceptWebSocketRequest.Value;
-            }
-        }
-
-        public virtual Task ProcessRequestAsync(HttpContextBase context)
+        public virtual Task ProcessRequestAsync(HostContext context)
         {
             Task transportEventTask = null;
 
@@ -87,12 +76,12 @@ namespace SignalR
 
             IEnumerable<string> groups = _transport.Groups;
 
-            Connection = CreateConnection(connectionId, groups, context);
+            Connection = CreateConnection(connectionId, groups, context.Request);
 
             // Wire up the events we need
             _transport.Connected += () =>
             {
-                transportEventTask = OnConnectedAsync(context, connectionId);
+                transportEventTask = OnConnectedAsync(context.Request, connectionId);
             };
 
             _transport.Received += (data) =>
@@ -124,7 +113,7 @@ namespace SignalR
             return transportEventTask ?? TaskAsyncHelper.Empty;
         }
 
-        protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
+        protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
@@ -139,12 +128,12 @@ namespace SignalR
             return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
         }
 
-        protected virtual void OnConnected(HttpContextBase context, string connectionId) { }
+        protected virtual void OnConnected(IRequest request, string connectionId) { }
 
-        protected virtual Task OnConnectedAsync(HttpContextBase context, string connectionId)
+        protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
             OnClientConnected(connectionId);
-            OnConnected(context, connectionId);
+            OnConnected(request, connectionId);
             return TaskAsyncHelper.Empty;
         }
 
@@ -212,14 +201,14 @@ namespace SignalR
             });
         }
 
-        private Task ProcessNegotiationRequest(HttpContextBase context)
+        private Task ProcessNegotiationRequest(HostContext context)
         {
             context.Response.ContentType = Json.MimeType;
             return context.Response.WriteAsync(_jsonSerializer.Stringify(new
             {
-                Url = VirtualPathUtility.ToAbsolute(context.Request.AppRelativeCurrentExecutionFilePath.Replace("/negotiate", "")),
-                ConnectionId = _connectionIdFactory.CreateConnectionId(context),
-                TryWebSockets = ClientShouldTryWebSockets
+                Url = context.Request.LocalPath.Replace("/negotiate", ""),
+                ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request),
+                TryWebSockets = context.Request.SupportsWebSockets
             }));
         }
 
@@ -228,12 +217,12 @@ namespace SignalR
             return DefaultSignal + "." + groupName;
         }
 
-        private bool IsNegotiationRequest(HttpRequestBase httpRequest)
+        private bool IsNegotiationRequest(IRequest request)
         {
-            return httpRequest.Path.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
+            return request.Path.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
         }
 
-        private ITransport GetTransport(HttpContextBase context)
+        private ITransport GetTransport(HostContext context)
         {
             return TransportManager.GetTransport(context) ??
                 new LongPollingTransport(context, _jsonSerializer);

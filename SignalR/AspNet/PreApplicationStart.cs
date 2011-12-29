@@ -1,13 +1,11 @@
 ﻿using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
-using SignalR;
-using SignalR.Hubs;
-using SignalR.Infrastructure;
+using SignalR.AspNet;
 using SignalR.Transports;
 
 [assembly: PreApplicationStartMethod(typeof(PreApplicationStart), "Start")]
 
-namespace SignalR
+namespace SignalR.AspNet
 {
     public static class PreApplicationStart
     {

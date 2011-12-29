@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Web;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
@@ -26,7 +25,9 @@ namespace SignalR.Hubs
             _javascriptMinifier = javascriptMinifier;
         }
 
-        public string GenerateProxy(HttpContextBase context, string serviceUrl)
+        public bool IsDebuggingEnabled { get; set; }
+
+        public string GenerateProxy(string serviceUrl)
         {
             string script;
             if (_scriptCache.TryGetValue(serviceUrl, out script))
@@ -53,7 +54,7 @@ namespace SignalR.Hubs
 
             script = script.Replace("/*hubs*/", hubs.ToString());
 
-            if (!context.IsDebuggingEnabled)
+            if (!IsDebuggingEnabled)
             {
                 script = _javascriptMinifier.Minify(script);
             }

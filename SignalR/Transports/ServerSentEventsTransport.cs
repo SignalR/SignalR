@@ -2,12 +2,13 @@
 using System.Web;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using SignalR.Abstractions;
 
 namespace SignalR.Transports
 {
     public class ServerSentEventsTransport : ForeverTransport
     {
-        public ServerSentEventsTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+        public ServerSentEventsTransport(HostContext context, IJsonSerializer jsonSerializer)
             : base(context, jsonSerializer)
         {
 
@@ -36,7 +37,7 @@ namespace SignalR.Transports
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
             long lastMessageId;
-            if (long.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))
+            if (Int64.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))
             {
                 LastMessageId = lastMessageId;
             }

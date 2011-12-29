@@ -29,13 +29,13 @@ namespace SignalR.Samples.Hubs.Chat
         public bool Join()
         {
             // Check the user id cookie
-            var cookie = Context.Cookies["userid"];
-            if (cookie == null)
+            var userId = Context.Cookies["userid"];
+            if (String.IsNullOrEmpty(userId))
             {
                 return false;
             }
 
-            ChatUser user = _users.Values.FirstOrDefault(u => u.Id == cookie.Value);
+            ChatUser user = _users.Values.FirstOrDefault(u => u.Id == userId);
 
             if (user != null)
             {

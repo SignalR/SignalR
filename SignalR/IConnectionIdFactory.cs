@@ -1,9 +1,9 @@
-﻿using System.Web;
+﻿using SignalR.Abstractions;
 
 namespace SignalR
 {
     public interface IConnectionIdFactory
     {
-        string CreateConnectionId(HttpContextBase context);
+        string CreateConnectionId(IRequest request);
     }
 }

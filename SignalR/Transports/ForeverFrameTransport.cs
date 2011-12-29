@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web;
 using System.Threading.Tasks;
-using SignalR.Infrastructure;
+using SignalR.Abstractions;
 
 namespace SignalR.Transports
 {
@@ -28,10 +24,10 @@ namespace SignalR.Transports
 
         private readonly bool _isDebug;
 
-        public ForeverFrameTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+        public ForeverFrameTransport(HostContext context, IJsonSerializer jsonSerializer)
             : base(context, jsonSerializer)
         {
-            _isDebug = context.IsDebuggingEnabled;
+            _isDebug = context.IsDebuggingEnabled();
         }
 
         protected override bool IsConnectRequest

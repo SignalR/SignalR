@@ -55,6 +55,12 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Abstractions\HostContext.cs" />
+    <Compile Include="Abstractions\HostContextExtensions.cs" />
+    <Compile Include="Abstractions\IRequest.cs" />
+    <Compile Include="Abstractions\IResponse.cs" />
+    <Compile Include="AspNet\AspNetRequest.cs" />
+    <Compile Include="AspNet\AspNetResponse.cs" />
     <Compile Include="CommandType.cs" />
     <Compile Include="DefaultPersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
@@ -70,8 +76,7 @@
     <Compile Include="IJsonSerializer.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
-    <Compile Include="Infrastructure\RequestHelpers.cs" />
-    <Compile Include="Infrastructure\ResponseHelpers.cs" />
+    <Compile Include="Abstractions\RequestExtensions.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
@@ -83,7 +88,7 @@
     <Compile Include="Hubs\ClientAgent.cs" />
     <Compile Include="Hubs\HubContext.cs" />
     <Compile Include="Hubs\HubDispatcher.cs" />
-    <Compile Include="Hubs\HubModule.cs" />
+    <Compile Include="AspNet\HubModule.cs" />
     <Compile Include="Hubs\IClientAgent.cs" />
     <Compile Include="Hubs\IHubFactory.cs" />
     <Compile Include="Hubs\IHubLocator.cs" />
@@ -126,7 +131,7 @@
     <Compile Include="IMessageStore.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="InProcessMessageStore.cs" />
-    <Compile Include="PreApplicationStart.cs" />
+    <Compile Include="AspNet\PreApplicationStart.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\TransportManager.cs" />
     <Compile Include="Web\HttpTaskAsyncHandler.cs" />

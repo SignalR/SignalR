@@ -1,9 +1,10 @@
 ﻿using System.Web;
+using SignalR.Abstractions;
 
 namespace SignalR.Hubs
 {
     public interface IJavaScriptProxyGenerator
     {
-        string GenerateProxy(HttpContextBase context, string serviceUrl);
+        string GenerateProxy(string serviceUrl);
     }
 }

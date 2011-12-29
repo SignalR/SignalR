@@ -1,5 +1,5 @@
-﻿using System.Security.Principal;
-using System.Web;
+﻿using System.Collections.Specialized;
+using System.Security.Principal;
 
 namespace SignalR.Hubs
 {
@@ -13,11 +13,11 @@ namespace SignalR.Hubs
         /// <summary>
         /// Gets the cookies for the request
         /// </summary>
-        public HttpCookieCollection Cookies { get; private set; }
+        public NameValueCollection Cookies { get; private set; }
 
         public IPrincipal User { get; private set; }
 
-        public HubContext(string connectionId, HttpCookieCollection cookies, IPrincipal user)
+        public HubContext(string connectionId, NameValueCollection cookies, IPrincipal user)
         {
             ConnectionId = connectionId;
             Cookies = cookies;

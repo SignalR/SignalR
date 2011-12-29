@@ -2,26 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
-using SignalR.Infrastructure;
+using SignalR.Abstractions;
 
 namespace SignalR.Transports
 {
     public class LongPollingTransport : ITransport, ITrackingDisconnect
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly HttpContextBase _context;
+        private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
         private IReceivingConnection _connection;
         private bool _disconnected;
 
-        public LongPollingTransport(HttpContextBase context, IJsonSerializer jsonSerializer)
+        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer)
             : this(context, jsonSerializer, TransportHeartBeat.Instance)
         {
 
         }
 
-        public LongPollingTransport(HttpContextBase context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
+        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;

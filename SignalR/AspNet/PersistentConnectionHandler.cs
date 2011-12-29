@@ -1,22 +1,26 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web;
+using SignalR.Abstractions;
 using SignalR.Web;
 
-namespace SignalR.Aspnet
+namespace SignalR.AspNet
 {
-    internal class PersistentConnectionHandler : HttpTaskAsyncHandler
+    public class PersistentConnectionHandler : HttpTaskAsyncHandler
     {
         private readonly PersistentConnection _connection;
 
-        public PersistentConnectionHandler(PersistentConnection persistentConnection)
+        public PersistentConnectionHandler(PersistentConnection connection)
         {
-            _connection = persistentConnection;
+            _connection = connection;
         }
 
         public override Task ProcessRequestAsync(HttpContextBase context)
         {
-            return _connection.ProcessRequestAsync(context);
+            var request = new AspNetRequest(context.Request);
+            var response = new AspNetResponse(context.Request, context.Response);
+            var hostContext = new HostContext(request, response, context.User);
+            hostContext.Items["IsDebuggingEnabled"] = context.IsDebuggingEnabled;
+            return _connection.ProcessRequestAsync(hostContext);
         }
     }
 }

@@ -1,38 +1,38 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Web;
+using SignalR.Abstractions;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
     public static class TransportManager
     {
-        private static readonly ConcurrentDictionary<string, Func<HttpContextBase, ITransport>> _transports = new ConcurrentDictionary<string, Func<HttpContextBase, ITransport>>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Func<HostContext, ITransport>> _transports = new ConcurrentDictionary<string, Func<HostContext, ITransport>>(StringComparer.OrdinalIgnoreCase);
 
-        public static void Register(string transportName, Func<HttpContextBase, ITransport> transportFactory)
+        public static void Register(string transportName, Func<HostContext, ITransport> transportFactory)
         {
             _transports.TryAdd(transportName, transportFactory);
         }
 
         public static void Remove(string transportName)
         {
-            Func<HttpContextBase, ITransport> removed;
+            Func<HostContext, ITransport> removed;
             _transports.TryRemove(transportName, out removed);
         }
 
-        internal static ITransport GetTransport(HttpContextBase contextBase)
+        internal static ITransport GetTransport(HostContext context)
         {
-            string transportName = contextBase.Request.QueryString["transport"];
+            string transportName = context.Request.QueryString["transport"];
 
             if (String.IsNullOrEmpty(transportName))
             {
                 return null;
             }
 
-            Func<HttpContextBase, ITransport> factory;
+            Func<HostContext, ITransport> factory;
             if (_transports.TryGetValue(transportName, out factory))
             {
-                return factory(contextBase);
+                return factory(context);
             }
 
             return null;

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Script.Serialization;
+using SignalR.Abstractions;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
@@ -32,7 +33,7 @@ namespace SignalR.Hubs
         private readonly IHubTypeResolver _hubTypeResolver;
         private readonly IJsonSerializer _jsonSerializer;
 
-        private HttpCookieCollection _cookies;
+        private NameValueCollection _cookies;
         private IPrincipal _user;
 
         public HubDispatcher(string url)
@@ -69,7 +70,7 @@ namespace SignalR.Hubs
             _proxyGenerator = proxyGenerator;
             _hubLocator = hubLocator;
             _hubTypeResolver = hubTypeResolver;
-            _url = VirtualPathUtility.ToAbsolute(url);
+            _url = url;
         }
 
         protected override Task OnReceivedAsync(string connectionId, string data)
@@ -155,13 +156,13 @@ namespace SignalR.Hubs
                 .FastUnwrap();
         }
 
-        public override Task ProcessRequestAsync(HttpContextBase context)
+        public override Task ProcessRequestAsync(HostContext context)
         {
             // Generate the proxy
             if (context.Request.Path.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(context, _url));
+                return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(_url));
             }
 
             _cookies = context.Request.Cookies;
@@ -216,20 +217,20 @@ namespace SignalR.Hubs
             return Send(hubResult);
         }
 
-        protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, HttpContextBase context)
+        protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
-            string data = context.Request.QueryStringOrForm("connectionData");
+            string data = request.QueryStringOrForm("connectionData");
 
             if (String.IsNullOrEmpty(data))
             {
-                return base.CreateConnection(connectionId, groups, context);
+                return base.CreateConnection(connectionId, groups, request);
             }
 
             var clientHubInfo = _serializer.Deserialize<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {
-                return base.CreateConnection(connectionId, groups, context);
+                return base.CreateConnection(connectionId, groups, request);
             }
 
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId));

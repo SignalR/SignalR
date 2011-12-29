@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Web;
-using SignalR.Aspnet;
+using SignalR.Hubs;
 
-namespace SignalR.Hubs
+namespace SignalR.AspNet
 {
     public class HubModule : IHttpModule
     {
@@ -16,7 +16,7 @@ namespace SignalR.Hubs
                 if (app.Request.AppRelativeCurrentExecutionFilePath.StartsWith(Url, StringComparison.OrdinalIgnoreCase) &&
                     !Path.GetExtension(app.Request.AppRelativeCurrentExecutionFilePath).Equals(".js", StringComparison.OrdinalIgnoreCase))
                 {
-                    var dispatcher = new HubDispatcher(Url);
+                    var dispatcher = new HubDispatcher(VirtualPathUtility.ToAbsolute(Url));
                     var handler = new PersistentConnectionHandler(dispatcher);
 
                     app.Context.RemapHandler(handler);
