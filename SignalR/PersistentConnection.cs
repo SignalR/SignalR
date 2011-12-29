@@ -128,38 +128,26 @@ namespace SignalR
             return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
         }
 
-        protected virtual void OnConnected(IRequest request, string connectionId) { }
-
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
             OnClientConnected(connectionId);
-            OnConnected(request, connectionId);
             return TaskAsyncHelper.Empty;
         }
-
-        protected virtual void OnReceived(string connectionId, string data) { }
 
         protected virtual Task OnReceivedAsync(string connectionId, string data)
         {
             OnReceiving();
-            OnReceived(connectionId, data);
             return TaskAsyncHelper.Empty;
         }
-
-        protected virtual void OnDisconnect(string connectionId) { }
 
         protected virtual Task OnDisconnectAsync(string connectionId)
         {
             OnClientDisconnected(connectionId);
-            OnDisconnect(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
-        protected virtual void OnError(Exception e) { }
-
         protected virtual Task OnErrorAsync(Exception e)
         {
-            OnError(e);
             return TaskAsyncHelper.Empty;
         }
 

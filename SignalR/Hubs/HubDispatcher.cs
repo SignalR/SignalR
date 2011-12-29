@@ -171,7 +171,7 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
-        protected override void OnDisconnect(string connectionId)
+        protected override Task OnDisconnectAsync(string connectionId)
         {
             // Loop over each hub and call disconnect (if the hub supports it)
             foreach (Type type in GetDisconnectTypes())
@@ -194,6 +194,8 @@ namespace SignalR.Hubs
                     disconnect.Disconnect();
                 }
             }
+
+            return TaskAsyncHelper.Empty;
         }
 
         private IEnumerable<Type> GetDisconnectTypes()

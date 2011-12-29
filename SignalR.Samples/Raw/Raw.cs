@@ -32,7 +32,7 @@ namespace SignalR.Samples.Raw
             return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
         }
 
-        protected override void OnReceived(string connectionId, string data)
+        protected override Task OnReceivedAsync(string connectionId, string data)
         {
             var serializer = new JavaScriptSerializer();
             var message = serializer.Deserialize<Message>(data);
@@ -91,6 +91,8 @@ namespace SignalR.Samples.Raw
                 default:
                     break;
             }
+
+            return base.OnReceivedAsync(connectionId, data);
         }
 
         private string GetUser(string connectionId)
