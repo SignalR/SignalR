@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Web;
-using SignalR.Abstractions;
 using Microsoft.Web.Infrastructure.DynamicValidationHelper;
+using SignalR.Abstractions;
 
 namespace SignalR.AspNet
 {
     public class AspNetRequest : IRequest
     {
         private readonly HttpRequestBase _request;
-        private NameValueCollection _form;
-        private NameValueCollection _queryString;
+        private readonly NameValueCollection _form;
+        private readonly NameValueCollection _queryString;
 
         public AspNetRequest(HttpRequestBase request)
         {
