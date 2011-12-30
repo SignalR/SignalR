@@ -2,12 +2,15 @@
 using System.Collections.Specialized;
 using System.Web;
 using SignalR.Abstractions;
+using Microsoft.Web.Infrastructure.DynamicValidationHelper;
 
 namespace SignalR.AspNet
 {
     public class AspNetRequest : IRequest
     {
         private readonly HttpRequestBase _request;
+        private NameValueCollection _form;
+        private NameValueCollection _queryString;
 
         public AspNetRequest(HttpRequestBase request)
         {
@@ -16,6 +19,21 @@ namespace SignalR.AspNet
             foreach (string key in request.Cookies)
             {
                 Cookies.Add(key, request.Cookies[key].Value);
+            }
+
+            // Since the ValidationUtility has a dependency on HttpContext (not HttpContextBase) we
+            // need to check if we're out of HttpContext to preserve testability.
+            if (HttpContext.Current == null)
+            {
+                _form = _request.Form;
+                _queryString = _request.QueryString;
+            }
+            else
+            {
+                Func<NameValueCollection> formGetter, queryGetter;
+                ValidationUtility.GetUnvalidatedCollections(HttpContext.Current, out formGetter, out queryGetter);
+                _form = formGetter();
+                _queryString = queryGetter();
             }
         }
 
@@ -31,7 +49,7 @@ namespace SignalR.AspNet
         {
             get
             {
-                return _request.QueryString;
+                return _queryString;
             }
         }
 
@@ -47,7 +65,7 @@ namespace SignalR.AspNet
         {
             get
             {
-                return _request.Form;
+                return _form;
             }
         }
 
