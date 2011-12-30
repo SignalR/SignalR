@@ -35,7 +35,7 @@ namespace SignalR.AspNet
 
             // Stick the context in here so transports or other asp.net specific logic can
             // grab at it.
-            hostContext.Items["aspnet.context"] = context;
+            hostContext.Items["aspnet.HttpContext"] = context;
 
             return _connection.ProcessRequestAsync(hostContext);
         }
