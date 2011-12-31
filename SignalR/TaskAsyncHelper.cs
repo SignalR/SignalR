@@ -477,7 +477,7 @@ namespace SignalR
         }
 
         
-        private static Task FromError(Exception e)
+        internal static Task FromError(Exception e)
         {
             var tcs = new TaskCompletionSource<object>();
             tcs.SetException(e);

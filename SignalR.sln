@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Tests", "SignalR.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.AspNet", "SignalR.AspNet\SignalR.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SelfHost", "SignalR.SelfHost\SignalR.SelfHost.csproj", "{A2BD866D-906A-4742-AB3B-DB8740830400}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2BD866D-906A-4742-AB3B-DB8740830400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2BD866D-906A-4742-AB3B-DB8740830400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

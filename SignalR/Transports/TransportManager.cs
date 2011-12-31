@@ -8,6 +8,7 @@ namespace SignalR.Transports
     public static class TransportManager
     {
         private static readonly ConcurrentDictionary<string, Func<HostContext, ITransport>> _transports = new ConcurrentDictionary<string, Func<HostContext, ITransport>>(StringComparer.OrdinalIgnoreCase);
+        private static bool _initialized;
 
         public static void Register(string transportName, Func<HostContext, ITransport> transportFactory)
         {
@@ -40,10 +41,15 @@ namespace SignalR.Transports
 
         public static void InitializeDefaultTransports()
         {
-            Register("foreverFrame", context => new ForeverFrameTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-            Register("serverSentEvents", context => new ServerSentEventsTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-            Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-            Register("forever", context => new ForeverTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            if (!_initialized)
+            {
+                Register("foreverFrame", context => new ForeverFrameTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+                Register("serverSentEvents", context => new ServerSentEventsTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+                Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+                Register("forever", context => new ForeverTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+
+                _initialized = true;
+            }
         }
     }
 }
