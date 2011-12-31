@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using SignalR.Abstractions;
+using SignalR.Hubs;
 using SignalR.Infrastructure;
 using SignalR.SelfHost.Infrastructure;
 using SignalR.Transports;
@@ -14,6 +15,7 @@ namespace SignalR.SelfHost
     {
         private readonly HttpListener _listener;
         private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
+        private bool _hubsEnabled;
 
         static Server()
         {
@@ -38,14 +40,17 @@ namespace SignalR.SelfHost
             _listener.Stop();
         }
 
-        public Server MapConnection<T>(string path) where T : PersistentConnection
+        public void MapConnection<T>(string path) where T : PersistentConnection
         {
             if (!_connectionMapping.ContainsKey(path))
             {
                 _connectionMapping.Add(path, typeof(T));
             }
+        }
 
-            return this;
+        public void EnableHubs()
+        {
+            _hubsEnabled = true;
         }
 
         private void ReceiveLoop()
@@ -101,6 +106,12 @@ namespace SignalR.SelfHost
         private bool TryGetConnection(HttpListenerContext context, out PersistentConnection connection)
         {
             connection = null;
+
+            if (_hubsEnabled && context.Request.RawUrl.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
+            {
+                connection = new HubDispatcher("/signalr");
+                return true;
+            }
 
             foreach (var pair in _connectionMapping)
             {
