@@ -124,7 +124,9 @@
     <Compile Include="Transports\TransportManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\SignalR.nuspec">
       <SubType>Designer</SubType>
     </None>
