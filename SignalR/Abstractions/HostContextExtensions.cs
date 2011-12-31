@@ -14,12 +14,12 @@
 
         public static bool IsDebuggingEnabled(this HostContext context)
         {
-            return context.GetValue<bool>("debugMode");
+            return context.GetValue<bool>(HostConstants.DebugMode);
         }
 
         public static bool SupportsWebSockets(this HostContext context)
         {
-            return context.GetValue<bool>("supportsWebSockets");
+            return context.GetValue<bool>(HostConstants.SupportsWebSockets);
         }
     }
 }
