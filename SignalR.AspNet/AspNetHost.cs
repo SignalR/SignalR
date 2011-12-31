@@ -28,14 +28,14 @@ namespace SignalR.AspNet
             var hostContext = new HostContext(request, response, context.User);
 
             // Determine if the client should bother to try a websocket request
-            hostContext.Items["supportsWebSockets"] = _hasAcceptWebSocketRequest.Value;
+            hostContext.Items[HostConstants.SupportsWebSockets] = _hasAcceptWebSocketRequest.Value;
 
             // Set the debugging flag
-            hostContext.Items["debugMode"] = context.IsDebuggingEnabled;
+            hostContext.Items[HostConstants.DebugMode] = context.IsDebuggingEnabled;
 
             // Stick the context in here so transports or other asp.net specific logic can
             // grab at it.
-            hostContext.Items["aspnet.HttpContext"] = context;
+            hostContext.Items["System.Web.HttpContext"] = context;
 
             return _connection.ProcessRequestAsync(hostContext);
         }

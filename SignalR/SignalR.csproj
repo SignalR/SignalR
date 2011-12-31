@@ -50,6 +50,7 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Abstractions\HostConstants.cs" />
     <Compile Include="Abstractions\HostContext.cs" />
     <Compile Include="Abstractions\HostContextExtensions.cs" />
     <Compile Include="Abstractions\IRequest.cs" />

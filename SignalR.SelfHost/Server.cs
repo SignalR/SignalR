@@ -90,7 +90,10 @@ namespace SignalR.SelfHost
                     var response = new HttpListenerResponseWrapper(context.Response);
                     var hostContext = new HostContext(request, response, context.User);
 
-                    hostContext.Items["net.HttpListenerContext"] = context;
+#if DEBUG
+                    hostContext.Items[HostConstants.DebugMode] = true;
+#endif
+                    hostContext.Items["System.Net.HttpListenerContext"] = context;
 
                     return connection.ProcessRequestAsync(hostContext);
                 }
