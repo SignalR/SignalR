@@ -33,8 +33,7 @@ namespace SignalR.Hubs
         private readonly IHubTypeResolver _hubTypeResolver;
         private readonly IJsonSerializer _jsonSerializer;
 
-        private NameValueCollection _cookies;
-        private IPrincipal _user;
+        private HostContext _context;
 
         public HubDispatcher(string url)
             : this(DependencyResolver.Resolve<IHubFactory>(),
@@ -94,7 +93,7 @@ namespace SignalR.Hubs
             string hubName = hub.GetType().FullName;
 
             var state = new TrackingDictionary(hubRequest.State);
-            hub.Context = new HubContext(connectionId, _cookies, _user);
+            hub.Context = new HubContext(_context, connectionId);
             hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
             var agent = new ClientAgent(Connection, hubName);
             hub.Agent = agent;
@@ -165,8 +164,7 @@ namespace SignalR.Hubs
                 return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(_url));
             }
 
-            _cookies = context.Request.Cookies;
-            _user = context.User;
+            _context = context;
 
             return base.ProcessRequestAsync(context);
         }
@@ -185,7 +183,7 @@ namespace SignalR.Hubs
                     // REVIEW: We don't have any client state here since we're calling this from the server.
                     // Will this match user expectations?
                     var state = new TrackingDictionary();
-                    hub.Context = new HubContext(connectionId, _cookies, _user);
+                    hub.Context = new HubContext(_context, connectionId);
                     hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
                     var agent = new ClientAgent(Connection, hubName);
                     hub.Agent = agent;

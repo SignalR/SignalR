@@ -1,5 +1,6 @@
 ﻿using System.Collections.Specialized;
 using System.Security.Principal;
+using SignalR.Abstractions;
 
 namespace SignalR.Hubs
 {
@@ -15,13 +16,19 @@ namespace SignalR.Hubs
         /// </summary>
         public NameValueCollection Cookies { get; private set; }
 
+        /// <summary>
+        /// Gets the headers for the request
+        /// </summary>
+        public NameValueCollection Headers { get; private set; }
+
         public IPrincipal User { get; private set; }
 
-        public HubContext(string connectionId, NameValueCollection cookies, IPrincipal user)
+        public HubContext(HostContext context, string connectionId)
         {
             ConnectionId = connectionId;
-            Cookies = cookies;
-            User = user;
+            Cookies = context.Request.Cookies;
+            Headers = context.Request.Headers;
+            User = context.User;
         }
     }
 }
