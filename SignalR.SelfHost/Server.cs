@@ -13,6 +13,7 @@ namespace SignalR.SelfHost
 {
     public class Server
     {
+        private readonly string _url;
         private readonly HttpListener _listener;
         private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
         private bool _hubsEnabled;
@@ -24,6 +25,7 @@ namespace SignalR.SelfHost
 
         public Server(string url)
         {
+            _url = url;
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
         }
@@ -110,7 +112,9 @@ namespace SignalR.SelfHost
         {
             connection = null;
 
-            if (_hubsEnabled && context.Request.RawUrl.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
+            string path = ResolvePath(context.Request.Url);
+
+            if (_hubsEnabled && path.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
             {
                 connection = new HubDispatcher("/signalr");
                 return true;
@@ -119,7 +123,7 @@ namespace SignalR.SelfHost
             foreach (var pair in _connectionMapping)
             {
                 // If the url matches then create the connection type
-                if (context.Request.RawUrl.StartsWith(pair.Key, StringComparison.OrdinalIgnoreCase))
+                if (path.StartsWith(pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
                     connection = factory.CreateInstance(pair.Value);
@@ -128,6 +132,24 @@ namespace SignalR.SelfHost
             }
 
             return false;
+        }
+
+        private string ResolvePath(Uri url)
+        {
+            string baseUrl = url.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort | UriComponents.Path, UriFormat.SafeUnescaped);
+
+            if (!baseUrl.StartsWith(_url, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Unable to resolve path");
+            }
+
+            string path = baseUrl.Substring(_url.Length);
+            if (!path.StartsWith("/"))
+            {
+                return "/" + path;
+            }
+
+            return path;
         }
     }
 }
