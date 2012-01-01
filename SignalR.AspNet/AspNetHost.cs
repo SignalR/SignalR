@@ -24,7 +24,7 @@ namespace SignalR.AspNet
         public override Task ProcessRequestAsync(HttpContextBase context)
         {
             var request = new AspNetRequest(context.Request);
-            var response = new AspNetResponse(context.Request, context.Response);
+            var response = new AspNetResponse(context);
             var hostContext = new HostContext(request, response, context.User);
 
             // Determine if the client should bother to try a websocket request
