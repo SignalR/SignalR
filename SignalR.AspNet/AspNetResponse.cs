@@ -24,7 +24,6 @@ namespace SignalR.AspNet
             set
             {
                 _response.Buffer = value;
-                _response.Buffer = value;
                 _response.BufferOutput = value;
 
                 if (!value)
