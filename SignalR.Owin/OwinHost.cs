@@ -2,55 +2,55 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Gate.Owin;
 using SignalR.Abstractions;
 using SignalR.Infrastructure;
 
 namespace SignalR.Owin
 {
-    using BodyDelegate = System.Func<System.Func<System.ArraySegment<byte>, // data
-                                     System.Action,                         // continuation
-                                     bool>,                                 // continuation will be invoked
-                                     System.Action<System.Exception>,       // onError
-                                     System.Action,                         // on Complete
-                                     System.Action>;
-
-    using ResponseCallBack = System.Action<string, System.Collections.Generic.IDictionary<string, string>, System.Func<System.Func<System.ArraySegment<byte>, System.Action, bool>, System.Action<System.Exception>, System.Action, System.Action>>; 
-
-    public class OwinHost<T>
+    public static class OwinHost
     {
-        public void ProcessRequest(IDictionary<string, object> environment, ResponseCallBack responseCallback, Action<Exception> fault)
+        public static IAppBuilder RunSignalR<T>(this IAppBuilder builder) where T : PersistentConnection
         {
-            // Read the request body then process the request.
-            ParseBodyAsync(environment).ContinueWith(task =>
+            return builder.Use<AppDelegate>(_ => App(typeof(T)));
+        }
+
+        public static AppDelegate App(Type persistentConnectionType)
+        {
+            return (environment, result, fault) =>
             {
-                if (task.IsFaulted)
+                // Read the request body then process the request.
+                ParseBodyAsync(environment).ContinueWith(task =>
                 {
-                    // There was an error reading the body
-                    fault(task.Exception);
-                }
-                else
-                {
-                    var request = new OwinRequest(environment, task.Result);
-                    var response = new OwinResponse(responseCallback);
-                    var hostContext = new HostContext(request, response, null);
-
-                    try
+                    if (task.IsFaulted)
                     {
-                        var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
-                        PersistentConnection connection = factory.CreateInstance(typeof(T));
+                        // There was an error reading the body
+                        fault(task.Exception);
+                    }
+                    else
+                    {
+                        var request = new OwinRequest(environment, task.Result);
+                        var response = new OwinResponse(result);
+                        var hostContext = new HostContext(request, response, null);
 
-                        connection.ProcessRequestAsync(hostContext).ContinueWith(innerTask =>
+                        try
                         {
-                            fault(innerTask.Exception);
-                        },
-                        TaskContinuationOptions.OnlyOnFaulted);
+                            var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
+                            PersistentConnection connection = factory.CreateInstance(persistentConnectionType);
+
+                            connection.ProcessRequestAsync(hostContext).ContinueWith(innerTask =>
+                            {
+                                fault(innerTask.Exception);
+                            },
+                            TaskContinuationOptions.OnlyOnFaulted);
+                        }
+                        catch (Exception ex)
+                        {
+                            fault(ex);
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        fault(ex);
-                    }
-                }
-            });
+                });
+            };
         }
 
         private static Task<string> ParseBodyAsync(IDictionary<string, object> environment)
@@ -72,7 +72,7 @@ namespace SignalR.Owin
                 text = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
                 return false;
             },
-            tcs.SetException,
+            ex => tcs.SetException(ex),
             () => tcs.SetResult(text));
 
             return tcs.Task;

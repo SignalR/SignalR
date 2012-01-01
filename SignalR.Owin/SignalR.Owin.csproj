@@ -33,8 +33,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Gate.Owin">
+      <HintPath>..\packages\Gate.Owin.0.2.0\lib\net40\Gate.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="Gate">
-      <HintPath>..\packages\Gate.0.1.4\lib\Gate.dll</HintPath>
+      <HintPath>..\packages\Gate.0.2.0\lib\net40\Gate.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,7 +51,6 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="OwinExtensions.cs" />
     <Compile Include="OwinHost.cs" />
     <Compile Include="OwinRequest.cs" />
     <Compile Include="OwinResponse.cs" />

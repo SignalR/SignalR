@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Gate.Owin;
 using SignalR.Abstractions;
 
 namespace SignalR.Owin
 {
-    using ResponseCallBack = System.Action<string, System.Collections.Generic.IDictionary<string, string>, System.Func<System.Func<System.ArraySegment<byte>, System.Action, bool>, System.Action<System.Exception>, System.Action, System.Action>>;
-    
     public class OwinResponse : IResponse
     {
-        private readonly ResponseCallBack _responseCallback;
+        private readonly ResultDelegate _responseCallback;
 
-        public OwinResponse(ResponseCallBack responseCallback)
+        public OwinResponse(ResultDelegate responseCallback)
         {
             _responseCallback = responseCallback;
 
