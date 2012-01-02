@@ -261,7 +261,7 @@
 
                 if (data.Messages) {
                     var $connection = $(connection);
-
+                    
                     $.each(data.Messages, function () {
                         try {
                             $connection.trigger("onReceived", [this]);
