@@ -74,7 +74,16 @@ namespace SignalR.SelfHost
         {
             _listener.BeginGetContext(ar =>
             {
-                HttpListenerContext context = _listener.EndGetContext(ar);
+                HttpListenerContext context;
+                try
+                {
+                    context = _listener.EndGetContext(ar);
+                }
+                catch(Exception ex)
+                {
+                    return;
+                }
+
                 ReceiveLoop();
 
                 // Process the request async
