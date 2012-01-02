@@ -18,6 +18,8 @@ namespace SignalR.SelfHost
         private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
         private bool _hubsEnabled;
 
+        public Action<HostContext> OnProcessRequest { get; set; }
+
         static Server()
         {
             TransportManager.InitializeDefaultTransports();
@@ -55,6 +57,19 @@ namespace SignalR.SelfHost
             _hubsEnabled = true;
         }
 
+        public bool TryGetConnection(string path, out PersistentConnection connection)
+        {
+            connection = null;
+
+            if (_hubsEnabled && path.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
+            {
+                connection = new HubDispatcher("/signalr");
+                return true;
+            }
+
+            return TryGetMappedConnection(path, out connection);
+        }
+        
         private void ReceiveLoop()
         {
             _listener.BeginGetContext(ar =>
@@ -86,12 +101,19 @@ namespace SignalR.SelfHost
                 Debug.WriteLine("Incoming request to {0}.", context.Request.Url);
 
                 PersistentConnection connection;
-                if (TryGetConnection(context, out connection))
+
+                string path = ResolvePath(context.Request.Url);
+
+                if (TryGetConnection(path, out connection))
                 {
                     var request = new HttpListenerRequestWrapper(context.Request);
                     var response = new HttpListenerResponseWrapper(context.Response);
                     var hostContext = new HostContext(request, response, context.User);
 
+                    if (OnProcessRequest != null)
+                    {
+                        OnProcessRequest(hostContext);
+                    }
 #if DEBUG
                     hostContext.Items[HostConstants.DebugMode] = true;
 #endif
@@ -108,17 +130,9 @@ namespace SignalR.SelfHost
             }
         }
 
-        private bool TryGetConnection(HttpListenerContext context, out PersistentConnection connection)
+        private bool TryGetMappedConnection(string path, out PersistentConnection connection)
         {
             connection = null;
-
-            string path = ResolvePath(context.Request.Url);
-
-            if (_hubsEnabled && path.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
-            {
-                connection = new HubDispatcher("/signalr");
-                return true;
-            }
 
             foreach (var pair in _connectionMapping)
             {

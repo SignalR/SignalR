@@ -196,7 +196,8 @@ namespace SignalR
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request),
-                TryWebSockets = context.SupportsWebSockets()
+                TryWebSockets = context.SupportsWebSockets(),
+                WebSocketServerUrl = context.WebSocketServerUrl()
             }));
         }
 

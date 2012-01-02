@@ -8,8 +8,13 @@
         public static readonly string DebugMode = "debugMode";
 
         /// <summary>
-        /// The host should set this is websockets can be supported
+        /// The host should set this is web sockets can be supported
         /// </summary>
         public static readonly string SupportsWebSockets = "supportsWebSockets";
+
+        /// <summary>
+        /// The host should set this if the web socket url is different
+        /// </summary>
+        public static readonly string WebSocketServerUrl = "webSocketServerUrl";
     }
 }

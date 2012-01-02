@@ -21,5 +21,10 @@
         {
             return context.GetValue<bool>(HostConstants.SupportsWebSockets);
         }
+
+        public static string WebSocketServerUrl(this HostContext context)
+        {
+            return context.GetValue<string>(HostConstants.WebSocketServerUrl);
+        }
     }
 }

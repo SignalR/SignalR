@@ -92,6 +92,7 @@
                     success: function (res) {
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
+                        connection.webSocketServerUrl = res.WebSocketServerUrl;
 
                         $(connection).trigger("onStarting");
 
@@ -303,9 +304,17 @@
                 }
 
                 if (!connection.socket) {
-                    // Build the url
-                    url = document.location.host + connection.appRelativeUrl;
+                    if (connection.webSocketServerUrl) {
+                        url = connection.webSocketServerUrl;
+                    }
+                    else {
+                        // Determine the protocol
+                        protocol = document.location.protocol === "https:" ? "wss://" : "ws://";
 
+                        url = protocol + document.location.host + connection.appRelativeUrl;
+                    }
+
+                    // Build the url
                     $(connection).trigger("onSending");
                     if (connection.data) {
                         url += "?connectionData=" + connection.data + "&transport=webSockets&connectionId=" + connection.id;
@@ -313,9 +322,7 @@
                         url += "?transport=webSockets&connectionId=" + connection.id;
                     }
 
-                    protocol = document.location.protocol === "https:" ? "wss://" : "ws://";
-
-                    connection.socket = new window.WebSocket(protocol + url);
+                    connection.socket = new window.WebSocket(url);
                     connection.socket.onopen = function () {
                         opened = true;
                         if (onSuccess) {
