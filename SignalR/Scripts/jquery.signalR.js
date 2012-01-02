@@ -349,7 +349,12 @@
                         if (data) {
                             if (data.Messages) {
                                 $.each(data.Messages, function () {
-                                    $(connection).trigger("onReceived", [this]);
+                                    try {
+                                        $(connection).trigger("onReceived", [this]);
+                                    }
+                                    catch (e) {
+                                        log('Error raising received ' + e);
+                                    }
                                 });
                             } else {
                                 $(connection).trigger("onReceived", [data]);
