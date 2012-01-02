@@ -79,7 +79,7 @@ namespace SignalR.SelfHost
                 {
                     context = _listener.EndGetContext(ar);
                 }
-                catch(Exception ex)
+                catch(Exception)
                 {
                     return;
                 }
