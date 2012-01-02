@@ -84,7 +84,7 @@ namespace SignalR.AspNet
             }
         }
 
-        private bool IsIIS7WorkerRequest(HttpWorkerRequest workerRequest)
+        private static bool IsIIS7WorkerRequest(HttpWorkerRequest workerRequest)
         {
             return workerRequest.GetType().FullName == IIS7WorkerRequestTypeName;
         }
