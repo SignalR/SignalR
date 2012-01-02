@@ -227,7 +227,7 @@ namespace SignalR.Transports
                         taskCompletetionSource.SetException(t.Exception);
                     }
                 },
-                TaskContinuationOptions.ExecuteSynchronously & TaskContinuationOptions.NotOnRanToCompletion);
+                TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
 
                 // Stop execution here
                 return;
