@@ -38,7 +38,9 @@ namespace SignalR.Owin
                             var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
                             PersistentConnection connection = factory.CreateInstance(persistentConnectionType);
 
-                            connection.ProcessRequestAsync(hostContext).ContinueWith(innerTask =>
+                            connection
+                                .ProcessRequestAsync(hostContext)
+                                .ContinueWith(innerTask =>
                             {
                                 fault(innerTask.Exception);
                             },
@@ -72,8 +74,8 @@ namespace SignalR.Owin
                 text = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
                 return false;
             },
-            ex => tcs.SetException(ex),
-            () => tcs.SetResult(text));
+            ex => tcs.TrySetException(ex),
+            () => tcs.TrySetResult(text));
 
             return tcs.Task;
         }

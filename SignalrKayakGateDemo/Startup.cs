@@ -4,6 +4,7 @@ using Gate.Hosts.Kayak;
 using Gate.Middleware;
 using Gate.Owin;
 using SignalR.Owin;
+using SignalR.Transports;
 
 namespace SignalrKayakGateDemo
 {
@@ -11,11 +12,14 @@ namespace SignalrKayakGateDemo
     {
         public static void Configuration(IAppBuilder builder)
         {
+            TransportManager.InitializeDefaultTransports();
+
             builder
                 .Use(LogToConsole)
                 //.RescheduleCallbacks()
-                .UseShowExceptions()
-                .Map("/Raw", map => map.RunSignalR<Raw>())
+                //.Chunked()
+                //.UseShowExceptions()
+                .Map("/Raw", map => map.Chunked().RunSignalR<Raw>())
                 .Use(Alias, "/", "/index.html")
                 .UseStatic("public");
         }

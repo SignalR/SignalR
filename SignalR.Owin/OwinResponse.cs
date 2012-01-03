@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Gate.Owin;
 using SignalR.Abstractions;
@@ -9,7 +10,10 @@ namespace SignalR.Owin
 {
     public class OwinResponse : IResponse
     {
-        private readonly ResultDelegate _responseCallback;
+        private ResultDelegate _responseCallback;
+        private Func<ArraySegment<byte>, Action, bool> _responseNext;
+        private Action<Exception> _responseError;
+        private Action _responseCompete;
 
         public OwinResponse(ResultDelegate responseCallback)
         {
@@ -39,31 +43,76 @@ namespace SignalR.Owin
 
         public Task WriteAsync(string data)
         {
+            return EnsureResponseStarted()
+                .Then(() => DoWrite(data))
+                .Catch();
+        }
+
+        Task EnsureResponseStarted()
+        {
+            var responseCallback = Interlocked.Exchange(ref _responseCallback, null);
+            if (responseCallback == null)
+                return TaskAsyncHelper.Empty;
+
             var tcs = new TaskCompletionSource<object>();
-            var headers = new Dictionary<string, string> { { "Content-Type", ContentType } };
-
-            _responseCallback.Invoke("200 OK", headers, (next, error, complete) => DoWrite(tcs, data, next, error, complete));
-
+            try
+            {
+                responseCallback(
+                    "200 OK",
+                    new Dictionary<string, string>
+                        {
+                            {"Content-Type", ContentType ?? "text/plain"},
+                        },
+                    (next, error, complete) =>
+                    {
+                        _responseNext = next;
+                        _responseError = error;
+                        _responseCompete = complete;
+                        tcs.SetResult(null);
+                        return StopSending;
+                    });
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
             return tcs.Task;
         }
 
-        private Action DoWrite(TaskCompletionSource<object> tcs, string data, Func<ArraySegment<byte>, Action, bool> next, Action<Exception> error, Action complete)
+        private void StopSending()
         {
+            IsClientConnected = false;
+        }
+
+        private Task DoWrite(string data)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
             try
             {
                 var value = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data));
-                next(value, null);
-                complete();
-                tcs.SetResult(null);
+                if (Buffer)
+                {
+                    // use Buffer==true to infer a single write and closed connection
+                    
+                    _responseNext(value, null);
+                    _responseCompete();
+                    tcs.SetResult(null);
+                }
+                else
+                {
+                    // use Buffer==true to infer an ongoing series of async writes that never end
+
+                    if (!_responseNext(value, () => tcs.SetResult(null)))
+                        tcs.SetResult(null);
+                }
             }
             catch (Exception ex)
             {
                 IsClientConnected = false;
-                error(ex);
                 tcs.SetException(ex);
             }
-
-            return null;
+            return tcs.Task;
         }
     }
 }
