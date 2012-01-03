@@ -260,9 +260,11 @@
                 }
 
                 if (data.Messages) {
+                    var $connection = $(connection);
+                    
                     $.each(data.Messages, function () {
                         try {
-                            $(connection).trigger("onReceived", [this]);
+                            $connection.trigger("onReceived", [this]);
                         }
                         catch (e) {
                             log('Error raising received ' + e);
@@ -347,17 +349,19 @@
                     connection.socket.onmessage = function (event) {
                         var data = window.JSON.parse(event.data);
                         if (data) {
+                            var $connection = $(connection);
+
                             if (data.Messages) {
                                 $.each(data.Messages, function () {
                                     try {
-                                        $(connection).trigger("onReceived", [this]);
+                                        $connection.trigger("onReceived", [this]);
                                     }
                                     catch (e) {
                                         log('Error raising received ' + e);
                                     }
                                 });
                             } else {
-                                $(connection).trigger("onReceived", [data]);
+                                $connection.trigger("onReceived", [data]);
                             }
                         }
                     };
