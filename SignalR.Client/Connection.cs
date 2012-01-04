@@ -14,11 +14,11 @@ namespace SignalR.Client
     {
         private static Version _assemblyVersion;
 
+        private IClientTransport _transport;
+
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
-
-        private readonly IClientTransport _transport = new LongPollingTransport();
 
         public Connection(string url)
         {
@@ -45,14 +45,21 @@ namespace SignalR.Client
 
         public string ConnectionId { get; set; }
 
-        public virtual Task Start()
+        public Task Start()
         {
+            return Start(Transport.ServerSentEvents);
+        }
+
+        public virtual Task Start(IClientTransport transport)
+        {            
             if (IsActive)
             {
                 return TaskAsyncHelper.Empty;
             }
-
+            
             IsActive = true;
+
+            _transport = transport;
 
             string data = null;
 
@@ -84,6 +91,12 @@ namespace SignalR.Client
 
         public virtual void Stop()
         {
+            // Do nothing if the connection was never started
+            if (_transport == null)
+            {
+                return;
+            }
+
             try
             {
                 _transport.Stop(this);
@@ -106,6 +119,11 @@ namespace SignalR.Client
 
         public Task<T> Send<T>(string data)
         {
+            if (_transport == null)
+            {
+                throw new InvalidOperationException("Start must be called before data can be sent");
+            }
+
             return _transport.Send<T>(this, data);
         }
 

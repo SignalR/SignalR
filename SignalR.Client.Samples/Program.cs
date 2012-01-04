@@ -1,5 +1,6 @@
 ﻿using System;
 using SignalR.Client.Hubs;
+using SignalR.Client.Transports;
 
 namespace SignalR.Client.Samples
 {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SignalR.Client.Transports;
 
 namespace SignalR.Client.Hubs
 {
@@ -14,11 +15,11 @@ namespace SignalR.Client.Hubs
         {
         }
 
-        public override Task Start()
+        public override Task Start(IClientTransport transport)
         {
             Sending += OnConnectionSending;
             Received += OnConnectionReceived;
-            return base.Start();
+            return base.Start(transport);
         }
 
         public override void Stop()
