@@ -63,9 +63,9 @@ namespace SignalR.Client
 
             string negotiateUrl = Url + "negotiate";
 
-            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(task =>
+            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
             {
-                string raw = task.Result.ReadAsString();
+                string raw = response.ReadAsString();
 
                 if (raw == null)
                 {
@@ -76,8 +76,10 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                _transport.Start(this, data);
-            });
+                return _transport.Start(this, data);
+
+            })
+            .FastUnwrap();
         }
 
         public virtual void Stop()

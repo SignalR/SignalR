@@ -78,26 +78,24 @@ namespace SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
-            return _connection.Send<HubResult<T>>(value).Then(task =>
+            return _connection.Send<HubResult<T>>(value).Then(result =>
             {
-                if (task.Result != null)
+                if (result != null)
                 {
-                    if (task.Result.Error != null)
+                    if (result.Error != null)
                     {
-                        throw new InvalidOperationException(task.Result.Error);
+                        throw new InvalidOperationException(result.Error);
                     }
 
-                    HubResult<T> hubResult = task.Result;
-
-                    if (hubResult.State != null)
+                    if (result.State != null)
                     {
-                        foreach (var pair in hubResult.State)
+                        foreach (var pair in result.State)
                         {
                             this[pair.Key] = pair.Value;
                         }
                     }
 
-                    return hubResult.Result;
+                    return result.Result;
                 }
                 return default(T);
             });

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace SignalR
 {
@@ -112,7 +112,7 @@ namespace SignalR
                     return FromMethod(successor);
 
                 default:
-                    return task.ContinueWith(t => successor(), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    return RunTask(task, successor);
             }
         }
 
@@ -223,7 +223,7 @@ namespace SignalR
                     return FromMethod(successor, task.Result);
 
                 default:
-                    return task.ContinueWith(t => successor(t.Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    return TaskRunners<T, TResult>.RunTask(task, t => successor(t.Result));
             }
         }
 
@@ -260,7 +260,25 @@ namespace SignalR
                     return FromMethod(successor);
 
                 default:
-                    return task.ContinueWith(t => successor(), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    return TaskRunners<object, Task>.RunTask(task, successor);
+            }
+        }
+
+        public static Task<Task<TResult>> Then<TResult>(this Task task, Func<Task<TResult>> successor)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError<Task<TResult>>(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled<Task<TResult>>();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor);
+
+                default:
+                    return TaskRunners<object, Task<TResult>>.RunTask(task, successor);
             }
         }
 
@@ -278,7 +296,7 @@ namespace SignalR
                     return FromMethod(successor, task.Result);
 
                 default:
-                    return task.ContinueWith(t => successor(t.Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+                    return TaskRunners<T, Task>.RunTask(task, t => successor(t.Result));
             }
         }
 
@@ -318,7 +336,6 @@ namespace SignalR
             }
         }
 
-
         public static Task<Task<T>> Then<T, T1>(this Task<T> task, Func<Task<T>, T1, Task<T>> successor, T1 arg1)
         {
             switch (task.Status)
@@ -337,7 +354,6 @@ namespace SignalR
             }
         }
 
-
         public static Task FastUnwrap(this Task<Task> task)
         {
             var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
@@ -349,7 +365,6 @@ namespace SignalR
             var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
             return innerTask ?? task.Unwrap();
         }
-
 
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
         {
@@ -476,7 +491,6 @@ namespace SignalR
             return continueWith;
         }
 
-        
         internal static Task FromError(Exception e)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -484,7 +498,7 @@ namespace SignalR
             return tcs.Task;
         }
 
-        private static Task<T> FromError<T>(Exception e)
+        internal static Task<T> FromError<T>(Exception e)
         {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetException(e);
@@ -511,47 +525,116 @@ namespace SignalR
             public Type Type { get; set; }
         }
 
+        private static Task RunTask(Task task, Action successor)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.SetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.SetCanceled();
+                }
+                else
+                {
+                    successor();
+                    tcs.SetResult(null);
+                }
+            });
+
+            return tcs.Task;
+        }
+
+        private static class TaskRunners<T, TResult>
+        {
+            internal static Task<TResult> RunTask(Task task, Func<TResult> successor)
+            {
+                var tcs = new TaskCompletionSource<TResult>();
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        tcs.SetException(t.Exception);
+                    }
+                    else if (t.IsCanceled)
+                    {
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        tcs.SetResult(successor());
+                    }
+                });
+
+                return tcs.Task;
+            }
+
+            internal static Task<TResult> RunTask(Task<T> task, Func<Task<T>, TResult> successor)
+            {
+                var tcs = new TaskCompletionSource<TResult>();
+                task.ContinueWith(t =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        tcs.SetException(t.Exception);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        tcs.SetResult(successor(t));
+                    }
+                });
+
+                return tcs.Task;
+            }
+        }
+
         private static class GenericDelegates<T, TResult, T1, T2>
         {
             internal static Task ThenWithArgs(Task task, Action<T1> successor, T1 arg1)
             {
-                return task.ContinueWith(t => successor(arg1), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return RunTask(task, () => successor(arg1));
             }
 
             internal static Task ThenWithArgs(Task task, Action<T1, T2> successor, T1 arg1, T2 arg2)
             {
-                return task.ContinueWith(t => successor(arg1, arg2), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return RunTask(task, () => successor(arg1, arg2));
             }
 
             internal static Task<TResult> ThenWithArgs(Task task, Func<T1, TResult> successor, T1 arg1)
             {
-                return task.ContinueWith(t => successor(arg1), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return TaskRunners<object, TResult>.RunTask(task, () => successor(arg1));
             }
 
             internal static Task<TResult> ThenWithArgs(Task task, Func<T1, T2, TResult> successor, T1 arg1, T2 arg2)
             {
-                return task.ContinueWith(t => successor(arg1, arg2), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return TaskRunners<object, TResult>.RunTask(task, () => successor(arg1, arg2));
             }
 
             internal static Task<TResult> ThenWithArgs(Task<T> task, Func<T, T1, TResult> successor, T1 arg1)
             {
-                return task.ContinueWith(t => successor(t.Result, arg1), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return TaskRunners<T, TResult>.RunTask(task, t => successor(t.Result, arg1));
             }
-
 
             internal static Task<Task> ThenWithArgs(Task task, Func<T1, Task> successor, T1 arg1)
             {
-                return task.ContinueWith(t => successor(arg1), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return TaskRunners<object, Task>.RunTask(task, () => successor(arg1));
             }
 
             internal static Task<Task<TResult>> ThenWithArgs(Task<T> task, Func<T, T1, Task<TResult>> successor, T1 arg1)
             {
-                return task.ContinueWith(t => successor(t.Result, arg1), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return TaskRunners<T, Task<TResult>>.RunTask(task, t => successor(t.Result, arg1));
             }
 
             internal static Task<Task<T>> ThenWithArgs(Task<T> task, Func<Task<T>, T1, Task<T>> successor, T1 arg1)
             {
-                return task.ContinueWith(t => successor(t, arg1), TaskContinuationOptions.OnlyOnRanToCompletion);
+                return TaskRunners<T, Task<T>>.RunTask(task, t => successor(t, arg1));
             }
         }
     }

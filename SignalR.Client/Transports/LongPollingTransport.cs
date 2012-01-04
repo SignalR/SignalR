@@ -18,7 +18,16 @@ namespace SignalR.Client.Transports
         private const string _receiveQs = "?transport=longPolling&connectionId={0}&messageId={1}&groups={2}&connectionData={3}";
         private const string _sendQs = "?transport=longPolling&connectionId={0}";
 
-        public void Start(Connection connection, string data)
+        public Task Start(Connection connection, string data)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            PollingLoop(tcs, connection, data);
+
+            return tcs.Task;
+        }
+
+        private void PollingLoop(TaskCompletionSource<object> tcs, Connection connection, string data)
         {
             string url = connection.Url;
 
@@ -97,10 +106,17 @@ namespace SignalR.Client.Transports
                     // Only continue if the connection is still active and wasn't aborted
                     if (!requestAborted && connection.IsActive)
                     {
-                        Start(connection, data);
+                        PollingLoop(null, connection, data);
                     }
                 }
             });
+
+            if (tcs != null)
+            {
+                // Only set this the first time
+                // TODO: We should delay this until after the http request has been made
+                tcs.SetResult(null);
+            }
         }
 
         private static bool IsRequestAborted(Exception exception)
@@ -119,9 +135,9 @@ namespace SignalR.Client.Transports
                 { "data", data }
             };
 
-            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Then(task =>
+            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
             {
-                string raw = task.Result.ReadAsString();
+                string raw = response.ReadAsString();
 
                 if (String.IsNullOrEmpty(raw))
                 {

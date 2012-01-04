@@ -12,39 +12,56 @@ namespace SignalR
     {
         public static Task<HttpWebResponse> GetResponseAsync(this HttpWebRequest request)
         {
-            return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, iar => (HttpWebResponse)request.EndGetResponse(iar), null);
+            try
+            {
+                return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
+            }
+            catch (Exception ex)
+            {
+                return TaskAsyncHelper.FromError<HttpWebResponse>(ex);
+            }
         }
 
         public static Task<Stream> GetRequestStreamAsync(this HttpWebRequest request)
         {
-            return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
+            try
+            {
+                return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
+            }
+            catch (Exception ex)
+            {
+                return TaskAsyncHelper.FromError<Stream>(ex);
+            }
         }
 
         public static Task<HttpWebResponse> GetAsync(string url)
         {
-            return GetAsync(url, _ => { });
+            return GetAsync(url, requestPreparer: null);
         }
 
         public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer)
         {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
-            requestPreparer(request);
+            if (requestPreparer != null)
+            {
+                requestPreparer(request);
+            }
             return request.GetResponseAsync();
         }
 
         public static Task<HttpWebResponse> PostAsync(string url)
         {
-            return PostInternal(url, _ => { }, new Dictionary<string, string>());
+            return PostInternal(url, requestPreparer: null, postData: null);
         }
 
         public static Task<HttpWebResponse> PostAsync(string url, IDictionary<string, string> postData)
         {
-            return PostInternal(url, _ => { }, postData);
+            return PostInternal(url, requestPreparer: null, postData: postData);
         }
 
         public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer)
         {
-            return PostInternal(url, requestPreparer, new Dictionary<string, string>());
+            return PostInternal(url, requestPreparer, postData: null);
         }
 
         public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
@@ -67,7 +84,7 @@ namespace SignalR
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine("Failed to read resonse: {0}", ex);
                 // Swallow exceptions when reading the response stream and just try again.
@@ -78,8 +95,41 @@ namespace SignalR
         private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
-            
-            requestPreparer(request);
+
+            if (requestPreparer != null)
+            {
+                requestPreparer(request);
+            }
+
+            byte[] buffer = ProcessPostData(postData);
+
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+#if !WINDOWS_PHONE && !SILVERLIGHT
+            // Set the content length if the buffer is non-null
+            request.ContentLength = buffer != null ? buffer.LongLength : 0;
+#endif
+
+            if (buffer == null)
+            {
+                // If there's nothing to be written to the request then just get the response
+                return request.GetResponseAsync();
+            }
+
+            // Write the post data to the request stream
+            return request.GetRequestStreamAsync()
+                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Close()))
+                .FastUnwrap()
+                .Then(() => request.GetResponseAsync())
+                .FastUnwrap();
+        }
+
+        private static byte[] ProcessPostData(IDictionary<string, string> postData)
+        {
+            if (postData == null || postData.Count == 0)
+            {
+                return null;
+            }
 
             var sb = new StringBuilder();
             foreach (var pair in postData)
@@ -97,25 +147,19 @@ namespace SignalR
                 sb.AppendFormat("{0}={1}", pair.Key, Uri.EscapeDataString(pair.Value));
             }
 
-            byte[] buffer = Encoding.UTF8.GetBytes(sb.ToString());
+            return Encoding.UTF8.GetBytes(sb.ToString());
+        }
 
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-#if !WINDOWS_PHONE && !SILVERLIGHT
-            request.ContentLength = buffer.LongLength;
-#endif
-
-            return request.GetRequestStreamAsync()
-                .Then(t =>
-                {
-                    t.Result.Write(buffer, 0, buffer.Length);
-                    t.Result.Close();
-                })
-                .Then(t =>
-                {
-                    return request.GetResponseAsync();
-                })
-                .Unwrap();
+        private static Task WriteAsync(this Stream stream, byte[] buffer)
+        {
+            try
+            {
+                return Task.Factory.FromAsync((cb, state) => stream.BeginWrite(buffer, 0, buffer.Length, cb, state), ar => stream.EndWrite(ar), null);
+            }
+            catch (Exception ex)
+            {
+                return TaskAsyncHelper.FromError(ex);
+            }
         }
     }
 }
