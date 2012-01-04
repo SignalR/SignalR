@@ -7,13 +7,11 @@ namespace SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
-            RunStreamingSample();
-
             var hubConnection = new HubConnection("http://localhost:40476/");
 
             RunDemoHub(hubConnection);
 
-            hubConnection.Start().Wait();
+            RunStreamingSample();
 
             Console.ReadKey();
         }
@@ -22,10 +20,14 @@ namespace SignalR.Client.Samples
         {
             var demo = hubConnection.CreateProxy("SignalR.Samples.Hubs.DemoHub.DemoHub");
 
-            demo.On("fromArbitraryCode", value =>
+            demo.On("invoke", i =>
             {
-                Console.WriteLine("Sending {0} from arbitrary code without the hub itself!", value);
+                Console.WriteLine("{0} client state index -> {1}", i, demo["index"]);
             });
+
+            hubConnection.Start().Wait();
+
+            demo.Invoke("multipleCalls").Wait();
         }
 
         private static void RunStreamingSample()
