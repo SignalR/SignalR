@@ -94,6 +94,10 @@
                         connection.id = res.ConnectionId;
                         connection.webSocketServerUrl = res.WebSocketServerUrl;
 
+                        if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
+                            throw "SignalR: Incompatible protocol version.";
+                        }
+
                         $(connection).trigger("onStarting");
 
                         var transports = [],
@@ -261,7 +265,7 @@
 
                 if (data.Messages) {
                     var $connection = $(connection);
-                    
+
                     $.each(data.Messages, function () {
                         try {
                             $connection.trigger("onReceived", [this]);
