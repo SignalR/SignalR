@@ -59,7 +59,7 @@ namespace SignalR.Client.Transports
         protected override void OnBeforeAbort(Connection connection)
         {
             // Get the reader from the connection and stop it
-            var reader = (AsyncStreamReader)connection.Items[ReaderKey];
+            var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
             if (reader != null)
             {
                 // Stop reading data from the stream

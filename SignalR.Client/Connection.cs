@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace SignalR.Client
 
             Url = url;
             Groups = Enumerable.Empty<string>();
-            Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         public ICredentials Credentials { get; set; }

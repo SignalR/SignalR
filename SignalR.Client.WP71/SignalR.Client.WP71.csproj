@@ -62,6 +62,9 @@
     <Compile Include="..\SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
+      <Link>ConnectionExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubClientInvocation.cs">
       <Link>Hubs\HubClientInvocation.cs</Link>
     </Compile>

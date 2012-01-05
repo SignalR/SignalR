@@ -26,7 +26,7 @@ namespace SignalR.Client.Transports
         {
             _transport = transport;
         }
- 
+
         public Task Start(Connection connection, string data)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -90,23 +90,17 @@ namespace SignalR.Client.Transports
 
         public void Stop(Connection connection)
         {
-            var httpRequest = (HttpWebRequest)connection.Items[HttpRequestKey];
+            var httpRequest = connection.GetValue<HttpWebRequest>(HttpRequestKey);
             if (httpRequest != null)
             {
-                lock (httpRequest)
+                try
                 {
-                    if (httpRequest != null)
-                    {
-                        try
-                        {
-                            OnBeforeAbort(connection);
-                            httpRequest.Abort();
-                        }
-                        catch (NotImplementedException)
-                        {
-                            // If this isn't implemented then do nothing
-                        }
-                    }
+                    OnBeforeAbort(connection);
+                    httpRequest.Abort();
+                }
+                catch (NotImplementedException)
+                {
+                    // If this isn't implemented then do nothing
                 }
             }
         }
