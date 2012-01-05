@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using SignalR.Client.Hubs;
-using SignalR.Client.Transports;
 
 namespace SignalR.Client.Samples
 {
@@ -28,7 +29,18 @@ namespace SignalR.Client.Samples
 
             hubConnection.Start().Wait();
 
-            demo.Invoke("multipleCalls").Wait();
+
+            demo.Invoke("multipleCalls").ContinueWith(task =>
+            {
+                Console.WriteLine(task.Exception);
+
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(3000);
+                hubConnection.Stop();
+            });
         }
 
         private static void RunStreamingSample()

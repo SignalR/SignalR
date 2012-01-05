@@ -30,6 +30,7 @@ namespace SignalR.Client
 
             Url = url;
             Groups = Enumerable.Empty<string>();
+            Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         public ICredentials Credentials { get; set; }
@@ -45,6 +46,8 @@ namespace SignalR.Client
         public long? MessageId { get; set; }
 
         public string ConnectionId { get; set; }
+
+        public IDictionary<string, object> Items { get; private set; }
 
         public Task Start()
         {

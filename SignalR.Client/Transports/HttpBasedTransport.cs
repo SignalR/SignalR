@@ -11,10 +11,6 @@ namespace SignalR.Client.Transports
 {
     public abstract class HttpBasedTransport : IClientTransport
     {
-        // The outstanding http request
-        private HttpWebRequest _httpRequest;
-        private readonly object _lockObj = new object();
-
         // The receive query string
         private const string _receiveQueryString = "?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}";
 
@@ -24,26 +20,13 @@ namespace SignalR.Client.Transports
         // The transport name
         protected readonly string _transport;
 
+        protected const string HttpRequestKey = "http.Request";
+
         public HttpBasedTransport(string transport)
         {
             _transport = transport;
         }
-
-        protected HttpWebRequest ActiveRequest
-        {
-            get
-            {
-                return _httpRequest;
-            }
-            set
-            {
-                lock (_lockObj)
-                {
-                    _httpRequest = value;
-                }
-            }
-        }
-
+ 
         public Task Start(Connection connection, string data)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -95,7 +78,7 @@ namespace SignalR.Client.Transports
                 // Setup the user agent along with any other defaults
                 connection.PrepareRequest(request);
 
-                ActiveRequest = request;
+                connection.Items[HttpRequestKey] = request;
             };
         }
 
@@ -107,16 +90,17 @@ namespace SignalR.Client.Transports
 
         public void Stop(Connection connection)
         {
-            if (_httpRequest != null)
+            var httpRequest = (HttpWebRequest)connection.Items[HttpRequestKey];
+            if (httpRequest != null)
             {
-                lock (_lockObj)
+                lock (httpRequest)
                 {
-                    if (_httpRequest != null)
+                    if (httpRequest != null)
                     {
                         try
                         {
-                            _httpRequest.Abort();
-                            _httpRequest = null;
+                            OnBeforeAbort(connection);
+                            httpRequest.Abort();
                         }
                         catch (NotImplementedException)
                         {
@@ -125,6 +109,11 @@ namespace SignalR.Client.Transports
                     }
                 }
             }
+        }
+
+        protected virtual void OnBeforeAbort(Connection connection)
+        {
+
         }
 
         protected static void OnMessage(Connection connection, string response)

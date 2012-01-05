@@ -8,6 +8,8 @@ namespace SignalR.Client.Transports
 {
     public class ServerSentEventsTransport : HttpBasedTransport
     {
+        private const string ReaderKey = "sse.reader";
+
         public ServerSentEventsTransport()
             : base("serverSentEvents")
         {
@@ -45,13 +47,24 @@ namespace SignalR.Client.Transports
                 {
                     // Get the reseponse stream and read it for messages
                     var stream = task.Result.GetResponseStream();
-                    var handler = new AsyncStreamReader(stream,
-                                                        connection,
-                                                        initializeCallback,
-                                                        exception => OpenConnection(connection, data, initializeCallback, errorCallback));
-                    handler.StartReading();
+                    var reader = new AsyncStreamReader(stream, connection, initializeCallback, errorCallback);
+                    reader.StartReading();
+
+                    // Set the reader for this connection
+                    connection.Items[ReaderKey] = reader;
                 }
             });
+        }
+
+        protected override void OnBeforeAbort(Connection connection)
+        {
+            // Get the reader from the connection and stop it
+            var reader = (AsyncStreamReader)connection.Items[ReaderKey];
+            if (reader != null)
+            {
+                // Stop reading data from the stream
+                reader.StopReading();
+            }
         }
 
         private class AsyncStreamReader
@@ -99,9 +112,12 @@ namespace SignalR.Client.Transports
                     {
                         Exception exception = task.Exception.GetBaseException();
 
-                        _connection.OnError(exception);
+                        if (!IsRequestAborted(exception))
+                        {
+                            _connection.OnError(exception);
 
-                        _errorCallback(exception);
+                            _errorCallback(exception);
+                        }
                         return;
                     }
 
@@ -126,6 +142,11 @@ namespace SignalR.Client.Transports
 
             private void ProcessBuffer()
             {
+                if (!_reading)
+                {
+                    return;
+                }
+
                 if (_processingBuffer)
                 {
                     // Increment the number of times we should process messages
@@ -139,6 +160,11 @@ namespace SignalR.Client.Transports
 
                 for (int i = 0; i < total; i++)
                 {
+                    if (!_reading)
+                    {
+                        return;
+                    }
+
                     ProcessChunks();
                 }
 
@@ -149,7 +175,7 @@ namespace SignalR.Client.Transports
 
             private void ProcessChunks()
             {
-                while (_buffer.HasChunks)
+                while (_reading && _buffer.HasChunks)
                 {
                     string line = _buffer.ReadLine();
 
@@ -159,11 +185,21 @@ namespace SignalR.Client.Transports
                         break;
                     }
 
+                    if (!_reading)
+                    {
+                        return;
+                    }
+
                     // Try parsing the sseEvent
                     SseEvent sseEvent;
                     if (!TryParseEvent(line, out sseEvent))
                     {
                         continue;
+                    }
+
+                    if (!_reading)
+                    {
+                        return;
                     }
 
                     switch (sseEvent.Type)
@@ -183,7 +219,10 @@ namespace SignalR.Client.Transports
                             }
                             else
                             {
-                                OnMessage(_connection, sseEvent.Data);
+                                if (_reading)
+                                {
+                                    OnMessage(_connection, sseEvent.Data);
+                                }
                             }
                             break;
                     }
@@ -250,7 +289,6 @@ namespace SignalR.Client.Transports
 
                 public string ReadLine()
                 {
-                    // TODO: Clean up old processed string
                     for (int i = _offset; i < _buffer.Length; i++, _offset++)
                     {
                         if (_buffer[i] == '\n')
