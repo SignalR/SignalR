@@ -15,6 +15,7 @@ namespace SignalR.Client
         private static Version _assemblyVersion;
 
         private IClientTransport _transport;
+        private bool _initialized;
 
         public event Action<string> Received;
         public event Action<Exception> Error;
@@ -51,12 +52,12 @@ namespace SignalR.Client
         }
 
         public virtual Task Start(IClientTransport transport)
-        {            
+        {
             if (IsActive)
             {
                 return TaskAsyncHelper.Empty;
             }
-            
+
             IsActive = true;
 
             _transport = transport;
@@ -83,8 +84,7 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                return _transport.Start(this, data);
-
+                return _transport.Start(this, data).Then(() => _initialized = true);
             })
             .FastUnwrap();
         }
@@ -92,7 +92,7 @@ namespace SignalR.Client
         public virtual void Stop()
         {
             // Do nothing if the connection was never started
-            if (_transport == null)
+            if (!_initialized)
             {
                 return;
             }
@@ -109,6 +109,7 @@ namespace SignalR.Client
             finally
             {
                 IsActive = false;
+                _initialized = false;
             }
         }
 
@@ -119,7 +120,7 @@ namespace SignalR.Client
 
         public Task<T> Send<T>(string data)
         {
-            if (_transport == null)
+            if (!_initialized)
             {
                 throw new InvalidOperationException("Start must be called before data can be sent");
             }
