@@ -168,7 +168,10 @@ namespace SignalR.Client.Transports
                     ProcessChunks();
                 }
 
-                _processingQueue -= total;
+                if (_processingQueue > 0)
+                {
+                    _processingQueue -= total;
+                }
 
                 _processingBuffer = false;
             }
