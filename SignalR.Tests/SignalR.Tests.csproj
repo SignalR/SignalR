@@ -52,7 +52,6 @@
   <ItemGroup>
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="InProcessMessageStoreTest.cs" />
-    <Compile Include="LongPollingTransportTest.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
