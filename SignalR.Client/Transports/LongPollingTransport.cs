@@ -30,7 +30,7 @@ namespace SignalR.Client.Transports
             HttpHelper.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
                 // Clear the pending request
-                connection.Items[HttpRequestKey] = null;
+                connection.Items.Remove(HttpRequestKey);
 
                 try
                 {

@@ -64,6 +64,9 @@ namespace SignalR.Client.Transports
             {
                 // Stop reading data from the stream
                 reader.StopReading();
+
+                // Remove the reader
+                connection.Items.Remove(ReaderKey);
             }
         }
 
