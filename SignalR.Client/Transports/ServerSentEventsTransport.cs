@@ -141,7 +141,7 @@ namespace SignalR.Client.Transports
                 {
                     ProcessChunks();
                 }
-                
+
                 _processingQueue -= total;
 
                 _processingBuffer = false;
@@ -255,9 +255,14 @@ namespace SignalR.Client.Transports
                     {
                         if (_buffer[i] == '\n')
                         {
+                            _buffer.Remove(0, _offset + 1);
                             string line = _lineBuilder.ToString();
+#if WINDOWS_PHONE
+                            _lineBuilder.Length = 0;
+#else
                             _lineBuilder.Clear();
-                            _offset++;
+#endif
+                            _offset = 0;
                             return line;
                         }
                         _lineBuilder.Append(_buffer[i]);

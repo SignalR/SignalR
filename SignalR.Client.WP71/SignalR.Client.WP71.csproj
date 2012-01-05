@@ -92,14 +92,29 @@
     <Compile Include="..\SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
+      <Link>Infrastructure\StreamExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
+      <Link>Transports\HttpBasedTransport.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\IClientTransport.cs">
       <Link>Transports\IClientTransport.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\LongPollingTransport.cs">
       <Link>Transports\LongPollingTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
+      <Link>Transports\ServerSentEventsTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\Transport.cs">
+      <Link>Transports\Transport.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
       <Link>Infrastructure\HttpHelper.cs</Link>
