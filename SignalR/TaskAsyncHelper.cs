@@ -540,8 +540,15 @@ namespace SignalR
                 }
                 else
                 {
-                    successor();
-                    tcs.SetResult(null);
+                    try
+                    {
+                        successor();
+                        tcs.SetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
                 }
             });
 
@@ -565,7 +572,14 @@ namespace SignalR
                     }
                     else
                     {
-                        tcs.SetResult(successor());
+                        try
+                        {
+                            tcs.SetResult(successor());
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.SetException(ex);
+                        }
                     }
                 });
 
@@ -587,7 +601,14 @@ namespace SignalR
                     }
                     else
                     {
-                        tcs.SetResult(successor(t));
+                        try
+                        {
+                            tcs.SetResult(successor(t));
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.SetException(ex);
+                        }
                     }
                 });
 

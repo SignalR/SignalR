@@ -81,16 +81,29 @@ namespace SignalR.Client
 
                 if (raw == null)
                 {
-                    throw new InvalidOperationException("Failed to negotiate");
+                    throw new InvalidOperationException("Server negotiation failed.");
                 }
 
                 var negotiationResponse = JsonConvert.DeserializeObject<NegotiationResponse>(raw);
+
+                VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
                 return _transport.Start(this, data).Then(() => _initialized = true);
             })
             .FastUnwrap();
+        }
+
+        private void VerifyProtocolVersion(string versionString)
+        {
+            Version version;
+            if (String.IsNullOrEmpty(versionString) ||
+                !Version.TryParse(versionString, out version) ||
+                !(version.Major == 1 && version.Minor == 0))
+            {
+                throw new InvalidOperationException("Incompatible protocol version.");
+            }
         }
 
         public virtual void Stop()
