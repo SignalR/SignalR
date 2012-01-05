@@ -58,6 +58,14 @@ namespace SignalR.Samples.Hubs.DemoHub
             });
         }
 
+        public Task<int> GenericTaskWithException()
+        {
+            return Task<int>.Factory.StartNew(() =>
+            {
+                throw new Exception();
+            });
+        }
+
         public void SimpleArray(int[] nums)
         {
             foreach (var n in nums)

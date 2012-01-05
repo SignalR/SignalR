@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using SignalR.Abstractions;
@@ -112,7 +110,7 @@ namespace SignalR.Hubs
                     if (!returnType.IsGenericType)
                     {
                         return task.ContinueWith(t => ProcessResult(state, null, hubRequest, t.Exception))
-                            .FastUnwrap();
+                                   .FastUnwrap();
                     }
                     else
                     {
@@ -123,21 +121,19 @@ namespace SignalR.Hubs
                         var continueWith = TaskAsyncHelper.GetContinueWith(task.GetType());
 
                         var taskParameter = Expression.Parameter(continueWith.Type);
-                        var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessResult", BindingFlags.NonPublic | BindingFlags.Instance);
-                        var taskResult = Expression.Property(taskParameter, "Result");
-                        var taskException = Expression.Property(taskParameter, "Exception");
-
+                        var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
+                        
                         var body = Expression.Call(Expression.Constant(this),
                                                    processResultMethod,
                                                    Expression.Constant(state),
-                                                   Expression.Convert(taskResult, typeof(object)),
                                                    Expression.Constant(hubRequest),
-                                                   Expression.Convert(taskException, typeof(Exception)));
+                                                   taskParameter);
 
                         var lambda = Expression.Lambda(body, taskParameter);
 
                         var call = Expression.Call(Expression.Constant(task, continueWith.Type), continueWith.Method, lambda);
-                        return Expression.Lambda<Func<Task<Task>>>(call).Compile()().FastUnwrap();
+                        Func<Task<Task>> continueWithMethod = Expression.Lambda<Func<Task<Task>>>(call).Compile();
+                        return continueWithMethod.Invoke().FastUnwrap();
                     }
                 }
                 else
@@ -202,6 +198,15 @@ namespace SignalR.Hubs
             return from type in _hubLocator.GetHubs()
                    where typeof(IDisconnect).IsAssignableFrom(type)
                    select type;
+        }
+
+        private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
+        {
+            if (task.IsFaulted)
+            {
+                return ProcessResult(state, null, request, task.Exception);
+            }
+            return ProcessResult(state, task.Result, request, null);
         }
 
         private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)

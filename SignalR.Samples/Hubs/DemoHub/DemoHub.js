@@ -22,7 +22,7 @@
         o.doIt();
     };
 
-    $.connection.hub.start({transport: "auto"}, function () {
+    $.connection.hub.start({ transport: "auto" }, function () {
         demo.doSomethingAndCallError();
 
         demo.getValue(function (value) {
@@ -63,6 +63,10 @@
 
         demo.taskWithException().fail(function (e) {
             $('#taskWithException').html(e);
+        });
+
+        demo.genericTaskWithException().fail(function (e) {
+            $('#genericTaskWithException').html(e);
         });
 
         demo.overload().done(function () {
