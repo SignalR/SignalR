@@ -99,7 +99,7 @@ namespace SignalR.Client
         {
             Version version;
             if (String.IsNullOrEmpty(versionString) ||
-                !Version.TryParse(versionString, out version) ||
+                !TryParseVersion(versionString, out version) ||
                 !(version.Major == 1 && version.Minor == 0))
             {
                 throw new InvalidOperationException("Incompatible protocol version.");
@@ -186,6 +186,24 @@ namespace SignalR.Client
             }
 
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
+        }
+
+        private static bool TryParseVersion(string versionString, out Version version)
+        {
+#if WINDOWS_PHONE
+            try
+            {
+                version = new Version(versionString);
+                return true;
+            }
+            catch
+            {
+                version = null;
+                return false;
+            }
+#else
+            return Version.TryParse(versionString, out version);
+#endif
         }
     }
 }
