@@ -21,9 +21,6 @@ namespace SignalR.AspNet
 
             DependencyResolver.Register(typeof(IHubTypeResolver), () => typeResolver);
             DependencyResolver.Register(typeof(IHubLocator), () => hubLocator);
-
-
-            TransportManager.InitializeDefaultTransports();
         }
     }
 }

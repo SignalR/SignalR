@@ -13,6 +13,7 @@ namespace SignalR
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IConnectionIdFactory _connectionIdFactory;
+        private readonly ITransportManager _transportManager;
 
         protected ITransport _transport;
 
@@ -20,19 +21,22 @@ namespace SignalR
             : this(Signaler.Instance,
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
-                   DependencyResolver.Resolve<IJsonSerializer>())
+                   DependencyResolver.Resolve<IJsonSerializer>(),
+                   DependencyResolver.Resolve<ITransportManager>())
         {
         }
 
         protected PersistentConnection(Signaler signaler,
                                        IConnectionIdFactory connectionIdFactory,
                                        IMessageStore store,
-                                       IJsonSerializer jsonSerializer)
+                                       IJsonSerializer jsonSerializer,
+                                       ITransportManager transportManager)
         {
             _signaler = signaler;
             _connectionIdFactory = connectionIdFactory;
             _store = store;
             _jsonSerializer = jsonSerializer;
+            _transportManager = transportManager;
         }
 
         // Static events intended for use when measuring performance
@@ -65,6 +69,11 @@ namespace SignalR
             }
 
             _transport = GetTransport(context);
+
+            if (_transport == null)
+            {
+                throw new InvalidOperationException("Unknown transport.");
+            }
 
             string connectionId = _transport.ConnectionId;
 
@@ -214,8 +223,7 @@ namespace SignalR
 
         private ITransport GetTransport(HostContext context)
         {
-            return TransportManager.GetTransport(context) ??
-                new LongPollingTransport(context, _jsonSerializer);
+            return _transportManager.GetTransport(context);
         }
 
         private static void OnSending()

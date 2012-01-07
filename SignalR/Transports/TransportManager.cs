@@ -5,23 +5,39 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
-    public static class TransportManager
+    public class TransportManager : ITransportManager
     {
-        private static readonly ConcurrentDictionary<string, Func<HostContext, ITransport>> _transports = new ConcurrentDictionary<string, Func<HostContext, ITransport>>(StringComparer.OrdinalIgnoreCase);
-        private static bool _initialized;
+        private readonly ConcurrentDictionary<string, Func<HostContext, ITransport>> _transports = new ConcurrentDictionary<string, Func<HostContext, ITransport>>(StringComparer.OrdinalIgnoreCase);
+        private static readonly TransportManager _default = new TransportManager();
 
-        public static void Register(string transportName, Func<HostContext, ITransport> transportFactory)
+        private TransportManager()
+        {
+            Register("foreverFrame", context => new ForeverFrameTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            Register("serverSentEvents", context => new ServerSentEventsTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+            Register("forever", context => new ForeverTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
+        }
+
+        public static TransportManager Default
+        {
+            get
+            {
+                return _default;
+            }
+        }
+
+        public void Register(string transportName, Func<HostContext, ITransport> transportFactory)
         {
             _transports.TryAdd(transportName, transportFactory);
         }
 
-        public static void Remove(string transportName)
+        public void Remove(string transportName)
         {
             Func<HostContext, ITransport> removed;
             _transports.TryRemove(transportName, out removed);
         }
 
-        internal static ITransport GetTransport(HostContext context)
+        public ITransport GetTransport(HostContext context)
         {
             string transportName = context.Request.QueryString["transport"];
 
@@ -37,19 +53,6 @@ namespace SignalR.Transports
             }
 
             return null;
-        }
-
-        public static void InitializeDefaultTransports()
-        {
-            if (!_initialized)
-            {
-                Register("foreverFrame", context => new ForeverFrameTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-                Register("serverSentEvents", context => new ServerSentEventsTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-                Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-                Register("forever", context => new ForeverTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-
-                _initialized = true;
-            }
         }
     }
 }

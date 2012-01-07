@@ -20,11 +20,6 @@ namespace SignalR.SelfHost
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
-        static Server()
-        {
-            TransportManager.InitializeDefaultTransports();
-        }
-
         public Server(string url)
         {
             _url = url;
