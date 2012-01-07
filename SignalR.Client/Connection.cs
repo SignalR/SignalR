@@ -168,6 +168,8 @@ namespace SignalR.Client
 #else
 #if WINDOWS_PHONE
             request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
+#elif __ANDROID__
+            request.UserAgent = CreateUserAgentString("SignalR.Client.MonoAndroid");
 #else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
 #endif
