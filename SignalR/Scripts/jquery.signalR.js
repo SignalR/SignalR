@@ -255,6 +255,8 @@
         },
 
         processMessages: function (connection, data) {
+            var $connection;
+            
             if (data) {
                 if (data.Disconnect) {
                     // Disconnected by the server, need to reconnect
@@ -264,7 +266,7 @@
                 }
 
                 if (data.Messages) {
-                    var $connection = $(connection);
+                    $connection = $(connection);
 
                     $.each(data.Messages, function () {
                         try {
@@ -351,9 +353,10 @@
                     };
 
                     connection.socket.onmessage = function (event) {
-                        var data = window.JSON.parse(event.data);
+                        var data = window.JSON.parse(event.data),
+                            $connection;
                         if (data) {
-                            var $connection = $(connection);
+                            $connection = $(connection);
 
                             if (data.Messages) {
                                 $.each(data.Messages, function () {
