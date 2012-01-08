@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
@@ -11,7 +12,7 @@ namespace SignalR.AspNet
         private delegate void RemoveHeaderDel(HttpWorkerRequest workerRequest);
 
         private const string IIS7WorkerRequestTypeName = "System.Web.Hosting.IIS7WorkerRequest";
-        private static readonly RemoveHeaderDel IIS7RemoveHeader = GetRemoveHeaderDelegate();        
+        private static readonly RemoveHeaderDel IIS7RemoveHeader = GetRemoveHeaderDelegate();
 
         private readonly HttpContextBase _context;
 
@@ -80,7 +81,14 @@ namespace SignalR.AspNet
             }
             else
             {
-                _context.Request.Headers.Remove("Accept-Encoding");
+                try
+                {
+                    _context.Request.Headers.Remove("Accept-Encoding");
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // Happens on cassini
+                }
             }
         }
 
@@ -88,7 +96,7 @@ namespace SignalR.AspNet
         {
             return workerRequest.GetType().FullName == IIS7WorkerRequestTypeName;
         }
-        
+
         private static RemoveHeaderDel GetRemoveHeaderDelegate()
         {
             var iis7wrType = typeof(HttpContext).Assembly.GetType(IIS7WorkerRequestTypeName);
