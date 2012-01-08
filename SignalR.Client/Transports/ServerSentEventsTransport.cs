@@ -185,8 +185,7 @@ namespace SignalR.Client.Transports
                 {
                     string line = _buffer.ReadLine();
 
-                    // Stop when we read an empty line
-                    if (String.IsNullOrEmpty(line))
+                    if (line == null)
                     {
                         break;
                     }
@@ -299,10 +298,6 @@ namespace SignalR.Client.Transports
                     {
                         if (_buffer[i] == '\n')
                         {
-                            // ignore newlines at the beginning of a line to catch cases where there are multiple newlines in a row
-                            if (_lineBuilder.Length == 0)
-                                continue;
-
                             _buffer.Remove(0, _offset + 1);
                             string line = _lineBuilder.ToString();
 #if WINDOWS_PHONE
