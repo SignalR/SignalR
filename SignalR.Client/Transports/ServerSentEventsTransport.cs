@@ -185,8 +185,8 @@ namespace SignalR.Client.Transports
                 {
                     string line = _buffer.ReadLine();
 
-                    // Stop when we read an empty line
-                    if (String.IsNullOrEmpty(line))
+                    // No new lines in the buffer so stop processing
+                    if (line == null)
                     {
                         break;
                     }
