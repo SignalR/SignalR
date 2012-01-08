@@ -73,7 +73,7 @@ namespace SignalR.Client.Hubs
             return subscription;
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT && !__ANDROID__
+#if !WINDOWS_PHONE && !SILVERLIGHT && !__ANDROID__ && !__MONOTOUCH__
         public static Subscription On(this IHubProxy proxy, string eventName, Action<dynamic> onData)
         {
             return On<dynamic>(proxy, eventName, onData);

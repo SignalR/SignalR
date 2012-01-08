@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-#if !WINDOWS_PHONE && !__ANDROID__
+#if !WINDOWS_PHONE && !__ANDROID__ && !__MONOTOUCH__
 using System.Dynamic;
 #endif
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace SignalR.Client.Hubs
 {
     public class HubProxy :
-#if !WINDOWS_PHONE && !__ANDROID__
+#if !WINDOWS_PHONE && !__ANDROID__ && !__MONOTOUCH__
  DynamicObject,
 #endif
  IHubProxy
@@ -101,7 +101,7 @@ namespace SignalR.Client.Hubs
             });
         }
 
-#if !WINDOWS_PHONE && !__ANDROID__
+#if !WINDOWS_PHONE && !__ANDROID__ && !__MONOTOUCH__
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             _state[binder.Name] = value;

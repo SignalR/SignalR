@@ -1,4 +1,4 @@
-﻿#if __ANDROID__
+﻿#if __ANDROID__ || __MONOTOUCH__
 // https://github.com/mono/mono/blob/master/mcs/class/System.Core/System.Threading.Tasks/TaskExtensions.cs
 namespace System.Threading.Tasks
 {

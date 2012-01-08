@@ -31,7 +31,7 @@ namespace SignalR
                 {
                     var ex = innerTask.Exception;
                     // observe Exception
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !__MONOTOUCH__
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
                 }, TaskContinuationOptions.OnlyOnFaulted);
