@@ -61,8 +61,6 @@ namespace SignalR
 
         public virtual Task ProcessRequestAsync(HostContext context)
         {
-            Task transportEventTask = null;
-
             if (IsNegotiationRequest(context.Request))
             {
                 return ProcessNegotiationRequest(context);
@@ -86,40 +84,25 @@ namespace SignalR
             IEnumerable<string> groups = _transport.Groups;
 
             Connection = CreateConnection(connectionId, groups, context.Request);
-
-            // Wire up the events we need
-            _transport.Connected += () =>
+            
+            _transport.Connected = () =>
             {
-                transportEventTask = OnConnectedAsync(context.Request, connectionId);
+                return OnConnectedAsync(context.Request, connectionId);
             };
 
-            _transport.Received += (data) =>
+            _transport.Received = data =>
             {
-                transportEventTask = OnReceivedAsync(connectionId, data);
+                return OnReceivedAsync(connectionId, data);
             };
 
-            _transport.Error += (e) =>
+            _transport.Error = OnErrorAsync;
+
+            _transport.Disconnected = () =>
             {
-                transportEventTask = OnErrorAsync(e);
+                return OnDisconnectAsync(connectionId);
             };
 
-            _transport.Disconnected += () =>
-            {
-                transportEventTask = OnDisconnectAsync(connectionId);
-            };
-
-            Func<Task> transportProcessRequest = _transport.ProcessRequest(Connection);
-
-            if (transportProcessRequest != null)
-            {
-                if (transportEventTask != null)
-                {
-                    return transportEventTask.Then(transportProcessRequest).FastUnwrap();
-                }
-                return transportProcessRequest();
-            }
-
-            return transportEventTask ?? TaskAsyncHelper.Empty;
+            return _transport.ProcessRequest(Connection) ?? TaskAsyncHelper.Empty;
         }
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)

@@ -114,12 +114,20 @@ namespace SignalR.Transports
 
                         try
                         {
-                            connection.Disconnect();
+                            connection.Disconnect().ContinueWith(task =>
+                            {
+                                if (task.IsFaulted)
+                                {
+                                    Trace.TraceError("SignalR exception thrown by Task: {0}", task.Exception);
+                                }
+
+                                // Remove the connection from the list
+                                RemoveConnection(connection);
+                            });
                         }
-                        finally
+                        catch
                         {
-                            // Remove the connection from the list
-                            RemoveConnection(connection);
+                            // Swallow exceptions that might happen during disconnect
                         }
                     }
                 }

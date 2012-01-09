@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+
 namespace SignalR.Transports
 {
     public interface ITrackingDisconnect
@@ -6,6 +8,6 @@ namespace SignalR.Transports
         string ConnectionId { get; }
         bool IsAlive { get; }
         TimeSpan DisconnectThreshold { get; }
-        void Disconnect();
+        Task Disconnect();
     }
 }
