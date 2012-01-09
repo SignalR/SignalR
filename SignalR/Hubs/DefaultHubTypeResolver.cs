@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web.Compilation;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
