@@ -194,7 +194,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind("onError", function (e, data) {
-                callback.call(connection);
+                callback.call(connection, data);
             });
             return connection;
         },
@@ -272,7 +272,7 @@
                     if (textStatus === "abort") {
                         return;
                     }
-                    $(connection).trigger("onError");
+                    $(connection).trigger("onError", [errData]);
                 }
             });
         },
