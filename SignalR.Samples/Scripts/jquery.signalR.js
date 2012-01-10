@@ -199,6 +199,17 @@
             return connection;
         },
 
+        reconnect: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the client reconnects after being disconnected</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection is re-established</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind("onReconnect", function (e, data) {
+                callback.call(connection);
+            });
+            return connection;
+        },
+
         stop: function () {
             /// <summary>Stops listening</summary>
             /// <returns type="signalR" />
@@ -261,25 +272,25 @@
                     if (textStatus === "abort") {
                         return;
                     }
-                    $(connection).trigger("onError", [errData]);
+                    $(connection).trigger("onError");
                 }
             });
         },
 
         processMessages: function (connection, data) {
-            var $connection;
+            var $connection = $(connection);
 
             if (data) {
                 if (data.Disconnect) {
-                    // Disconnected by the server, need to reconnect
-                    connection.stop()
-                        .start();
+                    // Disconnected by the server
+                    connection.stop();
+
+                    // Trigger the reconnect event
+                    $connection.trigger("onReconnect");
                     return;
                 }
 
                 if (data.Messages) {
-                    $connection = $(connection);
-
                     $.each(data.Messages, function () {
                         try {
                             $connection.trigger("onReceived", [this]);

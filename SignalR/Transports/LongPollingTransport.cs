@@ -201,10 +201,6 @@ namespace SignalR.Transports
 
         private Task ProcessConnectRequest(IReceivingConnection connection)
         {
-            // Since this is the first request, there's no data we need to retrieve so just wait
-            // on a message to come through
-            _heartBeat.AddConnection(this);
-
             if (Connected != null)
             {
                 return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
@@ -215,6 +211,8 @@ namespace SignalR.Transports
 
         private Task ProcessReceiveRequest(IReceivingConnection connection)
         {
+            _heartBeat.AddConnection(this);
+
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
                               connection.ReceiveAsync() :
