@@ -256,7 +256,7 @@
 
         processMessages: function (connection, data) {
             var $connection;
-            
+
             if (data) {
                 if (data.Disconnect) {
                     // Disconnected by the server, need to reconnect
@@ -407,9 +407,10 @@
                 connection.eventSource = new window.EventSource(url);
 
                 connection.eventSource.addEventListener("open", function (e) {
-                    // opened
-                    opened = true;
-                    onSuccess();
+                    if (opened === false) {
+                        opened = true;
+                        onSuccess();
+                    }
                 }, false);
 
                 connection.eventSource.addEventListener("message", function (e) {
