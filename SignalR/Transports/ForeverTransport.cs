@@ -163,7 +163,7 @@ namespace SignalR.Transports
         {
             // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
- 
+
             return TaskAsyncHelper.Empty;
         }
 
@@ -242,8 +242,7 @@ namespace SignalR.Transports
                 return;
             }
 
-            // Client is no longer connected
-            Disconnect().ContinueWith(taskCompletetionSource);
+            taskCompletetionSource.SetResult(null);
             return;
         }
     }
