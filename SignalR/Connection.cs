@@ -160,7 +160,7 @@ namespace SignalR
         {
             if (result.TimedOut)
             {
-                PersistentResponse response = GetEmptyResponse(messageId);
+                PersistentResponse response = GetEmptyResponse(messageId, result.TimedOut);
 
                 // Return a task wrapping the result
                 return TaskAsyncHelper.FromResult(response);
@@ -171,12 +171,12 @@ namespace SignalR
                 .Then<PersistentResponse, long?>((response, id) => response ?? GetEmptyResponse(id), messageId);
         }
 
-        private PersistentResponse GetEmptyResponse(long? messageId)
+        private PersistentResponse GetEmptyResponse(long? messageId, bool timedOut = false)
         {
             var response = new PersistentResponse
             {
                 MessageId = messageId ?? 0,
-                TimedOut = true
+                TimedOut = timedOut
             };
 
             PopulateResponseState(response);
@@ -239,7 +239,7 @@ namespace SignalR
             {
                 return;
             }
-                
+
             switch (command.Type)
             {
                 case CommandType.AddToGroup:
