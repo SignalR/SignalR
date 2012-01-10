@@ -65,14 +65,14 @@ namespace SignalR.Transports
         {
             get
             {
-                string groupValue = _context.Request.QueryStringOrForm("groups");
+                string groupValue = _context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))
                 {
                     return Enumerable.Empty<string>();
                 }
 
-                return groupValue.Split(',');
+                return _jsonSerializer.Parse<string[]>(groupValue);
             }
         }
 
@@ -216,7 +216,7 @@ namespace SignalR.Transports
                     // If the response has the Disconnect flag, just send the response and exit the loop,
                     // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
                     Task sendTask = Send(response);
-                    if (response.Disconnect)
+                    if (response.Disconnect || response.TimedOut)
                     {
                         // Signal the tcs when the task is done
                         return sendTask.Then(tcs => tcs.SetResult(null), taskCompletetionSource);

@@ -175,7 +175,8 @@ namespace SignalR
         {
             var response = new PersistentResponse
             {
-                MessageId = messageId ?? 0
+                MessageId = messageId ?? 0,
+                TimedOut = true
             };
 
             PopulateResponseState(response);

@@ -50,14 +50,14 @@ namespace SignalR.Transports
         {
             get
             {
-                string groupValue = _context.Request.QueryStringOrForm("groups");
+                string groupValue = _context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))
                 {
                     return Enumerable.Empty<string>();
                 }
 
-                return groupValue.Split(',');
+                return _jsonSerializer.Parse<string[]>(groupValue);
             }
         }
 

@@ -16,7 +16,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return Context.Request.Headers["Last-Event-ID"] == null;
+                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -35,7 +35,7 @@ namespace SignalR.Transports
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
             long lastMessageId;
-            if (Int64.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))
+            if (Int64.TryParse(Context.Request.QueryString["messageId"], out lastMessageId))
             {
                 LastMessageId = lastMessageId;
             }
