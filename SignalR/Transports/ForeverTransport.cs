@@ -163,9 +163,7 @@ namespace SignalR.Transports
         {
             // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
-
-            _context.Response.Buffer = false;
-
+ 
             return TaskAsyncHelper.Empty;
         }
 

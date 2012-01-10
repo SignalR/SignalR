@@ -19,30 +19,7 @@ namespace SignalR.AspNet
         public AspNetResponse(HttpContextBase context)
         {
             _context = context;
-        }
-
-        public bool Buffer
-        {
-            get
-            {
-                return _context.Response.Buffer;
-            }
-            set
-            {
-                _context.Response.Buffer = value;
-                _context.Response.BufferOutput = value;
-
-                if (!value)
-                {
-                    // This forces the IIS compression module to leave this response alone.
-                    // If we don't do this, it will buffer the response to suit its own compression
-                    // logic, resulting in partial messages being sent to the client.                    
-                    RemoveAcceptEncoding();
-
-                    _context.Response.CacheControl = "no-cache";
-                    _context.Response.AddHeader("Connection", "keep-alive");
-                }
-            }
+            DisableResponseBuffering();
         }
 
         public bool IsClientConnected
@@ -69,6 +46,20 @@ namespace SignalR.AspNet
         {
             _context.Response.Write(data);
             return TaskAsyncHelper.Empty;
+        }
+
+        private void DisableResponseBuffering()
+        {
+            _context.Response.Buffer = false;
+            _context.Response.BufferOutput = false;
+
+            // This forces the IIS compression module to leave this response alone.
+            // If we don't do this, it will buffer the response to suit its own compression
+            // logic, resulting in partial messages being sent to the client.
+            RemoveAcceptEncoding();
+
+            _context.Response.CacheControl = "no-cache";
+            _context.Response.AddHeader("Connection", "keep-alive");
         }
 
         private void RemoveAcceptEncoding()

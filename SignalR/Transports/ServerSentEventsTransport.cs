@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Web;
 using System.Threading.Tasks;
-using SignalR.Infrastructure;
 using SignalR.Abstractions;
 
 namespace SignalR.Transports

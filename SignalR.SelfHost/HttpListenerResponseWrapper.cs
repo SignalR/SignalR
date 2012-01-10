@@ -12,14 +12,7 @@ namespace SignalR.SelfHost
         public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse)
         {
             _httpListenerResponse = httpListenerResponse;
-            Buffer = true;
             IsClientConnected = true;
-        }
-
-        public bool Buffer
-        {
-            get;
-            set;
         }
 
         public string ContentType
@@ -53,11 +46,9 @@ namespace SignalR.SelfHost
                             IsClientConnected = false;
                         }
                     }
-                    else if (!Buffer)
-                    {
-                        // Flush the response if we aren't buffering
-                        _httpListenerResponse.OutputStream.Flush();
-                    }
+
+                    // Always flush the response
+                    _httpListenerResponse.OutputStream.Flush();
                 });
         }
     }
