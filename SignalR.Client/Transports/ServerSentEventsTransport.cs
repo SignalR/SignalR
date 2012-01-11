@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports
@@ -9,6 +10,7 @@ namespace SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private const string ReaderKey = "sse.reader";
+        private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
             : base("serverSentEvents")
@@ -22,7 +24,10 @@ namespace SignalR.Client.Transports
 
         private void OpenConnection(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
-            var url = connection.Url + GetReceiveQueryString(connection, data);
+            // If we're reconnecting add /connect to the url
+            bool reconnect = initializeCallback == null;
+
+            var url = (reconnect ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
             Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
 
@@ -32,22 +37,35 @@ namespace SignalR.Client.Transports
 
                 request.Accept = "text/event-stream";
 
-                if (connection.MessageId != null)
-                {
-                    request.Headers["Last-Event-ID"] = connection.MessageId.ToString();
-                }
-
             }).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
-                    errorCallback(task.Exception);
+                    if (errorCallback != null)
+                    {
+                        errorCallback(task.Exception);
+                    }
+                    else
+                    {
+                        // Raise the error event if we failed to reconnect
+                        connection.OnError(task.Exception.GetBaseException());
+                    }
                 }
                 else
                 {
                     // Get the reseponse stream and read it for messages
                     var stream = task.Result.GetResponseStream();
-                    var reader = new AsyncStreamReader(stream, connection, initializeCallback, errorCallback);
+                    var reader = new AsyncStreamReader(stream,
+                                                       connection,
+                                                       initializeCallback,
+                                                       () =>
+                                                       {
+                                                           // Wait for a bit before reconnecting
+                                                           Thread.Sleep(ReconnectDelay);
+
+                                                           // Now attempt a reconnect
+                                                           OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+                                                       });
                     reader.StartReading();
 
                     // Set the reader for this connection
@@ -75,16 +93,16 @@ namespace SignalR.Client.Transports
             private readonly Stream _stream;
             private readonly ChunkBuffer _buffer;
             private readonly Action _initializeCallback;
-            private readonly Action<Exception> _errorCallback;
+            private readonly Action _closeCallback;
             private readonly Connection _connection;
             private int _processingQueue;
             private bool _reading;
             private bool _processingBuffer;
 
-            public AsyncStreamReader(Stream stream, Connection connection, Action initializeCallback, Action<Exception> errorCallback)
+            public AsyncStreamReader(Stream stream, Connection connection, Action initializeCallback, Action closeCallback)
             {
                 _initializeCallback = initializeCallback;
-                _errorCallback = errorCallback;
+                _closeCallback = closeCallback;
                 _stream = stream;
                 _connection = connection;
                 _buffer = new ChunkBuffer();
@@ -118,8 +136,6 @@ namespace SignalR.Client.Transports
                         if (!IsRequestAborted(exception))
                         {
                             _connection.OnError(exception);
-
-                            _errorCallback(exception);
                         }
                         return;
                     }
@@ -130,6 +146,19 @@ namespace SignalR.Client.Transports
                     {
                         // Put chunks in the buffer
                         _buffer.Add(buffer, read);
+                    }
+
+                    if (read == 0)
+                    {
+                        // Stop any reading we're doing
+                        StopReading();
+
+                        // Close the stream
+                        _stream.Close();
+
+                        // Call the close callback
+                        _closeCallback();
+                        return;
                     }
 
                     // Keep reading the next set of data
@@ -220,8 +249,11 @@ namespace SignalR.Client.Transports
                         case EventType.Data:
                             if (sseEvent.Data.Equals("initialized", StringComparison.OrdinalIgnoreCase))
                             {
-                                // Mark the connection as started
-                                _initializeCallback();
+                                if (_initializeCallback != null)
+                                {
+                                    // Mark the connection as started
+                                    _initializeCallback();
+                                }
                             }
                             else
                             {
