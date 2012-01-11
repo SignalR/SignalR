@@ -67,7 +67,7 @@ namespace SignalR.Client.Transports
                                  _transport,
                                  Uri.EscapeDataString(connection.ConnectionId),
                                  Convert.ToString(connection.MessageId),
-                                 Uri.EscapeDataString(String.Join(",", connection.Groups.ToArray())),
+                                 Uri.EscapeDataString(JsonConvert.SerializeObject(connection.Groups)),
                                  data);
         }
 
