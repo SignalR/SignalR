@@ -5,4 +5,4 @@
 // associated with an assembly.
 [assembly: AssemblyTitle("SignalR.ScaleOut")]
 [assembly: AssemblyDescription("Scale out signal buses and message stores for SignalR for use in web farms")]
-[assembly: AssemblyVersion("0.3.6.0")]
+[assembly: AssemblyVersion("0.4.0.0")]
