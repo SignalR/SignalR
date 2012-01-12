@@ -486,7 +486,7 @@
 
                     log('SignalR: EventSource readyState: ' + connection.eventSource.readyState);
 
-                    if (e.eventPhase === EventSource.CLOSED) {
+                    if (e.eventPhase === window.EventSource.CLOSED) {
                         // connection closed                   
                         if (connection.eventSource.readyState === window.EventSource.CONNECTING) {
                             log('[' + new Date().toTimeString() + '] SignalR: EventSource reconnecting');
