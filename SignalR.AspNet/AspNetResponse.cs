@@ -44,8 +44,7 @@ namespace SignalR.AspNet
 
         public Task WriteAsync(string data)
         {
-            _context.Response.Write(data);
-            return TaskAsyncHelper.Empty;
+            return TaskAsyncHelper.FromMethod((response, value) => response.Write(value), _context.Response, data);
         }
 
         public Task EndAsync(string data)
