@@ -520,10 +520,13 @@
         foreverFrame: {
             name: "foreverFrame",
 
+            timeout: 3000,
+
             start: function (connection, onSuccess, onFailed) {
                 var that = this,
                     frameId = (transportLogic.foreverFrame.count += 1),
                     url,
+                    connectTimeOut,
                     frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
 
                 $(connection).trigger("onSending");
@@ -548,6 +551,19 @@
                 }
 
                 $("body").append(frame);
+
+                // After connecting, if after the specified timeout there's no response stop the connection
+                // and raise on failed
+                connectTimeOut = window.setTimeout(function () {
+                    if (connection.onSuccess) {
+                        that.stop(connection);
+
+                        if (onFailed) {
+                            onFailed();
+                        }
+                    }
+                },
+                that.timeOut);
             },
 
             reconnect: function (connection) {
