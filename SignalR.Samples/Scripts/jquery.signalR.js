@@ -545,7 +545,7 @@
         foreverFrame: {
             name: "foreverFrame",
 
-            timeout: 3000,
+            timeOut: 3000,
 
             start: function (connection, onSuccess, onFailed) {
                 var that = this,
@@ -608,7 +608,7 @@
 
             stop: function (connection) {
                 if (connection.frame) {
-                    connection.frame.remove();
+                    $(connection.frame).remove();
                     delete transportLogic.foreverFrame.connections[connection.frameId];
                 }
             },
