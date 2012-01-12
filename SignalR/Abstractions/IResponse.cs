@@ -8,5 +8,6 @@ namespace SignalR.Abstractions
         string ContentType { get; set; }
 
         Task WriteAsync(string data);
+        Task EndAsync(string data);
     }
 }

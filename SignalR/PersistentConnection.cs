@@ -184,7 +184,7 @@ namespace SignalR
         private Task ProcessNegotiationRequest(HostContext context)
         {
             context.Response.ContentType = Json.MimeType;
-            return context.Response.WriteAsync(_jsonSerializer.Stringify(new
+            return context.Response.EndAsync(_jsonSerializer.Stringify(new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request),

@@ -160,7 +160,7 @@ namespace SignalR.Hubs
             if (context.Request.Url.LocalPath.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(_url));
+                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url));
             }
 
             _context = context;

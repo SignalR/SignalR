@@ -36,20 +36,22 @@ namespace SignalR.SelfHost
         public Task WriteAsync(string data)
         {
             return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
                 {
-                    if (task.IsFaulted)
+                    var ex = task.Exception.GetBaseException() as HttpListenerException;
+                    if (ex != null && ex.ErrorCode == 1229)
                     {
-                        var ex = task.Exception.GetBaseException() as HttpListenerException;
-                        if (ex != null && ex.ErrorCode == 1229)
-                        {
-                            // Non existent connection or connection disposed
-                            IsClientConnected = false;
-                        }
+                        // Non existent connection or connection disposed
+                        IsClientConnected = false;
                     }
+                }
+            }).Catch();
+        }
 
-                    // Always flush the response
-                    _httpListenerResponse.OutputStream.Flush();
-                });
+        public Task EndAsync(string data)
+        {
+            return WriteAsync(data).Then(response => response.CloseSafe(), _httpListenerResponse);
         }
     }
 }

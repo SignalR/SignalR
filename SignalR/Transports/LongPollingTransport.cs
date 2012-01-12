@@ -154,7 +154,7 @@ namespace SignalR.Transports
             }
 
             _context.Response.ContentType = Json.MimeType;
-            return _context.Response.WriteAsync(payload);
+            return _context.Response.EndAsync(payload);
         }
 
         public virtual Task Disconnect()

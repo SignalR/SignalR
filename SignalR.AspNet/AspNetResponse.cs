@@ -48,6 +48,11 @@ namespace SignalR.AspNet
             return TaskAsyncHelper.Empty;
         }
 
+        public Task EndAsync(string data)
+        {
+            return WriteAsync(data);
+        }
+
         private void DisableResponseBuffering()
         {
             _context.Response.Buffer = false;

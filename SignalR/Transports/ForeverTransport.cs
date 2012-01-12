@@ -121,14 +121,16 @@ namespace SignalR.Transports
         public virtual Task Send(PersistentResponse response)
         {
             _heartBeat.MarkConnection(this);
-            return Send((object)response);
+            var data = JsonSerializer.Stringify(response);
+            OnSending(data);
+            return _context.Response.WriteAsync(data);
         }
 
         public virtual Task Send(object value)
         {
             var data = JsonSerializer.Stringify(value);
             OnSending(data);
-            return _context.Response.WriteAsync(data);
+            return _context.Response.EndAsync(data);
         }
 
         public Task Disconnect()
