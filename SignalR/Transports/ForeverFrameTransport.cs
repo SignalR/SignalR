@@ -58,6 +58,12 @@ namespace SignalR.Transports
 
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
+            long lastMessageId;
+            if (Int64.TryParse(Context.Request.QueryString["messageId"], out lastMessageId))
+            {
+                LastMessageId = lastMessageId;
+            }
+
             return base.InitializeResponse(connection)
                 .Then(initScript => Context.Response.WriteAsync(initScript), String.Format(_initTemplate, Context.Request.QueryString["frameId"]))
                 .FastUnwrap();

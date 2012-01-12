@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SelfHost", "SignalR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Samples", "SignalR.Client.Samples\SignalR.Client.Samples.csproj", "{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SelfHost.Samples", "SignalR.SelfHost.Samples\SignalR.SelfHost.Samples.csproj", "{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,16 @@ Global
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Release|Mixed Platforms.Build.0 = Release|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Release|x86.ActiveCfg = Release|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Release|x86.Build.0 = Release|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Debug|x86.ActiveCfg = Debug|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Debug|x86.Build.0 = Debug|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|Any CPU.ActiveCfg = Release|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|Mixed Platforms.Build.0 = Release|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|x86.ActiveCfg = Release|x86
+		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

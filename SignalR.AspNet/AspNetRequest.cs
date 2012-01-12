@@ -9,8 +9,8 @@ namespace SignalR.AspNet
     public class AspNetRequest : IRequest
     {
         private readonly HttpRequestBase _request;
-        private readonly NameValueCollection _form;
-        private readonly NameValueCollection _queryString;
+        private NameValueCollection _form;
+        private NameValueCollection _queryString;
 
         public AspNetRequest(HttpRequestBase request)
         {
@@ -21,20 +21,7 @@ namespace SignalR.AspNet
                 Cookies.Add(key, request.Cookies[key].Value);
             }
 
-            // Since the ValidationUtility has a dependency on HttpContext (not HttpContextBase) we
-            // need to check if we're out of HttpContext to preserve testability.
-            if (HttpContext.Current == null)
-            {
-                _form = _request.Form;
-                _queryString = _request.QueryString;
-            }
-            else
-            {
-                Func<NameValueCollection> formGetter, queryGetter;
-                ValidationUtility.GetUnvalidatedCollections(HttpContext.Current, out formGetter, out queryGetter);
-                _form = formGetter();
-                _queryString = queryGetter();
-            }
+            ResolveFormAndQueryString();
         }
 
         public Uri Url
@@ -73,6 +60,39 @@ namespace SignalR.AspNet
         {
             get;
             private set;
+        }
+
+        private void ResolveFormAndQueryString()
+        {
+            // Since the ValidationUtility has a dependency on HttpContext (not HttpContextBase) we
+            // need to check if we're out of HttpContext to preserve testability.
+            if (HttpContext.Current == null)
+            {
+                _form = _request.Form;
+                _queryString = _request.QueryString;
+            }
+            else
+            {
+                try
+                {
+                    ResolveUnvalidatedCollections();
+                }
+                catch
+                {
+                    // TODO: Cache this
+                    // Fallback to grabbing values from the request
+                    _form = _request.Form;
+                    _queryString = _request.QueryString;
+                }
+            }
+        }
+
+        private void ResolveUnvalidatedCollections()
+        {
+            Func<NameValueCollection> formGetter, queryGetter;
+            ValidationUtility.GetUnvalidatedCollections(HttpContext.Current, out formGetter, out queryGetter);
+            _form = formGetter();
+            _queryString = queryGetter();
         }
     }
 }

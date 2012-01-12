@@ -50,14 +50,14 @@ namespace SignalR.Transports
         {
             get
             {
-                string groupValue = _context.Request.QueryStringOrForm("groups");
+                string groupValue = _context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))
                 {
                     return Enumerable.Empty<string>();
                 }
 
-                return groupValue.Split(',');
+                return _jsonSerializer.Parse<string[]>(groupValue);
             }
         }
 
@@ -106,21 +106,21 @@ namespace SignalR.Transports
             }
         }
 
-        public event Action<string> Received;
+        public Func<string, Task> Received { get; set; }
 
-        public event Action Connected;
+        public Func<Task> Connected { get; set; }
 
-        public event Action Disconnected;
+        public Func<Task> Disconnected { get; set; }
 
-        public event Action<Exception> Error;
+        public Func<Exception, Task> Error { get; set; }
 
-        public Func<Task> ProcessRequest(IReceivingConnection connection)
+        public Task ProcessRequest(IReceivingConnection connection)
         {
             _connection = connection;
 
             if (IsSendRequest)
             {
-                ProcessSendRequest();
+                return ProcessSendRequest();
             }
             else
             {
@@ -152,70 +152,74 @@ namespace SignalR.Transports
             {
                 Sending(payload);
             }
+
             _context.Response.ContentType = Json.MimeType;
             return _context.Response.WriteAsync(payload);
         }
 
-        public virtual void Disconnect()
+        public virtual Task Disconnect()
         {
             if (!_disconnected && Disconnected != null)
             {
-                Disconnected();
+                return Disconnected().Then(() => SendDisconnectCommand()).FastUnwrap();
             }
 
+            return SendDisconnectCommand();
+        }
+
+        private Task SendDisconnectCommand()
+        {
             _disconnected = true;
-            
-            // Force connection to close by sending a command signal
-            _connection.SendCommand(
-                new SignalCommand
-                {
-                    Type = CommandType.Disconnect,
-                    ExpiresAfter = TimeSpan.FromMinutes(30)
-                });
-        }
 
-
-        private void ProcessSendRequest()
-        {
-            if (Received != null || Receiving != null)
+            var command = new SignalCommand
             {
-                string data = _context.Request.Form["data"];
-                if (Receiving != null)
-                {
-                    Receiving(data);
-                }
-                if (Received != null)
-                {
-                    Received(data);
-                }
-            }
+                Type = CommandType.Disconnect,
+                ExpiresAfter = TimeSpan.FromMinutes(30)
+            };
+
+            // Force connection to close by sending a command signal
+            return _connection.SendCommand(command);
         }
 
-        private Func<Task> ProcessConnectRequest(IReceivingConnection connection)
+
+        private Task ProcessSendRequest()
         {
-            // Since this is the first request, there's no data we need to retrieve so just wait
-            // on a message to come through
-            _heartBeat.AddConnection(this);
+            string data = _context.Request.Form["data"];
+
+            if (Receiving != null)
+            {
+                Receiving(data);
+            }
+
+            if (Received != null)
+            {
+                return Received(data);
+            }
+
+            return TaskAsyncHelper.Empty;
+        }
+
+        private Task ProcessConnectRequest(IReceivingConnection connection)
+        {
             if (Connected != null)
             {
-                Connected();
+                return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
             }
 
-            // ReceiveAsync() will async wait until a message arrives then return
-            return () => connection.ReceiveAsync()
-                .Then(new Func<PersistentResponse, Task>(response => Send(response)))
-                .FastUnwrap();
+            return ProcessReceiveRequest(connection);
         }
 
-        private Func<Task> ProcessReceiveRequest(IReceivingConnection connection)
+        private Task ProcessReceiveRequest(IReceivingConnection connection)
         {
             _heartBeat.AddConnection(this);
-            // If there is a message id then we receive with that id, which will either return
-            // immediately if there are already messages since that id, or wait until new
-            // messages come in and then return
-            return () => connection.ReceiveAsync(MessageId.Value)
-                .Then(new Func<PersistentResponse, Task>(response => Send(response)))
-                .FastUnwrap();
+
+            // ReceiveAsync() will async wait until a message arrives then return
+            var receiveTask = IsConnectRequest ?
+                              connection.ReceiveAsync() :
+                              connection.ReceiveAsync(MessageId.Value);
+
+            return receiveTask.Then(new Func<PersistentResponse, Task>(response => Send(response)))
+                              .FastUnwrap();
         }
 
         private PersistentResponse AddTransportData(PersistentResponse response)

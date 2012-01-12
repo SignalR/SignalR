@@ -6,13 +6,14 @@ namespace SignalR.Transports
 {
     public interface ITransport
     {
-        event Action<string> Received;
-        event Action Connected;
-        event Action Disconnected;
-        event Action<Exception> Error;
-        Func<Task> ProcessRequest(IReceivingConnection connection);
-        IEnumerable<string> Groups { get; }
-        Task Send(object value);
+        Func<string, Task> Received { get; set; }
+        Func<Task> Connected { get; set; }
+        Func<Task> Disconnected { get; set; }
+        Func<Exception, Task> Error { get; set; }
         string ConnectionId { get; }
+        IEnumerable<string> Groups { get; }
+
+        Task ProcessRequest(IReceivingConnection connection);
+        Task Send(object value);
     }
 }

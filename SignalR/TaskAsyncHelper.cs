@@ -97,6 +97,25 @@ namespace SignalR
 
         #endregion
 
+        public static void ContinueWith(this Task task, TaskCompletionSource<object> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.SetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.SetCanceled();
+                }
+                else
+                {
+                    tcs.SetResult(null);
+                }
+            });
+        }
+
         // Then extesions
         public static Task Then(this Task task, Action successor)
         {

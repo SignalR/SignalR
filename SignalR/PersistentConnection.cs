@@ -13,6 +13,7 @@ namespace SignalR
         private readonly IMessageStore _store;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IConnectionIdFactory _connectionIdFactory;
+        private readonly ITransportManager _transportManager;
 
         protected ITransport _transport;
 
@@ -20,19 +21,22 @@ namespace SignalR
             : this(Signaler.Instance,
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
-                   DependencyResolver.Resolve<IJsonSerializer>())
+                   DependencyResolver.Resolve<IJsonSerializer>(),
+                   DependencyResolver.Resolve<ITransportManager>())
         {
         }
 
         protected PersistentConnection(Signaler signaler,
                                        IConnectionIdFactory connectionIdFactory,
                                        IMessageStore store,
-                                       IJsonSerializer jsonSerializer)
+                                       IJsonSerializer jsonSerializer,
+                                       ITransportManager transportManager)
         {
             _signaler = signaler;
             _connectionIdFactory = connectionIdFactory;
             _store = store;
             _jsonSerializer = jsonSerializer;
+            _transportManager = transportManager;
         }
 
         // Static events intended for use when measuring performance
@@ -57,14 +61,17 @@ namespace SignalR
 
         public virtual Task ProcessRequestAsync(HostContext context)
         {
-            Task transportEventTask = null;
-
             if (IsNegotiationRequest(context.Request))
             {
                 return ProcessNegotiationRequest(context);
             }
 
             _transport = GetTransport(context);
+
+            if (_transport == null)
+            {
+                throw new InvalidOperationException("Unknown transport.");
+            }
 
             string connectionId = _transport.ConnectionId;
 
@@ -77,40 +84,25 @@ namespace SignalR
             IEnumerable<string> groups = _transport.Groups;
 
             Connection = CreateConnection(connectionId, groups, context.Request);
-
-            // Wire up the events we need
-            _transport.Connected += () =>
+            
+            _transport.Connected = () =>
             {
-                transportEventTask = OnConnectedAsync(context.Request, connectionId);
+                return OnConnectedAsync(context.Request, connectionId);
             };
 
-            _transport.Received += (data) =>
+            _transport.Received = data =>
             {
-                transportEventTask = OnReceivedAsync(connectionId, data);
+                return OnReceivedAsync(connectionId, data);
             };
 
-            _transport.Error += (e) =>
+            _transport.Error = OnErrorAsync;
+
+            _transport.Disconnected = () =>
             {
-                transportEventTask = OnErrorAsync(e);
+                return OnDisconnectAsync(connectionId);
             };
 
-            _transport.Disconnected += () =>
-            {
-                transportEventTask = OnDisconnectAsync(connectionId);
-            };
-
-            Func<Task> transportProcessRequest = _transport.ProcessRequest(Connection);
-
-            if (transportProcessRequest != null)
-            {
-                if (transportEventTask != null)
-                {
-                    return transportEventTask.Then(transportProcessRequest).FastUnwrap();
-                }
-                return transportProcessRequest();
-            }
-
-            return transportEventTask ?? TaskAsyncHelper.Empty;
+            return _transport.ProcessRequest(Connection) ?? TaskAsyncHelper.Empty;
         }
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
@@ -214,8 +206,7 @@ namespace SignalR
 
         private ITransport GetTransport(HostContext context)
         {
-            return TransportManager.GetTransport(context) ??
-                new LongPollingTransport(context, _jsonSerializer);
+            return _transportManager.GetTransport(context);
         }
 
         private static void OnSending()

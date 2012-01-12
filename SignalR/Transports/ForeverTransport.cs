@@ -65,14 +65,14 @@ namespace SignalR.Transports
         {
             get
             {
-                string groupValue = _context.Request.QueryStringOrForm("groups");
+                string groupValue = _context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))
                 {
                     return Enumerable.Empty<string>();
                 }
 
-                return groupValue.Split(',');
+                return _jsonSerializer.Parse<string[]>(groupValue);
             }
         }
 
@@ -89,30 +89,28 @@ namespace SignalR.Transports
         public static event Action<string> Sending;
         public static event Action<string> Receiving;
 
-        public event Action<string> Received;
+        public Func<string, Task> Received { get; set; }
 
-        public event Action Connected;
+        public Func<Task> Connected { get; set; }
 
-        public event Action Disconnected;
+        public Func<Task> Disconnected { get; set; }
 
-        public event Action<Exception> Error;
+        public Func<Exception, Task> Error { get; set; }
 
-        public Func<Task> ProcessRequest(IReceivingConnection connection)
+        public Task ProcessRequest(IReceivingConnection connection)
         {
             _connection = connection;
 
             if (_context.Request.Url.LocalPath.EndsWith("/send"))
             {
-                ProcessSendRequest();
+                return ProcessSendRequest();
             }
             else
             {
                 if (IsConnectRequest && Connected != null)
                 {
-                    Connected();
+                    return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
                 }
-
-                _heartBeat.AddConnection(this);
 
                 return ProcessReceiveRequest(connection);
             }
@@ -133,19 +131,27 @@ namespace SignalR.Transports
             return _context.Response.WriteAsync(data);
         }
 
-        public void Disconnect()
+        public Task Disconnect()
         {
             if (!_disconnected && Disconnected != null)
             {
-                Disconnected();
+                return Disconnected().Then(() => SendDisconnectCommand()).FastUnwrap();
             }
+
+            return SendDisconnectCommand();
+        }
+
+        private Task SendDisconnectCommand()
+        {
             _disconnected = true;
-            _connection.SendCommand(
-                new SignalCommand
-                {
-                    Type = CommandType.Disconnect,
-                    ExpiresAfter = TimeSpan.FromMinutes(30)
-                });
+
+            var command = new SignalCommand
+            {
+                Type = CommandType.Disconnect,
+                ExpiresAfter = TimeSpan.FromMinutes(30)
+            };
+
+            return _connection.SendCommand(command);
         }
 
         protected virtual bool IsConnectRequest
@@ -158,14 +164,13 @@ namespace SignalR.Transports
             // Don't timeout
             connection.ReceiveTimeout = TimeSpan.FromDays(1);
 
-            _context.Response.Buffer = false;
-
             return TaskAsyncHelper.Empty;
         }
 
-        private void ProcessSendRequest()
+        private Task ProcessSendRequest()
         {
             string data = _context.Request.Form["data"];
+
             if (Receiving != null)
             {
                 Receiving(data);
@@ -173,13 +178,17 @@ namespace SignalR.Transports
 
             if (Received != null)
             {
-                Received(data);
+                return Received(data);
             }
+
+            return TaskAsyncHelper.Empty;
         }
 
-        private Func<Task> ProcessReceiveRequest(IReceivingConnection connection)
+        private Task ProcessReceiveRequest(IReceivingConnection connection)
         {
-            return () => InitializeResponse(connection)
+            _heartBeat.AddConnection(this);
+
+            return InitializeResponse(connection)
                     .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
                     .FastUnwrap();
         }
@@ -207,7 +216,7 @@ namespace SignalR.Transports
                     // If the response has the Disconnect flag, just send the response and exit the loop,
                     // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
                     Task sendTask = Send(response);
-                    if (response.Disconnect)
+                    if (response.Disconnect || response.TimedOut)
                     {
                         // Signal the tcs when the task is done
                         return sendTask.Then(tcs => tcs.SetResult(null), taskCompletetionSource);
@@ -233,10 +242,6 @@ namespace SignalR.Transports
                 return;
             }
 
-            // Client is no longer connected
-            Disconnect();
-
-            // We're done
             taskCompletetionSource.SetResult(null);
             return;
         }

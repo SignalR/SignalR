@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Script.Serialization;
 using SignalR.Hubs;
+using SignalR.Transports;
 
 namespace SignalR.Infrastructure
 {
@@ -115,6 +116,8 @@ namespace SignalR.Infrastructure
 
                 var connectionIdFactory = new GuidConnectionIdFactory();
                 Register(typeof(IConnectionIdFactory), () => connectionIdFactory);
+
+                Register(typeof(ITransportManager), () => TransportManager.Default);
             }
 
             public object GetService(Type serviceType)

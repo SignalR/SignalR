@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using SignalR.Abstractions;
 using SignalR.Infrastructure;
+using SignalR.Transports;
 
 namespace SignalR.Hubs
 {
@@ -41,6 +42,7 @@ namespace SignalR.Hubs
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
                    DependencyResolver.Resolve<IJsonSerializer>(),
+                   DependencyResolver.Resolve<ITransportManager>(),
                    DependencyResolver.Resolve<IHubLocator>(),
                    DependencyResolver.Resolve<IHubTypeResolver>(),
                    url)
@@ -54,10 +56,11 @@ namespace SignalR.Hubs
                              IActionResolver actionResolver,
                              IJavaScriptProxyGenerator proxyGenerator,
                              IJsonSerializer jsonSerializer,
+                             ITransportManager transportManager,
                              IHubLocator hubLocator,
                              IHubTypeResolver hubTypeResolver,
                              string url)
-            : base(signaler, connectionIdFactory, store, jsonSerializer)
+            : base(signaler, connectionIdFactory, store, jsonSerializer, transportManager)
         {
             _hubFactory = hubFactory;
             _store = store;

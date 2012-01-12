@@ -9,6 +9,7 @@ namespace SignalR
         public long MessageId { get; set; }
         public IEnumerable<object> Messages { get; set; }
         public bool Disconnect { get; set; }
+        public bool TimedOut { get; set; }
 
         // TODO: Don't seralize TransportData to the response if there is none
         public IDictionary<string, object> TransportData
