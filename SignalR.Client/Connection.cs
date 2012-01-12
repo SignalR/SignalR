@@ -170,6 +170,8 @@ namespace SignalR.Client
             request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
 #elif __ANDROID__
             request.UserAgent = CreateUserAgentString("SignalR.Client.MonoAndroid");
+#elif __MONOTOUCH__
+            request.UserAgent = CreateUserAgentString("SignalR.Client.MonoTouch");
 #else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
 #endif
