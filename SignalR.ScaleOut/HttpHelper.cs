@@ -161,5 +161,26 @@ namespace SignalR
                 return TaskAsyncHelper.FromError(ex);
             }
         }
+
+        public static string AddVerbToUrl(string url, string verb) {
+             if (!url.Contains("?")) {
+                 return PostfixUrlSegment(url) + PostfixUrlSegment(verb);
+             }
+ 
+             string path = url.Substring(0,url.IndexOf("?", StringComparison.Ordinal));
+ 
+             return PostfixUrlSegment(path) + verb + url.Substring(url.IndexOf("?", StringComparison.Ordinal));
+         }
+ 
+         private static string PostfixUrlSegment(string urlSegment) {
+             return urlSegment.EndsWith("/") ? urlSegment : urlSegment + "/";
+         }
+ 
+         public static string AddQueryToUri(string url, string query) {
+             query = query.TrimStart('?').TrimStart('&');
+             return !url.Contains("?") ? url + "?" + query : url + "&" + query;
+         }
     }
 }
+
+
