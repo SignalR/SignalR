@@ -18,17 +18,23 @@
             ? function (msg) { console.debug(msg); }
             : $.noop;
 
-    signalR = function (url) {
+    signalR = function (url, qs) {
         /// <summary>Creates a new SignalR connection for the given url</summary>
         /// <param name="url" type="String">The URL of the long polling endpoint</param>
+        /// <param name="qs" type="Object">
+        ///     [Optional] Custom querystring parameters to add to the connection URL.
+        ///     If an object, every non-function member will be added to the querystring.
+        ///     If a string, it's added to the QS as specified.
+        /// </param>
         /// <returns type="signalR" />
 
-        return new signalR.fn.init(url);
+        return new signalR.fn.init(url, qs);
     };
 
     signalR.fn = signalR.prototype = {
-        init: function (url) {
+        init: function (url, qs) {
             this.url = url;
+            this.qs = qs;
         },
 
         start: function (options, callback) {
@@ -232,6 +238,22 @@
     // Transports
     var transportLogic = {
 
+        addQs: function (url, connection) {
+            if (!connection.qs) {
+                return url;
+            }
+
+            if (typeof (connection.qs) === "object") {
+                return url + "&" + $.param(connection.qs);
+            }
+
+            if (typeof (connection.qs) === "string") {
+                return url + "&" + connection.qs;
+            }
+
+            return url + "&" + escape(connection.qs.toString());
+        },
+
         getUrl: function (connection, transport, reconnecting) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var url = connection.url,
@@ -252,11 +274,14 @@
                 }
             }
             url += "?" + qs;
+            url = this.addQs(url, connection);
             return url;
         },
 
         ajaxSend: function (connection, data) {
-            $.ajax(connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id), {
+            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
+            url = this.addQs(url, connection);
+            $.ajax(url, {
                 global: false,
                 type: "POST",
                 dataType: "json",
