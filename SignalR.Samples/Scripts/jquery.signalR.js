@@ -199,12 +199,12 @@
             return connection;
         },
 
-        reconnect: function (callback) {
-            /// <summary>Adds a callback that will be invoked when the client reconnects after being disconnected</summary>
-            /// <param name="callback" type="Function">A callback function to execute when the connection is re-established</param>
+        disconnect: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the client disconnects</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection is broken</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind("onReconnect", function (e, data) {
+            $(connection).bind("onDisconnect", function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -285,8 +285,8 @@
                     // Disconnected by the server
                     connection.stop();
 
-                    // Trigger the reconnect event
-                    $connection.trigger("onReconnect");
+                    // Trigger the disconnect event
+                    $connection.trigger("onDisconnect");
                     return;
                 }
 
