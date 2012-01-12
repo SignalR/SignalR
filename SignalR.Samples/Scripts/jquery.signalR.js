@@ -409,11 +409,14 @@
         serverSentEvents: {
             name: "serverSentEvents",
 
+            timeOut: 3000,
+
             start: function (connection, onSuccess, onFailed) {
                 var that = this,
                     opened = false,
                     reconnecting = !onSuccess,
-                    url;
+                    url,
+                    connectTimeOut;
 
                 if (connection.eventSource) {
                     connection.stop();
@@ -428,11 +431,37 @@
 
                 url = transportLogic.getUrl(connection, this.name, reconnecting);
 
-                connection.eventSource = new window.EventSource(url);
+                try {
+                    connection.eventSource = new window.EventSource(url);
+                }
+                catch (e) {
+                    // If the connection failed call the failed callback
+                    if (onFailed) {
+                        onFailed();
+                    }
+                    return;
+                }
+
+                // After connecting, if after the specified timeout there's no response stop the connection
+                // and raise on failed
+                connectTimeOut = window.setTimeout(function () {
+                    if (opened === false) {
+                        that.stop(connection);
+
+                        if (onFailed) {
+                            onFailed();
+                        }
+                    }
+                },
+                that.timeOut);
 
                 connection.eventSource.addEventListener("open", function (e) {
                     if (opened === false) {
                         opened = true;
+
+                        // Clear the connectTimeOut
+                        clearTimeout(connectTimeOut);
+
                         if (onSuccess) {
                             onSuccess();
                         }
@@ -441,13 +470,11 @@
 
                 connection.eventSource.addEventListener("message", function (e) {
                     // process messages
-                    //log("SignalR: EventSource message received - " + e.data);
                     if (e.data === "initialized") {
                         return;
                     }
                     var data = window.JSON.parse(e.data);
                     transportLogic.processMessages(connection, data);
-                    // TODO: persist the groups and connection data in a cookie
                 }, false);
 
                 connection.eventSource.addEventListener("error", function (e) {
