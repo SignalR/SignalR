@@ -45,14 +45,14 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Common\TaskExtensions.cs">
+      <Link>Extensions\TaskExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Extensions\TaskExtensions.cs">
-      <Link>Extensions\TaskExtensions.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubClientInvocation.cs">
       <Link>Hubs\HubClientInvocation.cs</Link>

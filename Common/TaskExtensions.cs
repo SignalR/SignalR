@@ -26,7 +26,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-#if __ANDROID__ || __MONOTOUCH__
 namespace System.Threading.Tasks
 {
     public static class TaskExtensions
@@ -70,4 +69,3 @@ namespace System.Threading.Tasks
         }
     }
 }
-#endif
