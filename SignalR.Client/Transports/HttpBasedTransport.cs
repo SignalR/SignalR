@@ -40,9 +40,9 @@ namespace SignalR.Client.Transports
 
         public Task<T> Send<T>(Connection connection, string data)
         {
-            string url = connection.Url + "send";
+            string url = HttpHelper.AddVerbToUrl(connection.Url, "send");
 
-            url += String.Format(_sendQueryString, _transport, connection.ConnectionId);
+            url = HttpHelper.AddQueryToUri(url, String.Format(_sendQueryString, _transport, connection.ConnectionId));
 
             var postData = new Dictionary<string, string> {
                 { "data", data }

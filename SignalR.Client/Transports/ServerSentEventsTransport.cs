@@ -27,7 +27,7 @@ namespace SignalR.Client.Transports
             // If we're reconnecting add /connect to the url
             bool reconnect = initializeCallback == null;
 
-            var url = (reconnect ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
+            var url = HttpHelper.AddQueryToUri((reconnect ? connection.Url : HttpHelper.AddVerbToUrl(connection.Url, "connect")), GetReceiveQueryString(connection, data));
 
             Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
 

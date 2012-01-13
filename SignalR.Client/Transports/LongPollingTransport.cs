@@ -22,10 +22,10 @@ namespace SignalR.Client.Transports
 
             if (connection.MessageId == null)
             {
-                url += "connect";
+                url = HttpHelper.AddVerbToUrl(url, "connect");
             }
 
-            url += GetReceiveQueryString(connection, data);
+            url = HttpHelper.AddQueryToUri(url, GetReceiveQueryString(connection, data));
 
             HttpHelper.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {

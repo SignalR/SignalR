@@ -24,7 +24,7 @@ namespace SignalR.Client
 
         public Connection(string url)
         {
-            if (!url.EndsWith("/"))
+            if (!url.EndsWith("/") & !url.Contains("?"))
             {
                 url += "/";
             }
@@ -73,7 +73,7 @@ namespace SignalR.Client
                 data = Sending();
             }
 
-            string negotiateUrl = Url + "negotiate";
+            string negotiateUrl = HttpHelper.AddVerbToUrl(Url, "negotiate");
 
             return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
             {
