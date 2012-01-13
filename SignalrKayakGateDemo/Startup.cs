@@ -11,9 +11,7 @@ namespace SignalrKayakGateDemo
     public class Startup
     {
         public static void Configuration(IAppBuilder builder)
-        {
-            TransportManager.InitializeDefaultTransports();
-
+        {            
             builder
                 .Use(LogToConsole)
                 //.RescheduleCallbacks()
