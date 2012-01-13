@@ -18,6 +18,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7", "Signa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP71", "SignalR.Client.WP71\SignalR.Client.WP71.csproj", "{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7.Sample", "SignalR.Client.WP7.Sample\SignalR.Client.WP7.Sample.csproj", "{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Samples", "SignalR.Samples\SignalR.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.ScaleOut", "SignalR.ScaleOut\SignalR.ScaleOut.csproj", "{32D16B36-970E-4CF2-B954-78CB1833CBC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.AspNet", "SignalR.AspNet\SignalR.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +48,24 @@ Global
 		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
