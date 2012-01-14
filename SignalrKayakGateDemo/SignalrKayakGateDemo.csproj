@@ -17,40 +17,45 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\SignalR\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-        <PlatformTarget>x86</PlatformTarget>
-        <DebugSymbols>true</DebugSymbols>
-        <DebugType>full</DebugType>
-        <Optimize>false</Optimize>
-        <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-        <PlatformTarget>x86</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
-        <Optimize>true</Optimize>
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gate">
-      <HintPath>..\packages\Gate.0.2.0\lib\net40\Gate.dll</HintPath>
+    <Reference Include="Gate, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.0.2.1\lib\net40\Gate.dll</HintPath>
     </Reference>
-    <Reference Include="Gate.Builder">
-      <HintPath>..\packages\Gate.Builder.0.2.0\lib\net40\Gate.Builder.dll</HintPath>
+    <Reference Include="Gate.Builder, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.Builder.0.2.1\lib\net40\Gate.Builder.dll</HintPath>
     </Reference>
-    <Reference Include="Gate.Hosts.Kayak">
-      <HintPath>..\packages\Gate.Hosts.Kayak.0.2.0\lib\net40\Gate.Hosts.Kayak.dll</HintPath>
+    <Reference Include="Gate.Hosts.Kayak, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.Hosts.Kayak.0.2.1\lib\net40\Gate.Hosts.Kayak.dll</HintPath>
     </Reference>
-    <Reference Include="Gate.Middleware">
-      <HintPath>..\packages\Gate.Middleware.0.2.0\lib\net40\Gate.Middleware.dll</HintPath>
+    <Reference Include="Gate.Middleware, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.Middleware.0.2.1\lib\net40\Gate.Middleware.dll</HintPath>
     </Reference>
-    <Reference Include="Gate.Owin">
-      <HintPath>..\packages\Gate.Owin.0.2.0\lib\net40\Gate.Owin.dll</HintPath>
+    <Reference Include="Gate.Owin, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.Owin.0.2.1\lib\net40\Gate.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Kayak">
       <HintPath>..\packages\Kayak.0.7.2\lib\Kayak.dll</HintPath>

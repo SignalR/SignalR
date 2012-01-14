@@ -42,9 +42,15 @@ namespace SignalR.Owin
                                 .ProcessRequestAsync(hostContext)
                                 .ContinueWith(innerTask =>
                             {
-                                fault(innerTask.Exception);
-                            },
-                            TaskContinuationOptions.OnlyOnFaulted);
+                                if (innerTask.IsFaulted)
+                                {
+                                    fault(innerTask.Exception);
+                                }
+                                else
+                                {
+                                    response.End().Catch();
+                                }
+                            });
                         }
                         catch (Exception ex)
                         {

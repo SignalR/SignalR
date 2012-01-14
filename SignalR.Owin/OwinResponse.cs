@@ -44,6 +44,11 @@ namespace SignalR.Owin
             return WriteAsync(data, end: true);
         }
 
+        public Task End()
+        {
+            return EnsureResponseStarted().Then(() => _responseCompete());
+        }
+
         private Task WriteAsync(string data, bool end)
         {
             return EnsureResponseStarted()
@@ -64,9 +69,9 @@ namespace SignalR.Owin
             {
                 responseCallback(
                     "200 OK",
-                    new Dictionary<string, string>
+                    new Dictionary<string, IEnumerable<string>>
                         {
-                            { "Content-Type", ContentType ?? "text/plain" },
+                            { "Content-Type", new[] { ContentType ?? "text/plain" } },
                         },
                     (next, error, complete) =>
                     {

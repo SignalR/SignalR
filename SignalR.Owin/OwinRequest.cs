@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Gate;
 using SignalR.Abstractions;
 
 namespace SignalR.Owin
@@ -17,7 +18,10 @@ namespace SignalR.Owin
 
             foreach (var pair in headers)
             {
-                Headers.Add(pair.Key, pair.Value);
+                foreach (var value in pair.Value)
+                {
+                    Headers.Add(pair.Key, value);  
+                }                
             }
 
             Cookies = new NameValueCollection();
@@ -60,7 +64,7 @@ namespace SignalR.Owin
         /// </summary>
         private Uri BuildUrl(Gate.Environment env)
         {
-            string url = env.Scheme + "://" + env.Headers["Host"] + env.PathBase + env.Path;
+            string url = env.Scheme + "://" + env.Headers.GetHeader("Host") + env.PathBase + env.Path;
 
             if (!String.IsNullOrEmpty(env.QueryString))
             {

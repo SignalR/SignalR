@@ -11,12 +11,12 @@ namespace SignalrKayakGateDemo
     public class Startup
     {
         public static void Configuration(IAppBuilder builder)
-        {            
+        {
             builder
                 .Use(LogToConsole)
                 //.RescheduleCallbacks()
                 //.Chunked()
-                //.UseShowExceptions()
+                .UseShowExceptions()
                 .Map("/Raw", map => map.Chunked().RunSignalR<Raw>())
                 .Use(Alias, "/", "/index.html")
                 .UseStatic("public");
