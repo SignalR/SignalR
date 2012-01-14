@@ -7,4 +7,6 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("SignalR.Owin")]
 [assembly: AssemblyDescription("Owin host for SignalR")]
-[assembly: AssemblyVersion("0.3.6")]
+
+// Synced with OWIN version
+[assembly: AssemblyVersion("0.2.1")]
