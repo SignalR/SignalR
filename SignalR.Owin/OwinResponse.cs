@@ -46,7 +46,7 @@ namespace SignalR.Owin
 
         public Task End()
         {
-            return EnsureResponseStarted().Then(() => _responseCompete());
+            return EnsureResponseStarted().Then(cb => cb(), _responseCompete);
         }
 
         private Task WriteAsync(string data, bool end)
@@ -105,8 +105,10 @@ namespace SignalR.Owin
                 var value = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data));
                 if (end)
                 {
+                    // Write and send the response immediately
                     _responseNext(value, null);
                     _responseCompete();
+
                     tcs.SetResult(null);
                 }
                 else
@@ -119,8 +121,14 @@ namespace SignalR.Owin
             }
             catch (Exception ex)
             {
+                // Infer client connectedness from fails on write
                 IsClientConnected = false;
-                tcs.SetException(ex);
+
+                // Raise the respnse error callback
+                _responseError(ex);
+
+                // Mark the task as complete
+                tcs.SetResult(null);
             }
 
             return tcs.Task;

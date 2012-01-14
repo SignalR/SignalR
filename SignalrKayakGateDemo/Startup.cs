@@ -1,10 +1,8 @@
 ﻿using System;
 using Gate;
-using Gate.Hosts.Kayak;
 using Gate.Middleware;
 using Gate.Owin;
 using SignalR.Owin;
-using SignalR.Transports;
 
 namespace SignalrKayakGateDemo
 {
@@ -15,9 +13,8 @@ namespace SignalrKayakGateDemo
             builder
                 .Use(LogToConsole)
                 //.RescheduleCallbacks()
-                //.Chunked()
                 .UseShowExceptions()
-                .Map("/Raw", map => map.Chunked().RunSignalR<Raw>())
+                .Map("/Raw", map => map.Chunked().MapConnection<Raw>())
                 .Use(Alias, "/", "/index.html")
                 .UseStatic("public");
         }

@@ -10,12 +10,16 @@ namespace SignalR.Owin
 {
     public static class OwinHost
     {
-        public static IAppBuilder RunSignalR<T>(this IAppBuilder builder) where T : PersistentConnection
+        public static IAppBuilder MapConnection<T>(this IAppBuilder builder) where T : PersistentConnection
         {
-            return builder.Use<AppDelegate>(_ => App(typeof(T)));
+            return builder.Use<AppDelegate>(_ => ExecuteConnection(() =>
+            {
+                var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
+                return factory.CreateInstance(typeof(T));
+            }));
         }
 
-        public static AppDelegate App(Type persistentConnectionType)
+        private static AppDelegate ExecuteConnection(Func<PersistentConnection> factory)
         {
             return (environment, result, fault) =>
             {
@@ -35,8 +39,7 @@ namespace SignalR.Owin
 
                         try
                         {
-                            var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
-                            PersistentConnection connection = factory.CreateInstance(persistentConnectionType);
+                            PersistentConnection connection = factory();
 
                             connection
                                 .ProcessRequestAsync(hostContext)
