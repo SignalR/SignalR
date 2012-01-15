@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SignalR.AspNet;
 using SignalR.Hubs;
@@ -25,11 +26,11 @@ namespace SignalR.AspNet
                         RegisterHubModule();
 
                         // Replace defaults with asp.net implementations
-                        var typeResolver = new BuildManagerTypeResolver();
-                        var hubLocator = new BuildManagerTypeLocator();
+                        var typeResolver = new Lazy<BuildManagerTypeResolver>(() => new BuildManagerTypeResolver());
+                        var hubLocator = new Lazy<BuildManagerTypeLocator>(() => new BuildManagerTypeLocator());
 
-                        DependencyResolver.Register(typeof(IHubTypeResolver), () => typeResolver);
-                        DependencyResolver.Register(typeof(IHubLocator), () => hubLocator);
+                        DependencyResolver.Register(typeof(IHubLocator), () => hubLocator.Value);
+                        DependencyResolver.Register(typeof(IHubTypeResolver), () => typeResolver.Value);
 
                         _initialized = true;
                     }
