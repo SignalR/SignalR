@@ -103,6 +103,9 @@
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
+      <Link>Transports\AutoTransport.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
       <Link>Transports\HttpBasedTransport.cs</Link>
     </Compile>

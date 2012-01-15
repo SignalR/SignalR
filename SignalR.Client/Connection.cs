@@ -18,6 +18,9 @@ namespace SignalR.Client
         private IClientTransport _transport;
         private bool _initialized;
 
+        // Used by transports to sync
+        internal int _initializedCalled; 
+
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
@@ -52,7 +55,8 @@ namespace SignalR.Client
 
         public Task Start()
         {
-            return Start(Transport.ServerSentEvents);
+            // Pick the best transport supported by the client
+            return Start(new AutoTransport());
         }
 
         public virtual Task Start(IClientTransport transport)

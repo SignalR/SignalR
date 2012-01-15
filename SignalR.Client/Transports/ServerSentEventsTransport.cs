@@ -10,12 +10,19 @@ namespace SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private const string ReaderKey = "sse.reader";
+        
         private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
             : base("serverSentEvents")
         {
+            ConnectionTimeout = TimeSpan.FromSeconds(2);
         }
+
+        /// <summary>
+        /// Time allowed before failing the connect request
+        /// </summary>
+        public TimeSpan ConnectionTimeout { get; set; }
 
         protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
@@ -41,14 +48,19 @@ namespace SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-                    if (errorCallback != null)
+                    var exception = task.Exception.GetBaseException();
+                    if (!IsRequestAborted(exception) &&
+                        Interlocked.CompareExchange(ref connection._initializedCalled, 0, 0) == 0)
                     {
-                        errorCallback(task.Exception);
-                    }
-                    else
-                    {
-                        // Raise the error event if we failed to reconnect
-                        connection.OnError(task.Exception.GetBaseException());
+                        if (errorCallback != null)
+                        {
+                            errorCallback(exception);
+                        }
+                        else
+                        {
+                            // Raise the error event if we failed to reconnect
+                            connection.OnError(exception);
+                        }
                     }
                 }
                 else
@@ -57,7 +69,13 @@ namespace SignalR.Client.Transports
                     var stream = task.Result.GetResponseStream();
                     var reader = new AsyncStreamReader(stream,
                                                        connection,
-                                                       initializeCallback,
+                                                       () =>
+                                                       {
+                                                           if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
+                                                           {
+                                                               initializeCallback();
+                                                           }
+                                                       },
                                                        () =>
                                                        {
                                                            // Wait for a bit before reconnecting
@@ -72,6 +90,21 @@ namespace SignalR.Client.Transports
                     connection.Items[ReaderKey] = reader;
                 }
             });
+
+            if (initializeCallback != null)
+            {
+                TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
+                {
+                    if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
+                    {
+                        // Stop the connection
+                        Stop(connection);
+
+                        // Connection timeout occured
+                        errorCallback(new TimeoutException());
+                    }
+                });
+            }
         }
 
         protected override void OnBeforeAbort(Connection connection)

@@ -28,7 +28,7 @@ namespace SignalR.Client.WP7.Sample
                 });
             };
 
-            connection.Start(Transport.LongPolling).ContinueWith(task =>
+            connection.Start().ContinueWith(task =>
             {
                 Debug.WriteLine("ERROR: {0}", task.Exception.GetBaseException().Message);
             }, 

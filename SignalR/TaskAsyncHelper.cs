@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace SignalR
 {
@@ -383,6 +384,22 @@ namespace SignalR
         {
             var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
             return innerTask ?? task.Unwrap();
+        }
+
+        public static Task Delay(TimeSpan timeOut)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            var timer = new Timer(tcs.SetResult,
+            null,
+            timeOut,
+            TimeSpan.FromMilliseconds(-1));
+
+            return tcs.Task.ContinueWith(_ =>
+            {
+                timer.Dispose();
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
