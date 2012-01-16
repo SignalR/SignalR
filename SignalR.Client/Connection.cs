@@ -26,13 +26,31 @@ namespace SignalR.Client
         public event Action Closed;
 
         public Connection(string url)
+            : this(url, (string)null)
         {
+
+        }
+
+        public Connection(string url, IDictionary<string, string> queryString)
+            : this(url, CreateQueryString(queryString))
+        {
+            
+        }
+
+        public Connection(string url, string queryString)
+        {
+            if (url.Contains('?'))
+            {
+                throw new ArgumentException("Url cannot contain QueryString directly. Pass QueryString values in using available overload.", "url");
+            }
+
             if (!url.EndsWith("/"))
             {
                 url += "/";
             }
 
             Url = url;
+            QueryString = queryString;
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
@@ -52,6 +70,8 @@ namespace SignalR.Client
         public string ConnectionId { get; set; }
 
         public IDictionary<string, object> Items { get; private set; }
+
+        public string QueryString { get; private set; }
 
         public Task Start()
         {
@@ -208,6 +228,11 @@ namespace SignalR.Client
 #else
             return Version.TryParse(versionString, out version);
 #endif
+        }
+
+        private static string CreateQueryString(IDictionary<string, string> queryString)
+        {
+            return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value));
         }
     }
 }

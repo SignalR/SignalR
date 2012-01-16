@@ -12,10 +12,10 @@ namespace SignalR.Client.Transports
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The receive query string
-        private const string _receiveQueryString = "?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}";
+        private const string _receiveQueryString = "?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}";
 
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionId={1}";
+        private const string _sendQueryString = "?transport={0}&connectionId={1}{2}";
 
         // The transport name
         protected readonly string _transport;
@@ -41,8 +41,9 @@ namespace SignalR.Client.Transports
         public Task<T> Send<T>(Connection connection, string data)
         {
             string url = connection.Url + "send";
+            string customQueryString = GetCustomQueryString(connection);
 
-            url += String.Format(_sendQueryString, _transport, connection.ConnectionId);
+            url += String.Format(_sendQueryString, _transport, connection.ConnectionId, customQueryString);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }
@@ -68,7 +69,8 @@ namespace SignalR.Client.Transports
                                  Uri.EscapeDataString(connection.ConnectionId),
                                  Convert.ToString(connection.MessageId),
                                  Uri.EscapeDataString(JsonConvert.SerializeObject(connection.Groups)),
-                                 data);
+                                 data,
+                                 GetCustomQueryString(connection));
         }
 
         protected virtual Action<HttpWebRequest> PrepareRequest(Connection connection)
@@ -162,6 +164,13 @@ namespace SignalR.Client.Transports
                 Debug.WriteLine("Failed to response: {0}", ex);
                 connection.OnError(ex);
             }
+        }
+
+        private static string GetCustomQueryString(Connection connection)
+        {
+            return String.IsNullOrEmpty(connection.QueryString)
+                            ? ""
+                            : "&" + connection.QueryString;
         }
     }
 }
