@@ -120,7 +120,7 @@ namespace SignalR
         {
             return new Connection(DependencyResolver.Resolve<IMessageStore>(),
                                   DependencyResolver.Resolve<IJsonSerializer>(),
-                                  Signaler.Instance,
+                                  DependencyResolver.Resolve<Signaler>(),
                                   connectionType,
                                   null,
                                   new[] { connectionType });

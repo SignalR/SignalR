@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web;
+using SignalR.Infrastructure;
 using SignalR.ScaleOut;
 
 namespace SignalR.Web
@@ -22,7 +23,7 @@ namespace SignalR.Web
 
         public void ProcessRequest(HttpContext context)
         {
-            var signalBus = Signaler.Instance.SignalBus as PeerToPeerHttpSignalBus;
+            var signalBus = DependencyResolver.Resolve<ISignalBus>() as PeerToPeerHttpSignalBus;
             if (signalBus == null)
             {
                 return;

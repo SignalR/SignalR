@@ -15,31 +15,23 @@ namespace SignalR
 
         private readonly object _timeOutCreationLock = new object();
         private readonly SafeSet<SafeHandleEventAndSetResultAction> _signalActions = new SafeSet<SafeHandleEventAndSetResultAction>();
+        private readonly ISignalBus _signalBus;
         private bool _timeOutCheckRunning;
 
         // Timer that runs on an interval to check for Subscription timeouts
         private Timer _timeOutTimer;
 
-        private static readonly Signaler _instance = new Signaler();
-
-        public Signaler()
+        public Signaler(ISignalBus signalBus)
         {
+            _signalBus = signalBus;
             DefaultTimeout = TimeSpan.FromMinutes(2);
         }
 
-        public static Signaler Instance
+        public ISignalBus SignalBus
         {
             get
             {
-                return _instance;
-            }
-        }
-
-        public virtual ISignalBus SignalBus
-        {
-            get
-            {
-                return DependencyResolver.Resolve<ISignalBus>();
+                return _signalBus;
             }
         }
 

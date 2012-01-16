@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Script.Serialization;
 using SignalR.Hubs;
 using SignalR.Transports;
 
@@ -118,6 +117,9 @@ namespace SignalR.Infrastructure
                 Register(typeof(IConnectionIdFactory), () => connectionIdFactory);
 
                 Register(typeof(ITransportManager), () => TransportManager.Default);
+
+                var signaler = new Lazy<Signaler>(() => new Signaler(DependencyResolver.Resolve<ISignalBus>()));
+                Register(typeof(Signaler), () => signaler.Value);
             }
 
             public object GetService(Type serviceType)

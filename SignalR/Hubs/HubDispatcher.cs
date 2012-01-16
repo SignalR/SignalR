@@ -37,7 +37,7 @@ namespace SignalR.Hubs
         public HubDispatcher(string url)
             : this(DependencyResolver.Resolve<IHubFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
-                   Signaler.Instance,
+                   DependencyResolver.Resolve<Signaler>(),
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),

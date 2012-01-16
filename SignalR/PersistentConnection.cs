@@ -18,7 +18,7 @@ namespace SignalR
         protected ITransport _transport;
 
         protected PersistentConnection()
-            : this(Signaler.Instance,
+            : this(DependencyResolver.Resolve<Signaler>(),
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IMessageStore>(),
                    DependencyResolver.Resolve<IJsonSerializer>(),
