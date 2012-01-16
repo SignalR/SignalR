@@ -651,10 +651,6 @@
 
                             type: "GET",
 
-                            data: {
-                                connectionData: instance.data
-                            },
-
                             dataType: "json",
 
                             success: function (data) {
