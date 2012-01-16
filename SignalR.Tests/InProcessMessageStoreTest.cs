@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Xunit;
+using System.Globalization;
 
 namespace SignalR.Tests
 {
@@ -27,7 +28,7 @@ namespace SignalR.Tests
 
             for (int i = 0; i < 10; i++)
             {
-                store.Save("a", i).Wait();
+                store.Save("a", i.ToString(CultureInfo.InvariantCulture)).Wait();
             }
 
             var messages = store.GetAllSince("a", 100).Result.ToList();
@@ -47,7 +48,7 @@ namespace SignalR.Tests
             store.Save("a", "2").Wait();
             store.Save("a", "3").Wait();
 
-            Assert.Equal(3, store.GetLastId().Result);
+            Assert.Equal("3", store.GetLastId().Result);
         }
     }
 }

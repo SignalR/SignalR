@@ -37,7 +37,7 @@ namespace SignalR.Transports
             get { return _context; }
         }
 
-        protected long? LastMessageId
+        protected string LastMessageId
         {
             get;
             set;
@@ -114,8 +114,6 @@ namespace SignalR.Transports
 
                 return ProcessReceiveRequest(connection);
             }
-
-            return null;
         }
 
         public virtual Task Send(PersistentResponse response)
@@ -195,14 +193,14 @@ namespace SignalR.Transports
                     .FastUnwrap();
         }
 
-        private Task ProcessMessages(IReceivingConnection connection, long? lastMessageId)
+        private Task ProcessMessages(IReceivingConnection connection, string lastMessageId)
         {
             var tcs = new TaskCompletionSource<object>();
             ProcessMessagesImpl(tcs, connection, lastMessageId);
             return tcs.Task;
         }
 
-        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, long? lastMessageId)
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, string lastMessageId)
         {
             if (!_disconnected && _context.Response.IsClientConnected)
             {
@@ -210,7 +208,7 @@ namespace SignalR.Transports
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = lastMessageId == null
                     ? connection.ReceiveAsync()
-                    : connection.ReceiveAsync(lastMessageId.Value);
+                    : connection.ReceiveAsync(lastMessageId);
 
                 receiveAsyncTask.Then(response =>
                 {

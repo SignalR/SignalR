@@ -77,16 +77,11 @@ namespace SignalR.Transports
             }
         }
 
-        private long? MessageId
+        private string MessageId
         {
             get
             {
-                long messageId;
-                if (Int64.TryParse(_context.Request.QueryString["messageId"], out messageId))
-                {
-                    return messageId;
-                }
-                return null;
+                return _context.Request.QueryString["messageId"];
             }
         }
 
@@ -216,7 +211,7 @@ namespace SignalR.Transports
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
                               connection.ReceiveAsync() :
-                              connection.ReceiveAsync(MessageId.Value);
+                              connection.ReceiveAsync(MessageId);
 
             return receiveTask.Then(new Func<PersistentResponse, Task>(response => Send(response)))
                               .FastUnwrap();

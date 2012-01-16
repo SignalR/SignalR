@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using System.Globalization;
 
 namespace SignalR
 {
@@ -41,10 +42,13 @@ namespace SignalR
 
         public Task Save(string key, object value)
         {
-            var message = new Message(key, Interlocked.Increment(ref _lastMessageId), value);
             var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
-            list.Add(message);
-            
+            lock (_idLocker)
+            {
+                var message = new Message(key, Interlocked.Increment(ref _lastMessageId).ToString(), value);
+                list.Add(message);
+            }
+                
             return TaskAsyncHelper.Empty;
         }
 
@@ -53,33 +57,39 @@ namespace SignalR
         /// </summary>
         protected internal Task Save(Message message)
         {
-            var key = message.SignalKey;
+            //var key = message.SignalKey;
 
-            var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
-            list.Add(message);
+            //var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
+            //list.Add(message);
 
-            if (message.Id > _lastMessageId)
-            {
-                lock (_idLocker)
-                {
-                    if (message.Id > _lastMessageId)
-                    {
-                        _lastMessageId = message.Id;
-                    }
-                }
-            }
+            //if (message.Id > _lastMessageId)
+            //{
+            //    lock (_idLocker)
+            //    {
+            //        if (message.Id > _lastMessageId)
+            //        {
+            //            _lastMessageId = message.Id;
+            //        }
+            //    }
+            //}
 
             return TaskAsyncHelper.Empty;
         }
 
-        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, long id)
+        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id)
         {
-            if (id > _lastMessageId)
+            long longId;
+            if (!Int64.TryParse(id, NumberStyles.Any, CultureInfo.InvariantCulture, out longId))
             {
-                id = 0;
+                throw new ArgumentException("id must be a valid integer", "id");
             }
 
-            var items = keys.SelectMany(k => GetAllCore(k).Where(item => item.Id > id))
+            if (longId > _lastMessageId)
+            {
+                longId = 0;
+            }
+
+            var items = keys.SelectMany(k => GetAllCore(k).Where(item => Int64.Parse(item.Id, CultureInfo.InvariantCulture) > longId))
                             .OrderBy(item => item.Id);
 
             return TaskAsyncHelper.FromResult<IOrderedEnumerable<Message>>(items);
@@ -92,20 +102,20 @@ namespace SignalR
                 id = 0;
             }
 
-            var items = GetAllCore(key).Where(item => item.Id > id)
+            var items = GetAllCore(key).Where(item => Int64.Parse(item.Id, CultureInfo.InvariantCulture) > id)
                                        .OrderBy(item => item.Id);
 
             return TaskAsyncHelper.FromResult<IEnumerable<Message>>(items);
         }
 
-        public Task<long?> GetLastId()
+        public Task<string> GetLastId()
         {
             if (_lastMessageId > 0)
             {
-                return TaskAsyncHelper.FromResult<long?>(_lastMessageId);
+                return TaskAsyncHelper.FromResult(_lastMessageId.ToString(CultureInfo.InvariantCulture));
             }
 
-            return TaskAsyncHelper.FromResult<long?>(null);
+            return TaskAsyncHelper.FromResult((string)null);
         }
 
         private IEnumerable<Message> GetAllCore(string key)

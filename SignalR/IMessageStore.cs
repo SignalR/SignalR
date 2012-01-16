@@ -6,9 +6,8 @@ namespace SignalR
 {
     public interface IMessageStore
     {
-        Task<long?> GetLastId();
+        Task<string> GetLastId();
         Task Save(string key, object value);
-        Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, long id);
-        Task<IEnumerable<Message>> GetAllSince(string key, long id);
+        Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id);
     }
 }

@@ -98,7 +98,7 @@ namespace SignalR
                          .FastUnwrap();
         }
 
-        public Task<PersistentResponse> ReceiveAsync(long messageId)
+        public Task<PersistentResponse> ReceiveAsync(string messageId)
         {
             // Get all messages for this message id, or wait until new messages if there are none
             return GetResponse(messageId)
@@ -126,7 +126,7 @@ namespace SignalR
                                   new[] { connectionType });
         }
 
-        private Task<PersistentResponse> ProcessReceive(Task<PersistentResponse> responseTask, long? messageId = null)
+        private Task<PersistentResponse> ProcessReceive(Task<PersistentResponse> responseTask, string messageId = null)
         {
             // No messages to return so we need to subscribe until we have something
             if (responseTask.Result == null)
@@ -143,7 +143,7 @@ namespace SignalR
             return responseTask;
         }
 
-        private Task<PersistentResponse> WaitForSignal(long? messageId = null)
+        private Task<PersistentResponse> WaitForSignal(string messageId = null)
         {
             if (WaitingForSignal != null)
             {
@@ -156,7 +156,7 @@ namespace SignalR
                             .FastUnwrap();
         }
 
-        private Task<PersistentResponse> ProcessSignal(SignalResult result, long? messageId = null)
+        private Task<PersistentResponse> ProcessSignal(SignalResult result, string messageId = null)
         {
             if (result.TimedOut)
             {
@@ -167,15 +167,15 @@ namespace SignalR
             }
 
             // Get the response for this message id
-            return GetResponse(messageId ?? 0)
-                .Then<PersistentResponse, long?>((response, id) => response ?? GetEmptyResponse(id), messageId);
+            return GetResponse(messageId)
+                .Then<PersistentResponse, string>((response, id) => response ?? GetEmptyResponse(id), messageId);
         }
 
-        private PersistentResponse GetEmptyResponse(long? messageId, bool timedOut = false)
+        private PersistentResponse GetEmptyResponse(string messageId, bool timedOut = false)
         {
             var response = new PersistentResponse
             {
-                MessageId = messageId ?? 0,
+                MessageId = messageId,
                 TimedOut = timedOut
             };
 
@@ -184,11 +184,11 @@ namespace SignalR
             return response;
         }
 
-        private Task<PersistentResponse> GetResponse(long messageId)
+        private Task<PersistentResponse> GetResponse(string messageId)
         {
             // Get all messages for the current set of signals
             return GetMessages(messageId, Signals)
-                .Then<List<Message>, long, PersistentResponse>((messages, id) =>
+                .Then<List<Message>, string, PersistentResponse>((messages, id) =>
                 {
                     if (!messages.Any())
                     {
@@ -262,7 +262,7 @@ namespace SignalR
                          .Catch();
         }
 
-        private Task<List<Message>> GetMessages(long id, IEnumerable<string> signals)
+        private Task<List<Message>> GetMessages(string id, IEnumerable<string> signals)
         {
             return _store.GetAllSince(signals, id)
                 .Then(messages => messages.ToList());

@@ -123,6 +123,11 @@ namespace SignalR.ScaleOut
             );
         }
 
+        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, long id)
+        {
+            throw new NotImplementedException();
+        }
+
         private Task<IEnumerable<Message>> GetMessages(string key, string sql, SqlParameter[] parameters)
         {
             var connection = CreateAndOpenConnection();
@@ -138,7 +143,7 @@ namespace SignalR.ScaleOut
                     {
                         messages.Add(new Message(
                             signalKey: key,
-                            id: rdr.GetInt64(0),
+                            id: rdr.GetString(0),
                             value: Json.Parse(rdr.GetString(1)),
                             created: rdr.GetDateTime(2)
                         ));
@@ -174,8 +179,12 @@ namespace SignalR.ScaleOut
             }
         }
 
+        Task<string> IMessageStore.GetLastId()
+        {
+            throw new NotImplementedException();
+        }
 
-        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, long id)
+        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id)
         {
             throw new NotImplementedException();
         }

@@ -11,7 +11,7 @@ using SignalR.Web;
 
 namespace SignalR.ScaleOut
 {
-    public class PeerToPeerSQLSignalBusMessageStore : IMessageStore, ISignalBus
+    public class PeerToPeerSQLSignalBusMessageStore
     {
         private static readonly object _peerDiscoveryLocker = new object();
 
@@ -67,7 +67,7 @@ namespace SignalR.ScaleOut
 
         public string MessageTableName { get; set; }
 
-        public Task<long?> GetLastId()
+        public Task<string> GetLastId()
         {
             return _store.GetLastId();
         }
@@ -126,13 +126,13 @@ namespace SignalR.ScaleOut
         /// <param name="request">The request being sent to peers</param>
         protected virtual void PrepareRequest(WebRequest request) { }
 
-        private Task<long> GetMessageId(string key)
+        private Task<string> GetMessageId(string key)
         {
             var connection = CreateAndOpenConnection();
             var transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted);
             var cmd = new SqlCommand(_getMessageIdSql.Replace("{TableName}", MessageTableName), connection, transaction);
             cmd.Parameters.AddWithValue("EventKey", key);
-            return cmd.ExecuteScalarAsync<long>()
+            return cmd.ExecuteScalarAsync<string>()
                 .ContinueWith(idTask =>
                 {
                     // We purposely don't commit the transaction, we just wanted the ID anyway, not the record
@@ -195,7 +195,7 @@ namespace SignalR.ScaleOut
     {
         public string SignalKey { get; set; }
         public object Value { get; set; }
-        public long Id { get; set; }
+        public string Id { get; set; }
         public DateTime Created { get; set; }
 
         public Message ToMessage()

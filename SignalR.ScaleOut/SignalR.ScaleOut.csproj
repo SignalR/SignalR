@@ -50,6 +50,7 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigPeerUrlSource.cs" />
+    <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="HttpHelper.cs" />
     <Compile Include="IPeerUrlSource.cs" />
     <Compile Include="JavaScriptSerializerAdapter.cs" />
@@ -68,7 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\SignalR.ScaleOut.nuspec" />
-    <None Include="SignalRSignalsTable.sql" />
+    <EmbeddedResource Include="SignalRSignalsTable.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SignalR\SignalR.csproj">
@@ -77,7 +78,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SignalRMessagesTable.sql" />
+    <EmbeddedResource Include="SignalRMessagesTable.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
