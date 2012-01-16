@@ -448,7 +448,9 @@
                 }
 
                 if (!window.EventSource) {
-                    onFailed();
+                    if (onFailed) {
+                        onFailed();
+                    }
                     return;
                 }
 
@@ -553,6 +555,14 @@
                     url,
                     connectTimeOut,
                     frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
+
+                if (window.EventSource) {
+                    // If the browser supports SSE, don't use Forever Frame
+                    if (onFailed) {
+                        onFailed();
+                    }
+                    return;
+                }
 
                 $(connection).trigger("onSending");
 
