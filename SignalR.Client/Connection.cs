@@ -232,7 +232,7 @@ namespace SignalR.Client
 
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
-            return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value));
+            return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
         }
     }
 }
