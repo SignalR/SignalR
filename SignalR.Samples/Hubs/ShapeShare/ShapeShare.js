@@ -139,7 +139,7 @@ $(function () {
         });
     }
 
-    $.connection.hub.start(function () {
+    $.connection.hub.start({ transport: activeTransport }, function () {
         shapeShare.join($.cookie("userName"), function () {
             $.cookie("userName", shapeShare.user.Name, { expires: 30 });
             $("#user").val(shapeShare.user.Name);

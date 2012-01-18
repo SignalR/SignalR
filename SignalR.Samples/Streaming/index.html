@@ -3,6 +3,7 @@
 <head>
     <title></title>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <script src="../Scripts/signalr.samples.js" type="text/javascript"></script>
     <script src="../Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
     <script src="../Scripts/jquery.signalR.js" type="text/javascript"></script>
     <script type="text/javascript">
@@ -13,7 +14,7 @@
                 $('#messages').append('<li>' + data + '</li>');
             });
 
-            connection.start();
+            connection.start({ transport: activeTransport });
         });
     </script>
 </head>

@@ -3,9 +3,9 @@ $(function () {
 
     status.joined = function (id, when) {
         if ($.connection.hub.id === id) {
-            addMessage(id, 'blue');    
+            addMessage(id, 'blue');
         }
-        
+
         addMessage(id + ' joined at ' + when, 'green');
     };
 
@@ -17,7 +17,7 @@ $(function () {
         $('#messages').append('<li style="background-color:' + color + ';color:white">' + value + '</li>');
     }
 
-    $.connection.hub.start(function () {
+    $.connection.hub.start({ transport: activeTransport }, function () {
         status.join();
     });
 

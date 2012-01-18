@@ -22,15 +22,14 @@
         e.css('top', y);
     }
 
-    window.setTimeout(function () {
-        signalR.hub.start(function () {
-            signalR.mouseTracking.join(function () {
 
-                $(document).mousemove(function (e) {
-                    signalR.mouseTracking.move(e.pageX, e.pageY);
-                    updateCursor(signalR.mouseTracking.id, e.pageX, e.pageY);
-                });
+    signalR.hub.start({ transport: activeTransport }, function () {
+        signalR.mouseTracking.join(function () {
+
+            $(document).mousemove(function (e) {
+                signalR.mouseTracking.move(e.pageX, e.pageY);
+                updateCursor(signalR.mouseTracking.id, e.pageX, e.pageY);
             });
         });
-    }, 0);
+    });
 });
