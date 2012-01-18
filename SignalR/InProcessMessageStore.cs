@@ -2,11 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
-using System.Globalization;
 
 namespace SignalR
 {
@@ -15,13 +15,13 @@ namespace SignalR
         private static readonly Task<string> _zeroTask = TaskAsyncHelper.FromResult("0");
         private static List<InProcessMessage> _emptyMessageList = Enumerable.Empty<InProcessMessage>().ToList();
 
-        private readonly ConcurrentDictionary<string, List<InProcessMessage>> _items = new ConcurrentDictionary<string, List<InProcessMessage>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, LockedList<InProcessMessage>> _items = new ConcurrentDictionary<string, LockedList<InProcessMessage>>(StringComparer.OrdinalIgnoreCase);
         // Interval to wait before cleaning up expired items
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
+        private readonly object _idLocker = new object();
 
         private long _lastMessageId = 0;
-        private readonly object _idLocker = new object();
-        private bool _gcRunning;
+        private long _gcRunning = 0;
 
         private readonly Timer _timer;
 
@@ -45,14 +45,14 @@ namespace SignalR
 
         public Task Save(string key, object value)
         {
-            var list = _items.GetOrAdd(key, _ => new List<InProcessMessage>());
+            var list = _items.GetOrAdd(key, _ => new LockedList<InProcessMessage>());
+
             lock (_idLocker)
             {
-                var id = ++_lastMessageId;
-                var message = new InProcessMessage(key, id, value);
-                list.Add(message);
+                // Only 1 save allowed at a time, to ensure messages are added to the list in order
+                list.Add(new InProcessMessage(key, ++_lastMessageId, value));
             }
-                
+            
             return TaskAsyncHelper.Empty;
         }
 
@@ -91,8 +91,7 @@ namespace SignalR
                 id = 0;
             }
 
-            var items = GetAllCore(key).Where(item => Int64.Parse(item.Id, CultureInfo.InvariantCulture) > id)
-                                       .OrderBy(item => item.Id);
+            var items = GetAllCoreSince(key, id).OrderBy(item => item.Id);
 
             return TaskAsyncHelper.FromResult<IEnumerable<Message>>(items);
         }
@@ -101,7 +100,7 @@ namespace SignalR
         {
             if (_lastMessageId > 0)
             {
-                return TaskAsyncHelper.FromResult(_lastMessageId.ToString(CultureInfo.InvariantCulture));
+                return TaskAsyncHelper.FromResult(Interlocked.Read(ref _lastMessageId).ToString(CultureInfo.InvariantCulture));
             }
 
             return _zeroTask;
@@ -111,74 +110,63 @@ namespace SignalR
         {
             var list = GetAllCore(key);
             int index;
-            lock (list)
+            
+            if (list.Count > 0 && list[0].MessageId > id)
             {
-                if (list.Count > 0 && list[0].MessageId > id)
-                {
-                    // All messages in the list are greater than the last message
-                    return list.Select(m => m).ToList();
-                }
-
-                index = list.FindLastIndex(msg => msg.MessageId <= id);
-           
-                if (index < 0)
-                {
-                    return Enumerable.Empty<InProcessMessage>();
-                }
-
-                var startIndex = index + 1;
-
-                if (startIndex >= list.Count)
-                {
-                    return Enumerable.Empty<InProcessMessage>();
-                }
-
-                return list.GetRange(startIndex, list.Count - startIndex);
+                // All messages in the list are greater than the last message
+                return list;
             }
+
+            index = list.FindLastIndex(msg => msg.MessageId <= id);
+           
+            if (index < 0)
+            {
+                return Enumerable.Empty<InProcessMessage>();
+            }
+
+            var startIndex = index + 1;
+
+            if (startIndex >= list.Count)
+            {
+                return Enumerable.Empty<InProcessMessage>();
+            }
+
+            return list.GetRange(startIndex, list.Count - startIndex);
+            
         }
 
         private List<InProcessMessage> GetAllCore(string key)
         {
-            List<InProcessMessage> list;
+            LockedList<InProcessMessage> list;
             if (_items.TryGetValue(key, out list))
             {
                 // Return a copy of the list
-                return list;
+                return list.Copy();
             }
             return _emptyMessageList;
         }
 
         private void RemoveExpiredEntries(object state)
         {
+            if (Interlocked.Exchange(ref _gcRunning, 1) == 1 || Debugger.IsAttached)
+            {
+                return;
+            }
+
             try
             {
-                if (_gcRunning || Debugger.IsAttached)
-                {
-                    return;
-                }
-
-                _gcRunning = true;
-
                 // Take a snapshot of the entries
                 var entries = _items.ToList();
 
                 // Remove all the expired ones
                 foreach (var entry in entries)
                 {
-                    InProcessMessage[] messages;
-                    lock (entry.Value)
-                    {
-                        messages = new InProcessMessage[entry.Value.Count];
-                        entry.Value.CopyTo(messages);
-                    }
+                    var messages = entry.Value.Copy();
                     foreach (var item in messages)
                     {
                         if (item.Expired)
                         {
-                            lock (entry.Value)
-                            {
-                                entry.Value.Remove(item);
-                            }
+                            entry.Value.Remove(item);
                         }
                     }
                 }
@@ -190,7 +178,7 @@ namespace SignalR
             }
             finally
             {
-                _gcRunning = false;
+                Interlocked.Exchange(ref _gcRunning, 0);
             }
         }
 

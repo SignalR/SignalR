@@ -64,6 +64,7 @@
     <Compile Include="IConnectionIdFactory.cs" />
     <Compile Include="IJsonSerializer.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
+    <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Abstractions\RequestExtensions.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
