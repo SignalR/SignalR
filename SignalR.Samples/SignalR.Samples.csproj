@@ -135,6 +135,7 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\index.htm" />
+    <Content Include="Scripts\signalr.samples.js" />
     <Content Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.2.js" />
     <Content Include="Scripts\jquery-1.6.2.min.js" />
