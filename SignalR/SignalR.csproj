@@ -63,6 +63,7 @@
     <Compile Include="Hubs\IHubTypeResolver.cs" />
     <Compile Include="IConnectionIdFactory.cs" />
     <Compile Include="IJsonSerializer.cs" />
+    <Compile Include="IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
     <Compile Include="IReceivingConnection.cs" />
-    <Compile Include="ISignalBus.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="SignalCommand.cs" />
@@ -105,19 +105,13 @@
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
-    <Compile Include="InProcessSignalBus.cs" />
-    <Compile Include="SignaledEventArgs.cs" />
-    <Compile Include="Signaler.cs" />
-    <Compile Include="SignalResult.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
     <Compile Include="Hubs\TrackingDictionary.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="Hubs\IActionResolver.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
-    <Compile Include="IMessageStore.cs" />
     <Compile Include="Message.cs" />
-    <Compile Include="InProcessMessageStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\TransportManager.cs" />
   </ItemGroup>

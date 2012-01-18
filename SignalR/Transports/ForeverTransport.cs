@@ -22,7 +22,7 @@ namespace SignalR.Transports
             _jsonSerializer = jsonSerializer;
         }
 
-        protected string LastMessageId
+        protected ulong? LastMessageId
         {
             get;
             set;
@@ -142,14 +142,14 @@ namespace SignalR.Transports
                     .FastUnwrap();
         }
 
-        private Task ProcessMessages(IReceivingConnection connection, string lastMessageId)
+        private Task ProcessMessages(IReceivingConnection connection, ulong? lastMessageId)
         {
             var tcs = new TaskCompletionSource<object>();
             ProcessMessagesImpl(tcs, connection, lastMessageId);
             return tcs.Task;
         }
 
-        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, string lastMessageId)
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, ulong? lastMessageId)
         {
             if (_isDisconnected == 0 && Context.Response.IsClientConnected)
             {
@@ -157,7 +157,7 @@ namespace SignalR.Transports
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = lastMessageId == null
                     ? connection.ReceiveAsync()
-                    : connection.ReceiveAsync(lastMessageId);
+                    : connection.ReceiveAsync(lastMessageId.Value);
 
                 receiveAsyncTask.Then(response =>
                 {

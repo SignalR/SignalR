@@ -9,8 +9,7 @@ namespace SignalR
 {
     public abstract class PersistentConnection : IGroupManager
     {
-        private readonly Signaler _signaler;
-        private readonly IMessageStore _store;
+        private readonly IMessageBus _messageBus;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IConnectionIdFactory _connectionIdFactory;
         private readonly ITransportManager _transportManager;
@@ -18,23 +17,20 @@ namespace SignalR
         protected ITransport _transport;
 
         protected PersistentConnection()
-            : this(DependencyResolver.Resolve<Signaler>(),
+            : this(DependencyResolver.Resolve<IMessageBus>(),
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
-                   DependencyResolver.Resolve<IMessageStore>(),
                    DependencyResolver.Resolve<IJsonSerializer>(),
                    DependencyResolver.Resolve<ITransportManager>())
         {
         }
 
-        protected PersistentConnection(Signaler signaler,
+        protected PersistentConnection(IMessageBus messageBus,
                                        IConnectionIdFactory connectionIdFactory,
-                                       IMessageStore store,
                                        IJsonSerializer jsonSerializer,
                                        ITransportManager transportManager)
         {
-            _signaler = signaler;
+            _messageBus = messageBus;
             _connectionIdFactory = connectionIdFactory;
-            _store = store;
             _jsonSerializer = jsonSerializer;
             _transportManager = transportManager;
         }
@@ -117,7 +113,7 @@ namespace SignalR
                 SignalCommand.AddCommandSuffix(connectionId)
             };
 
-            return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
+            return new Connection(_messageBus, _jsonSerializer, DefaultSignal, connectionId, signals, groups);
         }
 
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)

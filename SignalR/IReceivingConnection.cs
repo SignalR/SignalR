@@ -8,7 +8,7 @@ namespace SignalR
         TimeSpan ReceiveTimeout { get; set; }
 
         Task<PersistentResponse> ReceiveAsync();
-        Task<PersistentResponse> ReceiveAsync(string messageId);
+        Task<PersistentResponse> ReceiveAsync(ulong messageId);
 
         Task SendCommand(SignalCommand command);
     }

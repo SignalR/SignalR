@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,19 +9,37 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class InProcessMessageBus
+    public class InProcessMessageBus : IMessageBus
     {
-        private static List<InProcessMessage> _emptyMessageList = new List<InProcessMessage>();
+        private static List<Message> _emptyMessageList = new List<Message>();
 
         private readonly ConcurrentDictionary<string, LockedList<Action<IEnumerable<Message>>>> _waitingTasks =
             new ConcurrentDictionary<string, LockedList<Action<IEnumerable<Message>>>>();
 
-        private readonly ConcurrentDictionary<string, LockedList<InProcessMessage>> _cache =
-            new ConcurrentDictionary<string, LockedList<InProcessMessage>>();
+        private readonly ConcurrentDictionary<string, LockedList<Message>> _cache =
+            new ConcurrentDictionary<string, LockedList<Message>>();
 
         private readonly object _messageCreationLock = new object();
 
+        private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
+
         private ulong _lastMessageId = 0;
+        private long _gcRunning = 0;
+
+        private readonly Timer _timer;
+
+        public InProcessMessageBus()
+            : this(garbageCollectMessages: true)
+        {
+        }
+
+        public InProcessMessageBus(bool garbageCollectMessages)
+        {
+            if (garbageCollectMessages)
+            {
+                _timer = new Timer(RemoveExpiredEntries, null, _cleanupInterval, _cleanupInterval);
+            }
+        }
 
         public Task<IEnumerable<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null)
         {
@@ -35,7 +53,7 @@ namespace SignalR
             if (messages.Any())
             {
                 // Messages already in store greater than last received id so return them
-                return TaskAsyncHelper.FromResult((IEnumerable<Message>)messages.OrderBy(msg => msg.MessageId));
+                return TaskAsyncHelper.FromResult((IEnumerable<Message>)messages.OrderBy(msg => msg.Id));
             }
 
             // Wait for new messages
@@ -44,13 +62,13 @@ namespace SignalR
 
         public Task Send(string eventKey, object value)
         {
-            var list = _cache.GetOrAdd(eventKey, _ => new LockedList<InProcessMessage>());
+            var list = _cache.GetOrAdd(eventKey, _ => new LockedList<Message>());
 
-            InProcessMessage message = null;
+            Message message = null;
             lock (_messageCreationLock)
             {
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
-                message = new InProcessMessage(eventKey, GenerateId(), value);
+                message = new Message(eventKey, GenerateId(), value);
                 list.Add(message);
             }
 
@@ -79,10 +97,10 @@ namespace SignalR
             return ++_lastMessageId;
         }
 
-        private IEnumerable<InProcessMessage> GetMessagesSince(string eventKey, ulong id)
+        private IEnumerable<Message> GetMessagesSince(string eventKey, ulong id)
         {
-            LockedList<InProcessMessage> store;
-            List<InProcessMessage> list = null;
+            LockedList<Message> store;
+            List<Message> list = null;
             if (_cache.TryGetValue(eventKey, out store))
             {
                 list = store.Copy();
@@ -93,13 +111,13 @@ namespace SignalR
                 return _emptyMessageList;
             }
 
-            if (list.Count > 0 && list[0].MessageId > id)
+            if (list.Count > 0 && list[0].Id > id)
             {
                 // All messages in the list are greater than the last message
                 return list;
             }
 
-            var index = list.FindLastIndex(msg => msg.MessageId <= id);
+            var index = list.FindLastIndex(msg => msg.Id <= id);
 
             if (index < 0)
             {
@@ -148,14 +166,39 @@ namespace SignalR
             return tcs.Task;
         }
 
-        private class InProcessMessage : Message
+        private void RemoveExpiredEntries(object state)
         {
-            public ulong MessageId { get; set; }
-
-            public InProcessMessage(string signalKey, ulong id, object value)
-                : base(signalKey, id.ToString(CultureInfo.InvariantCulture), value)
+            if (Interlocked.Exchange(ref _gcRunning, 1) == 1 || Debugger.IsAttached)
             {
-                MessageId = id;
+                return;
+            }
+
+            try
+            {
+                // Take a snapshot of the entries
+                var entries = _cache.ToList();
+
+                // Remove all the expired ones
+                foreach (var entry in entries)
+                {
+                    var messages = entry.Value.Copy();
+                    foreach (var item in messages)
+                    {
+                        if (item.Expired)
+                        {
+                            entry.Value.Remove(item);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Exception on bg thread, bad! Log and swallow to stop the process exploding
+                Trace.TraceError("Error during InProcessMessageStore clean up on background thread: {0}", ex);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _gcRunning, 0);
             }
         }
     }

@@ -72,11 +72,16 @@ namespace SignalR.Transports
             }
         }
 
-        private string MessageId
+        private ulong? MessageId
         {
             get
             {
-                return Context.Request.QueryString["messageId"];
+                ulong id;
+                if (UInt64.TryParse(Context.Request.QueryString["messageId"], out id))
+                {
+                    return id;
+                }
+                return null;
             }
         }
 
@@ -165,7 +170,7 @@ namespace SignalR.Transports
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
                               connection.ReceiveAsync() :
-                              connection.ReceiveAsync(MessageId);
+                              connection.ReceiveAsync(MessageId.Value);
 
             return receiveTask.Then(new Func<PersistentResponse, Task>(response => Send(response)))
                               .FastUnwrap();

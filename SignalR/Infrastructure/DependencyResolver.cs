@@ -84,9 +84,9 @@ namespace SignalR.Infrastructure
 
             internal DefaultDependencyResolver()
             {
-                var store = new Lazy<InProcessMessageStore>(() => new InProcessMessageStore());
+                var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus());
 
-                Register(typeof(IMessageStore), () => store.Value);
+                Register(typeof(IMessageBus), () => messageBus.Value);
 
                 var serializer = new JsonConvertAdapter();
 
@@ -102,9 +102,6 @@ namespace SignalR.Infrastructure
                 var hubTypeResolver = new Lazy<DefaultHubTypeResolver>(() => new DefaultHubTypeResolver());
                 Register(typeof(IHubTypeResolver), () => hubTypeResolver.Value);
 
-                var signalBus = new InProcessSignalBus();
-                Register(typeof(ISignalBus), () => signalBus);
-
                 var pesistentConnectionFactory = new DefaultPersistentConnectionFactory();
                 Register(typeof(IPersistentConnectionFactory), () => pesistentConnectionFactory);
 
@@ -117,9 +114,6 @@ namespace SignalR.Infrastructure
                 Register(typeof(IConnectionIdFactory), () => connectionIdFactory);
 
                 Register(typeof(ITransportManager), () => TransportManager.Default);
-
-                var signaler = new Lazy<Signaler>(() => new Signaler(DependencyResolver.Resolve<ISignalBus>()));
-                Register(typeof(Signaler), () => signaler.Value);
             }
 
             public object GetService(Type serviceType)

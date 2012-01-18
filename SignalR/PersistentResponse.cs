@@ -6,7 +6,7 @@ namespace SignalR
     {
         private readonly IDictionary<string, object> _transportData = new Dictionary<string, object>();
 
-        public string MessageId { get; set; }
+        public ulong? MessageId { get; set; }
         public IEnumerable<object> Messages { get; set; }
         public bool Disconnect { get; set; }
         public bool TimedOut { get; set; }

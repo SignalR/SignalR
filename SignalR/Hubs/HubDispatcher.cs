@@ -22,8 +22,7 @@ namespace SignalR.Hubs
             MaxJsonLength = 30 * 1024 * 1024
         };
 
-        private readonly Signaler _signaler;
-        private readonly IMessageStore _store;
+        private readonly IMessageBus _messageBus;
         private readonly IHubFactory _hubFactory;
         private readonly IActionResolver _actionResolver;
         private readonly IJavaScriptProxyGenerator _proxyGenerator;
@@ -36,8 +35,7 @@ namespace SignalR.Hubs
 
         public HubDispatcher(string url)
             : this(DependencyResolver.Resolve<IHubFactory>(),
-                   DependencyResolver.Resolve<IMessageStore>(),
-                   DependencyResolver.Resolve<Signaler>(),
+                   DependencyResolver.Resolve<IMessageBus>(),
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IActionResolver>(),
                    DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
@@ -50,8 +48,7 @@ namespace SignalR.Hubs
         }
 
         public HubDispatcher(IHubFactory hubFactory,
-                             IMessageStore store,
-                             Signaler signaler,
+                             IMessageBus messageBus,
                              IConnectionIdFactory connectionIdFactory,
                              IActionResolver actionResolver,
                              IJavaScriptProxyGenerator proxyGenerator,
@@ -60,12 +57,11 @@ namespace SignalR.Hubs
                              IHubLocator hubLocator,
                              IHubTypeResolver hubTypeResolver,
                              string url)
-            : base(signaler, connectionIdFactory, store, jsonSerializer, transportManager)
+            : base(messageBus, connectionIdFactory, jsonSerializer, transportManager)
         {
             _hubFactory = hubFactory;
-            _store = store;
             _jsonSerializer = jsonSerializer;
-            _signaler = signaler;
+            _messageBus = messageBus;
             _actionResolver = actionResolver;
             _proxyGenerator = proxyGenerator;
             _hubLocator = hubLocator;
@@ -243,7 +239,7 @@ namespace SignalR.Hubs
 
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId));
 
-            return new Connection(_store, _jsonSerializer, _signaler, null, connectionId, hubSignals, groups);
+            return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups);
         }
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
