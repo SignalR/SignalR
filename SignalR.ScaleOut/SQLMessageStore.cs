@@ -184,7 +184,7 @@ namespace SignalR.ScaleOut
             throw new NotImplementedException();
         }
 
-        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id)
+        public Task<IEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id)
         {
             throw new NotImplementedException();
         }

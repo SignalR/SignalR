@@ -12,9 +12,9 @@ namespace SignalR
 {
     public class InProcessMessageStore : IMessageStore
     {
-        private static readonly Task<string> _zeroTask = TaskAsyncHelper.FromResult("0"); 
+        private static readonly Task<string> _zeroTask = TaskAsyncHelper.FromResult("0");
 
-        private readonly ConcurrentDictionary<string, SafeSet<Message>> _items = new ConcurrentDictionary<string, SafeSet<Message>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SafeSet<InProcessMessage>> _items = new ConcurrentDictionary<string, SafeSet<InProcessMessage>>(StringComparer.OrdinalIgnoreCase);
         // Interval to wait before cleaning up expired items
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
@@ -44,10 +44,11 @@ namespace SignalR
 
         public Task Save(string key, object value)
         {
-            var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
+            var list = _items.GetOrAdd(key, _ => new SafeSet<InProcessMessage>());
             lock (_idLocker)
             {
-                var message = new Message(key, Interlocked.Increment(ref _lastMessageId).ToString(), value);
+                var id = ++_lastMessageId;
+                var message = new InProcessMessage(key, id, value);
                 list.Add(message);
             }
                 
@@ -59,26 +60,10 @@ namespace SignalR
         /// </summary>
         protected internal Task Save(Message message)
         {
-            //var key = message.SignalKey;
-
-            //var list = _items.GetOrAdd(key, _ => new SafeSet<Message>());
-            //list.Add(message);
-
-            //if (message.Id > _lastMessageId)
-            //{
-            //    lock (_idLocker)
-            //    {
-            //        if (message.Id > _lastMessageId)
-            //        {
-            //            _lastMessageId = message.Id;
-            //        }
-            //    }
-            //}
-
             return TaskAsyncHelper.Empty;
         }
 
-        public Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id)
+        public Task<IEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id)
         {
             long longId;
             if (!Int64.TryParse(id, NumberStyles.Any, CultureInfo.InvariantCulture, out longId))
@@ -92,10 +77,10 @@ namespace SignalR
                 longId = 0;
             }
 
-            var items = keys.SelectMany(k => GetAllCore(k).Where(item => Int64.Parse(item.Id, CultureInfo.InvariantCulture) > longId))
+            var items = keys.SelectMany(k => GetAllCore(k).Where(item => item.MessageId > longId))
                             .OrderBy(item => item.Id);
 
-            return TaskAsyncHelper.FromResult<IOrderedEnumerable<Message>>(items);
+            return TaskAsyncHelper.FromResult<IEnumerable<Message>>(items);
         }
 
         public Task<IEnumerable<Message>> GetAllSince(string key, long id)
@@ -121,15 +106,15 @@ namespace SignalR
             return _zeroTask;
         }
 
-        private IEnumerable<Message> GetAllCore(string key)
+        private IEnumerable<InProcessMessage> GetAllCore(string key)
         {
-            SafeSet<Message> list;
+            SafeSet<InProcessMessage> list;
             if (_items.TryGetValue(key, out list))
             {
                 // Return a copy of the list
                 return list.GetSnapshot();
             }
-            return Enumerable.Empty<Message>();
+            return Enumerable.Empty<InProcessMessage>();
         }
 
         private void RemoveExpiredEntries(object state)
@@ -166,6 +151,17 @@ namespace SignalR
             finally
             {
                 _gcRunning = false;
+            }
+        }
+
+        private class InProcessMessage : Message
+        {
+            public long MessageId { get; set; }
+
+            public InProcessMessage(string signalKey, long id, object value)
+                : base(signalKey, id.ToString(CultureInfo.InvariantCulture), value)
+            {
+                MessageId = id;
             }
         }
     }

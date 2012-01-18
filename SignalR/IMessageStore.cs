@@ -8,6 +8,6 @@ namespace SignalR
     {
         Task<string> GetLastId();
         Task Save(string key, object value);
-        Task<IOrderedEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id);
+        Task<IEnumerable<Message>> GetAllSince(IEnumerable<string> keys, string id);
     }
 }
