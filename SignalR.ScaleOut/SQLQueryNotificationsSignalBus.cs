@@ -168,7 +168,7 @@ namespace SignalR.ScaleOut
             return connection;
         }
 
-        public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void AddHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
             Signaled += handler;
         }

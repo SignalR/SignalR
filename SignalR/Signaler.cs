@@ -14,7 +14,7 @@ namespace SignalR
         private static TimeSpan _defaultTimeOut;
 
         private readonly object _timeOutCreationLock = new object();
-        private readonly SafeSet<SafeHandleEventAndSetResultAction> _signalActions = new SafeSet<SafeHandleEventAndSetResultAction>();
+        private readonly LockedList<SafeHandleEventAndSetResultAction> _signalActions = new LockedList<SafeHandleEventAndSetResultAction>();
         private readonly ISignalBus _signalBus;
         private bool _timeOutCheckRunning;
 
@@ -97,10 +97,9 @@ namespace SignalR
 
             var signalAction = new SafeHandleEventAndSetResultAction(SignalBus, tcs, eventKeys, timeout, action => _signalActions.Remove(action));
 
-            foreach (var eventKey in eventKeys)
-            {
-                SignalBus.AddHandler(eventKey, signalAction.Handler);
-            }
+            
+            SignalBus.AddHandler(eventKeys, signalAction.Handler);
+            
 
             if (cancellationToken != CancellationToken.None)
             {
@@ -140,7 +139,7 @@ namespace SignalR
 
                 _timeOutCheckRunning = true;
 
-                foreach (var signalAction in _signalActions.GetSnapshot())
+                foreach (var signalAction in _signalActions.Copy())
                 {
                     if (signalAction.TimeoutInfo.TimedOut)
                     {

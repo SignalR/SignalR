@@ -46,13 +46,16 @@ namespace SignalR.ScaleOut
             return Task.Factory.StartNew(() => SendSignalToPeers(eventKey));
         }
 
-        public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void AddHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
-            _handlers.AddOrUpdate(eventKey, new SafeSet<EventHandler<SignaledEventArgs>>(new[] { handler }), (key, list) =>
+            foreach (var key in eventKeys)
             {
-                list.Add(handler);
-                return list;
-            });
+                _handlers.AddOrUpdate(key, new SafeSet<EventHandler<SignaledEventArgs>>(new[] { handler }), (_, list) =>
+                {
+                    list.Add(handler);
+                    return list;
+                });
+            }
         }
 
         public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)

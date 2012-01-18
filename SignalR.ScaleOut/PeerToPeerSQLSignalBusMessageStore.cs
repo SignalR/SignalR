@@ -93,9 +93,9 @@ namespace SignalR.ScaleOut
             return _store.GetAllSince(key, id);
         }
 
-        public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void AddHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
-            _signalBus.AddHandler(eventKey, handler);
+            _signalBus.AddHandler(eventKeys, handler);
         }
 
         public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)

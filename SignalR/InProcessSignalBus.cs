@@ -11,23 +11,21 @@ namespace SignalR
     /// </summary>
     public class InProcessSignalBus : ISignalBus
     {
-        private readonly ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>> _handlers =
-            new ConcurrentDictionary<string, CustomStack<EventHandler<SignaledEventArgs>>>();
+        private readonly ConcurrentDictionary<string, LockedList<EventHandler<SignaledEventArgs>>> _handlers =
+            new ConcurrentDictionary<string, LockedList<EventHandler<SignaledEventArgs>>>();
 
         private void OnSignaled(string eventKey)
         {
-            CustomStack<EventHandler<SignaledEventArgs>> handlers;
+            LockedList<EventHandler<SignaledEventArgs>> handlers;
             if (_handlers.TryGetValue(eventKey, out handlers))
             {
-                var delegates = handlers.GetAllAndClear();
-                if (delegates != null)
+                var delegates = handlers.Copy();
+                
+                foreach (var callback in delegates)
                 {
-                    foreach (var callback in delegates)
+                    if (callback != null)
                     {
-                        if (callback != null)
-                        {
-                            callback.Invoke(this, new SignaledEventArgs(eventKey));
-                        }
+                        callback.Invoke(this, new SignaledEventArgs(eventKey));
                     }
                 }
             }
@@ -38,19 +36,29 @@ namespace SignalR
             return Task.Factory.StartNew(() => OnSignaled(eventKey));
         }
 
-        public void AddHandler(string eventKey, EventHandler<SignaledEventArgs> handler)
+        public void AddHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
             if (handler == null)
             {
                 throw new ArgumentNullException("handler");
             }
-            var handlers = _handlers.GetOrAdd(eventKey, _ => new CustomStack<EventHandler<SignaledEventArgs>>());
-            handlers.Add(handler);
+            foreach (var key in eventKeys)
+            {
+                var handlers = _handlers.GetOrAdd(key, _ => new LockedList<EventHandler<SignaledEventArgs>>());
+                handlers.Add(handler);
+            }
         }
 
         public void RemoveHandler(IEnumerable<string> eventKeys, EventHandler<SignaledEventArgs> handler)
         {
-            // Don't need to do anything as our handlers are cleared automatically by CustomStack
+            foreach (var key in eventKeys)
+            {
+                LockedList<EventHandler<SignaledEventArgs>> handlers;
+                if (_handlers.TryGetValue(key, out handlers))
+                {
+                    handlers.Remove(handler);
+                }
+            }
         }
     }
 }
