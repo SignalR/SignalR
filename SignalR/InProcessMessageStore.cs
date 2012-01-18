@@ -13,8 +13,9 @@ namespace SignalR
     public class InProcessMessageStore : IMessageStore
     {
         private static readonly Task<string> _zeroTask = TaskAsyncHelper.FromResult("0");
+        private static List<InProcessMessage> _emptyMessageList = Enumerable.Empty<InProcessMessage>().ToList();
 
-        private readonly ConcurrentDictionary<string, SafeSet<InProcessMessage>> _items = new ConcurrentDictionary<string, SafeSet<InProcessMessage>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<InProcessMessage>> _items = new ConcurrentDictionary<string, List<InProcessMessage>>(StringComparer.OrdinalIgnoreCase);
         // Interval to wait before cleaning up expired items
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
@@ -44,7 +45,7 @@ namespace SignalR
 
         public Task Save(string key, object value)
         {
-            var list = _items.GetOrAdd(key, _ => new SafeSet<InProcessMessage>());
+            var list = _items.GetOrAdd(key, _ => new List<InProcessMessage>());
             lock (_idLocker)
             {
                 var id = ++_lastMessageId;
@@ -77,8 +78,8 @@ namespace SignalR
                 longId = 0;
             }
 
-            var items = keys.SelectMany(k => GetAllCore(k).Where(item => item.MessageId > longId))
-                            .OrderBy(item => item.Id);
+            var items = keys.SelectMany(k => GetAllCoreSince(k, longId))
+                            .OrderBy(item => item.MessageId);
 
             return TaskAsyncHelper.FromResult<IEnumerable<Message>>(items);
         }
@@ -106,15 +107,45 @@ namespace SignalR
             return _zeroTask;
         }
 
-        private IEnumerable<InProcessMessage> GetAllCore(string key)
+        private IEnumerable<InProcessMessage> GetAllCoreSince(string key, long id)
         {
-            SafeSet<InProcessMessage> list;
+            var list = GetAllCore(key);
+            int index;
+            lock (list)
+            {
+                if (list.Count > 0 && list[0].MessageId > id)
+                {
+                    // All messages in the list are greater than the last message
+                    return list.Select(m => m).ToList();
+                }
+
+                index = list.FindLastIndex(msg => msg.MessageId <= id);
+           
+                if (index < 0)
+                {
+                    return Enumerable.Empty<InProcessMessage>();
+                }
+
+                var startIndex = index + 1;
+
+                if (startIndex >= list.Count)
+                {
+                    return Enumerable.Empty<InProcessMessage>();
+                }
+
+                return list.GetRange(startIndex, list.Count - startIndex);
+            }
+        }
+
+        private List<InProcessMessage> GetAllCore(string key)
+        {
+            List<InProcessMessage> list;
             if (_items.TryGetValue(key, out list))
             {
                 // Return a copy of the list
-                return list.GetSnapshot();
+                return list;
             }
-            return Enumerable.Empty<InProcessMessage>();
+            return _emptyMessageList;
         }
 
         private void RemoveExpiredEntries(object state)
@@ -134,11 +165,20 @@ namespace SignalR
                 // Remove all the expired ones
                 foreach (var entry in entries)
                 {
-                    foreach (var item in entry.Value.GetSnapshot())
+                    InProcessMessage[] messages;
+                    lock (entry.Value)
+                    {
+                        messages = new InProcessMessage[entry.Value.Count];
+                        entry.Value.CopyTo(messages);
+                    }
+                    foreach (var item in messages)
                     {
                         if (item.Expired)
                         {
-                            entry.Value.Remove(item);
+                            lock (entry.Value)
+                            {
+                                entry.Value.Remove(item);
+                            }
                         }
                     }
                 }
