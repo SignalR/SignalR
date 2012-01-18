@@ -67,6 +67,7 @@
     <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Abstractions\RequestExtensions.cs" />
+    <Compile Include="InProcessMessageBus.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />

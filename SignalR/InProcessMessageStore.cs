@@ -110,7 +110,12 @@ namespace SignalR
         {
             var list = GetAllCore(key);
             int index;
-            
+
+            if (list.Count == 0)
+            {
+                return list;
+            }
+
             if (list.Count > 0 && list[0].MessageId > id)
             {
                 // All messages in the list are greater than the last message
