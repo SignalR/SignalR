@@ -80,14 +80,14 @@ namespace SignalR.Transports
 
         private void Beat(object state)
         {
+            if (_running)
+            {
+                Trace.TraceInformation("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
+                return;
+            }
+
             try
             {
-                if (_running)
-                {
-                    Trace.TraceInformation("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
-                    return;
-                }
-
                 _running = true;
 
                 foreach (var connection in _connections.GetSnapshot())
@@ -114,16 +114,11 @@ namespace SignalR.Transports
 
                         try
                         {
-                            connection.Disconnect().ContinueWith(task =>
-                            {
-                                if (task.IsFaulted)
-                                {
-                                    Trace.TraceError("SignalR exception thrown by Task: {0}", task.Exception);
-                                }
+                            // Remove the connection from the list
+                            RemoveConnection(connection);
 
-                                // Remove the connection from the list
-                                RemoveConnection(connection);
-                            });
+                            // Fire disconnect on the connection
+                            connection.Disconnect();
                         }
                         catch
                         {

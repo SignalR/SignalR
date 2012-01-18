@@ -12,6 +12,8 @@ namespace SignalR
 {
     public class InProcessMessageStore : IMessageStore
     {
+        private static readonly Task<string> _zeroTask = TaskAsyncHelper.FromResult("0"); 
+
         private readonly ConcurrentDictionary<string, SafeSet<Message>> _items = new ConcurrentDictionary<string, SafeSet<Message>>(StringComparer.OrdinalIgnoreCase);
         // Interval to wait before cleaning up expired items
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
@@ -81,6 +83,7 @@ namespace SignalR
             long longId;
             if (!Int64.TryParse(id, NumberStyles.Any, CultureInfo.InvariantCulture, out longId))
             {
+                Debug.Fail("id must be a valid integer");
                 throw new ArgumentException("id must be a valid integer", "id");
             }
 
@@ -115,7 +118,7 @@ namespace SignalR
                 return TaskAsyncHelper.FromResult(_lastMessageId.ToString(CultureInfo.InvariantCulture));
             }
 
-            return TaskAsyncHelper.FromResult((string)null);
+            return _zeroTask;
         }
 
         private IEnumerable<Message> GetAllCore(string key)

@@ -6,13 +6,9 @@ using SignalR.Abstractions;
 
 namespace SignalR.Transports
 {
-    public class LongPollingTransport : ITransport, ITrackingDisconnect
+    public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly HostContext _context;
-        private readonly ITransportHeartBeat _heartBeat;
-        private IReceivingConnection _connection;
-        private bool _disconnected;
+        private IJsonSerializer _jsonSerializer;
 
         public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer)
             : this(context, jsonSerializer, TransportHeartBeat.Instance)
@@ -21,10 +17,9 @@ namespace SignalR.Transports
         }
 
         public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
+            : base(context, heartBeat)
         {
-            _context = context;
             _jsonSerializer = jsonSerializer;
-            _heartBeat = heartBeat;
         }
 
         // Static events intended for use when measuring performance
@@ -41,7 +36,7 @@ namespace SignalR.Transports
             set;
         }
 
-        public TimeSpan DisconnectThreshold
+        public override TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromMilliseconds(LongPollDelay); }
         }
@@ -50,7 +45,7 @@ namespace SignalR.Transports
         {
             get
             {
-                string groupValue = _context.Request.QueryString["groups"];
+                string groupValue = Context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))
                 {
@@ -65,7 +60,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -73,7 +68,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -81,23 +76,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _context.Request.QueryString["messageId"];
-            }
-        }
-
-        public string ConnectionId
-        {
-            get
-            {
-                return _context.Request.QueryString["connectionId"];
-            }
-        }
-
-        public bool IsAlive
-        {
-            get
-            {
-                return _context.Response.IsClientConnected;
+                return Context.Request.QueryString["messageId"];
             }
         }
 
@@ -105,13 +84,13 @@ namespace SignalR.Transports
 
         public Func<Task> Connected { get; set; }
 
-        public Func<Task> Disconnected { get; set; }
+        public override Func<Task> Disconnected { get; set; }
 
         public Func<Exception, Task> Error { get; set; }
 
         public Task ProcessRequest(IReceivingConnection connection)
         {
-            _connection = connection;
+            Connection = connection;
 
             if (IsSendRequest)
             {
@@ -134,7 +113,7 @@ namespace SignalR.Transports
 
         public virtual Task Send(PersistentResponse response)
         {
-            _heartBeat.MarkConnection(this);
+            HeartBeat.MarkConnection(this);
 
             AddTransportData(response);
             return Send((object)response);
@@ -148,38 +127,13 @@ namespace SignalR.Transports
                 Sending(payload);
             }
 
-            _context.Response.ContentType = Json.MimeType;
-            return _context.Response.EndAsync(payload);
+            Context.Response.ContentType = Json.MimeType;
+            return Context.Response.EndAsync(payload);
         }
-
-        public virtual Task Disconnect()
-        {
-            if (!_disconnected && Disconnected != null)
-            {
-                return Disconnected().Then(() => SendDisconnectCommand()).FastUnwrap();
-            }
-
-            return SendDisconnectCommand();
-        }
-
-        private Task SendDisconnectCommand()
-        {
-            _disconnected = true;
-
-            var command = new SignalCommand
-            {
-                Type = CommandType.Disconnect,
-                ExpiresAfter = TimeSpan.FromMinutes(30)
-            };
-
-            // Force connection to close by sending a command signal
-            return _connection.SendCommand(command);
-        }
-
 
         private Task ProcessSendRequest()
         {
-            string data = _context.Request.Form["data"];
+            string data = Context.Request.Form["data"];
 
             if (Receiving != null)
             {
@@ -206,7 +160,7 @@ namespace SignalR.Transports
 
         private Task ProcessReceiveRequest(IReceivingConnection connection)
         {
-            _heartBeat.AddConnection(this);
+            HeartBeat.AddConnection(this);
 
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
