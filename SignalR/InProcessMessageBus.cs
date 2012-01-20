@@ -70,20 +70,20 @@ namespace SignalR
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
                 message = new Message(eventKey, GenerateId(), value);
                 list.Add(message);
-            }
 
-            // Send to waiting callers
-            LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
-            if (_waitingTasks.TryGetValue(eventKey, out taskCompletionSources))
-            {
-                var delegates = taskCompletionSources.Copy();
-                var messages = new[] { message };
-
-                foreach (var callback in delegates)
+                // Send to waiting callers
+                LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
+                if (_waitingTasks.TryGetValue(eventKey, out taskCompletionSources))
                 {
-                    if (callback != null)
+                    var delegates = taskCompletionSources.Copy();
+                    var messages = new[] { message };
+
+                    foreach (var callback in delegates)
                     {
-                        callback.Invoke(messages);
+                        if (callback != null)
+                        {
+                            callback.Invoke(messages);
+                        }
                     }
                 }
             }
