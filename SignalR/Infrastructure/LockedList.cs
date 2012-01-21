@@ -74,6 +74,11 @@ namespace SignalR.Infrastructure
             }
         }
 
+        public int FindLastIndexLockFree(Predicate<T> match)
+        {
+            return _list.FindLastIndex(match);
+        }
+
         public List<T> GetRange(int index, int count)
         {
             try
@@ -85,6 +90,11 @@ namespace SignalR.Infrastructure
             {
                 _listLock.ExitReadLock();
             }
+        }
+
+        public List<T> GetRangeLockFree(int index, int count)
+        {
+            return _list.GetRange(index, count);
         }
 
         public int Count
@@ -101,6 +111,11 @@ namespace SignalR.Infrastructure
                     _listLock.ExitReadLock();
                 }
             }
+        }
+
+        public List<T> List
+        {
+            get { return _list; }
         }
 
         public T this[int index]

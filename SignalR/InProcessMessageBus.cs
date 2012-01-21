@@ -19,7 +19,8 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, LockedList<Message>> _cache =
             new ConcurrentDictionary<string, LockedList<Message>>();
 
-        private readonly object _messageCreationLock = new object();
+        //private readonly object _messageCreationLock = new object();
+        private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
@@ -49,7 +50,18 @@ namespace SignalR
                 return WaitForMessages(eventKeys);
             }
 
-            var messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value));
+            IEnumerable<Message> messages;
+            try
+            {
+                _cacheLock.EnterReadLock();
+
+                messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value));
+            }
+            finally
+            {
+                _cacheLock.ExitReadLock();
+            }
+
             if (messages.Any())
             {
                 // Messages already in store greater than last received id so return them
@@ -65,25 +77,36 @@ namespace SignalR
             var list = _cache.GetOrAdd(eventKey, _ => new LockedList<Message>());
 
             Message message = null;
-            lock (_messageCreationLock)
+            //lock (_messageCreationLock)
+            //{
+
+            try
             {
+                _cacheLock.EnterWriteLock();
+
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
                 message = new Message(eventKey, GenerateId(), value);
                 list.Add(message);
+            }
+            finally
+            {
+                _cacheLock.ExitWriteLock();
+            }
+            
+            //}
 
-                // Send to waiting callers
-                LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
-                if (_waitingTasks.TryGetValue(eventKey, out taskCompletionSources))
+            // Send to waiting callers
+            LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
+            if (_waitingTasks.TryGetValue(eventKey, out taskCompletionSources))
+            {
+                var delegates = taskCompletionSources.Copy();
+                var messages = new[] { message };
+
+                foreach (var callback in delegates)
                 {
-                    var delegates = taskCompletionSources.Copy();
-                    var messages = new[] { message };
-
-                    foreach (var callback in delegates)
+                    if (callback != null)
                     {
-                        if (callback != null)
-                        {
-                            callback.Invoke(messages);
-                        }
+                        callback.Invoke(messages);
                     }
                 }
             }
@@ -99,13 +122,9 @@ namespace SignalR
 
         private IEnumerable<Message> GetMessagesSince(string eventKey, ulong id)
         {
-            LockedList<Message> store;
-            List<Message> list = null;
-            if (_cache.TryGetValue(eventKey, out store))
-            {
-                list = store.Copy();
-            }
-
+            LockedList<Message> list = null;
+            _cache.TryGetValue(eventKey, out list);
+            
             if (list == null || list.Count == 0)
             {
                 return _emptyMessageList;
@@ -114,10 +133,10 @@ namespace SignalR
             if (list.Count > 0 && list[0].Id > id)
             {
                 // All messages in the list are greater than the last message
-                return list;
+                return list.List;
             }
 
-            var index = list.FindLastIndex(msg => msg.Id <= id);
+            var index = list.FindLastIndexLockFree(msg => msg.Id <= id);
 
             if (index < 0)
             {
@@ -131,7 +150,7 @@ namespace SignalR
                 return _emptyMessageList;
             }
 
-            return list.GetRange(startIndex, list.Count - startIndex);
+            return list.GetRangeLockFree(startIndex, list.Count - startIndex);
         }
 
         private Task<IEnumerable<Message>> WaitForMessages(IEnumerable<string> eventKeys)
@@ -182,6 +201,7 @@ namespace SignalR
                 foreach (var entry in entries)
                 {
                     var messages = entry.Value.Copy();
+                    
                     foreach (var item in messages)
                     {
                         if (item.Expired)
