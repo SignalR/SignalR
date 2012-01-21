@@ -19,7 +19,6 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, LockedList<Message>> _cache =
             new ConcurrentDictionary<string, LockedList<Message>>();
 
-        //private readonly object _messageCreationLock = new object();
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
@@ -53,6 +52,7 @@ namespace SignalR
             IEnumerable<Message> messages;
             try
             {
+                // We need to lock here in case messages are added to the bus while we're reading
                 _cacheLock.EnterReadLock();
 
                 messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value));
@@ -77,11 +77,10 @@ namespace SignalR
             var list = _cache.GetOrAdd(eventKey, _ => new LockedList<Message>());
 
             Message message = null;
-            //lock (_messageCreationLock)
-            //{
 
             try
             {
+                // Take a write lock here so we ensure messages go into the list in order
                 _cacheLock.EnterWriteLock();
 
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
@@ -92,8 +91,6 @@ namespace SignalR
             {
                 _cacheLock.ExitWriteLock();
             }
-            
-            //}
 
             // Send to waiting callers
             LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
@@ -114,9 +111,8 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        private ulong GenerateId()
+        protected virtual ulong GenerateId()
         {
-            // do some crazy shit here
             return ++_lastMessageId;
         }
 
@@ -124,7 +120,7 @@ namespace SignalR
         {
             LockedList<Message> list = null;
             _cache.TryGetValue(eventKey, out list);
-            
+
             if (list == null || list.Count == 0)
             {
                 return _emptyMessageList;
@@ -201,7 +197,7 @@ namespace SignalR
                 foreach (var entry in entries)
                 {
                     var messages = entry.Value.Copy();
-                    
+
                     foreach (var item in messages)
                     {
                         if (item.Expired)
