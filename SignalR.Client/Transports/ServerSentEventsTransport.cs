@@ -10,7 +10,7 @@ namespace SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private const string ReaderKey = "sse.reader";
-        
+
         private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
@@ -50,7 +50,7 @@ namespace SignalR.Client.Transports
                 {
                     var exception = task.Exception.GetBaseException();
                     if (!IsRequestAborted(exception) &&
-                        Interlocked.CompareExchange(ref connection._initializedCalled, 0, 0) == 0)
+                        Interlocked.Exchange(ref connection._initializedCalled, 0) == 0)
                     {
                         if (errorCallback != null)
                         {
@@ -71,7 +71,7 @@ namespace SignalR.Client.Transports
                                                        connection,
                                                        () =>
                                                        {
-                                                           if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
+                                                           if (Interlocked.Exchange(ref connection._initializedCalled, 1) == 0)
                                                            {
                                                                initializeCallback();
                                                            }
@@ -95,7 +95,7 @@ namespace SignalR.Client.Transports
             {
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
                 {
-                    if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
+                    if (Interlocked.Exchange(ref connection._initializedCalled, 1) == 0)
                     {
                         // Stop the connection
                         Stop(connection);
