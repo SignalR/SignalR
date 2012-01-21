@@ -43,6 +43,7 @@ namespace SignalR.Hubs
                    DependencyResolver.Resolve<ITransportManager>(),
                    DependencyResolver.Resolve<IHubLocator>(),
                    DependencyResolver.Resolve<IHubTypeResolver>(),
+                   DependencyResolver.Resolve<ITraceManager>(),
                    url)
         {
         }
@@ -56,8 +57,9 @@ namespace SignalR.Hubs
                              ITransportManager transportManager,
                              IHubLocator hubLocator,
                              IHubTypeResolver hubTypeResolver,
+                             ITraceManager traceManager,
                              string url)
-            : base(messageBus, connectionIdFactory, jsonSerializer, transportManager)
+            : base(messageBus, connectionIdFactory, jsonSerializer, transportManager, traceManager)
         {
             _hubFactory = hubFactory;
             _jsonSerializer = jsonSerializer;
@@ -239,7 +241,7 @@ namespace SignalR.Hubs
 
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId));
 
-            return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups);
+            return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups, _trace);
         }
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)

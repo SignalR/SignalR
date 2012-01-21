@@ -65,9 +65,11 @@
     <Compile Include="IJsonSerializer.cs" />
     <Compile Include="IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
+    <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Abstractions\RequestExtensions.cs" />
+    <Compile Include="Infrastructure\TraceManager.cs" />
     <Compile Include="InProcessMessageBus.cs" />
     <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />

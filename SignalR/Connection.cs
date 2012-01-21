@@ -17,18 +17,21 @@ namespace SignalR
         private readonly HashSet<string> _groups;
         private readonly object _lockObj = new object();
         private bool _disconnected;
+        private readonly ITraceManager _trace;
 
         public Connection(IMessageBus messageBus,
                           IJsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
-                          IEnumerable<string> signals)
+                          IEnumerable<string> signals,
+                          ITraceManager traceManager)
             : this(messageBus,
                    jsonSerializer,
                    baseSignal,
                    connectionId,
                    signals,
-                   Enumerable.Empty<string>())
+                   Enumerable.Empty<string>(),
+                   traceManager)
         {
         }
 
@@ -37,7 +40,8 @@ namespace SignalR
                           string baseSignal,
                           string connectionId,
                           IEnumerable<string> signals,
-                          IEnumerable<string> groups)
+                          IEnumerable<string> groups,
+                          ITraceManager traceManager)
         {
             _messageBus = messageBus;
             _jsonSerializer = jsonSerializer;
@@ -45,6 +49,7 @@ namespace SignalR
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
             _groups = new HashSet<string>(groups);
+            _trace = traceManager;
         }
 
         // These static events are used for performance monitoring
@@ -108,7 +113,8 @@ namespace SignalR
                                   DependencyResolver.Resolve<IJsonSerializer>(),
                                   connectionType,
                                   null,
-                                  new[] { connectionType });
+                                  new[] { connectionType },
+                                  DependencyResolver.Resolve<ITraceManager>());
         }
 
         private PersistentResponse GetEmptyResponse(ulong? messageId, bool timedOut = false)
@@ -146,6 +152,8 @@ namespace SignalR
             };
 
             PopulateResponseState(response);
+
+            _trace.Source.TraceInformation("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, messages.Count, messageId);
 
             return response;
         }

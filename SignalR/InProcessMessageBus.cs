@@ -28,13 +28,17 @@ namespace SignalR
 
         private readonly Timer _timer;
 
+        private readonly ITraceManager _trace;
+
         public InProcessMessageBus()
-            : this(garbageCollectMessages: true)
+            : this(DependencyResolver.Resolve<ITraceManager>(), garbageCollectMessages: true)
         {
         }
 
-        public InProcessMessageBus(bool garbageCollectMessages)
+        public InProcessMessageBus(ITraceManager traceManager, bool garbageCollectMessages)
         {
+            _trace = traceManager;
+
             if (garbageCollectMessages)
             {
                 _timer = new Timer(RemoveExpiredEntries, null, _cleanupInterval, _cleanupInterval);
@@ -46,29 +50,32 @@ namespace SignalR
             if (id == null)
             {
                 // Wait for new messages
+                _trace.Source.TraceInformation("MessageBus: New connection waiting for messages");
                 return WaitForMessages(eventKeys);
             }
 
-            IEnumerable<Message> messages;
+            List<Message> messages;
             try
             {
                 // We need to lock here in case messages are added to the bus while we're reading
                 _cacheLock.EnterReadLock();
 
-                messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value));
+                messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value)).ToList();
             }
             finally
             {
                 _cacheLock.ExitReadLock();
             }
 
-            if (messages.Any())
+            if (messages.Count > 0)
             {
                 // Messages already in store greater than last received id so return them
+                _trace.Source.TraceInformation("MessageBus: Connection getting messages from cache from id {0}", id.Value);
                 return TaskAsyncHelper.FromResult((IEnumerable<Message>)messages.OrderBy(msg => msg.Id));
             }
 
             // Wait for new messages
+            _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id.Value);
             return WaitForMessages(eventKeys);
         }
 
@@ -85,19 +92,32 @@ namespace SignalR
 
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
                 message = new Message(eventKey, GenerateId(), value);
+                _trace.Source.TraceInformation("MessageBus: Saving message {0} to cache", message.Id);
                 list.Add(message);
+
+                // Send to waiting callers.
+                // This must be done in the write lock to ensure that messages are sent to waiting
+                // connections in the order they were saved so that they always get the correct
+                // last message id to resubscribe with.
+                Broadcast(eventKey, message);
             }
             finally
             {
                 _cacheLock.ExitWriteLock();
             }
 
-            // Send to waiting callers
+            return TaskAsyncHelper.Empty;
+        }
+
+        private void Broadcast(string eventKey, Message message)
+        {
             LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
             if (_waitingTasks.TryGetValue(eventKey, out taskCompletionSources))
             {
                 var delegates = taskCompletionSources.Copy();
                 var messages = new[] { message };
+
+                _trace.Source.TraceInformation("MessageBus: Sending message {0} to {1} waiting connections", message.Id, delegates.Count);
 
                 foreach (var callback in delegates)
                 {
@@ -107,8 +127,6 @@ namespace SignalR
                     }
                 }
             }
-
-            return TaskAsyncHelper.Empty;
         }
 
         protected virtual ulong GenerateId()

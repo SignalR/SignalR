@@ -13,26 +13,30 @@ namespace SignalR
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IConnectionIdFactory _connectionIdFactory;
         private readonly ITransportManager _transportManager;
-
+        
+        protected readonly ITraceManager _trace;
         protected ITransport _transport;
 
         protected PersistentConnection()
             : this(DependencyResolver.Resolve<IMessageBus>(),
                    DependencyResolver.Resolve<IConnectionIdFactory>(),
                    DependencyResolver.Resolve<IJsonSerializer>(),
-                   DependencyResolver.Resolve<ITransportManager>())
+                   DependencyResolver.Resolve<ITransportManager>(),
+                   DependencyResolver.Resolve<ITraceManager>())
         {
         }
 
         protected PersistentConnection(IMessageBus messageBus,
                                        IConnectionIdFactory connectionIdFactory,
                                        IJsonSerializer jsonSerializer,
-                                       ITransportManager transportManager)
+                                       ITransportManager transportManager,
+                                       ITraceManager traceManager)
         {
             _messageBus = messageBus;
             _connectionIdFactory = connectionIdFactory;
             _jsonSerializer = jsonSerializer;
             _transportManager = transportManager;
+            _trace = traceManager;
         }
 
         // Static events intended for use when measuring performance
@@ -113,7 +117,7 @@ namespace SignalR
                 SignalCommand.AddCommandSuffix(connectionId)
             };
 
-            return new Connection(_messageBus, _jsonSerializer, DefaultSignal, connectionId, signals, groups);
+            return new Connection(_messageBus, _jsonSerializer, DefaultSignal, connectionId, signals, groups, _trace);
         }
 
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)

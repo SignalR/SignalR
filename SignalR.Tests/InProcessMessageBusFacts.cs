@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Xunit;
+using SignalR.Infrastructure;
 
 namespace SignalR.Tests
 {
@@ -14,7 +15,8 @@ namespace SignalR.Tests
                 // _, 28, 29, 32
                 // ^
 
-                var bus = new InProcessMessageBus(false);
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
                 bus.Send("bar", "1").Wait();
                 bus.Send("bar", "2").Wait();
                 bus.Send("foo", "3").Wait();
@@ -31,7 +33,8 @@ namespace SignalR.Tests
                 // 24, 25, 27
                 //         ^
 
-                var bus = new InProcessMessageBus(false);
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
                 bus.Send("foo", "1").Wait();
                 bus.Send("foo", "2").Wait();
 
@@ -47,7 +50,8 @@ namespace SignalR.Tests
                 // 27
                 // ^
 
-                var bus = new InProcessMessageBus(false);
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
                 bus.Send("bar", "1").Wait();
                 bus.Send("foo", "2").Wait();
 
@@ -63,7 +67,8 @@ namespace SignalR.Tests
                 // 24, 25, 28, 30, 45
                 //     ^
 
-                var bus = new InProcessMessageBus(false);
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
                 bus.Send("bar", "1").Wait();
                 bus.Send("foo", "2").Wait();
                 bus.Send("bar", "3").Wait();
@@ -82,7 +87,8 @@ namespace SignalR.Tests
                 // 14, 18, 25, 26
                 //             ^
 
-                var bus = new InProcessMessageBus(false);
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
                 bus.Send("foo", "1").Wait();
                 bus.Send("foo", "2").Wait();
                 bus.Send("bar", "3").Wait();
@@ -96,7 +102,8 @@ namespace SignalR.Tests
             [Fact]
             public void ReturnsNoMessagesWhenThereAreNoMessages()
             {
-                var bus = new InProcessMessageBus(false);
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
 
                 // REVIEW: Will block
                 // var result = bus.GetMessagesSince(new[] { "foo" }, 1).Result.ToList();

@@ -84,6 +84,10 @@ namespace SignalR.Infrastructure
 
             internal DefaultDependencyResolver()
             {
+                var traceManager = new Lazy<TraceManager>(() => new TraceManager());
+
+                Register(typeof(ITraceManager), () => traceManager.Value);
+
                 var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus());
 
                 Register(typeof(IMessageBus), () => messageBus.Value);
