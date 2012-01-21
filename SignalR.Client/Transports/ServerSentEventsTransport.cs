@@ -50,7 +50,7 @@ namespace SignalR.Client.Transports
                 {
                     var exception = task.Exception.GetBaseException();
                     if (!IsRequestAborted(exception) &&
-                        Interlocked.Exchange(ref connection._initializedCalled, 0) == 0)
+                        Interlocked.CompareExchange(ref connection._initializedCalled, 0, 0) == 0)
                     {
                         if (errorCallback != null)
                         {
@@ -71,7 +71,7 @@ namespace SignalR.Client.Transports
                                                        connection,
                                                        () =>
                                                        {
-                                                           if (Interlocked.Exchange(ref connection._initializedCalled, 1) == 0)
+                                                           if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
                                                            {
                                                                initializeCallback();
                                                            }
@@ -95,7 +95,7 @@ namespace SignalR.Client.Transports
             {
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
                 {
-                    if (Interlocked.CompareExchange(ref connection._initializedCalled, 1) == 0)
+                    if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
                     {
                         // Stop the connection
                         Stop(connection);
