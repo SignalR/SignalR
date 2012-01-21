@@ -2,9 +2,9 @@
 using Gate;
 using Gate.Middleware;
 using Gate.Owin;
-using SignalR.Owin;
+using SignalR.Hosting.Owin;
 
-namespace SignalrKayakGateDemo
+namespace SignalR.Hosting.Owin.Samples
 {
     public class Startup
     {

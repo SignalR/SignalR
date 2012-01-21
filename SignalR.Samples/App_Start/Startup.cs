@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
-using SignalR.AspNet.Routing;
+using SignalR.Hosting.AspNet.Routing;
 using SignalR.Hubs;
 using SignalR.Samples.App_Start;
 using SignalR.Samples.Hubs.DemoHub;

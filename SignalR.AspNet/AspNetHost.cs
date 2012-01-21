@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Web;
 using SignalR.Abstractions;
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public class AspNetHost : HttpTaskAsyncHandler
     {

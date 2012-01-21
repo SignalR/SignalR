@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
-using SignalR.AspNet;
+using SignalR.Hosting.AspNet;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
 
 [assembly: PreApplicationStartMethod(typeof(Bootstrapper), "Initialize")]
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public static class Bootstrapper
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Gate.Owin;
 
-namespace SignalrKayakGateDemo
+namespace SignalR.Hosting.Owin.Samples
 {
     class Workaround
     {

@@ -2,7 +2,7 @@
 using System.Web.Routing;
 using SignalR.Infrastructure;
 
-namespace SignalR.AspNet.Routing
+namespace SignalR.Hosting.AspNet.Routing
 {
     public static class RouteExtensions
     {

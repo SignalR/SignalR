@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Web.Compilation;
 using SignalR.Hubs;
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public class BuildManagerTypeLocator : DefaultHubLocator
     {

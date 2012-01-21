@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using SignalR.Hosting.Self;
 
-namespace SignalR.SelfHost.Samples
+namespace SignalR.Hosting.Self.Samples
 {
     class Program
     {

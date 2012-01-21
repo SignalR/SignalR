@@ -1,7 +1,7 @@
 ﻿using System;
 using Kayak;
 
-namespace SignalrKayakGateDemo
+namespace SignalR.Hosting.Owin.Samples
 {
     public class SchedulerDelegate : ISchedulerDelegate
     {

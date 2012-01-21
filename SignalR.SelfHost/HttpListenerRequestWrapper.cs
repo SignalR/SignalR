@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using SignalR.Abstractions;
 
-namespace SignalR.SelfHost
+namespace SignalR.Hosting.Self
 {
     public class HttpListenerRequestWrapper : IRequest
     {

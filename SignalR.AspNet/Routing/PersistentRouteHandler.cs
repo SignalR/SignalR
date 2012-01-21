@@ -3,7 +3,7 @@ using System.Web;
 using System.Web.Routing;
 using SignalR.Infrastructure;
 
-namespace SignalR.AspNet.Routing
+namespace SignalR.Hosting.AspNet.Routing
 {
     public class PersistentRouteHandler : IRouteHandler
     {

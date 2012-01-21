@@ -5,7 +5,7 @@ using System.Web.Script.Serialization;
 using SignalR;
 using SignalR.Abstractions;
 
-namespace SignalrKayakGateDemo
+namespace SignalR.Hosting.Owin.Samples
 {
     public class Raw : PersistentConnection
     {

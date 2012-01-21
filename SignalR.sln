@@ -17,17 +17,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{1E4BA77C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Tests", "SignalR.Tests\SignalR.Tests.csproj", "{FBA09237-84CC-4383-BD12-CDF58E4020E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.AspNet", "SignalR.AspNet\SignalR.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.AspNet", "SignalR.AspNet\SignalR.Hosting.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SelfHost", "SignalR.SelfHost\SignalR.SelfHost.csproj", "{A2BD866D-906A-4742-AB3B-DB8740830400}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Self", "SignalR.SelfHost\SignalR.Hosting.Self.csproj", "{A2BD866D-906A-4742-AB3B-DB8740830400}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Samples", "SignalR.Client.Samples\SignalR.Client.Samples.csproj", "{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SelfHost.Samples", "SignalR.SelfHost.Samples\SignalR.SelfHost.Samples.csproj", "{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Self.Samples", "SignalR.SelfHost.Samples\SignalR.Hosting.Self.Samples.csproj", "{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Owin", "SignalR.Owin\SignalR.Owin.csproj", "{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Owin", "SignalR.Owin\SignalR.Hosting.Owin.csproj", "{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalrKayakGateDemo", "SignalrKayakGateDemo\SignalrKayakGateDemo.csproj", "{8BF43A5B-4C96-4490-A9AF-5A057AC37C24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Owin.Samples", "SignalrKayakGateDemo\SignalR.Hosting.Owin.Samples.csproj", "{8BF43A5B-4C96-4490-A9AF-5A057AC37C24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -109,13 +109,6 @@ Global
 		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|x86.ActiveCfg = Release|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Release|x86.ActiveCfg = Release|Any CPU
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -136,9 +129,6 @@ Global
 		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|Mixed Platforms.Build.0 = Release|x86
 		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|x86.ActiveCfg = Release|x86
 		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}.Release|x86.Build.0 = Release|x86
-		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A2BD866D-906A-4742-AB3B-DB8740830400}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

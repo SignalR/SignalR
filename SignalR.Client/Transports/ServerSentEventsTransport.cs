@@ -95,7 +95,7 @@ namespace SignalR.Client.Transports
             {
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
                 {
-                    if (Interlocked.Exchange(ref connection._initializedCalled, 1) == 0)
+                    if (Interlocked.CompareExchange(ref connection._initializedCalled, 1) == 0)
                     {
                         // Stop the connection
                         Stop(connection);

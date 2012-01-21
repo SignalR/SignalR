@@ -6,7 +6,7 @@ using Gate.Owin;
 using SignalR.Abstractions;
 using SignalR.Infrastructure;
 
-namespace SignalR.Owin
+namespace SignalR.Hosting.Owin
 {
     public static class OwinHost
     {

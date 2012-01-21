@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Web;
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public abstract class HttpTaskAsyncHandler : IHttpAsyncHandler
     {

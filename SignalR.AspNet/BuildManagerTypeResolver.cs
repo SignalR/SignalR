@@ -2,7 +2,7 @@
 using System.Web.Compilation;
 using SignalR.Hubs;
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public class BuildManagerTypeResolver : DefaultHubTypeResolver
     {

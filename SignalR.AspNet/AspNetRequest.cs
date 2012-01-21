@@ -4,7 +4,7 @@ using System.Web;
 using Microsoft.Web.Infrastructure.DynamicValidationHelper;
 using SignalR.Abstractions;
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public class AspNetRequest : IRequest
     {

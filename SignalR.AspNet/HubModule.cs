@@ -3,7 +3,7 @@ using System.IO;
 using System.Web;
 using SignalR.Hubs;
 
-namespace SignalR.AspNet
+namespace SignalR.Hosting.AspNet
 {
     public class HubModule : IHttpModule
     {

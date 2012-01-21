@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Gate.Owin;
 using SignalR.Abstractions;
 
-namespace SignalR.Owin
+namespace SignalR.Hosting.Owin
 {
     public class OwinResponse : IResponse
     {

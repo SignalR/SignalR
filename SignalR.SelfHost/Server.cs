@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using SignalR.Abstractions;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
-using SignalR.SelfHost.Infrastructure;
+using SignalR.Hosting.Self.Infrastructure;
 using SignalR.Transports;
 
-namespace SignalR.SelfHost
+namespace SignalR.Hosting.Self
 {
     public class Server
     {

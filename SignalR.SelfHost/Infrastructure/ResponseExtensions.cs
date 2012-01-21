@@ -3,7 +3,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SignalR.SelfHost.Infrastructure
+namespace SignalR.Hosting.Self.Infrastructure
 {
     public static class ResponseExtensions
     {
