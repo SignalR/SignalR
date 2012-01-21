@@ -13,7 +13,7 @@
         callbacks = {};
 
     // Array.prototype.map
-    if (!Array.prototype.hasOwnProperty('map')) {
+    if (!Array.prototype.hasOwnProperty("map")) {
         Array.prototype.map = function (fun, thisp) {
             var arr = this,
                 i,
@@ -30,14 +30,16 @@
 
     function executeCallback(hubName, fn, args, state) {
         var hub = hubs[hubName],
-            method;
+            hubMethod;
 
         if (hub) {
             signalR.hub.processState(hubName, hub.obj, state);
 
-            method = hub[fn];
-            if (method) {
-                method.apply(hub.obj, args);
+            if (hub[fn]) {
+                hubMethod = hub.obj[fn];
+                if (hubMethod) {
+                    hubMethod.apply(hub.obj, args);
+                }
             }
         }
     }
