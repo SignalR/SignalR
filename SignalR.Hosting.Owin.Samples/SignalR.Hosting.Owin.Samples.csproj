@@ -82,7 +82,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SignalR.Owin\SignalR.Hosting.Owin.csproj">
+    <ProjectReference Include="..\SignalR.Hosting.Owin\SignalR.Hosting.Owin.csproj">
       <Project>{A5726CD0-DE18-40A9-A2EF-C2765EEDBA30}</Project>
       <Name>SignalR.Hosting.Owin</Name>
     </ProjectReference>

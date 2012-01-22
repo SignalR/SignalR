@@ -210,7 +210,7 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SignalR.AspNet\SignalR.Hosting.AspNet.csproj">
+    <ProjectReference Include="..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
       <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
       <Name>SignalR.Hosting.AspNet</Name>
     </ProjectReference>

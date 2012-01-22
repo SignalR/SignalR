@@ -50,7 +50,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SignalR.SelfHost\SignalR.Hosting.Self.csproj">
+    <ProjectReference Include="..\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj">
       <Project>{A2BD866D-906A-4742-AB3B-DB8740830400}</Project>
       <Name>SignalR.Hosting.Self</Name>
     </ProjectReference>
