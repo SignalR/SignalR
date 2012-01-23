@@ -20,8 +20,8 @@ namespace SignalR.Stress
         private static long _avgLastReceivedCount;
         private static DateTime _avgCalcStart;
         private static long _rate = 10;
-        private static int _runs = 1000;
-        private static int _clients = 100;
+        private static int _runs = 0;
+        private static int _clients = 1000;
         private static Exception _exception;
 
         public static long TotalRate
