@@ -188,7 +188,7 @@ namespace SignalR.ScaleOut
         //{
         //    throw new NotImplementedException();
         //}
-        public Task<IEnumerable<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null)
+        public Task<IList<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null)
         {
             throw new NotImplementedException();
         }

@@ -5,7 +5,7 @@ namespace SignalR
 {
     public interface IMessageBus
     {
-        Task<IEnumerable<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null);
+        Task<IList<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null);
         Task Send(string eventKey, object value);
     }
 }

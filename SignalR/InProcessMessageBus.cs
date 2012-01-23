@@ -13,8 +13,8 @@ namespace SignalR
     {
         private static List<Message> _emptyMessageList = new List<Message>();
 
-        private readonly ConcurrentDictionary<string, LockedList<Action<IEnumerable<Message>>>> _waitingTasks =
-            new ConcurrentDictionary<string, LockedList<Action<IEnumerable<Message>>>>();
+        private readonly ConcurrentDictionary<string, LockedList<Action<IList<Message>>>> _waitingTasks =
+            new ConcurrentDictionary<string, LockedList<Action<IList<Message>>>>();
 
         private readonly ConcurrentDictionary<string, LockedList<Message>> _cache =
             new ConcurrentDictionary<string, LockedList<Message>>();
@@ -47,7 +47,7 @@ namespace SignalR
             }
         }
 
-        public Task<IEnumerable<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null)
+        public Task<IList<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null)
         {
             if (id == null)
             {
@@ -56,7 +56,6 @@ namespace SignalR
                 return WaitForMessages(eventKeys);
             }
 
-            List<Message> messages;
             try
             {
                 // We need to lock here in case messages are added to the bus while we're reading
@@ -69,13 +68,13 @@ namespace SignalR
                     return WaitForMessages(eventKeys);
                 }
 
-                messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value)).ToList();
+                var messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value));
 
-                if (messages.Count > 0)
+                if (messages.Any())
                 {
                     // Messages already in store greater than last received id so return them
                     _trace.Source.TraceInformation("MessageBus: Connection getting messages from cache from id {0}", id.Value);
-                    return TaskAsyncHelper.FromResult((IEnumerable<Message>)messages.OrderBy(msg => msg.Id));
+                    return TaskAsyncHelper.FromResult<IList<Message>>(messages.OrderBy(msg => msg.Id).ToList());
                 }
 
                 // Wait for new messages
@@ -134,7 +133,7 @@ namespace SignalR
 
         private void Broadcast(string eventKey, Message message)
         {
-            LockedList<Action<IEnumerable<Message>>> callbacks;
+            LockedList<Action<IList<Message>>> callbacks;
             if (_waitingTasks.TryGetValue(eventKey, out callbacks))
             {
                 var delegates = callbacks.CopyWithLock();
@@ -157,7 +156,7 @@ namespace SignalR
             return ++_lastMessageId;
         }
 
-        private IEnumerable<Message> GetMessagesSince(string eventKey, ulong id)
+        private IList<Message> GetMessagesSince(string eventKey, ulong id)
         {
             LockedList<Message> list = null;
             _cache.TryGetValue(eventKey, out list);
@@ -167,13 +166,16 @@ namespace SignalR
                 return _emptyMessageList;
             }
 
-            if (list.CountWithLock > 0 && list.GetWithLock(0).Id > id)
+            // Create a snapshot so that we ensure the list isn't modified within this scope
+            var snapshot = list.CopyWithLock();
+
+            if (snapshot.Count > 0 && snapshot[0].Id > id)
             {
                 // All messages in the list are greater than the last message
-                return list;
+                return snapshot;
             }
 
-            var index = list.FindLastIndexWithLock(msg => msg.Id <= id);
+            var index = snapshot.FindLastIndex(msg => msg.Id <= id);
 
             if (index < 0)
             {
@@ -182,19 +184,19 @@ namespace SignalR
 
             var startIndex = index + 1;
 
-            if (startIndex >= list.CountWithLock)
+            if (startIndex >= snapshot.Count)
             {
                 return _emptyMessageList;
             }
 
-            return list.GetRangeWithLock(startIndex, list.CountWithLock - startIndex);
+            return snapshot.GetRange(startIndex, snapshot.Count - startIndex);
         }
 
-        private Task<IEnumerable<Message>> WaitForMessages(IEnumerable<string> eventKeys)
+        private Task<IList<Message>> WaitForMessages(IEnumerable<string> eventKeys)
         {
-            var tcs = new TaskCompletionSource<IEnumerable<Message>>();
+            var tcs = new TaskCompletionSource<IList<Message>>();
             int callbackCalled = 0;
-            Action<IEnumerable<Message>> callback = null;
+            Action<IList<Message>> callback = null;
 
             callback = messages =>
             {
@@ -206,7 +208,7 @@ namespace SignalR
                 // Remove callback for all keys
                 foreach (var eventKey in eventKeys)
                 {
-                    LockedList<Action<IEnumerable<Message>>> callbacks;
+                    LockedList<Action<IList<Message>>> callbacks;
                     if (_waitingTasks.TryGetValue(eventKey, out callbacks))
                     {
                         callbacks.RemoveWithLock(callback);
@@ -217,7 +219,7 @@ namespace SignalR
             // Add callback for all keys
             foreach (var eventKey in eventKeys)
             {
-                var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IEnumerable<Message>>>());
+                var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IList<Message>>>());
                 callbacks.AddWithLock(callback);
             }
 
