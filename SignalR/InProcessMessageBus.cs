@@ -23,6 +23,8 @@ namespace SignalR
 
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
+        private readonly object _lockDowngradeLock = new object();
+
         private ulong _lastMessageId = 0;
         private long _gcRunning = 0;
 
@@ -60,23 +62,30 @@ namespace SignalR
                 // We need to lock here in case messages are added to the bus while we're reading
                 _cacheLock.EnterReadLock();
 
+                if (id.Value >= _lastMessageId)
+                {
+                    // Connection already has the latest message, so start wating
+                    _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id.Value);
+                    return WaitForMessages(eventKeys);
+                }
+
                 messages = eventKeys.SelectMany(key => GetMessagesSince(key, id.Value)).ToList();
+
+                if (messages.Count > 0)
+                {
+                    // Messages already in store greater than last received id so return them
+                    _trace.Source.TraceInformation("MessageBus: Connection getting messages from cache from id {0}", id.Value);
+                    return TaskAsyncHelper.FromResult((IEnumerable<Message>)messages.OrderBy(msg => msg.Id));
+                }
+
+                // Wait for new messages
+                _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id.Value);
+                return WaitForMessages(eventKeys);
             }
             finally
             {
                 _cacheLock.ExitReadLock();
             }
-
-            if (messages.Count > 0)
-            {
-                // Messages already in store greater than last received id so return them
-                _trace.Source.TraceInformation("MessageBus: Connection getting messages from cache from id {0}", id.Value);
-                return TaskAsyncHelper.FromResult((IEnumerable<Message>)messages.OrderBy(msg => msg.Id));
-            }
-
-            // Wait for new messages
-            _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id.Value);
-            return WaitForMessages(eventKeys);
         }
 
         public Task Send(string eventKey, object value)
@@ -93,17 +102,31 @@ namespace SignalR
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
                 message = new Message(eventKey, GenerateId(), value);
                 _trace.Source.TraceInformation("MessageBus: Saving message {0} to cache", message.Id);
-                list.Add(message);
+                list.AddWithLock(message);
+
+                // Atomically switch to a read lock now
+                lock (_lockDowngradeLock)
+                {
+                    _cacheLock.ExitWriteLock();
+                    _cacheLock.EnterReadLock();
+                }
 
                 // Send to waiting callers.
-                // This must be done in the write lock to ensure that messages are sent to waiting
+                // This must be done in the read lock to ensure that messages are sent to waiting
                 // connections in the order they were saved so that they always get the correct
                 // last message id to resubscribe with.
                 Broadcast(eventKey, message);
             }
             finally
             {
-                _cacheLock.ExitWriteLock();
+                if (_cacheLock.IsWriteLockHeld)
+                {
+                    _cacheLock.ExitWriteLock();
+                }
+                if (_cacheLock.IsReadLockHeld)
+                {
+                    _cacheLock.ExitReadLock();
+                }
             }
 
             return TaskAsyncHelper.Empty;
@@ -111,10 +134,10 @@ namespace SignalR
 
         private void Broadcast(string eventKey, Message message)
         {
-            LockedList<Action<IEnumerable<Message>>> taskCompletionSources;
-            if (_waitingTasks.TryGetValue(eventKey, out taskCompletionSources))
+            LockedList<Action<IEnumerable<Message>>> callbacks;
+            if (_waitingTasks.TryGetValue(eventKey, out callbacks))
             {
-                var delegates = taskCompletionSources.Copy();
+                var delegates = callbacks.CopyWithLock();
                 var messages = new[] { message };
 
                 _trace.Source.TraceInformation("MessageBus: Sending message {0} to {1} waiting connections", message.Id, delegates.Count);
@@ -139,18 +162,18 @@ namespace SignalR
             LockedList<Message> list = null;
             _cache.TryGetValue(eventKey, out list);
 
-            if (list == null || list.Count == 0)
+            if (list == null || list.CountWithLock == 0)
             {
                 return _emptyMessageList;
             }
 
-            if (list.Count > 0 && list[0].Id > id)
+            if (list.CountWithLock > 0 && list.GetWithLock(0).Id > id)
             {
                 // All messages in the list are greater than the last message
-                return list.List;
+                return list;
             }
 
-            var index = list.FindLastIndexLockFree(msg => msg.Id <= id);
+            var index = list.FindLastIndexWithLock(msg => msg.Id <= id);
 
             if (index < 0)
             {
@@ -159,12 +182,12 @@ namespace SignalR
 
             var startIndex = index + 1;
 
-            if (startIndex >= list.Count)
+            if (startIndex >= list.CountWithLock)
             {
                 return _emptyMessageList;
             }
 
-            return list.GetRangeLockFree(startIndex, list.Count - startIndex);
+            return list.GetRangeWithLock(startIndex, list.CountWithLock - startIndex);
         }
 
         private Task<IEnumerable<Message>> WaitForMessages(IEnumerable<string> eventKeys)
@@ -180,20 +203,22 @@ namespace SignalR
                     tcs.SetResult(messages);
                 }
 
+                // Remove callback for all keys
                 foreach (var eventKey in eventKeys)
                 {
                     LockedList<Action<IEnumerable<Message>>> callbacks;
                     if (_waitingTasks.TryGetValue(eventKey, out callbacks))
                     {
-                        callbacks.Remove(callback);
+                        callbacks.RemoveWithLock(callback);
                     }
                 }
             };
 
+            // Add callback for all keys
             foreach (var eventKey in eventKeys)
             {
-                var handlers = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IEnumerable<Message>>>());
-                handlers.Add(callback);
+                var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IEnumerable<Message>>>());
+                callbacks.AddWithLock(callback);
             }
 
             return tcs.Task;
@@ -214,13 +239,13 @@ namespace SignalR
                 // Remove all the expired ones
                 foreach (var entry in entries)
                 {
-                    var messages = entry.Value.Copy();
+                    var messages = entry.Value.CopyWithLock();
 
                     foreach (var item in messages)
                     {
                         if (item.Expired)
                         {
-                            entry.Value.Remove(item);
+                            entry.Value.RemoveWithLock(item);
                         }
                     }
                 }

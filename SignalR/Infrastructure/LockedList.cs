@@ -4,17 +4,16 @@ using System.Threading;
 
 namespace SignalR.Infrastructure
 {
-    internal class LockedList<T>
+    internal class LockedList<T> : List<T>
     {
-        private readonly List<T> _list = new List<T>();
         private readonly ReaderWriterLockSlim _listLock = new ReaderWriterLockSlim();
 
-        public void Add(T item)
+        public void AddWithLock(T item)
         {
             try
             {
                 _listLock.EnterWriteLock();
-                _list.Add(item);
+                Add(item);
             }
             finally
             {
@@ -22,12 +21,12 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public void Remove(T item)
+        public void RemoveWithLock(T item)
         {
             try
             {
                 _listLock.EnterWriteLock();
-                _list.Remove(item);
+                Remove(item);
             }
             finally
             {
@@ -35,12 +34,12 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public List<T> Copy()
+        public List<T> CopyWithLock()
         {
             try
             {
                 _listLock.EnterReadLock();
-                return _list.GetRange(0, _list.Count);
+                return GetRange(0, Count);
             }
             finally
             {
@@ -48,12 +47,12 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public void CopyTo(T[] array)
+        public void CopyToWithLock(T[] array)
         {
             try
             {
                 _listLock.EnterReadLock();
-                _list.CopyTo(array);
+                CopyTo(array);
             }
             finally
             {
@@ -61,12 +60,12 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public int FindLastIndex(Predicate<T> match)
+        public int FindLastIndexWithLock(Predicate<T> match)
         {
             try
             {
                 _listLock.EnterReadLock();
-                return _list.FindLastIndex(match);
+                return FindLastIndex(match);
             }
             finally
             {
@@ -74,17 +73,12 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public int FindLastIndexLockFree(Predicate<T> match)
-        {
-            return _list.FindLastIndex(match);
-        }
-
-        public List<T> GetRange(int index, int count)
+        public List<T> GetRangeWithLock(int index, int count)
         {
             try
             {
                 _listLock.EnterReadLock();
-                return _list.GetRange(index, count);
+                return GetRange(index, count);
             }
             finally
             {
@@ -92,19 +86,14 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public List<T> GetRangeLockFree(int index, int count)
-        {
-            return _list.GetRange(index, count);
-        }
-
-        public int Count
+        public int CountWithLock
         {
             get
             {
                 try
                 {
                     _listLock.EnterReadLock();
-                    return _list.Count;
+                    return Count;
                 }
                 finally
                 {
@@ -113,36 +102,29 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public List<T> List
+        public T GetWithLock(int index)
         {
-            get { return _list; }
+            try
+            {
+                _listLock.EnterReadLock();
+                return this[index];
+            }
+            finally
+            {
+                _listLock.ExitReadLock();
+            }
         }
 
-        public T this[int index]
+        public void SetWithLock(int index, T value)
         {
-            get
+            try
             {
-                try
-                {
-                    _listLock.EnterReadLock();
-                    return _list[index];
-                }
-                finally
-                {
-                    _listLock.ExitReadLock();
-                }
+                _listLock.EnterWriteLock();
+                this[index] = value;
             }
-            set
+            finally
             {
-                try
-                {
-                    _listLock.EnterWriteLock();
-                    _list[index] = value;
-                }
-                finally
-                {
-                    _listLock.ExitWriteLock();
-                }
+                _listLock.EnterWriteLock();
             }
         }
     }
