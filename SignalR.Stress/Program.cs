@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace SignalR.Stress
 {
@@ -60,7 +61,7 @@ namespace SignalR.Stress
                             bus.Send("a", payload).ContinueWith(task =>
                             {
                                 Interlocked.Exchange(ref _exception, task.Exception);
-                            }, 
+                            },
                             TaskContinuationOptions.OnlyOnFaulted);
 
                             Thread.Sleep(interval);
@@ -74,7 +75,7 @@ namespace SignalR.Stress
             },
             TaskCreationOptions.LongRunning);
 
-            MeasureStats();            
+            MeasureStats();
 
             Console.ReadLine();
         }
@@ -126,6 +127,8 @@ namespace SignalR.Stress
         {
             _sw.Start();
             _avgCalcStart = DateTime.UtcNow;
+            var resultsPath = Guid.NewGuid().ToString() + ".csv";
+            File.WriteAllText(resultsPath, "Target Rate, RPS, Peak RPS, Avg RPS\n");
 
             _rateTimer = new Timer(_ =>
             {
@@ -171,6 +174,9 @@ namespace SignalR.Stress
                     Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _peakReceivesPerSecond), d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
                     Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _avgReceivesPerSecond), d3, d3 * 100.0 / TotalRate);
+
+                    File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
+
 
                     if (recvPerSec < long.MaxValue && recvPerSec > _peakReceivesPerSecond)
                     {
