@@ -16,11 +16,13 @@ namespace SignalR.Stress
         private static double _peakReceivesPerSecond;
         private static double _avgReceivesPerSecond;
         private static long _received;
-        private static long _lastReceivedCount;
         private static long _avgLastReceivedCount;
+        private static long _lastReceivedCount;
         private static DateTime _avgCalcStart;
         private static long _rate = 10;
         private static int _runs = 0;
+        private static int _step = 10;
+        private static int _stepInterval = 30;
         private static int _clients = 1000;
         private static Exception _exception;
 
@@ -55,7 +57,12 @@ namespace SignalR.Stress
                     {
                         try
                         {
-                            bus.Send("a", payload).Wait();
+                            bus.Send("a", payload).ContinueWith(task =>
+                            {
+                                Interlocked.Exchange(ref _exception, task.Exception);
+                            }, 
+                            TaskContinuationOptions.OnlyOnFaulted);
+
                             Thread.Sleep(interval);
                         }
                         catch (Exception ex)
@@ -100,7 +107,7 @@ namespace SignalR.Stress
                     }
                     else
                     {
-                        var list = task.Result.ToList();
+                        var list = task.Result;
                         id = list[list.Count - 1].Id;
                         Interlocked.Increment(ref _received);
                         Interlocked.Increment(ref _avgLastReceivedCount);
@@ -172,12 +179,12 @@ namespace SignalR.Stress
 
                     _avgReceivesPerSecond = _avgLastReceivedCount / (now - _avgCalcStart).TotalSeconds;
 
-                    if (_runs > 0 && _runs % 30 == 0)
+                    if (_runs > 0 && _runs % _stepInterval == 0)
                     {
                         _avgCalcStart = DateTime.UtcNow;
                         _avgLastReceivedCount = 0;
                         long old = _rate;
-                        long @new = old + 10;
+                        long @new = old + _step;
                         while (Interlocked.Exchange(ref _rate, @new) == old) { }
                     }
 
