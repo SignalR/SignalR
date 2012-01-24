@@ -103,13 +103,6 @@ namespace SignalR
                 _trace.Source.TraceInformation("MessageBus: Saving message {0} to cache", message.Id);
                 list.AddWithLock(message);
 
-                // Atomically switch to a read lock now
-                lock (_lockDowngradeLock)
-                {
-                    _cacheLock.ExitWriteLock();
-                    _cacheLock.EnterReadLock();
-                }
-
                 // Send to waiting callers.
                 // This must be done in the read lock to ensure that messages are sent to waiting
                 // connections in the order they were saved so that they always get the correct
@@ -118,14 +111,7 @@ namespace SignalR
             }
             finally
             {
-                if (_cacheLock.IsWriteLockHeld)
-                {
-                    _cacheLock.ExitWriteLock();
-                }
-                if (_cacheLock.IsReadLockHeld)
-                {
-                    _cacheLock.ExitReadLock();
-                }
+                _cacheLock.ExitWriteLock();
             }
 
             return TaskAsyncHelper.Empty;
