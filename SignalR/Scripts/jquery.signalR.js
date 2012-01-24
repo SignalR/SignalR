@@ -322,6 +322,7 @@
                         }
                         catch (e) {
                             log('Error raising received ' + e);
+                            $(connection).trigger("onError", [e]);
                         }
                     });
                 }
@@ -439,6 +440,7 @@
             start: function (connection, onSuccess, onFailed) {
                 var that = this,
                     opened = false,
+                    $connection = $(connection),
                     reconnecting = !onSuccess,
                     url,
                     connectTimeOut;
@@ -454,7 +456,7 @@
                     return;
                 }
 
-                $(connection).trigger("onSending");
+                $connection.trigger("onSending");
 
                 url = transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -466,6 +468,9 @@
                     if (onFailed) {
                         onFailed();
                     }
+                    else {
+                        $connection.trigger("onError", [e]);
+                    }
                     return;
                 }
 
@@ -475,6 +480,8 @@
                     if (opened === false) {
                         that.stop(connection);
 
+                        log('[' + new Date().toTimeString() + '] SignalR: EventSource failed to connect');
+
                         if (onFailed) {
                             onFailed();
                         }
@@ -483,6 +490,8 @@
                 that.timeOut);
 
                 connection.eventSource.addEventListener("open", function (e) {
+                    log('[' + new Date().toTimeString() + '] SignalR: EventSource connected');
+
                     if (opened === false) {
                         opened = true;
 
@@ -527,7 +536,7 @@
                     } else {
                         // connection error
                         log('[' + new Date().toTimeString() + '] SignalR: EventSource error');
-                        $(instance).trigger("onError", [data]);
+                        $connection.trigger("onError");
                     }
                 }, false);
             },
