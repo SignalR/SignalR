@@ -54,13 +54,13 @@ namespace SignalR.Transports
                                 // Observe & trace any exception
                                 Trace.TraceError("SignalR: Error during ForeverTransport disconnect: {0}", t.Exception);
                             }
-                            return SendDisconnectCommand();
+                            return Connection.Close();
                         })
                         .FastUnwrap();
                 }
                 else
                 {
-                    return SendDisconnectCommand();
+                    return Connection.Close();
                 }
             }
             else
@@ -84,17 +84,6 @@ namespace SignalR.Transports
         protected ITransportHeartBeat HeartBeat
         {
             get { return _heartBeat; }
-        }
-
-        private Task SendDisconnectCommand()
-        {
-            var command = new SignalCommand
-            {
-                Type = CommandType.Disconnect,
-                ExpiresAfter = TimeSpan.FromMinutes(30)
-            };
-
-            return Connection.SendCommand(command);
         }
     }
 }

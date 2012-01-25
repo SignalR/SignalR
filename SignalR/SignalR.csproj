@@ -51,6 +51,7 @@
     <Compile Include="Abstractions\IRequest.cs" />
     <Compile Include="Abstractions\IResponse.cs" />
     <Compile Include="CommandType.cs" />
+    <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="DefaultPersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
