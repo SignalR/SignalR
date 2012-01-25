@@ -22,16 +22,13 @@ namespace SignalR.Client.WP7.Sample
             var connection = new Connection("http://localhost:40476/Streaming/streaming");
             connection.Received += data =>
             {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
-                });
+                App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
             };
 
             connection.Start().ContinueWith(task =>
             {
                 Debug.WriteLine("ERROR: {0}", task.Exception.GetBaseException().Message);
-            }, 
+            },
             TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -52,7 +49,7 @@ namespace SignalR.Client.WP7.Sample
         // Load data for the ViewModel Items
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            
+
         }
     }
 }
