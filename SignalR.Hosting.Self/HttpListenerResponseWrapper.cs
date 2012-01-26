@@ -35,6 +35,11 @@ namespace SignalR.Hosting.Self
 
         public Task WriteAsync(string data)
         {
+            if (!IsClientConnected)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
             {
                 if (task.IsFaulted)

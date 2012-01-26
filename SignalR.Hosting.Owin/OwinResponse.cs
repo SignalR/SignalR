@@ -98,6 +98,11 @@ namespace SignalR.Hosting.Owin
 
         private Task DoWrite(string data, bool end)
         {
+            if (!IsClientConnected)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             var tcs = new TaskCompletionSource<object>();
 
             try
