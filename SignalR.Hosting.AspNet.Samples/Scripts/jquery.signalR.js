@@ -589,7 +589,7 @@
                     log("Forever frame iframe load event fired, reconnecting");
                     that.reconnect(connection);
                 }).bind("readystatechange", function () {
-                    if ($.inArray(this.readyState, ["loaded", "complete"])) {
+                    if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
                         log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
                         that.reconnect(connection);
                     }

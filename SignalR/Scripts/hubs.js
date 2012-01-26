@@ -59,11 +59,7 @@
                 obj = instance[key];
 
                 if ($.type(obj) !== "object" ||
-                        key === "prototype" ||
-                        key === "constructor" ||
-                        key === "fn" ||
-                        key === "hub" ||
-                        key === "transports") {
+                        $.inArray(key, ["prototype", "constructor", "fn", "hub", "transports"]) >= 0) {
                     continue;
                 }
 
@@ -97,9 +93,11 @@
     }
 
     function getArgValue(a) {
-        return $.isFunction(a) ? null :
-            ($.type(a) === "undefined"
-                ? null : a);
+        return $.isFunction(a)
+            ? null
+            : ($.type(a) === "undefined"
+                ? null
+                : a);
     }
 
     function copy(obj, exclude) {
