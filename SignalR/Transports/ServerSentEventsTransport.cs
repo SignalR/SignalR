@@ -25,11 +25,7 @@ namespace SignalR.Transports
             var data = JsonSerializer.Stringify(response);
             OnSending(data);
 
-            if (Context.Response.IsClientConnected)
-            {
-                return Context.Response.WriteAsync("id: " + response.MessageId + "\n" + "data: " + data + "\n\n");
-            }
-            return TaskAsyncHelper.Empty;
+            return Context.Response.WriteAsync("id: " + response.MessageId + "\n" + "data: " + data + "\n\n");
         }
 
         protected override Task InitializeResponse(IReceivingConnection connection)

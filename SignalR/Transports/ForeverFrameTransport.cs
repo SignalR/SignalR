@@ -46,11 +46,7 @@ namespace SignalR.Transports
                 script += "<div>" + data + "</div>\r\n";
             }
 
-            if (Context.Response.IsClientConnected)
-            {
-                return Context.Response.WriteAsync(script);
-            }
-            return TaskAsyncHelper.Empty;
+            return Context.Response.WriteAsync(script);            
         }
 
         protected override Task InitializeResponse(IReceivingConnection connection)
@@ -63,7 +59,7 @@ namespace SignalR.Transports
 
             return base.InitializeResponse(connection)
                 .Then(initScript => Context.Response.WriteAsync(initScript),
-                    _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix)
+                      _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix)
                 .FastUnwrap();
         }
     }

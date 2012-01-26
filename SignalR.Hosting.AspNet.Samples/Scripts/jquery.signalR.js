@@ -13,17 +13,20 @@
         throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
     }
 
-    var signalR, _connection,
-        log = (typeof (window.console) !== "undefined" && window.console && (window.console.debug || window.console.log))
-            ? function (msg) {
-                var m = "[" + new Date().toTimeString() + "] SignalR: " + msg;
-                if (window.console.debug) {
-                    window.console.debug(m);
-                } else if (window.console.log) {
-                    window.console.log(m);
-                }
+    var signalR,
+        _connection,
+        log = function (msg) {
+            var m;
+            if (typeof (window.console) === "undefined") {
+                return;
             }
-            : $.noop;
+            m = "[" + new Date().toTimeString() + "] SignalR: " + msg;
+            if (window.console.debug) {
+                window.console.debug(m);
+            } else if (window.console.log) {
+                window.console.log(m);
+            }
+        };
 
     signalR = function (url, qs) {
         /// <summary>Creates a new SignalR connection for the given url</summary>
