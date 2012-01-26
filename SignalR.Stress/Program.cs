@@ -13,18 +13,30 @@ namespace SignalR.Stress
         private static Timer _rateTimer;
         private static bool _measuringRate;
         private static Stopwatch _sw = Stopwatch.StartNew();
+        
         private static double _receivesPerSecond;
         private static double _peakReceivesPerSecond;
         private static double _avgReceivesPerSecond;
         private static long _received;
         private static long _avgLastReceivedCount;
         private static long _lastReceivedCount;
+
+        private static double _sendsPerSecond;
+        private static double _peakSendsPerSecond;
+        private static double _avgSendsPerSecond;
+        private static long _sent;
+        private static long _avgLastSendsCount;
+        private static long _lastSendsCount;
+
         private static DateTime _avgCalcStart;
-        private static long _rate = 10;
+        private static long _lastSendTimeTicks;
+        private static long _rate = 1100;
         private static int _runs = 0;
-        private static int _step = 10;
-        private static int _stepInterval = 30;
-        private static int _clients = 1000;
+        private static int _step = 100;
+        private static int _stepInterval = 10;
+        private static int _clients = 1;
+        private static int _clientsRunning = 0;
+        private static int _senders = 1;
         private static Exception _exception;
 
         public static long TotalRate
@@ -46,38 +58,52 @@ namespace SignalR.Stress
             for (int i = 0; i < _clients; i++)
             {
                 Task.Factory.StartNew(() => StartClientLoop(bus, eventKeys), TaskCreationOptions.LongRunning);
+                //ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, eventKeys));
+                //(new Thread(_ => StartClientLoop(bus, eventKeys))).Start();
             }
 
-            Task.Factory.StartNew(() =>
+            for (var i = 1; i <= _senders; i++)
             {
-                while (_exception == null)
-                {
-                    long old = _rate;
-                    var interval = TimeSpan.FromMilliseconds(1000.0 / _rate);
-                    while (Interlocked.Read(ref _rate) == old && _exception == null)
-                    {
-                        try
-                        {
-                            bus.Send("a", payload).ContinueWith(task =>
-                            {
-                                Interlocked.Exchange(ref _exception, task.Exception);
-                            },
-                            TaskContinuationOptions.OnlyOnFaulted);
-
-                            Thread.Sleep(interval);
-                        }
-                        catch (Exception ex)
-                        {
-                            Interlocked.Exchange(ref _exception, ex);
-                        }
-                    }
-                }
-            },
-            TaskCreationOptions.LongRunning);
+                //ThreadPool.QueueUserWorkItem(_ => StartSendLoop(bus, payload));
+                Task.Factory.StartNew(() => StartSendLoop(bus, payload), TaskCreationOptions.LongRunning);
+            }
 
             MeasureStats();
 
             Console.ReadLine();
+        }
+
+        private static void StartSendLoop(InProcessMessageBus bus, string payload)
+        {
+            while (_exception == null)
+            {
+                long old = _rate;
+                var interval = TimeSpan.FromMilliseconds((1000.0 / _rate) * _senders);
+                //var interval = TimeSpan.FromMilliseconds(1000.0 / _rate);
+                while (Interlocked.Read(ref _rate) == old && _exception == null)
+                {
+                    try
+                    {
+                        var sw = Stopwatch.StartNew();
+                        bus.Send("a", payload).ContinueWith(task =>
+                        {
+                            Interlocked.Exchange(ref _exception, task.Exception);
+                        },
+                        TaskContinuationOptions.OnlyOnFaulted);
+                        sw.Stop();
+                        Interlocked.Exchange(ref _lastSendTimeTicks, sw.ElapsedTicks);
+
+                        Interlocked.Increment(ref _sent);
+                        Interlocked.Increment(ref _avgLastSendsCount);
+
+                        //Thread.Sleep(interval);
+                    }
+                    catch (Exception ex)
+                    {
+                        Interlocked.Exchange(ref _exception, ex);
+                    }
+                }
+            }
         }
 
         private static string GetPayload(int n = 32)
@@ -93,6 +119,7 @@ namespace SignalR.Stress
 
         private static void StartClientLoop(InProcessMessageBus bus, string[] eventKeys)
         {
+            Interlocked.Increment(ref _clientsRunning);
             ReceiveLoop(bus, eventKeys, null);
         }
 
@@ -159,6 +186,35 @@ namespace SignalR.Stress
                         return;
                     }
 
+                    Console.Clear();
+                    Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);
+                    //Console.WriteLine("Last time to send: {0}ms", TimeSpan.FromTicks(Interlocked.Read(ref _lastSendTimeTicks)).TotalMilliseconds);
+
+                    Console.WriteLine("Total Rate: {0:0.000} (mps) = {1:0.000} (mps) * {2} (clients)", TotalRate, _rate, _clients);
+                    
+                    // Sends
+                    var sends = Interlocked.Read(ref _sent);
+                    var sendsDiff = sends - _lastSendsCount;
+                    var sendsPerSec = sendsDiff / timeDiffSecs;
+                    _sendsPerSecond = sendsPerSec;
+
+                    _lastSendsCount = sends;
+
+                    var s1 = Math.Max(0, _rate - _sendsPerSecond);
+                    Console.WriteLine("MPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
+                    var s2 = Math.Max(0, _rate - _peakSendsPerSecond);
+                    Console.WriteLine("Peak MPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
+                    var s3 = Math.Max(0, _rate - _avgSendsPerSecond);
+                    Console.WriteLine("Avg MPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
+
+                    if (sendsPerSec < long.MaxValue && sendsPerSec > _peakSendsPerSecond)
+                    {
+                        Interlocked.Exchange(ref _peakSendsPerSecond, sendsPerSec);
+                    }
+
+                    _avgSendsPerSecond = _avgLastSendsCount / (now - _avgCalcStart).TotalSeconds;
+
+                    // Receives
                     var recv = Interlocked.Read(ref _received);
                     var recvDiff = recv - _lastReceivedCount;
                     var recvPerSec = recvDiff / timeDiffSecs;
@@ -166,17 +222,12 @@ namespace SignalR.Stress
 
                     _lastReceivedCount = recv;
 
-                    Console.Clear();
-                    Console.WriteLine("Total Rate: {0:0.000} (mps) = {1:0.000} (mps) * {2} (clients)", TotalRate, _rate, _clients);
                     var d1 = Math.Max(0, TotalRate - _receivesPerSecond);
                     Console.WriteLine("RPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", Math.Min(TotalRate, _receivesPerSecond), d1, d1 * 100.0 / TotalRate);
                     var d2 = Math.Max(0, TotalRate - _peakReceivesPerSecond);
                     Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _peakReceivesPerSecond), d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
                     Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _avgReceivesPerSecond), d3, d3 * 100.0 / TotalRate);
-
-                    File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
-
 
                     if (recvPerSec < long.MaxValue && recvPerSec > _peakReceivesPerSecond)
                     {
@@ -185,11 +236,14 @@ namespace SignalR.Stress
 
                     _avgReceivesPerSecond = _avgLastReceivedCount / (now - _avgCalcStart).TotalSeconds;
 
+                    File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
+
                     if (_runs > 0 && _runs % _stepInterval == 0)
                     {
                         _avgCalcStart = DateTime.UtcNow;
-                        _avgLastReceivedCount = 0;
-                        long old = _rate;
+                        Interlocked.Exchange(ref _avgLastReceivedCount, 0);
+                        Interlocked.Exchange(ref _avgLastSendsCount, 0);
+                        long old = Interlocked.Read(ref _rate);
                         long @new = old + _step;
                         while (Interlocked.Exchange(ref _rate, @new) == old) { }
                     }

@@ -19,3 +19,5 @@ artifacts/*
 msbuild.log
 PublishProfiles/
 *.psess
+*.vsp
+*.csv
