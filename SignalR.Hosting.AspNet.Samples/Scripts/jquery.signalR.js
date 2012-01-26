@@ -14,8 +14,15 @@
     }
 
     var signalR, _connection,
-        log = (typeof (console) !== "undefined" && console && console.debug)
-            ? function (msg) { console.debug("[" + new Date().toTimeString() + "] SignalR: " + msg); }
+        log = (typeof (window.console) !== "undefined" && window.console && (window.console.debug || window.console.log))
+            ? function (msg) {
+                var m = "[" + new Date().toTimeString() + "] SignalR: " + msg;
+                if (window.console.debug) {
+                    window.console.debug(m);
+                } else if (window.console.log) {
+                    window.console.log(m);
+                }
+            }
             : $.noop;
 
     signalR = function (url, qs) {
