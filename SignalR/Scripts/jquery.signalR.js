@@ -558,11 +558,11 @@
                             // doesn't allow us to change the URL when reconnecting. We need
                             // to change the URL to not include the /connect suffix, and pass
                             // the last message id we received.
-                            log("EventSource reconnecting due to error");
+                            log("EventSource reconnecting due to the server connection ending");
                             that.reconnect(connection);
                         }
                         else {
-                            log("EventSource closed due to error");
+                            log("EventSource closed");
                             that.stop(connection);
                         }
                     } else {
