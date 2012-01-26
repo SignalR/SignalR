@@ -123,7 +123,7 @@ namespace SignalR.Hubs
 
                         var taskParameter = Expression.Parameter(continueWith.Type);
                         var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
-                        
+
                         var body = Expression.Call(Expression.Constant(this),
                                                    processResultMethod,
                                                    Expression.Constant(state),
@@ -212,12 +212,17 @@ namespace SignalR.Hubs
 
         private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
         {
+            var exception = error != null ? error.GetBaseException() : null;
+            string stackTrace = (exception != null && _context.IsDebuggingEnabled()) ? exception.StackTrace : null;
+            string errorMessage = exception != null ? exception.Message : null;
+
             var hubResult = new HubResult
             {
                 State = state.GetChanges(),
                 Result = result,
                 Id = request.Id,
-                Error = error != null ? error.GetBaseException().Message : null
+                Error = errorMessage,
+                StackTrace = stackTrace
             };
 
             return Send(hubResult);
@@ -285,6 +290,7 @@ namespace SignalR.Hubs
             public object Result { get; set; }
             public string Id { get; set; }
             public string Error { get; set; }
+            public string StackTrace { get; set; }
         }
 
         private class HubRequest

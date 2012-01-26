@@ -230,10 +230,13 @@
             delete connection.groups;
 
             return connection;
-        }
+        },
+
+        log: log
     };
 
     signalR.fn.init.prototype = signalR.fn;
+
 
     // Transports
     var transportLogic = {
