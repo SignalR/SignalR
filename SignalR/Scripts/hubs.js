@@ -173,13 +173,17 @@
             this.data = window.JSON.stringify(localHubs);
         })
         .received(function (result) {
+            var callbackId, cb;
             if (result) {
                 if (!result.Id) {
                     executeCallback(result.Hub, result.Method, result.Args, result.State);
                 } else {
-                    var callback = callbacks[result.Id.toString()];
-                    if (callback) {
-                        callback.callback.call(callback.scope, result);
+                    callbackId = result.Id.toString();
+                    cb = callbacks[callbackId];
+                    if (cb) {
+                        callbacks[callbackId] = null;
+                        delete callbacks[callbackId];
+                        cb.callback.call(cb.scope, result);
                     }
                 }
             }
