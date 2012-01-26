@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Client.Transports;
@@ -19,7 +20,8 @@ namespace SignalR.Client
         private bool _initialized;
 
         // Used by transports to sync
-        internal int _initializedCalled; 
+        internal int _initializedCalled;
+        private readonly SynchronizationContext _syncContext;
 
         public event Action<string> Received;
         public event Action<Exception> Error;
@@ -34,7 +36,7 @@ namespace SignalR.Client
         public Connection(string url, IDictionary<string, string> queryString)
             : this(url, CreateQueryString(queryString))
         {
-            
+
         }
 
         public Connection(string url, string queryString)
@@ -53,6 +55,7 @@ namespace SignalR.Client
             QueryString = queryString;
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            _syncContext = SynchronizationContext.Current;
         }
 
         public ICredentials Credentials { get; set; }
@@ -144,7 +147,14 @@ namespace SignalR.Client
 
                 if (Closed != null)
                 {
-                    Closed();
+                    if (_syncContext != null)
+                    {
+                        _syncContext.Post(_ => Closed(), null);
+                    }
+                    else
+                    {
+                        Closed();
+                    }
                 }
             }
             finally
@@ -173,7 +183,14 @@ namespace SignalR.Client
         {
             if (Received != null)
             {
-                Received(message);
+                if (_syncContext != null)
+                {
+                    _syncContext.Post(msg => Received((string)msg), message);
+                }
+                else
+                {
+                    Received(message);
+                }
             }
         }
 
@@ -181,7 +198,14 @@ namespace SignalR.Client
         {
             if (Error != null)
             {
-                Error(error);
+                if (_syncContext != null)
+                {
+                    _syncContext.Post(err => Error((Exception)err), error);
+                }
+                else
+                {
+                    Error(error);
+                }
             }
         }
 

@@ -15,7 +15,7 @@
 
     var signalR, _connection,
         log = (typeof (console) !== "undefined" && console && console.debug)
-            ? function (msg) { console.debug(msg); }
+            ? function (msg) { console.debug("[" + new Date().toTimeString() + "] SignalR: " + msg); }
             : $.noop;
 
     signalR = function (url, qs) {
@@ -91,7 +91,7 @@
             };
 
             window.setTimeout(function () {
-                $.ajax(connection.url + '/negotiate', {
+                $.ajax(connection.url + "/negotiate", {
                     global: false,
                     type: "POST",
                     data: {},
@@ -230,10 +230,13 @@
             delete connection.groups;
 
             return connection;
-        }
+        },
+
+        log: log
     };
 
     signalR.fn.init.prototype = signalR.fn;
+
 
     // Transports
     var transportLogic = {
@@ -321,7 +324,8 @@
                             $connection.trigger("onReceived", [this]);
                         }
                         catch (e) {
-                            log('Error raising received ' + e);
+                            log("Error raising received " + e);
+                            $(connection).trigger("onError", [e]);
                         }
                     });
                 }
@@ -391,10 +395,10 @@
                             if (onFailed) {
                                 onFailed();
                             }
-                        } else if (typeof event.wasClean != 'undefined' && event.wasClean === false) {
+                        } else if (typeof event.wasClean != "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).trigger('onError');
+                            $(connection).trigger("onError");
                             // TODO: Support reconnect attempt here, need to ensure last message id, groups, and connection data go up on reconnect
                         }
                         connection.socket = null;
@@ -412,7 +416,7 @@
                                         $connection.trigger("onReceived", [this]);
                                     }
                                     catch (e) {
-                                        log('Error raising received ' + e);
+                                        log("Error raising received " + e);
                                     }
                                 });
                             } else {
@@ -439,6 +443,7 @@
             start: function (connection, onSuccess, onFailed) {
                 var that = this,
                     opened = false,
+                    $connection = $(connection),
                     reconnecting = !onSuccess,
                     url,
                     connectTimeOut;
@@ -454,7 +459,7 @@
                     return;
                 }
 
-                $(connection).trigger("onSending");
+                $connection.trigger("onSending");
 
                 url = transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -466,6 +471,9 @@
                     if (onFailed) {
                         onFailed();
                     }
+                    else {
+                        $connection.trigger("onError", [e]);
+                    }
                     return;
                 }
 
@@ -475,6 +483,8 @@
                     if (opened === false) {
                         that.stop(connection);
 
+                        log("EventSource timed out trying to connect");
+
                         if (onFailed) {
                             onFailed();
                         }
@@ -483,6 +493,8 @@
                 that.timeOut);
 
                 connection.eventSource.addEventListener("open", function (e) {
+                    log("EventSource connected");
+
                     if (opened === false) {
                         opened = true;
 
@@ -511,23 +523,23 @@
                         }
                     }
 
-                    log('SignalR: EventSource readyState: ' + connection.eventSource.readyState);
+                    log("EventSource readyState: " + connection.eventSource.readyState);
 
                     if (e.eventPhase === window.EventSource.CLOSED) {
-                        // connection closed                   
+                        // connection closed
                         if (connection.eventSource.readyState === window.EventSource.CONNECTING) {
-                            log('[' + new Date().toTimeString() + '] SignalR: EventSource reconnecting');
+                            log("EventSource reconnecting");
                             that.stop(connection);
                             that.start(connection);
                         }
                         else {
-                            log('[' + new Date().toTimeString() + '] SignalR: EventSource closed');
+                            log("EventSource closed");
                             that.stop(connection);
                         }
                     } else {
                         // connection error
-                        log('[' + new Date().toTimeString() + '] SignalR: EventSource error');
-                        $(instance).trigger("onError", [data]);
+                        log("EventSource error");
+                        $connection.trigger("onError");
                     }
                 }, false);
             },
@@ -574,8 +586,13 @@
                 transportLogic.foreverFrame.connections[frameId] = connection;
 
                 frame.bind("load", function () {
-                    log("SignalR: forever frame iframe load event fired");
+                    log("Forever frame iframe load event fired, reconnecting");
                     that.reconnect(connection);
+                }).bind("readystatechange", function () {
+                    if ($.inArray(this.readyState, ["loaded", "complete"])) {
+                        log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+                        that.reconnect(connection);
+                    }
                 });
 
                 connection.frame = frame[0];
@@ -597,8 +614,7 @@
                             onFailed();
                         }
                     }
-                },
-                that.timeOut);
+                }, that.timeOut);
             },
 
             reconnect: function (connection) {
@@ -687,16 +703,15 @@
 
                                 window.setTimeout(function () {
                                     poll(instance);
-                                }, 2 * 1000);
+                                }, 2000);
                             }
                         });
                     } (connection));
 
                     // Now connected
                     // There's no good way know when the long poll has actually started so 
-                    // we and assume it only takes around 150ms (max) to start connection 
-                    // to start.
-                    setTimeout(onSuccess, 150);
+                    // we assume it only takes around 150ms (max) to start the connection
+                    window.setTimeout(onSuccess, 150);
 
                 }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
             },
@@ -710,7 +725,7 @@
                 /// <param name="connection" type="signalR">The SignalR connection to stop</param>
                 if (connection.pollXhr) {
                     connection.pollXhr.abort();
-                    connection.pollXhr = null;
+                    delete connection.pollXhr;
                 }
             }
         }

@@ -126,6 +126,9 @@
                 signalR.hub.processState(hub._.hubName, hub, result.State);
 
                 if (result.Error) {
+                    if (result.StackTrace) {
+                        signalR.hub.log(result.Error + "\n" + result.StackTrace);
+                    }
                     d.rejectWith(hub, [result.Error]);
                 } else {
                     if ($.type(callback) === "function") {
@@ -186,4 +189,4 @@
         $.extend(left, right);
     };
 
-}(window.jQuery, window));
+} (window.jQuery, window));
