@@ -47,6 +47,8 @@
             this.qs = qs;
         },
 
+        reconnectDelay: 2000,
+
         start: function (options, callback) {
             /// <summary>Starts the connection</summary>
             /// <param name="options" type="Object">Options map</param>
@@ -477,12 +479,18 @@
                     connection.eventSource = new window.EventSource(url);
                 }
                 catch (e) {
-                    // If the connection failed call the failed callback
+                    log("EventSource failed trying to connect with error " + e.Message);
                     if (onFailed) {
+                        // The connection failed, call the failed callback
                         onFailed();
                     }
                     else {
                         $connection.trigger("onError", [e]);
+                        if (reconnecting) {
+                            // If we were reconnecting, rather than doing initial connect, then try reconnect again
+                            log("EventSource reconnecting");
+                            that.reconnect(connection);
+                        }
                     }
                     return;
                 }
@@ -491,12 +499,18 @@
                 // and raise on failed
                 connectTimeOut = window.setTimeout(function () {
                     if (opened === false) {
-                        that.stop(connection);
-
                         log("EventSource timed out trying to connect");
 
                         if (onFailed) {
                             onFailed();
+                        }
+
+                        if (reconnecting) {
+                            // If we were reconnecting, rather than doing initial connect, then try reconnect again
+                            log("EventSource reconnecting");
+                            that.reconnect(connection);
+                        } else {
+                            that.stop(connection);
                         }
                     }
                 },
@@ -505,11 +519,12 @@
                 connection.eventSource.addEventListener("open", function (e) {
                     log("EventSource connected");
 
+                    if (connectTimeOut) {
+                        window.clearTimeout(connectTimeOut);
+                    }
+
                     if (opened === false) {
                         opened = true;
-
-                        // Clear the connectTimeOut
-                        clearTimeout(connectTimeOut);
 
                         if (onSuccess) {
                             onSuccess();
@@ -531,6 +546,7 @@
                         if (onFailed) {
                             onFailed();
                         }
+                        return;
                     }
 
                     log("EventSource readyState: " + connection.eventSource.readyState);
@@ -538,12 +554,15 @@
                     if (e.eventPhase === window.EventSource.CLOSED) {
                         // connection closed
                         if (connection.eventSource.readyState === window.EventSource.CONNECTING) {
-                            log("EventSource reconnecting");
-                            that.stop(connection);
-                            that.start(connection);
+                            // We don't use the EventSource's native reconnect function as it
+                            // doesn't allow us to change the URL when reconnecting. We need
+                            // to change the URL to not include the /connect suffix, and pass
+                            // the last message id we received.
+                            log("EventSource reconnecting due to error");
+                            that.reconnect(connection);
                         }
                         else {
-                            log("EventSource closed");
+                            log("EventSource closed due to error");
                             that.stop(connection);
                         }
                     } else {
@@ -552,6 +571,14 @@
                         $connection.trigger("onError");
                     }
                 }, false);
+            },
+
+            reconnect: function (connection) {
+                var that = this;
+                window.setTimeout(function () {
+                    that.stop(connection);
+                    that.start(connection);
+                }, connection.reconnectDelay);
             },
 
             send: function (connection, data) {
@@ -633,7 +660,7 @@
                     var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
                     frame.src = src;
-                }, 2000);
+                }, connection.reconnectDelay);
             },
 
             send: function (connection, data) {
@@ -713,7 +740,7 @@
 
                                 window.setTimeout(function () {
                                     poll(instance);
-                                }, 2000);
+                                }, connection.reconnectDelay);
                             }
                         });
                     } (connection));
