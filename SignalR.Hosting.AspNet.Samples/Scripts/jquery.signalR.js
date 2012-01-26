@@ -537,8 +537,7 @@
                     if (e.data === "initialized") {
                         return;
                     }
-                    var data = window.JSON.parse(e.data);
-                    transportLogic.processMessages(connection, data);
+                    transportLogic.processMessages(connection, window.JSON.parse(e.data));
                 }, false);
 
                 connection.eventSource.addEventListener("error", function (e) {
@@ -562,6 +561,8 @@
                             that.reconnect(connection);
                         }
                         else {
+                            // The EventSource has closed, either because its close() method was called,
+                            // or the server sent down a "don't reconnect" frame.
                             log("EventSource closed");
                             that.stop(connection);
                         }
@@ -589,6 +590,7 @@
                 if (connection && connection.eventSource) {
                     connection.eventSource.close();
                     connection.eventSource = null;
+                    delete connection.eventSource;
                 }
             }
         },
@@ -673,6 +675,10 @@
                 if (connection.frame) {
                     $(connection.frame).remove();
                     delete transportLogic.foreverFrame.connections[connection.frameId];
+                    connection.frame = null;
+                    connection.frameId = null;
+                    delete connection.frame;
+                    delete connection.frameId;
                 }
             },
 
@@ -683,6 +689,7 @@
             started: function (connection) {
                 if (connection.onSuccess) {
                     connection.onSuccess();
+                    connection.onSuccess = null;
                     delete connection.onSuccess;
                 }
             }
@@ -762,6 +769,7 @@
                 /// <param name="connection" type="signalR">The SignalR connection to stop</param>
                 if (connection.pollXhr) {
                     connection.pollXhr.abort();
+                    connection.pollXhr = null;
                     delete connection.pollXhr;
                 }
             }
