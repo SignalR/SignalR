@@ -97,12 +97,9 @@ namespace SignalR.Transports
                         // The transport is currently disconnected, it could just be reconnecting though
                         // so we need to check it's last active time to see if it's over the disconnect
                         // threshold
-                        DateTime lastUsed;
-                        if (_connectionMetadata.TryGetValue(connection, out lastUsed))
+                        TimeSpan elapsed;
+                        if (TryGetElapsed(connection, out elapsed))
                         {
-                            // Calculate how long this connection has been inactive
-                            var elapsed = DateTime.UtcNow - lastUsed;
-
                             // The threshold for disconnect is the transport threshold + (potential network issues)
                             var threshold = connection.DisconnectThreshold + DisconnectTimeout;
 
@@ -125,6 +122,13 @@ namespace SignalR.Transports
                             // Swallow exceptions that might happen during disconnect
                         }
                     }
+                    else
+                    {
+                        // The connection is still alive so we need to keep it alive with a server side "ping".
+                        // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
+                        // of us handling timeout's or disconencts gracefully
+                        MarkConnection(connection);
+                    }
                 }
             }
             catch (Exception ex)
@@ -135,6 +139,20 @@ namespace SignalR.Transports
             {
                 _running = false;
             }
+        }
+
+        private bool TryGetElapsed(ITrackingDisconnect connection, out TimeSpan elapsed)
+        {
+            DateTime lastUsed;
+            if (_connectionMetadata.TryGetValue(connection, out lastUsed))
+            {
+                // Calculate how long this connection has been inactive
+                elapsed = DateTime.UtcNow - lastUsed;
+                return true;
+            }
+
+            elapsed = TimeSpan.Zero;
+            return false;
         }
 
         private class ConnectionIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
