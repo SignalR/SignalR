@@ -136,6 +136,7 @@ namespace SignalR.Transports
         private Task ProcessReceiveRequest(IReceivingConnection connection)
         {
             HeartBeat.AddConnection(this);
+            HeartBeat.MarkConnection(this);
 
             return InitializeResponse(connection)
                     .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
@@ -191,6 +192,8 @@ namespace SignalR.Transports
                 return;
             }
 
+            // Mark the connection on the way out so that it has time to reconnect
+            HeartBeat.MarkConnection(this);
             taskCompletetionSource.SetResult(null);
             return;
         }
