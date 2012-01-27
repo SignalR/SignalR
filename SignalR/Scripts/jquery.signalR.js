@@ -322,6 +322,8 @@
 
             if (data) {
                 if (data.Disconnect) {
+                    log("disconnect command received from server");
+
                     // Disconnected by the server
                     connection.stop();
 
