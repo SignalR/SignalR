@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 using SignalR.Abstractions;
 using SignalR.Infrastructure;
 
@@ -13,22 +13,14 @@ namespace SignalR.Hubs
 {
     public class HubDispatcher : PersistentConnection
     {
-        // We don't use the configured IJson serializer here because we assume things about
-        // the parsed output. Doesn't matter coming in anyway as member resolution is 
-        // case insensitive.
-        private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer
-        {
-            MaxJsonLength = 30 * 1024 * 1024
-        };
-
         private IHubFactory _hubFactory;
         private IActionResolver _actionResolver;
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubLocator _hubLocator;
         private IHubTypeResolver _hubTypeResolver;
-        private readonly string _url;
-
         private HostContext _context;
+
+        private readonly string _url;
 
         public HubDispatcher(string url)
         {
@@ -37,18 +29,18 @@ namespace SignalR.Hubs
 
         public override void Initialize(IDependencyResolver resolver)
         {
-            base.Initialize(resolver);
-
             _hubFactory = resolver.Resolve<IHubFactory>();
             _actionResolver = resolver.Resolve<IActionResolver>();
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
             _hubLocator = resolver.Resolve<IHubLocator>();
             _hubTypeResolver = resolver.Resolve<IHubTypeResolver>();
+
+            base.Initialize(resolver);
         }
 
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
-            var hubRequest = _serializer.Deserialize<HubRequest>(data);
+            var hubRequest = JsonConvert.DeserializeObject<HubRequest>(data);
 
             // Create the hub
             IHub hub = _hubFactory.CreateHub(hubRequest.Hub);
@@ -212,7 +204,7 @@ namespace SignalR.Hubs
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            var clientHubInfo = _serializer.Deserialize<IEnumerable<ClientHubInfo>>(data);
+            var clientHubInfo = JsonConvert.DeserializeObject<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {

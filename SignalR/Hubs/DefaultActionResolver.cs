@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
     public class DefaultActionResolver : IActionResolver
     {
-        private JavaScriptSerializer _serializer = new JavaScriptSerializer();
-
         public ActionInfo ResolveAction(Type hubType, string actionName, object[] parameters)
         {
             // Get all methods
@@ -50,7 +48,17 @@ namespace SignalR.Hubs
 
         private object Bind(object value, Type type)
         {
-            return _serializer.ConvertToType(value, type);
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (value.GetType() == type)
+            {
+                return value;
+            }
+
+            return JsonConvert.DeserializeObject(value.ToString(), type);
         }
     }
 }

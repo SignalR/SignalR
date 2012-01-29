@@ -84,6 +84,11 @@ namespace SignalR.Samples.Hubs.DemoHub
             return p;
         }
 
+        public int PassingDynamicComplex(dynamic p)
+        {
+            return p.Age;
+        }
+
         public void MultipleCalls()
         {
             for (int i = 0; i < 10; i++)

@@ -21,7 +21,7 @@
         var o = null;
         o.doIt();
     };
-    
+
     $.connection.hub.start({ transport: activeTransport }, function () {
         demo.doSomethingAndCallError();
 
@@ -55,6 +55,10 @@
 
         demo.plainTask().done(function () {
             $('#plainTask').html('Plain Task Result');
+        });
+
+        demo.passingDynamicComplex(p).done(function (age) {
+            $('#passingDynamicComplex').html('The person\'s age is ' + age);
         });
 
         demo.genericTaskTypedAsPlain().done(function (result) {

@@ -51,19 +51,15 @@ namespace SignalR.Samples.Hubs.ShapeShare
             }
         }
 
-        public void CreateShape(string type = "rectangle")
+        public Task CreateShape(string type = "rectangle")
         {
-            var user = _users[Caller.user["Name"]];
+            string name = Caller.user["Name"];
+            var user = _users[name];
             var shape = Shape.Create(type);
             shape.ChangedBy = user;
             _shapes.Add(shape);
 
-            Task task = Clients.shapeAdded(shape);
-            task.Wait();
-            if (task.Exception != null)
-            {
-                throw task.Exception;
-            }
+            return Clients.shapeAdded(shape);
         }
 
         public void ChangeShape(string id, int x, int y, int w, int h)
@@ -76,7 +72,8 @@ namespace SignalR.Samples.Hubs.ShapeShare
                 return;
             }
 
-            var user = _users[Caller.user["Name"]];
+            string name = Caller.user["Name"];
+            var user = _users[name];
 
             shape.Width = w;
             shape.Height = h;
