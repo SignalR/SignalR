@@ -9,6 +9,5 @@ namespace SignalR.Abstractions
 
         Task WriteAsync(string data);
         Task EndAsync(string data);
-        // Task End();
     }
 }
