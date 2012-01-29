@@ -4,10 +4,9 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using SignalR.Abstractions;
+using SignalR.Hosting.Self.Infrastructure;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
-using SignalR.Hosting.Self.Infrastructure;
-using SignalR.Transports;
 
 namespace SignalR.Hosting.Self
 {
@@ -16,13 +15,21 @@ namespace SignalR.Hosting.Self
         private readonly string _url;
         private readonly HttpListener _listener;
         private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
-        private bool _hubsEnabled;
+        private readonly IDependencyResolver _resolver;
+        private bool _hubsEnabled;        
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
         public Server(string url)
+            : this(url, new DefaultDependencyResolver())
+        {
+
+        }
+
+        public Server(string url, IDependencyResolver resolver)
         {
             _url = url;
+            _resolver = resolver;
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
         }
@@ -64,7 +71,7 @@ namespace SignalR.Hosting.Self
 
             return TryGetMappedConnection(path, out connection);
         }
-        
+
         private void ReceiveLoop()
         {
             _listener.BeginGetContext(ar =>
@@ -74,7 +81,7 @@ namespace SignalR.Hosting.Self
                 {
                     context = _listener.EndGetContext(ar);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     return;
                 }
@@ -123,6 +130,9 @@ namespace SignalR.Hosting.Self
 #endif
                     hostContext.Items["System.Net.HttpListenerContext"] = context;
 
+                    // Initialize the connection
+                    connection.Initialize(_resolver);
+
                     return connection.ProcessRequestAsync(hostContext);
                 }
 
@@ -143,7 +153,7 @@ namespace SignalR.Hosting.Self
                 // If the url matches then create the connection type
                 if (path.StartsWith(pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
+                    var factory = new PersistentConnectionFactory(_resolver);
                     connection = factory.CreateInstance(pair.Value);
                     return true;
                 }

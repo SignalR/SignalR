@@ -2,6 +2,7 @@
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SignalR.Hosting.AspNet;
+using SignalR.Hosting.AspNet.Infrastructure;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
 
@@ -13,6 +14,23 @@ namespace SignalR.Hosting.AspNet
     {
         private static bool _initialized;
         private static object _lockObject = new object();
+        private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
+        private static IDependencyResolver _resolver;
+
+        public static IDependencyResolver DependencyResolver
+        {
+            get { return _resolver ?? _defaultResolver; }
+        }
+
+        public static void SetResolver(IDependencyResolver resolver)
+        {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            _resolver = new FallbackDependencyResolver(resolver, _defaultResolver);
+        }
 
         public static void Initialize()
         {
@@ -25,9 +43,8 @@ namespace SignalR.Hosting.AspNet
                     {
                         RegisterHubModule();
 
-                        // Replace defaults with asp.net implementations
-                        var typeResolver = new Lazy<BuildManagerTypeResolver>(() => new BuildManagerTypeResolver());
                         var hubLocator = new Lazy<BuildManagerTypeLocator>(() => new BuildManagerTypeLocator());
+                        var typeResolver = new Lazy<BuildManagerTypeResolver>(() => new BuildManagerTypeResolver(hubLocator.Value));
 
                         DependencyResolver.Register(typeof(IHubLocator), () => hubLocator.Value);
                         DependencyResolver.Register(typeof(IHubTypeResolver), () => typeResolver.Value);

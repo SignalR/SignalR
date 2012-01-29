@@ -18,10 +18,12 @@ namespace SignalR.ScaleOut
             {
                 MaxJsonLength = 30 * 1024 * 1024
             });
-            DependencyResolver.Register(typeof(IPeerUrlSource), () => new ConfigPeerUrlSource());
-            DependencyResolver.Register(typeof(IJsonSerializer), () => serializer);
-            DynamicModuleUtility.RegisterModule(typeof(SignalReceiverModule));
-            DynamicModuleUtility.RegisterModule(typeof(MessageReceiverModule));
+
+            // DependencyResolver.Default.Register(typeof(IPeerUrlSource), () => new ConfigPeerUrlSource());
+            // DependencyResolver.Default.Register(typeof(IJsonSerializer), () => serializer);
+
+            // DynamicModuleUtility.RegisterModule(typeof(SignalReceiverModule));
+            // DynamicModuleUtility.RegisterModule(typeof(MessageReceiverModule));
         }
 
     }

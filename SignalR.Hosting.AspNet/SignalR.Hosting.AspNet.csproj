@@ -59,6 +59,7 @@
     <Compile Include="BuildManagerTypeResolver.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
     <Compile Include="HubModule.cs" />
+    <Compile Include="Infrastructure\FallbackDependencyResolver.cs" />
     <Compile Include="Infrastructure\TaskWrapperAsyncResult.cs" />
     <Compile Include="AspNetHost.cs" />
     <Compile Include="Bootstrapper.cs" />

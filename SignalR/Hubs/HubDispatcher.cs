@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using SignalR.Abstractions;
 using SignalR.Infrastructure;
-using SignalR.Transports;
 
 namespace SignalR.Hubs
 {
@@ -22,53 +21,29 @@ namespace SignalR.Hubs
             MaxJsonLength = 30 * 1024 * 1024
         };
 
-        private readonly IMessageBus _messageBus;
-        private readonly IHubFactory _hubFactory;
-        private readonly IActionResolver _actionResolver;
-        private readonly IJavaScriptProxyGenerator _proxyGenerator;
+        private IHubFactory _hubFactory;
+        private IActionResolver _actionResolver;
+        private IJavaScriptProxyGenerator _proxyGenerator;
+        private IHubLocator _hubLocator;
+        private IHubTypeResolver _hubTypeResolver;
         private readonly string _url;
-        private readonly IHubLocator _hubLocator;
-        private readonly IHubTypeResolver _hubTypeResolver;
-        private readonly IJsonSerializer _jsonSerializer;
 
         private HostContext _context;
 
         public HubDispatcher(string url)
-            : this(DependencyResolver.Resolve<IHubFactory>(),
-                   DependencyResolver.Resolve<IMessageBus>(),
-                   DependencyResolver.Resolve<IConnectionIdFactory>(),
-                   DependencyResolver.Resolve<IActionResolver>(),
-                   DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
-                   DependencyResolver.Resolve<IJsonSerializer>(),
-                   DependencyResolver.Resolve<ITransportManager>(),
-                   DependencyResolver.Resolve<IHubLocator>(),
-                   DependencyResolver.Resolve<IHubTypeResolver>(),
-                   DependencyResolver.Resolve<ITraceManager>(),
-                   url)
         {
+            _url = url;
         }
 
-        public HubDispatcher(IHubFactory hubFactory,
-                             IMessageBus messageBus,
-                             IConnectionIdFactory connectionIdFactory,
-                             IActionResolver actionResolver,
-                             IJavaScriptProxyGenerator proxyGenerator,
-                             IJsonSerializer jsonSerializer,
-                             ITransportManager transportManager,
-                             IHubLocator hubLocator,
-                             IHubTypeResolver hubTypeResolver,
-                             ITraceManager traceManager,
-                             string url)
-            : base(messageBus, connectionIdFactory, jsonSerializer, transportManager, traceManager)
+        public override void Initialize(IDependencyResolver resolver)
         {
-            _hubFactory = hubFactory;
-            _jsonSerializer = jsonSerializer;
-            _messageBus = messageBus;
-            _actionResolver = actionResolver;
-            _proxyGenerator = proxyGenerator;
-            _hubLocator = hubLocator;
-            _hubTypeResolver = hubTypeResolver;
-            _url = url;
+            base.Initialize(resolver);
+
+            _hubFactory = resolver.Resolve<IHubFactory>();
+            _actionResolver = resolver.Resolve<IActionResolver>();
+            _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
+            _hubLocator = resolver.Resolve<IHubLocator>();
+            _hubTypeResolver = resolver.Resolve<IHubTypeResolver>();
         }
 
         protected override Task OnReceivedAsync(string connectionId, string data)

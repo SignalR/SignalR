@@ -52,7 +52,8 @@
     <Compile Include="Abstractions\IResponse.cs" />
     <Compile Include="CommandType.cs" />
     <Compile Include="ConnectionExtensions.cs" />
-    <Compile Include="DefaultPersistentConnectionFactory.cs" />
+    <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
     <Compile Include="Hubs\DefaultHubTypeResolver.cs" />
@@ -68,11 +69,11 @@
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
+    <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Abstractions\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
     <Compile Include="InProcessMessageBus.cs" />
-    <Compile Include="IPersistentConnectionFactory.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
@@ -87,7 +88,6 @@
     <Compile Include="Hubs\IHubFactory.cs" />
     <Compile Include="Hubs\IHubLocator.cs" />
     <Compile Include="Hubs\SignalAgent.cs" />
-    <Compile Include="Infrastructure\DependencyResolver.cs" />
     <Compile Include="Infrastructure\NullJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\IDependencyResolver.cs" />
     <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />

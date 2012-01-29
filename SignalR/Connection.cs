@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
@@ -10,30 +9,13 @@ namespace SignalR
     public class Connection : IConnection, IReceivingConnection
     {
         private readonly IMessageBus _messageBus;
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IJsonSerializer _serializer;
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
-        private readonly object _lockObj = new object();
         private bool _disconnected;
         private readonly ITraceManager _trace;
-
-        public Connection(IMessageBus messageBus,
-                          IJsonSerializer jsonSerializer,
-                          string baseSignal,
-                          string connectionId,
-                          IEnumerable<string> signals,
-                          ITraceManager traceManager)
-            : this(messageBus,
-                   jsonSerializer,
-                   baseSignal,
-                   connectionId,
-                   signals,
-                   Enumerable.Empty<string>(),
-                   traceManager)
-        {
-        }
 
         public Connection(IMessageBus messageBus,
                           IJsonSerializer jsonSerializer,
@@ -44,7 +26,7 @@ namespace SignalR
                           ITraceManager traceManager)
         {
             _messageBus = messageBus;
-            _jsonSerializer = jsonSerializer;
+            _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
@@ -102,19 +84,20 @@ namespace SignalR
             return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
         }
 
-        public static IConnection GetConnection<T>() where T : PersistentConnection
+        public static IConnection GetConnection<T>(IDependencyResolver resolver) where T : PersistentConnection
         {
-            return GetConnection(typeof(T).FullName);
+            return GetConnection(typeof(T).FullName, resolver);
         }
 
-        public static IConnection GetConnection(string connectionType)
+        public static IConnection GetConnection(string connectionType, IDependencyResolver resolver)
         {
-            return new Connection(DependencyResolver.Resolve<IMessageBus>(),
-                                  DependencyResolver.Resolve<IJsonSerializer>(),
+            return new Connection(resolver.Resolve<IMessageBus>(),
+                                  resolver.Resolve<IJsonSerializer>(),
                                   connectionType,
                                   null,
                                   new[] { connectionType },
-                                  DependencyResolver.Resolve<ITraceManager>());
+                                  Enumerable.Empty<string>(),
+                                  resolver.Resolve<ITraceManager>());
         }
 
         private PersistentResponse GetEmptyResponse(ulong? messageId, bool timedOut = false)
@@ -163,9 +146,10 @@ namespace SignalR
             var messageValues = new List<object>();
             foreach (var message in source)
             {
-                if (SignalCommand.IsCommand(message))
+                SignalCommand command;
+                if (SignalCommand.TryGetCommand(message, _serializer, out command))
                 {
-                    ProcessCommand(message);
+                    ProcessCommand(command);
                 }
                 else
                 {
@@ -175,14 +159,8 @@ namespace SignalR
             return messageValues;
         }
 
-        private void ProcessCommand(Message message)
+        private void ProcessCommand(SignalCommand command)
         {
-            var command = message.GetCommand();
-            if (command == null)
-            {
-                return;
-            }
-
             switch (command.Type)
             {
                 case CommandType.AddToGroup:
@@ -209,6 +187,7 @@ namespace SignalR
             {
                 response.TransportData["Groups"] = _groups;
             }
+
             if (_disconnected)
             {
                 response.TransportData["Disconnected"] = true;

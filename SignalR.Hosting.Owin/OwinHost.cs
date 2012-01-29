@@ -12,10 +12,17 @@ namespace SignalR.Hosting.Owin
     {
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder) where T : PersistentConnection
         {
+            return MapConnection<T>(builder, new DefaultDependencyResolver());
+        }
+
+        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, IDependencyResolver resolver) where T : PersistentConnection
+        {
             return builder.Use<AppDelegate>(_ => ExecuteConnection(() =>
             {
-                var factory = DependencyResolver.Resolve<IPersistentConnectionFactory>();
-                return factory.CreateInstance(typeof(T));
+                var factory = new PersistentConnectionFactory(resolver);
+                var connection = factory.CreateInstance(typeof(T));
+                connection.Initialize(resolver);
+                return connection;
             }));
         }
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using SignalR.Infrastructure;
 
 namespace SignalR.Stress
 {
@@ -49,7 +50,8 @@ namespace SignalR.Stress
 
         static void Main(string[] args)
         {
-            var bus = new InProcessMessageBus();
+            var resolver = new DefaultDependencyResolver();
+            var bus = new InProcessMessageBus(resolver);
             var eventKeys = new[] { "a", "b", "c" };
             string payload = GetPayload();
 

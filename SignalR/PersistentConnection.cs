@@ -9,34 +9,29 @@ namespace SignalR
 {
     public abstract class PersistentConnection : IGroupManager
     {
-        private readonly IMessageBus _messageBus;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly IConnectionIdFactory _connectionIdFactory;
-        private readonly ITransportManager _transportManager;
-        
-        protected readonly ITraceManager _trace;
+        protected IMessageBus _messageBus;
+        protected IJsonSerializer _jsonSerializer;
+        protected IConnectionIdFactory _connectionIdFactory;
+        private ITransportManager _transportManager;
+        private bool _initialized;
+
+        protected ITraceManager _trace;
         protected ITransport _transport;
 
-        protected PersistentConnection()
-            : this(DependencyResolver.Resolve<IMessageBus>(),
-                   DependencyResolver.Resolve<IConnectionIdFactory>(),
-                   DependencyResolver.Resolve<IJsonSerializer>(),
-                   DependencyResolver.Resolve<ITransportManager>(),
-                   DependencyResolver.Resolve<ITraceManager>())
+        public virtual void Initialize(IDependencyResolver resolver)
         {
-        }
+            if (_initialized)
+            {
+                return;
+            }
 
-        protected PersistentConnection(IMessageBus messageBus,
-                                       IConnectionIdFactory connectionIdFactory,
-                                       IJsonSerializer jsonSerializer,
-                                       ITransportManager transportManager,
-                                       ITraceManager traceManager)
-        {
-            _messageBus = messageBus;
-            _connectionIdFactory = connectionIdFactory;
-            _jsonSerializer = jsonSerializer;
-            _transportManager = transportManager;
-            _trace = traceManager;
+            _messageBus = resolver.Resolve<IMessageBus>();
+            _connectionIdFactory = resolver.Resolve<IConnectionIdFactory>();
+            _jsonSerializer = resolver.Resolve<IJsonSerializer>();
+            _transportManager = resolver.Resolve<ITransportManager>();
+            _trace = resolver.Resolve<ITraceManager>();
+
+            _initialized = true;
         }
 
         // Static events intended for use when measuring performance
@@ -61,6 +56,11 @@ namespace SignalR
 
         public virtual Task ProcessRequestAsync(HostContext context)
         {
+            if (!_initialized)
+            {
+                throw new InvalidOperationException("Connection not initialized.");
+            }
+
             if (IsNegotiationRequest(context.Request))
             {
                 return ProcessNegotiationRequest(context);
@@ -84,7 +84,7 @@ namespace SignalR
             IEnumerable<string> groups = _transport.Groups;
 
             Connection = CreateConnection(connectionId, groups, context.Request);
-            
+
             _transport.Connected = () =>
             {
                 return OnConnectedAsync(context.Request, connectionId);

@@ -18,8 +18,12 @@ namespace SignalR.Hosting.AspNet.Routing
 
         public IHttpHandler GetHttpHandler(RequestContext requestContext)
         {
-            var factory = (IPersistentConnectionFactory)_resolver.GetService(typeof(IPersistentConnectionFactory));
+            var factory = new PersistentConnectionFactory(_resolver);
             PersistentConnection connection = factory.CreateInstance(_handlerType);
+
+            // Initialize the connection
+            connection.Initialize(_resolver);
+
             return new AspNetHost(connection);
         }
     }

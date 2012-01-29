@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
+using SignalR.Hosting.AspNet;
 using SignalR.Hosting.AspNet.Routing;
 using SignalR.Hubs;
 using SignalR.Samples.App_Start;
@@ -23,8 +24,8 @@ namespace SignalR.Samples.App_Start
 
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var connection = Connection.GetConnection<Streaming.Streaming>();
-                var demoClients = Hub.GetClients<DemoHub>();
+                var connection = Connection.GetConnection<Streaming.Streaming>(Bootstrapper.DependencyResolver);
+                var demoClients = Hub.GetClients<DemoHub>(Bootstrapper.DependencyResolver);
                 while (true)
                 {
                     try

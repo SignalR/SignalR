@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using SignalR.Infrastructure;
 namespace SignalR.Hubs
 {
     public abstract class Hub : IHub
@@ -26,26 +27,15 @@ namespace SignalR.Hubs
         {
             return GroupManager.RemoveFromGroup(Context.ConnectionId, groupName);
         }
-
-        public static Task Invoke<T>(string method, params object[] args) where T : IHub
+ 
+        public static dynamic GetClients<T>(IDependencyResolver resolver) where T : IHub
         {
-            return Invoke(typeof(T).FullName, method, args);
+            return GetClients(typeof(T).FullName, resolver);
         }
 
-        public static Task Invoke(string hubName, string method, params object[] args)
+        public static dynamic GetClients(string hubName, IDependencyResolver resolver)
         {
-            var connection = Connection.GetConnection<HubDispatcher>();
-            return ClientAgent.Invoke(connection, method, hubName, method, args);
-        }
-
-        public static dynamic GetClients<T>() where T : IHub
-        {
-            return GetClients(typeof(T).FullName);
-        }
-
-        public static dynamic GetClients(string hubName)
-        {
-            var connection = Connection.GetConnection<HubDispatcher>();
+            var connection = Connection.GetConnection<HubDispatcher>(resolver);
             return new ClientAgent(connection, hubName);
         }
     }

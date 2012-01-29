@@ -32,8 +32,9 @@ namespace SignalR
 
         private readonly ITraceManager _trace;
 
-        public InProcessMessageBus()
-            : this(DependencyResolver.Resolve<ITraceManager>(), garbageCollectMessages: true)
+        
+        public InProcessMessageBus(IDependencyResolver resolver)
+            : this(resolver.Resolve<ITraceManager>(), garbageCollectMessages: true)
         {
         }
 
