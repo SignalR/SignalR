@@ -2,15 +2,14 @@
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SignalR.Hosting.AspNet;
-using SignalR.Hosting.AspNet.Infrastructure;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
 
-[assembly: PreApplicationStartMethod(typeof(Bootstrapper), "Initialize")]
+[assembly: PreApplicationStartMethod(typeof(AspNetBootstrapper), "Initialize")]
 
 namespace SignalR.Hosting.AspNet
 {
-    public static class Bootstrapper
+    public static class AspNetBootstrapper
     {
         private static bool _initialized;
         private static object _lockObject = new object();
@@ -29,10 +28,16 @@ namespace SignalR.Hosting.AspNet
                 throw new ArgumentNullException("resolver");
             }
 
-            _resolver = new FallbackDependencyResolver(resolver, _defaultResolver);
+            _resolver = resolver;
         }
 
         public static void Initialize()
+        {
+            // Register the hub module
+            RegisterHubModule();
+        }
+
+        internal static void InitializeHubDependencies()
         {
             // Ensure this is only called once
             if (!_initialized)
@@ -41,7 +46,7 @@ namespace SignalR.Hosting.AspNet
                 {
                     if (!_initialized)
                     {
-                        RegisterHubModule();
+                        // Initializes the hub depedencies once
 
                         var hubLocator = new Lazy<BuildManagerTypeLocator>(() => new BuildManagerTypeLocator());
                         var typeResolver = new Lazy<BuildManagerTypeResolver>(() => new BuildManagerTypeResolver(hubLocator.Value));

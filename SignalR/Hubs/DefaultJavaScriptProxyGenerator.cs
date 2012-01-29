@@ -19,10 +19,16 @@ namespace SignalR.Hubs
         private readonly IHubLocator _hubLocator;
         private readonly IJavaScriptMinifier _javascriptMinifier;
 
+        public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
+            this(resolver.Resolve<IHubLocator>(),
+                 resolver.Resolve<IJavaScriptMinifier>())
+        {
+        }
+
         public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator, IJavaScriptMinifier javascriptMinifier)
         {
             _hubLocator = hubLocator;
-            _javascriptMinifier = javascriptMinifier;
+            _javascriptMinifier = javascriptMinifier ?? NullJavaScriptMinifier.Instance;
         }
 
         public bool IsDebuggingEnabled { get; set; }
@@ -134,7 +140,7 @@ namespace SignalR.Hubs
         {
             return ReflectionHelper.GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName) ?? Json.CamelCase(method.Name);
         }
-        
+
         private static string Commas(IEnumerable<string> values)
         {
             return Commas(values, v => v);

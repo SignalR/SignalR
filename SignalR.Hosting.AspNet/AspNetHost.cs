@@ -9,7 +9,7 @@ namespace SignalR.Hosting.AspNet
     public class AspNetHost : HttpTaskAsyncHandler
     {
         private readonly PersistentConnection _connection;
-
+        
         private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
             new Lazy<bool>(() =>
             {
@@ -36,6 +36,9 @@ namespace SignalR.Hosting.AspNet
             // Stick the context in here so transports or other asp.net specific logic can
             // grab at it.
             hostContext.Items["System.Web.HttpContext"] = context;
+
+            // Initialize the connection
+            _connection.Initialize(AspNetBootstrapper.DependencyResolver);
 
             return _connection.ProcessRequestAsync(hostContext);
         }

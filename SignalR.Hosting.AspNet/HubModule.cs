@@ -16,14 +16,15 @@ namespace SignalR.Hosting.AspNet
                 if (app.Request.AppRelativeCurrentExecutionFilePath.StartsWith(Url, StringComparison.OrdinalIgnoreCase) &&
                     !Path.GetExtension(app.Request.AppRelativeCurrentExecutionFilePath).Equals(".js", StringComparison.OrdinalIgnoreCase))
                 {
+
+                    // Setup asp.net specific dependencies for the hub's dependency resolver
+                    AspNetBootstrapper.InitializeHubDependencies();
+
                     // Get the absolute url
                     string url = VirtualPathUtility.ToAbsolute(Url);
 
                     // Create the hub dispatcher
                     var connection = new HubDispatcher(url);
-
-                    // Initalize the dispatcher with the default asp.net resolver
-                    connection.Initialize(Bootstrapper.DependencyResolver);
 
                     var host = new AspNetHost(connection);
 

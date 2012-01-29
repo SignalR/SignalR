@@ -7,7 +7,12 @@ namespace SignalR.Hubs
     public class DefaultHubTypeResolver : IHubTypeResolver
     {
         private readonly Dictionary<string, Type> _hubCache = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
-        
+
+        public DefaultHubTypeResolver(IDependencyResolver resolver)
+            : this(resolver.Resolve<IHubLocator>())
+        {
+        }
+
         public DefaultHubTypeResolver(IHubLocator hubLocator)
         {
             if (hubLocator == null)

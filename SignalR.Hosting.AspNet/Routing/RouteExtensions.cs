@@ -13,7 +13,7 @@ namespace SignalR.Hosting.AspNet.Routing
 
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type)
         {
-            var route = new Route(url, new PersistentRouteHandler(Bootstrapper.DependencyResolver, type));
+            var route = new Route(url, new PersistentRouteHandler(type));
             route.Constraints = new RouteValueDictionary();
             route.Constraints.Add("PersistentConnectionConstraint", new IncomingOnlyRouteConstraint());
             routes.Add(name, route);

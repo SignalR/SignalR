@@ -59,10 +59,9 @@
     <Compile Include="BuildManagerTypeResolver.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
     <Compile Include="HubModule.cs" />
-    <Compile Include="Infrastructure\FallbackDependencyResolver.cs" />
     <Compile Include="Infrastructure\TaskWrapperAsyncResult.cs" />
     <Compile Include="AspNetHost.cs" />
-    <Compile Include="Bootstrapper.cs" />
+    <Compile Include="AspNetBootstrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Routing\IncomingOnlyRouteConstraint.cs" />
     <Compile Include="Routing\PersistentRouteHandler.cs" />

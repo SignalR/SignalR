@@ -18,8 +18,8 @@ namespace SignalR.Samples.App_Start
         { 
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var connection = Connection.GetConnection<Streaming.Streaming>(Bootstrapper.DependencyResolver);
-                var demoClients = Hub.GetClients<DemoHub>(Bootstrapper.DependencyResolver);
+                var connection = Connection.GetConnection<Streaming.Streaming>(AspNetBootstrapper.DependencyResolver);
+                var demoClients = Hub.GetClients<DemoHub>(AspNetBootstrapper.DependencyResolver);
                 while (true)
                 {
                     try

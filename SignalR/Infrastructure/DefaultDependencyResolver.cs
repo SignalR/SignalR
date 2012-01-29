@@ -28,7 +28,7 @@ namespace SignalR.Infrastructure
             var hubLocator = new Lazy<DefaultHubLocator>();
             Register(typeof(IHubLocator), () => hubLocator.Value);
 
-            var hubTypeResolver = new Lazy<DefaultHubTypeResolver>(() => new DefaultHubTypeResolver(hubLocator.Value));
+            var hubTypeResolver = new Lazy<DefaultHubTypeResolver>(() => new DefaultHubTypeResolver(this));
             Register(typeof(IHubTypeResolver), () => hubTypeResolver.Value);
 
             var actionResolver = new Lazy<DefaultActionResolver>(() => new DefaultActionResolver());
@@ -37,11 +37,10 @@ namespace SignalR.Infrastructure
             var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));
             Register(typeof(IHubActivator), () => activator.Value);
 
-            var hubFactory = new Lazy<DefaultHubFactory>(() => new DefaultHubFactory(activator.Value, hubTypeResolver.Value));
+            var hubFactory = new Lazy<DefaultHubFactory>(() => new DefaultHubFactory(this));
             Register(typeof(IHubFactory), () => hubFactory.Value);
 
-            var minifier = new NullJavaScriptMinifier();
-            var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(hubLocator.Value, this.Resolve<IJavaScriptMinifier>() ?? minifier));
+            var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
             Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);
 
             var connectionIdFactory = new GuidConnectionIdFactory();
@@ -51,7 +50,7 @@ namespace SignalR.Infrastructure
             Register(typeof(ITransportManager), () => transportManager.Value);
         }
 
-        public object GetService(Type serviceType)
+        public virtual object GetService(Type serviceType)
         {
             IList<Func<object>> activators;
             if (_resolvers.TryGetValue(serviceType, out activators))
@@ -69,7 +68,7 @@ namespace SignalR.Infrastructure
             return null;
         }
 
-        public IEnumerable<object> GetServices(Type serviceType)
+        public virtual IEnumerable<object> GetServices(Type serviceType)
         {
             IList<Func<object>> activators;
             if (_resolvers.TryGetValue(serviceType, out activators))
@@ -83,7 +82,7 @@ namespace SignalR.Infrastructure
             return null;
         }
 
-        public void Register(Type serviceType, Func<object> activator)
+        public virtual void Register(Type serviceType, Func<object> activator)
         {
             IList<Func<object>> activators;
             if (!_resolvers.TryGetValue(serviceType, out activators))
@@ -98,7 +97,7 @@ namespace SignalR.Infrastructure
             activators.Add(activator);
         }
 
-        public void Register(Type serviceType, IEnumerable<Func<object>> activators)
+        public virtual void Register(Type serviceType, IEnumerable<Func<object>> activators)
         {
             IList<Func<object>> list;
             if (!_resolvers.TryGetValue(serviceType, out list))
