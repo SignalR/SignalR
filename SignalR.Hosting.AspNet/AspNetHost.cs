@@ -3,11 +3,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using SignalR.Abstractions;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.AspNet
 {
     public class AspNetHost : HttpTaskAsyncHandler
     {
+        private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
+        private static IDependencyResolver _resolver;
+
         private readonly PersistentConnection _connection;
         
         private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
@@ -19,6 +23,11 @@ namespace SignalR.Hosting.AspNet
         public AspNetHost(PersistentConnection connection)
         {
             _connection = connection;
+        }
+
+        public static IDependencyResolver DependencyResolver
+        {
+            get { return _resolver ?? _defaultResolver; }
         }
 
         public override Task ProcessRequestAsync(HttpContextBase context)
@@ -38,9 +47,20 @@ namespace SignalR.Hosting.AspNet
             hostContext.Items["System.Web.HttpContext"] = context;
 
             // Initialize the connection
-            _connection.Initialize(AspNetBootstrapper.DependencyResolver);
+            _connection.Initialize(DependencyResolver);
 
             return _connection.ProcessRequestAsync(hostContext);
         }
+
+        public static void SetResolver(IDependencyResolver resolver)
+        {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            _resolver = resolver;
+        }
+
     }
 }

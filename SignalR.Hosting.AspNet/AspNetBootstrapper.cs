@@ -13,24 +13,6 @@ namespace SignalR.Hosting.AspNet
     {
         private static bool _initialized;
         private static object _lockObject = new object();
-        private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
-        private static IDependencyResolver _resolver;
-
-        public static IDependencyResolver DependencyResolver
-        {
-            get { return _resolver ?? _defaultResolver; }
-        }
-
-        public static void SetResolver(IDependencyResolver resolver)
-        {
-            if (resolver == null)
-            {
-                throw new ArgumentNullException("resolver");
-            }
-
-            _resolver = resolver;
-        }
-
         public static void Initialize()
         {
             // Register the hub module
@@ -51,8 +33,8 @@ namespace SignalR.Hosting.AspNet
                         var hubLocator = new Lazy<BuildManagerTypeLocator>(() => new BuildManagerTypeLocator());
                         var typeResolver = new Lazy<BuildManagerTypeResolver>(() => new BuildManagerTypeResolver(hubLocator.Value));
 
-                        DependencyResolver.Register(typeof(IHubLocator), () => hubLocator.Value);
-                        DependencyResolver.Register(typeof(IHubTypeResolver), () => typeResolver.Value);
+                        AspNetHost.DependencyResolver.Register(typeof(IHubLocator), () => hubLocator.Value);
+                        AspNetHost.DependencyResolver.Register(typeof(IHubTypeResolver), () => typeResolver.Value);
 
                         _initialized = true;
                     }

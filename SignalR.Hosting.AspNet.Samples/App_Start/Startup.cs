@@ -18,7 +18,7 @@ namespace SignalR.Samples.App_Start
         { 
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var resolver = AspNetBootstrapper.DependencyResolver;
+                var resolver = AspNetHost.DependencyResolver;
 
                 var connection = resolver.GetConnection<Streaming.Streaming>();
                 var demoClients = resolver.GetClients<DemoHub>();

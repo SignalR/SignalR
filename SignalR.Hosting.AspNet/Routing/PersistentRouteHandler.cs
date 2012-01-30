@@ -15,7 +15,7 @@ namespace SignalR.Hosting.AspNet.Routing
 
         public IHttpHandler GetHttpHandler(RequestContext requestContext)
         {
-            var factory = new PersistentConnectionFactory(AspNetBootstrapper.DependencyResolver);
+            var factory = new PersistentConnectionFactory(AspNetHost.DependencyResolver);
             PersistentConnection connection = factory.CreateInstance(_handlerType);
 
             return new AspNetHost(connection);
