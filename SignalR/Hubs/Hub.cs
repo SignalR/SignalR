@@ -27,16 +27,5 @@ namespace SignalR.Hubs
         {
             return GroupManager.RemoveFromGroup(Context.ConnectionId, groupName);
         }
- 
-        public static dynamic GetClients<T>(IDependencyResolver resolver) where T : IHub
-        {
-            return GetClients(typeof(T).FullName, resolver);
-        }
-
-        public static dynamic GetClients(string hubName, IDependencyResolver resolver)
-        {
-            var connection = Connection.GetConnection<HubDispatcher>(resolver);
-            return new ClientAgent(connection, hubName);
-        }
     }
 }

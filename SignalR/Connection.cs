@@ -82,23 +82,7 @@ namespace SignalR
         public Task SendCommand(SignalCommand command)
         {
             return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
-        }
-
-        public static IConnection GetConnection<T>(IDependencyResolver resolver) where T : PersistentConnection
-        {
-            return GetConnection(typeof(T).FullName, resolver);
-        }
-
-        public static IConnection GetConnection(string connectionType, IDependencyResolver resolver)
-        {
-            return new Connection(resolver.Resolve<IMessageBus>(),
-                                  resolver.Resolve<IJsonSerializer>(),
-                                  connectionType,
-                                  null,
-                                  new[] { connectionType },
-                                  Enumerable.Empty<string>(),
-                                  resolver.Resolve<ITraceManager>());
-        }
+        } 
 
         private PersistentResponse GetEmptyResponse(ulong? messageId, bool timedOut = false)
         {

@@ -15,10 +15,11 @@ namespace SignalR.Hosting.Self
         private readonly string _url;
         private readonly HttpListener _listener;
         private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
-        private readonly IDependencyResolver _resolver;
-        private bool _hubsEnabled;        
+        private bool _hubsEnabled;
 
         public Action<HostContext> OnProcessRequest { get; set; }
+
+        public IDependencyResolver DependencyResolver { get; private set; }
 
         public Server(string url)
             : this(url, new DefaultDependencyResolver())
@@ -29,9 +30,9 @@ namespace SignalR.Hosting.Self
         public Server(string url, IDependencyResolver resolver)
         {
             _url = url;
-            _resolver = resolver;
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
+            DependencyResolver = resolver;
         }
 
         public void Start()
@@ -131,7 +132,7 @@ namespace SignalR.Hosting.Self
                     hostContext.Items["System.Net.HttpListenerContext"] = context;
 
                     // Initialize the connection
-                    connection.Initialize(_resolver);
+                    connection.Initialize(DependencyResolver);
 
                     return connection.ProcessRequestAsync(hostContext);
                 }
@@ -153,7 +154,7 @@ namespace SignalR.Hosting.Self
                 // If the url matches then create the connection type
                 if (path.StartsWith(pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    var factory = new PersistentConnectionFactory(_resolver);
+                    var factory = new PersistentConnectionFactory(DependencyResolver);
                     connection = factory.CreateInstance(pair.Value);
                     return true;
                 }

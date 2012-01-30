@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
+using SignalR.Hubs;
 
 namespace SignalR.Infrastructure
 {
@@ -15,15 +16,36 @@ namespace SignalR.Infrastructure
             return resolver.GetService(type);
         }
 
-        public static void Register(this IDependencyResolver resolver, Type type, Func<object> activator)
+        public static IConnection GetConnection<T>(this IDependencyResolver resolver) where T : PersistentConnection
         {
-            resolver.Register(type, activator);
+            return GetConnection(resolver, typeof(T));
         }
 
-        public static void Register(this IDependencyResolver resolver, Type serviceType, IEnumerable<Func<object>> activators)
+        public static IConnection GetConnection(this IDependencyResolver resolver, Type type)
         {
-            resolver.Register(serviceType, activators);
+            return GetConnection(resolver, type.FullName);
         }
 
+        public static dynamic GetClients<T>(this IDependencyResolver resolver) where T : IHub
+        {
+            return GetClients(resolver, typeof(T).FullName);
+        }
+
+        public static dynamic GetClients(this IDependencyResolver resolver, string hubName)
+        {
+            var connection = GetConnection<HubDispatcher>(resolver);
+            return new ClientAgent(connection, hubName);
+        }
+
+        private static IConnection GetConnection(IDependencyResolver resolver, string connectionType)
+        {
+            return new Connection(resolver.Resolve<IMessageBus>(),
+                                  resolver.Resolve<IJsonSerializer>(),
+                                  connectionType,
+                                  null,
+                                  new[] { connectionType },
+                                  Enumerable.Empty<string>(),
+                                  resolver.Resolve<ITraceManager>());
+        }
     }
 }
