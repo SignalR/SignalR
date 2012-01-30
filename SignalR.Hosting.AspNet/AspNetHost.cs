@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.AspNet

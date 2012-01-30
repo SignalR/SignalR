@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Gate.Hosts.Kayak;
-using SignalR;
-using SignalR.Abstractions;
 
 namespace SignalR.Hosting.Owin.Samples
 {

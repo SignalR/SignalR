@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Gate;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hosting.Owin
 {

@@ -1,7 +1,7 @@
-﻿using System.Collections.Specialized;
-using System;
+﻿using System;
+using System.Collections.Specialized;
 
-namespace SignalR.Abstractions
+namespace SignalR.Hosting
 {
     public interface IRequest
     {

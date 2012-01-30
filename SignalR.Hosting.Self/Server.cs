@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Hosting.Self.Infrastructure;
 using SignalR.Hubs;
 using SignalR.Infrastructure;

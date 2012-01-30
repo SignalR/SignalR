@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Gate.Owin;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Owin

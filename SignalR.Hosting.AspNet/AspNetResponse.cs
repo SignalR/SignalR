@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hosting.AspNet
 {

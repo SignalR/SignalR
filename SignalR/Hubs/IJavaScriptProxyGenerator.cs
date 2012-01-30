@@ -1,5 +1,5 @@
 ﻿using System.Web;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hubs
 {

@@ -1,4 +1,4 @@
-﻿namespace SignalR.Abstractions
+﻿namespace SignalR.Hosting
 {
     public static class HostConstants
     {

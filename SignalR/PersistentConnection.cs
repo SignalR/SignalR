@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 using SignalR.Transports;
 

@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hosting.Self
 {

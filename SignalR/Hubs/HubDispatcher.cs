@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs

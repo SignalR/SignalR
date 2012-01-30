@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicValidationHelper;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hosting.AspNet
 {

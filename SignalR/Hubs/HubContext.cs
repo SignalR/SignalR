@@ -1,6 +1,6 @@
 ﻿using System.Collections.Specialized;
 using System.Security.Principal;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hubs
 {

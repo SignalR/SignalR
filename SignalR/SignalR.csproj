@@ -44,11 +44,11 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Abstractions\HostConstants.cs" />
-    <Compile Include="Abstractions\HostContext.cs" />
-    <Compile Include="Abstractions\HostContextExtensions.cs" />
-    <Compile Include="Abstractions\IRequest.cs" />
-    <Compile Include="Abstractions\IResponse.cs" />
+    <Compile Include="Hosting\HostConstants.cs" />
+    <Compile Include="Hosting\HostContext.cs" />
+    <Compile Include="Hosting\HostContextExtensions.cs" />
+    <Compile Include="Hosting\IRequest.cs" />
+    <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
@@ -70,7 +70,7 @@
     <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
-    <Compile Include="Abstractions\RequestExtensions.cs" />
+    <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
     <Compile Include="InProcessMessageBus.cs" />
     <Compile Include="IGroupManager.cs" />

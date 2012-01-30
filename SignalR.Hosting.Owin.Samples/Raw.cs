@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using SignalR;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR.Hosting.Owin.Samples
 {

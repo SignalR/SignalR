@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports

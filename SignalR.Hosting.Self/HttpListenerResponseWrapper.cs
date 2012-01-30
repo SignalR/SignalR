@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Hosting.Self.Infrastructure;
 
 namespace SignalR.Hosting.Self
