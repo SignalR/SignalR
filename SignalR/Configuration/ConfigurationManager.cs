@@ -7,18 +7,10 @@ namespace SignalR.Configuration
         public ConfigurationManager()
         {
             ReconnectionTimeout = TimeSpan.FromSeconds(110);
-            HeartBeatInterval = TimeSpan.FromSeconds(10);
             DisconnectTimeout = TimeSpan.FromSeconds(20);
         }
 
         public TimeSpan ReconnectionTimeout
-        {
-            get;
-            set;
-        }
-
-
-        public TimeSpan HeartBeatInterval
         {
             get;
             set;
