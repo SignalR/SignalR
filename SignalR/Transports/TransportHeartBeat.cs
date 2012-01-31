@@ -11,7 +11,7 @@ namespace SignalR.Transports
     public class TransportHeartBeat : ITransportHeartBeat
     {
         private readonly SafeSet<ITrackingConnection> _connections = new SafeSet<ITrackingConnection>(new ConnectionIdEqualityComparer());
-        private readonly ConcurrentDictionary<ITrackingConnection, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingConnection, DateTime>(new ConnectionIdEqualityComparer());
+        private readonly ConcurrentDictionary<ITrackingConnection, ConnectionMetadata> _connectionMetadata = new ConcurrentDictionary<ITrackingConnection, ConnectionMetadata>(new ConnectionIdEqualityComparer());
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
 
@@ -37,22 +37,24 @@ namespace SignalR.Transports
             _connections.Add(connection);
 
             // Remove the metadata for new connections
-            DateTime removed;
-            _connectionMetadata.TryRemove(connection, out removed);
+            ConnectionMetadata old;
+            _connectionMetadata.TryRemove(connection, out old);
+            _connectionMetadata.TryAdd(connection, new ConnectionMetadata());
         }
 
         private void RemoveConnection(ITrackingConnection connection)
         {
             // Remove the connection and associated metadata
             _connections.Remove(connection);
-            DateTime removed;
-            _connectionMetadata.TryRemove(connection, out removed);
+            ConnectionMetadata old;
+            _connectionMetadata.TryRemove(connection, out old);
         }
 
         public void MarkConnection(ITrackingConnection connection)
         {
             // Mark this time this connection was used
-            _connectionMetadata[connection] = DateTime.UtcNow;
+            var metadata = _connectionMetadata.GetOrAdd(connection, _ => new ConnectionMetadata());
+            metadata.LastMarked = DateTime.UtcNow;
         }
 
         private void Beat(object state)
@@ -73,7 +75,7 @@ namespace SignalR.Transports
                         // so we need to check it's last active time to see if it's over the disconnect
                         // threshold
                         TimeSpan elapsed;
-                        if (TryGetElapsed(connection, out elapsed))
+                        if (TryGetElapsed(connection, metadata => metadata.LastMarked, out elapsed))
                         {
                             // The threshold for disconnect is the transport threshold + (potential network issues)
                             var threshold = connection.DisconnectThreshold + _configurationManager.DisconnectTimeout;
@@ -100,7 +102,7 @@ namespace SignalR.Transports
                     else
                     {
                         TimeSpan elapsed;
-                        if (TryGetElapsed(connection, out elapsed) && 
+                        if (TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
                             elapsed >= _configurationManager.ReconnectionTimeout)
                         {
                             // If we're past the expiration time then just timeout the connection
@@ -128,13 +130,13 @@ namespace SignalR.Transports
             }
         }
 
-        private bool TryGetElapsed(ITrackingConnection connection, out TimeSpan elapsed)
+        private bool TryGetElapsed(ITrackingConnection connection, Func<ConnectionMetadata, DateTime> selector, out TimeSpan elapsed)
         {
-            DateTime lastUsed;
-            if (_connectionMetadata.TryGetValue(connection, out lastUsed))
+            ConnectionMetadata metadata;
+            if (_connectionMetadata.TryGetValue(connection, out metadata))
             {
                 // Calculate how long this connection has been inactive
-                elapsed = DateTime.UtcNow - lastUsed;
+                elapsed = DateTime.UtcNow - selector(metadata);
                 return true;
             }
 
@@ -153,6 +155,18 @@ namespace SignalR.Transports
             {
                 return obj.ConnectionId.GetHashCode();
             }
+        }
+
+        private class ConnectionMetadata
+        {
+            public ConnectionMetadata()
+            {
+                Initial = DateTime.UtcNow;
+                LastMarked = DateTime.UtcNow;
+            }
+
+            public DateTime LastMarked { get; set; }
+            public DateTime Initial { get; set; }
         }
     }
 }

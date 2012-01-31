@@ -35,6 +35,22 @@ namespace SignalR.Transports
             get { return _context.Response.IsClientConnected; }
         }
 
+        protected bool IsDisconnected
+        {
+            get
+            {
+                return _isDisconnected == 1;
+            }
+        }
+
+        protected bool IsTimedout
+        {
+            get
+            {
+                return _isTimedout == 1;
+            }
+        }
+
         public virtual TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromSeconds(5); }

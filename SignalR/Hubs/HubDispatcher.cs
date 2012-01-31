@@ -211,7 +211,8 @@ namespace SignalR.Hubs
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId));
+            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId))
+                                                          .Concat(GetDefaultSignals(connectionId));
 
             return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups, _trace);
         }

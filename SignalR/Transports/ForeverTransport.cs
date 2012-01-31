@@ -12,7 +12,7 @@ namespace SignalR.Transports
         private IJsonSerializer _jsonSerializer;
 
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
-            : this(context, 
+            : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>())
         {
@@ -152,7 +152,7 @@ namespace SignalR.Transports
 
         private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, ulong? lastMessageId)
         {
-            if (_isDisconnected == 0 && Context.Response.IsClientConnected)
+            if (!IsTimedout && !IsDisconnected && Context.Response.IsClientConnected)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
@@ -192,8 +192,6 @@ namespace SignalR.Transports
                 return;
             }
 
-            // Mark the connection on the way out so that it has time to reconnect
-            HeartBeat.MarkConnection(this);
             taskCompletetionSource.SetResult(null);
             return;
         }

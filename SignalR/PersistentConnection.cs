@@ -106,18 +106,27 @@ namespace SignalR
         }
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
+        {            
+            return new Connection(_messageBus, 
+                                  _jsonSerializer, 
+                                  DefaultSignal, 
+                                  connectionId, 
+                                  GetDefaultSignals(connectionId), 
+                                  groups, 
+                                  _trace);
+        }
+
+        protected IEnumerable<string> GetDefaultSignals(string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
             // 3. connection id + SIGNALRCOMMAND -> for built in commands that we need to process
-            var signals = new string[] {
+            return new string[] {
                 DefaultSignal,
                 connectionId,
                 SignalCommand.AddCommandSuffix(connectionId)
             };
-
-            return new Connection(_messageBus, _jsonSerializer, DefaultSignal, connectionId, signals, groups, _trace);
         }
 
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
