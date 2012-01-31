@@ -122,12 +122,14 @@ namespace SignalR
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
             // 3. connection id + SIGNALRCOMMAND -> for built in commands that we need to process
-            // 4. A way to ping all connections
+            // 4. A way to ping all in the app domain
+            // 5. A way to ping all connections
             return new string[] {
                 DefaultSignal,
                 connectionId,
                 SignalCommand.AddCommandSuffix(connectionId),
-                SignalCommand.AddCommandSuffix(typeof(PersistentConnection).FullName)
+                ConnectionScope.AppDomain,
+                ConnectionScope.Global
             };
         }
 

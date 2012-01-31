@@ -45,6 +45,8 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
+    <Compile Include="ConnectionManager.cs" />
+    <Compile Include="ConnectionScope.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
@@ -52,6 +54,7 @@
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
     <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="IConnectionManager.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />

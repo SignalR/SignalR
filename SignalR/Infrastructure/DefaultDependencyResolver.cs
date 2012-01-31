@@ -55,6 +55,9 @@ namespace SignalR.Infrastructure
 
             var transportHeartbeat = new Lazy<TransportHeartBeat>(() => new TransportHeartBeat(this));
             Register(typeof(ITransportHeartBeat), () => transportHeartbeat.Value);
+
+            var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
+            Register(typeof(IConnectionManager), () => connectionManager.Value);
         }
 
         public virtual object GetService(Type serviceType)

@@ -18,10 +18,10 @@ namespace SignalR.Samples.App_Start
         { 
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var resolver = AspNetHost.DependencyResolver;
+                var connectionManager = AspNetHost.DependencyResolver.Resolve<IConnectionManager>();
 
-                var connection = resolver.GetConnection<Streaming.Streaming>();
-                var demoClients = resolver.GetClients<DemoHub>();
+                var connection = connectionManager.GetConnection<Streaming.Streaming>();
+                var demoClients = connectionManager.GetClients<DemoHub>();
 
                 while (true)
                 {

@@ -59,8 +59,12 @@ namespace SignalR.Hosting.AspNet
 
         private static void OnAppDomainShutdown()
         {
-            // Close all connections before the app domain goes down
-            AspNetHost.DependencyResolver.CloseConnections().Wait();
+            var connectionManager = AspNetHost.DependencyResolver.Resolve<IConnectionManager>();
+
+            // Close all connections before the app domain goes down.
+            // Only signal all connections on a particular appdomain (if this was cross machine we
+            // don't want to end up disconnecting everyone on the farm)
+            connectionManager.CloseConnections(ConnectionScope.AppDomain).Wait();
         }
     }
 }
