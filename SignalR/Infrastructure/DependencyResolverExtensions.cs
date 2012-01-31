@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using SignalR.Hubs;
 
 namespace SignalR.Infrastructure
@@ -35,6 +36,24 @@ namespace SignalR.Infrastructure
         {
             var connection = GetConnection<HubDispatcher>(resolver);
             return new ClientAgent(connection, hubName);
+        }
+
+        public static Task CloseConnections(this IDependencyResolver resolver)
+        {
+            // Get the connection that represents all clients (even if the type really means nothing
+            // since we're just broadcasting to all connected clients
+            var connection = resolver.GetConnection<PersistentConnection>();
+
+            // We're targeting all clients
+            string key = SignalCommand.AddCommandSuffix(typeof(PersistentConnection).FullName);
+
+            // Tell them all to go away
+            var command = new SignalCommand
+            {
+                Type = CommandType.Timeout
+            };
+
+            return connection.Broadcast(key, command);
         }
 
         private static IConnection GetConnection(IDependencyResolver resolver, string connectionType)

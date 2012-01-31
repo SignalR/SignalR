@@ -13,6 +13,8 @@ namespace SignalR.Hosting.AspNet
     {
         private static bool _initialized;
         private static object _lockObject = new object();
+        private static readonly AspNetShutDownDetector _detector = new AspNetShutDownDetector(OnAppDomainShutdown);
+
         public static void Initialize()
         {
             // Register the hub module
@@ -53,6 +55,12 @@ namespace SignalR.Hosting.AspNet
                 // If we're unable to load MWI then just swallow the exception and don't allow
                 // the automagic hub registration
             }
+        }
+
+        private static void OnAppDomainShutdown()
+        {
+            // Close all connections before the app domain goes down
+            AspNetHost.DependencyResolver.CloseConnections().Wait();
         }
     }
 }

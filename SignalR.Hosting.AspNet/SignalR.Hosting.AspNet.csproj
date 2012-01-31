@@ -55,6 +55,7 @@
     </Compile>
     <Compile Include="AspNetRequest.cs" />
     <Compile Include="AspNetResponse.cs" />
+    <Compile Include="AspNetShutDownDetector.cs" />
     <Compile Include="BuildManagerTypeLocator.cs" />
     <Compile Include="BuildManagerTypeResolver.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
