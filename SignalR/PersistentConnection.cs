@@ -128,8 +128,8 @@ namespace SignalR
                 DefaultSignal,
                 connectionId,
                 SignalCommand.AddCommandSuffix(connectionId),
-                ConnectionScope.AppDomain,
-                ConnectionScope.Global
+                SignalCommand.AddCommandSuffix(ConnectionScope.AppDomain),
+                SignalCommand.AddCommandSuffix(ConnectionScope.Global)
             };
         }
 
