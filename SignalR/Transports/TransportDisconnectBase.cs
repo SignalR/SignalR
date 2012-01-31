@@ -43,7 +43,7 @@ namespace SignalR.Transports
             }
         }
 
-        protected bool IsTimedout
+        public bool IsTimedOut
         {
             get
             {

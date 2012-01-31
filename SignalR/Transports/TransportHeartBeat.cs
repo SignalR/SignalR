@@ -102,12 +102,11 @@ namespace SignalR.Transports
                     else
                     {
                         TimeSpan elapsed;
-                        if (TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
+                        if (!connection.IsTimedOut && 
+                            TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
                             elapsed >= _configurationManager.ReconnectionTimeout)
                         {
-                            // If we're past the expiration time then just timeout the connection
-                            RemoveConnection(connection);
-
+                            // If we're past the expiration time then just timeout the connection                            
                             connection.Timeout();
                         }
                         else

@@ -7,6 +7,7 @@ namespace SignalR.Transports
     {
         string ConnectionId { get; }
         bool IsAlive { get; }
+        bool IsTimedOut { get; }
         TimeSpan DisconnectThreshold { get; }
         Task Disconnect();
         Task Timeout();
