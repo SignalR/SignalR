@@ -6,12 +6,13 @@ using SignalR.Hosting;
 
 namespace SignalR.Transports
 {
-    public abstract class TransportDisconnectBase : ITrackingDisconnect
+    public abstract class TransportDisconnectBase : ITrackingConnection
     {
         private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
-        
+
         protected int _isDisconnected;
+        protected int _isTimedout;
 
         public TransportDisconnectBase(HostContext context, ITransportHeartBeat heartBeat)
         {
@@ -70,11 +71,17 @@ namespace SignalR.Transports
             }
         }
 
-        protected IReceivingConnection Connection
+        public Task Timeout()
         {
-            get;
-            set;
+            if (Interlocked.Exchange(ref _isTimedout, 1) == 0)
+            {
+                // Trigger the timeout event
+                return Connection.Timeout().Catch();
+            }
+            return TaskAsyncHelper.Empty;
         }
+
+        protected IReceivingConnection Connection { get; set; }
 
         protected HostContext Context
         {

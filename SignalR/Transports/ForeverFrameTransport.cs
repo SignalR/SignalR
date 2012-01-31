@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -21,8 +22,8 @@ namespace SignalR.Transports
 
         private readonly bool _isDebug;
 
-        public ForeverFrameTransport(HostContext context, IJsonSerializer jsonSerializer)
-            : base(context, jsonSerializer)
+        public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
+            : base(context, resolver)
         {
             _isDebug = context.IsDebuggingEnabled();
         }

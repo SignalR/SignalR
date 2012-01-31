@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -10,8 +11,10 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
 
-        public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer)
-            : this(context, jsonSerializer, TransportHeartBeat.Instance)
+        public ForeverTransport(HostContext context, IDependencyResolver resolver)
+            : this(context, 
+                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<ITransportHeartBeat>())
         {
 
         }
@@ -110,9 +113,6 @@ namespace SignalR.Transports
 
         protected virtual Task InitializeResponse(IReceivingConnection connection)
         {
-            // Don't timeout
-            connection.ReceiveTimeout = TimeSpan.FromDays(1);
-
             return TaskAsyncHelper.Empty;
         }
 

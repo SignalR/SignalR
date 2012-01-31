@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
@@ -14,8 +13,9 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
-        private bool _disconnected;
         private readonly ITraceManager _trace;
+        private bool _disconnected;
+        private bool _timedOut;
 
         public Connection(IMessageBus messageBus,
                           IJsonSerializer jsonSerializer,
@@ -32,16 +32,6 @@ namespace SignalR
             _signals = new HashSet<string>(signals);
             _groups = new HashSet<string>(groups);
             _trace = traceManager;
-        }
-
-        // These static events are used for performance monitoring
-        public static event EventHandler WaitingForSignal;
-        public static event EventHandler MessagesPending;
-
-        public TimeSpan ReceiveTimeout
-        {
-            get;
-            set;
         }
 
         private IEnumerable<string> Signals
@@ -74,7 +64,7 @@ namespace SignalR
         }
 
         public Task<PersistentResponse> ReceiveAsync(ulong messageId)
-        {            
+        {
             return _messageBus.GetMessagesSince(Signals, messageId)
                 .Then(messages => GetResponse(messages.ToList()));
         }
@@ -82,26 +72,13 @@ namespace SignalR
         public Task SendCommand(SignalCommand command)
         {
             return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
-        } 
-
-        private PersistentResponse GetEmptyResponse(ulong? messageId, bool timedOut = false)
-        {
-            var response = new PersistentResponse
-            {
-                MessageId = messageId,
-                TimedOut = timedOut
-            };
-
-            PopulateResponseState(response);
-
-            return response;
         }
 
         private PersistentResponse GetResponse(List<Message> messages)
         {
             if (!messages.Any())
             {
-                // No messages, not even commands
+                // This should never happen
                 return null;
             }
 
@@ -115,7 +92,8 @@ namespace SignalR
             {
                 MessageId = messageId,
                 Messages = messageValues,
-                Disconnect = _disconnected
+                Disconnect = _disconnected,
+                TimedOut = _timedOut
             };
 
             PopulateResponseState(response);
@@ -156,12 +134,15 @@ namespace SignalR
                 case CommandType.Disconnect:
                     _disconnected = true;
                     break;
+                case CommandType.Timeout:
+                    _timedOut = true;
+                    break;
             }
         }
 
         private Task SendMessage(string key, object value)
         {
-            return _messageBus.Send(key, value).Catch();            
+            return _messageBus.Send(key, value).Catch();
         }
 
         private void PopulateResponseState(PersistentResponse response)
@@ -170,11 +151,6 @@ namespace SignalR
             if (_groups.Any())
             {
                 response.TransportData["Groups"] = _groups;
-            }
-
-            if (_disconnected)
-            {
-                response.TransportData["Disconnected"] = true;
             }
         }
     }

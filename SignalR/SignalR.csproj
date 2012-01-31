@@ -44,6 +44,7 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Configuration\ConfigurationManager.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
@@ -97,7 +98,8 @@
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
-    <Compile Include="Transports\ITrackingDisconnect.cs" />
+    <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Transports\ITrackingConnection.cs" />
     <Compile Include="Transports\ITransport.cs" />
     <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />

@@ -11,10 +11,10 @@ namespace SignalR.Transports
         
         public TransportManager(IDependencyResolver resolver)
         {
-            Register("foreverFrame", context => new ForeverFrameTransport(context, resolver.Resolve<IJsonSerializer>()));
-            Register("serverSentEvents", context => new ServerSentEventsTransport(context, resolver.Resolve<IJsonSerializer>()));
-            Register("longPolling", context => new LongPollingTransport(context, resolver.Resolve<IJsonSerializer>()));
-            Register("forever", context => new ForeverTransport(context, resolver.Resolve<IJsonSerializer>()));
+            Register("foreverFrame", context => new ForeverFrameTransport(context, resolver));
+            Register("serverSentEvents", context => new ServerSentEventsTransport(context, resolver));
+            Register("longPolling", context => new LongPollingTransport(context, resolver));
+            Register("forever", context => new ForeverTransport(context, resolver));
         }
 
         public void Register(string transportName, Func<HostContext, ITransport> transportFactory)

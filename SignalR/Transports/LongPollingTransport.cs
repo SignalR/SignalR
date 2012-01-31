@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -10,8 +11,10 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
 
-        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer)
-            : this(context, jsonSerializer, TransportHeartBeat.Instance)
+        public LongPollingTransport(HostContext context, IDependencyResolver resolver)
+            : this(context, 
+                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<ITransportHeartBeat>())
         {
 
         }

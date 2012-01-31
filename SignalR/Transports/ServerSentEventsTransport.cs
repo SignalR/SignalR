@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
     public class ServerSentEventsTransport : ForeverTransport
     {
-        public ServerSentEventsTransport(HostContext context, IJsonSerializer jsonSerializer)
-            : base(context, jsonSerializer)
+        public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
+            : base(context, resolver)
         {
 
         }

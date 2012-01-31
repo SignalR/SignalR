@@ -3,24 +3,25 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
+using SignalR.Configuration;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
     public class TransportHeartBeat : ITransportHeartBeat
     {
-        private readonly static TransportHeartBeat _instance = new TransportHeartBeat();
-        private readonly SafeSet<ITrackingDisconnect> _connections = new SafeSet<ITrackingDisconnect>(new ConnectionIdEqualityComparer());
-        private readonly ConcurrentDictionary<ITrackingDisconnect, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingDisconnect, DateTime>(new ConnectionIdEqualityComparer());
+        private readonly SafeSet<ITrackingConnection> _connections = new SafeSet<ITrackingConnection>(new ConnectionIdEqualityComparer());
+        private readonly ConcurrentDictionary<ITrackingConnection, DateTime> _connectionMetadata = new ConcurrentDictionary<ITrackingConnection, DateTime>(new ConnectionIdEqualityComparer());
         private readonly Timer _timer;
-        private TimeSpan _heartBeatInterval;
-        private bool _running;
+        private readonly IConfigurationManager _configurationManager;
 
-        private TransportHeartBeat()
+        private static readonly TimeSpan _heartBeatInterval = TimeSpan.FromSeconds(10);
+
+        private int _running;
+
+        public TransportHeartBeat(IDependencyResolver resolver)
         {
-            _heartBeatInterval = TimeSpan.FromSeconds(10);
-            DisconnectTimeout = TimeSpan.FromSeconds(20);
+            _configurationManager = resolver.Resolve<IConfigurationManager>();
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
@@ -29,31 +30,7 @@ namespace SignalR.Transports
                                _heartBeatInterval);
         }
 
-        public static TransportHeartBeat Instance
-        {
-            get { return _instance; }
-        }
-
-        public TimeSpan HeartBeatInterval
-        {
-            get { return _heartBeatInterval; }
-            set
-            {
-                _heartBeatInterval = value;
-                if (_timer != null)
-                {
-                    _timer.Change(_heartBeatInterval, _heartBeatInterval);
-                }
-            }
-        }
-
-        public TimeSpan DisconnectTimeout
-        {
-            get;
-            set;
-        }
-
-        public void AddConnection(ITrackingDisconnect connection)
+        public void AddConnection(ITrackingConnection connection)
         {
             // Remove and re-add the connection so we have the correct object reference
             _connections.Remove(connection);
@@ -64,7 +41,7 @@ namespace SignalR.Transports
             _connectionMetadata.TryRemove(connection, out removed);
         }
 
-        private void RemoveConnection(ITrackingDisconnect connection)
+        private void RemoveConnection(ITrackingConnection connection)
         {
             // Remove the connection and associated metadata
             _connections.Remove(connection);
@@ -72,7 +49,7 @@ namespace SignalR.Transports
             _connectionMetadata.TryRemove(connection, out removed);
         }
 
-        public void MarkConnection(ITrackingDisconnect connection)
+        public void MarkConnection(ITrackingConnection connection)
         {
             // Mark this time this connection was used
             _connectionMetadata[connection] = DateTime.UtcNow;
@@ -80,7 +57,7 @@ namespace SignalR.Transports
 
         private void Beat(object state)
         {
-            if (_running)
+            if (Interlocked.Exchange(ref _running, 1) == 0)
             {
                 Trace.TraceInformation("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
                 return;
@@ -88,8 +65,6 @@ namespace SignalR.Transports
 
             try
             {
-                _running = true;
-
                 foreach (var connection in _connections.GetSnapshot())
                 {
                     if (!connection.IsAlive)
@@ -101,7 +76,7 @@ namespace SignalR.Transports
                         if (TryGetElapsed(connection, out elapsed))
                         {
                             // The threshold for disconnect is the transport threshold + (potential network issues)
-                            var threshold = connection.DisconnectThreshold + DisconnectTimeout;
+                            var threshold = connection.DisconnectThreshold + _configurationManager.DisconnectTimeout;
 
                             if (elapsed < threshold)
                             {
@@ -124,10 +99,22 @@ namespace SignalR.Transports
                     }
                     else
                     {
-                        // The connection is still alive so we need to keep it alive with a server side "ping".
-                        // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
-                        // of us handling timeout's or disconencts gracefully
-                        MarkConnection(connection);
+                        TimeSpan elapsed;
+                        if (TryGetElapsed(connection, out elapsed) && 
+                            elapsed >= _configurationManager.ReconnectionTimeout)
+                        {
+                            // If we're past the expiration time then just timeout the connection
+                            RemoveConnection(connection);
+
+                            connection.Timeout();
+                        }
+                        else
+                        {
+                            // The connection is still alive so we need to keep it alive with a server side "ping".
+                            // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
+                            // of us handling timeout's or disconencts gracefully
+                            MarkConnection(connection);
+                        }
                     }
                 }
             }
@@ -137,11 +124,11 @@ namespace SignalR.Transports
             }
             finally
             {
-                _running = false;
+                Interlocked.Exchange(ref _running, 0);
             }
         }
 
-        private bool TryGetElapsed(ITrackingDisconnect connection, out TimeSpan elapsed)
+        private bool TryGetElapsed(ITrackingConnection connection, out TimeSpan elapsed)
         {
             DateTime lastUsed;
             if (_connectionMetadata.TryGetValue(connection, out lastUsed))
@@ -155,14 +142,14 @@ namespace SignalR.Transports
             return false;
         }
 
-        private class ConnectionIdEqualityComparer : IEqualityComparer<ITrackingDisconnect>
+        private class ConnectionIdEqualityComparer : IEqualityComparer<ITrackingConnection>
         {
-            public bool Equals(ITrackingDisconnect x, ITrackingDisconnect y)
+            public bool Equals(ITrackingConnection x, ITrackingConnection y)
             {
                 return String.Equals(x.ConnectionId, y.ConnectionId, StringComparison.OrdinalIgnoreCase);
             }
 
-            public int GetHashCode(ITrackingDisconnect obj)
+            public int GetHashCode(ITrackingConnection obj)
             {
                 return obj.ConnectionId.GetHashCode();
             }
