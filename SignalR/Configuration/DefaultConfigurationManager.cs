@@ -2,9 +2,9 @@
 
 namespace SignalR.Configuration
 {
-    public class ConfigurationManager : IConfigurationManager
+    public class DefaultConfigurationManager : IConfigurationManager
     {
-        public ConfigurationManager()
+        public DefaultConfigurationManager()
         {
             ReconnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(20);

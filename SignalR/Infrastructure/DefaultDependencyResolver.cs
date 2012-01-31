@@ -50,7 +50,7 @@ namespace SignalR.Infrastructure
             var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
             Register(typeof(ITransportManager), () => transportManager.Value);
 
-            var configurationManager = new ConfigurationManager();
+            var configurationManager = new DefaultConfigurationManager();
             Register(typeof(IConfigurationManager), () => configurationManager);
 
             var transportHeartbeat = new Lazy<TransportHeartBeat>(() => new TransportHeartBeat(this));

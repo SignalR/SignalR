@@ -44,7 +44,7 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Configuration\ConfigurationManager.cs" />
+    <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
