@@ -228,6 +228,17 @@
             return connection;
         },
 
+        reconnect: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the underlying transport reconnects</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection is restored</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind("onReconnect", function (e, data) {
+                callback.call(connection);
+            });
+            return connection;
+        },
+
         stop: function () {
             /// <summary>Stops listening</summary>
             /// <returns type="signalR" />
@@ -531,6 +542,10 @@
                         if (onSuccess) {
                             onSuccess();
                         }
+
+                        if (reconnecting) {
+                            $connection.trigger("onReconnect");
+                        }
                     }
                 }, false);
 
@@ -694,6 +709,10 @@
                     connection.onSuccess = null;
                     delete connection.onSuccess;
                 }
+                else {
+                    // If there's no onSuccess handler we assume this is a reconnect
+                    $(connection).trigger("onReconnect");
+                }
             }
         },
 
@@ -717,6 +736,12 @@
                         var messageId = instance.messageId,
                             connect = (messageId === null),
                             url = transportLogic.getUrl(instance, that.name, !connect);
+
+                        if (!connect) {
+                            window.setTimeout(function () {
+                                $(instance).trigger("onReconnect");
+                            }, 100);
+                        }
 
                         instance.pollXhr = $.ajax(url, {
                             global: false,
