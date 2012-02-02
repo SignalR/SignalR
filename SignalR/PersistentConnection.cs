@@ -87,12 +87,12 @@ namespace SignalR
 
             _transport.Connected = () =>
             {
-                return OnConnectedAsync(context.Request, connectionId);
+                return OnConnectedAsync(context.Request, groups, connectionId);
             };
 
             _transport.Reconnected = () =>
             {
-                return OnReconnectedAsync(context.Request, connectionId);
+                return OnReconnectedAsync(context.Request, groups, connectionId);
             };
 
             _transport.Received = data =>
@@ -138,13 +138,13 @@ namespace SignalR
             };
         }
 
-        protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
+        protected virtual Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             OnClientConnected(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
-        private Task OnReconnectedAsync(IRequest request, string connectionId)
+        private Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }
