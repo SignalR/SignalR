@@ -92,6 +92,8 @@ namespace SignalR.Transports
 
         public Func<Task> Connected { get; set; }
 
+        public Func<Task> Reconnected { get; set; }
+
         public override Func<Task> Disconnected { get; set; }
 
         public Func<Exception, Task> Error { get; set; }
@@ -112,6 +114,11 @@ namespace SignalR.Transports
                 }
                 else if (MessageId != null)
                 {
+                    if (Reconnected != null)
+                    {
+                        return Reconnected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                    }
+
                     return ProcessReceiveRequest(connection);
                 }
             }

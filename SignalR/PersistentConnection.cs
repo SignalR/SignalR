@@ -90,6 +90,11 @@ namespace SignalR
                 return OnConnectedAsync(context.Request, connectionId);
             };
 
+            _transport.Reconnected = () =>
+            {
+                return OnReconnectedAsync(context.Request, connectionId);
+            };
+
             _transport.Received = data =>
             {
                 return OnReceivedAsync(connectionId, data);
@@ -136,6 +141,11 @@ namespace SignalR
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
             OnClientConnected(connectionId);
+            return TaskAsyncHelper.Empty;
+        }
+
+        private Task OnReconnectedAsync(IRequest request, string connectionId)
+        {
             return TaskAsyncHelper.Empty;
         }
 

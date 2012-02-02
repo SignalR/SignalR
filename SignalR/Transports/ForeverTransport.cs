@@ -67,6 +67,8 @@ namespace SignalR.Transports
         public Func<string, Task> Received { get; set; }
 
         public Func<Task> Connected { get; set; }
+        
+        public Func<Task> Reconnected { get; set; }
 
         public override Func<Task> Disconnected { get; set; }
 
@@ -82,9 +84,19 @@ namespace SignalR.Transports
             }
             else
             {
-                if (IsConnectRequest && Connected != null)
+                if (IsConnectRequest)
                 {
-                    return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                    if (Connected != null)
+                    {
+                        return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                    }
+
+                    return ProcessReceiveRequest(connection);
+                }
+
+                if (Reconnected != null)
+                {
+                    return Reconnected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
                 }
 
                 return ProcessReceiveRequest(connection);
