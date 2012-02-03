@@ -9,6 +9,10 @@ $(function () {
         addMessage(id + ' joined at ' + when, 'green');
     };
 
+    status.rejoined = function (id, when) {
+        addMessage(id + ' reconnected at ' + when, 'purple');
+    };
+
     status.leave = function (id, when) {
         addMessage(id + ' left at ' + when, 'red');
     };
@@ -17,8 +21,6 @@ $(function () {
         $('#messages').append('<li style="background-color:' + color + ';color:white">' + value + '</li>');
     }
 
-    $.connection.hub.start({ transport: activeTransport }, function () {
-        status.join();
-    });
+    $.connection.hub.start({ transport: activeTransport });
 
 });

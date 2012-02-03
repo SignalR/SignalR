@@ -1,7 +1,9 @@
-﻿namespace SignalR.Hubs
+﻿using System.Threading.Tasks;
+
+namespace SignalR.Hubs
 {
     public interface IDisconnect
     {
-        void Disconnect();
+        Task Disconnect();
     }
 }

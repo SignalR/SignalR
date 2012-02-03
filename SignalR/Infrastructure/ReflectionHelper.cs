@@ -8,7 +8,8 @@ namespace SignalR.Infrastructure
 {
     internal static class ReflectionHelper
     {
-        private static readonly Type[] _excludeTypes = new[] { typeof(IHub), typeof(Hub), typeof(object) };
+        private static readonly Type[] _excludeTypes = new[] { typeof(Hub), typeof(object) };
+        private static readonly Type[] _excludeInterfaces = new[] { typeof(IHub), typeof(IDisconnect), typeof(IConnected) };
 
         internal static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
         {
@@ -21,12 +22,24 @@ namespace SignalR.Infrastructure
             var getMethods = properties.Select(p => p.GetGetMethod());
             var setMethods = properties.Select(p => p.GetSetMethod());
             var allPropertyMethods = getMethods.Concat(setMethods);
+            var allInterfaceMethods = _excludeInterfaces.SelectMany(i => GetInterfaceMethods(type, i));
+            var allExcludes = allPropertyMethods.Concat(allInterfaceMethods);
 
             var actualMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
-            return actualMethods.Except(allPropertyMethods)
+            return actualMethods.Except(allExcludes)
                                 .Where(m => !_excludeTypes.Contains(m.DeclaringType));
 
+        }
+
+        private static IEnumerable<MethodInfo> GetInterfaceMethods(Type type, Type iface)
+        {
+            if (!iface.IsAssignableFrom(type))
+            {
+                return Enumerable.Empty<MethodInfo>();
+            }
+
+            return type.GetInterfaceMap(iface).TargetMethods;
         }
 
         internal static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)

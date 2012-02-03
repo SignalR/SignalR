@@ -133,38 +133,84 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
+        protected override Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect(groups));
+        }
+
+        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(groups));
+        }
+
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            // Loop over each hub and call disconnect (if the hub supports it)
-            foreach (Type type in GetDisconnectTypes())
+            return ExecuteHubEventAsync<IDisconnect>(connectionId, hub => hub.Disconnect());
+        }
+
+        private Task ExecuteHubEventAsync<T>(string connectionId, Func<T, Task> action) where T : class
+        {
+            var operations = new List<Task>();
+
+            foreach (Type type in GetHubsImplementingInterface(typeof(T)))
             {
-                string hubName = type.FullName;
-                IHub hub = _hubFactory.CreateHub(hubName);
-
-                var disconnect = hub as IDisconnect;
-                if (disconnect != null)
+                T instance = CreateHub(type, connectionId) as T;
+                if (instance != null)
                 {
-                    // REVIEW: We don't have any client state here since we're calling this from the server.
-                    // Will this match user expectations?
-                    var state = new TrackingDictionary();
-                    hub.Context = new HubContext(_context, connectionId);
-                    hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
-                    var agent = new ClientAgent(Connection, hubName);
-                    hub.Agent = agent;
-                    hub.GroupManager = agent;
-
-                    disconnect.Disconnect();
+                    // Collect all the asyc operations
+                    operations.Add(action(instance) ?? TaskAsyncHelper.Empty);
                 }
             }
 
-            return TaskAsyncHelper.Empty;
+            if (operations.Count == 0)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+            Task.Factory.ContinueWhenAll(operations.ToArray(), tasks =>
+            {
+                var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
+                if (faulted != null)
+                {
+                    tcs.SetException(faulted.Exception);
+                }
+                else if (tasks.Any(t => t.IsCanceled))
+                {
+                    tcs.SetCanceled();
+                }
+                else
+                {
+                    tcs.SetResult(null);
+                }
+            });
+
+            return tcs.Task;
         }
 
-        private IEnumerable<Type> GetDisconnectTypes()
+        public IHub CreateHub(Type type, string connectionId)
         {
-            // Get types that implement IDisconnect
+            string hubName = type.FullName;
+            IHub hub = _hubFactory.CreateHub(hubName);
+
+            if (hub != null)
+            {
+                var state = new TrackingDictionary();
+                hub.Context = new HubContext(_context, connectionId);
+                hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
+                var agent = new ClientAgent(Connection, hubName);
+                hub.Agent = agent;
+                hub.GroupManager = agent;
+            }
+
+            return hub;
+        }
+
+        private IEnumerable<Type> GetHubsImplementingInterface(Type interfaceType)
+        {
+            // Get hubs that implement the specified interface
             return from type in _hubLocator.GetHubs()
-                   where typeof(IDisconnect).IsAssignableFrom(type)
+                   where interfaceType.IsAssignableFrom(type)
                    select type;
         }
 

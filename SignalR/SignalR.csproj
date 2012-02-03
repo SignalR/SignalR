@@ -54,6 +54,7 @@
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
     <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="Hubs\IConnected.cs" />
     <Compile Include="IConnectionManager.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />

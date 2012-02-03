@@ -67,7 +67,7 @@ namespace SignalR.Transports
         public Func<string, Task> Received { get; set; }
 
         public Func<Task> Connected { get; set; }
-        
+
         public Func<Task> Reconnected { get; set; }
 
         public override Func<Task> Disconnected { get; set; }
@@ -88,7 +88,7 @@ namespace SignalR.Transports
                 {
                     if (Connected != null)
                     {
-                        return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                        return ProcessReceiveRequest(connection, () => Connected());
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -96,7 +96,7 @@ namespace SignalR.Transports
 
                 if (Reconnected != null)
                 {
-                    return Reconnected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                    return ProcessReceiveRequest(connection, () => Reconnected());
                 }
 
                 return ProcessReceiveRequest(connection);
@@ -145,24 +145,31 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessReceiveRequest(IReceivingConnection connection)
+        private Task ProcessReceiveRequest(IReceivingConnection connection, Func<Task> postReceive = null)
         {
             HeartBeat.AddConnection(this);
             HeartBeat.MarkConnection(this);
 
+            var state = new
+            {
+                Connection = connection,
+                LastMessageId = LastMessageId,
+                PostReceive = postReceive
+            };
+
             return InitializeResponse(connection)
-                    .Then((c, id) => ProcessMessages(c, id), connection, LastMessageId)
+                    .Then((s) => ProcessMessages(s.Connection, s.LastMessageId, s.PostReceive), state)
                     .FastUnwrap();
         }
 
-        private Task ProcessMessages(IReceivingConnection connection, ulong? lastMessageId)
+        private Task ProcessMessages(IReceivingConnection connection, ulong? lastMessageId, Func<Task> postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
-            ProcessMessagesImpl(tcs, connection, lastMessageId);
+            ProcessMessagesImpl(tcs, connection, lastMessageId, postReceive);
             return tcs.Task;
         }
 
-        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, ulong? lastMessageId)
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, ulong? lastMessageId, Func<Task> postReceive = null)
         {
             if (!IsTimedOut && !IsDisconnected && Context.Response.IsClientConnected)
             {
@@ -171,6 +178,11 @@ namespace SignalR.Transports
                 var receiveAsyncTask = lastMessageId == null
                     ? connection.ReceiveAsync()
                     : connection.ReceiveAsync(lastMessageId.Value);
+
+                if (postReceive != null)
+                {
+                    postReceive().Catch();
+                }
 
                 receiveAsyncTask.Then(response =>
                 {

@@ -81,7 +81,7 @@ namespace SignalR
                 throw new InvalidOperationException("Protocol error: Missing connection id.");
             }
 
-            IEnumerable<string> groups = _transport.Groups;
+            var groups = new List<string>(_transport.Groups);
 
             Connection = CreateConnection(connectionId, groups, context.Request);
 
@@ -144,7 +144,7 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        private Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected virtual Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }

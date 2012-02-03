@@ -1,18 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.ConnectDisconnect
 {
-    public class Status : Hub, IDisconnect
+    public class Status : Hub, IDisconnect, IConnected
     {
-        public void Join()
+        public Task Disconnect()
         {
-            Clients.joined(Context.ConnectionId, DateTime.Now.ToString());
+            return Clients.leave(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public void Disconnect()
+        public Task Connect(IEnumerable<string> groups)
         {
-            Clients.leave(Context.ConnectionId, DateTime.Now.ToString());
+            return Clients.joined(Context.ConnectionId, DateTime.Now.ToString());
+        }
+
+        public Task Reconnect(IEnumerable<string> groups)
+        {
+            return Clients.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }
     }
 }

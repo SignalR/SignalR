@@ -121,7 +121,7 @@ namespace SignalR.Samples.Hubs.Chat
             }
         }
 
-        public void Disconnect()
+        public Task Disconnect()
         {
             ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)
@@ -142,6 +142,8 @@ namespace SignalR.Samples.Hubs.Chat
 
                 _userRooms.Remove(user.Name);
             }
+
+            return null;
         }
 
         public IEnumerable<ChatUser> GetUsers()

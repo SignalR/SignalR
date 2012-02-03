@@ -12,7 +12,7 @@ namespace SignalR.Transports
         private IJsonSerializer _jsonSerializer;
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
-            : this(context, 
+            : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>())
         {
@@ -116,7 +116,7 @@ namespace SignalR.Transports
                 {
                     if (Reconnected != null)
                     {
-                        return Reconnected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                        return ProcessReceiveRequest(connection, () => Reconnected());
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -167,20 +167,26 @@ namespace SignalR.Transports
         {
             if (Connected != null)
             {
-                return Connected().Then(() => ProcessReceiveRequest(connection)).FastUnwrap();
+                return ProcessReceiveRequest(connection, () => Connected());
             }
 
             return ProcessReceiveRequest(connection);
         }
 
-        private Task ProcessReceiveRequest(IReceivingConnection connection)
+        private Task ProcessReceiveRequest(IReceivingConnection connection, Func<Task> postReceive = null)
         {
             HeartBeat.AddConnection(this);
+            HeartBeat.MarkConnection(this);
 
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
                               connection.ReceiveAsync() :
                               connection.ReceiveAsync(MessageId.Value);
+
+            if (postReceive != null)
+            {
+                postReceive().Catch();
+            }
 
             return receiveTask.Then(new Func<PersistentResponse, Task>(response => Send(response)))
                               .FastUnwrap();
