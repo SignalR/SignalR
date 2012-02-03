@@ -10,7 +10,7 @@ namespace SignalR.Transports
     public class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private IJsonSerializer _jsonSerializer;
-
+        
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
@@ -25,7 +25,7 @@ namespace SignalR.Transports
             _jsonSerializer = jsonSerializer;
         }
 
-        protected ulong? LastMessageId
+        protected string LastMessageId
         {
             get;
             set;
@@ -162,14 +162,14 @@ namespace SignalR.Transports
                     .FastUnwrap();
         }
 
-        private Task ProcessMessages(IReceivingConnection connection, ulong? lastMessageId, Func<Task> postReceive = null)
+        private Task ProcessMessages(IReceivingConnection connection, string lastMessageId, Func<Task> postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
             ProcessMessagesImpl(tcs, connection, lastMessageId, postReceive);
             return tcs.Task;
         }
 
-        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, ulong? lastMessageId, Func<Task> postReceive = null)
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, string lastMessageId, Func<Task> postReceive = null)
         {
             if (!IsTimedOut && !IsDisconnected && Context.Response.IsClientConnected)
             {
@@ -177,7 +177,7 @@ namespace SignalR.Transports
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = lastMessageId == null
                     ? connection.ReceiveAsync()
-                    : connection.ReceiveAsync(lastMessageId.Value);
+                    : connection.ReceiveAsync(lastMessageId);
 
                 if (postReceive != null)
                 {

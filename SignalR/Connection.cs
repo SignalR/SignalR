@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using SignalR.MessageBus;
 
 namespace SignalR
 {
@@ -59,14 +60,14 @@ namespace SignalR
 
         public Task<PersistentResponse> ReceiveAsync()
         {
-            return _messageBus.GetMessagesSince(Signals)
-                .Then(messages => GetResponse(messages.ToList()));
+            return _messageBus.GetMessages(Signals, null)
+                .Then(result => GetResponse(result));
         }
 
-        public Task<PersistentResponse> ReceiveAsync(ulong messageId)
+        public Task<PersistentResponse> ReceiveAsync(string messageId)
         {
-            return _messageBus.GetMessagesSince(Signals, messageId)
-                .Then(messages => GetResponse(messages.ToList()));
+            return _messageBus.GetMessages(Signals, messageId)
+                .Then(result => GetResponse(result));
         }
 
         public Task SendCommand(SignalCommand command)
@@ -74,23 +75,14 @@ namespace SignalR
             return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
         }
 
-        private PersistentResponse GetResponse(List<Message> messages)
+        private PersistentResponse GetResponse(MessageResult result)
         {
-            if (!messages.Any())
-            {
-                // This should never happen
-                return null;
-            }
-
-            // Get last message ID
-            var messageId = messages[messages.Count - 1].Id;
-
             // Do a single sweep through the results to process commands and extract values
-            var messageValues = ProcessResults(messages);
+            var messageValues = ProcessResults(result.Messages);
 
             var response = new PersistentResponse
             {
-                MessageId = messageId,
+                MessageId = result.LastMessageId,
                 Messages = messageValues,
                 Disconnect = _disconnected,
                 TimedOut = _timedOut
@@ -98,12 +90,12 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            _trace.Source.TraceInformation("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, messages.Count, messageId);
+            _trace.Source.TraceInformation("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
 
             return response;
         }
 
-        private List<object> ProcessResults(List<Message> source)
+        private List<object> ProcessResults(IList<Message> source)
         {
             var messageValues = new List<object>();
             foreach (var message in source)

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
 using SignalR.Infrastructure;
+using SignalR.MessageBus;
 
 namespace SignalR.Stress
 {
@@ -125,11 +126,11 @@ namespace SignalR.Stress
             ReceiveLoop(bus, eventKeys, null);
         }
 
-        private static void ReceiveLoop(InProcessMessageBus bus, string[] eventKeys, ulong? id)
+        private static void ReceiveLoop(InProcessMessageBus bus, string[] eventKeys, string id)
         {
             try
             {
-                bus.GetMessagesSince(eventKeys, id).ContinueWith(task =>
+                bus.GetMessages(eventKeys, id).ContinueWith(task =>
                 {
                     if (task.IsFaulted)
                     {
@@ -137,12 +138,11 @@ namespace SignalR.Stress
                     }
                     else
                     {
-                        var list = task.Result;
-                        id = list[list.Count - 1].Id;
+                        var result = task.Result;
                         Interlocked.Increment(ref _received);
                         Interlocked.Increment(ref _avgLastReceivedCount);
 
-                        ReceiveLoop(bus, eventKeys, id);
+                        ReceiveLoop(bus, eventKeys, result.LastMessageId);
                     }
                 });
             }

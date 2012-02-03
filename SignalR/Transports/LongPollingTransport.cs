@@ -10,7 +10,7 @@ namespace SignalR.Transports
     public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
         private IJsonSerializer _jsonSerializer;
-
+        
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
@@ -75,16 +75,11 @@ namespace SignalR.Transports
             }
         }
 
-        private ulong? MessageId
+        private string MessageId
         {
             get
             {
-                ulong id;
-                if (UInt64.TryParse(Context.Request.QueryString["messageId"], out id))
-                {
-                    return id;
-                }
-                return null;
+                return Context.Request.QueryString["messageId"];
             }
         }
 
@@ -181,7 +176,7 @@ namespace SignalR.Transports
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
                               connection.ReceiveAsync() :
-                              connection.ReceiveAsync(MessageId.Value);
+                              connection.ReceiveAsync(MessageId);
 
             if (postReceive != null)
             {

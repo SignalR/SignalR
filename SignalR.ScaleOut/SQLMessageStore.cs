@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using SignalR.MessageBus;
 
 namespace SignalR.ScaleOut
 {
@@ -188,12 +189,13 @@ namespace SignalR.ScaleOut
         //{
         //    throw new NotImplementedException();
         //}
-        public Task<IList<Message>> GetMessagesSince(IEnumerable<string> eventKeys, ulong? id = null)
+        
+        public Task Send(string eventKey, object value)
         {
             throw new NotImplementedException();
         }
 
-        public Task Send(string eventKey, object value)
+        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id)
         {
             throw new NotImplementedException();
         }

@@ -57,6 +57,8 @@
     <Compile Include="Hubs\IConnected.cs" />
     <Compile Include="IConnectionManager.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="MessageBus\InMemoryMessage.cs" />
+    <Compile Include="MessageBus\MessageResult.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
@@ -69,7 +71,7 @@
     <Compile Include="Hubs\IHubTypeResolver.cs" />
     <Compile Include="IConnectionIdFactory.cs" />
     <Compile Include="IJsonSerializer.cs" />
-    <Compile Include="IMessageBus.cs" />
+    <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
@@ -77,7 +79,7 @@
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
-    <Compile Include="InProcessMessageBus.cs" />
+    <Compile Include="MessageBus\InProcessMessageBus.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
@@ -119,7 +121,7 @@
     <Compile Include="Hubs\IActionResolver.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
-    <Compile Include="Message.cs" />
+    <Compile Include="MessageBus\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\TransportManager.cs" />
   </ItemGroup>

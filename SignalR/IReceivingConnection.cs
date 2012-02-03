@@ -1,12 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SignalR
 {
     public interface IReceivingConnection
     {
         Task<PersistentResponse> ReceiveAsync();
-        Task<PersistentResponse> ReceiveAsync(ulong messageId);
+        Task<PersistentResponse> ReceiveAsync(string messageId);
 
         Task SendCommand(SignalCommand command);
     }

@@ -52,8 +52,8 @@ namespace SignalR.Transports
 
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
-            ulong lastMessageId;
-            if (UInt64.TryParse(Context.Request.QueryString["messageId"], out lastMessageId))
+            string lastMessageId = Context.Request.QueryString["messageId"];
+            if (!String.IsNullOrEmpty(lastMessageId))
             {
                 LastMessageId = lastMessageId;
             }

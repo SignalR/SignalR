@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
+using SignalR.MessageBus;
 
 namespace SignalR
 {

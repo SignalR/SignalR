@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using SignalR.Infrastructure;
+using SignalR.MessageBus;
 using Xunit;
-using SignalR.Infrastructure;
 
 namespace SignalR.Tests
 {
@@ -22,8 +22,8 @@ namespace SignalR.Tests
                 bus.Send("foo", "3").Wait();
                 bus.Send("foo", "4").Wait();
 
-                var result = bus.GetMessagesSince(new[] { "foo" }, 1).Result.ToList();
-                Assert.Equal(2, result.Count);
+                var result = bus.GetMessages(new[] { "foo" }, "1").Result;
+                Assert.Equal(2, result.Messages.Count);
             }
 
             [Fact]
@@ -76,8 +76,8 @@ namespace SignalR.Tests
                 bus.Send("bar", "5").Wait();
                 bus.Send("foo", "6").Wait();
 
-                var result = bus.GetMessagesSince(new[] { "foo" }, 3).Result.ToList();
-                Assert.Equal(2, result.Count);
+                var result = bus.GetMessages(new[] { "foo" }, "3").Result;
+                Assert.Equal(2, result.Messages.Count);
             }
 
             [Fact]
