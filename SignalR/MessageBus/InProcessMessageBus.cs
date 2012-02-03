@@ -103,7 +103,7 @@ namespace SignalR.MessageBus
 
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
                 message = new InMemoryMessage(eventKey, value, GenerateId());
-                _trace.Source.TraceInformation("MessageBus: Saving message {0} to cache", message.Id);
+                _trace.Source.TraceInformation("MessageBus: Saving message {0} with eventKey {1} to cache on AppDomain {2}", message.Id, eventKey, AppDomain.CurrentDomain.Id);
                 list.AddWithLock(message);
 
                 // Send to waiting callers.
@@ -128,7 +128,12 @@ namespace SignalR.MessageBus
                 var delegates = callbacks.CopyWithLock();
                 var messages = new[] { message };
 
-                _trace.Source.TraceInformation("MessageBus: Sending message {0} to {1} waiting connections", message.Id, delegates.Count);
+                if (delegates.Count == 0)
+                {
+                    return;
+                }
+
+                _trace.Source.TraceInformation("MessageBus: Sending message {0} with eventKey {1} to {2} waiting connections", message.Id, eventKey, delegates.Count);
 
                 foreach (var callback in delegates)
                 {
@@ -219,7 +224,7 @@ namespace SignalR.MessageBus
         {
             var id = messages[messages.Count - 1].Id;
 
-            return new MessageResult(messages.ToList<Message>(), 
+            return new MessageResult(messages.ToList<Message>(),
                                      id.ToString(CultureInfo.InvariantCulture));
         }
 

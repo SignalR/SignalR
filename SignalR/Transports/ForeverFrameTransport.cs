@@ -52,12 +52,6 @@ namespace SignalR.Transports
 
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
-            string lastMessageId = Context.Request.QueryString["messageId"];
-            if (!String.IsNullOrEmpty(lastMessageId))
-            {
-                LastMessageId = lastMessageId;
-            }
-
             return base.InitializeResponse(connection)
                 .Then(initScript => Context.Response.WriteAsync(initScript),
                       _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix)

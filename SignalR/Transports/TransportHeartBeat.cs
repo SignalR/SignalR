@@ -59,7 +59,7 @@ namespace SignalR.Transports
 
         private void Beat(object state)
         {
-            if (Interlocked.Exchange(ref _running, 1) == 0)
+            if (Interlocked.Exchange(ref _running, 1) == 1)
             {
                 Trace.TraceInformation("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
                 return;

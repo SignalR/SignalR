@@ -10,6 +10,7 @@ namespace SignalR.Transports
     public class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private IJsonSerializer _jsonSerializer;
+        private string _lastMessageId;
         
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
@@ -27,8 +28,18 @@ namespace SignalR.Transports
 
         protected string LastMessageId
         {
-            get;
-            set;
+            get
+            {
+                if (_lastMessageId == null)
+                {
+                    _lastMessageId = Context.Request.QueryString["messageId"];
+                }
+                return _lastMessageId;
+            }
+            private set
+            {
+                _lastMessageId = value;
+            }
         }
 
         protected IJsonSerializer JsonSerializer
@@ -150,34 +161,27 @@ namespace SignalR.Transports
             HeartBeat.AddConnection(this);
             HeartBeat.MarkConnection(this);
 
-            var state = new
-            {
-                Connection = connection,
-                LastMessageId = LastMessageId,
-                PostReceive = postReceive
-            };
-
             return InitializeResponse(connection)
-                    .Then((s) => ProcessMessages(s.Connection, s.LastMessageId, s.PostReceive), state)
+                    .Then((c, pr) => ProcessMessages(c, pr), connection, postReceive)
                     .FastUnwrap();
         }
 
-        private Task ProcessMessages(IReceivingConnection connection, string lastMessageId, Func<Task> postReceive = null)
+        private Task ProcessMessages(IReceivingConnection connection, Func<Task> postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
-            ProcessMessagesImpl(tcs, connection, lastMessageId, postReceive);
+            ProcessMessagesImpl(tcs, connection, postReceive);
             return tcs.Task;
         }
 
-        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, string lastMessageId, Func<Task> postReceive = null)
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, Func<Task> postReceive = null)
         {
             if (!IsTimedOut && !IsDisconnected && Context.Response.IsClientConnected)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
-                var receiveAsyncTask = lastMessageId == null
+                var receiveAsyncTask = LastMessageId == null
                     ? connection.ReceiveAsync()
-                    : connection.ReceiveAsync(lastMessageId);
+                    : connection.ReceiveAsync(LastMessageId);
 
                 if (postReceive != null)
                 {
@@ -197,7 +201,7 @@ namespace SignalR.Transports
                     }
 
                     // Continue the receive loop
-                    return sendTask.Then((conn, id) => ProcessMessagesImpl(taskCompletetionSource, conn, id), connection, LastMessageId);
+                    return sendTask.Then((conn) => ProcessMessagesImpl(taskCompletetionSource, conn), connection);
                 })
                 .FastUnwrap().ContinueWith(t =>
                 {
