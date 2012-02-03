@@ -34,14 +34,11 @@
             });
 
             var start = function () {
-                connection.start({
-                    transport: activeTransport,
-                    callback: function () {
-                        $("#stopStart")
-                            .prop("disabled", false);
-                    }
-                });
-            }
+                connection.start({ transport: activeTransport })
+                    .then(function () {
+                        $("#stopStart").prop("disabled", false);
+                    });
+            };
             start();
 
             $("#send").click(function () {
@@ -88,34 +85,33 @@
     </script>
 </head>
 <body>
-    <h2>
-        To Everybody</h2>
+    <h2>To Everybody</h2>
     <form>
-    <input type="text" id="msg" />
-    <input type="button" id="broadcast" value="Broadcast" />
-    <input type="button" id="join" value="Enter Name" />
-    <input type="button" id="join-group" value="Join Group" />
-    <input type="button" id="leave-group" value="Leave Group" />
+        <input type="text" id="msg" />
+        <input type="button" id="broadcast" value="Broadcast" />
+        <input type="button" id="join" value="Enter Name" />
+        <input type="button" id="join-group" value="Join Group" />
+        <input type="button" id="leave-group" value="Leave Group" />
     </form>
     <h2>
         To Me</h2>
     <form>
-    <input type="text" id="me" />
-    <input type="button" id="send" value="Send" />
+        <input type="text" id="me" />
+        <input type="button" id="send" value="Send" />
     </form>
     <h2>
         Private Message</h2>
     <form>
-    <label for="message">
-        Message:
-    </label>
-    <input type="text" name="message" id="message" />
-    <label for="user">
-        User/Group:
-    </label>
-    <input type="text" name="user" id="user" />
-    <input type="button" id="privatemsg" value="Send to user" />
-    <input type="button" id="groupmsg" value="Send to group" />
+        <label for="message">
+            Message:
+        </label>
+        <input type="text" name="message" id="message" />
+        <label for="user">
+            User/Group:
+        </label>
+        <input type="text" name="user" id="user" />
+        <input type="button" id="privatemsg" value="Send to user" />
+        <input type="button" id="groupmsg" value="Send to group" />
     </form>
     <ul id="messages">
     </ul>

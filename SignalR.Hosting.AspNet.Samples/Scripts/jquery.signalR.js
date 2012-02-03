@@ -53,16 +53,18 @@
             /// <summary>Starts the connection</summary>
             /// <param name="options" type="Object">Options map</param>
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
-            /// <returns type="signalR" />
+            /// <returns type="jQuery.Deferred" />
             var connection = this,
                 config = {
                     transport: "auto"
                 },
-                initialize;
+                initialize,
+                promise = $.Deferred();
 
             if (connection.transport) {
                 // Already started, just return
-                return connection;
+                promise.resolve(connection);
+                return promise;
             }
 
             if ($.type(options) === "function") {
@@ -75,18 +77,19 @@
                 }
             }
 
-            if ($.type(callback) === "function") {
-                $(connection).bind("onStart", function (e, data) {
+            $(connection).bind("onStart", function (e, data) {
+                if ($.type(callback) === "function") {
                     callback.call(connection);
-                });
-            }
-
+                }
+                promise.resolve(connection);
+            });
+            
             initialize = function (transports, index) {
                 index = index || 0;
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
-                        throw "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.";
+                        promise.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                     }
                     return;
                 }
@@ -149,7 +152,7 @@
                 });
             }, 0);
 
-            return connection;
+            return promise;
         },
 
         starting: function (callback) {
