@@ -53,7 +53,6 @@
             /// <summary>Starts the connection</summary>
             /// <param name="options" type="Object">Options map</param>
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
-            /// <returns type="jQuery.Deferred" />
             var connection = this,
                 config = {
                     transport: "auto"
@@ -83,7 +82,7 @@
                 }
                 promise.resolve(connection);
             });
-            
+
             initialize = function (transports, index) {
                 index = index || 0;
                 if (index >= transports.length) {
@@ -693,6 +692,11 @@
 
             stop: function (connection) {
                 if (connection.frame) {
+                    if (connection.frame.stop) {
+                        connection.frame.stop();
+                    } else if (connection.frame.document && connection.frame.document.execCommand) {
+                        connection.frame.document.execCommand("Stop");
+                    }
                     $(connection.frame).remove();
                     delete transportLogic.foreverFrame.connections[connection.frameId];
                     connection.frame = null;
