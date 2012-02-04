@@ -29,12 +29,26 @@ namespace SignalR.Client.Transports
             OpenConnection(connection, data, initializeCallback, errorCallback);
         }
 
+        private void Reconnect(Connection connection, string data)
+        {
+            if (!connection.IsActive)
+            {
+                return;
+            }
+
+            // Wait for a bit before reconnecting
+            Thread.Sleep(ReconnectDelay);
+
+            // Now attempt a reconnect
+            OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+        }
+
         private void OpenConnection(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             // If we're reconnecting add /connect to the url
-            bool reconnect = initializeCallback == null;
+            bool reconnecting = initializeCallback == null;
 
-            var url = (reconnect ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
+            var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
             Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
 
@@ -49,18 +63,25 @@ namespace SignalR.Client.Transports
                 if (task.IsFaulted)
                 {
                     var exception = task.Exception.GetBaseException();
-                    if (!IsRequestAborted(exception) &&
-                        Interlocked.CompareExchange(ref connection._initializedCalled, 0, 0) == 0)
+                    if (!IsRequestAborted(exception))
                     {
-                        if (errorCallback != null)
+                        if (errorCallback != null &&
+                            Interlocked.Exchange(ref connection._initializedCalled, 1) == 0)
                         {
                             errorCallback(exception);
                         }
-                        else
+                        else if (reconnecting)
                         {
-                            // Raise the error event if we failed to reconnect
+                            // Only raise the error event if we failed to reconnect
                             connection.OnError(exception);
                         }
+                    }
+
+                    if (reconnecting)
+                    {
+                        // Retry
+                        Reconnect(connection, data);
+                        return;
                     }
                 }
                 else
@@ -76,14 +97,7 @@ namespace SignalR.Client.Transports
                                                                initializeCallback();
                                                            }
                                                        },
-                                                       () =>
-                                                       {
-                                                           // Wait for a bit before reconnecting
-                                                           Thread.Sleep(ReconnectDelay);
-
-                                                           // Now attempt a reconnect
-                                                           OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
-                                                       });
+                                                       () => Reconnect(connection, data));
                     reader.StartReading();
 
                     // Set the reader for this connection
@@ -169,6 +183,8 @@ namespace SignalR.Client.Transports
                         if (!IsRequestAborted(exception))
                         {
                             _connection.OnError(exception);
+
+                            _closeCallback();
                         }
                         return;
                     }
@@ -286,6 +302,10 @@ namespace SignalR.Client.Transports
                                 {
                                     // Mark the connection as started
                                     _initializeCallback();
+                                }
+                                else
+                                {
+                                    _connection.OnReconnect();
                                 }
                             }
                             else

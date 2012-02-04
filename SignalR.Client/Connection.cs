@@ -26,6 +26,7 @@ namespace SignalR.Client
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
+        public event Action Reconnected;
 
         public Connection(string url)
             : this(url, (string)null)
@@ -205,6 +206,21 @@ namespace SignalR.Client
                 else
                 {
                     Error(error);
+                }
+            }
+        }
+
+        internal void OnReconnect()
+        {
+            if (Reconnected != null)
+            {
+                if (_syncContext != null)
+                {
+                    _syncContext.Post(_ => Reconnected(), null);
+                }
+                else
+                {
+                    Reconnected();
                 }
             }
         }
