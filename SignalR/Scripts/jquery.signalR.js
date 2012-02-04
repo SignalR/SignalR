@@ -15,6 +15,15 @@
 
     var signalR,
         _connection,
+        events = {
+            onStart: "onStart",
+            onStarting: "onStarting",
+            onSending: "onSending",
+            onReceived: "onReceived",
+            onError: "onError",
+            onReconnect: "onReconnect",
+            onDisconnect: "onDisconnect"
+        },
         log = function (msg) {
             var m;
             if (typeof (window.console) === "undefined") {
@@ -76,7 +85,7 @@
                 }
             }
 
-            $(connection).bind("onStart", function (e, data) {
+            $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
                     callback.call(connection);
                 }
@@ -98,7 +107,7 @@
 
                 transport.start(connection, function () {
                     connection.transport = transport;
-                    $(connection).trigger("onStart");
+                    $(connection).trigger(events.onStart);
                 }, function () {
                     initialize(transports, index + 1);
                 });
@@ -109,16 +118,22 @@
                     global: false,
                     type: "POST",
                     data: {},
+                    error: function (error) {
+                        $(connection).trigger(events.onError, [error]);
+                        promise.reject("SignalR: Error during negotiation request: " + error);
+                    },
                     success: function (res) {
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
                         connection.webSocketServerUrl = res.WebSocketServerUrl;
 
                         if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
-                            throw "SignalR: Incompatible protocol version.";
+                            $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
+                            promise.reject("SignalR: Incompatible protocol version.");
+                            return;
                         }
 
-                        $(connection).trigger("onStarting");
+                        $(connection).trigger(events.onStarting);
 
                         var transports = [],
                             supportedTransports = [];
@@ -161,10 +176,10 @@
             var connection = this,
                 $connection = $(connection);
 
-            $connection.bind("onStarting", function (e, data) {
+            $connection.bind(events.onStarting, function (e, data) {
                 callback.call(connection);
                 // Unbind immediately, we don't want to call this callback again
-                $connection.unbind("onStarting");
+                $connection.unbind(events.onStarting);
             });
 
             return connection;
@@ -191,7 +206,7 @@
             /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind("onSending", function (e, data) {
+            $(connection).bind(events.onSending, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -202,7 +217,7 @@
             /// <param name="callback" type="Function">A callback function to execute when any data is received on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind("onReceived", function (e, data) {
+            $(connection).bind(events.onReceived, function (e, data) {
                 callback.call(connection, data);
             });
             return connection;
@@ -213,7 +228,7 @@
             /// <param name="callback" type="Function">A callback function to execute when an error occurs on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind("onError", function (e, data) {
+            $(connection).bind(events.onError, function (e, data) {
                 callback.call(connection, data);
             });
             return connection;
@@ -224,7 +239,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection is broken</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind("onDisconnect", function (e, data) {
+            $(connection).bind(events.onDisconnect, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -235,7 +250,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection is restored</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind("onReconnect", function (e, data) {
+            $(connection).bind(events.onReconnect, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -253,6 +268,9 @@
 
             delete connection.messageId;
             delete connection.groups;
+
+            // Trigger the disconnect event
+            $connection.trigger(events.onDisconnect);
 
             return connection;
         },
@@ -318,14 +336,14 @@
                 },
                 success: function (result) {
                     if (result) {
-                        $(connection).trigger("onReceived", [result]);
+                        $(connection).trigger(events.onReceived, [result]);
                     }
                 },
                 error: function (errData, textStatus) {
                     if (textStatus === "abort") {
                         return;
                     }
-                    $(connection).trigger("onError", [errData]);
+                    $(connection).trigger(events.onError, [errData]);
                 }
             });
         },
@@ -341,18 +359,18 @@
                     connection.stop();
 
                     // Trigger the disconnect event
-                    $connection.trigger("onDisconnect");
+                    $connection.trigger(events.onDisconnect);
                     return;
                 }
 
                 if (data.Messages) {
                     $.each(data.Messages, function () {
                         try {
-                            $connection.trigger("onReceived", [this]);
+                            $connection.trigger(events.onReceived, [this]);
                         }
                         catch (e) {
                             log("Error raising received " + e);
-                            $(connection).trigger("onError", [e]);
+                            $(connection).trigger(events.onError, [e]);
                         }
                     });
                 }
@@ -402,7 +420,7 @@
                     }
 
                     // Build the url
-                    $(connection).trigger("onSending");
+                    $(connection).trigger(events.onSending);
                     if (connection.data) {
                         url += "?connectionData=" + connection.data + "&transport=webSockets&connectionId=" + connection.id;
                     } else {
@@ -425,7 +443,7 @@
                         } else if (typeof event.wasClean != "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).trigger("onError");
+                            $(connection).trigger(events.onError);
                             // TODO: Support reconnect attempt here, need to ensure last message id, groups, and connection data go up on reconnect
                         }
                         connection.socket = null;
@@ -440,14 +458,14 @@
                             if (data.Messages) {
                                 $.each(data.Messages, function () {
                                     try {
-                                        $connection.trigger("onReceived", [this]);
+                                        $connection.trigger(events.onReceived, [this]);
                                     }
                                     catch (e) {
                                         log("Error raising received " + e);
                                     }
                                 });
                             } else {
-                                $connection.trigger("onReceived", [data]);
+                                $connection.trigger(events.onReceived, [data]);
                             }
                         }
                     };
@@ -486,7 +504,7 @@
                     return;
                 }
 
-                $connection.trigger("onSending");
+                $connection.trigger(events.onSending);
 
                 url = transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -500,7 +518,7 @@
                         onFailed();
                     }
                     else {
-                        $connection.trigger("onError", [e]);
+                        $connection.trigger(events.onError, [e]);
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
                             log("EventSource reconnecting");
@@ -546,7 +564,7 @@
                         }
 
                         if (reconnecting) {
-                            $connection.trigger("onReconnect");
+                            $connection.trigger(events.onReconnect);
                         }
                     }
                 }, false);
@@ -588,7 +606,7 @@
                     } else {
                         // connection error
                         log("EventSource error");
-                        $connection.trigger("onError");
+                        $connection.trigger(events.onError);
                     }
                 }, false);
             },
@@ -634,7 +652,7 @@
                     return;
                 }
 
-                $(connection).trigger("onSending");
+                $(connection).trigger(events.onSending);
 
                 // Build the url
                 url = transportLogic.getUrl(connection, this.name);
@@ -715,7 +733,7 @@
                 }
                 else {
                     // If there's no onSuccess handler we assume this is a reconnect
-                    $(connection).trigger("onReconnect");
+                    $(connection).trigger(events.onReconnect);
                 }
             }
         },
@@ -735,7 +753,7 @@
 
                 window.setTimeout(function () {
                     (function poll(instance) {
-                        $(instance).trigger("onSending");
+                        $(instance).trigger(events.onSending);
 
                         var messageId = instance.messageId,
                             connect = (messageId === null),
@@ -743,7 +761,7 @@
 
                         if (!connect) {
                             window.setTimeout(function () {
-                                $(instance).trigger("onReconnect");
+                                $(instance).trigger(events.onReconnect);
                             }, 100);
                         }
 
@@ -774,7 +792,7 @@
                                     return;
                                 }
 
-                                $(instance).trigger("onError", [data]);
+                                $(instance).trigger(events.onError, [data]);
 
                                 window.setTimeout(function () {
                                     poll(instance);
