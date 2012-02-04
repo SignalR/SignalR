@@ -108,7 +108,7 @@
                 $.ajax(connection.url + "/negotiate", {
                     global: false,
                     type: "POST",
-                    data: {},
+                    data: {'x':'x'},
                     success: function (res) {
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
