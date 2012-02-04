@@ -40,64 +40,6 @@ namespace SignalR
             return task;
         }
 
-        #region Legacy Task.Then() extensions, don't use these
-
-        public static Task<TResult> Then<TResult>(this Task task, Func<Task, TResult> successor)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError<TResult>(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled<TResult>();
-
-                case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task);
-
-                default:
-                    return task.ContinueWith(t => successor(t), TaskContinuationOptions.OnlyOnRanToCompletion);
-            }
-        }
-
-        public static Task<TResult> Then<T, TResult>(this Task<T> task, Func<Task<T>, TResult> successor)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError<TResult>(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled<TResult>();
-
-                case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task);
-
-                default:
-                    return task.ContinueWith(t => successor(t), TaskContinuationOptions.OnlyOnRanToCompletion);
-            }
-        }
-
-        public static Task Then<TResult>(this Task<TResult> task, Action<Task<TResult>> successor)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError<TResult>(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled<TResult>();
-
-                case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task);
-
-                default:
-                    return task.ContinueWith(t => successor(t), TaskContinuationOptions.OnlyOnRanToCompletion);
-            }
-        }
-
-        #endregion
-
         public static void ContinueWith(this Task task, TaskCompletionSource<object> tcs)
         {
             task.ContinueWith(t =>
@@ -117,6 +59,21 @@ namespace SignalR
             });
         }
 
+        /// <summary>
+        /// Passes a task returning function into another task returning function so that
+        /// it can decide when it starts and returns a task that completes when all are finished
+        /// </summary>
+        public static Task Interleave<T>(Func<T, Action, Task> before, Func<Task> after, T arg)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var tasks = new[] {
+                            tcs.Task,
+                            before(arg, () => after().ContinueWith(tcs))
+                        };
+
+            return tasks.Return();
+        }
+
         // Then extesions
         public static Task Then(this Task task, Action successor)
         {
@@ -134,6 +91,41 @@ namespace SignalR
                 default:
                     return RunTask(task, successor);
             }
+        }
+
+        public static Task Return(this Task[] tasks)
+        {
+            return Then(tasks, () => { });
+        }
+
+        public static Task Then(this Task[] tasks, Action successor)
+        {
+            if (tasks.Length == 0)
+            {
+                return FromMethod(successor);
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+            Task.Factory.ContinueWhenAll(tasks, completedTasks =>
+            {
+                var faulted = completedTasks.FirstOrDefault(t => t.IsFaulted);
+                if (faulted != null)
+                {
+                    tcs.SetException(faulted.Exception);
+                    return;
+                }
+                var cancelled = completedTasks.FirstOrDefault(t => t.IsCanceled);
+                if (cancelled != null)
+                {
+                    tcs.SetCanceled();
+                    return;
+                }
+
+                successor();
+                tcs.SetResult(null);
+            });
+
+            return tcs.Task;
         }
 
         public static Task Then<T1>(this Task task, Action<T1> successor, T1 arg1)

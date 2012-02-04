@@ -111,7 +111,8 @@ namespace SignalR.Transports
                 {
                     if (Reconnected != null)
                     {
-                        return ProcessReceiveRequest(connection, () => Reconnected());
+                        // Return a task that completes when the reconnected event task & the receive loop task are both finished
+                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -162,13 +163,14 @@ namespace SignalR.Transports
         {
             if (Connected != null)
             {
-                return ProcessReceiveRequest(connection, () => Connected());
+                // Return a task that completes when the connected event task & the receive loop task are both finished
+                return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Connected, connection);
             }
 
             return ProcessReceiveRequest(connection);
         }
 
-        private Task ProcessReceiveRequest(IReceivingConnection connection, Func<Task> postReceive = null)
+        private Task ProcessReceiveRequest(IReceivingConnection connection, Action postReceive = null)
         {
             HeartBeat.AddConnection(this);
             HeartBeat.MarkConnection(this);
@@ -180,10 +182,10 @@ namespace SignalR.Transports
 
             if (postReceive != null)
             {
-                postReceive().Catch();
+                postReceive();
             }
 
-            return receiveTask.Then(new Func<PersistentResponse, Task>(response => Send(response)))
+            return receiveTask.Then(response => Send(response))
                               .FastUnwrap();
         }
 
