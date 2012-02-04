@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Phone.Controls;
 using SignalR.Client.Transports;
+using System.Threading;
 
 namespace SignalR.Client.WP7.Sample
 {
@@ -19,17 +20,32 @@ namespace SignalR.Client.WP7.Sample
             DataContext = App.ViewModel;
             this.Loaded += new RoutedEventHandler(MainPage_Loaded);
 
-            var connection = new Connection("http://localhost:40476/Streaming/streaming");
+            var connection = new Connection("http://localhost:40476/Raw/raw");
             connection.Received += data =>
             {
                 App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
             };
 
+            connection.Error += ex =>
+            {
+                var aggEx = (AggregateException)ex;
+                App.ViewModel.Items.Add(new ItemViewModel { LineOne = aggEx.InnerExceptions[0].Message });
+            };
+
+            connection.Reconnected += () =>
+            {
+                App.ViewModel.Items.Add(new ItemViewModel { LineOne = String.Format("[{0}]: Re-connected", DateTime.Now) });
+            };
+
+            var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
             connection.Start().ContinueWith(task =>
             {
-                Debug.WriteLine("ERROR: {0}", task.Exception.GetBaseException().Message);
+                var ex = task.Exception.InnerExceptions[0];
+                App.ViewModel.Items.Add(new ItemViewModel { LineOne = ex.Message });
             },
-            TaskContinuationOptions.OnlyOnFaulted);
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted,
+            scheduler);
         }
 
         // Handle selection changed on ListBox

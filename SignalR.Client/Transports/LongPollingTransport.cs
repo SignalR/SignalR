@@ -6,6 +6,8 @@ namespace SignalR.Client.Transports
 {
     public class LongPollingTransport : HttpBasedTransport
     {
+        private static readonly TimeSpan _reconnectDelay = TimeSpan.FromMilliseconds(300);
+
         public LongPollingTransport()
             : base("longPolling")
         {
@@ -16,13 +18,18 @@ namespace SignalR.Client.Transports
             PollingLoop(connection, data, initializeCallback, errorCallback);
         }
 
-        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool timedOut = false)
         {
             string url = connection.Url;
 
             if (connection.MessageId == null)
             {
                 url += "connect";
+            }
+            else if (timedOut)
+            {
+                // If the previous long poll timed out, raise the event
+                connection.OnReconnected();
             }
 
             url += GetReceiveQueryString(connection, data);
@@ -32,6 +39,9 @@ namespace SignalR.Client.Transports
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);
 
+                bool timeOutReceived = false;
+                bool disconnectedReceived = false;
+
                 try
                 {
                     if (!task.IsFaulted)
@@ -39,68 +49,70 @@ namespace SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
-                        if (!String.IsNullOrEmpty(raw))
-                        {
-                            OnMessage(connection, raw);
-                        }
+                        ProcessResponse(connection, raw, out timeOutReceived, out disconnectedReceived);
                     }
                 }
                 finally
                 {
-                    bool requestAborted = false;
-                    bool continuePolling = true;
-
-                    if (task.IsFaulted)
+                    if (disconnectedReceived)
                     {
-                        // Get the underlying exception
-                        Exception exception = task.Exception.GetBaseException();
+                        connection.Stop();
+                    }
+                    else
+                    {
+                        bool requestAborted = false;
+                        bool continuePolling = true;
 
-                        // If the error callback isn't null then raise it and don't continue polling
-                        if (errorCallback != null)
+                        if (task.IsFaulted)
                         {
-                            // Raise on error
-                            connection.OnError(exception);
+                            // Get the underlying exception
+                            Exception exception = task.Exception.GetBaseException();
 
-                            // Call the callback
-                            errorCallback(exception);
-
-                            // Don't continue polling if the error is on the first request
-                            continuePolling = false;
-                        }
-                        else
-                        {
-                            // Figure out if the request was aborted
-                            requestAborted = IsRequestAborted(exception);
-
-                            // Sometimes a connection might have been closed by the server before we get to write anything
-                            // so just try again and don't raise OnError.
-                            if (!requestAborted && !(exception is IOException))
+                            // If the error callback isn't null then raise it and don't continue polling
+                            if (errorCallback != null)
                             {
                                 // Raise on error
                                 connection.OnError(exception);
 
-                                // If the connection is still active after raising the error event wait for 2 seconds
-                                // before polling again so we aren't hammering the server
-                                if (connection.IsActive)
+                                // Call the callback
+                                errorCallback(exception);
+
+                                // Don't continue polling if the error is on the first request
+                                continuePolling = false;
+                            }
+                            else
+                            {
+                                // Figure out if the request was aborted
+                                requestAborted = IsRequestAborted(exception);
+
+                                // Sometimes a connection might have been closed by the server before we get to write anything
+                                // so just try again and don't raise OnError.
+                                if (!requestAborted && !(exception is IOException))
                                 {
-                                    Thread.Sleep(2000);
+                                    // Raise on error
+                                    connection.OnError(exception);
+
+                                    // If the connection is still active after raising the error event wait for 2 seconds
+                                    // before polling again so we aren't hammering the server
+                                    if (connection.IsActive)
+                                    {
+                                        Thread.Sleep(2000);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Only continue if the connection is still active and wasn't aborted
-                    if (continuePolling && !requestAborted && connection.IsActive)
-                    {
-                        PollingLoop(connection, data, null, null);
+                        // Only continue if the connection is still active and wasn't aborted
+                        if (continuePolling && !requestAborted && connection.IsActive)
+                        {
+                            PollingLoop(connection, data, null, null, timeOutReceived);
+                        }
                     }
                 }
             });
 
             if (initializeCallback != null)
             {
-                // Only set this the first time
-                // TODO: We should delay this until after the http request has been made
                 initializeCallback();
             }
         }

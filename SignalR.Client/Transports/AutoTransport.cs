@@ -8,7 +8,7 @@ namespace SignalR.Client.Transports
         private IClientTransport _transport;
 
         // List of transports in fallback order
-        private static readonly IClientTransport[] _transports = new[] { Transport.ServerSentEvents, Transport.LongPolling };
+        private readonly IClientTransport[] _transports = new IClientTransport[] { new ServerSentEventsTransport(), new LongPollingTransport() };
 
         public Task Start(Connection connection, string data)
         {

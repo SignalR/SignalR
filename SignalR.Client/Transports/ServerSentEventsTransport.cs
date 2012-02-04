@@ -10,6 +10,7 @@ namespace SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private const string ReaderKey = "sse.reader";
+        private int _initializedCalled;
 
         private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
@@ -66,7 +67,7 @@ namespace SignalR.Client.Transports
                     if (!IsRequestAborted(exception))
                     {
                         if (errorCallback != null &&
-                            Interlocked.Exchange(ref connection._initializedCalled, 1) == 0)
+                            Interlocked.Exchange(ref _initializedCalled, 1) == 0)
                         {
                             errorCallback(exception);
                         }
@@ -92,7 +93,7 @@ namespace SignalR.Client.Transports
                                                        connection,
                                                        () =>
                                                        {
-                                                           if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
+                                                           if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
                                                            {
                                                                initializeCallback();
                                                            }
@@ -109,7 +110,7 @@ namespace SignalR.Client.Transports
             {
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
                 {
-                    if (Interlocked.CompareExchange(ref connection._initializedCalled, 1, 0) == 0)
+                    if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
                     {
                         // Stop the connection
                         Stop(connection);
@@ -305,14 +306,26 @@ namespace SignalR.Client.Transports
                                 }
                                 else
                                 {
-                                    _connection.OnReconnect();
+                                    _connection.OnReconnected();
                                 }
                             }
                             else
                             {
                                 if (_reading)
                                 {
-                                    OnMessage(_connection, sseEvent.Data);
+                                    // We don't care about timedout messages here since it will just reconnect
+                                    // as part of being a long running request
+                                    bool timedOutReceived;
+                                    bool disconnectReceived;
+
+                                    ProcessResponse(_connection, sseEvent.Data, out timedOutReceived, out disconnectReceived);
+
+                                    if (disconnectReceived)
+                                    {
+                                        StopReading();
+
+                                        _connection.Stop();
+                                    }
                                 }
                             }
                             break;

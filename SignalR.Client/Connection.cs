@@ -19,8 +19,6 @@ namespace SignalR.Client
         private IClientTransport _transport;
         private bool _initialized;
 
-        // Used by transports to sync
-        internal int _initializedCalled;
         private readonly SynchronizationContext _syncContext;
 
         public event Action<string> Received;
@@ -79,8 +77,12 @@ namespace SignalR.Client
 
         public Task Start()
         {
+#if WINDOWS_PHONE || SILVERLIGHT
+            return Start(new LongPollingTransport());
+#else
             // Pick the best transport supported by the client
             return Start(new AutoTransport());
+#endif
         }
 
         public virtual Task Start(IClientTransport transport)
@@ -210,7 +212,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void OnReconnect()
+        internal void OnReconnected()
         {
             if (Reconnected != null)
             {

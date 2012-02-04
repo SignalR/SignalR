@@ -125,9 +125,6 @@
     <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
       <Link>Transports\ServerSentEventsTransport.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Transports\Transport.cs">
-      <Link>Transports\Transport.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
       <Link>Infrastructure\HttpHelper.cs</Link>
     </Compile>

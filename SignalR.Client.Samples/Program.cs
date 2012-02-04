@@ -38,7 +38,7 @@ namespace SignalR.Client.Samples
 
             Task.Factory.StartNew(() =>
             {
-                Thread.Sleep(3000);
+                Thread.Sleep(7000);
                 hubConnection.Stop();
             });
         }

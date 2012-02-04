@@ -112,8 +112,16 @@ namespace SignalR.Client.Transports
 
         }
 
-        protected static void OnMessage(Connection connection, string response)
+        protected static void ProcessResponse(Connection connection, string response, out bool timedOut, out bool disconnected)
         {
+            timedOut = false;
+            disconnected = false;
+
+            if (String.IsNullOrEmpty(response))
+            {
+                return;
+            }
+
             if (connection.MessageId == null)
             {
                 connection.MessageId = 0;
@@ -128,8 +136,15 @@ namespace SignalR.Client.Transports
                     return;
                 }
 
-                var messages = result["Messages"] as JArray;
+                timedOut = result.Value<bool>("TimedOut");
+                disconnected = result.Value<bool>("Disconnected");
 
+                if (disconnected)
+                {
+                    return;
+                }
+
+                var messages = result["Messages"] as JArray;
                 if (messages != null)
                 {
                     foreach (var message in messages)
