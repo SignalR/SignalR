@@ -96,13 +96,11 @@ namespace SignalR.Client
 
             _transport = transport;
 
-            string data = null;
+            return Negotiate();
+        }
 
-            if (Sending != null)
-            {
-                data = Sending();
-            }
-
+        private Task Negotiate()
+        {
             string negotiateUrl = Url + "negotiate";
 
             return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
@@ -120,9 +118,39 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                return _transport.Start(this, data).Then(() => _initialized = true);
+                var tcs = new TaskCompletionSource<object>();
+
+                if (Sending != null)
+                {
+                    if (_syncContext != null)
+                    {
+                        _syncContext.Post(_ =>
+                        {
+                            var data = Sending();
+                            StartTransport(data).ContinueWith(tcs);
+                        },
+                        null);
+                    }
+                    else
+                    {
+                        var data = Sending();
+                        StartTransport(data).ContinueWith(tcs);
+                    }
+                }
+                else
+                {
+                    StartTransport(null).ContinueWith(tcs);
+                }
+
+                return tcs.Task;
             })
             .FastUnwrap();
+        }
+
+        private Task StartTransport(string data)
+        {
+            return _transport.Start(this, data)
+                             .Then(() => _initialized = true);
         }
 
         private void VerifyProtocolVersion(string versionString)
