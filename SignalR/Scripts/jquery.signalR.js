@@ -234,7 +234,7 @@
             return connection;
         },
 
-        disconnect: function (callback) {
+        disconnected: function (callback) {
             /// <summary>Adds a callback that will be invoked when the client disconnects</summary>
             /// <param name="callback" type="Function">A callback function to execute when the connection is broken</param>
             /// <returns type="signalR" />
@@ -245,7 +245,7 @@
             return connection;
         },
 
-        reconnect: function (callback) {
+        reconnected: function (callback) {
             /// <summary>Adds a callback that will be invoked when the underlying transport reconnects</summary>
             /// <param name="callback" type="Function">A callback function to execute when the connection is restored</param>
             /// <returns type="signalR" />
@@ -741,6 +741,8 @@
         longPolling: {
             name: "longPolling",
 
+            reconnectDelay: 3000,
+
             start: function (connection, onSuccess, onFailed) {
                 /// <summary>Starts the long polling connection</summary>
                 /// <param name="connection" type="signalR">The SignalR connection to start</param>
@@ -752,18 +754,14 @@
                 connection.messageId = null;
 
                 window.setTimeout(function () {
-                    (function poll(instance) {
+                    (function poll(instance, raiseReconnect) {
                         $(instance).trigger(events.onSending);
 
                         var messageId = instance.messageId,
                             connect = (messageId === null),
-                            url = transportLogic.getUrl(instance, that.name, !connect);
-
-                        if (!connect) {
-                            window.setTimeout(function () {
-                                $(instance).trigger(events.onReconnect);
-                            }, 100);
-                        }
+                            url = transportLogic.getUrl(instance, that.name, !connect),
+                            reconnectTimeOut = null,
+                            reconnectFired = false;
 
                         instance.pollXhr = $.ajax(url, {
                             global: false,
@@ -773,17 +771,32 @@
                             dataType: "json",
 
                             success: function (data) {
-                                var delay = 0;
+                                var delay = 0,
+                                    timedOutReceived = false;
+
+                                if (raiseReconnect === true) {
+                                    // Fire the reconnect event if it hasn't been fired as yet
+                                    if (reconnectFired === false) {
+                                        $(instance).trigger(events.onReconnect);
+                                        reconnectFired = true;
+                                    }
+                                }
+
                                 transportLogic.processMessages(instance, data);
                                 if (data && $.type(data.TransportData.LongPollDelay) === "number") {
                                     delay = data.TransportData.LongPollDelay;
                                 }
+
+                                if (data && data.TimedOut) {
+                                    timedOutReceived = data.TimedOut;
+                                }
+
                                 if (delay > 0) {
                                     window.setTimeout(function () {
-                                        poll(instance);
+                                        poll(instance, timedOutReceived);
                                     }, delay);
                                 } else {
-                                    poll(instance);
+                                    poll(instance, timedOutReceived);
                                 }
                             },
 
@@ -792,13 +805,30 @@
                                     return;
                                 }
 
+                                if (reconnectTimeOut) {
+                                    // If the request failed then we clear the timeout so that the 
+                                    // reconnect event doesn't get fired
+                                    clearTimeout(reconnectTimeOut);
+                                }
+
                                 $(instance).trigger(events.onError, [data]);
 
                                 window.setTimeout(function () {
-                                    poll(instance);
+                                    poll(instance, true);
                                 }, connection.reconnectDelay);
                             }
                         });
+
+                        if (raiseReconnect === true) {
+                            reconnectTimeOut = window.setTimeout(function () {
+                                if (reconnectFired === false) {
+                                    $(instance).trigger(events.onReconnect);
+                                    reconnectFired = true;
+                                }
+                            },
+                            that.reconnectDelay);
+                        }
+
                     } (connection));
 
                     // Now connected
