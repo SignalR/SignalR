@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using Gate;
 using Gate.Middleware;
-using Gate.Owin;
+using Owin;
 using SignalR.Hosting.Owin;
+using SignalR.Hubs;
 
 namespace SignalR.Hosting.Owin.Samples
 {
@@ -10,13 +12,17 @@ namespace SignalR.Hosting.Owin.Samples
     {
         public static void Configuration(IAppBuilder builder)
         {
+            var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            var contentFolder = Path.Combine(applicationBase, "Content");
+
             builder
                 .Use(LogToConsole)
                 //.RescheduleCallbacks()
                 .UseShowExceptions()
-                .Map("/Raw", map => map.Chunked().MapConnection<Raw>())
+                .Map("/signalr", map => map.UseChunked().RunSignalR())
+                .Map("/Raw/Connection", map => map.UseChunked().RunConnection<RawConnection>())
                 .Use(Alias, "/", "/index.html")
-                .UseStatic("public");
+                .UseStatic(contentFolder);
         }
 
         public static AppDelegate Alias(AppDelegate app, string path, string alias)

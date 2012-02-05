@@ -7,7 +7,7 @@ using SignalR.Hosting;
 
 namespace SignalR.Hosting.Owin.Samples
 {
-    public class Raw : PersistentConnection
+    public class RawConnection : PersistentConnection
     {
         private static readonly Dictionary<string, string> _users = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _clients = new Dictionary<string, string>();

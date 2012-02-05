@@ -1,23 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Gate.Owin;
+using Owin;
 using SignalR.Hosting;
+using SignalR.Hubs;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Owin
 {
     public static class OwinHost
     {
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder) where T : PersistentConnection
+        public static IAppBuilder RunSignalR(this IAppBuilder builder)
         {
-            return MapConnection<T>(builder, new DefaultDependencyResolver());
+            return RunSignalR(builder, new DefaultDependencyResolver());
         }
 
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, IDependencyResolver resolver) where T : PersistentConnection
+        public static IAppBuilder RunSignalR(this IAppBuilder builder, IDependencyResolver resolver)
         {
-            return builder.Use<AppDelegate>(_ => ExecuteConnection(() =>
+            return builder.Use<AppDelegate>(_ => ExecuteConnection(env =>
+            {
+                var hubDispatcher = new HubDispatcher(env["owin.RequestPathBase"].ToString());
+                hubDispatcher.Initialize(resolver);
+                return hubDispatcher;
+            }));
+        }
+
+        public static IAppBuilder RunConnection<T>(this IAppBuilder builder) where T : PersistentConnection
+        {
+            return RunConnection<T>(builder, new DefaultDependencyResolver());
+        }
+
+        public static IAppBuilder RunConnection<T>(this IAppBuilder builder, IDependencyResolver resolver) where T : PersistentConnection
+        {
+            return builder.Use<AppDelegate>(_ => ExecuteConnection(env =>
             {
                 var factory = new PersistentConnectionFactory(resolver);
                 var connection = factory.CreateInstance(typeof(T));
@@ -26,7 +43,7 @@ namespace SignalR.Hosting.Owin
             }));
         }
 
-        private static AppDelegate ExecuteConnection(Func<PersistentConnection> factory)
+        private static AppDelegate ExecuteConnection(Func<IDictionary<string,object>, PersistentConnection> factory)
         {
             return (environment, result, fault) =>
             {
@@ -46,7 +63,7 @@ namespace SignalR.Hosting.Owin
 
                         try
                         {
-                            PersistentConnection connection = factory();
+                            PersistentConnection connection = factory(environment);
 
                             connection
                                 .ProcessRequestAsync(hostContext)
@@ -84,14 +101,22 @@ namespace SignalR.Hosting.Owin
 
             string text = null;
 
-            requestBodyDelegate.Invoke((data, continuation) =>
-            {
-                // TODO: Check the continuation and read async if it isn't null
-                text = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
-                return false;
-            },
-            ex => tcs.TrySetException(ex),
-            () => tcs.TrySetResult(text));
+            requestBodyDelegate.Invoke(
+                data =>
+                {
+                    // TODO: Check the continuation and read async if it isn't null
+                    text += Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
+                    return false;
+                },
+                _ => false,
+                ex =>
+                {
+                    if (ex == null)
+                        tcs.TrySetResult(text);
+                    else
+                        tcs.TrySetException(ex);
+                },
+                CancellationToken.None);
 
             return tcs.Task;
         }

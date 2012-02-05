@@ -1,5 +1,5 @@
 ﻿using System;
-using Gate.Owin;
+using Owin;
 
 namespace SignalR.Hosting.Owin.Samples
 {
