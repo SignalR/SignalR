@@ -34,13 +34,6 @@ namespace SignalR.Client.Transports
 
             HttpHelper.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
-                if (raiseReconnect)
-                {
-                    // If the timeout for the reconnect hasn't fired as yet just fire the 
-                    // event here before any incoming messages are processed
-                    FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
-                }
-
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);
 
@@ -51,6 +44,13 @@ namespace SignalR.Client.Transports
                 {
                     if (!task.IsFaulted)
                     {
+                        if (raiseReconnect)
+                        {
+                            // If the timeout for the reconnect hasn't fired as yet just fire the 
+                            // event here before any incoming messages are processed
+                            FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                        }
+
                         // Get the response
                         var raw = task.Result.ReadAsString();
 

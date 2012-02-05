@@ -34,7 +34,7 @@ namespace SignalR.Client.WP7.Sample
 
             connection.Reconnected += () =>
             {
-                App.ViewModel.Items.Add(new ItemViewModel { LineOne = String.Format("[{0}]: Re-connected", DateTime.Now) });
+                App.ViewModel.Items.Add(new ItemViewModel { LineOne = "Connection restored" });
             };
 
             var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
