@@ -6,11 +6,12 @@ namespace SignalR.Client.Transports
 {
     public class LongPollingTransport : HttpBasedTransport
     {
-        private static readonly TimeSpan _reconnectDelay = TimeSpan.FromMilliseconds(300);
+        public TimeSpan ReconnectDelay { get; set; }
 
         public LongPollingTransport()
             : base("longPolling")
         {
+            ReconnectDelay = TimeSpan.FromSeconds(5);
         }
 
         protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
@@ -18,28 +19,32 @@ namespace SignalR.Client.Transports
             PollingLoop(connection, data, initializeCallback, errorCallback);
         }
 
-        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool timedOut = false)
+        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
         {
             string url = connection.Url;
+            var reconnectTokenSource = new CancellationTokenSource();
+            int reconnectFired = 0;
 
             if (connection.MessageId == null)
             {
                 url += "connect";
-            }
-            else if (timedOut)
-            {
-                // If the previous long poll timed out, raise the event
-                connection.OnReconnected();
             }
 
             url += GetReceiveQueryString(connection, data);
 
             HttpHelper.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
+                if (raiseReconnect)
+                {
+                    // If the timeout for the reconnect hasn't fired as yet just fire the 
+                    // event here before any incoming messages are processed
+                    FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                }
+
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);
 
-                bool timeOutReceived = false;
+                bool shouldRaiseReconnect = false;
                 bool disconnectedReceived = false;
 
                 try
@@ -49,7 +54,7 @@ namespace SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
-                        ProcessResponse(connection, raw, out timeOutReceived, out disconnectedReceived);
+                        ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
                     }
                 }
                 finally
@@ -65,6 +70,12 @@ namespace SignalR.Client.Transports
 
                         if (task.IsFaulted)
                         {
+                            // Cancel the previous reconnect event
+                            reconnectTokenSource.Cancel();
+
+                            // Raise the reconnect event if we successfully reconnect after failing
+                            shouldRaiseReconnect = true;
+
                             // Get the underlying exception
                             Exception exception = task.Exception.GetBaseException();
 
@@ -105,7 +116,7 @@ namespace SignalR.Client.Transports
                         // Only continue if the connection is still active and wasn't aborted
                         if (continuePolling && !requestAborted && connection.IsActive)
                         {
-                            PollingLoop(connection, data, null, null, timeOutReceived);
+                            PollingLoop(connection, data, null, null, shouldRaiseReconnect);
                         }
                     }
                 }
@@ -114,6 +125,29 @@ namespace SignalR.Client.Transports
             if (initializeCallback != null)
             {
                 initializeCallback();
+            }
+
+            if (raiseReconnect)
+            {
+                TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
+                {
+                    // Fire the reconnect event after the delay. This gives the 
+                    FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                });
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void FireReconnected(Connection connection, CancellationTokenSource reconnectTokenSource, ref int reconnectedFired)
+        {
+            if (!reconnectTokenSource.IsCancellationRequested)
+            {
+                if (Interlocked.Exchange(ref reconnectedFired, 1) == 0)
+                {
+                    connection.OnReconnected();
+                }
             }
         }
     }
