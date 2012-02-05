@@ -21,6 +21,11 @@ namespace SignalR.Hubs
         /// </summary>
         public NameValueCollection Headers { get; private set; }
 
+        /// <summary>
+        /// Gets the querystring for the request
+        /// </summary>
+        public NameValueCollection QueryString { get; private set; }
+
         public IPrincipal User { get; private set; }
 
         public HubContext(HostContext context, string connectionId)
@@ -28,6 +33,7 @@ namespace SignalR.Hubs
             ConnectionId = connectionId;
             Cookies = context.Request.Cookies;
             Headers = context.Request.Headers;
+            QueryString = context.Request.QueryString;
             User = context.User;
         }
     }
