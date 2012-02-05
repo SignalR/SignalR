@@ -76,7 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Properties\SignalR.AspNet.nuspec">
+    <None Include="Properties\SignalR.Hosting.AspNet.nuspec">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>

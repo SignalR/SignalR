@@ -3,4 +3,4 @@
 
 [assembly: AssemblyTitle("SignalR.SelfHost")]
 [assembly: AssemblyDescription("HttpListener host for SignalR")]
-[assembly: AssemblyVersion("0.3.6")]
+[assembly: AssemblyVersion("0.4.0")]
