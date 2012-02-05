@@ -17,10 +17,9 @@ namespace SignalR.Hosting.Owin.Samples
 
             builder
                 .Use(LogToConsole)
-                //.RescheduleCallbacks()
                 .UseShowExceptions()
-                .Map("/signalr", map => map.UseChunked().RunSignalR())
-                .Map("/Raw/Connection", map => map.UseChunked().RunConnection<RawConnection>())
+                .UseSignalR("/signalr")
+                .UseSignalR<RawConnection>("/Raw/Connection")
                 .Use(Alias, "/", "/index.html")
                 .UseStatic(contentFolder);
         }
@@ -29,25 +28,25 @@ namespace SignalR.Hosting.Owin.Samples
         {
             return
                 (env, result, fault) =>
+                {
+                    var req = new Request(env);
+                    if (req.Path == path)
                     {
-                        var req = new Request(env);
-                        if (req.Path == path)
-                        {
-                            req.Path = alias;
-                        }
-                        app(env, result, fault);
-                    };
+                        req.Path = alias;
+                    }
+                    app(env, result, fault);
+                };
         }
 
         public static AppDelegate LogToConsole(AppDelegate app)
         {
             return
                 (env, result, fault) =>
-                    {
-                        var req = new Request(env);
-                        Console.WriteLine(req.Method + " " + req.PathBase + req.Path);
-                        app(env, result, fault);
-                    };
+                {
+                    var req = new Request(env);
+                    Console.WriteLine(req.Method + " " + req.PathBase + req.Path);
+                    app(env, result, fault);
+                };
         }
     }
 }

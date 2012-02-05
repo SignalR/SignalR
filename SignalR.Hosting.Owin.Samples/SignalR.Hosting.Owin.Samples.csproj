@@ -34,19 +34,21 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gate, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Gate, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Gate.0.3.1\lib\net40\Gate.dll</HintPath>
+      <HintPath>..\packages\Gate.0.3.2\lib\net40\Gate.dll</HintPath>
     </Reference>
-    <Reference Include="Gate.Builder">
-      <HintPath>..\packages\Gate.Builder.0.3.1\lib\net40\Gate.Builder.dll</HintPath>
-    </Reference>
-    <Reference Include="Gate.Hosts.AspNet">
-      <HintPath>..\packages\Gate.Hosts.AspNet.0.3.1\lib\net40\Gate.Hosts.AspNet.dll</HintPath>
-    </Reference>
-    <Reference Include="Gate.Middleware, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Gate.Builder, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Gate.Middleware.0.3.1\lib\net40\Gate.Middleware.dll</HintPath>
+      <HintPath>..\packages\Gate.Builder.0.3.2\lib\net40\Gate.Builder.dll</HintPath>
+    </Reference>
+    <Reference Include="Gate.Hosts.AspNet, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.Hosts.AspNet.0.3.2\lib\net40\Gate.Hosts.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Gate.Middleware, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Gate.Middleware.0.3.2\lib\net40\Gate.Middleware.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.0.7\lib\net40\Owin.dll</HintPath>
