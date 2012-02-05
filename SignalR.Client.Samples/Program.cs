@@ -45,11 +45,16 @@ namespace SignalR.Client.Samples
 
         private static void RunStreamingSample()
         {
-            var connection = new Connection("http://localhost:40476/Streaming/streaming");
+            var connection = new Connection("http://localhost:40476/Raw/raw");
 
             connection.Received += data =>
             {
                 Console.WriteLine(data);
+            };
+
+            connection.Reconnected += () =>
+            {
+                Console.WriteLine("[{0}]: Connection restablished", DateTime.Now);
             };
 
             connection.Error += e =>
