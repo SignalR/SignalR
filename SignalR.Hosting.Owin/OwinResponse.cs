@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Gate.Owin;
+using Owin;
 using SignalR.Hosting;
 
 namespace SignalR.Hosting.Owin
@@ -73,14 +73,13 @@ namespace SignalR.Hosting.Owin
                         {
                             { "Content-Type", new[] { ContentType ?? "text/plain" } },
                         },
-                    (next, error, complete) =>
+                    (write, flush, end, cancel) =>
                     {
-                        _responseNext = next;
-                        _responseError = error;
-                        _responseCompete = complete;
-
+                        _responseNext = (data, continuation) => write(data) && flush(continuation);
+                        _responseError = ex => end(ex);
+                        _responseCompete = () => end(null);
+                        cancel.Register(StopSending);
                         tcs.SetResult(null);
-                        return StopSending;
                     });
             }
             catch (Exception ex)

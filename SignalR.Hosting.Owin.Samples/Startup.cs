@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using Gate;
 using Gate.Middleware;
-using Gate.Owin;
+using Owin;
 using SignalR.Hosting.Owin;
+using SignalR.Hubs;
 
 namespace SignalR.Hosting.Owin.Samples
 {
@@ -10,38 +12,41 @@ namespace SignalR.Hosting.Owin.Samples
     {
         public static void Configuration(IAppBuilder builder)
         {
+            var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            var contentFolder = Path.Combine(applicationBase, "Content");
+
             builder
                 .Use(LogToConsole)
-                //.RescheduleCallbacks()
                 .UseShowExceptions()
-                .Map("/Raw", map => map.Chunked().MapConnection<Raw>())
+                .UseSignalR("/signalr")
+                .UseSignalR<RawConnection>("/Raw/Connection")
                 .Use(Alias, "/", "/index.html")
-                .UseStatic("public");
+                .UseStatic(contentFolder);
         }
 
         public static AppDelegate Alias(AppDelegate app, string path, string alias)
         {
             return
                 (env, result, fault) =>
+                {
+                    var req = new Request(env);
+                    if (req.Path == path)
                     {
-                        var req = new Request(env);
-                        if (req.Path == path)
-                        {
-                            req.Path = alias;
-                        }
-                        app(env, result, fault);
-                    };
+                        req.Path = alias;
+                    }
+                    app(env, result, fault);
+                };
         }
 
         public static AppDelegate LogToConsole(AppDelegate app)
         {
             return
                 (env, result, fault) =>
-                    {
-                        var req = new Request(env);
-                        Console.WriteLine(req.Method + " " + req.PathBase + req.Path);
-                        app(env, result, fault);
-                    };
+                {
+                    var req = new Request(env);
+                    Console.WriteLine(req.Method + " " + req.PathBase + req.Path);
+                    app(env, result, fault);
+                };
         }
     }
 }
