@@ -294,6 +294,24 @@ namespace SignalR
             }
         }
 
+        public static Task Then<T>(this Task<T> task, Action<T> successor)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, task.Result);
+
+                default:
+                    return TaskRunners<T, object>.RunTask(task, successor);
+            }
+        }
+
         public static Task<Task> Then<T>(this Task<T> task, Func<T, Task> successor)
         {
             switch (task.Status)
@@ -585,6 +603,36 @@ namespace SignalR
 
         private static class TaskRunners<T, TResult>
         {
+            internal static Task RunTask(Task<T> task, Action<T> successor)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        tcs.SetException(t.Exception);
+                    }
+                    else if (t.IsCanceled)
+                    {
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            successor(t.Result);
+                            tcs.SetResult(null);
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.SetException(ex);
+                        }
+                    }
+                });
+
+                return tcs.Task;
+            }
+
             internal static Task<TResult> RunTask(Task task, Func<TResult> successor)
             {
                 var tcs = new TaskCompletionSource<TResult>();

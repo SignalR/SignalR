@@ -103,7 +103,9 @@ namespace SignalR.Client
         {
             string negotiateUrl = Url + "negotiate";
 
-            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
+            var negotiateTcs = new TaskCompletionSource<object>();
+
+            HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
 
@@ -118,33 +120,36 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                var tcs = new TaskCompletionSource<object>();
-
                 if (Sending != null)
                 {
                     if (_syncContext != null)
                     {
+                        var dataTcs = new TaskCompletionSource<string>();
                         _syncContext.Post(_ =>
                         {
-                            var data = Sending();
-                            StartTransport(data).ContinueWith(tcs);
+                            // Raise the event on the sync context
+                            dataTcs.SetResult(Sending());
                         },
                         null);
+
+                        // Get the data and start the transport
+                        dataTcs.Task.Then(data => StartTransport(data))
+                                    .FastUnwrap()
+                                    .ContinueWith(negotiateTcs);
                     }
                     else
                     {
                         var data = Sending();
-                        StartTransport(data).ContinueWith(tcs);
+                        StartTransport(data).ContinueWith(negotiateTcs);
                     }
                 }
                 else
                 {
-                    StartTransport(null).ContinueWith(tcs);
+                    StartTransport(null).ContinueWith(negotiateTcs);
                 }
+            });
 
-                return tcs.Task;
-            })
-            .FastUnwrap();
+            return negotiateTcs.Task;
         }
 
         private Task StartTransport(string data)
