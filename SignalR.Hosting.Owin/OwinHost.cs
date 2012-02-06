@@ -1,23 +1,136 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Gate.Owin;
+using Gate;
+using Owin;
 using SignalR.Hosting;
+using SignalR.Hubs;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Owin
 {
     public static class OwinHost
     {
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder) where T : PersistentConnection
+        /// <summary>
+        /// Add HubDispatcher to pipeline at default "/signalr" path
+        /// </summary>
+        public static IAppBuilder UseSignalR(this IAppBuilder builder)
         {
-            return MapConnection<T>(builder, new DefaultDependencyResolver());
+            return builder.Map("/signalr", x => x.RunSignalR());
         }
 
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, IDependencyResolver resolver) where T : PersistentConnection
+        /// <summary>
+        /// Add HubDispatcher to pipeline at default "/signalr" path
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="resolver">Used by components to acquire the services they depend on</param>
+        /// <returns></returns>
+        public static IAppBuilder UseSignalR(this IAppBuilder builder, IDependencyResolver resolver)
         {
-            return builder.Use<AppDelegate>(_ => ExecuteConnection(() =>
+            return builder.Map("/signalr", x => x.RunSignalR(resolver));
+        }
+
+        /// <summary>
+        /// Add HubDispatcher to pipeline at user defined path
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="url">Base path for hub requests</param>
+        /// <returns></returns>
+        public static IAppBuilder UseSignalR(this IAppBuilder builder, string url)
+        {
+            return builder.Map(url, x => x.RunSignalR());
+        }
+
+        /// <summary>
+        /// Add HubDispatcher to pipeline at user defined path
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="url">Base path for hub requests</param>
+        /// <param name="resolver">Used by components to acquire the services they depend on</param>
+        /// <returns></returns>
+        public static IAppBuilder UseSignalR(this IAppBuilder builder, string url, IDependencyResolver resolver)
+        {
+            return builder.Map(url, x => x.RunSignalR(resolver));
+        }
+
+        /// <summary>
+        /// Add a specific PersistentConnection type at user defined path
+        /// </summary>
+        /// <typeparam name="T">PersistentConnection type to expose</typeparam>
+        /// <param name="builder"></param>
+        /// <param name="url">Base url for persistent connection requests</param>
+        /// <returns></returns>
+        public static IAppBuilder UseSignalR<T>(this IAppBuilder builder, string url) where T : PersistentConnection
+        {
+            return builder.Map(url, x => x.RunSignalR<T>());
+        }
+
+        /// <summary>
+        /// Add a specific PersistentConnection type at user defined path
+        /// </summary>
+        /// <typeparam name="T">PersistentConnection type to expose</typeparam>
+        /// <param name="builder"></param>
+        /// <param name="url">Base url for persistent connection requests</param>
+        /// <param name="resolver">Used by components to acquire the services they depend on</param>
+        /// <returns></returns>
+        public static IAppBuilder UseSignalR<T>(this IAppBuilder builder, string url, IDependencyResolver resolver) where T : PersistentConnection
+        {
+            return builder.Map(url, x => x.RunSignalR<T>(resolver));
+        }
+
+        /// <summary>
+        /// Sends all requests to HubDispatcher. RunSignalR should be used as the last item in a pipeline, or
+        /// inside a Map statement.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IAppBuilder RunSignalR(this IAppBuilder builder)
+        {
+            return RunSignalR(builder, new DefaultDependencyResolver());
+        }
+
+        /// <summary>
+        /// Sends all requests to HubDispatcher. RunSignalR should be used as the last item in a pipeline, or
+        /// inside a Map statement.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="resolver">Used by components to acquire the services they depend on</param>
+        /// <returns></returns>
+        public static IAppBuilder RunSignalR(this IAppBuilder builder, IDependencyResolver resolver)
+        {
+            return builder.Use<AppDelegate>(_ => ExecuteConnection(env =>
+            {
+                var hubDispatcher = new HubDispatcher(env["owin.RequestPathBase"].ToString());
+                hubDispatcher.Initialize(resolver);
+                return hubDispatcher;
+            }));
+        }
+
+        /// <summary>
+        /// Sends all requests to a PersistentConnection type. RunSignalR should be used as the last item in a pipeline, or
+        /// inside a Map statement.
+        /// </summary>
+        /// <typeparam name="T">PersistentConnection type to expose</typeparam>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IAppBuilder RunSignalR<T>(this IAppBuilder builder) where T : PersistentConnection
+        {
+            return RunSignalR<T>(builder, new DefaultDependencyResolver());
+        }
+
+        /// <summary>
+        /// Sends all requests to a PersistentConnection type. RunSignalR should be used as the last item in a pipeline, or
+        /// inside a Map statement.
+        /// </summary>
+        /// <typeparam name="T">PersistentConnection type to expose</typeparam>
+        /// <param name="builder"></param>
+        /// <param name="resolver">Used by components to acquire the services they depend on</param>
+        /// <returns></returns>
+        public static IAppBuilder RunSignalR<T>(this IAppBuilder builder, IDependencyResolver resolver) where T : PersistentConnection
+        {
+            return builder.Use<AppDelegate>(_ => ExecuteConnection(env =>
             {
                 var factory = new PersistentConnectionFactory(resolver);
                 var connection = factory.CreateInstance(typeof(T));
@@ -26,7 +139,7 @@ namespace SignalR.Hosting.Owin
             }));
         }
 
-        private static AppDelegate ExecuteConnection(Func<PersistentConnection> factory)
+        private static AppDelegate ExecuteConnection(Func<IDictionary<string,object>, PersistentConnection> factory)
         {
             return (environment, result, fault) =>
             {
@@ -46,7 +159,7 @@ namespace SignalR.Hosting.Owin
 
                         try
                         {
-                            PersistentConnection connection = factory();
+                            PersistentConnection connection = factory(environment);
 
                             connection
                                 .ProcessRequestAsync(hostContext)
@@ -84,14 +197,22 @@ namespace SignalR.Hosting.Owin
 
             string text = null;
 
-            requestBodyDelegate.Invoke((data, continuation) =>
-            {
-                // TODO: Check the continuation and read async if it isn't null
-                text = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
-                return false;
-            },
-            ex => tcs.TrySetException(ex),
-            () => tcs.TrySetResult(text));
+            requestBodyDelegate.Invoke(
+                data =>
+                {
+                    // TODO: Check the continuation and read async if it isn't null
+                    text += Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
+                    return false;
+                },
+                _ => false,
+                ex =>
+                {
+                    if (ex == null)
+                        tcs.TrySetResult(text);
+                    else
+                        tcs.TrySetException(ex);
+                },
+                CancellationToken.None);
 
             return tcs.Task;
         }
