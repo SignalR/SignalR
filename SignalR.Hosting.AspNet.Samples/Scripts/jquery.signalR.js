@@ -24,7 +24,10 @@
             onReconnect: "onReconnect",
             onDisconnect: "onDisconnect"
         },
-        log = function (msg) {
+        log = function (msg, logging) {
+            if (logging === false) {
+                return;
+            }
             var m;
             if (typeof (window.console) === "undefined") {
                 return;
@@ -37,7 +40,7 @@
             }
         };
 
-    signalR = function (url, qs) {
+    signalR = function (url, qs, logging) {
         /// <summary>Creates a new SignalR connection for the given url</summary>
         /// <param name="url" type="String">The URL of the long polling endpoint</param>
         /// <param name="qs" type="Object">
@@ -45,16 +48,25 @@
         ///     If an object, every non-function member will be added to the querystring.
         ///     If a string, it's added to the QS as specified.
         /// </param>
+        /// <param name="logging" type="Boolean">
+        ///     [Optional] A flag indicating whether connection logging is enabled to the browser
+        ///     console/log. Defaults to false.
+        /// </param>
         /// <returns type="signalR" />
 
-        return new signalR.fn.init(url, qs);
+        return new signalR.fn.init(url, qs, logging);
     };
 
     signalR.fn = signalR.prototype = {
-        init: function (url, qs) {
+        init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
+            if (typeof (logging) === "boolean") {
+                this.logging = logging;
+            }
         },
+
+        logging: false,
 
         reconnectDelay: 2000,
 
@@ -353,7 +365,7 @@
 
             if (data) {
                 if (data.Disconnect) {
-                    log("disconnect command received from server");
+                    log("Disconnect command received from server", connection.logging);
 
                     // Disconnected by the server
                     connection.stop();
@@ -369,7 +381,7 @@
                             $connection.trigger(events.onReceived, [this]);
                         }
                         catch (e) {
-                            log("Error raising received " + e);
+                            log("Error raising received " + e, connection.logging);
                             $(connection).trigger(events.onError, [e]);
                         }
                     });
@@ -461,7 +473,7 @@
                                         $connection.trigger(events.onReceived, [this]);
                                     }
                                     catch (e) {
-                                        log("Error raising received " + e);
+                                        log("Error raising received " + e, connection.logging);
                                     }
                                 });
                             } else {
@@ -512,7 +524,7 @@
                     connection.eventSource = new window.EventSource(url);
                 }
                 catch (e) {
-                    log("EventSource failed trying to connect with error " + e.Message);
+                    log("EventSource failed trying to connect with error " + e.Message, connection.logging);
                     if (onFailed) {
                         // The connection failed, call the failed callback
                         onFailed();
@@ -521,7 +533,7 @@
                         $connection.trigger(events.onError, [e]);
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            log("EventSource reconnecting");
+                            log("EventSource reconnecting", connection.logging);
                             that.reconnect(connection);
                         }
                     }
@@ -532,7 +544,7 @@
                 // and raise on failed
                 connectTimeOut = window.setTimeout(function () {
                     if (opened === false) {
-                        log("EventSource timed out trying to connect");
+                        log("EventSource timed out trying to connect", connection.logging);
 
                         if (onFailed) {
                             onFailed();
@@ -540,7 +552,7 @@
 
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            log("EventSource reconnecting");
+                            log("EventSource reconnecting", connection.logging);
                             that.reconnect(connection);
                         } else {
                             that.stop(connection);
@@ -550,7 +562,7 @@
                 that.timeOut);
 
                 connection.eventSource.addEventListener("open", function (e) {
-                    log("EventSource connected");
+                    log("EventSource connected", connection.logging);
 
                     if (connectTimeOut) {
                         window.clearTimeout(connectTimeOut);
@@ -585,7 +597,7 @@
                         return;
                     }
 
-                    log("EventSource readyState: " + connection.eventSource.readyState);
+                    log("EventSource readyState: " + connection.eventSource.readyState, connection.logging);
 
                     if (e.eventPhase === window.EventSource.CLOSED) {
                         // connection closed
@@ -594,18 +606,18 @@
                             // doesn't allow us to change the URL when reconnecting. We need
                             // to change the URL to not include the /connect suffix, and pass
                             // the last message id we received.
-                            log("EventSource reconnecting due to the server connection ending");
+                            log("EventSource reconnecting due to the server connection ending", connection.logging);
                             that.reconnect(connection);
                         }
                         else {
                             // The EventSource has closed, either because its close() method was called,
                             // or the server sent down a "don't reconnect" frame.
-                            log("EventSource closed");
+                            log("EventSource closed", connection.logging);
                             that.stop(connection);
                         }
                     } else {
                         // connection error
-                        log("EventSource error");
+                        log("EventSource error", connection.logging);
                         $connection.trigger(events.onError);
                     }
                 }, false);
@@ -663,7 +675,7 @@
 
                 frame.bind("readystatechange", function () {
                     if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
-                        log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+                        log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting", connection.logging);
                         that.reconnect(connection);
                     }
                 });

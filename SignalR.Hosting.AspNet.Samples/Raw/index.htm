@@ -25,6 +25,7 @@
         $(function () {
             "use strict";
             var connection = $.connection("Raw");
+            connection.logging = true;
 
             connection.received(function (data) {
                 $("<li/>").html(window.JSON.stringify(data)).appendTo($("#messages"));
