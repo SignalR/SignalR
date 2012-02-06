@@ -23,7 +23,8 @@ namespace SignalR.Hosting.Owin.Samples
 
             string user = GetUser(connectionId);
 
-            return Connection.Broadcast(DateTime.Now + ": " + user + " joined");
+            return AddToGroup(connectionId, "foo").ContinueWith(_ =>
+                   Connection.Broadcast(DateTime.Now + ": " + user + " joined")).Unwrap();
         }
 
         protected override Task OnDisconnectAsync(string connectionId)
