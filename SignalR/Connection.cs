@@ -100,14 +100,14 @@ namespace SignalR
             var messageValues = new List<object>();
             foreach (var message in source)
             {
-                SignalCommand command;
-                if (SignalCommand.TryGetCommand(message, _serializer, out command))
+                if (SignalCommand.IsCommand(message))
                 {
+                    var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
                     ProcessCommand(command);
                 }
                 else
                 {
-                    messageValues.Add(message.Value);
+                    messageValues.Add(WrappedValue.Unwrap(message.Value, _serializer));
                 }
             }
             return messageValues;
@@ -131,7 +131,7 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
-            return _messageBus.Send(key, value).Catch();
+            return _messageBus.Send(key, new WrappedValue(value, _serializer)).Catch();
         }
 
         private void PopulateResponseState(PersistentResponse response)

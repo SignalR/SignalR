@@ -59,6 +59,7 @@
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
     <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
+    <Compile Include="MessageBus\WrappedValue.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />

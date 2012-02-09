@@ -1,4 +1,5 @@
 ﻿using System;
+using SignalR.MessageBus;
 
 namespace SignalR
 {
@@ -11,31 +12,9 @@ namespace SignalR
             return eventKey + "." + SignalrCommand;
         }
 
-        internal static bool TryGetCommand(Message message, IJsonSerializer serializer, out SignalCommand command)
+        public static bool IsCommand(Message message)
         {
-            command = null;
-            if (!message.SignalKey.EndsWith(SignalrCommand, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            command = message.Value as SignalCommand;
-
-            // Optimization for in memory message store
-            if (command != null)
-            {
-                return true;
-            }
-
-            // Otherwise deserialize the message value
-            string rawValue = message.Value as string;
-            if (rawValue == null)
-            {
-                return false;
-            }
-
-            command = serializer.Parse<SignalCommand>(rawValue);
-            return true;
+            return message.SignalKey.EndsWith(SignalrCommand, StringComparison.OrdinalIgnoreCase);
         }
 
         public CommandType Type { get; set; }
