@@ -12,12 +12,20 @@ namespace SignalR.Transports
         private readonly ITransportHeartBeat _heartBeat;
 
         protected int _isDisconnected;
-        protected int _isTimedout;
+        private readonly CancellationTokenSource _timeoutTokenSource;
 
         public TransportDisconnectBase(HostContext context, ITransportHeartBeat heartBeat)
         {
             _context = context;
             _heartBeat = heartBeat;
+            _timeoutTokenSource = new CancellationTokenSource();
+            
+            // Register the callback to cancel this connection
+            var hostShutdownToken = context.HostShutdownToken();
+            if (hostShutdownToken != CancellationToken.None)
+            {
+                hostShutdownToken.Register(_timeoutTokenSource.Cancel);
+            }
         }
 
         public string ConnectionId
@@ -35,6 +43,14 @@ namespace SignalR.Transports
             get { return _context.Response.IsClientConnected; }
         }
 
+        public CancellationToken TimeoutToken
+        {
+            get
+            {
+                return _timeoutTokenSource.Token;
+            }
+        }
+
         protected bool IsDisconnected
         {
             get
@@ -47,7 +63,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _isTimedout == 1;
+                return _timeoutTokenSource.IsCancellationRequested;
             }
         }
 
@@ -87,14 +103,9 @@ namespace SignalR.Transports
             }
         }
 
-        public Task Timeout()
+        public void Timeout()
         {
-            if (Interlocked.Exchange(ref _isTimedout, 1) == 0)
-            {
-                // Trigger the timeout event
-                return Connection.Timeout().Catch();
-            }
-            return TaskAsyncHelper.Empty;
+            _timeoutTokenSource.Cancel();
         }
 
         protected IReceivingConnection Connection { get; set; }

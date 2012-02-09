@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using System;
 using SignalR.Hubs;
 
 namespace SignalR
@@ -7,6 +7,5 @@ namespace SignalR
     {
         dynamic GetClients<T>() where T : IHub;
         IConnection GetConnection<T>() where T : PersistentConnection;
-        Task CloseConnections(string scope);
     }
 }

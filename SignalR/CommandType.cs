@@ -4,7 +4,6 @@
     {
         AddToGroup,
         RemoveFromGroup,
-        Disconnect,
-        Timeout
+        Disconnect
     }
 }

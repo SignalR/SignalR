@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.AspNet
@@ -11,6 +11,9 @@ namespace SignalR.Hosting.AspNet
     {
         private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
         private static IDependencyResolver _resolver;
+
+        // This will fire when the app domain is shutting down
+        internal static readonly CancellationTokenSource AppDomainTokenSource = new CancellationTokenSource();
 
         private readonly PersistentConnection _connection;
         
@@ -41,6 +44,9 @@ namespace SignalR.Hosting.AspNet
 
             // Set the debugging flag
             hostContext.Items[HostConstants.DebugMode] = context.IsDebuggingEnabled;
+
+            // Set the host shutdown token
+            hostContext.Items[HostConstants.ShutdownToken] = AppDomainTokenSource.Token;
 
             // Stick the context in here so transports or other asp.net specific logic can
             // grab at it.

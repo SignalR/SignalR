@@ -130,7 +130,7 @@ namespace SignalR.Stress
         {
             try
             {
-                bus.GetMessages(eventKeys, id).ContinueWith(task =>
+                bus.GetMessages(eventKeys, id, CancellationToken.None).ContinueWith(task =>
                 {
                     if (task.IsFaulted)
                     {

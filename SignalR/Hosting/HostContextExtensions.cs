@@ -1,4 +1,5 @@
-﻿namespace SignalR.Hosting
+﻿using System.Threading;
+namespace SignalR.Hosting
 {
     public static class HostContextExtensions
     {
@@ -25,6 +26,11 @@
         public static string WebSocketServerUrl(this HostContext context)
         {
             return context.GetValue<string>(HostConstants.WebSocketServerUrl);
+        }
+
+        public static CancellationToken HostShutdownToken(this HostContext context)
+        {
+            return context.GetValue<CancellationToken>(HostConstants.ShutdownToken);
         }
     }
 }

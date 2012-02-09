@@ -11,7 +11,7 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
-        
+
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
@@ -182,8 +182,8 @@ namespace SignalR.Transports
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = LastMessageId == null
-                    ? connection.ReceiveAsync()
-                    : connection.ReceiveAsync(LastMessageId);
+                    ? connection.ReceiveAsync(TimeoutToken)
+                    : connection.ReceiveAsync(LastMessageId, TimeoutToken);
 
                 if (postReceive != null)
                 {

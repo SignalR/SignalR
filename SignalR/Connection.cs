@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 using SignalR.MessageBus;
@@ -16,7 +17,6 @@ namespace SignalR
         private readonly HashSet<string> _groups;
         private readonly ITraceManager _trace;
         private bool _disconnected;
-        private bool _timedOut;
 
         public Connection(IMessageBus messageBus,
                           IJsonSerializer jsonSerializer,
@@ -58,16 +58,16 @@ namespace SignalR
             return SendMessage(_connectionId, value);
         }
 
-        public Task<PersistentResponse> ReceiveAsync()
+        public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
         {
-            return _messageBus.GetMessages(Signals, null)
-                .Then(result => GetResponse(result));
+            return _messageBus.GetMessages(Signals, null, timeoutToken)
+                              .Then(result => GetResponse(result));
         }
 
-        public Task<PersistentResponse> ReceiveAsync(string messageId)
+        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
         {
-            return _messageBus.GetMessages(Signals, messageId)
-                .Then(result => GetResponse(result));
+            return _messageBus.GetMessages(Signals, messageId, timeoutToken)
+                              .Then(result => GetResponse(result));
         }
 
         public Task SendCommand(SignalCommand command)
@@ -85,7 +85,7 @@ namespace SignalR
                 MessageId = result.LastMessageId,
                 Messages = messageValues,
                 Disconnect = _disconnected,
-                TimedOut = _timedOut
+                TimedOut = result.TimedOut
             };
 
             PopulateResponseState(response);
@@ -125,9 +125,6 @@ namespace SignalR
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;
-                    break;
-                case CommandType.Timeout:
-                    _timedOut = true;
                     break;
             }
         }

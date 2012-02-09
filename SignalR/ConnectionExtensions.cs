@@ -15,15 +15,5 @@ namespace SignalR
 
             return connection.SendCommand(command);
         }
-
-        public static Task Timeout(this IReceivingConnection connection)
-        {
-            var command = new SignalCommand
-            {
-                Type = CommandType.Timeout
-            };
-
-            return connection.SendCommand(command);
-        }
     }
 }

@@ -16,5 +16,7 @@
         /// The host should set this if the web socket url is different
         /// </summary>
         public static readonly string WebSocketServerUrl = "webSocketServerUrl";
+
+        public static readonly string ShutdownToken = "shutdownToken";
     }
 }

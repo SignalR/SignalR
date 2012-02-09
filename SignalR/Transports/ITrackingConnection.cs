@@ -10,6 +10,6 @@ namespace SignalR.Transports
         bool IsTimedOut { get; }
         TimeSpan DisconnectThreshold { get; }
         Task Disconnect();
-        Task Timeout();
+        void Timeout();
     }
 }

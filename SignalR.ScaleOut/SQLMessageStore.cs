@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Infrastructure;
 using SignalR.MessageBus;
 
 namespace SignalR.ScaleOut
@@ -195,7 +191,7 @@ namespace SignalR.ScaleOut
             throw new NotImplementedException();
         }
 
-        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id)
+        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id, CancellationToken timeoutToken)
         {
             throw new NotImplementedException();
         }

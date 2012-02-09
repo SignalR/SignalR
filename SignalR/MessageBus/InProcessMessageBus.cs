@@ -49,13 +49,13 @@ namespace SignalR.MessageBus
             }
         }
 
-        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id)
+        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id, CancellationToken timeoutToken)
         {
             if (String.IsNullOrEmpty(id))
             {
                 // Wait for new messages
                 _trace.Source.TraceInformation("MessageBus: New connection waiting for messages");
-                return WaitForMessages(eventKeys);
+                return WaitForMessages(eventKeys, timeoutToken);
             }
 
             try
@@ -68,7 +68,7 @@ namespace SignalR.MessageBus
                 {
                     // Connection already has the latest message, so start wating
                     _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id);
-                    return WaitForMessages(eventKeys);
+                    return WaitForMessages(eventKeys, timeoutToken);
                 }
 
                 var messages = eventKeys.SelectMany(key => GetMessagesSince(key, uid));
@@ -82,7 +82,7 @@ namespace SignalR.MessageBus
 
                 // Wait for new messages
                 _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id);
-                return WaitForMessages(eventKeys);
+                return WaitForMessages(eventKeys, timeoutToken);
             }
             finally
             {
@@ -186,17 +186,26 @@ namespace SignalR.MessageBus
             return snapshot.GetRange(startIndex, snapshot.Count - startIndex);
         }
 
-        private Task<MessageResult> WaitForMessages(IEnumerable<string> eventKeys)
+        private Task<MessageResult> WaitForMessages(IEnumerable<string> eventKeys, CancellationToken timeoutToken)
         {
             var tcs = new TaskCompletionSource<MessageResult>();
             int callbackCalled = 0;
             Action<IList<InMemoryMessage>> callback = null;
 
+            timeoutToken.Register(() =>
+            {
+                if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
+                {
+                    string lastMessageId = _lastMessageId.ToString(CultureInfo.InvariantCulture);
+                    tcs.TrySetResult(new MessageResult(lastMessageId, timedOut: true));
+                }
+            });
+
             callback = messages =>
             {
                 if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
                 {
-                    tcs.SetResult(GetMessageResult(messages));
+                    tcs.TrySetResult(GetMessageResult(messages));
                 }
 
                 // Remove callback for all keys

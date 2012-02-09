@@ -3,7 +3,6 @@ using System.Web;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SignalR.Hosting.AspNet;
 using SignalR.Hubs;
-using SignalR.Infrastructure;
 
 [assembly: PreApplicationStartMethod(typeof(AspNetBootstrapper), "Initialize")]
 
@@ -59,12 +58,9 @@ namespace SignalR.Hosting.AspNet
 
         private static void OnAppDomainShutdown()
         {
-            var connectionManager = AspNetHost.DependencyResolver.Resolve<IConnectionManager>();
-
             // Close all connections before the app domain goes down.
-            // Only signal all connections on a particular appdomain (if this was cross machine we
-            // don't want to end up disconnecting everyone on the farm)
-            connectionManager.CloseConnections(ConnectionScope.AppDomain).Wait();
+            // Only signal all connections on a particular appdomain
+            AspNetHost.AppDomainTokenSource.Cancel();
         }
     }
 }
