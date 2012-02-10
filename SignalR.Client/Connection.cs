@@ -147,7 +147,8 @@ namespace SignalR.Client
                 {
                     StartTransport(null).ContinueWith(negotiateTcs);
                 }
-            });
+            })
+            .ContinueWithNotComplete(negotiateTcs);
 
             return negotiateTcs.Task;
         }

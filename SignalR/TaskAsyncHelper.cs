@@ -40,6 +40,22 @@ namespace SignalR
             return task;
         }
 
+        public static void ContinueWithNotComplete(this Task task, TaskCompletionSource<object> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.SetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.SetCanceled();
+                }
+            }, 
+            TaskContinuationOptions.NotOnRanToCompletion);
+        }
+
         public static void ContinueWith(this Task task, TaskCompletionSource<object> tcs)
         {
             task.ContinueWith(t =>
