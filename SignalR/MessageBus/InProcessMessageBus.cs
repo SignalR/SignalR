@@ -10,38 +10,77 @@ using SignalR.Infrastructure;
 
 namespace SignalR.MessageBus
 {
-    public class InProcessMessageBus : IMessageBus
+    public class InProcessMessageBus : InProcessMessageBus<ulong>
     {
-        private static List<InMemoryMessage> _emptyMessageList = new List<InMemoryMessage>();
+        public InProcessMessageBus(IDependencyResolver resolver)
+            : this(resolver.Resolve<ITraceManager>(),
+                   garbageCollectMessages: true)
+        {
+        }
 
-        private readonly ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage>>>> _waitingTasks =
-            new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage>>>>();
+        public InProcessMessageBus(ITraceManager trace, bool garbageCollectMessages)
+            : base(trace,
+                   garbageCollectMessages,
+                   new DefaultIdGenerator())
+        {
+        }
 
-        private readonly ConcurrentDictionary<string, LockedList<InMemoryMessage>> _cache =
-            new ConcurrentDictionary<string, LockedList<InMemoryMessage>>();
+        private class DefaultIdGenerator : IIdGenerator<ulong>
+        {
+            private ulong _id;
+            public ulong GetNext()
+            {
+                return ++_id;
+            }
+
+            public ulong ConvertFromString(string value)
+            {
+                return UInt64.Parse(value, CultureInfo.InvariantCulture);
+            }
+
+            public string ConvertToString(ulong value)
+            {
+                return value.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+    }
+
+    public class InProcessMessageBus<T> : IMessageBus where T : IComparable<T>
+    {
+        private static List<InMemoryMessage<T>> _emptyMessageList = new List<InMemoryMessage<T>>();
+
+        private readonly ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>> _waitingTasks =
+            new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>>();
+
+        private readonly ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>> _cache =
+            new ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>>();
 
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
         private readonly object _lockDowngradeLock = new object();
+        private readonly IIdGenerator<T> _idGenerator;
 
-        private ulong _lastMessageId = 0;
+        private T _lastMessageId;
         private long _gcRunning = 0;
 
         private readonly Timer _timer;
 
         private readonly ITraceManager _trace;
 
-
-        public InProcessMessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>(), garbageCollectMessages: true)
+        public InProcessMessageBus(IDependencyResolver resolver, IIdGenerator<T> idGenerator)
+            : this(resolver.Resolve<ITraceManager>(),
+                   garbageCollectMessages: true,
+                   idGenerator: idGenerator)
         {
+
         }
 
-        public InProcessMessageBus(ITraceManager traceManager, bool garbageCollectMessages)
+        public InProcessMessageBus(ITraceManager traceManager, bool garbageCollectMessages, IIdGenerator<T> idGenerator)
         {
             _trace = traceManager;
+            _idGenerator = idGenerator;
 
             if (garbageCollectMessages)
             {
@@ -62,16 +101,16 @@ namespace SignalR.MessageBus
             {
                 // We need to lock here in case messages are added to the bus while we're reading
                 _cacheLock.EnterReadLock();
-                ulong uid = UInt64.Parse(id);
+                T uuid = _idGenerator.ConvertFromString(id);
 
-                if (uid >= _lastMessageId)
+                if (uuid.CompareTo(_lastMessageId) >= 0)
                 {
                     // Connection already has the latest message, so start wating
                     _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id);
                     return WaitForMessages(eventKeys, timeoutToken);
                 }
 
-                var messages = eventKeys.SelectMany(key => GetMessagesSince(key, uid));
+                var messages = eventKeys.SelectMany(key => GetMessagesSince(key, uuid));
 
                 if (messages.Any())
                 {
@@ -92,9 +131,9 @@ namespace SignalR.MessageBus
 
         public Task Send(string eventKey, object value)
         {
-            var list = _cache.GetOrAdd(eventKey, _ => new LockedList<InMemoryMessage>());
+            var list = _cache.GetOrAdd(eventKey, _ => new LockedList<InMemoryMessage<T>>());
 
-            InMemoryMessage message = null;
+            InMemoryMessage<T> message = null;
 
             try
             {
@@ -102,7 +141,7 @@ namespace SignalR.MessageBus
                 _cacheLock.EnterWriteLock();
 
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
-                message = new InMemoryMessage(eventKey, value, GenerateId());
+                message = new InMemoryMessage<T>(eventKey, value, GenerateId());
                 _trace.Source.TraceInformation("MessageBus: Saving message {0} with eventKey {1} to cache on AppDomain {2}", message.Id, eventKey, AppDomain.CurrentDomain.Id);
                 list.AddWithLock(message);
 
@@ -120,9 +159,14 @@ namespace SignalR.MessageBus
             return TaskAsyncHelper.Empty;
         }
 
-        private void Broadcast(string eventKey, InMemoryMessage message)
+        private T GenerateId()
         {
-            LockedList<Action<IList<InMemoryMessage>>> callbacks;
+            return _lastMessageId = _idGenerator.GetNext();
+        }
+
+        private void Broadcast(string eventKey, InMemoryMessage<T> message)
+        {
+            LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
             if (_waitingTasks.TryGetValue(eventKey, out callbacks))
             {
                 var delegates = callbacks.CopyWithLock();
@@ -145,14 +189,9 @@ namespace SignalR.MessageBus
             }
         }
 
-        protected virtual ulong GenerateId()
+        private IList<InMemoryMessage<T>> GetMessagesSince(string eventKey, T id)
         {
-            return ++_lastMessageId;
-        }
-
-        private IList<InMemoryMessage> GetMessagesSince(string eventKey, ulong id)
-        {
-            LockedList<InMemoryMessage> list = null;
+            LockedList<InMemoryMessage<T>> list = null;
             _cache.TryGetValue(eventKey, out list);
 
             if (list == null || list.CountWithLock == 0)
@@ -163,13 +202,13 @@ namespace SignalR.MessageBus
             // Create a snapshot so that we ensure the list isn't modified within this scope
             var snapshot = list.CopyWithLock();
 
-            if (snapshot.Count > 0 && snapshot[0].Id > id)
+            if (snapshot.Count > 0 && snapshot[0].Id.CompareTo(id) > 0)
             {
                 // All messages in the list are greater than the last message
                 return snapshot;
             }
 
-            var index = snapshot.FindLastIndex(msg => msg.Id <= id);
+            var index = snapshot.FindLastIndex(msg => msg.Id.CompareTo(id) <= 0);
 
             if (index < 0)
             {
@@ -190,14 +229,14 @@ namespace SignalR.MessageBus
         {
             var tcs = new TaskCompletionSource<MessageResult>();
             int callbackCalled = 0;
-            Action<IList<InMemoryMessage>> callback = null;
+            Action<IList<InMemoryMessage<T>>> callback = null;
 
             timeoutToken.Register(() =>
             {
                 if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
                 {
-                    string lastMessageId = _lastMessageId.ToString(CultureInfo.InvariantCulture);
-                    tcs.TrySetResult(new MessageResult(lastMessageId, timedOut: true));
+                    string id = _idGenerator.ConvertToString(_lastMessageId);
+                    tcs.TrySetResult(new MessageResult(id, timedOut: true));
                 }
             });
 
@@ -211,7 +250,7 @@ namespace SignalR.MessageBus
                 // Remove callback for all keys
                 foreach (var eventKey in eventKeys)
                 {
-                    LockedList<Action<IList<InMemoryMessage>>> callbacks;
+                    LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
                     if (_waitingTasks.TryGetValue(eventKey, out callbacks))
                     {
                         callbacks.RemoveWithLock(callback);
@@ -222,19 +261,18 @@ namespace SignalR.MessageBus
             // Add callback for all keys
             foreach (var eventKey in eventKeys)
             {
-                var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IList<InMemoryMessage>>>());
+                var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IList<InMemoryMessage<T>>>>());
                 callbacks.AddWithLock(callback);
             }
 
             return tcs.Task;
         }
 
-        private MessageResult GetMessageResult(IList<InMemoryMessage> messages)
+        private MessageResult GetMessageResult(IList<InMemoryMessage<T>> messages)
         {
             var id = messages[messages.Count - 1].Id;
 
-            return new MessageResult(messages.ToList<Message>(),
-                                     id.ToString(CultureInfo.InvariantCulture));
+            return new MessageResult(messages.ToList<Message>(), _idGenerator.ConvertToString(id));
         }
 
         private void RemoveExpiredEntries(object state)

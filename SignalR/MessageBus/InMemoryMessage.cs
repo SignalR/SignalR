@@ -1,9 +1,11 @@
-﻿namespace SignalR.MessageBus
+﻿using System;
+
+namespace SignalR.MessageBus
 {
-    public class InMemoryMessage : Message
+    public class InMemoryMessage<T> : Message where T : IComparable<T>
     {
-        public ulong Id { get; private set; }
-        public InMemoryMessage(string key, object value, ulong id)
+        public T Id { get; private set; }
+        public InMemoryMessage(string key, object value, T id)
             : base(key, value)
         {
             Id = id;
