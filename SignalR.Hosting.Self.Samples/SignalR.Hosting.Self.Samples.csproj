@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+	<Compile Include="Hubs/DemoHub/DemoHub.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj">
