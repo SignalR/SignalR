@@ -205,7 +205,7 @@ namespace SignalR.Transports
                     // Continue the receive loop
                     return sendTask.Then((conn) => ProcessMessagesImpl(taskCompletetionSource, conn), connection);
                 })
-                .FastUnwrap().ContinueWith(t =>
+                .ContinueWith(t =>
                 {
                     if (t.IsCanceled)
                     {

@@ -54,8 +54,7 @@ namespace SignalR.Transports
         {
             return base.InitializeResponse(connection)
                 .Then(initScript => Context.Response.WriteAsync(initScript),
-                      _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix)
-                .FastUnwrap();
+                      _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }
     }
 }

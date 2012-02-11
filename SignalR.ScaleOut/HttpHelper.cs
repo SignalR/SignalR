@@ -119,9 +119,7 @@ namespace SignalR
             // Write the post data to the request stream
             return request.GetRequestStreamAsync()
                 .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Close()))
-                .FastUnwrap()
-                .Then(() => request.GetResponseAsync())
-                .FastUnwrap();
+                .Then(() => request.GetResponseAsync());
         }
 
         private static byte[] ProcessPostData(IDictionary<string, string> postData)

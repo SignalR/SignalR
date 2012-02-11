@@ -185,8 +185,7 @@ namespace SignalR.Transports
                 postReceive();
             }
 
-            return receiveTask.Then(response => Send(response))
-                              .FastUnwrap();
+            return receiveTask.Then(response => Send(response));
         }
 
         private PersistentResponse AddTransportData(PersistentResponse response)

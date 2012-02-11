@@ -32,11 +32,11 @@ namespace SignalR.Transports
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
             return base.InitializeResponse(connection)
-                .Then(() =>
-                {
-                    Context.Response.ContentType = "text/event-stream";
-                    return Context.Response.WriteAsync("data: initialized\n\n");
-                }).FastUnwrap();
+                       .Then(() =>
+                       {
+                           Context.Response.ContentType = "text/event-stream";
+                           return Context.Response.WriteAsync("data: initialized\n\n");
+                       });
         }
     }
 }

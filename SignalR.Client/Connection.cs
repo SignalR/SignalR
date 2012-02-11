@@ -134,7 +134,6 @@ namespace SignalR.Client
 
                         // Get the data and start the transport
                         dataTcs.Task.Then(data => StartTransport(data))
-                                    .FastUnwrap()
                                     .ContinueWith(negotiateTcs);
                     }
                     else
