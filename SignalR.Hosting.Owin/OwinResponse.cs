@@ -52,8 +52,7 @@ namespace SignalR.Hosting.Owin
         private Task WriteAsync(string data, bool end)
         {
             return EnsureResponseStarted()
-                .Then((d, e) => DoWrite(d, e), data, end)
-                .FastUnwrap();
+                .Then((d, e) => DoWrite(d, e), data, end);
         }
 
         private Task EnsureResponseStarted()

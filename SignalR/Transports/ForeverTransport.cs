@@ -164,8 +164,7 @@ namespace SignalR.Transports
             HeartBeat.MarkConnection(this);
 
             return InitializeResponse(connection)
-                    .Then((c, pr) => ProcessMessages(c, pr), connection, postReceive)
-                    .FastUnwrap();
+                    .Then((c, pr) => ProcessMessages(c, pr), connection, postReceive);
         }
 
         private Task ProcessMessages(IReceivingConnection connection, Action postReceive = null)

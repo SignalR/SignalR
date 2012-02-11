@@ -52,7 +52,7 @@ namespace SignalR
                 {
                     tcs.SetCanceled();
                 }
-            }, 
+            },
             TaskContinuationOptions.NotOnRanToCompletion);
         }
 
@@ -90,6 +90,11 @@ namespace SignalR
             return tasks.Return();
         }
 
+        public static Task Return(this Task[] tasks)
+        {
+            return Then(tasks, () => { });
+        }
+
         // Then extesions
         public static Task Then(this Task task, Action successor)
         {
@@ -109,9 +114,22 @@ namespace SignalR
             }
         }
 
-        public static Task Return(this Task[] tasks)
+        public static Task<TResult> Then<TResult>(this Task task, Func<TResult> successor)
         {
-            return Then(tasks, () => { });
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError<TResult>(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled<TResult>();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor);
+
+                default:
+                    return TaskRunners<object, TResult>.RunTask(task, successor);
+            }
         }
 
         public static Task Then(this Task[] tasks, Action successor)
@@ -180,8 +198,45 @@ namespace SignalR
             }
         }
 
+        public static Task Then<T1>(this Task task, Func<T1, Task> successor, T1 arg1)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError(task.Exception);
 
-        public static Task<TResult> Then<T1, TResult>(this Task task, Func<T1, TResult> successor, T1 arg1)
+                case TaskStatus.Canceled:
+                    return Canceled();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, arg1).FastUnwrap();
+
+                default:
+                    return GenericDelegates<object, Task, T1, object>.ThenWithArgs(task, successor, arg1)
+                                                                     .FastUnwrap();
+            }
+        }
+
+        public static Task Then<T1, T2>(this Task task, Func<T1, T2, Task> successor, T1 arg1, T2 arg2)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, arg1, arg2).FastUnwrap();
+
+                default:
+                    return GenericDelegates<object, Task, T1, T2>.ThenWithArgs(task, successor, arg1, arg2)
+                                                                 .FastUnwrap();
+            }
+        }
+
+        public static Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, Task<TResult>> successor)
         {
             switch (task.Status)
             {
@@ -192,50 +247,13 @@ namespace SignalR
                     return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1);
+                    return FromMethod(successor, task.Result).FastUnwrap();
 
                 default:
-                    return GenericDelegates<object, TResult, T1, object>.ThenWithArgs(task, successor, arg1);
+                    return TaskRunners<T, Task<TResult>>.RunTask(task, t => successor(t.Result))
+                                                        .FastUnwrap();
             }
         }
-
-        public static Task<TResult> Then<T1, T2, TResult>(this Task task, Func<T1, T2, TResult> successor, T1 arg1, T2 arg2)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError<TResult>(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled<TResult>();
-
-                case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1, arg2);
-
-                default:
-                    return GenericDelegates<object, TResult, T1, T2>.ThenWithArgs(task, successor, arg1, arg2);
-            }
-        }
-
-
-        public static Task<T> Then<T, T1>(this Task<T> task, Func<T, T1, T> successor, T1 arg1)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError<T>(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled<T>();
-
-                case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task.Result, arg1);
-
-                default:
-                    return GenericDelegates<T, T, T1, object>.ThenWithArgs(task, successor, arg1);
-            }
-        }
-
 
         public static Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> successor)
         {
@@ -272,7 +290,6 @@ namespace SignalR
                     return GenericDelegates<T, TResult, T1, object>.ThenWithArgs(task, successor, arg1);
             }
         }
-
 
         public static Task Then(this Task task, Func<Task> successor)
         {
@@ -312,7 +329,7 @@ namespace SignalR
             }
         }
 
-        public static Task Then<T>(this Task<T> task, Action<T> successor)
+        public static Task Then<TResult>(this Task<TResult> task, Action<TResult> successor)
         {
             switch (task.Status)
             {
@@ -326,11 +343,11 @@ namespace SignalR
                     return FromMethod(successor, task.Result);
 
                 default:
-                    return TaskRunners<T, object>.RunTask(task, successor);
+                    return TaskRunners<TResult, object>.RunTask(task, successor);
             }
         }
 
-        public static Task Then<T>(this Task<T> task, Func<T, Task> successor)
+        public static Task Then<TResult>(this Task<TResult> task, Func<TResult, Task> successor)
         {
             switch (task.Status)
             {
@@ -344,31 +361,12 @@ namespace SignalR
                     return FromMethod(successor, task.Result).FastUnwrap();
 
                 default:
-                    return TaskRunners<T, Task>.RunTask(task, t => successor(t.Result))
-                                               .FastUnwrap();
+                    return TaskRunners<TResult, Task>.RunTask(task, t => successor(t.Result))
+                                                     .FastUnwrap();
             }
         }
 
-        public static Task Then<T1>(this Task task, Func<T1, Task> successor, T1 arg1)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled();
-
-                case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1).FastUnwrap();
-
-                default:
-                    return GenericDelegates<object, Task, T1, object>.ThenWithArgs(task, successor, arg1)
-                                                                     .FastUnwrap();
-            }
-        }
-
-        public static Task<TResult> Then<T, T1, TResult>(this Task<T> task, Func<T, T1, Task<TResult>> successor, T1 arg1)
+        public static Task<TResult> Then<TResult, T1>(this Task<TResult> task, Func<Task<TResult>, T1, Task<TResult>> successor, T1 arg1)
         {
             switch (task.Status)
             {
@@ -379,30 +377,11 @@ namespace SignalR
                     return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task.Result, arg1).FastUnwrap();
-
-                default:
-                    return GenericDelegates<T, Task<TResult>, T1, object>.ThenWithArgs(task, successor, arg1)
-                                                                         .FastUnwrap();
-            }
-        }
-
-        public static Task<T> Then<T, T1>(this Task<T> task, Func<Task<T>, T1, Task<T>> successor, T1 arg1)
-        {
-            switch (task.Status)
-            {
-                case TaskStatus.Faulted:
-                    return FromError<T>(task.Exception);
-
-                case TaskStatus.Canceled:
-                    return Canceled<T>();
-
-                case TaskStatus.RanToCompletion:
                     return FromMethod(successor, task, arg1).FastUnwrap();
 
                 default:
-                    return GenericDelegates<T, Task<T>, T1, object>.ThenWithArgs(task, successor, arg1)
-                                                                   .FastUnwrap();
+                    return GenericDelegates<TResult, Task<TResult>, T1, object>.ThenWithArgs(task, successor, arg1)
+                                                                               .FastUnwrap();
             }
         }
 
