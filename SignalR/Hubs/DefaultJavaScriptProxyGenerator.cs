@@ -119,10 +119,10 @@ namespace SignalR.Hubs
             // Pick the overload with the minimum number of arguments
             return from method in ReflectionHelper.GetExportedHubMethods(type)
                    group method by method.Name into overloads
-                   let overload = (from overload in overloads
+                   let oload = (from overload in overloads
                                    orderby overload.GetParameters().Length
                                    select overload).FirstOrDefault()
-                   select overload;
+                   select oload;
         }
 
         private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method)
