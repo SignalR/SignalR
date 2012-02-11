@@ -131,7 +131,7 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
-            return _messageBus.Send(key, new WrappedValue(value, _serializer)).Catch();
+            return _messageBus.Send(_connectionId, key, new WrappedValue(value, _serializer)).Catch();
         }
 
         private void PopulateResponseState(PersistentResponse response)

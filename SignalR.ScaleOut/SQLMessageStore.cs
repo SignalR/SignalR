@@ -186,7 +186,7 @@ namespace SignalR.ScaleOut
         //    throw new NotImplementedException();
         //}
         
-        public Task Send(string eventKey, object value)
+        public Task Send(string connectionId, string eventKey, object value)
         {
             throw new NotImplementedException();
         }

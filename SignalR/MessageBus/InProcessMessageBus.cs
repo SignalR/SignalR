@@ -129,7 +129,7 @@ namespace SignalR.MessageBus
             }
         }
 
-        public Task Send(string eventKey, object value)
+        public Task Send(string connectionId, string eventKey, object value)
         {
             var list = _cache.GetOrAdd(eventKey, _ => new LockedList<InMemoryMessage<T>>());
 

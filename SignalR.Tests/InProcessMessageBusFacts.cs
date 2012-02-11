@@ -18,10 +18,10 @@ namespace SignalR.Tests
 
                 var trace = new TraceManager();
                 var bus = new InProcessMessageBus(trace, false);
-                bus.Send("bar", "1").Wait();
-                bus.Send("bar", "2").Wait();
-                bus.Send("foo", "3").Wait();
-                bus.Send("foo", "4").Wait();
+                bus.Send("testclient", "bar", "1").Wait();
+                bus.Send("testclient", "bar", "2").Wait();
+                bus.Send("testclient", "foo", "3").Wait();
+                bus.Send("testclient", "foo", "4").Wait();
 
                 var result = bus.GetMessages(new[] { "foo" }, "1", CancellationToken.None).Result;
                 Assert.Equal(2, result.Messages.Count);
@@ -36,8 +36,8 @@ namespace SignalR.Tests
 
                 var trace = new TraceManager();
                 var bus = new InProcessMessageBus(trace, false);
-                bus.Send("foo", "1").Wait();
-                bus.Send("foo", "2").Wait();
+                bus.Send("testclient", "foo", "1").Wait();
+                bus.Send("testclient", "foo", "2").Wait();
 
                 // REVIEW: Will block
                 //var result = bus.GetMessagesSince(new[] { "foo" }, 2).Result.ToList();
@@ -53,8 +53,8 @@ namespace SignalR.Tests
 
                 var trace = new TraceManager();
                 var bus = new InProcessMessageBus(trace, false);
-                bus.Send("bar", "1").Wait();
-                bus.Send("foo", "2").Wait();
+                bus.Send("testclient", "bar", "1").Wait();
+                bus.Send("testclient", "foo", "2").Wait();
 
                 // REVIEW: Will block
                 //var result = bus.GetMessagesSince(new[] { "foo" }, 2).Result.ToList();
@@ -70,12 +70,12 @@ namespace SignalR.Tests
 
                 var trace = new TraceManager();
                 var bus = new InProcessMessageBus(trace, false);
-                bus.Send("bar", "1").Wait();
-                bus.Send("foo", "2").Wait();
-                bus.Send("bar", "3").Wait();
-                bus.Send("foo", "4").Wait();
-                bus.Send("bar", "5").Wait();
-                bus.Send("foo", "6").Wait();
+                bus.Send("testclient", "bar", "1").Wait();
+                bus.Send("testclient", "foo", "2").Wait();
+                bus.Send("testclient", "bar", "3").Wait();
+                bus.Send("testclient", "foo", "4").Wait();
+                bus.Send("testclient", "bar", "5").Wait();
+                bus.Send("testclient", "foo", "6").Wait();
 
                 var result = bus.GetMessages(new[] { "foo" }, "3", CancellationToken.None).Result;
                 Assert.Equal(2, result.Messages.Count);
@@ -90,10 +90,10 @@ namespace SignalR.Tests
 
                 var trace = new TraceManager();
                 var bus = new InProcessMessageBus(trace, false);
-                bus.Send("foo", "1").Wait();
-                bus.Send("foo", "2").Wait();
-                bus.Send("bar", "3").Wait();
-                bus.Send("bar", "4").Wait();
+                bus.Send("testclient", "foo", "1").Wait();
+                bus.Send("testclient", "foo", "2").Wait();
+                bus.Send("testclient", "bar", "3").Wait();
+                bus.Send("testclient", "bar", "4").Wait();
 
                 // REVIEW: Will block
                 // var result = bus.GetMessagesSince(new[] { "foo" }, 3).Result.ToList();

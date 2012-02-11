@@ -68,7 +68,7 @@ namespace SignalR.Stress
             for (var i = 1; i <= _senders; i++)
             {
                 //ThreadPool.QueueUserWorkItem(_ => StartSendLoop(bus, payload));
-                Task.Factory.StartNew(() => StartSendLoop(bus, payload), TaskCreationOptions.LongRunning);
+                Task.Factory.StartNew(() => StartSendLoop(i, bus, payload), TaskCreationOptions.LongRunning);
             }
 
             MeasureStats();
@@ -76,7 +76,7 @@ namespace SignalR.Stress
             Console.ReadLine();
         }
 
-        private static void StartSendLoop(InProcessMessageBus bus, string payload)
+        private static void StartSendLoop(int clientId, InProcessMessageBus bus, string payload)
         {
             while (_exception == null)
             {
@@ -88,7 +88,7 @@ namespace SignalR.Stress
                     try
                     {
                         var sw = Stopwatch.StartNew();
-                        bus.Send("a", payload).ContinueWith(task =>
+                        bus.Send(clientId.ToString(), "a", payload).ContinueWith(task =>
                         {
                             Interlocked.Exchange(ref _exception, task.Exception);
                         },
