@@ -282,7 +282,7 @@
             delete connection.groups;
 
             // Trigger the disconnect event
-            $connection.trigger(events.onDisconnect);
+            $(connection).trigger(events.onDisconnect);
 
             return connection;
         },
