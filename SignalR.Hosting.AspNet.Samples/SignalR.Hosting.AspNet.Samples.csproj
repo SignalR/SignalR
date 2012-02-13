@@ -214,10 +214,6 @@
       <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
       <Name>SignalR.Hosting.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SignalR.ScaleOut\SignalR.ScaleOut.csproj">
-      <Project>{32D16B36-970E-4CF2-B954-78CB1833CBC1}</Project>
-      <Name>SignalR.ScaleOut</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>SignalR</Name>
