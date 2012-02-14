@@ -58,6 +58,11 @@ namespace SignalR.Hubs
                 return value;
             }
 
+            if (type == typeof(Guid))
+            {
+            	return new Guid(value.ToString());
+            }
+
             return JsonConvert.DeserializeObject(value.ToString(), type);
         }
     }

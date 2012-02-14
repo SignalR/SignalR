@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using SignalR.Hubs;
 using Xunit;
 
@@ -143,6 +144,21 @@ namespace SignalR.Tests
             Assert.Equal(34567, complex.Address.Zip);
         }
 
+        [Fact]
+        public void ResolveActionBindsGuid()
+        {
+            var resolver = new DefaultActionResolver();
+            var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
+
+            var actionInfo = resolver.ResolveAction(typeof(TestHub),
+                                                    "MethodWithGuid",
+                                                    new object[] { arg });
+
+            Assert.NotNull(actionInfo);
+            var arg0 = (Guid)actionInfo.Arguments[0];
+            Assert.Equal(new Guid(arg), arg0);
+        }
+
         private class TestDerivedHub : TestHub
         {
             public void FooDerived()
@@ -185,6 +201,11 @@ namespace SignalR.Tests
             }
 
             public void MethodWithComplex(Complex complex)
+            {
+
+            }
+
+            public void MethodWithGuid(Guid guid)
             {
 
             }
