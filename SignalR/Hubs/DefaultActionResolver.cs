@@ -58,6 +58,11 @@ namespace SignalR.Hubs
                 return value;
             }
 
+			if (type.Name == "Guid")
+			{
+				value = string.Format("\"{0}\"", value);
+			}
+
             return JsonConvert.DeserializeObject(value.ToString(), type);
         }
     }
