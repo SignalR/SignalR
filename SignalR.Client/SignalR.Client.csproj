@@ -78,6 +78,7 @@
     <Compile Include="Transports\IClientTransport.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
+    <Compile Include="Properties\VersionInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

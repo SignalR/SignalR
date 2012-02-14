@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP71", "Sign
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7.Sample", "SignalR.Client.WP7.Sample\SignalR.Client.WP7.Sample.csproj", "{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.ScaleOut", "SignalR.ScaleOut\SignalR.ScaleOut.csproj", "{32D16B36-970E-4CF2-B954-78CB1833CBC1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Samples", "SignalR.Client.Samples\SignalR.Client.Samples.csproj", "{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.AspNet", "SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
@@ -92,16 +90,6 @@ Global
 		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|x86.ActiveCfg = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{32D16B36-970E-4CF2-B954-78CB1833CBC1}.Release|x86.ActiveCfg = Release|Any CPU
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Mixed Platforms.Build.0 = Debug|x86
