@@ -144,22 +144,22 @@ namespace SignalR.Tests
             Assert.Equal(34567, complex.Address.Zip);
         }
 
-		[Fact]
-		public void ResolveActionBindsGuid()
-		{
-			var resolver = new DefaultActionResolver();
-			var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
+        [Fact]
+        public void ResolveActionBindsGuid()
+        {
+            var resolver = new DefaultActionResolver();
+            var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
 
-			var actionInfo = resolver.ResolveAction(typeof(TestHub),
-													"MethodWithGuid",
-													new object[] { arg });
+            var actionInfo = resolver.ResolveAction(typeof(TestHub),
+                                                    "MethodWithGuid",
+                                                    new object[] { arg });
 
-			Assert.NotNull(actionInfo);
-			var arg0 = (Guid)actionInfo.Arguments[0];
-			Assert.Equal(new Guid(arg), arg0);
-		}
+            Assert.NotNull(actionInfo);
+            var arg0 = (Guid)actionInfo.Arguments[0];
+            Assert.Equal(new Guid(arg), arg0);
+        }
 
-		private class TestDerivedHub : TestHub
+        private class TestDerivedHub : TestHub
         {
             public void FooDerived()
             {
@@ -205,11 +205,11 @@ namespace SignalR.Tests
 
             }
 
-			public void MethodWithGuid(Guid guid)
-			{
+            public void MethodWithGuid(Guid guid)
+            {
 
-			}
-		}
+            }
+        }
 
         public class Complex
         {
