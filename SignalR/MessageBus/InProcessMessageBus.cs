@@ -52,6 +52,8 @@ namespace SignalR.MessageBus
         private readonly ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>> _waitingTasks =
             new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>>();
 
+        private readonly ConcurrentQueue<BroadcastData> _broadcastQueue = new ConcurrentQueue<BroadcastData>();
+
         private readonly ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>> _cache =
             new ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>>();
 
@@ -59,7 +61,6 @@ namespace SignalR.MessageBus
 
         private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
 
-        private readonly object _lockDowngradeLock = new object();
         private readonly IIdGenerator<T> _idGenerator;
 
         private T _lastMessageId;
@@ -146,17 +147,25 @@ namespace SignalR.MessageBus
                 list.AddWithLock(message);
 
                 // Send to waiting callers.
-                // This must be done in the read lock to ensure that messages are sent to waiting
+                // This must be done in the write lock to ensure that messages are sent to waiting
                 // connections in the order they were saved so that they always get the correct
-                // last message id to resubscribe with.
-                Broadcast(eventKey, message);
+                // last message id to resubscribe with. Moving this outside the lock can enable
+                // a subsequent send to overtake the previous send, resulting in the waiting connection
+                // getting a last message id that is after the first save, hence missing a message.
+                _broadcastQueue.Enqueue(new BroadcastData(eventKey, message));
             }
             finally
-            {
-                _cacheLock.ExitWriteLock();
+            {    
+                _cacheLock.ExitWriteLock();   
             }
 
-            return TaskAsyncHelper.Empty;
+            return Task.Factory.StartNew(() => {
+                BroadcastData item;
+                if (_broadcastQueue.TryDequeue(out item))
+                {
+                    Broadcast(item.EventKey, item.Message);
+                }
+            });
         }
 
         private T GenerateId()
@@ -238,6 +247,16 @@ namespace SignalR.MessageBus
                     string id = _idGenerator.ConvertToString(_lastMessageId);
                     tcs.TrySetResult(new MessageResult(id, timedOut: true));
                 }
+
+                // Remove callback for all keys
+                foreach (var eventKey in eventKeys)
+                {
+                    LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
+                    if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                    {
+                        callbacks.RemoveWithLock(callback);
+                    }
+                }
             });
 
             callback = messages =>
@@ -309,6 +328,18 @@ namespace SignalR.MessageBus
             finally
             {
                 Interlocked.Exchange(ref _gcRunning, 0);
+            }
+        }
+
+        private class BroadcastData
+        {
+            public readonly string EventKey;
+            public readonly InMemoryMessage<T> Message;
+
+            public BroadcastData(string eventKey, InMemoryMessage<T> message)
+            {
+                EventKey = eventKey;
+                Message = message;
             }
         }
     }

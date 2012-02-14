@@ -32,11 +32,11 @@ namespace SignalR.Stress
 
         private static DateTime _avgCalcStart;
         private static long _lastSendTimeTicks;
-        private static long _rate = 1100;
+        private static long _rate = 1;
         private static int _runs = 0;
-        private static int _step = 100;
-        private static int _stepInterval = 10;
-        private static int _clients = 1;
+        private static int _step = 1;
+        private static int _stepInterval = 50;
+        private static int _clients = 10000;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
         private static Exception _exception;
@@ -99,7 +99,7 @@ namespace SignalR.Stress
                         Interlocked.Increment(ref _sent);
                         Interlocked.Increment(ref _avgLastSendsCount);
 
-                        //Thread.Sleep(interval);
+                        Thread.Sleep(interval);
                     }
                     catch (Exception ex)
                     {
@@ -192,8 +192,9 @@ namespace SignalR.Stress
                     Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);
                     //Console.WriteLine("Last time to send: {0}ms", TimeSpan.FromTicks(Interlocked.Read(ref _lastSendTimeTicks)).TotalMilliseconds);
 
-                    Console.WriteLine("Total Rate: {0:0.000} (mps) = {1:0.000} (mps) * {2} (clients)", TotalRate, _rate, _clients);
-                    
+                    Console.WriteLine("Total Rate: {0} (mps) = {1} (mps) * {2} (clients)", TotalRate, _rate, _clients);
+                    Console.WriteLine();
+
                     // Sends
                     var sends = Interlocked.Read(ref _sent);
                     var sendsDiff = sends - _lastSendsCount;
@@ -202,12 +203,15 @@ namespace SignalR.Stress
 
                     _lastSendsCount = sends;
 
+                    Console.WriteLine("----- SENDS -----");
+
                     var s1 = Math.Max(0, _rate - _sendsPerSecond);
-                    Console.WriteLine("MPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
+                    Console.WriteLine("SPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
                     var s2 = Math.Max(0, _rate - _peakSendsPerSecond);
-                    Console.WriteLine("Peak MPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
+                    Console.WriteLine("Peak SPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
                     var s3 = Math.Max(0, _rate - _avgSendsPerSecond);
-                    Console.WriteLine("Avg MPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
+                    Console.WriteLine("Avg SPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
+                    Console.WriteLine();
 
                     if (sendsPerSec < long.MaxValue && sendsPerSec > _peakSendsPerSecond)
                     {
@@ -223,6 +227,8 @@ namespace SignalR.Stress
                     _receivesPerSecond = recvPerSec;
 
                     _lastReceivedCount = recv;
+
+                    Console.WriteLine("----- RECEIVES -----");
 
                     var d1 = Math.Max(0, TotalRate - _receivesPerSecond);
                     Console.WriteLine("RPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", Math.Min(TotalRate, _receivesPerSecond), d1, d1 * 100.0 / TotalRate);
