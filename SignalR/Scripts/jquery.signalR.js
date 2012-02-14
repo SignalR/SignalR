@@ -130,6 +130,7 @@
                     global: false,
                     type: "POST",
                     data: {},
+                    dataType: "json",
                     error: function (error) {
                         $(connection).trigger(events.onError, [error]);
                         promise.reject("SignalR: Error during negotiation request: " + error);
