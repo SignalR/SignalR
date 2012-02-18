@@ -6,9 +6,12 @@ namespace SignalR.Client.Transports
 {
     public class LongPollingTransport : HttpBasedTransport
     {
+        public TimeSpan ReconnectDelay { get; set; }
+
         public LongPollingTransport()
             : base("longPolling")
         {
+            ReconnectDelay = TimeSpan.FromSeconds(5);
         }
 
         protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
@@ -16,9 +19,11 @@ namespace SignalR.Client.Transports
             PollingLoop(connection, data, initializeCallback, errorCallback);
         }
 
-        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
         {
             string url = connection.Url;
+            var reconnectTokenSource = new CancellationTokenSource();
+            int reconnectFired = 0;
 
             if (connection.MessageId == null)
             {
@@ -32,76 +37,117 @@ namespace SignalR.Client.Transports
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);
 
+                bool shouldRaiseReconnect = false;
+                bool disconnectedReceived = false;
+
                 try
                 {
                     if (!task.IsFaulted)
                     {
+                        if (raiseReconnect)
+                        {
+                            // If the timeout for the reconnect hasn't fired as yet just fire the 
+                            // event here before any incoming messages are processed
+                            FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                        }
+
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
-                        if (!String.IsNullOrEmpty(raw))
-                        {
-                            OnMessage(connection, raw);
-                        }
+                        ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
                     }
                 }
                 finally
                 {
-                    bool requestAborted = false;
-                    bool continuePolling = true;
-
-                    if (task.IsFaulted)
+                    if (disconnectedReceived)
                     {
-                        // Get the underlying exception
-                        Exception exception = task.Exception.GetBaseException();
+                        connection.Stop();
+                    }
+                    else
+                    {
+                        bool requestAborted = false;
+                        bool continuePolling = true;
 
-                        // If the error callback isn't null then raise it and don't continue polling
-                        if (errorCallback != null)
+                        if (task.IsFaulted)
                         {
-                            // Raise on error
-                            connection.OnError(exception);
+                            // Cancel the previous reconnect event
+                            reconnectTokenSource.Cancel();
 
-                            // Call the callback
-                            errorCallback(exception);
+                            // Raise the reconnect event if we successfully reconnect after failing
+                            shouldRaiseReconnect = true;
 
-                            // Don't continue polling if the error is on the first request
-                            continuePolling = false;
-                        }
-                        else
-                        {
-                            // Figure out if the request was aborted
-                            requestAborted = IsRequestAborted(exception);
+                            // Get the underlying exception
+                            Exception exception = task.Exception.GetBaseException();
 
-                            // Sometimes a connection might have been closed by the server before we get to write anything
-                            // so just try again and don't raise OnError.
-                            if (!requestAborted && !(exception is IOException))
+                            // If the error callback isn't null then raise it and don't continue polling
+                            if (errorCallback != null)
                             {
                                 // Raise on error
                                 connection.OnError(exception);
 
-                                // If the connection is still active after raising the error event wait for 2 seconds
-                                // before polling again so we aren't hammering the server
-                                if (connection.IsActive)
+                                // Call the callback
+                                errorCallback(exception);
+
+                                // Don't continue polling if the error is on the first request
+                                continuePolling = false;
+                            }
+                            else
+                            {
+                                // Figure out if the request was aborted
+                                requestAborted = IsRequestAborted(exception);
+
+                                // Sometimes a connection might have been closed by the server before we get to write anything
+                                // so just try again and don't raise OnError.
+                                if (!requestAborted && !(exception is IOException))
                                 {
-                                    Thread.Sleep(2000);
+                                    // Raise on error
+                                    connection.OnError(exception);
+
+                                    // If the connection is still active after raising the error event wait for 2 seconds
+                                    // before polling again so we aren't hammering the server
+                                    if (connection.IsActive)
+                                    {
+                                        Thread.Sleep(2000);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Only continue if the connection is still active and wasn't aborted
-                    if (continuePolling && !requestAborted && connection.IsActive)
-                    {
-                        PollingLoop(connection, data, null, null);
+                        // Only continue if the connection is still active and wasn't aborted
+                        if (continuePolling && !requestAborted && connection.IsActive)
+                        {
+                            PollingLoop(connection, data, null, null, shouldRaiseReconnect);
+                        }
                     }
                 }
             });
 
             if (initializeCallback != null)
             {
-                // Only set this the first time
-                // TODO: We should delay this until after the http request has been made
                 initializeCallback();
+            }
+
+            if (raiseReconnect)
+            {
+                TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
+                {
+                    // Fire the reconnect event after the delay. This gives the 
+                    FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                });
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void FireReconnected(Connection connection, CancellationTokenSource reconnectTokenSource, ref int reconnectedFired)
+        {
+            if (!reconnectTokenSource.IsCancellationRequested)
+            {
+                if (Interlocked.Exchange(ref reconnectedFired, 1) == 0)
+                {
+                    connection.OnReconnected();
+                }
             }
         }
     }

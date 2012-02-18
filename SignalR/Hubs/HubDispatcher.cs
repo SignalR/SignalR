@@ -5,77 +5,42 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
-using SignalR.Abstractions;
+using Newtonsoft.Json;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
-using SignalR.Transports;
 
 namespace SignalR.Hubs
 {
     public class HubDispatcher : PersistentConnection
     {
-        // We don't use the configured IJson serializer here because we assume things about
-        // the parsed output. Doesn't matter coming in anyway as member resolution is 
-        // case insensitive.
-        private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer
-        {
-            MaxJsonLength = 30 * 1024 * 1024
-        };
-
-        private readonly Signaler _signaler;
-        private readonly IMessageStore _store;
-        private readonly IHubFactory _hubFactory;
-        private readonly IActionResolver _actionResolver;
-        private readonly IJavaScriptProxyGenerator _proxyGenerator;
-        private readonly string _url;
-        private readonly IHubLocator _hubLocator;
-        private readonly IHubTypeResolver _hubTypeResolver;
-        private readonly IJsonSerializer _jsonSerializer;
-
+        private IHubFactory _hubFactory;
+        private IActionResolver _actionResolver;
+        private IJavaScriptProxyGenerator _proxyGenerator;
+        private IHubLocator _hubLocator;
+        private IHubTypeResolver _hubTypeResolver;
         private HostContext _context;
 
+        private readonly string _url;
+
         public HubDispatcher(string url)
-            : this(DependencyResolver.Resolve<IHubFactory>(),
-                   DependencyResolver.Resolve<IMessageStore>(),
-                   Signaler.Instance,
-                   DependencyResolver.Resolve<IConnectionIdFactory>(),
-                   DependencyResolver.Resolve<IActionResolver>(),
-                   DependencyResolver.Resolve<IJavaScriptProxyGenerator>(),
-                   DependencyResolver.Resolve<IJsonSerializer>(),
-                   DependencyResolver.Resolve<ITransportManager>(),
-                   DependencyResolver.Resolve<IHubLocator>(),
-                   DependencyResolver.Resolve<IHubTypeResolver>(),
-                   url)
         {
+            _url = url;
         }
 
-        public HubDispatcher(IHubFactory hubFactory,
-                             IMessageStore store,
-                             Signaler signaler,
-                             IConnectionIdFactory connectionIdFactory,
-                             IActionResolver actionResolver,
-                             IJavaScriptProxyGenerator proxyGenerator,
-                             IJsonSerializer jsonSerializer,
-                             ITransportManager transportManager,
-                             IHubLocator hubLocator,
-                             IHubTypeResolver hubTypeResolver,
-                             string url)
-            : base(signaler, connectionIdFactory, store, jsonSerializer, transportManager)
+        public override void Initialize(IDependencyResolver resolver)
         {
-            _hubFactory = hubFactory;
-            _store = store;
-            _jsonSerializer = jsonSerializer;
-            _signaler = signaler;
-            _actionResolver = actionResolver;
-            _proxyGenerator = proxyGenerator;
-            _hubLocator = hubLocator;
-            _hubTypeResolver = hubTypeResolver;
-            _url = url;
+            _hubFactory = resolver.Resolve<IHubFactory>();
+            _actionResolver = resolver.Resolve<IActionResolver>();
+            _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
+            _hubLocator = resolver.Resolve<IHubLocator>();
+            _hubTypeResolver = resolver.Resolve<IHubTypeResolver>();
+
+            base.Initialize(resolver);
         }
 
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
-            var hubRequest = _serializer.Deserialize<HubRequest>(data);
+            var hubRequest = JsonConvert.DeserializeObject<HubRequest>(data);
 
             // Create the hub
             IHub hub = _hubFactory.CreateHub(hubRequest.Hub);
@@ -125,7 +90,7 @@ namespace SignalR.Hubs
 
                         var taskParameter = Expression.Parameter(continueWith.Type);
                         var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
-                        
+
                         var body = Expression.Call(Expression.Constant(this),
                                                    processResultMethod,
                                                    Expression.Constant(state),
@@ -160,7 +125,7 @@ namespace SignalR.Hubs
             if (context.Request.Url.LocalPath.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.WriteAsync(_proxyGenerator.GenerateProxy(_url));
+                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url));
             }
 
             _context = context;
@@ -168,38 +133,84 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
+        protected override Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect(groups));
+        }
+
+        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(groups));
+        }
+
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            // Loop over each hub and call disconnect (if the hub supports it)
-            foreach (Type type in GetDisconnectTypes())
+            return ExecuteHubEventAsync<IDisconnect>(connectionId, hub => hub.Disconnect());
+        }
+
+        private Task ExecuteHubEventAsync<T>(string connectionId, Func<T, Task> action) where T : class
+        {
+            var operations = new List<Task>();
+
+            foreach (Type type in GetHubsImplementingInterface(typeof(T)))
             {
-                string hubName = type.FullName;
-                IHub hub = _hubFactory.CreateHub(hubName);
-
-                var disconnect = hub as IDisconnect;
-                if (disconnect != null)
+                T instance = CreateHub(type, connectionId) as T;
+                if (instance != null)
                 {
-                    // REVIEW: We don't have any client state here since we're calling this from the server.
-                    // Will this match user expectations?
-                    var state = new TrackingDictionary();
-                    hub.Context = new HubContext(_context, connectionId);
-                    hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
-                    var agent = new ClientAgent(Connection, hubName);
-                    hub.Agent = agent;
-                    hub.GroupManager = agent;
-
-                    disconnect.Disconnect();
+                    // Collect all the asyc operations
+                    operations.Add(action(instance) ?? TaskAsyncHelper.Empty);
                 }
             }
 
-            return TaskAsyncHelper.Empty;
+            if (operations.Count == 0)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+            Task.Factory.ContinueWhenAll(operations.ToArray(), tasks =>
+            {
+                var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
+                if (faulted != null)
+                {
+                    tcs.SetException(faulted.Exception);
+                }
+                else if (tasks.Any(t => t.IsCanceled))
+                {
+                    tcs.SetCanceled();
+                }
+                else
+                {
+                    tcs.SetResult(null);
+                }
+            });
+
+            return tcs.Task;
         }
 
-        private IEnumerable<Type> GetDisconnectTypes()
+        public IHub CreateHub(Type type, string connectionId)
         {
-            // Get types that implement IDisconnect
+            string hubName = type.FullName;
+            IHub hub = _hubFactory.CreateHub(hubName);
+
+            if (hub != null)
+            {
+                var state = new TrackingDictionary();
+                hub.Context = new HubContext(_context, connectionId);
+                hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
+                var agent = new ClientAgent(Connection, hubName);
+                hub.Agent = agent;
+                hub.GroupManager = agent;
+            }
+
+            return hub;
+        }
+
+        private IEnumerable<Type> GetHubsImplementingInterface(Type interfaceType)
+        {
+            // Get hubs that implement the specified interface
             return from type in _hubLocator.GetHubs()
-                   where typeof(IDisconnect).IsAssignableFrom(type)
+                   where interfaceType.IsAssignableFrom(type)
                    select type;
         }
 
@@ -214,12 +225,17 @@ namespace SignalR.Hubs
 
         private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
         {
+            var exception = error != null ? error.GetBaseException() : null;
+            string stackTrace = (exception != null && _context.IsDebuggingEnabled()) ? exception.StackTrace : null;
+            string errorMessage = exception != null ? exception.Message : null;
+
             var hubResult = new HubResult
             {
                 State = state.GetChanges(),
                 Result = result,
                 Id = request.Id,
-                Error = error != null ? error.GetBaseException().Message : null
+                Error = errorMessage,
+                StackTrace = stackTrace
             };
 
             return Send(hubResult);
@@ -234,16 +250,17 @@ namespace SignalR.Hubs
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            var clientHubInfo = _serializer.Deserialize<IEnumerable<ClientHubInfo>>(data);
+            var clientHubInfo = JsonConvert.DeserializeObject<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId));
+            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId))
+                                                          .Concat(GetDefaultSignals(connectionId));
 
-            return new Connection(_store, _jsonSerializer, _signaler, null, connectionId, hubSignals, groups);
+            return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups, _trace);
         }
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
@@ -287,6 +304,7 @@ namespace SignalR.Hubs
             public object Result { get; set; }
             public string Id { get; set; }
             public string Error { get; set; }
+            public string StackTrace { get; set; }
         }
 
         private class HubRequest

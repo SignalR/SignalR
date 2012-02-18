@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Client.Transports;
@@ -18,20 +19,42 @@ namespace SignalR.Client
         private IClientTransport _transport;
         private bool _initialized;
 
+        private readonly SynchronizationContext _syncContext;
+
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
+        public event Action Reconnected;
 
         public Connection(string url)
+            : this(url, (string)null)
         {
+
+        }
+
+        public Connection(string url, IDictionary<string, string> queryString)
+            : this(url, CreateQueryString(queryString))
+        {
+
+        }
+
+        public Connection(string url, string queryString)
+        {
+            if (url.Contains('?'))
+            {
+                throw new ArgumentException("Url cannot contain QueryString directly. Pass QueryString values in using available overload.", "url");
+            }
+
             if (!url.EndsWith("/"))
             {
                 url += "/";
             }
 
             Url = url;
+            QueryString = queryString;
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            _syncContext = SynchronizationContext.Current;
         }
 
         public ICredentials Credentials { get; set; }
@@ -50,9 +73,16 @@ namespace SignalR.Client
 
         public IDictionary<string, object> Items { get; private set; }
 
+        public string QueryString { get; private set; }
+
         public Task Start()
         {
-            return Start(Transport.ServerSentEvents);
+#if WINDOWS_PHONE || SILVERLIGHT
+            return Start(new LongPollingTransport());
+#else
+            // Pick the best transport supported by the client
+            return Start(new AutoTransport());
+#endif
         }
 
         public virtual Task Start(IClientTransport transport)
@@ -66,16 +96,16 @@ namespace SignalR.Client
 
             _transport = transport;
 
-            string data = null;
+            return Negotiate();
+        }
 
-            if (Sending != null)
-            {
-                data = Sending();
-            }
-
+        private Task Negotiate()
+        {
             string negotiateUrl = Url + "negotiate";
 
-            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
+            var negotiateTcs = new TaskCompletionSource<object>();
+
+            HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
 
@@ -90,9 +120,42 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                return _transport.Start(this, data).Then(() => _initialized = true);
+                if (Sending != null)
+                {
+                    if (_syncContext != null)
+                    {
+                        var dataTcs = new TaskCompletionSource<string>();
+                        _syncContext.Post(_ =>
+                        {
+                            // Raise the event on the sync context
+                            dataTcs.SetResult(Sending());
+                        },
+                        null);
+
+                        // Get the data and start the transport
+                        dataTcs.Task.Then(data => StartTransport(data))
+                                    .ContinueWith(negotiateTcs);
+                    }
+                    else
+                    {
+                        var data = Sending();
+                        StartTransport(data).ContinueWith(negotiateTcs);
+                    }
+                }
+                else
+                {
+                    StartTransport(null).ContinueWith(negotiateTcs);
+                }
             })
-            .FastUnwrap();
+            .ContinueWithNotComplete(negotiateTcs);
+
+            return negotiateTcs.Task;
+        }
+
+        private Task StartTransport(string data)
+        {
+            return _transport.Start(this, data)
+                             .Then(() => _initialized = true);
         }
 
         private void VerifyProtocolVersion(string versionString)
@@ -120,7 +183,14 @@ namespace SignalR.Client
 
                 if (Closed != null)
                 {
-                    Closed();
+                    if (_syncContext != null)
+                    {
+                        _syncContext.Post(_ => Closed(), null);
+                    }
+                    else
+                    {
+                        Closed();
+                    }
                 }
             }
             finally
@@ -149,7 +219,14 @@ namespace SignalR.Client
         {
             if (Received != null)
             {
-                Received(message);
+                if (_syncContext != null)
+                {
+                    _syncContext.Post(msg => Received((string)msg), message);
+                }
+                else
+                {
+                    Received(message);
+                }
             }
         }
 
@@ -157,21 +234,44 @@ namespace SignalR.Client
         {
             if (Error != null)
             {
-                Error(error);
+                if (_syncContext != null)
+                {
+                    _syncContext.Post(err => Error((Exception)err), error);
+                }
+                else
+                {
+                    Error(error);
+                }
+            }
+        }
+
+        internal void OnReconnected()
+        {
+            if (Reconnected != null)
+            {
+                if (_syncContext != null)
+                {
+                    _syncContext.Post(_ => Reconnected(), null);
+                }
+                else
+                {
+                    Reconnected();
+                }
             }
         }
 
         internal void PrepareRequest(HttpWebRequest request)
         {
-#if SILVERLIGHT
-            // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
-#else
 #if WINDOWS_PHONE
+            // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
             request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
 #elif __ANDROID__
             request.UserAgent = CreateUserAgentString("SignalR.Client.MonoAndroid");
 #elif __MONOTOUCH__
             request.UserAgent = CreateUserAgentString("SignalR.Client.MonoTouch");
+#else
+#if SILVERLIGHT
+            // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
 #else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
 #endif
@@ -208,6 +308,11 @@ namespace SignalR.Client
 #else
             return Version.TryParse(versionString, out version);
 #endif
+        }
+
+        private static string CreateQueryString(IDictionary<string, string> queryString)
+        {
+            return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
         }
     }
 }

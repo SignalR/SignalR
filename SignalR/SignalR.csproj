@@ -33,30 +33,35 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.0.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.0.7.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.4.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Abstractions\HostConstants.cs" />
-    <Compile Include="Abstractions\HostContext.cs" />
-    <Compile Include="Abstractions\HostContextExtensions.cs" />
-    <Compile Include="Abstractions\IRequest.cs" />
-    <Compile Include="Abstractions\IResponse.cs" />
+    <Compile Include="Configuration\DefaultConfigurationManager.cs" />
+    <Compile Include="ConnectionManager.cs" />
+    <Compile Include="Hosting\HostConstants.cs" />
+    <Compile Include="Hosting\HostContext.cs" />
+    <Compile Include="Hosting\HostContextExtensions.cs" />
+    <Compile Include="Hosting\IRequest.cs" />
+    <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
-    <Compile Include="DefaultPersistentConnectionFactory.cs" />
+    <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="Hubs\IConnected.cs" />
+    <Compile Include="IConnectionManager.cs" />
+    <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="MessageBus\IIdGenerator.cs" />
+    <Compile Include="MessageBus\InMemoryMessage.cs" />
+    <Compile Include="MessageBus\MessageResult.cs" />
+    <Compile Include="MessageBus\WrappedValue.cs" />
+    <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\ActionInfo.cs" />
     <Compile Include="Hubs\DefaultHubTypeResolver.cs" />
@@ -68,10 +73,15 @@
     <Compile Include="Hubs\IHubTypeResolver.cs" />
     <Compile Include="IConnectionIdFactory.cs" />
     <Compile Include="IJsonSerializer.cs" />
+    <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
+    <Compile Include="Infrastructure\ITraceManager.cs" />
+    <Compile Include="Infrastructure\LockedList.cs" />
+    <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
     <Compile Include="Infrastructure\ReflectionHelper.cs" />
-    <Compile Include="Abstractions\RequestExtensions.cs" />
-    <Compile Include="IPersistentConnectionFactory.cs" />
+    <Compile Include="Hosting\RequestExtensions.cs" />
+    <Compile Include="Infrastructure\TraceManager.cs" />
+    <Compile Include="MessageBus\InProcessMessageBus.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
@@ -86,40 +96,34 @@
     <Compile Include="Hubs\IHubFactory.cs" />
     <Compile Include="Hubs\IHubLocator.cs" />
     <Compile Include="Hubs\SignalAgent.cs" />
-    <Compile Include="Infrastructure\DependencyResolver.cs" />
     <Compile Include="Infrastructure\NullJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\IDependencyResolver.cs" />
     <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
     <Compile Include="IReceivingConnection.cs" />
-    <Compile Include="ISignalBus.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
-    <Compile Include="Transports\ITrackingDisconnect.cs" />
+    <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Transports\ITrackingConnection.cs" />
     <Compile Include="Transports\ITransport.cs" />
     <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
+    <Compile Include="Transports\TransportDisconnectBase.cs" />
     <Compile Include="Transports\TransportHeartBeat.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
-    <Compile Include="InProcessSignalBus.cs" />
-    <Compile Include="SignaledEventArgs.cs" />
-    <Compile Include="Signaler.cs" />
-    <Compile Include="SignalResult.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
     <Compile Include="Hubs\TrackingDictionary.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="Hubs\IActionResolver.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
-    <Compile Include="IMessageStore.cs" />
-    <Compile Include="Message.cs" />
-    <Compile Include="InProcessMessageStore.cs" />
+    <Compile Include="MessageBus\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\TransportManager.cs" />
   </ItemGroup>

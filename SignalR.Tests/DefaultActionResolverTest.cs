@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using Newtonsoft.Json.Linq;
 using SignalR.Hubs;
 using Xunit;
 
@@ -79,18 +80,15 @@ namespace SignalR.Tests
         }
 
         [Fact]
-        public void ResolveActionBindsComplexArgumentsWithDictionary()
+        public void ResolveActionBindsComplexArguments()
         {
             var resolver = new DefaultActionResolver();
-            var arg = new Dictionary<string, object> {
-                { "Age", 1 },
-                { "Address",  new Dictionary<string, object> {
-                                { "Street",  "The street" },
-                                { "Zip", 34567 }
-                              } 
-                }
-            };
-
+            var arg = new JObject(new JProperty("Age", 1),
+                                  new JProperty("Address",
+                                      new JObject(
+                                          new JProperty("Street", "The street"),
+                                          new JProperty("Zip", "34567"))));
+            
             var actionInfo = resolver.ResolveAction(typeof(TestHub), "MethodWithComplex", new object[] { arg });
 
             Assert.NotNull(actionInfo);
@@ -107,9 +105,11 @@ namespace SignalR.Tests
         {
             var resolver = new DefaultActionResolver();
 
+            var arg = new JArray(new[] { 1, 2, 3 });
+
             var actionInfo = resolver.ResolveAction(typeof(TestHub),
                                                     "MethodWithArray",
-                                                    new object[] { new object[] { 1, 2, 3 } });
+                                                    new object[] { arg });
 
             Assert.NotNull(actionInfo);
             var args = actionInfo.Arguments[0] as int[];
@@ -122,19 +122,16 @@ namespace SignalR.Tests
         public void ResolveActionBindsComplexArrayArgument()
         {
             var resolver = new DefaultActionResolver();
-            var arg = new Dictionary<string, object> {
-                { "Age", 1 },
-                { "Address",  new Dictionary<string, object> {
-                                { "Street",  "The street" },
-                                { "Zip", 34567 }
-                              } 
-                }
-            };
+            var arg = new JObject(new JProperty("Age", 1),
+                                  new JProperty("Address",
+                                      new JObject(
+                                          new JProperty("Street", "The street"),
+                                          new JProperty("Zip", "34567"))));
 
 
             var actionInfo = resolver.ResolveAction(typeof(TestHub),
                                                     "MethodWithArrayOfComplete",
-                                                    new object[] { new object[] { arg } });
+                                                    new object[] { new JArray(new object[] { arg }) });
 
             Assert.NotNull(actionInfo);
             var complexArray = actionInfo.Arguments[0] as Complex[];
@@ -145,6 +142,21 @@ namespace SignalR.Tests
             Assert.NotNull(complex.Address);
             Assert.Equal("The street", complex.Address.Street);
             Assert.Equal(34567, complex.Address.Zip);
+        }
+
+        [Fact]
+        public void ResolveActionBindsGuid()
+        {
+            var resolver = new DefaultActionResolver();
+            var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
+
+            var actionInfo = resolver.ResolveAction(typeof(TestHub),
+                                                    "MethodWithGuid",
+                                                    new object[] { arg });
+
+            Assert.NotNull(actionInfo);
+            var arg0 = (Guid)actionInfo.Arguments[0];
+            Assert.Equal(new Guid(arg), arg0);
         }
 
         private class TestDerivedHub : TestHub
@@ -189,6 +201,11 @@ namespace SignalR.Tests
             }
 
             public void MethodWithComplex(Complex complex)
+            {
+
+            }
+
+            public void MethodWithGuid(Guid guid)
             {
 
             }

@@ -9,12 +9,12 @@ namespace SignalR.Web
         {
             context.PostResolveRequestCache += (sender, e) =>
             {
-                // Remap to MessageReceiverHandler
-                if (context.Request.AppRelativeCurrentExecutionFilePath.StartsWith("~/" + MessageReceiverHandler.HandlerName))
-                {
-                    var handler = new MessageReceiverHandler();
-                    context.Context.RemapHandler(handler);
-                }
+                //// Remap to MessageReceiverHandler
+                //if (context.Request.AppRelativeCurrentExecutionFilePath.StartsWith("~/" + MessageReceiverHandler.HandlerName))
+                //{
+                //    var handler = new MessageReceiverHandler();
+                //    context.Context.RemapHandler(handler);
+                //}
             };
         }
 

@@ -19,10 +19,16 @@ namespace SignalR.Hubs
         private readonly IHubLocator _hubLocator;
         private readonly IJavaScriptMinifier _javascriptMinifier;
 
+        public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
+            this(resolver.Resolve<IHubLocator>(),
+                 resolver.Resolve<IJavaScriptMinifier>())
+        {
+        }
+
         public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator, IJavaScriptMinifier javascriptMinifier)
         {
             _hubLocator = hubLocator;
-            _javascriptMinifier = javascriptMinifier;
+            _javascriptMinifier = javascriptMinifier ?? NullJavaScriptMinifier.Instance;
         }
 
         public bool IsDebuggingEnabled { get; set; }
@@ -113,10 +119,10 @@ namespace SignalR.Hubs
             // Pick the overload with the minimum number of arguments
             return from method in ReflectionHelper.GetExportedHubMethods(type)
                    group method by method.Name into overloads
-                   let overload = (from overload in overloads
+                   let oload = (from overload in overloads
                                    orderby overload.GetParameters().Length
                                    select overload).FirstOrDefault()
-                   select overload;
+                   select oload;
         }
 
         private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method)
@@ -134,7 +140,7 @@ namespace SignalR.Hubs
         {
             return ReflectionHelper.GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName) ?? Json.CamelCase(method.Name);
         }
-        
+
         private static string Commas(IEnumerable<string> values)
         {
             return Commas(values, v => v);

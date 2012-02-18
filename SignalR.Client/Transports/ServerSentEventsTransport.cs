@@ -10,24 +10,46 @@ namespace SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private const string ReaderKey = "sse.reader";
+        private int _initializedCalled;
+
         private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
             : base("serverSentEvents")
         {
+            ConnectionTimeout = TimeSpan.FromSeconds(2);
         }
+
+        /// <summary>
+        /// Time allowed before failing the connect request
+        /// </summary>
+        public TimeSpan ConnectionTimeout { get; set; }
 
         protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             OpenConnection(connection, data, initializeCallback, errorCallback);
         }
 
+        private void Reconnect(Connection connection, string data)
+        {
+            if (!connection.IsActive)
+            {
+                return;
+            }
+
+            // Wait for a bit before reconnecting
+            Thread.Sleep(ReconnectDelay);
+
+            // Now attempt a reconnect
+            OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+        }
+
         private void OpenConnection(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             // If we're reconnecting add /connect to the url
-            bool reconnect = initializeCallback == null;
+            bool reconnecting = initializeCallback == null;
 
-            var url = (reconnect ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
+            var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
             Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
 
@@ -41,37 +63,76 @@ namespace SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-                    if (errorCallback != null)
+                    var exception = task.Exception.GetBaseException();
+                    if (!IsRequestAborted(exception))
                     {
-                        errorCallback(task.Exception);
+                        if (errorCallback != null &&
+                            Interlocked.Exchange(ref _initializedCalled, 1) == 0)
+                        {
+                            errorCallback(exception);
+                        }
+                        else if (reconnecting)
+                        {
+                            // Only raise the error event if we failed to reconnect
+                            connection.OnError(exception);
+                        }
                     }
-                    else
+
+                    if (reconnecting)
                     {
-                        // Raise the error event if we failed to reconnect
-                        connection.OnError(task.Exception.GetBaseException());
+                        // Retry
+                        Reconnect(connection, data);
+                        return;
                     }
                 }
                 else
                 {
                     // Get the reseponse stream and read it for messages
-                    var stream = task.Result.GetResponseStream();
+                    var response = task.Result;
+                    var stream = response.GetResponseStream();
                     var reader = new AsyncStreamReader(stream,
                                                        connection,
-                                                       initializeCallback,
                                                        () =>
                                                        {
-                                                           // Wait for a bit before reconnecting
-                                                           Thread.Sleep(ReconnectDelay);
+                                                           if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
+                                                           {
+                                                               initializeCallback();
+                                                           }
+                                                       },
+                                                       () =>
+                                                       {
+                                                           response.Close();
 
-                                                           // Now attempt a reconnect
-                                                           OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+                                                           Reconnect(connection, data);
                                                        });
+
+                    if (reconnecting)
+                    {
+                        // Raise the reconnect event if the connection comes back up
+                        connection.OnReconnected();
+                    }
+
                     reader.StartReading();
 
                     // Set the reader for this connection
                     connection.Items[ReaderKey] = reader;
                 }
             });
+
+            if (initializeCallback != null)
+            {
+                TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
+                {
+                    if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
+                    {
+                        // Stop the connection
+                        Stop(connection);
+
+                        // Connection timeout occured
+                        errorCallback(new TimeoutException());
+                    }
+                });
+            }
         }
 
         protected override void OnBeforeAbort(Connection connection)
@@ -80,8 +141,9 @@ namespace SignalR.Client.Transports
             var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
             if (reader != null)
             {
-                // Stop reading data from the stream
-                reader.StopReading();
+                // Stop reading data from the stream, don't close it since we're going to end
+                // the request
+                reader.StopReading(raiseCloseCallback: false);
 
                 // Remove the reader
                 connection.Items.Remove(ReaderKey);
@@ -96,7 +158,7 @@ namespace SignalR.Client.Transports
             private readonly Action _closeCallback;
             private readonly Connection _connection;
             private int _processingQueue;
-            private bool _reading;
+            private int _reading;
             private bool _processingBuffer;
 
             public AsyncStreamReader(Stream stream, Connection connection, Action initializeCallback, Action closeCallback)
@@ -108,20 +170,36 @@ namespace SignalR.Client.Transports
                 _buffer = new ChunkBuffer();
             }
 
-            public void StartReading()
+            public bool Reading
             {
-                _reading = true;
-                ReadLoop();
+                get
+                {
+                    return _reading == 1;
+                }
             }
 
-            public void StopReading()
+            public void StartReading()
             {
-                _reading = false;
+                if (Interlocked.Exchange(ref _reading, 1) == 0)
+                {
+                    ReadLoop();
+                }
+            }
+
+            public void StopReading(bool raiseCloseCallback = true)
+            {
+                if (Interlocked.Exchange(ref _reading, 0) == 1)
+                {
+                    if (raiseCloseCallback)
+                    {
+                        _closeCallback();
+                    }
+                }
             }
 
             private void ReadLoop()
             {
-                if (!_reading)
+                if (!Reading)
                 {
                     return;
                 }
@@ -135,7 +213,12 @@ namespace SignalR.Client.Transports
 
                         if (!IsRequestAborted(exception))
                         {
-                            _connection.OnError(exception);
+                            if (!(exception is IOException))
+                            {
+                                _connection.OnError(exception);
+                            }
+
+                            StopReading();
                         }
                         return;
                     }
@@ -152,12 +235,6 @@ namespace SignalR.Client.Transports
                     {
                         // Stop any reading we're doing
                         StopReading();
-
-                        // Close the stream
-                        _stream.Close();
-
-                        // Call the close callback
-                        _closeCallback();
                         return;
                     }
 
@@ -174,7 +251,7 @@ namespace SignalR.Client.Transports
 
             private void ProcessBuffer()
             {
-                if (!_reading)
+                if (!Reading)
                 {
                     return;
                 }
@@ -192,7 +269,7 @@ namespace SignalR.Client.Transports
 
                 for (int i = 0; i < total; i++)
                 {
-                    if (!_reading)
+                    if (!Reading)
                     {
                         return;
                     }
@@ -210,7 +287,7 @@ namespace SignalR.Client.Transports
 
             private void ProcessChunks()
             {
-                while (_reading && _buffer.HasChunks)
+                while (Reading && _buffer.HasChunks)
                 {
                     string line = _buffer.ReadLine();
 
@@ -220,7 +297,7 @@ namespace SignalR.Client.Transports
                         break;
                     }
 
-                    if (!_reading)
+                    if (!Reading)
                     {
                         return;
                     }
@@ -232,7 +309,7 @@ namespace SignalR.Client.Transports
                         continue;
                     }
 
-                    if (!_reading)
+                    if (!Reading)
                     {
                         return;
                     }
@@ -257,9 +334,24 @@ namespace SignalR.Client.Transports
                             }
                             else
                             {
-                                if (_reading)
+                                if (Reading)
                                 {
-                                    OnMessage(_connection, sseEvent.Data);
+                                    // We don't care about timedout messages here since it will just reconnect
+                                    // as part of being a long running request
+                                    bool timedOutReceived;
+                                    bool disconnectReceived;
+
+                                    ProcessResponse(_connection, sseEvent.Data, out timedOutReceived, out disconnectReceived);
+
+                                    if (disconnectReceived)
+                                    {
+                                        _connection.Stop();
+                                    }
+
+                                    if (timedOutReceived)
+                                    {
+                                        return;
+                                    }
                                 }
                             }
                             break;

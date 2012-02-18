@@ -13,7 +13,7 @@
         callbacks = {};
 
     // Array.prototype.map
-    if (!Array.prototype.hasOwnProperty('map')) {
+    if (!Array.prototype.hasOwnProperty("map")) {
         Array.prototype.map = function (fun, thisp) {
             var arr = this,
                 i,
@@ -30,14 +30,16 @@
 
     function executeCallback(hubName, fn, args, state) {
         var hub = hubs[hubName],
-            method;
+            hubMethod;
 
         if (hub) {
             signalR.hub.processState(hubName, hub.obj, state);
 
-            method = hub[fn];
-            if (method) {
-                method.apply(hub.obj, args);
+            if (hub[fn]) {
+                hubMethod = hub.obj[fn];
+                if (hubMethod) {
+                    hubMethod.apply(hub.obj, args);
+                }
             }
         }
     }
@@ -57,11 +59,7 @@
                 obj = instance[key];
 
                 if ($.type(obj) !== "object" ||
-                        key === "prototype" ||
-                        key === "constructor" ||
-                        key === "fn" ||
-                        key === "hub" ||
-                        key === "transports") {
+                        $.inArray(key, ["prototype", "constructor", "fn", "hub", "transports"]) >= 0) {
                     continue;
                 }
 
@@ -95,9 +93,11 @@
     }
 
     function getArgValue(a) {
-        return $.isFunction(a) ? null :
-            ($.type(a) === "undefined"
-                ? null : a);
+        return $.isFunction(a)
+            ? null
+            : ($.type(a) === "undefined"
+                ? null
+                : a);
     }
 
     function copy(obj, exclude) {
@@ -124,6 +124,9 @@
                 signalR.hub.processState(hub._.hubName, hub, result.State);
 
                 if (result.Error) {
+                    if (result.StackTrace) {
+                        signalR.hub.log(result.Error + "\n" + result.StackTrace);
+                    }
                     d.rejectWith(hub, [result.Error]);
                 } else {
                     if ($.type(callback) === "function") {
@@ -168,13 +171,17 @@
             this.data = window.JSON.stringify(localHubs);
         })
         .received(function (result) {
+            var callbackId, cb;
             if (result) {
                 if (!result.Id) {
                     executeCallback(result.Hub, result.Method, result.Args, result.State);
                 } else {
-                    var callback = callbacks[result.Id.toString()];
-                    if (callback) {
-                        callback.callback.call(callback.scope, result);
+                    callbackId = result.Id.toString();
+                    cb = callbacks[callbackId];
+                    if (cb) {
+                        callbacks[callbackId] = null;
+                        delete callbacks[callbackId];
+                        cb.callback.call(cb.scope, result);
                     }
                 }
             }
@@ -184,4 +191,4 @@
         $.extend(left, right);
     };
 
-}(window.jQuery, window));
+} (window.jQuery, window));

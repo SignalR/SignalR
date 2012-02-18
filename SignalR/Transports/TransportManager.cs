@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports
@@ -8,22 +8,13 @@ namespace SignalR.Transports
     public class TransportManager : ITransportManager
     {
         private readonly ConcurrentDictionary<string, Func<HostContext, ITransport>> _transports = new ConcurrentDictionary<string, Func<HostContext, ITransport>>(StringComparer.OrdinalIgnoreCase);
-        private static readonly TransportManager _default = new TransportManager();
-
-        private TransportManager()
+        
+        public TransportManager(IDependencyResolver resolver)
         {
-            Register("foreverFrame", context => new ForeverFrameTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-            Register("serverSentEvents", context => new ServerSentEventsTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-            Register("longPolling", context => new LongPollingTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-            Register("forever", context => new ForeverTransport(context, DependencyResolver.Resolve<IJsonSerializer>()));
-        }
-
-        public static TransportManager Default
-        {
-            get
-            {
-                return _default;
-            }
+            Register("foreverFrame", context => new ForeverFrameTransport(context, resolver));
+            Register("serverSentEvents", context => new ServerSentEventsTransport(context, resolver));
+            Register("longPolling", context => new LongPollingTransport(context, resolver));
+            Register("forever", context => new ForeverTransport(context, resolver));
         }
 
         public void Register(string transportName, Func<HostContext, ITransport> transportFactory)

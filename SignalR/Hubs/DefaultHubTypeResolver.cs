@@ -8,10 +8,9 @@ namespace SignalR.Hubs
     {
         private readonly Dictionary<string, Type> _hubCache = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
 
-        public DefaultHubTypeResolver()
-            : this(DependencyResolver.Resolve<IHubLocator>())
+        public DefaultHubTypeResolver(IDependencyResolver resolver)
+            : this(resolver.Resolve<IHubLocator>())
         {
-
         }
 
         public DefaultHubTypeResolver(IHubLocator hubLocator)

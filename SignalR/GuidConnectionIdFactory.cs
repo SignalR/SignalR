@@ -1,5 +1,5 @@
 ﻿using System;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 
 namespace SignalR
 {

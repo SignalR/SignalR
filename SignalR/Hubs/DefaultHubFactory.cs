@@ -9,9 +9,9 @@ namespace SignalR.Hubs
         private readonly IHubActivator _hubActivator;
         private readonly IHubTypeResolver _hubTypeResolver;
 
-        public DefaultHubFactory()
-            : this(DependencyResolver.Resolve<IHubActivator>(),
-                   DependencyResolver.Resolve<IHubTypeResolver>())
+        public DefaultHubFactory(IDependencyResolver resolver)
+            : this(resolver.Resolve<IHubActivator>(),
+                   resolver.Resolve<IHubTypeResolver>())
         {
 
         }

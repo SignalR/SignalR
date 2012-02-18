@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web.Script.Serialization;
 using Newtonsoft.Json;
 
 namespace SignalR

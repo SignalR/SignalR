@@ -43,8 +43,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.0.3\lib\sl3-wp\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.0.7.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.4.0.7\lib\sl4-windowsphone71\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.WP71">
       <HintPath>..\packages\System.Threading.Tasks.2.1.2\lib\sl4-wp71\System.Threading.Tasks.WP71.dll</HintPath>
@@ -104,6 +105,12 @@
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
+      <Link>Transports\AutoTransport.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
       <Link>Transports\HttpBasedTransport.cs</Link>
     </Compile>
@@ -115,9 +122,6 @@
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
       <Link>Transports\ServerSentEventsTransport.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Transports\Transport.cs">
-      <Link>Transports\Transport.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
       <Link>Infrastructure\HttpHelper.cs</Link>

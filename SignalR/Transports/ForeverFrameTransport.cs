@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Threading.Tasks;
-using SignalR.Abstractions;
+using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
     public class ForeverFrameTransport : ForeverTransport
     {
-        private const string _initTemplate = "<!DOCTYPE html><html><head>" +
-                                             "<title>SignalR Forever Frame Transport Stream</title></head>\r\n" +
-                                             "<body>\r\n" +
-                                             "<script>\r\n" +
-            //"    debugger;\r\n"+
-                                             "    var $ = window.parent.jQuery,\r\n" +
-                                             "        ff = $ ? $.signalR.transports.foreverFrame : null,\r\n" +
-                                             "        c =  ff ? ff.getConnection('{0}') : null,\r\n" +
-                                             "        r = ff ? ff.receive : function() {{}};\r\n" +
-                                             "    ff ? ff.started(c) : '';" +
-                                             "</script>";
+        private const string _initPrefix = "<!DOCTYPE html><html><head>" +
+                                           "<title>SignalR Forever Frame Transport Stream</title></head>\r\n" +
+                                           "<body>\r\n" +
+                                           "<script>\r\n" + //"    debugger;\r\n"+
+                                           "    var $ = window.parent.jQuery,\r\n" +
+                                           "        ff = $ ? $.signalR.transports.foreverFrame : null,\r\n" +
+                                           "        c =  ff ? ff.getConnection('";
 
-        private const string _sendTemplate = "<script>r(c, {0});</script>\r\n";
-
-        private const string _debugTemplate = "<div>{0}</div>\r\n";
+        private const string _initSuffix = "') : null,\r\n" +
+                                            "        r = ff ? ff.receive : function() {{}};\r\n" +
+                                            "    ff ? ff.started(c) : '';" +
+                                            "</script>";
 
         private readonly bool _isDebug;
 
-        public ForeverFrameTransport(HostContext context, IJsonSerializer jsonSerializer)
-            : base(context, jsonSerializer)
+        public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
+            : base(context, resolver)
         {
             _isDebug = context.IsDebuggingEnabled();
         }
@@ -43,30 +41,20 @@ namespace SignalR.Transports
             var data = JsonSerializer.Stringify(response);
             OnSending(data);
 
-            var script = String.Format(_sendTemplate, data);
+            var script = "<script>r(c, " + data + ");</script>\r\n";
             if (_isDebug)
             {
-                script += (String.Format(_debugTemplate, data));
+                script += "<div>" + data + "</div>\r\n";
             }
 
-            if (Context.Response.IsClientConnected)
-            {
-                return Context.Response.WriteAsync(script);
-            }
-            return TaskAsyncHelper.Empty;
+            return Context.Response.WriteAsync(script);            
         }
 
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
-            long lastMessageId;
-            if (Int64.TryParse(Context.Request.QueryString["messageId"], out lastMessageId))
-            {
-                LastMessageId = lastMessageId;
-            }
-
             return base.InitializeResponse(connection)
-                .Then(initScript => Context.Response.WriteAsync(initScript), String.Format(_initTemplate, Context.Request.QueryString["frameId"]))
-                .FastUnwrap();
+                .Then(initScript => Context.Response.WriteAsync(initScript),
+                      _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }
     }
 }

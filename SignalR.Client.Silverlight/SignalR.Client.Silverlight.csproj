@@ -18,6 +18,7 @@
     <ValidateXaml>true</ValidateXaml>
     <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
     <RestorePackages>true</RestorePackages>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\SignalR\</SolutionDir>
   </PropertyGroup>
   <!-- This property group is only here to support building this project using the 
        MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
@@ -48,8 +49,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.0.4\lib\sl4\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.0.7.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.4.0.7\lib\sl4\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.SL4">
       <HintPath>..\packages\System.Threading.Tasks.2.1.2\lib\sl40\System.Threading.Tasks.SL4.dll</HintPath>
@@ -110,6 +112,12 @@
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
+      <Link>Transports\AutoTransport.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
       <Link>Transports\HttpBasedTransport.cs</Link>
     </Compile>
@@ -122,9 +130,6 @@
     <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
       <Link>Transports\ServerSentEventsTransport.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Transports\Transport.cs">
-      <Link>Transports\Transport.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
       <Link>Infrastructure\HttpHelper.cs</Link>
     </Compile>
@@ -135,6 +140,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Properties\SignalR.Client.Silverlight.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />

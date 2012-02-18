@@ -2,7 +2,7 @@
 {
     public interface ITransportHeartBeat
     {
-        void AddConnection(ITrackingDisconnect connection);
-        void MarkConnection(ITrackingDisconnect connection);
+        void AddConnection(ITrackingConnection connection);
+        void MarkConnection(ITrackingConnection connection);
     }
 }
