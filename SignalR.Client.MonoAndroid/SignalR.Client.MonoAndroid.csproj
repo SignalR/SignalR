@@ -42,11 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Common\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="..\Common\TaskExtensions.cs">
       <Link>Extensions\TaskExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
@@ -84,11 +84,20 @@
     <Compile Include="..\SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
+      <Link>Transports\AutoTransport.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
       <Link>Transports\HttpBasedTransport.cs</Link>
@@ -101,9 +110,6 @@
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
       <Link>Transports\ServerSentEventsTransport.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Transports\Transport.cs">
-      <Link>Transports\Transport.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
       <Link>Infrastructure\HttpHelper.cs</Link>
