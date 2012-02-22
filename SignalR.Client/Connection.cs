@@ -57,6 +57,8 @@ namespace SignalR.Client
             _syncContext = SynchronizationContext.Current;
         }
 
+        public CookieContainer CookieContainer { get; set; }
+
         public ICredentials Credentials { get; set; }
 
         public IEnumerable<string> Groups { get; internal set; }
@@ -260,7 +262,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void PrepareRequest(HttpWebRequest request)
+        protected internal virtual void PrepareRequest(HttpWebRequest request)
         {
 #if WINDOWS_PHONE
             // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
@@ -275,6 +277,11 @@ namespace SignalR.Client
             if (Credentials != null)
             {
                 request.Credentials = Credentials;
+            }
+
+            if (CookieContainer != null)
+            {
+                request.CookieContainer = CookieContainer;
             }
         }
 
