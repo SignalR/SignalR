@@ -16,6 +16,7 @@ namespace SignalR.Client
         string Url { get; }
 
         ICredentials Credentials { get; set; }
+        CookieContainer CookieContainer { get; set; }
 
         event Action Closed;
         event Action<Exception> Error;
