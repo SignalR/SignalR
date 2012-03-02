@@ -9,7 +9,7 @@ namespace SignalR
     public class ConnectionManager : IConnectionManager
     {
         private readonly IDependencyResolver _resolver;
-        
+
         public ConnectionManager(IDependencyResolver resolver)
         {
             _resolver = resolver;
@@ -38,10 +38,12 @@ namespace SignalR
 
         private IConnection GetConnection(string connectionType)
         {
+            // Give this a unique id
+            var connectionId = Guid.NewGuid().ToString();
             return new Connection(_resolver.Resolve<IMessageBus>(),
                                   _resolver.Resolve<IJsonSerializer>(),
                                   connectionType,
-                                  null,
+                                  connectionId,
                                   new[] { connectionType },
                                   Enumerable.Empty<string>(),
                                   _resolver.Resolve<ITraceManager>());
