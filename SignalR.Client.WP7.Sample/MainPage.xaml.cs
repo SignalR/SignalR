@@ -23,18 +23,27 @@ namespace SignalR.Client.WP7.Sample
             var connection = new Connection("http://localhost:40476/Raw/raw");
             connection.Received += data =>
             {
-                App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
+                Dispatcher.BeginInvoke(() =>
+                {
+                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
+                });
             };
 
             connection.Error += ex =>
             {
-                var aggEx = (AggregateException)ex;
-                App.ViewModel.Items.Add(new ItemViewModel { LineOne = aggEx.InnerExceptions[0].Message });
+                Dispatcher.BeginInvoke(() =>
+                {
+                    var aggEx = (AggregateException)ex;
+                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = aggEx.InnerExceptions[0].Message });
+                });
             };
 
             connection.Reconnected += () =>
             {
-                App.ViewModel.Items.Add(new ItemViewModel { LineOne = "Connection restored" });
+                Dispatcher.BeginInvoke(() =>
+                {
+                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = "Connection restored" });
+                });
             };
 
             var scheduler = TaskScheduler.FromCurrentSynchronizationContext();

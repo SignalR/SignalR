@@ -19,8 +19,6 @@ namespace SignalR.Client
         private IClientTransport _transport;
         private bool _initialized;
 
-        private readonly SynchronizationContext _syncContext;
-
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
@@ -54,7 +52,6 @@ namespace SignalR.Client
             QueryString = queryString;
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            _syncContext = SynchronizationContext.Current;
         }
 
         public CookieContainer CookieContainer { get; set; }
@@ -124,25 +121,8 @@ namespace SignalR.Client
 
                 if (Sending != null)
                 {
-                    if (_syncContext != null)
-                    {
-                        var dataTcs = new TaskCompletionSource<string>();
-                        _syncContext.Post(_ =>
-                        {
-                            // Raise the event on the sync context
-                            dataTcs.SetResult(Sending());
-                        },
-                        null);
-
-                        // Get the data and start the transport
-                        dataTcs.Task.Then(data => StartTransport(data))
-                                    .ContinueWith(negotiateTcs);
-                    }
-                    else
-                    {
-                        var data = Sending();
-                        StartTransport(data).ContinueWith(negotiateTcs);
-                    }
+                    var data = Sending();
+                    StartTransport(data).ContinueWith(negotiateTcs);
                 }
                 else
                 {
@@ -185,14 +165,7 @@ namespace SignalR.Client
 
                 if (Closed != null)
                 {
-                    if (_syncContext != null)
-                    {
-                        _syncContext.Post(_ => Closed(), null);
-                    }
-                    else
-                    {
-                        Closed();
-                    }
+                    Closed();
                 }
             }
             finally
@@ -221,14 +194,7 @@ namespace SignalR.Client
         {
             if (Received != null)
             {
-                if (_syncContext != null)
-                {
-                    _syncContext.Post(msg => Received((string)msg), message);
-                }
-                else
-                {
-                    Received(message);
-                }
+                Received(message);
             }
         }
 
@@ -236,14 +202,7 @@ namespace SignalR.Client
         {
             if (Error != null)
             {
-                if (_syncContext != null)
-                {
-                    _syncContext.Post(err => Error((Exception)err), error);
-                }
-                else
-                {
-                    Error(error);
-                }
+                Error(error);
             }
         }
 
@@ -251,14 +210,7 @@ namespace SignalR.Client
         {
             if (Reconnected != null)
             {
-                if (_syncContext != null)
-                {
-                    _syncContext.Post(_ => Reconnected(), null);
-                }
-                else
-                {
-                    Reconnected();
-                }
+                Reconnected();
             }
         }
 
