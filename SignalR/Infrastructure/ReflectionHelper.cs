@@ -6,12 +6,12 @@ using SignalR.Hubs;
 
 namespace SignalR.Infrastructure
 {
-    internal static class ReflectionHelper
+    public static class ReflectionHelper
     {
         private static readonly Type[] _excludeTypes = new[] { typeof(Hub), typeof(object) };
         private static readonly Type[] _excludeInterfaces = new[] { typeof(IHub), typeof(IDisconnect), typeof(IConnected) };
 
-        internal static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
+        public static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
         {
             if (!typeof(IHub).IsAssignableFrom(type))
             {
@@ -42,7 +42,7 @@ namespace SignalR.Infrastructure
             return type.GetInterfaceMap(iface).TargetMethods;
         }
 
-        internal static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
+        public static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
             where TAttribute : Attribute
         {
             var attributes = source.GetCustomAttributes(typeof(TAttribute), false)
