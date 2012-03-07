@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DC2C1256-C3B1-4C5B-AD36-912F4BF593AD}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SignalR.Client.MonoAndroid</RootNamespace>
+    <AssemblyName>SignalR.Client.MonoAndroid</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="Newtonsoft.Json.MonoDroid">
+      <HintPath>lib\Newtonsoft.Json.MonoDroid.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Common\TaskExtensions.cs">
+      <Link>Extensions\TaskExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Connection.cs">
+      <Link>Connection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
+      <Link>ConnectionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubClientInvocation.cs">
+      <Link>Hubs\HubClientInvocation.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubConnection.cs">
+      <Link>Hubs\HubConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubProxy.cs">
+      <Link>Hubs\HubProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubProxyExtensions.cs">
+      <Link>Hubs\HubProxyExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubRegistrationData.cs">
+      <Link>Hubs\HubRegistrationData.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubResult.cs">
+      <Link>Hubs\HubResult.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubServerInvocation.cs">
+      <Link>Hubs\HubServerInvocation.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\IHubProxy.cs">
+      <Link>Hubs\IHubProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\Subscription.cs">
+      <Link>Hubs\Subscription.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\IConnection.cs">
+      <Link>IConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
+      <Link>Infrastructure\StreamExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
+      <Link>NegotiationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
+      <Link>Transports\AutoTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
+      <Link>Transports\HttpBasedTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\IClientTransport.cs">
+      <Link>Transports\IClientTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\LongPollingTransport.cs">
+      <Link>Transports\LongPollingTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
+      <Link>Transports\ServerSentEventsTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
+      <Link>Infrastructure\HttpHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\TaskAsyncHelper.cs">
+      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

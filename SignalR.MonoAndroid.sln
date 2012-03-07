@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR", "SignalR\SignalR.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client", "SignalR.Client\SignalR.Client.csproj", "{EB46B9C6-EE37-48F9-835E-E49580E40E0A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.MonoAndroid", "SignalR.Client.MonoAndroid\SignalR.Client.MonoAndroid.csproj", "{DC2C1256-C3B1-4C5B-AD36-912F4BF593AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DC2C1256-C3B1-4C5B-AD36-912F4BF593AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC2C1256-C3B1-4C5B-AD36-912F4BF593AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC2C1256-C3B1-4C5B-AD36-912F4BF593AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC2C1256-C3B1-4C5B-AD36-912F4BF593AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

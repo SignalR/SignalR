@@ -88,7 +88,7 @@ namespace SignalR.Client.Hubs
             return new DisposableAction(() => subscription.Data -= handler);
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !__ANDROID__ && !__MONOTOUCH__
         public static IDisposable On(this IHubProxy proxy, string eventName, Action<dynamic> onData)
         {
             return On<dynamic>(proxy, eventName, onData);

@@ -219,6 +219,10 @@ namespace SignalR.Client
 #if WINDOWS_PHONE
             // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
             request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
+#elif __ANDROID__
+            request.UserAgent = CreateUserAgentString("SignalR.Client.MonoAndroid");
+#elif __MONOTOUCH__
+            request.UserAgent = CreateUserAgentString("SignalR.Client.MonoTouch");
 #else
 #if SILVERLIGHT
             // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request

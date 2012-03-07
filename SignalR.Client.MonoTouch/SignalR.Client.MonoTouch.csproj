@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5F4A31E8-36B1-4F6B-81AF-AFE1491FECAA}</ProjectGuid>
+    <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SignalR.Client.MonoTouch</RootNamespace>
+    <AssemblyName>SignalR.Client.MonoTouch</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;__MONOTOUCH__</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <DefineConstants>__MONOTOUCH__</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="monotouch" />
+    <Reference Include="Newtonsoft.Json.MonoTouch">
+      <HintPath>lib\Newtonsoft.Json.MonoTouch.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Common\TaskExtensions.cs">
+      <Link>Extensions\TaskExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Connection.cs">
+      <Link>Connection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
+      <Link>ConnectionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubClientInvocation.cs">
+      <Link>Hubs\HubClientInvocation.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubConnection.cs">
+      <Link>Hubs\HubConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubProxy.cs">
+      <Link>Hubs\HubProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubProxyExtensions.cs">
+      <Link>Hubs\HubProxyExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubRegistrationData.cs">
+      <Link>Hubs\HubRegistrationData.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubResult.cs">
+      <Link>Hubs\HubResult.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\HubServerInvocation.cs">
+      <Link>Hubs\HubServerInvocation.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\IHubProxy.cs">
+      <Link>Hubs\IHubProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Hubs\Subscription.cs">
+      <Link>Hubs\Subscription.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\IConnection.cs">
+      <Link>IConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
+      <Link>Infrastructure\StreamExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
+      <Link>NegotiationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
+      <Link>Transports\AutoTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\HttpBasedTransport.cs">
+      <Link>Transports\HttpBasedTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\IClientTransport.cs">
+      <Link>Transports\IClientTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\LongPollingTransport.cs">
+      <Link>Transports\LongPollingTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEventsTransport.cs">
+      <Link>Transports\ServerSentEventsTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
+      <Link>Infrastructure\HttpHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\TaskAsyncHelper.cs">
+      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>
