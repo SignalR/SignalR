@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace SignalR
 {
-    internal static class Json
+    public static class Json
     {
-        internal static string CamelCase(string value)
+        public static string CamelCase(string value)
         {
             if (value == null)
             {
@@ -14,7 +14,7 @@ namespace SignalR
             return String.Join(".", value.Split('.').Select(n => Char.ToLower(n[0]) + n.Substring(1)));
         }
 
-        internal static string MimeType
+        public static string MimeType
         {
             get { return "application/json"; }
         }
