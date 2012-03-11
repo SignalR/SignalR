@@ -5,19 +5,13 @@ using System.Linq;
 
 namespace SignalR.Hosting
 {
-    public class CookieCollection : IEnumerable<Cookie>
+    public class RequestCookieCollection : IEnumerable<Cookie>
     {
         private const string ExceptionMessage_ReadOnlyCollection = "Collection is read only";
         private List<Cookie> _cookies;
         private IEnumerable<Cookie> _cookieSource;
 
-        public CookieCollection()
-        {
-            
-        }
-
-        public CookieCollection(IEnumerable<Cookie> source)
-            : this()
+        public RequestCookieCollection(IEnumerable<Cookie> source)
         {
             _cookieSource = source;   
         }

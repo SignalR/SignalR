@@ -17,7 +17,7 @@ namespace SignalR.Hosting.AspNet
         {
             _request = request;
 
-            Cookies = new CookieCollection(request.Cookies.Cast<string>()
+            Cookies = new RequestCookieCollection(request.Cookies.Cast<string>()
                 .Select(key =>
                     {
                         var cookie = request.Cookies[key];
@@ -64,7 +64,7 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
-        public CookieCollection Cookies
+        public RequestCookieCollection Cookies
         {
             get;
             private set;

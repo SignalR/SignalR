@@ -51,7 +51,7 @@
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
     <Compile Include="Hosting\Cookie.cs" />
-    <Compile Include="Hosting\CookieCollection.cs" />
+    <Compile Include="Hosting\RequestCookieCollection.cs" />
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />

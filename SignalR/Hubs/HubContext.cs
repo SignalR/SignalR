@@ -14,7 +14,7 @@ namespace SignalR.Hubs
         /// <summary>
         /// Gets the cookies for the request
         /// </summary>
-        public CookieCollection Cookies { get; private set; }
+        public RequestCookieCollection Cookies { get; private set; }
 
         /// <summary>
         /// Gets the headers for the request

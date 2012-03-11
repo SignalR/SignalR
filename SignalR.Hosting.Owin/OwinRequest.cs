@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Gate;
 using SignalR.Hosting;
 
@@ -24,13 +25,13 @@ namespace SignalR.Hosting.Owin
                 }                
             }
 
-            // TODO: Add a cookie source that parses cookie header
-            Cookies = new CookieCollection();
+            // TODO: Add a cookie source that parses the cookie header
+            Cookies = new RequestCookieCollection(new Cookie[0]);
             QueryString = ParseDelimited(env.QueryString);
             Form = ParseDelimited(body);
         }
 
-        public CookieCollection Cookies
+        public RequestCookieCollection Cookies
         {
             get;
             private set;
