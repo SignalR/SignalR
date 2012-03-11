@@ -10,7 +10,6 @@ namespace SignalR.Hosting
         private const string ExceptionMessage_ReadOnlyCollection = "Collection is read only";
         private List<Cookie> _cookies;
         private IEnumerable<Cookie> _cookieSource;
-        private bool _isReadOnly = false;
 
         public CookieCollection()
         {
@@ -21,23 +20,6 @@ namespace SignalR.Hosting
             : this()
         {
             _cookieSource = source;   
-        }
-
-        public bool IsReadOnly
-        {
-            get
-            {
-                return _isReadOnly;
-            }
-            set
-            {
-                if (_isReadOnly && !value)
-                {
-                    // Can't change from read only to not read only
-                    throw new InvalidOperationException(ExceptionMessage_ReadOnlyCollection);
-                }
-                _isReadOnly = value;
-            }
         }
 
         public Cookie this[string name]
@@ -82,14 +64,6 @@ namespace SignalR.Hosting
                 {
                     _cookieSource = new List<Cookie>();
                 }
-            }
-        }
-
-        private void ThrowIfReadOnly()
-        {
-            if (IsReadOnly)
-            {
-                throw new InvalidOperationException(ExceptionMessage_ReadOnlyCollection);
             }
         }
     }
