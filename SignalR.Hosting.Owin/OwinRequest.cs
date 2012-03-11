@@ -24,12 +24,13 @@ namespace SignalR.Hosting.Owin
                 }                
             }
 
-            Cookies = new NameValueCollection();
+            // TODO: Add a cookie source that parses cookie header
+            Cookies = new CookieCollection();
             QueryString = ParseDelimited(env.QueryString);
             Form = ParseDelimited(body);
         }
 
-        public NameValueCollection Cookies
+        public CookieCollection Cookies
         {
             get;
             private set;

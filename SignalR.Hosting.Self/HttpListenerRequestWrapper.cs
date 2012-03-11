@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
 using SignalR.Hosting;
 
@@ -12,22 +13,23 @@ namespace SignalR.Hosting.Self
         private readonly NameValueCollection _qs;
         private NameValueCollection _form;
         private readonly NameValueCollection _headers;
-        private readonly NameValueCollection _cookies;
+        private readonly SignalR.Hosting.CookieCollection _cookies;
 
         public HttpListenerRequestWrapper(HttpListenerRequest httpListenerRequest)
         {
             _httpListenerRequest = httpListenerRequest;
             _qs = new NameValueCollection(httpListenerRequest.QueryString);
             _headers = new NameValueCollection(httpListenerRequest.Headers);
-            _cookies = new NameValueCollection();
-
-            foreach (Cookie cookie in httpListenerRequest.Cookies)
-            {
-                _cookies[cookie.Name] = cookie.Value;
-            }
+            _cookies = new SignalR.Hosting.CookieCollection(httpListenerRequest.Cookies.Cast<System.Net.Cookie>()
+                .Select(c => new SignalR.Hosting.Cookie (
+                    name: c.Name,
+                    value: c.Value,
+                    domain: c.Domain,
+                    path: c.Path
+                )));
         }
 
-        public NameValueCollection Cookies
+        public SignalR.Hosting.CookieCollection Cookies
         {
             get
             {

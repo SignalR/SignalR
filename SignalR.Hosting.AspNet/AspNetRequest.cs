@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicValidationHelper;
 using SignalR.Hosting;
@@ -15,11 +16,18 @@ namespace SignalR.Hosting.AspNet
         public AspNetRequest(HttpRequestBase request)
         {
             _request = request;
-            Cookies = new NameValueCollection();
-            foreach (string key in request.Cookies)
-            {
-                Cookies.Add(key, request.Cookies[key].Value);
-            }
+
+            Cookies = new CookieCollection(request.Cookies.Cast<string>()
+                .Select(key =>
+                    {
+                        var cookie = request.Cookies[key];
+                        return new Cookie (
+                            name: cookie.Name,
+                            value: cookie.Value,
+                            domain: cookie.Domain,
+                            path: cookie.Path
+                        );
+                    }));
 
             ResolveFormAndQueryString();
         }
@@ -56,7 +64,7 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
-        public NameValueCollection Cookies
+        public CookieCollection Cookies
         {
             get;
             private set;

@@ -14,16 +14,14 @@ namespace SignalR.Samples.Raw
 
         protected override Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            var userName = request.Cookies["user"];
-            if (!String.IsNullOrEmpty(userName))
+            var userNameCookie = request.Cookies["user"];
+            if (userNameCookie != null)
             {
-                _clients[connectionId] = userName;
-                _users[userName] = connectionId;
+                _clients[connectionId] = userNameCookie.Value;
+                _users[userNameCookie.Value] = connectionId;
             }
 
             string user = GetUser(connectionId);
-
-
 
             return AddToGroup(connectionId, "foo").ContinueWith(_ => 
                    Connection.Broadcast(DateTime.Now + ": " + user + " joined")).Unwrap();

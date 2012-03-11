@@ -14,11 +14,11 @@ namespace SignalR.Hosting.Owin.Samples
 
         protected override Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            var userName = request.Cookies["user"];
-            if (!String.IsNullOrEmpty(userName))
+            var userNameCookie = request.Cookies["user"];
+            if (userNameCookie != null)
             {
-                _clients[connectionId] = userName;
-                _users[userName] = connectionId;
+                _clients[connectionId] = userNameCookie.Value;
+                _users[userNameCookie.Value] = connectionId;
             }
 
             string user = GetUser(connectionId);
