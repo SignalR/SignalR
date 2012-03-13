@@ -86,27 +86,15 @@ namespace SignalR
 
             Connection = CreateConnection(connectionId, groups, context.Request);
 
-            _transport.Connected = () =>
-            {
-                return OnConnectedAsync(context.Request, groups, connectionId);
-            };
+            _transport.Connected = () => OnConnectedAsync(context.Request, groups, connectionId);
 
-            _transport.Reconnected = () =>
-            {
-                return OnReconnectedAsync(context.Request, groups, connectionId);
-            };
+            _transport.Reconnected = () => OnReconnectedAsync(context.Request, groups, connectionId);
 
-            _transport.Received = data =>
-            {
-                return OnReceivedAsync(connectionId, data);
-            };
+            _transport.Received = data => OnReceivedAsync(connectionId, data);
 
             _transport.Error = OnErrorAsync;
 
-            _transport.Disconnected = () =>
-            {
-                return OnDisconnectAsync(connectionId);
-            };
+            _transport.Disconnected = () => OnDisconnectAsync(connectionId);
 
             return _transport.ProcessRequest(Connection) ?? TaskAsyncHelper.Empty;
         }
@@ -128,7 +116,7 @@ namespace SignalR
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
             // 3. connection id + SIGNALRCOMMAND -> for built in commands that we need to process
-            return new string[] {
+            return new[] {
                 DefaultSignal,
                 connectionId,
                 SignalCommand.AddCommandSuffix(connectionId)

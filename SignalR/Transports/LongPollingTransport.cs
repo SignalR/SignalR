@@ -101,22 +101,21 @@ namespace SignalR.Transports
             {
                 return ProcessSendRequest();
             }
-            else
+            
+            if (IsConnectRequest)
             {
-                if (IsConnectRequest)
+                return ProcessConnectRequest(connection);
+            }
+            
+            if (MessageId != null)
+            {
+                if (Reconnected != null)
                 {
-                    return ProcessConnectRequest(connection);
+                    // Return a task that completes when the reconnected event task & the receive loop task are both finished
+                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
                 }
-                else if (MessageId != null)
-                {
-                    if (Reconnected != null)
-                    {
-                        // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
-                    }
 
-                    return ProcessReceiveRequest(connection);
-                }
+                return ProcessReceiveRequest(connection);
             }
 
             return null;

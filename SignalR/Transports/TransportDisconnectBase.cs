@@ -91,16 +91,12 @@ namespace SignalR.Transports
                         })
                         .FastUnwrap();
                 }
-                else
-                {
-                    return Connection.Close();
-                }
+                
+                return Connection.Close();
             }
-            else
-            {
-                // somebody else already fired the Disconnect event
-                return TaskAsyncHelper.Empty;
-            }
+            
+            // somebody else already fired the Disconnect event
+            return TaskAsyncHelper.Empty;
         }
 
         public void Timeout()

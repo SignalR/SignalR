@@ -80,34 +80,28 @@ namespace SignalR.Hubs
                         return task.ContinueWith(t => ProcessResult(state, null, hubRequest, t.Exception))
                                    .FastUnwrap();
                     }
-                    else
-                    {
-                        // Get the <T> in Task<T>
-                        Type resultType = returnType.GetGenericArguments().Single();
+                    // Get the <T> in Task<T>
+                    Type resultType = returnType.GetGenericArguments().Single();
 
-                        // Get the correct ContinueWith overload
-                        var continueWith = TaskAsyncHelper.GetContinueWith(task.GetType());
+                    // Get the correct ContinueWith overload
+                    var continueWith = TaskAsyncHelper.GetContinueWith(task.GetType());
 
-                        var taskParameter = Expression.Parameter(continueWith.Type);
-                        var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
+                    var taskParameter = Expression.Parameter(continueWith.Type);
+                    var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
 
-                        var body = Expression.Call(Expression.Constant(this),
-                                                   processResultMethod,
-                                                   Expression.Constant(state),
-                                                   Expression.Constant(hubRequest),
-                                                   taskParameter);
+                    var body = Expression.Call(Expression.Constant(this),
+                                               processResultMethod,
+                                               Expression.Constant(state),
+                                               Expression.Constant(hubRequest),
+                                               taskParameter);
 
-                        var lambda = Expression.Lambda(body, taskParameter);
+                    var lambda = Expression.Lambda(body, taskParameter);
 
-                        var call = Expression.Call(Expression.Constant(task, continueWith.Type), continueWith.Method, lambda);
-                        Func<Task<Task>> continueWithMethod = Expression.Lambda<Func<Task<Task>>>(call).Compile();
-                        return continueWithMethod.Invoke().FastUnwrap();
-                    }
+                    var call = Expression.Call(Expression.Constant(task, continueWith.Type), continueWith.Method, lambda);
+                    Func<Task<Task>> continueWithMethod = Expression.Lambda<Func<Task<Task>>>(call).Compile();
+                    return continueWithMethod.Invoke().FastUnwrap();
                 }
-                else
-                {
-                    resultTask = ProcessResult(state, result, hubRequest, null);
-                }
+                resultTask = ProcessResult(state, result, hubRequest, null);
             }
             catch (TargetInvocationException e)
             {

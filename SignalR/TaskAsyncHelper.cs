@@ -406,10 +406,7 @@ namespace SignalR
             timeOut,
             TimeSpan.FromMilliseconds(-1));
 
-            return tcs.Task.ContinueWith(_ =>
-            {
-                timer.Dispose();
-            },
+            return tcs.Task.ContinueWith(_ => timer.Dispose(), 
             TaskContinuationOptions.ExecuteSynchronously);
         }
 
@@ -481,7 +478,7 @@ namespace SignalR
         {
             try
             {
-                return FromResult<TResult>(func());
+                return FromResult(func());
             }
             catch (Exception ex)
             {
@@ -493,7 +490,7 @@ namespace SignalR
         {
             try
             {
-                return FromResult<TResult>(func(arg));
+                return FromResult(func(arg));
             }
             catch (Exception ex)
             {
@@ -505,7 +502,7 @@ namespace SignalR
         {
             try
             {
-                return FromResult<TResult>(func(arg1, arg2));
+                return FromResult(func(arg1, arg2));
             }
             catch (Exception ex)
             {
