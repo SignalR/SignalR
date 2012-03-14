@@ -1,5 +1,4 @@
-﻿using System;
-using SignalR.Hubs;
+﻿using SignalR.Hubs;
 
 namespace SignalR
 {
