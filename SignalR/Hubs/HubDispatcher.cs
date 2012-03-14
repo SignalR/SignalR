@@ -133,14 +133,14 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
-        protected override Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect(request, groups));
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect());
         }
 
         protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(request, groups));
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(groups));
         }
 
         protected override Task OnDisconnectAsync(string connectionId)

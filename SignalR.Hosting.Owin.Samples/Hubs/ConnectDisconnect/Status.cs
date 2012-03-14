@@ -12,7 +12,7 @@ namespace SignalR.Samples.Hubs.ConnectDisconnect
             return Clients.leave(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public Task Connect(IEnumerable<string> groups)
+        public Task Connect()
         {
             return Clients.joined(Context.ConnectionId, DateTime.Now.ToString());
         }

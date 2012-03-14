@@ -30,7 +30,7 @@ namespace SignalR.Hosting.Self.Samples
 
         public class MyConnection : PersistentConnection
         {
-            protected override Task OnConnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+            protected override Task OnConnectedAsync(IRequest request, string connectionId)
             {
                 return Connection.Broadcast(String.Format("{0} connected from {1}", connectionId, request.Headers["User-Agent"]));
             }
