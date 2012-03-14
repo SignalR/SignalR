@@ -7,7 +7,7 @@ using SignalR.MessageBus;
 
 namespace SignalR
 {
-    public class Connection : IConnection, IReceivingConnection
+    public class Connection : IConnection
     {
         private readonly IMessageBus _messageBus;
         private readonly IJsonSerializer _serializer;

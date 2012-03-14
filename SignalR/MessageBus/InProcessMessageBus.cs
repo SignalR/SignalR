@@ -47,7 +47,7 @@ namespace SignalR.MessageBus
 
     public class InProcessMessageBus<T> : IMessageBus where T : IComparable<T>
     {
-        private static List<InMemoryMessage<T>> _emptyMessageList = new List<InMemoryMessage<T>>();
+        private static readonly List<InMemoryMessage<T>> _emptyMessageList = new List<InMemoryMessage<T>>();
 
         private readonly ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>> _waitingTasks =
             new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>>();
@@ -64,7 +64,7 @@ namespace SignalR.MessageBus
         private readonly IIdGenerator<T> _idGenerator;
 
         private T _lastMessageId;
-        private long _gcRunning = 0;
+        private long _gcRunning;
 
         private readonly Timer _timer;
 
@@ -134,15 +134,13 @@ namespace SignalR.MessageBus
         {
             var list = _cache.GetOrAdd(eventKey, _ => new LockedList<InMemoryMessage<T>>());
 
-            InMemoryMessage<T> message = null;
-
             try
             {
                 // Take a write lock here so we ensure messages go into the list in order
                 _cacheLock.EnterWriteLock();
 
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
-                message = new InMemoryMessage<T>(eventKey, value, GenerateId());
+                var message = new InMemoryMessage<T>(eventKey, value, GenerateId());
                 _trace.Source.TraceInformation("MessageBus: Saving message {0} with eventKey {1} to cache on AppDomain {2}", message.Id, eventKey, AppDomain.CurrentDomain.Id);
                 list.AddWithLock(message);
 
@@ -200,7 +198,7 @@ namespace SignalR.MessageBus
 
         private IList<InMemoryMessage<T>> GetMessagesSince(string eventKey, T id)
         {
-            LockedList<InMemoryMessage<T>> list = null;
+            LockedList<InMemoryMessage<T>> list;
             _cache.TryGetValue(eventKey, out list);
 
             if (list == null || list.CountWithLock == 0)

@@ -154,11 +154,9 @@ namespace SignalR.Hubs
         private static string GetTemplate()
         {
             using (Stream resourceStream = typeof(DefaultJavaScriptProxyGenerator).Assembly.GetManifestResourceStream(ScriptResource))
+            using (var reader = new StreamReader(resourceStream))
             {
-                using (var reader = new StreamReader(resourceStream))
-                {
-                    return reader.ReadToEnd();
-                }
+                return reader.ReadToEnd();
             }
         }
     }

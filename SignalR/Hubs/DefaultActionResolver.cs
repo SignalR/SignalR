@@ -26,8 +26,6 @@ namespace SignalR.Hubs
                         Method = method,
                         Arguments = args
                     };
-                default:
-                    break;
             }
 
             return null;

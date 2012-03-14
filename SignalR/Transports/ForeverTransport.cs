@@ -93,27 +93,25 @@ namespace SignalR.Transports
             {
                 return ProcessSendRequest();
             }
-            else
+            
+            if (IsConnectRequest)
             {
-                if (IsConnectRequest)
+                if (Connected != null)
                 {
-                    if (Connected != null)
-                    {
-                        // Return a task that completes when the connected event task & the receive loop task are both finished
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Connected, connection);
-                    }
-
-                    return ProcessReceiveRequest(connection);
-                }
-
-                if (Reconnected != null)
-                {
-                    // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
+                    // Return a task that completes when the connected event task & the receive loop task are both finished
+                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Connected, connection);
                 }
 
                 return ProcessReceiveRequest(connection);
             }
+
+            if (Reconnected != null)
+            {
+                // Return a task that completes when the reconnected event task & the receive loop task are both finished
+                return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
+            }
+
+            return ProcessReceiveRequest(connection);
         }
 
         public virtual Task Send(PersistentResponse response)
@@ -202,7 +200,7 @@ namespace SignalR.Transports
                     }
 
                     // Continue the receive loop
-                    return sendTask.Then((conn) => ProcessMessagesImpl(taskCompletetionSource, conn), connection);
+                    return sendTask.Then(conn => ProcessMessagesImpl(taskCompletetionSource, conn), connection);
                 })
                 .ContinueWith(t =>
                 {

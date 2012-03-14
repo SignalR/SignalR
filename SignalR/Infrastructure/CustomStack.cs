@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 
 namespace SignalR.Infrastructure
 {
@@ -23,11 +19,8 @@ namespace SignalR.Infrastructure
                     // We successfully updated the field value during this iteration, so there is no more work to do. 
                     return;
                 }
-                else
-                {
-                    // Otherwise, another thread updated the field before we did, so we need to retry. 
-                    lastReadFieldValue = fieldValueDuringInterlocked;
-                }
+                // Otherwise, another thread updated the field before we did, so we need to retry. 
+                lastReadFieldValue = fieldValueDuringInterlocked;
             }
         }
 
@@ -39,15 +32,13 @@ namespace SignalR.Infrastructure
             {
                 return null;
             }
-            else
+            
+            T[] all = new T[current.Remaining + 1];
+            for (int i = 0; current != null; i++, current = current.Next)
             {
-                T[] all = new T[current.Remaining + 1];
-                for (int i = 0; current != null; i++, current = current.Next)
-                {
-                    all[i] = current.Value;
-                }
-                return all;
+                all[i] = current.Value;
             }
+            return all;
         }
 
         private sealed class Node

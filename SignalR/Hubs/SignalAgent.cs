@@ -10,12 +10,7 @@ namespace SignalR.Hubs
         private readonly string _hubName;
         private readonly TrackingDictionary _state;
 
-        public SignalAgent(IConnection connection, string signal, string hubName)
-            : this(connection, signal, hubName, null)
-        {
-        }
-
-        public SignalAgent(IConnection connection, string signal, string hubName, TrackingDictionary state)
+        public SignalAgent(IConnection connection, string signal, string hubName, TrackingDictionary state = null)
         {
             _connection = connection;
             _signal = signal;
@@ -53,14 +48,7 @@ namespace SignalR.Hubs
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
-            if (_state != null)
-            {
-                result = InvokeWithState(binder.Name, args);
-            }
-            else
-            {
-                result = Invoke(binder.Name, args);
-            }
+            result = _state != null ? InvokeWithState(binder.Name, args) : Invoke(binder.Name, args);
             return true;
         }
 
