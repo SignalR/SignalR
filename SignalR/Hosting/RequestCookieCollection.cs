@@ -48,17 +48,10 @@ namespace SignalR.Hosting
 
         private void EnsureCookies()
         {
-            if (_cookies == null)
-            {
-                if (_cookieSource != null)
-                {
-                    _cookies = new List<Cookie>(_cookieSource);
-                }
-                else
-                {
-                    _cookieSource = new List<Cookie>();
-                }
-            }
+    		if (_cookies != null)
+				return;
+
+			_cookies = new List<Cookie>(_cookieSource ?? new Cookie[0]);
         }
     }
 }
