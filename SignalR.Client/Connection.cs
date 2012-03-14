@@ -153,14 +153,14 @@ namespace SignalR.Client
 
         public virtual void Stop()
         {
-            // Do nothing if the connection was never started
-            if (!_initialized)
-            {
-                return;
-            }
-
             try
             {
+                // Do nothing if the connection was never started
+                if (!_initialized)
+                {
+                    return;
+                }
+
                 _transport.Stop(this);
 
                 if (Closed != null)
