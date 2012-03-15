@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SignalR
+namespace SignalR.MessageBus
 {
     public class Message
     {
