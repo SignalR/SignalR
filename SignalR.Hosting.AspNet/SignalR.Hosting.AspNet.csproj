@@ -58,6 +58,7 @@
     <Compile Include="AspNetShutDownDetector.cs" />
     <Compile Include="BuildManagerTypeLocator.cs" />
     <Compile Include="BuildManagerTypeResolver.cs" />
+    <Compile Include="HttpCookieCollectionWrapper.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
     <Compile Include="HubModule.cs" />
     <Compile Include="Infrastructure\TaskWrapperAsyncResult.cs" />

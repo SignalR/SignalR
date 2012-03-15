@@ -48,6 +48,7 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="CookieCollectionWrapper.cs" />
     <Compile Include="HttpListenerRequestWrapper.cs" />
     <Compile Include="HttpListenerResponseWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

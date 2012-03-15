@@ -55,6 +55,7 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="CookieManager.cs" />
     <Compile Include="OwinHost.cs" />
     <Compile Include="OwinRequest.cs" />
     <Compile Include="OwinResponse.cs" />

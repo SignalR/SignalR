@@ -9,6 +9,6 @@ namespace SignalR.Hosting
         NameValueCollection QueryString { get; }
         NameValueCollection Headers { get; }
         NameValueCollection Form { get; }
-        RequestCookieCollection Cookies { get; }
+        IRequestCookieCollection Cookies { get; }
     }
 }

@@ -48,6 +48,11 @@ namespace SignalR.Transports
         {
             get
             {
+                if (IsConnectRequest)
+                {
+                    return Enumerable.Empty<string>();
+                }
+
                 string groupValue = Context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))

@@ -9,5 +9,7 @@ namespace SignalR.Hosting
 
         Task WriteAsync(string data);
         Task EndAsync(string data);
+
+        IResponseCookieCollection Cookies { get; }
     }
 }

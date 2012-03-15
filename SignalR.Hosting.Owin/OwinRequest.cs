@@ -9,6 +9,8 @@ namespace SignalR.Hosting.Owin
 {
     public class OwinRequest : IRequest
     {
+        private readonly CookieManager _cookies;
+
         public OwinRequest(IDictionary<string, object> environment, string body)
         {
             var env = new Gate.Environment(environment);
@@ -25,16 +27,17 @@ namespace SignalR.Hosting.Owin
                 }                
             }
 
-            // TODO: Add a cookie source that parses the cookie header
-            Cookies = new RequestCookieCollection(new Cookie[0]);
+            _cookies = new CookieManager();
             QueryString = ParseDelimited(env.QueryString);
             Form = ParseDelimited(body);
         }
 
-        public RequestCookieCollection Cookies
+        public IRequestCookieCollection Cookies
         {
-            get;
-            private set;
+            get
+            {
+                return _cookies;
+            }
         }
 
         public NameValueCollection Form

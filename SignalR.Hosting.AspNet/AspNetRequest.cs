@@ -10,24 +10,14 @@ namespace SignalR.Hosting.AspNet
     public class AspNetRequest : IRequest
     {
         private readonly HttpRequestBase _request;
+        private readonly HttpCookieCollectionWrapper _cookies;
         private NameValueCollection _form;
         private NameValueCollection _queryString;
 
         public AspNetRequest(HttpRequestBase request)
         {
             _request = request;
-
-            Cookies = new RequestCookieCollection(request.Cookies.Cast<string>()
-                .Select(key =>
-                    {
-                        var cookie = request.Cookies[key];
-                        return new Cookie (
-                            name: cookie.Name,
-                            value: cookie.Value,
-                            domain: cookie.Domain,
-                            path: cookie.Path
-                        );
-                    }));
+            _cookies = new HttpCookieCollectionWrapper(request.Cookies);
 
             ResolveFormAndQueryString();
         }
@@ -64,10 +54,12 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
-        public RequestCookieCollection Cookies
+        public IRequestCookieCollection Cookies
         {
-            get;
-            private set;
+            get
+            {
+                return _cookies;
+            }
         }
 
         private void ResolveFormAndQueryString()

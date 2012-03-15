@@ -3,7 +3,7 @@ namespace SignalR.Hosting
 {
     public class Cookie
     {
-        public Cookie(string name, string value, string domain, string path)
+        public Cookie(string name, string value, string domain = "", string path = "")
         {
             Name = name;
             Value = value;

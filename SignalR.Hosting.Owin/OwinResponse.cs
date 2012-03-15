@@ -14,10 +14,12 @@ namespace SignalR.Hosting.Owin
         private Func<ArraySegment<byte>, Action, bool> _responseNext;
         private Action<Exception> _responseError;
         private Action _responseCompete;
+        private readonly CookieManager _cookies;
 
         public OwinResponse(ResultDelegate responseCallback)
         {
             _responseCallback = responseCallback;
+            _cookies = new CookieManager();
 
             IsClientConnected = true;
         }
@@ -32,6 +34,14 @@ namespace SignalR.Hosting.Owin
         {
             get;
             private set;
+        }
+
+        public IResponseCookieCollection Cookies
+        {
+            get
+            {
+                return _cookies;
+            }
         }
 
         public Task WriteAsync(string data)

@@ -13,23 +13,17 @@ namespace SignalR.Hosting.Self
         private readonly NameValueCollection _qs;
         private NameValueCollection _form;
         private readonly NameValueCollection _headers;
-        private readonly RequestCookieCollection _cookies;
+        private readonly CookieCollectionWrapper _cookies;
 
         public HttpListenerRequestWrapper(HttpListenerRequest httpListenerRequest)
         {
             _httpListenerRequest = httpListenerRequest;
             _qs = new NameValueCollection(httpListenerRequest.QueryString);
             _headers = new NameValueCollection(httpListenerRequest.Headers);
-            _cookies = new RequestCookieCollection(httpListenerRequest.Cookies.Cast<System.Net.Cookie>()
-                .Select(c => new SignalR.Hosting.Cookie (
-                    name: c.Name,
-                    value: c.Value,
-                    domain: c.Domain,
-                    path: c.Path
-                )));
+            _cookies = new CookieCollectionWrapper(_httpListenerRequest.Cookies);
         }
 
-        public RequestCookieCollection Cookies
+        public IRequestCookieCollection Cookies
         {
             get
             {

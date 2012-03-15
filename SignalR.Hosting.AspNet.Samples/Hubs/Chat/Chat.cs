@@ -29,7 +29,7 @@ namespace SignalR.Samples.Hubs.Chat
         public bool Join()
         {
             // Check the user id cookie
-            var userIdCookie = Context.Cookies["userid"];
+            var userIdCookie = Context.RequestCookies["userid"];
             if (userIdCookie == null)
             {
                 return false;

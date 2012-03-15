@@ -15,10 +15,12 @@ namespace SignalR.Hosting.AspNet
         private static readonly RemoveHeaderDel IIS7RemoveHeader = GetRemoveHeaderDelegate();
 
         private readonly HttpContextBase _context;
+        private readonly HttpCookieCollectionWrapper _cookies;
 
         public AspNetResponse(HttpContextBase context)
         {
             _context = context;
+            _cookies = new HttpCookieCollectionWrapper(context.Response.Cookies);
             DisableResponseBuffering();
         }
 
@@ -39,6 +41,14 @@ namespace SignalR.Hosting.AspNet
             set
             {
                 _context.Response.ContentType = value;
+            }
+        }
+
+        public IResponseCookieCollection Cookies
+        {
+            get
+            {
+                return _cookies;
             }
         }
 

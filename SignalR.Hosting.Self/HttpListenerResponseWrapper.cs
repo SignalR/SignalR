@@ -8,11 +8,14 @@ namespace SignalR.Hosting.Self
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
+        private readonly CookieCollectionWrapper _cookies;
 
         public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse)
         {
             _httpListenerResponse = httpListenerResponse;
             IsClientConnected = true;
+            _cookies = new CookieCollectionWrapper(httpListenerResponse.Cookies,
+                () => _httpListenerResponse.Cookies = new CookieCollection());
         }
 
         public string ContentType
@@ -31,6 +34,11 @@ namespace SignalR.Hosting.Self
         {
             get;
             private set;
+        }
+
+        public IResponseCookieCollection Cookies
+        {
+            get { return _cookies; }
         }
 
         public Task WriteAsync(string data)
