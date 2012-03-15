@@ -32,7 +32,6 @@ namespace SignalR.Hubs
         {
             ConnectionId = connectionId;
             RequestCookies = context.Request.Cookies;
-            ResponseCookies = context.Response.Cookies;
             Headers = context.Request.Headers;
             QueryString = context.Request.QueryString;
             User = context.User;

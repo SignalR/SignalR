@@ -3,14 +3,9 @@
 namespace SignalR.Hosting.Owin
 {
     // TODO: Add support for cookies in OWIN when Gate adds it
-    internal class CookieManager : IRequestCookieCollection, IResponseCookieCollection
+    internal class CookieManager : IRequestCookieCollection
     {
-        Cookie IRequestCookieCollection.this[string name]
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        ResponseCookie IResponseCookieCollection.this[string name]
+        public Cookie this[string name]
         {
             get { throw new NotImplementedException(); }
         }
@@ -18,16 +13,6 @@ namespace SignalR.Hosting.Owin
         public int Count
         {
             get { throw new NotImplementedException(); }
-        }
-
-        void IResponseCookieCollection.Add(ResponseCookie cookie)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IResponseCookieCollection.Clear()
-        {
-            throw new NotImplementedException();
         }
     }
 }

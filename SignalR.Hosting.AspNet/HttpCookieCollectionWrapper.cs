@@ -2,7 +2,7 @@
 
 namespace SignalR.Hosting.AspNet
 {
-    internal class HttpCookieCollectionWrapper : IRequestCookieCollection, IResponseCookieCollection
+    internal class HttpCookieCollectionWrapper : IRequestCookieCollection
     {
         private readonly HttpCookieCollection _cookies;
 
@@ -11,12 +11,7 @@ namespace SignalR.Hosting.AspNet
             _cookies = cookies;
         }
 
-        Cookie IRequestCookieCollection.this[string name]
-        {
-            get { return ToSignalRCookie(_cookies[name]); }
-        }
-
-        ResponseCookie IResponseCookieCollection.this[string name]
+        public Cookie this[string name]
         {
             get { return ToSignalRCookie(_cookies[name]); }
         }
@@ -26,49 +21,19 @@ namespace SignalR.Hosting.AspNet
             get { return _cookies.Count; }
         }
 
-        void IResponseCookieCollection.Add(ResponseCookie cookie)
-        {
-            _cookies.Add(ToSystemWebCookie(cookie));
-        }
-
-        void IResponseCookieCollection.Clear()
-        {
-            _cookies.Clear();
-        }
-
-        private static ResponseCookie ToSignalRCookie(HttpCookie source)
+        private static Cookie ToSignalRCookie(HttpCookie source)
         {
             if (source == null)
             {
                 return null;
             }
 
-            return new ResponseCookie(
+            return new Cookie(
                 source.Name,
                 source.Value,
                 source.Domain,
-                source.Path,
-                source.Secure,
-                source.HttpOnly,
-                source.Expires
+                source.Path
             );
-        }
-
-        private static HttpCookie ToSystemWebCookie(ResponseCookie source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            return new HttpCookie(source.Name, source.Value)
-                {
-                    Domain = source.Domain,
-                    Path = source.Path,
-                    Secure = source.Secure,
-                    HttpOnly = source.HttpOnly,
-                    Expires = source.Expires
-                };
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Net;
 
 namespace SignalR.Hosting.Self
 {
-    internal class CookieCollectionWrapper : IRequestCookieCollection, IResponseCookieCollection
+    internal class CookieCollectionWrapper : IRequestCookieCollection
     {
         private CookieCollection _cookies;
         private readonly Func<CookieCollection> _clearer;
@@ -20,15 +20,7 @@ namespace SignalR.Hosting.Self
             _clearer = clearer;
         }
 
-        Cookie IRequestCookieCollection.this[string name]
-        {
-            get
-            {
-                return ToSignalRCookie(_cookies[name]);
-            }
-        }
-
-        ResponseCookie IResponseCookieCollection.this[string name]
+        public Cookie this[string name]
         {
             get
             {
@@ -41,50 +33,19 @@ namespace SignalR.Hosting.Self
             get { return _cookies.Count; }
         }
 
-        void IResponseCookieCollection.Add(ResponseCookie cookie)
-        {
-            _cookies.Add(ToSystemNetCookie(cookie));
-        }
-
-        void IResponseCookieCollection.Clear()
-        {
-            if (_clearer != null)
-            {
-                _cookies = _clearer();
-            }
-        }
-
-        private static ResponseCookie ToSignalRCookie(System.Net.Cookie source)
+        private static Cookie ToSignalRCookie(System.Net.Cookie source)
         {
             if (source == null)
             {
                 return null;
             }
 
-            return new ResponseCookie(
+            return new Cookie(
                 source.Name,
                 source.Value,
                 source.Domain,
-                source.Path,
-                source.Secure,
-                source.HttpOnly,
-                source.Expires
+                source.Path
             );
-        }
-
-        private static System.Net.Cookie ToSystemNetCookie(ResponseCookie source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            return new System.Net.Cookie(source.Name, source.Value, source.Path, source.Domain)
-                {
-                    Secure = source.Secure,
-                    HttpOnly = source.HttpOnly,
-                    Expires = source.Expires
-                };
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Owin;
-using SignalR.Hosting;
 
 namespace SignalR.Hosting.Owin
 {
@@ -34,14 +33,6 @@ namespace SignalR.Hosting.Owin
         {
             get;
             private set;
-        }
-
-        public IResponseCookieCollection Cookies
-        {
-            get
-            {
-                return _cookies;
-            }
         }
 
         public Task WriteAsync(string data)

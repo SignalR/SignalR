@@ -135,13 +135,13 @@ namespace SignalR
             };
         }
 
-        protected virtual Task OnConnectedAsync(IRequest request, IResponseCookieCollection responseCookies, string connectionId)
+        protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
             OnClientConnected(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
-        protected virtual Task OnReconnectedAsync(IRequest request, IResponseCookieCollection responseCookies, IEnumerable<string> groups, string connectionId)
+        protected virtual Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }

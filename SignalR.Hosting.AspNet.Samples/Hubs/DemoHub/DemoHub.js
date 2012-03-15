@@ -1,5 +1,6 @@
 ﻿$(function () {
-    var demo = $.connection.demo;
+    var demo = $.connection.demo,
+        groupAddedCalled = false;
 
     demo.invoke = function (index) {
         $('#msg').append('<li>' + index + ' client state index ->' + this.index + '</li>');
@@ -14,7 +15,11 @@
     };
 
     demo.groupAdded = function () {
+        if (groupAddedCalled) {
+            throw Error("groupAdded already called!");
+        }
         $('#groupAdded').append('Group Added');
+        groupAddedCalled = true;
     };
 
     demo.errorInCallback = function () {
