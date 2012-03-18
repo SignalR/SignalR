@@ -84,7 +84,7 @@
             if (connection.transport) {
                 // Already started, just return
                 deferred.resolve(connection);
-                return deferred;
+                return deferred.promise();
             }
 
             if ($.type(options) === "function") {
