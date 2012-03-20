@@ -51,7 +51,7 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="Class1.cs" />
+    <Compile Include="ConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
