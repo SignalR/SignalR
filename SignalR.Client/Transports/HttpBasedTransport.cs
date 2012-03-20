@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports
 {
@@ -22,9 +23,34 @@ namespace SignalR.Client.Transports
 
         protected const string HttpRequestKey = "http.Request";
 
-        public HttpBasedTransport(string transport)
+        protected readonly IHttpClient _httpClient;
+
+        public HttpBasedTransport(IHttpClient httpClient, string transport)
         {
+            _httpClient = httpClient;
             _transport = transport;
+        }
+
+        public Task<NegotiationResponse> Negotiate(Connection connection, string url)
+        {
+            return GetNegotiationResponse(_httpClient, connection, url);
+        }
+
+        internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, Connection connection, string url)
+        {
+            string negotiateUrl = url + "negotiate";
+
+            return httpClient.PostAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
+            {
+                string raw = response.ReadAsString();
+
+                if (raw == null)
+                {
+                    throw new InvalidOperationException("Server negotiation failed.");
+                }
+
+                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
+            });
         }
 
         public Task Start(Connection connection, string data)
@@ -49,7 +75,7 @@ namespace SignalR.Client.Transports
                 { "data", data }
             };
 
-            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
+            return _httpClient.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
             {
                 string raw = response.ReadAsString();
 

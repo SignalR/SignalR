@@ -15,7 +15,12 @@ namespace SignalR.Client.Transports
         private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
-            : base("serverSentEvents")
+            : this(new DefaultHttpClient())
+        {
+        }
+
+        public ServerSentEventsTransport(IHttpClient httpClient)
+            : base(httpClient, "serverSentEvents")
         {
             ConnectionTimeout = TimeSpan.FromSeconds(2);
         }
@@ -53,7 +58,7 @@ namespace SignalR.Client.Transports
 
             Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
 
-            HttpHelper.GetAsync(url, request =>
+            _httpClient.GetAsync(url, request =>
             {
                 prepareRequest(request);
 

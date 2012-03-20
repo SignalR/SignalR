@@ -5,9 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using SignalR.Client.Transports;
 
 namespace SignalR.Client
@@ -95,26 +93,15 @@ namespace SignalR.Client
 
             _transport = transport;
 
-            return Negotiate();
+            return Negotiate(transport);
         }
 
-        private Task Negotiate()
+        private Task Negotiate(IClientTransport transport)
         {
-            string negotiateUrl = Url + "negotiate";
-
             var negotiateTcs = new TaskCompletionSource<object>();
 
-            HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
+            transport.Negotiate(this, Url).Then(negotiationResponse =>
             {
-                string raw = response.ReadAsString();
-
-                if (raw == null)
-                {
-                    throw new InvalidOperationException("Server negotiation failed.");
-                }
-
-                var negotiationResponse = JsonConvert.DeserializeObject<NegotiationResponse>(raw);
-
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
@@ -140,7 +127,7 @@ namespace SignalR.Client
                              .Then(() => _initialized = true);
         }
 
-        private void VerifyProtocolVersion(string versionString)
+        private static void VerifyProtocolVersion(string versionString)
         {
             Version version;
             if (String.IsNullOrEmpty(versionString) ||

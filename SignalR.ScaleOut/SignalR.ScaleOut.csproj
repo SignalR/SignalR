@@ -51,7 +51,6 @@
     </Compile>
     <Compile Include="ConfigPeerUrlSource.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
-    <Compile Include="HttpHelper.cs" />
     <Compile Include="IPeerUrlSource.cs" />
     <Compile Include="PeerToPeerHelper.cs" />
     <Compile Include="PeerToPeerHttpSignalBus.cs" />

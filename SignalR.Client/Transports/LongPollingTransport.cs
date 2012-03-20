@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports
 {
@@ -9,7 +10,12 @@ namespace SignalR.Client.Transports
         public TimeSpan ReconnectDelay { get; set; }
 
         public LongPollingTransport()
-            : base("longPolling")
+            : this(new DefaultHttpClient())
+        {
+        }
+
+        public LongPollingTransport(IHttpClient httpClient)
+            : base(httpClient, "longPolling")
         {
             ReconnectDelay = TimeSpan.FromSeconds(5);
         }
@@ -32,7 +38,7 @@ namespace SignalR.Client.Transports
 
             url += GetReceiveQueryString(connection, data);
 
-            HttpHelper.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
+            _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);

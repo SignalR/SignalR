@@ -49,9 +49,6 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.ScaleOut\HttpHelper.cs">
-      <Link>Infrastructure\HttpHelper.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
@@ -67,7 +64,10 @@
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
+    <Compile Include="Infrastructure\DefaultHttpClient.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
+    <Compile Include="Infrastructure\HttpHelper.cs" />
+    <Compile Include="Infrastructure\IHttpClient.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />

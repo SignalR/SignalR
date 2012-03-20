@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports
 {
@@ -7,8 +8,26 @@ namespace SignalR.Client.Transports
         // Transport that's in use
         private IClientTransport _transport;
 
+        private readonly IHttpClient _httpClient;
+
         // List of transports in fallback order
-        private readonly IClientTransport[] _transports = new IClientTransport[] { new ServerSentEventsTransport(), new LongPollingTransport() };
+        private readonly IClientTransport[] _transports;
+
+        public AutoTransport()
+            : this(new DefaultHttpClient())
+        {
+        }
+
+        public AutoTransport(IHttpClient httpClient)
+        {
+            _httpClient = httpClient;
+            _transports = new IClientTransport[] { new ServerSentEventsTransport(httpClient), new LongPollingTransport(httpClient) };
+        }
+
+        public Task<NegotiationResponse> Negotiate(Connection connection, string url)
+        {
+            return HttpBasedTransport.GetNegotiationResponse(_httpClient, connection, url);
+        }
 
         public Task Start(Connection connection, string data)
         {
