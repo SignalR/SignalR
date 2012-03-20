@@ -24,12 +24,12 @@ namespace SignalR.Client.Transports
             _transports = new IClientTransport[] { new ServerSentEventsTransport(httpClient), new LongPollingTransport(httpClient) };
         }
 
-        public Task<NegotiationResponse> Negotiate(Connection connection, string url)
+        public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return HttpBasedTransport.GetNegotiationResponse(_httpClient, connection, url);
+            return HttpBasedTransport.GetNegotiationResponse(_httpClient, connection);
         }
 
-        public Task Start(Connection connection, string data)
+        public Task Start(IConnection connection, string data)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -39,7 +39,7 @@ namespace SignalR.Client.Transports
             return tcs.Task;
         }
 
-        private void ResolveTransport(Connection connection, string data, TaskCompletionSource<object> tcs, int index)
+        private void ResolveTransport(IConnection connection, string data, TaskCompletionSource<object> tcs, int index)
         {
             // Pick the current transport
             IClientTransport transport = _transports[index];
@@ -72,12 +72,12 @@ namespace SignalR.Client.Transports
             });
         }
 
-        public Task<T> Send<T>(Connection connection, string data)
+        public Task<T> Send<T>(IConnection connection, string data)
         {
             return _transport.Send<T>(connection, data);
         }
 
-        public void Stop(Connection connection)
+        public void Stop(IConnection connection)
         {
             _transport.Stop(connection);
         }

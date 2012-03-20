@@ -58,5 +58,10 @@ namespace SignalR.Client.Infrastructure
                 _request.Accept = value;
             }
         }
+
+        public void Abort()
+        {
+            _request.Abort();
+        }
     }
 }

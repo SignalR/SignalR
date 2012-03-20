@@ -20,12 +20,12 @@ namespace SignalR.Client.Transports
             ReconnectDelay = TimeSpan.FromSeconds(5);
         }
 
-        protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             PollingLoop(connection, data, initializeCallback, errorCallback);
         }
 
-        private void PollingLoop(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
+        private void PollingLoop(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
         {
             string url = connection.Url;
             var reconnectTokenSource = new CancellationTokenSource();
@@ -146,7 +146,7 @@ namespace SignalR.Client.Transports
         /// <summary>
         /// 
         /// </summary>
-        private static void FireReconnected(Connection connection, CancellationTokenSource reconnectTokenSource, ref int reconnectedFired)
+        private static void FireReconnected(IConnection connection, CancellationTokenSource reconnectTokenSource, ref int reconnectedFired)
         {
             if (!reconnectTokenSource.IsCancellationRequested)
             {

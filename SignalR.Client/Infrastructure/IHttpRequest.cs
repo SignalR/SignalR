@@ -8,5 +8,7 @@ namespace SignalR.Client.Infrastructure
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
         string Accept { get; set; }
+
+        void Abort();
     }
 }

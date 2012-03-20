@@ -29,12 +29,12 @@ namespace SignalR.Client.Transports
         /// </summary>
         public TimeSpan ConnectionTimeout { get; set; }
 
-        protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             OpenConnection(connection, data, initializeCallback, errorCallback);
         }
 
-        private void Reconnect(Connection connection, string data)
+        private void Reconnect(IConnection connection, string data)
         {
             if (!connection.IsActive)
             {
@@ -48,7 +48,7 @@ namespace SignalR.Client.Transports
             OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
         }
 
-        private void OpenConnection(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        private void OpenConnection(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             // If we're reconnecting add /connect to the url
             bool reconnecting = initializeCallback == null;
@@ -139,7 +139,7 @@ namespace SignalR.Client.Transports
             }
         }
 
-        protected override void OnBeforeAbort(Connection connection)
+        protected override void OnBeforeAbort(IConnection connection)
         {
             // Get the reader from the connection and stop it
             var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
@@ -160,12 +160,12 @@ namespace SignalR.Client.Transports
             private readonly ChunkBuffer _buffer;
             private readonly Action _initializeCallback;
             private readonly Action _closeCallback;
-            private readonly Connection _connection;
+            private readonly IConnection _connection;
             private int _processingQueue;
             private int _reading;
             private bool _processingBuffer;
 
-            public AsyncStreamReader(Stream stream, Connection connection, Action initializeCallback, Action closeCallback)
+            public AsyncStreamReader(Stream stream, IConnection connection, Action initializeCallback, Action closeCallback)
             {
                 _initializeCallback = initializeCallback;
                 _closeCallback = closeCallback;

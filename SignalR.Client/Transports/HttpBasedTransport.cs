@@ -31,14 +31,14 @@ namespace SignalR.Client.Transports
             _transport = transport;
         }
 
-        public Task<NegotiationResponse> Negotiate(Connection connection, string url)
+        public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return GetNegotiationResponse(_httpClient, connection, url);
+            return GetNegotiationResponse(_httpClient, connection);
         }
 
-        internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, Connection connection, string url)
+        internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
         {
-            string negotiateUrl = url + "negotiate";
+            string negotiateUrl = connection.Url + "negotiate";
 
             return httpClient.PostAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
@@ -53,7 +53,7 @@ namespace SignalR.Client.Transports
             });
         }
 
-        public Task Start(Connection connection, string data)
+        public Task Start(IConnection connection, string data)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -62,9 +62,9 @@ namespace SignalR.Client.Transports
             return tcs.Task;
         }
 
-        protected abstract void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
+        protected abstract void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
 
-        public Task<T> Send<T>(Connection connection, string data)
+        public Task<T> Send<T>(IConnection connection, string data)
         {
             string url = connection.Url + "send";
             string customQueryString = GetCustomQueryString(connection);
@@ -88,7 +88,7 @@ namespace SignalR.Client.Transports
             });
         }
 
-        protected string GetReceiveQueryString(Connection connection, string data)
+        protected string GetReceiveQueryString(IConnection connection, string data)
         {
             return String.Format(_receiveQueryString,
                                  _transport,
@@ -99,7 +99,7 @@ namespace SignalR.Client.Transports
                                  GetCustomQueryString(connection));
         }
 
-        protected virtual Action<IHttpRequest> PrepareRequest(Connection connection)
+        protected virtual Action<IHttpRequest> PrepareRequest(IConnection connection)
         {
             return request =>
             {
@@ -116,9 +116,9 @@ namespace SignalR.Client.Transports
             return (webException != null && webException.Status == WebExceptionStatus.RequestCanceled);
         }
 
-        public void Stop(Connection connection)
+        public void Stop(IConnection connection)
         {
-            var httpRequest = connection.GetValue<HttpWebRequest>(HttpRequestKey);
+            var httpRequest = connection.GetValue<IHttpRequest>(HttpRequestKey);
             if (httpRequest != null)
             {
                 try
@@ -133,12 +133,12 @@ namespace SignalR.Client.Transports
             }
         }
 
-        protected virtual void OnBeforeAbort(Connection connection)
+        protected virtual void OnBeforeAbort(IConnection connection)
         {
 
         }
 
-        protected static void ProcessResponse(Connection connection, string response, out bool timedOut, out bool disconnected)
+        protected static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
             timedOut = false;
             disconnected = false;
@@ -207,7 +207,7 @@ namespace SignalR.Client.Transports
             }
         }
 
-        private static string GetCustomQueryString(Connection connection)
+        private static string GetCustomQueryString(IConnection connection)
         {
             return String.IsNullOrEmpty(connection.QueryString)
                             ? ""

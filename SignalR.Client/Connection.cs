@@ -57,7 +57,7 @@ namespace SignalR.Client
 
         public ICredentials Credentials { get; set; }
 
-        public IEnumerable<string> Groups { get; internal set; }
+        public IEnumerable<string> Groups { get; set; }
 
         public Func<string> Sending { get; set; }
 
@@ -101,7 +101,7 @@ namespace SignalR.Client
         {
             var negotiateTcs = new TaskCompletionSource<object>();
 
-            transport.Negotiate(this, Url).Then(negotiationResponse =>
+            transport.Negotiate(this).Then(negotiationResponse =>
             {
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
@@ -178,7 +178,7 @@ namespace SignalR.Client
             return _transport.Send<T>(this, data);
         }
 
-        internal void OnReceived(string message)
+        void IConnection.OnReceived(string message)
         {
             if (Received != null)
             {
@@ -186,7 +186,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void OnError(Exception error)
+        void IConnection.OnError(Exception error)
         {
             if (Error != null)
             {
@@ -194,7 +194,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void OnReconnected()
+        void IConnection.OnReconnected()
         {
             if (Reconnected != null)
             {
@@ -202,7 +202,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void PrepareRequest(IHttpRequest request)
+        void IConnection.PrepareRequest(IHttpRequest request)
         {
 #if WINDOWS_PHONE
             // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
