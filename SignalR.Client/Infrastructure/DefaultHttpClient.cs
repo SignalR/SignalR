@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace SignalR.Client.Infrastructure
 {
     public class DefaultHttpClient : IHttpClient
     {
-        public Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> prepareRequest)
+        public Task<IHttpResponse> GetAsync(string url, Action<IHttpRequest> prepareRequest)
         {
-            return HttpHelper.GetAsync(url, prepareRequest);
+            return HttpHelper.GetAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)))
+                             .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
         }
 
-        public Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> prepareRequest)
+        public Task<IHttpResponse> PostAsync(string url, Action<IHttpRequest> prepareRequest)
         {
-            return HttpHelper.PostAsync(url, prepareRequest);
+            return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)))
+                             .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
         }
 
-        public Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> prepareRequest, Dictionary<string, string> postData)
+        public Task<IHttpResponse> PostAsync(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData)
         {
-            return HttpHelper.PostAsync(url, prepareRequest, postData);
+            return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)), postData)
+                             .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
         }
     }
 }

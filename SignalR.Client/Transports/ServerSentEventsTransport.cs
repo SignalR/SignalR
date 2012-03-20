@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading;
 using SignalR.Client.Infrastructure;
@@ -56,7 +55,7 @@ namespace SignalR.Client.Transports
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
-            Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
+            Action<IHttpRequest> prepareRequest = PrepareRequest(connection);
 
             _httpClient.GetAsync(url, request =>
             {

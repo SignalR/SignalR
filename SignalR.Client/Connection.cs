@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using SignalR.Client.Infrastructure;
 using SignalR.Client.Transports;
 
 namespace SignalR.Client
@@ -201,7 +202,7 @@ namespace SignalR.Client
             }
         }
 
-        protected internal virtual void PrepareRequest(HttpWebRequest request)
+        internal void PrepareRequest(IHttpRequest request)
         {
 #if WINDOWS_PHONE
             // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx

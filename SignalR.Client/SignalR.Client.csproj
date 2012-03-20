@@ -67,7 +67,11 @@
     <Compile Include="Infrastructure\DefaultHttpClient.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\HttpHelper.cs" />
+    <Compile Include="Infrastructure\HttpWebRequestWrapper.cs" />
+    <Compile Include="Infrastructure\HttpWebResponseWrapper.cs" />
     <Compile Include="Infrastructure\IHttpClient.cs" />
+    <Compile Include="Infrastructure\IHttpRequest.cs" />
+    <Compile Include="Infrastructure\IHttpResponse.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />

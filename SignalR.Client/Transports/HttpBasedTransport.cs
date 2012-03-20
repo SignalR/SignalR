@@ -99,7 +99,7 @@ namespace SignalR.Client.Transports
                                  GetCustomQueryString(connection));
         }
 
-        protected virtual Action<HttpWebRequest> PrepareRequest(Connection connection)
+        protected virtual Action<IHttpRequest> PrepareRequest(Connection connection)
         {
             return request =>
             {
