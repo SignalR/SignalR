@@ -114,6 +114,9 @@
     <Compile Include="..\SignalR.Client\Infrastructure\IHttpClient.cs">
       <Link>Infrastructure\IHttpClient.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\IHttpClientExtensions.cs">
+      <Link>Infrastructure\IHttpClientExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\IHttpRequest.cs">
       <Link>Infrastructure\IHttpRequest.cs</Link>
     </Compile>
