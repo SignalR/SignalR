@@ -79,12 +79,12 @@
                     transport: "auto"
                 },
                 initialize,
-                promise = $.Deferred();
+                deferred = $.Deferred();
 
             if (connection.transport) {
                 // Already started, just return
-                promise.resolve(connection);
-                return promise;
+                deferred.resolve(connection);
+                return deferred.promise();
             }
 
             if ($.type(options) === "function") {
@@ -101,7 +101,7 @@
                 if ($.type(callback) === "function") {
                     callback.call(connection);
                 }
-                promise.resolve(connection);
+                deferred.resolve(connection);
             });
 
             initialize = function (transports, index) {
@@ -109,7 +109,7 @@
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
-                        promise.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                        deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                     }
                     return;
                 }
@@ -133,7 +133,7 @@
                     dataType: "json",
                     error: function (error) {
                         $(connection).trigger(events.onError, [error]);
-                        promise.reject("SignalR: Error during negotiation request: " + error);
+                        deferred.reject("SignalR: Error during negotiation request: " + error);
                     },
                     success: function (res) {
                         connection.appRelativeUrl = res.Url;
@@ -142,7 +142,7 @@
 
                         if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                             $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
-                            promise.reject("SignalR: Incompatible protocol version.");
+                            deferred.reject("SignalR: Incompatible protocol version.");
                             return;
                         }
 
@@ -179,7 +179,7 @@
                 });
             }, 0);
 
-            return promise;
+            return deferred.promise();
         },
 
         starting: function (callback) {
