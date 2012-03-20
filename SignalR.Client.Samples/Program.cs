@@ -10,6 +10,19 @@ namespace SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
+            RunInMemoryHost();
+
+            //var hubConnection = new HubConnection("http://localhost:40476/");
+
+            //RunDemoHub(hubConnection);
+
+            //RunStreamingSample();
+
+            Console.ReadKey();
+        }
+
+        private static void RunInMemoryHost()
+        {
             var host = new MemoryHost();
             host.MapConnection<MyConnection>("/echo");
 
@@ -39,30 +52,7 @@ namespace SignalR.Client.Samples
 
                 }
             });
-
-            //var hubConnection = new HubConnection("http://localhost:40476/");
-
-            //RunDemoHub(hubConnection);
-
-            //RunStreamingSample();
-
-            Console.ReadKey();
         }
-
-        public class MyConnection : PersistentConnection
-        {
-            protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
-            {
-                Console.WriteLine("{0} Connected", connectionId);
-                return base.OnConnectedAsync(request, connectionId);
-            }
-
-            protected override Task OnReceivedAsync(string connectionId, string data)
-            {
-                return Connection.Broadcast(data);
-            }
-        }
-
         private static void RunDemoHub(HubConnection hubConnection)
         {
             var demo = hubConnection.CreateProxy("SignalR.Samples.Hubs.DemoHub.DemoHub");
@@ -108,6 +98,20 @@ namespace SignalR.Client.Samples
             };
 
             connection.Start().Wait();
+        }
+
+        public class MyConnection : PersistentConnection
+        {
+            protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+            {
+                Console.WriteLine("{0} Connected", connectionId);
+                return base.OnConnectedAsync(request, connectionId);
+            }
+
+            protected override Task OnReceivedAsync(string connectionId, string data)
+            {
+                return Connection.Broadcast(data);
+            }
         }
     }
 }
