@@ -86,29 +86,31 @@ namespace SignalR.Hosting.Memory
             PersistentConnection connection;
             if (TryGetConnection(uri.LocalPath, out connection))
             {
+                var tcs = new TaskCompletionSource<IHttpResponse>();
                 var cts = new CancellationTokenSource();
                 var request = new Request(uri, cts, postData);
                 prepareRequest(request);
-                var response = new Response(cts.Token);
+
+                Response response = null;
+                response = new Response(cts.Token, () => tcs.TrySetResult(response));
                 var hostContext = new HostContext(request, response, null);
 
                 // Initialize the connection
                 connection.Initialize(DependencyResolver);
 
-                var tcs = new TaskCompletionSource<IHttpResponse>();
                 connection.ProcessRequestAsync(hostContext).ContinueWith(task =>
                 {
                     if (task.IsFaulted)
                     {
-                        tcs.SetException(task.Exception);
+                        tcs.TrySetException(task.Exception);
                     }
                     else if (task.IsCanceled)
                     {
-                        tcs.SetCanceled();
+                        tcs.TrySetCanceled();
                     }
                     else
                     {
-                        tcs.SetResult(response);
+                        tcs.TrySetResult(response);
                     }
                 });
 

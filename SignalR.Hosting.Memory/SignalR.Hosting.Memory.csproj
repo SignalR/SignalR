@@ -43,6 +43,7 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="AsyncResult.cs" />
     <Compile Include="MemoryHost.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
