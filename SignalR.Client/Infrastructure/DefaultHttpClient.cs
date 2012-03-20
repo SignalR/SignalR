@@ -12,12 +12,6 @@ namespace SignalR.Client.Infrastructure
                              .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
         }
 
-        public Task<IHttpResponse> PostAsync(string url, Action<IHttpRequest> prepareRequest)
-        {
-            return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)))
-                             .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
-        }
-
         public Task<IHttpResponse> PostAsync(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData)
         {
             return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)), postData)

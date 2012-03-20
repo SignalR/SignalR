@@ -69,6 +69,7 @@ namespace SignalR.Hosting.Memory
             private readonly MemoryStream _ms;
             private int _readPosition;
             private event Action _onWrite;
+            private event Action _onClosed;
             private readonly Action _start;
             private int _streaming;
 
@@ -148,22 +149,47 @@ namespace SignalR.Hosting.Memory
             {
                 var ar = new AsyncResult<int>(callback, state);
 
+                Action closedHandler = null;
+                closedHandler = () =>
+                {
+                    if (!ar.IsCompleted)
+                    {
+                        ar.SetAsCompleted(0, false);
+                    }
+
+                    _onClosed -= _onClosed;
+                };
+
+                if (ar.IsCompleted)
+                {
+                    return ar;
+                }
+
                 int read = Read(buffer, offset, count);
 
                 if (read != 0 || Ended)
                 {
+                    if (ar.IsCompleted)
+                    {
+                        return ar;
+                    }
+
                     ar.SetAsCompleted(read, true);
                 }
                 else
                 {
-                    Action handler = null;
-                    handler = () =>
+                    Action writeHandler = null;
+                    writeHandler = () =>
                     {
-                        read = Read(buffer, offset, count);
-                        ar.SetAsCompleted(read, false);
-                        _onWrite -= handler;
+                        if (!ar.IsCompleted)
+                        {
+                            read = Read(buffer, offset, count);
+                            ar.SetAsCompleted(read, false);
+                        }
+                        _onWrite -= writeHandler;
                     };
-                    _onWrite += handler;
+
+                    _onWrite += writeHandler;
                 }
                 return ar;
             }
@@ -177,6 +203,12 @@ namespace SignalR.Hosting.Memory
             {
                 Ended = true;
                 _ms.Close();
+
+                if (_onClosed != null)
+                {
+                    _onClosed();
+                }
+
                 base.Close();
             }
 
