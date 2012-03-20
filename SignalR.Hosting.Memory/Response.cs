@@ -11,15 +11,12 @@ namespace SignalR.Hosting.Memory
     {
         private string _nonStreamingData;
         private readonly CancellationToken _clientToken;
-        private bool _ended;
-        private readonly Action _startSending;
-        private int _streaming;
-        private FollowStream _responseStream = new FollowStream();
+        private readonly FollowStream _responseStream;
 
         public Response(CancellationToken clientToken, Action startSending)
         {
             _clientToken = clientToken;
-            _startSending = startSending;
+            _responseStream = new FollowStream(startSending);
         }
 
         public string ReadAsString()
@@ -53,14 +50,9 @@ namespace SignalR.Hosting.Memory
 
         public Task WriteAsync(string data)
         {
-            if (!_ended)
+            if (!_responseStream.Ended)
             {
                 _responseStream.Write(data);
-            }
-
-            if (Interlocked.Exchange(ref _streaming, 1) == 0)
-            {
-                _startSending();
             }
 
             return TaskAsyncHelper.Empty;
@@ -77,10 +69,13 @@ namespace SignalR.Hosting.Memory
             private readonly MemoryStream _ms;
             private int _readPosition;
             private event Action _onWrite;
+            private readonly Action _start;
+            private int _streaming;
 
-            public FollowStream()
+            public FollowStream(Action start)
             {
                 _ms = new MemoryStream();
+                _start = start;
             }
 
             public override bool CanRead
@@ -108,6 +103,14 @@ namespace SignalR.Hosting.Memory
             }
 
             public bool Ended { get; private set; }
+
+            private void EnsureStarted()
+            {
+                if (Interlocked.Exchange(ref _streaming, 1) == 0)
+                {
+                    _start();
+                }
+            }
 
             public override void Flush()
             {
@@ -144,7 +147,7 @@ namespace SignalR.Hosting.Memory
             public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
             {
                 var ar = new AsyncResult<int>(callback, state);
-                
+
                 int read = Read(buffer, offset, count);
 
                 if (read != 0 || Ended)
@@ -201,6 +204,8 @@ namespace SignalR.Hosting.Memory
                 {
                     _onWrite();
                 }
+
+                EnsureStarted();
             }
         }
     }
