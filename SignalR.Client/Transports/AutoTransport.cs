@@ -13,11 +13,6 @@ namespace SignalR.Client.Transports
         // List of transports in fallback order
         private readonly IClientTransport[] _transports;
 
-        public AutoTransport()
-            : this(new DefaultHttpClient())
-        {
-        }
-
         public AutoTransport(IHttpClient httpClient)
         {
             _httpClient = httpClient;

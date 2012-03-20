@@ -75,11 +75,16 @@ namespace SignalR.Client
 
         public Task Start()
         {
+            return Start(new DefaultHttpClient());
+        }
+
+        public Task Start(IHttpClient httpClient)
+        {
 #if WINDOWS_PHONE || SILVERLIGHT
             return Start(new LongPollingTransport());
 #else
             // Pick the best transport supported by the client
-            return Start(new AutoTransport());
+            return Start(new AutoTransport(httpClient));
 #endif
         }
 

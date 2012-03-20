@@ -70,6 +70,7 @@
     <Compile Include="Infrastructure\HttpWebRequestWrapper.cs" />
     <Compile Include="Infrastructure\HttpWebResponseWrapper.cs" />
     <Compile Include="Infrastructure\IHttpClient.cs" />
+    <Compile Include="Infrastructure\IHttpClientExtensions.cs" />
     <Compile Include="Infrastructure\IHttpRequest.cs" />
     <Compile Include="Infrastructure\IHttpResponse.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Hubs;
+using SignalR.Hosting.Memory;
 
 namespace SignalR.Client.Samples
 {
@@ -9,13 +10,57 @@ namespace SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
-            var hubConnection = new HubConnection("http://localhost:40476/");
+            var host = new MemoryHost();
+            host.MapConnection<MyConnection>("/echo");
 
-            RunDemoHub(hubConnection);
+            var connection = new Connection("http://foo/echo");
 
-            RunStreamingSample();
+            connection.Received += data =>
+            {
+                Console.WriteLine(data);
+            };
+
+            connection.Start(host).Wait();
+
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    while (true)
+                    {
+                        connection.Send(DateTime.Now.ToString());
+
+                        Thread.Sleep(2000);
+                    }
+                }
+                catch
+                {
+
+                }
+            });
+
+            //var hubConnection = new HubConnection("http://localhost:40476/");
+
+            //RunDemoHub(hubConnection);
+
+            //RunStreamingSample();
 
             Console.ReadKey();
+        }
+
+        public class MyConnection : PersistentConnection
+        {
+            protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+            {
+                Console.WriteLine("{0} Connected", connectionId);
+                return base.OnConnectedAsync(request, connectionId);
+            }
+
+            protected override Task OnReceivedAsync(string connectionId, string data)
+            {
+                return Connection.Broadcast(data);
+            }
         }
 
         private static void RunDemoHub(HubConnection hubConnection)
