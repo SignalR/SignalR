@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SignalR.Configuration;
 using SignalR.Hubs;
+using SignalR.Infrastructure;
 using SignalR.MessageBus;
 using SignalR.Transports;
 
-namespace SignalR.Infrastructure
+namespace SignalR
 {
     public class DefaultDependencyResolver : IDependencyResolver
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SignalR.Infrastructure
+namespace SignalR
 {
     public interface IDependencyResolver
     {

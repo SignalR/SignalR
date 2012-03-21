@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using SignalR.Configuration;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports
@@ -15,8 +14,6 @@ namespace SignalR.Transports
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
 
-        private static readonly TimeSpan _heartBeatInterval = TimeSpan.FromSeconds(10);
-
         private int _running;
 
         public TransportHeartBeat(IDependencyResolver resolver)
@@ -26,8 +23,8 @@ namespace SignalR.Transports
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
                                null,
-                               _heartBeatInterval,
-                               _heartBeatInterval);
+                               _configurationManager.HeartBeatInterval,
+                               _configurationManager.HeartBeatInterval);
         }
 
         public void AddConnection(ITrackingConnection connection)

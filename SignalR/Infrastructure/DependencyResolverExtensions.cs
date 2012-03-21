@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SignalR.Infrastructure
+namespace SignalR
 {
     public static class DependencyResolverExtensions
     {
