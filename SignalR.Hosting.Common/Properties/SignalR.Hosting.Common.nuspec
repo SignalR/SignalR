@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package >
     <metadata>
         <id>$id$</id>
         <version>$version$</version>
@@ -10,7 +10,6 @@
         <description>$description$</description>
         <dependencies>
             <dependency id="SignalR.Server" version="0.4" />
-            <dependency id="SignalR.Hosting.Common" version="0.4" />
         </dependencies>
     </metadata>
 </package>

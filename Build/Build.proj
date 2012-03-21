@@ -59,6 +59,7 @@
       <Projects Include="$(ProjectRoot)\SignalR.Client\SignalR.Client.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Owin\SignalR.Hosting.Owin.csproj" />
+      <Projects Include="$(ProjectRoot)\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj" />
     </ItemGroup>
     
     <MSBuild Projects="%(Projects.Identity)"
