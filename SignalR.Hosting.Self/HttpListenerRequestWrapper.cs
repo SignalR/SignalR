@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Net;
-using SignalR.Hosting;
+using SignalR.Hosting.Common;
 
 namespace SignalR.Hosting.Self
 {
@@ -68,36 +67,19 @@ namespace SignalR.Hosting.Self
         {
             if (_form == null)
             {
-                _form = new NameValueCollection();
-
                 // Do nothing if there's no body
                 if (!_httpListenerRequest.HasEntityBody)
                 {
+                    _form = new NameValueCollection();
                     return;
                 }
 
                 using (var sw = new StreamReader(_httpListenerRequest.InputStream))
                 {
                     var body = sw.ReadToEnd();
-                    string[] pairs = body.Split(new[] { "&" }, StringSplitOptions.RemoveEmptyEntries);
-
-                    foreach (var pair in pairs)
-                    {
-                        string[] entry = pair.Split('=');
-                        if (entry.Length > 1)
-                        {
-                            _form.Add(entry[0], UrlDecode(entry[1]));
-                        }
-                    }
+                    _form = HttpUtility.ParseDelimited(body);                    
                 }
             }
-        }
-
-        private static string UrlDecode(string url)
-        {
-            // HACK: Uri.UnescapeDataString doesn't seem to handle +
-            // TODO: Copy impl from System.Web.HttpUtility.UrlDecode
-            return Uri.UnescapeDataString(url).Replace("+", " ");
         }
     }
 }

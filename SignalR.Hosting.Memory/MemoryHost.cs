@@ -3,18 +3,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Infrastructure;
-using SignalR.Hubs;
+using SignalR.Hosting.Common;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Memory
 {
-    public class MemoryHost : IHttpClient
+    public class MemoryHost : DefaultHost, IHttpClient
     {
-        private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
-        private bool _hubsEnabled;
-
-        public IDependencyResolver DependencyResolver { get; private set; }
-
         public MemoryHost()
             : this(new DefaultDependencyResolver())
         {
@@ -22,52 +17,9 @@ namespace SignalR.Hosting.Memory
         }
 
         public MemoryHost(IDependencyResolver resolver)
+            : base(resolver)
         {
-            DependencyResolver = resolver;
-        }
 
-        public void MapConnection<T>(string path) where T : PersistentConnection
-        {
-            if (!_connectionMapping.ContainsKey(path))
-            {
-                _connectionMapping.Add(path, typeof(T));
-            }
-        }
-
-        public void EnableHubs()
-        {
-            _hubsEnabled = true;
-        }
-
-        public bool TryGetConnection(string path, out PersistentConnection connection)
-        {
-            connection = null;
-
-            if (_hubsEnabled && path.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
-            {
-                connection = new HubDispatcher("/signalr");
-                return true;
-            }
-
-            return TryGetMappedConnection(path, out connection);
-        }
-
-        private bool TryGetMappedConnection(string path, out PersistentConnection connection)
-        {
-            connection = null;
-
-            foreach (var pair in _connectionMapping)
-            {
-                // If the url matches then create the connection type
-                if (path.StartsWith(pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    var factory = new PersistentConnectionFactory(DependencyResolver);
-                    connection = factory.CreateInstance(pair.Value);
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         Task<IHttpResponse> IHttpClient.GetAsync(string url, Action<IHttpRequest> prepareRequest)
@@ -83,19 +35,19 @@ namespace SignalR.Hosting.Memory
         private Task<IHttpResponse> ProcessRequest(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData)
         {
             var uri = new Uri(url);
+
             PersistentConnection connection;
             if (TryGetConnection(uri.LocalPath, out connection))
             {
                 var tcs = new TaskCompletionSource<IHttpResponse>();
-                var cts = new CancellationTokenSource();
-                var request = new Request(uri, cts, postData);
+                var clientTokenSource = new CancellationTokenSource();
+                var request = new Request(uri, clientTokenSource, postData);
                 prepareRequest(request);
 
                 Response response = null;
-                response = new Response(cts.Token, () => tcs.TrySetResult(response));
+                response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response));
                 var hostContext = new HostContext(request, response, null);
 
-                // Initialize the connection
                 connection.Initialize(DependencyResolver);
 
                 connection.ProcessRequestAsync(hostContext).ContinueWith(task =>

@@ -1,25 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
-using SignalR.Hosting;
+using SignalR.Hosting.Common;
 using SignalR.Hosting.Self.Infrastructure;
-using SignalR.Hubs;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Self
 {
-    public class Server
+    public class Server : DefaultHost
     {
         private readonly string _url;
         private readonly HttpListener _listener;
-        private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
-        private bool _hubsEnabled;
 
         public Action<HostContext> OnProcessRequest { get; set; }
-
-        public IDependencyResolver DependencyResolver { get; private set; }
 
         public Server(string url)
             : this(url, new DefaultDependencyResolver())
@@ -28,11 +22,11 @@ namespace SignalR.Hosting.Self
         }
 
         public Server(string url, IDependencyResolver resolver)
+            : base(resolver)
         {
             _url = url;
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
-            DependencyResolver = resolver;
         }
 
         public void Start()
@@ -45,32 +39,6 @@ namespace SignalR.Hosting.Self
         public void Stop()
         {
             _listener.Stop();
-        }
-
-        public void MapConnection<T>(string path) where T : PersistentConnection
-        {
-            if (!_connectionMapping.ContainsKey(path))
-            {
-                _connectionMapping.Add(path, typeof(T));
-            }
-        }
-
-        public void EnableHubs()
-        {
-            _hubsEnabled = true;
-        }
-
-        public bool TryGetConnection(string path, out PersistentConnection connection)
-        {
-            connection = null;
-
-            if (_hubsEnabled && path.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
-            {
-                connection = new HubDispatcher("/signalr");
-                return true;
-            }
-
-            return TryGetMappedConnection(path, out connection);
         }
 
         private void ReceiveLoop()
@@ -145,25 +113,7 @@ namespace SignalR.Hosting.Self
             }
         }
 
-        private bool TryGetMappedConnection(string path, out PersistentConnection connection)
-        {
-            connection = null;
-
-            foreach (var pair in _connectionMapping)
-            {
-                // If the url matches then create the connection type
-                if (path.StartsWith(pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    var factory = new PersistentConnectionFactory(DependencyResolver);
-                    connection = factory.CreateInstance(pair.Value);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private string ResolvePath(Uri url)
+        public string ResolvePath(Uri url)
         {
             string baseUrl = url.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort | UriComponents.Path, UriFormat.SafeUnescaped);
 

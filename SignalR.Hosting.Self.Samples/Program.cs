@@ -18,9 +18,6 @@ namespace SignalR.Hosting.Self.Samples
             // Map /echo to the persistent connection
             server.MapConnection<MyConnection>("/echo");
 
-            // Enable the hubs route (/signalr)
-            server.EnableHubs();
-
             server.Start();
 
             Console.WriteLine("Server running on {0}", url);

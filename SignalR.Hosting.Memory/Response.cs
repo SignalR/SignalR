@@ -64,6 +64,9 @@ namespace SignalR.Hosting.Memory
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Mimics a network stream between client and server.
+        /// </summary>
         private class FollowStream : Stream
         {
             private readonly MemoryStream _ms;
@@ -138,10 +141,19 @@ namespace SignalR.Hosting.Memory
 
             public override int Read(byte[] buffer, int offset, int count)
             {
+                // Read count bytes from the underlying buffer
                 byte[] followingBuffer = _ms.GetBuffer();
+
+                // Get the max readable
                 int max = Math.Min(count, (int)_ms.Length);
+
+                // Copy it to the output buffer
                 Array.Copy(followingBuffer, _readPosition, buffer, offset, max);
+
+                // Calculate the read
                 int read = Math.Abs(_readPosition - max);
+
+                // Move our cursor into the data further
                 _readPosition += read;
                 return read;
             }
@@ -157,6 +169,7 @@ namespace SignalR.Hosting.Memory
                     {
                         if (!ar.IsCompleted)
                         {
+                            // Set the response to 0 if we've closed
                             ar.SetAsCompleted(0, false);
                         }
 
