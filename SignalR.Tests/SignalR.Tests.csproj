@@ -54,7 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DisconnectFats.cs" />
+    <Compile Include="DisconnectFacts.cs" />
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SignalR.Tests
 {
-    public class DisconnectFats
+    public class DisconnectFacts
     {
         [Fact]
         public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
