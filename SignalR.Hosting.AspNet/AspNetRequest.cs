@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Web;
 using Microsoft.Web.Infrastructure.DynamicValidationHelper;
-using SignalR.Hosting;
 
 namespace SignalR.Hosting.AspNet
 {

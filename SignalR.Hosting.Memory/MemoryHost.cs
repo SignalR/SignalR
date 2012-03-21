@@ -10,10 +10,10 @@ using IClientResponse = SignalR.Client.Infrastructure.IResponse;
 
 namespace SignalR.Hosting.Memory
 {
-    public class MemoryHost : DefaultHost, IHttpClient
+    public class MemoryHost : RoutingHost, IHttpClient
     {
         public MemoryHost()
-            : this(new DefaultDependencyResolver())
+            : base()
         {
 
         }

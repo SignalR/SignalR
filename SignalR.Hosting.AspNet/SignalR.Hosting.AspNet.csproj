@@ -56,16 +56,21 @@
     <Compile Include="BuildManagerTypeResolver.cs" />
     <Compile Include="HttpCookieCollectionWrapper.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
-    <Compile Include="HubModule.cs" />
     <Compile Include="Infrastructure\TaskWrapperAsyncResult.cs" />
-    <Compile Include="AspNetHost.cs" />
+    <Compile Include="AspNetHandler.cs" />
     <Compile Include="AspNetBootstrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Routing\IgnoreJsRouteConstraint.cs" />
+    <Compile Include="Routing\HubDispatcherRouteHandler.cs" />
     <Compile Include="Routing\IncomingOnlyRouteConstraint.cs" />
     <Compile Include="Routing\PersistentRouteHandler.cs" />
     <Compile Include="Routing\RouteExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+      <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
+      <Name>SignalR.Hosting.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>SignalR</Name>

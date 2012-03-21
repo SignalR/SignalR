@@ -8,7 +8,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Self
 {
-    public class Server : DefaultHost
+    public class Server : RoutingHost
     {
         private readonly string _url;
         private readonly HttpListener _listener;

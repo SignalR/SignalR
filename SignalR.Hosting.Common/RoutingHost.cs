@@ -5,16 +5,19 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Common
 {
-    public class DefaultHost
+    public class RoutingHost : Host
     {
         private readonly RouteManager _routeManager;
 
-        public IDependencyResolver DependencyResolver { get; private set; }
-
-        public DefaultHost(IDependencyResolver resolver)
+        public RoutingHost()
+            : base()
         {
-            DependencyResolver = resolver;
-            _routeManager = new RouteManager(DependencyResolver);
+        }
+
+        public RoutingHost(IDependencyResolver resolver)
+            : base(resolver)
+        {
+            _routeManager = new RouteManager(resolver);
         }
 
         public void MapConnection<TConnection>(string path) where TConnection : PersistentConnection

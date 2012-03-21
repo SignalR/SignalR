@@ -7,30 +7,24 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.AspNet
 {
-    public class AspNetHost : HttpTaskAsyncHandler
+    public class AspNetHandler : HttpTaskAsyncHandler
     {
-        private static readonly IDependencyResolver _defaultResolver = new DefaultDependencyResolver();
-        private static IDependencyResolver _resolver;
-
         // This will fire when the app domain is shutting down
         internal static readonly CancellationTokenSource AppDomainTokenSource = new CancellationTokenSource();
 
         private readonly PersistentConnection _connection;
-        
+        private readonly IDependencyResolver _resolver;
+
         private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
             new Lazy<bool>(() =>
             {
                 return typeof(HttpContextBase).GetMethods().Any(m => m.Name.Equals("AcceptWebSocketRequest", StringComparison.OrdinalIgnoreCase));
             });
-
-        public AspNetHost(PersistentConnection connection)
+        
+        public AspNetHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
+            _resolver = resolver;
             _connection = connection;
-        }
-
-        public static IDependencyResolver DependencyResolver
-        {
-            get { return _resolver ?? _defaultResolver; }
         }
 
         public override Task ProcessRequestAsync(HttpContextBase context)
@@ -53,20 +47,9 @@ namespace SignalR.Hosting.AspNet
             hostContext.Items["System.Web.HttpContext"] = context;
 
             // Initialize the connection
-            _connection.Initialize(DependencyResolver);
+            _connection.Initialize(_resolver);
 
             return _connection.ProcessRequestAsync(hostContext);
         }
-
-        public static void SetResolver(IDependencyResolver resolver)
-        {
-            if (resolver == null)
-            {
-                throw new ArgumentNullException("resolver");
-            }
-
-            _resolver = resolver;
-        }
-
     }
 }

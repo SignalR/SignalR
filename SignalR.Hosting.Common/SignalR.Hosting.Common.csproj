@@ -41,7 +41,9 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="DefaultHost.cs" />
+    <Compile Include="Global.cs" />
+    <Compile Include="Host.cs" />
+    <Compile Include="RoutingHost.cs" />
     <Compile Include="HttpUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Routing\RouteManager.cs" />
