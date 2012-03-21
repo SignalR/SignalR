@@ -72,6 +72,7 @@ namespace SignalR.Hosting.Memory
             private event Action _onClosed;
             private readonly Action _start;
             private int _streaming;
+            private readonly object _lockObj = new object();
 
             public FollowStream(Action start)
             {
@@ -152,15 +153,20 @@ namespace SignalR.Hosting.Memory
                 Action closedHandler = null;
                 closedHandler = () =>
                 {
-                    if (!ar.IsCompleted)
+                    lock (_lockObj)
                     {
-                        ar.SetAsCompleted(0, false);
-                    }
+                        if (!ar.IsCompleted)
+                        {
+                            ar.SetAsCompleted(0, false);
+                        }
 
-                    _onClosed -= _onClosed;
+                        _onClosed -= closedHandler;
+                    }
                 };
 
-                if (ar.IsCompleted)
+                _onClosed += closedHandler;
+
+                if (Ended)
                 {
                     return ar;
                 }
@@ -169,28 +175,34 @@ namespace SignalR.Hosting.Memory
 
                 if (read != 0 || Ended)
                 {
-                    if (ar.IsCompleted)
+                    lock (_lockObj)
                     {
-                        return ar;
+                        if (!ar.IsCompleted)
+                        {
+                            ar.SetAsCompleted(read, true);
+                        }
                     }
-
-                    ar.SetAsCompleted(read, true);
                 }
                 else
                 {
                     Action writeHandler = null;
                     writeHandler = () =>
                     {
-                        if (!ar.IsCompleted)
+                        lock (_lockObj)
                         {
-                            read = Read(buffer, offset, count);
-                            ar.SetAsCompleted(read, false);
+                            if (!ar.IsCompleted)
+                            {
+                                read = Read(buffer, offset, count);
+                                ar.SetAsCompleted(read, false);
+                            }
                         }
+
                         _onWrite -= writeHandler;
                     };
 
                     _onWrite += writeHandler;
                 }
+
                 return ar;
             }
 
