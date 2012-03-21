@@ -6,16 +6,16 @@ namespace SignalR.Client.Infrastructure
 {
     public class DefaultHttpClient : IHttpClient
     {
-        public Task<IHttpResponse> GetAsync(string url, Action<IHttpRequest> prepareRequest)
+        public Task<IResponse> GetAsync(string url, Action<IRequest> prepareRequest)
         {
             return HttpHelper.GetAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)))
-                             .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
+                             .Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
 
-        public Task<IHttpResponse> PostAsync(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData)
+        public Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData)
         {
             return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)), postData)
-                             .Then(response => (IHttpResponse)new HttpWebResponseWrapper(response));
+                             .Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
     }
 }

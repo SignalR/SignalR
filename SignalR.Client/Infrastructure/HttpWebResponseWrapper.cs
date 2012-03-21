@@ -3,7 +3,7 @@ using System.Net;
 
 namespace SignalR.Client.Infrastructure
 {
-    public class HttpWebResponseWrapper : IHttpResponse
+    public class HttpWebResponseWrapper : IResponse
     {
         private readonly HttpWebResponse _response;
 

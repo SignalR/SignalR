@@ -6,7 +6,7 @@ namespace SignalR.Client.Infrastructure
 {
     public interface IHttpClient
     {
-        Task<IHttpResponse> GetAsync(string url, Action<IHttpRequest> prepareRequest);
-        Task<IHttpResponse> PostAsync(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData);
+        Task<IResponse> GetAsync(string url, Action<IRequest> prepareRequest);
+        Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData);
     }
 }

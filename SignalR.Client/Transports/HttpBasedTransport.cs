@@ -99,7 +99,7 @@ namespace SignalR.Client.Transports
                                  GetCustomQueryString(connection));
         }
 
-        protected virtual Action<IHttpRequest> PrepareRequest(IConnection connection)
+        protected virtual Action<IRequest> PrepareRequest(IConnection connection)
         {
             return request =>
             {
@@ -118,7 +118,7 @@ namespace SignalR.Client.Transports
 
         public void Stop(IConnection connection)
         {
-            var httpRequest = connection.GetValue<IHttpRequest>(HttpRequestKey);
+            var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
             if (httpRequest != null)
             {
                 try

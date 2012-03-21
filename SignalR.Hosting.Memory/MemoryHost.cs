@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Infrastructure;
 using SignalR.Hosting.Common;
-using SignalR.Infrastructure;
+
+using IClientRequest = SignalR.Client.Infrastructure.IRequest;
+using IClientResponse = SignalR.Client.Infrastructure.IResponse;
 
 namespace SignalR.Hosting.Memory
 {
@@ -22,24 +24,24 @@ namespace SignalR.Hosting.Memory
 
         }
 
-        Task<IHttpResponse> IHttpClient.GetAsync(string url, Action<IHttpRequest> prepareRequest)
+        Task<IClientResponse> IHttpClient.GetAsync(string url, Action<IClientRequest> prepareRequest)
         {
             return ProcessRequest(url, prepareRequest, postData: null);
         }
 
-        Task<IHttpResponse> IHttpClient.PostAsync(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData)
+        Task<IClientResponse> IHttpClient.PostAsync(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
         {
             return ProcessRequest(url, prepareRequest, postData);
         }
 
-        private Task<IHttpResponse> ProcessRequest(string url, Action<IHttpRequest> prepareRequest, Dictionary<string, string> postData)
+        private Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
         {
             var uri = new Uri(url);
 
             PersistentConnection connection;
             if (TryGetConnection(uri.LocalPath, out connection))
             {
-                var tcs = new TaskCompletionSource<IHttpResponse>();
+                var tcs = new TaskCompletionSource<IClientResponse>();
                 var clientTokenSource = new CancellationTokenSource();
                 var request = new Request(uri, clientTokenSource, postData);
                 prepareRequest(request);
@@ -69,7 +71,7 @@ namespace SignalR.Hosting.Memory
                 return tcs.Task;
             }
 
-            return TaskAsyncHelper.FromError<IHttpResponse>(new InvalidOperationException("Not a valid end point"));
+            return TaskAsyncHelper.FromError<IClientResponse>(new InvalidOperationException("Not a valid end point"));
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace SignalR.Client.Infrastructure
 {
-    public interface IHttpResponse
+    public interface IResponse
     {
         string ReadAsString();
         Stream GetResponseStream();

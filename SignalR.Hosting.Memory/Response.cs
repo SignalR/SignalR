@@ -3,11 +3,12 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Client.Infrastructure;
+
+using IClientResponse = SignalR.Client.Infrastructure.IResponse;
 
 namespace SignalR.Hosting.Memory
 {
-    public class Response : IHttpResponse, IResponse
+    public class Response : IClientResponse, IResponse
     {
         private string _nonStreamingData;
         private readonly CancellationToken _clientToken;

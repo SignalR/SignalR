@@ -207,7 +207,7 @@ namespace SignalR.Client
             }
         }
 
-        void IConnection.PrepareRequest(IHttpRequest request)
+        void IConnection.PrepareRequest(IRequest request)
         {
 #if WINDOWS_PHONE
             // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx

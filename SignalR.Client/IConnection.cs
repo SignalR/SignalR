@@ -31,6 +31,6 @@ namespace SignalR.Client
         void OnReceived(string data);
         void OnError(Exception ex);
         void OnReconnected();
-        void PrepareRequest(IHttpRequest request);        
+        void PrepareRequest(IRequest request);
     }
 }

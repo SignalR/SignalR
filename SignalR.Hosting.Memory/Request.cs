@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Threading;
-using SignalR.Client.Infrastructure;
 using SignalR.Hosting.Common;
+
+using IClientRequest = SignalR.Client.Infrastructure.IRequest;
 
 namespace SignalR.Hosting.Memory
 {
-    public class Request : IHttpRequest, IRequest
+    public class Request : IClientRequest, IRequest
     {
         private readonly CancellationTokenSource _clientTokenSource;
 

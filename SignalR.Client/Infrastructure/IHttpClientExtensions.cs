@@ -5,7 +5,7 @@ namespace SignalR.Client.Infrastructure
 {
     public static class IHttpClientExtensions
     {
-        public static Task<IHttpResponse> PostAsync(this IHttpClient client, string url, Action<IHttpRequest> prepareRequest)
+        public static Task<IResponse> PostAsync(this IHttpClient client, string url, Action<IRequest> prepareRequest)
         {
             return client.PostAsync(url, prepareRequest, postData: null);
         }

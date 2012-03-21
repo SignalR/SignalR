@@ -55,7 +55,7 @@ namespace SignalR.Client.Transports
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
-            Action<IHttpRequest> prepareRequest = PrepareRequest(connection);
+            Action<IRequest> prepareRequest = PrepareRequest(connection);
 
             _httpClient.GetAsync(url, request =>
             {

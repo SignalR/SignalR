@@ -2,7 +2,7 @@
 
 namespace SignalR.Client.Infrastructure
 {
-    public interface IHttpRequest
+    public interface IRequest
     {
         string UserAgent { get; set; }
         ICredentials Credentials { get; set; }

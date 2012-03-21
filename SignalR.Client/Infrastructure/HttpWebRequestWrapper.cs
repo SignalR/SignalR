@@ -2,7 +2,7 @@
 
 namespace SignalR.Client.Infrastructure
 {
-    public class HttpWebRequestWrapper : IHttpRequest
+    public class HttpWebRequestWrapper : IRequest
     {
         private readonly HttpWebRequest _request;
 

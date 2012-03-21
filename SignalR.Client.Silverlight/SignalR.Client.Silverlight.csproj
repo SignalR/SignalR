@@ -124,10 +124,10 @@
     <Compile Include="..\SignalR.Client\Infrastructure\IHttpClientExtensions.cs">
       <Link>Infrastructure\IHttpClientExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\IHttpRequest.cs">
+    <Compile Include="..\SignalR.Client\Infrastructure\IRequest.cs">
       <Link>Infrastructure\IHttpRequest.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\IHttpResponse.cs">
+    <Compile Include="..\SignalR.Client\Infrastructure\IResponse.cs">
       <Link>Infrastructure\IHttpResponse.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">

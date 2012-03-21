@@ -67,8 +67,8 @@
     <Compile Include="Infrastructure\HttpWebResponseWrapper.cs" />
     <Compile Include="Infrastructure\IHttpClient.cs" />
     <Compile Include="Infrastructure\IHttpClientExtensions.cs" />
-    <Compile Include="Infrastructure\IHttpRequest.cs" />
-    <Compile Include="Infrastructure\IHttpResponse.cs" />
+    <Compile Include="Infrastructure\IRequest.cs" />
+    <Compile Include="Infrastructure\IResponse.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />
