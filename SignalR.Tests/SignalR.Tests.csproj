@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DisconnectFats.cs" />
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
@@ -66,6 +67,10 @@
     <ProjectReference Include="..\SignalR.Client\SignalR.Client.csproj">
       <Project>{EB46B9C6-EE37-48F9-835E-E49580E40E0A}</Project>
       <Name>SignalR.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+      <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
+      <Name>SignalR.Hosting.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\SignalR.Hosting.Memory\SignalR.Hosting.Memory.csproj">
       <Project>{055F2118-FE29-4219-A28A-3D6F0889652E}</Project>
