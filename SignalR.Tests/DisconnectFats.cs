@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Memory;
+using SignalR.Hubs;
 using Xunit;
 
 namespace SignalR.Tests
@@ -31,6 +33,61 @@ namespace SignalR.Tests
             connection.Stop();
 
             Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+        }
+
+        [Fact]
+        public void DisconnectFiresForHubsWhenConnectionGoesAway()
+        {
+            var host = new MemoryHost();
+            var configurationManager = host.DependencyResolver.Resolve<IConfigurationManager>();
+            configurationManager.DisconnectTimeout = TimeSpan.Zero;
+            configurationManager.HeartBeatInterval = TimeSpan.FromSeconds(5);
+            var connectWh = new ManualResetEventSlim();
+            var disconnectWh = new ManualResetEventSlim();
+            host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+            var connection = new Client.Hubs.HubConnection("http://foo/");
+
+            // Maximum wait time for disconnect to fire (2 heart beat intervals)
+            var disconnectWait = configurationManager.HeartBeatInterval + configurationManager.HeartBeatInterval;
+
+            connection.Start(host).Wait();
+
+            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(100)), "Connect never fired");
+
+            connection.Stop();
+
+            Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+        }
+
+        private class MyHub : Hub, IDisconnect, IConnected
+        {
+            private ManualResetEventSlim _connectWh;
+            private ManualResetEventSlim _disconnectWh;
+
+            public MyHub(ManualResetEventSlim connectWh, ManualResetEventSlim disconnectWh)
+            {
+                _connectWh = connectWh;
+                _disconnectWh = disconnectWh;
+            }
+
+            public Task Disconnect()
+            {
+                _disconnectWh.Set();
+
+                return TaskAsyncHelper.Empty;
+            }
+
+            public Task Connect()
+            {
+                _connectWh.Set();
+
+                return TaskAsyncHelper.Empty;
+            }
+
+            public Task Reconnect(IEnumerable<string> groups)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class MyConnection : PersistentConnection
