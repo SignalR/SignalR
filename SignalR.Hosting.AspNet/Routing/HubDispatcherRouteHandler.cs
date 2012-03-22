@@ -17,7 +17,8 @@ namespace SignalR.Hosting.AspNet.Routing
         }
 
         public IHttpHandler GetHttpHandler(RequestContext requestContext)
-        {            
+        {   
+            // REVIEW: This only needs to be done once per resolver.
             var hubLocator = new Lazy<BuildManagerTypeLocator>(() => new BuildManagerTypeLocator());
             var typeResolver = new Lazy<BuildManagerTypeResolver>(() => new BuildManagerTypeResolver(hubLocator.Value));
 

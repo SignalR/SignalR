@@ -1,6 +1,5 @@
 ﻿using System.Web;
 using System.Web.Routing;
-using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using SignalR.Hosting.AspNet;
 using SignalR.Hosting.AspNet.Routing;
 
@@ -22,7 +21,7 @@ namespace SignalR.Hosting.AspNet
                 {
                     if (!_initialized)
                     {
-                        RouteTable.Routes.MapHubs("signalr.hubs", "~/signalr");
+                        RouteTable.Routes.MapHubs("~/signalr");
 
                         _initialized = true;
                     }

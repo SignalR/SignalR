@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Web.Routing;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.AspNet.Routing
 {
@@ -21,13 +20,19 @@ namespace SignalR.Hosting.AspNet.Routing
             return MapConnection(routes, name, url, type, Global.DependencyResolver);
         }
 
-        public static RouteBase MapHubs(this RouteCollection routes, string name, string url)
+        public static RouteBase MapHubs(this RouteCollection routes, string url)
         {
-            return MapHubs(routes, name, url, Global.DependencyResolver);
+            return MapHubs(routes, url, Global.DependencyResolver);
         }
 
-        public static RouteBase MapHubs(this RouteCollection routes, string name, string url, IDependencyResolver resolver)
+        public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)
         {
+            var existing = routes["signalr.hubs"];
+            if (existing != null)
+            {
+                routes.Remove(existing);
+            }
+
             string routeUrl = url;
             if (!routeUrl.EndsWith("/"))
             {
@@ -40,7 +45,7 @@ namespace SignalR.Hosting.AspNet.Routing
             route.Constraints = new RouteValueDictionary();
             route.Constraints.Add("Incoming", new IncomingOnlyRouteConstraint());
             route.Constraints.Add("IgnoreJs", new IgnoreJsRouteConstraint());
-            routes.Add(name, route);
+            routes.Add("signalr.hubs", route);
             return route;
         }
 
