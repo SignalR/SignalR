@@ -60,6 +60,7 @@
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
+    <Compile Include="Infrastructure\ChunkBuffer.cs" />
     <Compile Include="Infrastructure\DefaultHttpClient.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\HttpHelper.cs" />
