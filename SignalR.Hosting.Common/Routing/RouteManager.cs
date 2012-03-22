@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SignalR.Infrastructure;
+using SignalR.Hubs;
 
 namespace SignalR.Hosting.Common.Routing
 {
@@ -8,6 +8,7 @@ namespace SignalR.Hosting.Common.Routing
     {
         private readonly IDependencyResolver _resolver;
         private readonly Dictionary<string, Type> _connectionMapping = new Dictionary<string, Type>();
+        private string _hubPath;
 
         public RouteManager(IDependencyResolver resolver)
         {
@@ -22,6 +23,11 @@ namespace SignalR.Hosting.Common.Routing
             }
         }
 
+        public void MapHubs(string path)
+        {
+            _hubPath = path;
+        }
+
         public bool TryGetConnection(Uri uri, out PersistentConnection connection)
         {
             return TryGetConnection(uri.LocalPath, out connection);
@@ -30,6 +36,13 @@ namespace SignalR.Hosting.Common.Routing
         public bool TryGetConnection(string path, out PersistentConnection connection)
         {
             connection = null;
+
+            if (!String.IsNullOrEmpty(_hubPath) &&
+                path.StartsWith(_hubPath, StringComparison.OrdinalIgnoreCase))
+            {
+                connection = new HubDispatcher(_hubPath);
+                return true;
+            }
 
             foreach (var pair in _connectionMapping)
             {

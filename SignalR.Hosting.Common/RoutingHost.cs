@@ -1,7 +1,4 @@
-﻿using System;
-using SignalR.Hosting.Common.Routing;
-using SignalR.Hubs;
-using SignalR.Infrastructure;
+﻿using SignalR.Hosting.Common.Routing;
 
 namespace SignalR.Hosting.Common
 {
@@ -20,19 +17,26 @@ namespace SignalR.Hosting.Common
             _routeManager = new RouteManager(resolver);
         }
 
-        public void MapConnection<TConnection>(string path) where TConnection : PersistentConnection
+        public RoutingHost MapHubs()
         {
-            _routeManager.MapConnection<TConnection>(path);
+            return MapHubs("/signalr");
         }
 
-        public virtual bool TryGetConnection(string path, out PersistentConnection connection)
+        public RoutingHost MapHubs(string path)
         {
-            if (path.StartsWith("/signalr", StringComparison.OrdinalIgnoreCase))
-            {
-                connection = new HubDispatcher("/signalr");
-                return true;
-            }
+            _routeManager.MapHubs(path);
 
+            return this;
+        }
+
+        public RoutingHost MapConnection<TConnection>(string path) where TConnection : PersistentConnection
+        {
+            _routeManager.MapConnection<TConnection>(path);
+            return this;
+        }
+
+        public bool TryGetConnection(string path, out PersistentConnection connection)
+        {
             return _routeManager.TryGetConnection(path, out connection);
         }
     }

@@ -39,6 +39,7 @@ namespace SignalR.Tests
         public void DisconnectFiresForHubsWhenConnectionGoesAway()
         {
             var host = new MemoryHost();
+            host.MapHubs();
             var configurationManager = host.DependencyResolver.Resolve<IConfigurationManager>();
             configurationManager.DisconnectTimeout = TimeSpan.Zero;
             configurationManager.HeartBeatInterval = TimeSpan.FromSeconds(5);
