@@ -13,6 +13,7 @@ namespace SignalR.Hosting.Memory
         private string _nonStreamingData;
         private readonly CancellationToken _clientToken;
         private readonly FollowStream _responseStream;
+        private bool _ended;
 
         public Response(CancellationToken clientToken, Action startSending)
         {
@@ -39,7 +40,7 @@ namespace SignalR.Hosting.Memory
         {
             get
             {
-                return !_responseStream.Ended && !_clientToken.IsCancellationRequested;
+                return !_responseStream.Ended && !_clientToken.IsCancellationRequested && !_ended;
             }
         }
 
@@ -62,6 +63,7 @@ namespace SignalR.Hosting.Memory
         public Task EndAsync(string data)
         {
             _nonStreamingData = data;
+            _ended = true;
             return TaskAsyncHelper.Empty;
         }
 
