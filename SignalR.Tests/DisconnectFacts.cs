@@ -15,16 +15,15 @@ namespace SignalR.Tests
         {
             var host = new MemoryHost();
             host.MapConnection<MyConnection>("/echo");
-            var configurationManager = host.DependencyResolver.Resolve<IConfigurationManager>();
-            configurationManager.DisconnectTimeout = TimeSpan.Zero;
-            configurationManager.HeartBeatInterval = TimeSpan.FromSeconds(5);
+            host.Configuration.DisconnectTimeout = TimeSpan.Zero;
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
             var connectWh = new ManualResetEventSlim();
             var disconnectWh = new ManualResetEventSlim();
             host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
             var connection = new Client.Connection("http://foo/echo");
 
             // Maximum wait time for disconnect to fire (2 heart beat intervals)
-            var disconnectWait = configurationManager.HeartBeatInterval + configurationManager.HeartBeatInterval;
+            var disconnectWait = host.Configuration.HeartBeatInterval + host.Configuration.HeartBeatInterval;
 
             connection.Start(host).Wait();
 
@@ -40,16 +39,15 @@ namespace SignalR.Tests
         {
             var host = new MemoryHost();
             host.MapHubs();
-            var configurationManager = host.DependencyResolver.Resolve<IConfigurationManager>();
-            configurationManager.DisconnectTimeout = TimeSpan.Zero;
-            configurationManager.HeartBeatInterval = TimeSpan.FromSeconds(5);
+            host.Configuration.DisconnectTimeout = TimeSpan.Zero;
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
             var connectWh = new ManualResetEventSlim();
             var disconnectWh = new ManualResetEventSlim();
             host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
             // Maximum wait time for disconnect to fire (2 heart beat intervals)
-            var disconnectWait = configurationManager.HeartBeatInterval + configurationManager.HeartBeatInterval;
+            var disconnectWait = host.Configuration.HeartBeatInterval + host.Configuration.HeartBeatInterval;
 
             connection.Start(host).Wait();
 
