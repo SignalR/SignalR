@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using SignalR.Client.Infrastructure;
 using SignalR.Client.Transports;
 
+#if SILVERLIGHT5
+using System.Collections.Concurrent.Standins;
+#endif
+
 namespace SignalR.Client
 {
     public class Connection : IConnection
