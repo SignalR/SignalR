@@ -60,6 +60,7 @@
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
+    <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
