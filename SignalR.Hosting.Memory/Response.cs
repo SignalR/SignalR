@@ -52,7 +52,7 @@ namespace SignalR.Hosting.Memory
 
         public Task WriteAsync(string data)
         {
-            if (!_responseStream.Ended)
+            if (IsClientConnected)
             {
                 _responseStream.Write(data);
             }
@@ -144,21 +144,26 @@ namespace SignalR.Hosting.Memory
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                // Read count bytes from the underlying buffer
-                byte[] followingBuffer = _ms.GetBuffer();
+                try
+                {
+                    // Read count bytes from the underlying buffer
+                    byte[] followingBuffer = _ms.GetBuffer();
 
-                // Get the max readable
-                int max = Math.Min(count, (int)_ms.Length);
+                    // Get the max len
+                    int read = Math.Min(count, (int)_ms.Length - _readPosition);
+                    
+                    // Copy it to the output buffer
+                    Array.Copy(followingBuffer, _readPosition, buffer, offset, read);
 
-                // Copy it to the output buffer
-                Array.Copy(followingBuffer, _readPosition, buffer, offset, max);
+                    // Move our cursor into the data further
+                    _readPosition += read;
 
-                // Calculate the read
-                int read = Math.Abs(_readPosition - max);
-
-                // Move our cursor into the data further
-                _readPosition += read;
-                return read;
+                    return read;
+                }
+                catch (ObjectDisposedException)
+                {
+                    return 0;
+                }
             }
 
             public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
