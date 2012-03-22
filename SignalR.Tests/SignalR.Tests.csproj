@@ -54,6 +54,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChunkBufferFacts.cs" />
+    <Compile Include="ConnectionFacts.cs" />
     <Compile Include="DisconnectFacts.cs" />
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />

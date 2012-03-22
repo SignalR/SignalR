@@ -103,6 +103,9 @@
     <Compile Include="..\SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\ChunkBuffer.cs">
+      <Link>Infrastructure\ChunkBuffer.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\DefaultHttpClient.cs">
       <Link>Infrastructure\DefaultHttpClient.cs</Link>
     </Compile>
