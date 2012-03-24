@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
-using SignalR.Hosting;
 
 namespace SignalR.Hosting.AspNet
 {
@@ -12,7 +11,7 @@ namespace SignalR.Hosting.AspNet
         private delegate void RemoveHeaderDel(HttpWorkerRequest workerRequest);
 
         private const string IIS7WorkerRequestTypeName = "System.Web.Hosting.IIS7WorkerRequest";
-        private static readonly RemoveHeaderDel IIS7RemoveHeader = GetRemoveHeaderDelegate();
+        private static readonly Lazy<RemoveHeaderDel> IIS7RemoveHeader = new Lazy<RemoveHeaderDel>(GetRemoveHeaderDelegate);
 
         private readonly HttpContextBase _context;
 
@@ -74,7 +73,7 @@ namespace SignalR.Hosting.AspNet
             if (IsIIS7WorkerRequest(workerRequest))
             {
                 // Optimized code path for IIS7, accessing Headers causes all headers to be read
-                IIS7RemoveHeader(workerRequest);
+                IIS7RemoveHeader.Value.Invoke(workerRequest);
             }
             else
             {
