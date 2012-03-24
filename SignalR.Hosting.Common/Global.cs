@@ -4,13 +4,14 @@ namespace SignalR
 {
     public static class Global
     {
-        private static readonly Lazy<IDependencyResolver> _resolver = new Lazy<IDependencyResolver>(() => new DefaultDependencyResolver());
+        private static IDependencyResolver _resolver;
+        private static readonly Lazy<IDependencyResolver> _defaultResolver = new Lazy<IDependencyResolver>(() => new DefaultDependencyResolver());
 
         public static IDependencyResolver DependencyResolver
         {
             get
             {
-                return _resolver.Value;
+                return _resolver ?? _defaultResolver.Value;
             }
         }
 
@@ -28,6 +29,11 @@ namespace SignalR
             {
                 return DependencyResolver.Resolve<IConnectionManager>();
             }
+        }
+
+        public static void SetResolver(IDependencyResolver resolver)
+        {
+            _resolver = resolver;
         }
     }
 }

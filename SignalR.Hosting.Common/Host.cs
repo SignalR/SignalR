@@ -1,6 +1,6 @@
 ﻿namespace SignalR.Hosting.Common
 {
-    public abstract class Host
+    public class Host
     {
         private readonly IDependencyResolver _resolver;
 
