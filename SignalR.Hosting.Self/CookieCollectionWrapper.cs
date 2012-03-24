@@ -33,7 +33,7 @@ namespace SignalR.Hosting.Self
             get { return _cookies.Count; }
         }
 
-        private static Cookie ToSignalRCookie(System.Net.Cookie source)
+        private static Cookie ToSignalRCookie(Cookie source)
         {
             if (source == null)
             {
