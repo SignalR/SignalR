@@ -16,7 +16,7 @@ namespace SignalR.Hosting.Self
         public Action<HostContext> OnProcessRequest { get; set; }
 
         public Server(string url)
-            : this(url, new DefaultDependencyResolver())
+            : this(url, Global.DependencyResolver)
         {
 
         }
