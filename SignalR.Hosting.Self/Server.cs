@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -15,7 +16,7 @@ namespace SignalR.Hosting.Self
         private readonly HttpListener _listener;
 
         private Timer _heartBeat;
-        private List<HttpListenerResponseWrapper> _aliveConnections = new List<HttpListenerResponseWrapper>();
+        private ConcurrentDictionary<HttpListenerResponseWrapper, bool> _aliveConnections = new ConcurrentDictionary<HttpListenerResponseWrapper, bool>();
         private int _checkingConnections;
 
         public Action<HostContext> OnProcessRequest { get; set; }
@@ -65,7 +66,7 @@ namespace SignalR.Hosting.Self
                     if (_heartBeat == null)
                     {
                         var interval = TimeSpan.FromTicks(Configuration.HeartBeatInterval.Ticks / 2);
-                        _heartBeat = new Timer(_ => CheckConnections(), 
+                        _heartBeat = new Timer(_ => CheckConnections(),
                                                null,
                                                interval,
                                                interval);
@@ -117,7 +118,7 @@ namespace SignalR.Hosting.Self
                     }
 
                     // Add this response to the list of live connections
-                    _aliveConnections.Add(response);
+                    _aliveConnections.TryAdd(response, true);
 #if DEBUG
                     hostContext.Items[HostConstants.DebugMode] = true;
 #endif
@@ -169,7 +170,7 @@ namespace SignalR.Hosting.Self
             if (_aliveConnections.Count > 0)
             {
                 var dead = new List<HttpListenerResponseWrapper>();
-                foreach (var c in _aliveConnections)
+                foreach (var c in _aliveConnections.Keys)
                 {
                     if (!c.Ping())
                     {
@@ -179,7 +180,8 @@ namespace SignalR.Hosting.Self
 
                 foreach (var c in dead)
                 {
-                    _aliveConnections.Remove(c);
+                    bool ignore;
+                    _aliveConnections.TryRemove(c, out ignore);
                 }
             }
 
