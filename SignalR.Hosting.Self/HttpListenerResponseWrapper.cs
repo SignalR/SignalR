@@ -8,6 +8,7 @@ namespace SignalR.Hosting.Self
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
+        private readonly object _lockObject = new object();
 
         public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse)
         {
@@ -35,23 +36,21 @@ namespace SignalR.Hosting.Self
 
         public Task WriteAsync(string data)
         {
-            if (!IsClientConnected)
+            return DoWrite(data).Then((response, lockObj) =>
             {
-                return TaskAsyncHelper.Empty;
-            }
-
-            return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
-            {
-                if (task.IsFaulted)
+                lock (lockObj)
                 {
-                    var ex = task.Exception.GetBaseException() as HttpListenerException;
-                    if (ex != null && ex.ErrorCode == 1229)
+                    try
                     {
-                        // Non existent connection or connection disposed
-                        IsClientConnected = false;
+                        response.OutputStream.Flush();
+                    }
+                    catch
+                    {
                     }
                 }
-            }).Catch();
+            }, 
+            _httpListenerResponse, 
+            _lockObject);
         }
 
         public bool Ping()
@@ -63,12 +62,15 @@ namespace SignalR.Hosting.Self
 
             try
             {
-                _httpListenerResponse.OutputStream.WriteByte(0);
-                _httpListenerResponse.OutputStream.Flush();
+                lock (_lockObject)
+                {
+                    _httpListenerResponse.OutputStream.WriteByte(0);
+                    _httpListenerResponse.OutputStream.Flush();
+                }
 
                 return true;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 IsClientConnected = false;
             }
@@ -78,7 +80,31 @@ namespace SignalR.Hosting.Self
 
         public Task EndAsync(string data)
         {
-            return WriteAsync(data).Then(response => response.CloseSafe(), _httpListenerResponse);
+            return DoWrite(data).Then(response => response.CloseSafe(), _httpListenerResponse);
+        }
+
+        private Task DoWrite(string data)
+        {
+            if (!IsClientConnected)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            lock (_lockObject)
+            {
+                return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        var ex = task.Exception.GetBaseException() as HttpListenerException;
+                        if (ex != null && ex.ErrorCode == 1229)
+                        {
+                            // Non existent connection or connection disposed
+                            IsClientConnected = false;
+                        }
+                    }
+                }).Catch();
+            }
         }
     }
 }
