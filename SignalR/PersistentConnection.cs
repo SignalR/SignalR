@@ -166,7 +166,7 @@ namespace SignalR
         public Task Send(object value)
         {
             OnSending();
-            return _transport.Send(value);
+            return Connection.Send(value);
         }
 
         public Task Send(string connectionId, object value)

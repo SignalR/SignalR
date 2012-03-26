@@ -42,9 +42,7 @@
             });
 
             connection.error(function (e) {
-                $("<li/>").css("background-color", "red")
-                          .css("color", "white")
-                          .html("[" + new Date().toTimeString() + "]: " + e || "Error occurred")
+                $("<li/>").html(e.responseText)
                           .appendTo($("#messages"));
             });
 

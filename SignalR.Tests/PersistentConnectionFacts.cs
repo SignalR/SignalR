@@ -48,6 +48,50 @@ namespace SignalR.Tests
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
             }
+
+            [Fact]
+            public void SendRaisesOnReceivedFromAllEvents()
+            {
+                var host = new MemoryHost();
+                host.MapConnection<MySendingConnection>("/multisend");
+
+                var connection = new Client.Connection("http://foo/multisend");
+                var results = new List<string>();
+                connection.Received += data =>
+                {
+                    results.Add(data);
+                };
+
+                connection.Start(host).Wait();
+                connection.Send("").Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal("OnConnectedAsync1", results[0]);
+                Assert.Equal("OnConnectedAsync2", results[1]);
+                Assert.Equal("OnReceivedAsync1", results[2]);
+                Assert.Equal("OnReceivedAsync2", results[3]);
+            }
+        }
+    }
+
+    public class MySendingConnection : PersistentConnection
+    {
+        protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+        {
+            Send("OnConnectedAsync1");
+            Send("OnConnectedAsync2");
+
+            return base.OnConnectedAsync(request, connectionId);
+        }
+
+        protected override Task OnReceivedAsync(string connectionId, string data)
+        {
+            Send("OnReceivedAsync1");
+            Send("OnReceivedAsync2");
+
+            return base.OnReceivedAsync(connectionId, data);
         }
     }
 
