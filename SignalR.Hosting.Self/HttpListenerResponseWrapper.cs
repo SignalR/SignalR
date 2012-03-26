@@ -1,6 +1,6 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
-using SignalR.Hosting;
 using SignalR.Hosting.Self.Infrastructure;
 
 namespace SignalR.Hosting.Self
@@ -52,6 +52,28 @@ namespace SignalR.Hosting.Self
                     }
                 }
             }).Catch();
+        }
+
+        public bool Ping()
+        {
+            if (!IsClientConnected)
+            {
+                return false;
+            }
+
+            try
+            {
+                _httpListenerResponse.OutputStream.WriteByte(0);
+                _httpListenerResponse.OutputStream.Flush();
+
+                return true;
+            }
+            catch(Exception)
+            {
+                IsClientConnected = false;
+            }
+
+            return false;
         }
 
         public Task EndAsync(string data)
