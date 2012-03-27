@@ -9,7 +9,7 @@
     using SignalR.Infrastructure;
 
     /// <summary>
-    /// Default hub descriptor provider. Finds all IHub-implementing types and lists them as hubs.
+    /// Default hub descriptor provider - reflection-based.
     /// </summary>
     public class ReflectedHubDescriptorProvider: IHubDescriptorProvider
     {

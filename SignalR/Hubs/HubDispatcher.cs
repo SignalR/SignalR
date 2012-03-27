@@ -63,7 +63,7 @@
             try
             {
                 // Invoke the action
-                // pszmyd: Invoker delegate automatically adjusts JSON parameters to correct types.
+                // pszmyd: Invoker delegate automatically deserializes JSON parameters and adjusts them to the given action.
                 object result = actionDescriptor.Invoker(hub, parameters);
                 Type returnType = result != null ? result.GetType() : actionDescriptor.ReturnType;
 

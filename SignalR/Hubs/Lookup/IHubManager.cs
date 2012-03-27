@@ -6,7 +6,7 @@
     using SignalR.Hubs.Lookup.Descriptors;
 
     /// <summary>
-    /// Describes a hub manager - main point in whole hub and action lookup process.
+    /// Describes a hub manager - main point in the whole hub and action lookup process.
     /// </summary>
     public interface IHubManager
     {

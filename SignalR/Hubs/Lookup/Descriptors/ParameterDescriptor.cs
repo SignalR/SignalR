@@ -10,11 +10,11 @@
         /// <summary>
         /// Parameter name.
         /// </summary>
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         /// <summary>
         /// Parameter type.
         /// </summary>
-        public Type Type { get; set; }
+        public virtual Type Type { get; set; }
     }
 }

@@ -10,11 +10,11 @@ namespace SignalR.Hubs.Lookup.Descriptors
         /// <summary>
         /// Hub name.
         /// </summary>
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         /// <summary>
         /// Hub type.
         /// </summary>
-        public Type Type { get; set; }
+        public virtual Type Type { get; set; }
     }
 }

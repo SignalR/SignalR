@@ -9,6 +9,9 @@ namespace SignalR.Hubs.Lookup
     using SignalR.Hubs.Lookup.Descriptors;
     using SignalR.Infrastructure;
 
+    /// <summary>
+    /// Default hub action descriptor provider - reflection-based.
+    /// </summary>
     public class ReflectedActionDescriptorProvider : IActionDescriptorProvider
     {
         private readonly ConcurrentDictionary<string, IDictionary<string, IEnumerable<ActionDescriptor>>> _actions;
