@@ -7,6 +7,5 @@ namespace SignalR.Hubs
         dynamic Caller { get; set; }
         HubContext Context { get; set; }
         IGroupManager GroupManager { get; set; }
-        string Name { get; }
     }
 }

@@ -43,6 +43,10 @@
 
             // Create the hub
             var descriptor = this._manager.GetHub(hubRequest.Hub);
+            if (descriptor == null)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' hub could not be resolved.", hubRequest.Hub));
+            }
 
             // Deserialize the parameter name value pairs so we can match it up with the method's parameters
             var parameters = hubRequest.Data;
@@ -52,7 +56,7 @@
 
             if (actionDescriptor == null)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' could not be resolved.", hubRequest.Action));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' action could not be resolved.", hubRequest.Action));
             }
 
             // Resolving the actual state object

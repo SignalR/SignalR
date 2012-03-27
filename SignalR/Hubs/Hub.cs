@@ -18,11 +18,6 @@ namespace SignalR.Hubs
         public HubContext Context { get; set; }
         public IGroupManager GroupManager { get; set; }
 
-        public string Name
-        {
-            get; internal set; 
-        }
-
         public Task AddToGroup(string groupName)
         {
             return GroupManager.AddToGroup(Context.ConnectionId, groupName);
