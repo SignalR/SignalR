@@ -8,6 +8,8 @@ using SignalR.Transports;
 
 namespace SignalR
 {
+    using SignalR.Hubs.Lookup;
+
     public class DefaultDependencyResolver : IDependencyResolver
     {
         private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
@@ -27,20 +29,17 @@ namespace SignalR
             Register(typeof(IJsonSerializer), () => serializer);
 
             // Hubs
-            var hubLocator = new Lazy<DefaultHubLocator>();
-            Register(typeof(IHubLocator), () => hubLocator.Value);
+            var actionDescriptorProvider = new Lazy<ReflectedActionDescriptorProvider>();
+            Register(typeof(IActionDescriptorProvider), () => actionDescriptorProvider.Value);
 
-            var hubTypeResolver = new Lazy<DefaultHubTypeResolver>(() => new DefaultHubTypeResolver(this));
-            Register(typeof(IHubTypeResolver), () => hubTypeResolver.Value);
-
-            var actionResolver = new Lazy<DefaultActionResolver>(() => new DefaultActionResolver());
-            Register(typeof(IActionResolver), () => actionResolver.Value);
+            var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>();
+            Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);
 
             var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));
             Register(typeof(IHubActivator), () => activator.Value);
 
-            var hubFactory = new Lazy<DefaultHubFactory>(() => new DefaultHubFactory(this));
-            Register(typeof(IHubFactory), () => hubFactory.Value);
+            var hubManager = new Lazy<DefaultHubManager>(() => new DefaultHubManager(this));
+            Register(typeof(IHubManager), () => hubManager.Value);
 
             var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
             Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);

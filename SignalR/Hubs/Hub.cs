@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using SignalR.Infrastructure;
+
 namespace SignalR.Hubs
 {
     public abstract class Hub : IHub
@@ -17,6 +17,11 @@ namespace SignalR.Hubs
         public dynamic Caller { get; set; }
         public HubContext Context { get; set; }
         public IGroupManager GroupManager { get; set; }
+
+        public string Name
+        {
+            get; internal set; 
+        }
 
         public Task AddToGroup(string groupName)
         {

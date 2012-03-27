@@ -3,12 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
+    using SignalR.Hubs.Lookup;
+    using SignalR.Hubs.Lookup.Descriptors;
+
     public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator
     {
         private static readonly Lazy<string> _template = new Lazy<string>(GetTemplate);
@@ -16,18 +18,18 @@ namespace SignalR.Hubs
 
         private const string ScriptResource = "SignalR.Scripts.hubs.js";
 
-        private readonly IHubLocator _hubLocator;
+        private readonly IHubManager _manager;
         private readonly IJavaScriptMinifier _javascriptMinifier;
 
         public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
-            this(resolver.Resolve<IHubLocator>(),
+            this(resolver.Resolve<IHubManager>(),
                  resolver.Resolve<IJavaScriptMinifier>())
         {
         }
 
-        public DefaultJavaScriptProxyGenerator(IHubLocator hubLocator, IJavaScriptMinifier javascriptMinifier)
+        public DefaultJavaScriptProxyGenerator(IHubManager manager, IJavaScriptMinifier javascriptMinifier)
         {
-            _hubLocator = hubLocator;
+            _manager = manager;
             _javascriptMinifier = javascriptMinifier ?? NullJavaScriptMinifier.Instance;
         }
 
@@ -47,14 +49,14 @@ namespace SignalR.Hubs
 
             var hubs = new StringBuilder();
             var first = true;
-            foreach (var type in _hubLocator.GetHubs())
+            foreach (var descriptor in _manager.GetHubs())
             {
                 if (!first)
                 {
                     hubs.AppendLine(",");
                     hubs.Append("        ");
                 }
-                GenerateType(serviceUrl, hubs, type);
+                GenerateType(serviceUrl, hubs, descriptor);
                 first = false;
             }
 
@@ -70,18 +72,22 @@ namespace SignalR.Hubs
             return script;
         }
 
-        private void GenerateType(string serviceUrl, StringBuilder sb, Type type)
+        private void GenerateType(string serviceUrl, StringBuilder sb, HubDescriptor descriptor)
         {
-            // Get public instance methods declared on this type only
-            var methods = GetMethods(type);
+            // Get only actions with minimum number of parameters.
+            var methods = _manager.GetHubActions(descriptor.Name)
+                .GroupBy(d => d.Name, (key, group) => group
+                    .OrderBy(a => a.Parameters.Count())
+                    .First()).ToList();
+
             var members = methods.Select(m => m.Name).ToList();
             members.Add("namespace");
             members.Add("ignoreMembers");
             members.Add("callbacks");
 
-            sb.AppendFormat("{0}: {{", GetHubName(type)).AppendLine();
+            sb.AppendFormat("{0}: {{", GetHubName(descriptor)).AppendLine();
             sb.AppendFormat("            _: {{").AppendLine();
-            sb.AppendFormat("                hubName: '{0}',", type.FullName ?? "null").AppendLine();
+            sb.AppendFormat("                hubName: '{0}',", descriptor.Name ?? "null").AppendLine();
             sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
             sb.AppendLine("                connection: function () { return signalR.hub; }");
             sb.AppendFormat("            }}");
@@ -102,33 +108,21 @@ namespace SignalR.Hubs
                 {
                     sb.Append(",").AppendLine();
                 }
-                GenerateMethod(serviceUrl, sb, type, method);
+                GenerateMethod(serviceUrl, sb, descriptor, method);
                 first = false;
             }
             sb.AppendLine();
             sb.Append("        }");
         }
 
-        protected virtual string GetHubName(Type type)
+        protected virtual string GetHubName(HubDescriptor descriptor)
         {
-            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, a => a.HubName) ?? Json.CamelCase(type.Name);
+            return Json.CamelCase(descriptor.Name);
         }
 
-        protected virtual IEnumerable<MethodInfo> GetMethods(Type type)
+        private void GenerateMethod(string serviceUrl, StringBuilder sb, HubDescriptor descriptor, ActionDescriptor method)
         {
-            // Pick the overload with the minimum number of arguments
-            return from method in ReflectionHelper.GetExportedHubMethods(type)
-                   group method by method.Name into overloads
-                   let oload = (from overload in overloads
-                                   orderby overload.GetParameters().Length
-                                   select overload).FirstOrDefault()
-                   select oload;
-        }
-
-        private void GenerateMethod(string serviceUrl, StringBuilder sb, Type type, MethodInfo method)
-        {
-            var parameters = method.GetParameters();
-            var parameterNames = parameters.Select(p => p.Name).ToList();
+            var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             parameterNames.Add("callback");
             sb.AppendLine();
             sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
@@ -136,9 +130,9 @@ namespace SignalR.Hubs
             sb.Append("            }");
         }
 
-        private static string GetMethodName(MethodInfo method)
+        private static string GetMethodName(ActionDescriptor method)
         {
-            return ReflectionHelper.GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName) ?? Json.CamelCase(method.Name);
+            return Json.CamelCase(method.Name);
         }
 
         private static string Commas(IEnumerable<string> values)

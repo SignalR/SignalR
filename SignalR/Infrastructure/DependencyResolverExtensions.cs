@@ -2,6 +2,10 @@
 
 namespace SignalR
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public static class DependencyResolverExtensions
     {
         public static T Resolve<T>(this IDependencyResolver resolver)
@@ -12,6 +16,16 @@ namespace SignalR
         public static object Resolve(this IDependencyResolver resolver, Type type)
         {
             return resolver.GetService(type);
+        }
+
+        public static IEnumerable<T> ResolveAll<T>(this IDependencyResolver resolver)
+        {
+            return resolver.GetServices(typeof(T)).Cast<T>();
+        }
+
+        public static IEnumerable<object> ResolveAll(this IDependencyResolver resolver, Type type)
+        {
+            return resolver.GetServices(type);
         }
     }
 }
