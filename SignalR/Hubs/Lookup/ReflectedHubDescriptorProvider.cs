@@ -14,15 +14,17 @@
     public class ReflectedHubDescriptorProvider: IHubDescriptorProvider
     {
         private readonly Lazy<IDictionary<string, HubDescriptor>> _hubs;
+        private readonly Lazy<IAssemblyLocator> _locator;
 
-        public ReflectedHubDescriptorProvider()
+        public ReflectedHubDescriptorProvider(IDependencyResolver resolver)
         {
-            this._hubs = new Lazy<IDictionary<string, HubDescriptor>>(BuildHubsCache);
+            _locator = new Lazy<IAssemblyLocator>(resolver.Resolve<IAssemblyLocator>);
+            _hubs = new Lazy<IDictionary<string, HubDescriptor>>(BuildHubsCache);
         }
 
         public IEnumerable<HubDescriptor> GetHubs()
         {
-            return this._hubs.Value.Select(kv => kv.Value).Distinct();
+            return _hubs.Value.Select(kv => kv.Value).Distinct();
         }
 
         public bool TryGetHub(string hubName, out HubDescriptor descriptor)
@@ -32,7 +34,7 @@
 
         protected IDictionary<string, HubDescriptor> BuildHubsCache()
         {
-            return GetAssemblies()
+            return _locator.Value.GetAssemblies()
                 .Where(a => !a.GlobalAssemblyCache && !a.IsDynamic)
                 .SelectMany(GetTypesSafe)
                 .Where(type => typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract)
@@ -43,12 +45,6 @@
                     })
                 .SelectMany(x => CacheKeysFor(x.Type).Select(key => new { Descriptor = x, Key = key }))
                 .ToDictionary(xx => xx.Key, xx => xx.Descriptor);
-        }
-
-        protected virtual IEnumerable<Assembly> GetAssemblies()
-        {
-            // TODO: Look for a better default, chances are the hubs aren't even loaded yet
-            return AppDomain.CurrentDomain.GetAssemblies();
         }
 
         private static IEnumerable<string> CacheKeysFor(Type type)

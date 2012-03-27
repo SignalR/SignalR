@@ -18,6 +18,9 @@ namespace SignalR
         {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
 
+            var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
+            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
+
             Register(typeof(ITraceManager), () => traceManager.Value);
 
             var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
@@ -32,7 +35,7 @@ namespace SignalR
             var actionDescriptorProvider = new Lazy<ReflectedActionDescriptorProvider>();
             Register(typeof(IActionDescriptorProvider), () => actionDescriptorProvider.Value);
 
-            var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>();
+            var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>(() => new ReflectedHubDescriptorProvider(this));
             Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);
 
             var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));

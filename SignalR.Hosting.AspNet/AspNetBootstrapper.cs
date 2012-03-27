@@ -1,12 +1,17 @@
 ﻿using System.Web;
 using System.Web.Routing;
+
 using SignalR.Hosting.AspNet;
 using SignalR.Hosting.AspNet.Routing;
+using SignalR.Infrastructure;
 
 [assembly: PreApplicationStartMethod(typeof(AspNetBootstrapper), "Initialize")]
-
 namespace SignalR.Hosting.AspNet
 {
+    using System;
+
+    using SignalR.Hosting.AspNet.Infrastructure;
+
     public static class AspNetBootstrapper
     {
         private static bool _initialized;
@@ -22,6 +27,10 @@ namespace SignalR.Hosting.AspNet
                     if (!_initialized)
                     {
                         RouteTable.Routes.MapHubs("~/signalr");
+                        
+                        // pszmyd: Moved assembly locator ASP.NET overrides here, from the route handler.
+                        var locator = new Lazy<IAssemblyLocator>(() => new AspNetAssemblyLocator());
+                        Global.DependencyResolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
                         _initialized = true;
                     }
