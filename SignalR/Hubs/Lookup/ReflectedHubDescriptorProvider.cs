@@ -54,7 +54,8 @@ namespace SignalR.Hubs.Lookup
                 .SelectMany(desc => CacheKeysFor(desc.Type)
                 .Select(key => new { Descriptor = desc, Key = key }))
                 .ToDictionary(anon => anon.Key, 
-                              anon => anon.Descriptor);
+                              anon => anon.Descriptor,
+                              StringComparer.OrdinalIgnoreCase);
 
             return cacheEntries;
         }

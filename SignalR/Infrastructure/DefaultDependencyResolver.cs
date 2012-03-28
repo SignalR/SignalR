@@ -37,6 +37,9 @@ namespace SignalR
             var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>(() => new ReflectedHubDescriptorProvider(this));
             Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);
 
+            var parameterBinder = new Lazy<DefaultParameterResolver>();
+            Register(typeof(IParameterResolver), () => parameterBinder.Value);
+
             var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));
             Register(typeof(IHubActivator), () => activator.Value);
 

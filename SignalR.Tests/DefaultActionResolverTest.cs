@@ -94,6 +94,8 @@ namespace SignalR.Tests
         public void ResolveActionBindsComplexArguments()
         {
             var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
+
             var arg = new JObject(new JProperty("Age", 1),
                                   new JProperty("Address",
                                       new JObject(
@@ -105,7 +107,7 @@ namespace SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithComplex", out actionInfo, new object[] { arg });
 
             Assert.NotNull(actionInfo);
-            var complex = actionInfo.Adjust(arg)[0] as Complex;
+            var complex = binder.ResolveMethodParameters(actionInfo, arg)[0] as Complex;
             Assert.NotNull(complex);
             Assert.Equal(1, complex.Age);
             Assert.NotNull(complex.Address);
@@ -117,6 +119,7 @@ namespace SignalR.Tests
         public void ResolveActionBindsSimpleArrayArgument()
         {
             var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
 
             var arg = new JArray(new[] { 1, 2, 3 });
 
@@ -124,7 +127,7 @@ namespace SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithArray", out actionInfo, new object[] { arg });
 
             Assert.NotNull(actionInfo);
-            var args = actionInfo.Adjust(arg)[0] as int[];
+            var args = binder.ResolveMethodParameters(actionInfo, arg)[0] as int[];
             Assert.Equal(1, args[0]);
             Assert.Equal(2, args[1]);
             Assert.Equal(3, args[2]);
@@ -134,6 +137,8 @@ namespace SignalR.Tests
         public void ResolveActionBindsComplexArrayArgument()
         {
             var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
+
             var arg = new JObject(new JProperty("Age", 1),
                                   new JProperty("Address",
                                       new JObject(
@@ -145,7 +150,7 @@ namespace SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithArrayOfComplete", out actionInfo, new object[] { new JArray(new object[] { arg }) });
 
             Assert.NotNull(actionInfo);
-            var complexArray = actionInfo.Adjust(new JArray(new object[] { arg }))[0] as Complex[];
+            var complexArray = binder.ResolveMethodParameters(actionInfo, new JArray(new object[] { arg }))[0] as Complex[];
             Assert.Equal(1, complexArray.Length);
             var complex = complexArray[0];
             Assert.NotNull(complex);
@@ -159,13 +164,15 @@ namespace SignalR.Tests
         public void ResolveActionBindsGuid()
         {
             var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
+
             var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
 
             MethodDescriptor actionInfo;
             resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithGuid", out actionInfo, new object[] { arg });
 
             Assert.NotNull(actionInfo);
-            var arg0 = (Guid)actionInfo.Adjust(arg)[0];
+            var arg0 = (Guid)binder.ResolveMethodParameters(actionInfo, arg)[0];
             Assert.Equal(new Guid(arg), arg0);
         }
 

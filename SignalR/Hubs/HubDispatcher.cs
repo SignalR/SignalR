@@ -16,6 +16,7 @@ namespace SignalR.Hubs
     {
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
+        private IParameterResolver _binder;
         private HostContext _context;
 
         private readonly string _url;
@@ -29,6 +30,7 @@ namespace SignalR.Hubs
         {
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
             _manager = resolver.Resolve<IHubManager>();
+            _binder = resolver.Resolve<IParameterResolver>();
 
             base.Initialize(resolver);
         }
@@ -61,8 +63,7 @@ namespace SignalR.Hubs
             try
             {
                 // Invoke the action
-                // Invoker delegate automatically deserializes JSON parameters and adjusts them to the given action.
-                object result = actionDescriptor.Invoker(hub, parameters);
+                object result = actionDescriptor.Invoker(hub, _binder.ResolveMethodParameters(actionDescriptor, parameters));
                 Type returnType = result != null ? result.GetType() : actionDescriptor.ReturnType;
 
                 if (typeof(Task).IsAssignableFrom(returnType))
@@ -195,7 +196,7 @@ namespace SignalR.Hubs
         private IEnumerable<HubDescriptor> GetHubsImplementingInterface(Type interfaceType)
         {
             // Get hubs that implement the specified interface
-            return _manager.GetHubs(d => interfaceType.IsAssignableFrom(d.Type));
+            return _manager.GetHubs(hub => interfaceType.IsAssignableFrom(hub.Type));
         }
 
         private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
