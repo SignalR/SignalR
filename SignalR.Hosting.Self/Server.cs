@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Common;
 using SignalR.Hosting.Self.Infrastructure;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Self
 {
@@ -12,6 +14,10 @@ namespace SignalR.Hosting.Self
     {
         private readonly string _url;
         private readonly HttpListener _listener;
+
+        private Timer _heartBeat;
+        private ConcurrentDictionary<HttpListenerResponseWrapper, bool> _aliveConnections = new ConcurrentDictionary<HttpListenerResponseWrapper, bool>();
+        private int _checkingConnections;
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
@@ -39,6 +45,12 @@ namespace SignalR.Hosting.Self
         public void Stop()
         {
             _listener.Stop();
+
+            if (_heartBeat != null)
+            {
+                _heartBeat.Dispose();
+                _heartBeat = null;
+            }
         }
 
         private void ReceiveLoop()
@@ -49,6 +61,16 @@ namespace SignalR.Hosting.Self
                 try
                 {
                     context = _listener.EndGetContext(ar);
+
+                    // Start the timer the checks for connection activity
+                    if (_heartBeat == null)
+                    {
+                        var interval = TimeSpan.FromTicks(Configuration.HeartBeatInterval.Ticks / 2);
+                        _heartBeat = new Timer(_ => CheckConnections(),
+                                               null,
+                                               interval,
+                                               interval);
+                    }
                 }
                 catch (Exception)
                 {
@@ -94,6 +116,9 @@ namespace SignalR.Hosting.Self
                     {
                         OnProcessRequest(hostContext);
                     }
+
+                    // Add this response to the list of live connections
+                    _aliveConnections.TryAdd(response, true);
 #if DEBUG
                     hostContext.Items[HostConstants.DebugMode] = true;
 #endif
@@ -129,6 +154,38 @@ namespace SignalR.Hosting.Self
             }
 
             return path;
+        }
+
+        /// <summary>
+        /// Checks to see if any of the active connections are still alive by writing a byte to the output
+        /// stream and checking for an exception.
+        /// </summary>
+        private void CheckConnections()
+        {
+            if (Interlocked.Exchange(ref _checkingConnections, 1) == 1)
+            {
+                return;
+            }
+
+            if (_aliveConnections.Count > 0)
+            {
+                var dead = new List<HttpListenerResponseWrapper>();
+                foreach (var c in _aliveConnections.Keys)
+                {
+                    if (!c.Ping())
+                    {
+                        dead.Add(c);
+                    }
+                }
+
+                foreach (var c in dead)
+                {
+                    bool ignore;
+                    _aliveConnections.TryRemove(c, out ignore);
+                }
+            }
+
+            _checkingConnections = 0;
         }
     }
 }

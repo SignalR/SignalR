@@ -1,6 +1,6 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
-using SignalR.Hosting;
 using SignalR.Hosting.Self.Infrastructure;
 
 namespace SignalR.Hosting.Self
@@ -8,6 +8,7 @@ namespace SignalR.Hosting.Self
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
+        private readonly object _lockObject = new object();
 
         public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse)
         {
@@ -35,28 +36,75 @@ namespace SignalR.Hosting.Self
 
         public Task WriteAsync(string data)
         {
+            return DoWrite(data).Then((response, lockObj) =>
+            {
+                lock (lockObj)
+                {
+                    try
+                    {
+                        response.OutputStream.Flush();
+                    }
+                    catch
+                    {
+                    }
+                }
+            }, 
+            _httpListenerResponse, 
+            _lockObject);
+        }
+
+        public bool Ping()
+        {
+            if (!IsClientConnected)
+            {
+                return false;
+            }
+
+            try
+            {
+                lock (_lockObject)
+                {
+                    _httpListenerResponse.OutputStream.WriteByte(0);
+                    _httpListenerResponse.OutputStream.Flush();
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                IsClientConnected = false;
+            }
+
+            return false;
+        }
+
+        public Task EndAsync(string data)
+        {
+            return DoWrite(data).Then(response => response.CloseSafe(), _httpListenerResponse);
+        }
+
+        private Task DoWrite(string data)
+        {
             if (!IsClientConnected)
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
+            lock (_lockObject)
             {
-                if (task.IsFaulted)
+                return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
                 {
-                    var ex = task.Exception.GetBaseException() as HttpListenerException;
-                    if (ex != null && ex.ErrorCode == 1229)
+                    if (task.IsFaulted)
                     {
-                        // Non existent connection or connection disposed
-                        IsClientConnected = false;
+                        var ex = task.Exception.GetBaseException() as HttpListenerException;
+                        if (ex != null && ex.ErrorCode == 1229)
+                        {
+                            // Non existent connection or connection disposed
+                            IsClientConnected = false;
+                        }
                     }
-                }
-            }).Catch();
-        }
-
-        public Task EndAsync(string data)
-        {
-            return WriteAsync(data).Then(response => response.CloseSafe(), _httpListenerResponse);
+                }).Catch();
+            }
         }
     }
 }

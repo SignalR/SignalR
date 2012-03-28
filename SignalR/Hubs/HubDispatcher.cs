@@ -222,7 +222,7 @@ namespace SignalR.Hubs
                 StackTrace = stackTrace
             };
 
-            return Send(hubResult);
+            return _transport.Send(hubResult);
         }
 
         protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)

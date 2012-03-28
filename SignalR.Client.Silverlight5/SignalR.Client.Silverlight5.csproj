@@ -53,6 +53,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.4.0.7\lib\sl4\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Threading.Tasks.SL5">
+      <HintPath>..\packages\System.Threading.Tasks.3.0\lib\sl50\System.Threading.Tasks.SL5.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="system" />
     <Reference Include="System.Core" />
@@ -61,7 +64,6 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Impl\ConcurrentDictionary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
