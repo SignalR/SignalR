@@ -47,7 +47,7 @@ namespace SignalR.Hubs
             var parameters = hubRequest.Data;
 
             // Resolve the action
-            ActionDescriptor actionDescriptor = _manager.GetHubAction(descriptor.Name, hubRequest.Action, parameters);
+            MethodDescriptor actionDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Action, parameters);
             if (actionDescriptor == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' action could not be resolved.", hubRequest.Action));

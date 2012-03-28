@@ -117,17 +117,17 @@ namespace SignalR.Hubs
             return Json.CamelCase(descriptor.Name);
         }
 
-        private IEnumerable<ActionDescriptor> GetMethods(HubDescriptor descriptor)
+        private IEnumerable<MethodDescriptor> GetMethods(HubDescriptor descriptor)
         {
-           return _manager.GetHubActions(descriptor.Name)
-                .GroupBy(d => d.Name, 
-                         (key, group) => group
-                             .OrderBy(a => a.Parameters.Count())
-                             .First())
-                .ToList();
+            return from method in _manager.GetHubMethods(descriptor.Name)
+                   group method by method.Name into overloads
+                   let oload = (from overload in overloads
+                                orderby overload.Parameters.Count
+	  	                        select overload).FirstOrDefault()
+                   select oload;
         }
 
-        private void GenerateMethod(StringBuilder sb, ActionDescriptor method)
+        private void GenerateMethod(StringBuilder sb, MethodDescriptor method)
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             parameterNames.Add("callback");
@@ -137,7 +137,7 @@ namespace SignalR.Hubs
             sb.Append("            }");
         }
 
-        private static string GetMethodName(ActionDescriptor method)
+        private static string GetMethodName(MethodDescriptor method)
         {
             return Json.CamelCase(method.Name);
         }

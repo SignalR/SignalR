@@ -4,29 +4,29 @@ using System.Collections.Generic;
 namespace SignalR.Hubs.Lookup.Descriptors
 {
     /// <summary>
-    /// Holds information about a single hub action.
+    /// Holds information about a single hub method.
     /// </summary>
-    public class ActionDescriptor
+    public class MethodDescriptor
     {
         /// <summary>
-        /// Name of this action.
+        /// Name of this method.
         /// </summary>
         public virtual string Name { get; set; }
 
         /// <summary>
-        /// The return type of this action.
+        /// The return type of this method.
         /// </summary>
         public virtual Type ReturnType { get; set; }
 
         /// <summary>
-        /// Hub descriptor object to which this action is related.
+        /// Hub descriptor object, target to his method.
         /// </summary>
         public virtual HubDescriptor Hub { get; set; }
 
         /// <summary>
-        /// Available action parameters.
+        /// Available method parameters.
         /// </summary>
-        public virtual IEnumerable<ParameterDescriptor> Parameters { get; set; }
+        public virtual IList<ParameterDescriptor> Parameters { get; set; }
 
         /// <summary>
         /// Method invocation delegate.

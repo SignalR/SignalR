@@ -18,11 +18,12 @@ namespace SignalR.Hubs.Lookup
             _hubs = new Lazy<IDictionary<string, HubDescriptor>>(BuildHubsCache);
         }
 
-        public IEnumerable<HubDescriptor> GetHubs()
+        public IList<HubDescriptor> GetHubs()
         {
             return _hubs.Value
                 .Select(kv => kv.Value)
-                .Distinct();
+                .Distinct()
+                .ToList();
         }
 
         public bool TryGetHub(string hubName, out HubDescriptor descriptor)
@@ -32,21 +33,30 @@ namespace SignalR.Hubs.Lookup
 
         protected IDictionary<string, HubDescriptor> BuildHubsCache()
         {
-            return _locator.Value.GetAssemblies()
+            // Getting all IHub-implementing types that apply
+            var types = _locator.Value.GetAssemblies()
                 .Where(a => !a.GlobalAssemblyCache && !a.IsDynamic)
                 .SelectMany(GetTypesSafe)
-                .Where(type => typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract)
-                .Select(type => 
+                .Where(type => typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract);
+
+            // Building a list of descriptors for each type
+            var descriptors = types.Select(type => 
                     new HubDescriptor
                     {
                         Name = GetHubName(type),
                         Type = type
-                    })
-                .SelectMany(desc => 
-                    CacheKeysFor(desc.Type)
-                        .Select(key => new { Descriptor = desc, Key = key }))
+                    });
+
+            // Building cache entries for each descriptor
+            // Each descriptor is stored in dictionary under several keys for allowing quick lookup:
+            // full type name, short type name and optionally a name given by attribute
+            var cacheEntries = descriptors
+                .SelectMany(desc => CacheKeysFor(desc.Type)
+                .Select(key => new { Descriptor = desc, Key = key }))
                 .ToDictionary(anon => anon.Key, 
                               anon => anon.Descriptor);
+
+            return cacheEntries;
         }
 
         private static IEnumerable<string> CacheKeysFor(Type type)

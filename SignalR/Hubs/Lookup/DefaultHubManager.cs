@@ -7,21 +7,21 @@ namespace SignalR.Hubs.Lookup
 {
     public class DefaultHubManager : IHubManager
     {
-        private readonly IEnumerable<IActionDescriptorProvider> _actionProviders;
+        private readonly IEnumerable<IMethodDescriptorProvider> _methodProviders;
         private readonly IHubActivator _activator;
         private readonly IEnumerable<IHubDescriptorProvider> _hubProviders;
 
         public DefaultHubManager(IDependencyResolver resolver)
         {
             _hubProviders = resolver.ResolveAll<IHubDescriptorProvider>();
-            _actionProviders = resolver.ResolveAll<IActionDescriptorProvider>();
+            _methodProviders = resolver.ResolveAll<IMethodDescriptorProvider>();
             _activator = resolver.Resolve<IHubActivator>();
         }
 
         public HubDescriptor GetHub(string hubName)
         {
             HubDescriptor descriptor = null;
-            if(_hubProviders.Single(p => p.TryGetHub(hubName, out descriptor)) != null)
+            if(_hubProviders.FirstOrDefault(p => p.TryGetHub(hubName, out descriptor)) != null)
             {
                 return descriptor;
             }
@@ -29,24 +29,29 @@ namespace SignalR.Hubs.Lookup
             return null;
         }
 
-        public IEnumerable<HubDescriptor> GetHubs(Predicate<HubDescriptor> predicate = null)
+        public IEnumerable<HubDescriptor> GetHubs(Func<HubDescriptor, bool> predicate = null)
         {
-            return _hubProviders
-                .SelectMany(p => p.GetHubs())
-                .Where(d => predicate == null || predicate(d));
+            var hubs = _hubProviders.SelectMany(p => p.GetHubs());
+
+            if(predicate != null) 
+            {
+                return hubs.Where(predicate);
+            }
+
+            return hubs;
         }
 
-        public ActionDescriptor GetHubAction(string hubName, string actionName, params object[] parameters)
+        public MethodDescriptor GetHubMethod(string hubName, string method, params object[] parameters)
         {
-            var hub = GetHub(hubName);
+            HubDescriptor hub = GetHub(hubName);
 
             if (hub == null)
             {
                 return null;
             }
 
-            ActionDescriptor descriptor = null;
-            if (_actionProviders.Count(p => p.TryGetAction(hub, actionName, out descriptor, parameters)) == 1)
+            MethodDescriptor descriptor = null;
+            if (_methodProviders.Count(p => p.TryGetMethod(hub, method, out descriptor, parameters)) == 1)
             {
                 return descriptor;
             }
@@ -54,29 +59,35 @@ namespace SignalR.Hubs.Lookup
             return null;
         }
 
-        public IEnumerable<ActionDescriptor> GetHubActions(string hubName, Predicate<ActionDescriptor> predicate = null)
+        public IEnumerable<MethodDescriptor> GetHubMethods(string hubName, Func<MethodDescriptor, bool> predicate = null)
         {
-            var hub = GetHub(hubName);
+            HubDescriptor hub = GetHub(hubName);
 
             if (hub == null)
             {
                 return null;
             }
 
-            return _actionProviders
-                    .SelectMany(p => p.GetActions(hub))
-                    .Where(d => predicate == null || predicate(d));
+            var methods = _methodProviders.SelectMany(p => p.GetMethods(hub));
+
+            if(predicate != null) 
+            {
+                return methods.Where(predicate);
+            }
+
+            return methods;
+                    
         }
 
         public IHub ResolveHub(string hubName)
         {
-            var hub = GetHub(hubName);
+            HubDescriptor hub = GetHub(hubName);
             return hub == null ? null : _activator.Create(hub);
         }
 
         public IEnumerable<IHub> ResolveHubs()
         {
-            return GetHubs().Select(d => _activator.Create(d));
+            return GetHubs().Select(hub => _activator.Create(hub));
         }
     }
 }

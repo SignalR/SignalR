@@ -10,39 +10,40 @@ namespace SignalR.Hubs.Lookup
 {
     using System.Reflection;
 
-    public class ReflectedActionDescriptorProvider : IActionDescriptorProvider
+    public class ReflectedMethodDescriptorProvider : IMethodDescriptorProvider
     {
-        private readonly ConcurrentDictionary<string, IDictionary<string, IEnumerable<ActionDescriptor>>> _actions;
+        private readonly ConcurrentDictionary<string, IDictionary<string, IEnumerable<MethodDescriptor>>> _methods;
 
-        public ReflectedActionDescriptorProvider()
+        public ReflectedMethodDescriptorProvider()
         {
-            _actions = new ConcurrentDictionary<string, IDictionary<string, IEnumerable<ActionDescriptor>>>();
+            _methods = new ConcurrentDictionary<string, IDictionary<string, IEnumerable<MethodDescriptor>>>();
         }
 
-        public IEnumerable<ActionDescriptor> GetActions(HubDescriptor hub)
+        public IEnumerable<MethodDescriptor> GetMethods(HubDescriptor hub)
         {
-            return BuildActionsDictionary(hub)
+            return FetchMethodsFor(hub)
                 .SelectMany(kv => kv.Value)
                 .ToList();
         }
 
-        private IDictionary<string, IEnumerable<ActionDescriptor>> BuildActionsDictionary(HubDescriptor hub)
+        private IDictionary<string, IEnumerable<MethodDescriptor>> FetchMethodsFor(HubDescriptor hub)
         {
-            return _actions.GetOrAdd(
+            return _methods.GetOrAdd(
                 hub.Name, 
                 key => ReflectionHelper.GetExportedHubMethods(hub.Type)
                     .Select(m => 
                         {
-                            var descriptor = new ActionDescriptor 
+                            var descriptor = new MethodDescriptor 
                                 {
                                     ReturnType = m.ReturnType,
-                                    Name = GetActionName(m),
+                                    Name = GetMethodName(m),
                                     Parameters = m.GetParameters()
                                         .Select(p => new ParameterDescriptor 
                                             {
                                                 Name = p.Name,
                                                 Type = p.ParameterType
-                                            })                   
+                                            })
+                                        .ToList()                   
                                 };
 
                             descriptor.Invoker = (target, parameters) => m.Invoke(target, descriptor.Adjust(parameters));
@@ -53,26 +54,25 @@ namespace SignalR.Hubs.Lookup
                                   a => a.AsEnumerable()));
         }
 
-        public bool TryGetAction(HubDescriptor hub, string action, out ActionDescriptor descriptor, params object[] parameters)
+        public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params object[] parameters)
         {
-            IEnumerable<ActionDescriptor> descriptors;
-            BuildActionsDictionary(hub).TryGetValue(action.ToLowerInvariant(), out descriptors);
+            IEnumerable<MethodDescriptor> overloads;
 
-            try
+            if(FetchMethodsFor(hub).TryGetValue(method.ToLowerInvariant(), out overloads))
             {
-                descriptor = descriptors != null 
-                    ? descriptors.SingleOrDefault(d => d.Matches(parameters)) 
-                    : null;
-            }
-            catch(Exception)
-            {
-                descriptor = null;
+                var matches = overloads.Where(o => o.Matches(parameters)).ToList();
+                if(matches.Count == 1)
+                {
+                    descriptor = matches.First();
+                    return true;
+                }
             }
 
-            return descriptor != null;
+            descriptor = null;
+            return false;
         }
 
-        private static string GetActionName(MethodInfo method)
+        private static string GetMethodName(MethodInfo method)
         {
             return ReflectionHelper.GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName)
                    ?? method.Name;

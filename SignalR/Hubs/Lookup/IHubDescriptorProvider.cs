@@ -12,7 +12,7 @@ namespace SignalR.Hubs.Lookup
         /// Retrieve all avaiable hubs.
         /// </summary>
         /// <returns>Collection of hub descriptors.</returns>
-        IEnumerable<HubDescriptor> GetHubs();
+        IList<HubDescriptor> GetHubs();
 
         /// <summary>
         /// Tries to retrieve hub with a given name.

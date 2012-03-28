@@ -7,16 +7,15 @@ namespace SignalR.Hubs.Extensions
 {
     public static class ActionExtensions
     {
-        public static object[] Adjust(this ActionDescriptor action, params object[] parameters)
+        public static object[] Adjust(this MethodDescriptor action, params object[] parameters)
         {
-            var i = 0;
-            return action.Parameters.Select(p => Bind(parameters[i++], p.Type)).ToArray();
+            return action.Parameters.Select((p, index) => Bind(parameters[index], p.Type)).ToArray();
         }
 
-        public static bool Matches(this ActionDescriptor action, params object[] parameters)
+        public static bool Matches(this MethodDescriptor action, params object[] parameters)
         {
-            if ((action.Parameters.Any() && parameters == null) 
-                || action.Parameters.Count() != parameters.Length)
+            if ((action.Parameters.Count == 0 && parameters == null) 
+                || action.Parameters.Count != parameters.Length)
             {
                 return false;
             }

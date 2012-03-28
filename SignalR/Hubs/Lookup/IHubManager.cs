@@ -6,7 +6,7 @@
     using SignalR.Hubs.Lookup.Descriptors;
 
     /// <summary>
-    /// Describes a hub manager - main point in the whole hub and action lookup process.
+    /// Describes a hub manager - main point in the whole hub and method lookup process.
     /// </summary>
     public interface IHubManager
     {
@@ -21,7 +21,7 @@
         /// Retrieves all available hubs.
         /// </summary>
         /// <returns>List of hub descriptors.</returns>
-        IEnumerable<HubDescriptor> GetHubs(Predicate<HubDescriptor> predicate = null);
+        IEnumerable<HubDescriptor> GetHubs(Func<HubDescriptor, bool> predicate = null);
 
         /// <summary>
         /// Resolves a given hub name to a concrete object.
@@ -37,20 +37,20 @@
         IEnumerable<IHub> ResolveHubs();
 
         /// <summary>
-        /// Retrieves an action of a given name on a given hub.
+        /// Retrieves a method with a given name on a given hub.
         /// </summary>
         /// <param name="hubName">Name of the hub.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <param name="parameters">Action parameters to match.</param>
-        /// <returns>Descriptor of the action, if found. Null otherwise.</returns>
-        ActionDescriptor GetHubAction(string hubName, string actionName, params object[] parameters);
+        /// <param name="method">Name of the method to find.</param>
+        /// <param name="parameters">Method parameters to match.</param>
+        /// <returns>Descriptor of the method, if found. Null otherwise.</returns>
+        MethodDescriptor GetHubMethod(string hubName, string method, params object[] parameters);
 
         /// <summary>
-        /// Gets all actions available to call on a given hub.
+        /// Gets all methods available to call on a given hub.
         /// </summary>
         /// <param name="hubName">Name of the hub,</param>
         /// <param name="predicate">Optional predicate for filtering results.</param>
-        /// <returns>List of available actions.</returns>
-        IEnumerable<ActionDescriptor> GetHubActions(string hubName, Predicate<ActionDescriptor> predicate = null);
+        /// <returns>List of available methods.</returns>
+        IEnumerable<MethodDescriptor> GetHubMethods(string hubName, Func<MethodDescriptor, bool> predicate = null);
     }
 }
