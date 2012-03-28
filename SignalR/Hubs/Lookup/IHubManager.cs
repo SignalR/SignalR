@@ -1,10 +1,9 @@
-﻿namespace SignalR.Hubs.Lookup
+﻿using System;
+using System.Collections.Generic;
+using SignalR.Hubs.Lookup.Descriptors;
+
+namespace SignalR.Hubs.Lookup
 {
-    using System;
-    using System.Collections.Generic;
-
-    using SignalR.Hubs.Lookup.Descriptors;
-
     /// <summary>
     /// Describes a hub manager - main point in the whole hub and method lookup process.
     /// </summary>
