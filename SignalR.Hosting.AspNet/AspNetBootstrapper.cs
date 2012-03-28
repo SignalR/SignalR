@@ -28,7 +28,6 @@ namespace SignalR.Hosting.AspNet
                     {
                         RouteTable.Routes.MapHubs("~/signalr");
                         
-                        // pszmyd: Moved assembly locator ASP.NET overrides here, from the route handler.
                         var locator = new Lazy<IAssemblyLocator>(() => new AspNetAssemblyLocator());
                         Global.DependencyResolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 

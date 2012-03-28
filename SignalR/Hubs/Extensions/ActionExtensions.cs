@@ -1,12 +1,10 @@
-﻿namespace SignalR.Hubs.Extensions
+﻿using System;
+using System.Linq;
+using Newtonsoft.Json;
+using SignalR.Hubs.Lookup.Descriptors;
+
+namespace SignalR.Hubs.Extensions
 {
-    using System;
-    using System.Linq;
-
-    using Newtonsoft.Json;
-
-    using SignalR.Hubs.Lookup.Descriptors;
-
     public static class ActionExtensions
     {
         public static object[] Adjust(this ActionDescriptor action, params object[] parameters)
@@ -18,16 +16,10 @@
         public static bool Matches(this ActionDescriptor action, params object[] parameters)
         {
             if ((action.Parameters.Any() && parameters == null) 
-                || action.Parameters.Count() != parameters.Length) return false;
-
-            // pszmyd: Added, but commented this out afterwards, as it's a huge overhead...
-            /*parameters = action.Adjust(parameters);
-
-            int i = 0;
-            foreach (var p in action.Parameters) {
-                if (!p.Type.IsInstanceOfType(parameters[i])) return false;
-                i++;
-            }*/
+                || action.Parameters.Count() != parameters.Length)
+            {
+                return false;
+            }
 
             return true;
         }

@@ -1,9 +1,8 @@
 ﻿using System;
+using SignalR.Hubs.Lookup.Descriptors;
 
 namespace SignalR.Hubs
 {
-    using SignalR.Hubs.Lookup.Descriptors;
-
     public class DefaultHubActivator : IHubActivator
     {
         private readonly IDependencyResolver _resolver;

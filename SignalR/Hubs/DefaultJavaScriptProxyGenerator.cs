@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SignalR.Hubs.Lookup;
+using SignalR.Hubs.Lookup.Descriptors;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
-    using SignalR.Hubs.Lookup;
-    using SignalR.Hubs.Lookup.Descriptors;
-
     public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator
     {
         private static readonly Lazy<string> _template = new Lazy<string>(GetTemplate);
@@ -56,7 +55,7 @@ namespace SignalR.Hubs
                     hubs.AppendLine(",");
                     hubs.Append("        ");
                 }
-                GenerateType(serviceUrl, hubs, descriptor);
+                this.GenerateType(hubs, descriptor);
                 first = false;
             }
 
@@ -72,13 +71,10 @@ namespace SignalR.Hubs
             return script;
         }
 
-        private void GenerateType(string serviceUrl, StringBuilder sb, HubDescriptor descriptor)
+        private void GenerateType(StringBuilder sb, HubDescriptor descriptor)
         {
             // Get only actions with minimum number of parameters.
-            var methods = _manager.GetHubActions(descriptor.Name)
-                .GroupBy(d => d.Name, (key, group) => group
-                    .OrderBy(a => a.Parameters.Count())
-                    .First()).ToList();
+            var methods = GetMethods(descriptor);
 
             var members = methods.Select(m => m.Name).ToList();
             members.Add("namespace");
@@ -91,6 +87,7 @@ namespace SignalR.Hubs
             sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
             sb.AppendLine("                connection: function () { return signalR.hub; }");
             sb.AppendFormat("            }}");
+
             if (methods.Any())
             {
                 sb.Append(",").AppendLine();
@@ -108,7 +105,7 @@ namespace SignalR.Hubs
                 {
                     sb.Append(",").AppendLine();
                 }
-                GenerateMethod(serviceUrl, sb, descriptor, method);
+                this.GenerateMethod(sb, method);
                 first = false;
             }
             sb.AppendLine();
@@ -120,7 +117,17 @@ namespace SignalR.Hubs
             return Json.CamelCase(descriptor.Name);
         }
 
-        private void GenerateMethod(string serviceUrl, StringBuilder sb, HubDescriptor descriptor, ActionDescriptor method)
+        private IEnumerable<ActionDescriptor> GetMethods(HubDescriptor descriptor)
+        {
+           return _manager.GetHubActions(descriptor.Name)
+                .GroupBy(d => d.Name, 
+                         (key, group) => group
+                             .OrderBy(a => a.Parameters.Count())
+                             .First())
+                .ToList();
+        }
+
+        private void GenerateMethod(StringBuilder sb, ActionDescriptor method)
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             parameterNames.Add("callback");

@@ -1,21 +1,17 @@
-﻿namespace SignalR.Hubs
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using SignalR.Hosting;
+using SignalR.Hubs.Lookup;
+using SignalR.Hubs.Lookup.Descriptors;
+
+namespace SignalR.Hubs
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Threading.Tasks;
-
-    using Newtonsoft.Json;
-
-    using SignalR.Hosting;
-
-    using System.Reflection;
-
-    using SignalR.Hubs.Lookup;
-    using SignalR.Hubs.Lookup.Descriptors;
-
     public class HubDispatcher : PersistentConnection
     {
         private IJavaScriptProxyGenerator _proxyGenerator;
@@ -26,13 +22,13 @@
 
         public HubDispatcher(string url)
         {
-            this._url = url;
+            _url = url;
         }
 
         public override void Initialize(IDependencyResolver resolver)
         {
-            this._proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
-            this._manager = resolver.Resolve<IHubManager>();
+            _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
+            _manager = resolver.Resolve<IHubManager>();
 
             base.Initialize(resolver);
         }
@@ -42,18 +38,16 @@
             var hubRequest = JsonConvert.DeserializeObject<HubRequest>(data);
 
             // Create the hub
-            var descriptor = this._manager.GetHub(hubRequest.Hub);
+            HubDescriptor descriptor = _manager.GetHub(hubRequest.Hub);
             if (descriptor == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' hub could not be resolved.", hubRequest.Hub));
             }
 
-            // Deserialize the parameter name value pairs so we can match it up with the method's parameters
             var parameters = hubRequest.Data;
 
             // Resolve the action
-            ActionDescriptor actionDescriptor = this._manager.GetHubAction(descriptor.Name, hubRequest.Action, parameters);
-
+            ActionDescriptor actionDescriptor = _manager.GetHubAction(descriptor.Name, hubRequest.Action, parameters);
             if (actionDescriptor == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' action could not be resolved.", hubRequest.Action));
@@ -61,13 +55,13 @@
 
             // Resolving the actual state object
             var state = new TrackingDictionary(hubRequest.State);
-            var hub = this.CreateHub(descriptor, connectionId, state);
+            var hub = CreateHub(descriptor, connectionId, state);
             Task resultTask;
 
             try
             {
                 // Invoke the action
-                // pszmyd: Invoker delegate automatically deserializes JSON parameters and adjusts them to the given action.
+                // Invoker delegate automatically deserializes JSON parameters and adjusts them to the given action.
                 object result = actionDescriptor.Invoker(hub, parameters);
                 Type returnType = result != null ? result.GetType() : actionDescriptor.ReturnType;
 
@@ -76,7 +70,7 @@
                     var task = (Task)result;
                     if (!returnType.IsGenericType)
                     {
-                        return task.ContinueWith(t => this.ProcessResult(state, null, hubRequest, t.Exception))
+                        return task.ContinueWith(t => ProcessResult(state, null, hubRequest, t.Exception))
                                    .FastUnwrap();
                     }
                     else
@@ -105,12 +99,12 @@
                 }
                 else
                 {
-                    resultTask = this.ProcessResult(state, result, hubRequest, null);
+                    resultTask = ProcessResult(state, result, hubRequest, null);
                 }
             }
             catch (TargetInvocationException e)
             {
-                resultTask = this.ProcessResult(state, null, hubRequest, e);
+                resultTask = ProcessResult(state, null, hubRequest, e);
             }
 
             return resultTask
@@ -124,33 +118,33 @@
             if (context.Request.Url.LocalPath.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.EndAsync(this._proxyGenerator.GenerateProxy(this._url));
+                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url));
             }
 
-            this._context = context;
+            _context = context;
 
             return base.ProcessRequestAsync(context);
         }
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            return this.ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect());
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect());
         }
 
         protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return this.ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(groups));
+            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(groups));
         }
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            return this.ExecuteHubEventAsync<IDisconnect>(connectionId, hub => hub.Disconnect());
+            return ExecuteHubEventAsync<IDisconnect>(connectionId, hub => hub.Disconnect());
         }
 
         private Task ExecuteHubEventAsync<T>(string connectionId, Func<T, Task> action) where T : class
         {
-            var operations = this.GetHubsImplementingInterface(typeof(T))
-                .Select(hub => this.CreateHub(hub, connectionId))
+            var operations = GetHubsImplementingInterface(typeof(T))
+                .Select(hub => CreateHub(hub, connectionId))
                 .OfType<T>()
                 .Select(instance => action(instance) ?? TaskAsyncHelper.Empty)
                 .ToList();
@@ -183,14 +177,14 @@
 
         public IHub CreateHub(HubDescriptor descriptor, string connectionId, TrackingDictionary state = null)
         {
-            var hub = this._manager.ResolveHub(descriptor.Name);
+            var hub = _manager.ResolveHub(descriptor.Name);
 
             if (hub != null)
             {
                 state = state ?? new TrackingDictionary();
-                hub.Context = new HubContext(this._context, connectionId);
-                hub.Caller = new SignalAgent(this.Connection, connectionId, descriptor.Name, state);
-                var agent = new ClientAgent(this.Connection, descriptor.Name);
+                hub.Context = new HubContext(_context, connectionId);
+                hub.Caller = new SignalAgent(Connection, connectionId, descriptor.Name, state);
+                var agent = new ClientAgent(Connection, descriptor.Name);
                 hub.Agent = agent;
                 hub.GroupManager = agent;
             }
@@ -201,22 +195,22 @@
         private IEnumerable<HubDescriptor> GetHubsImplementingInterface(Type interfaceType)
         {
             // Get hubs that implement the specified interface
-            return this._manager.GetHubs(d => interfaceType.IsAssignableFrom(d.Type));
+            return _manager.GetHubs(d => interfaceType.IsAssignableFrom(d.Type));
         }
 
         private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
         {
             if (task.IsFaulted)
             {
-                return this.ProcessResult(state, null, request, task.Exception);
+                return ProcessResult(state, null, request, task.Exception);
             }
-            return this.ProcessResult(state, task.Result, request, null);
+            return ProcessResult(state, task.Result, request, null);
         }
 
         private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
         {
             var exception = error != null ? error.GetBaseException() : null;
-            string stackTrace = (exception != null && this._context.IsDebuggingEnabled()) ? exception.StackTrace : null;
+            string stackTrace = (exception != null && _context.IsDebuggingEnabled()) ? exception.StackTrace : null;
             string errorMessage = exception != null ? exception.Message : null;
 
             var hubResult = new HubResult
@@ -228,7 +222,7 @@
                 StackTrace = stackTrace
             };
 
-            return this.Send(hubResult);
+            return Send(hubResult);
         }
 
         protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
@@ -247,10 +241,10 @@
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => this.GetSignals(info, connectionId))
-                                                          .Concat(this.GetDefaultSignals(connectionId));
+            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId))
+                                                          .Concat(GetDefaultSignals(connectionId));
 
-            return new Connection(this._messageBus, this._jsonSerializer, null, connectionId, hubSignals, groups, this._trace);
+            return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups, _trace);
         }
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
@@ -261,7 +255,7 @@
             };
 
             // Try to find the associated hub type
-            var hub = this._manager.GetHub(hubInfo.Name);
+            var hub = _manager.GetHub(hubInfo.Name);
 
             if (hub == null)
             {
@@ -284,7 +278,7 @@
 
             public string CreateQualifiedName(string unqualifiedName)
             {
-                return this.Name + "." + unqualifiedName;
+                return Name + "." + unqualifiedName;
             }
         }
 

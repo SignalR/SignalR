@@ -1,7 +1,7 @@
+using System;
+
 namespace SignalR.Hubs.Lookup.Descriptors
 {
-    using System;
-
     /// <summary>
     /// Holds information about a single hub.
     /// </summary>

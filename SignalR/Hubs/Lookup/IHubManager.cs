@@ -41,6 +41,7 @@
         /// </summary>
         /// <param name="hubName">Name of the hub.</param>
         /// <param name="actionName">Name of the action.</param>
+        /// <param name="parameters">Action parameters to match.</param>
         /// <returns>Descriptor of the action, if found. Null otherwise.</returns>
         ActionDescriptor GetHubAction(string hubName, string actionName, params object[] parameters);
 
@@ -48,6 +49,7 @@
         /// Gets all actions available to call on a given hub.
         /// </summary>
         /// <param name="hubName">Name of the hub,</param>
+        /// <param name="predicate">Optional predicate for filtering results.</param>
         /// <returns>List of available actions.</returns>
         IEnumerable<ActionDescriptor> GetHubActions(string hubName, Predicate<ActionDescriptor> predicate = null);
     }

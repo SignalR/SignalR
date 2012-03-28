@@ -1,8 +1,8 @@
-﻿namespace SignalR.Hubs.Lookup.Descriptors
-{
-    using System;
-    using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
+namespace SignalR.Hubs.Lookup.Descriptors
+{
     /// <summary>
     /// Holds information about a single hub action.
     /// </summary>
@@ -35,3 +35,4 @@
         public virtual Func<IHub, object[], object> Invoker { get; set; }
     }
 }
+

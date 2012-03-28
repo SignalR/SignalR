@@ -59,7 +59,6 @@
     <Compile Include="Infrastructure\DefaultAssemblyLocator.cs" />
     <Compile Include="Hubs\Extensions\ActionExtensions.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\ParameterDescriptor.cs" />
-    <Compile Include="Hubs\Extensions\HubExtensions.cs" />
     <Compile Include="Infrastructure\IAssemblyLocator.cs" />
     <Compile Include="Hubs\Lookup\ReflectedActionDescriptorProvider.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\HubDescriptor.cs" />

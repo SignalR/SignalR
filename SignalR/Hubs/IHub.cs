@@ -1,5 +1,4 @@
-﻿
-namespace SignalR.Hubs
+﻿namespace SignalR.Hubs
 {
     public interface IHub
     {
@@ -9,3 +8,4 @@ namespace SignalR.Hubs
         IGroupManager GroupManager { get; set; }
     }
 }
+

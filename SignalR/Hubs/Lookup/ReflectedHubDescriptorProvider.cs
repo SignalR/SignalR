@@ -1,16 +1,12 @@
-﻿namespace SignalR.Hubs.Lookup
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using SignalR.Hubs.Lookup.Descriptors;
+using SignalR.Infrastructure;
+
+namespace SignalR.Hubs.Lookup
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using SignalR.Hubs.Lookup.Descriptors;
-    using SignalR.Infrastructure;
-
-    /// <summary>
-    /// Default hub descriptor provider - reflection-based.
-    /// </summary>
     public class ReflectedHubDescriptorProvider: IHubDescriptorProvider
     {
         private readonly Lazy<IDictionary<string, HubDescriptor>> _hubs;
@@ -24,7 +20,9 @@
 
         public IEnumerable<HubDescriptor> GetHubs()
         {
-            return _hubs.Value.Select(kv => kv.Value).Distinct();
+            return _hubs.Value
+                .Select(kv => kv.Value)
+                .Distinct();
         }
 
         public bool TryGetHub(string hubName, out HubDescriptor descriptor)
@@ -38,13 +36,17 @@
                 .Where(a => !a.GlobalAssemblyCache && !a.IsDynamic)
                 .SelectMany(GetTypesSafe)
                 .Where(type => typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract)
-                .Select(type => new HubDescriptor
+                .Select(type => 
+                    new HubDescriptor
                     {
-                        Name = ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName) ?? type.Name,
+                        Name = GetHubName(type),
                         Type = type
                     })
-                .SelectMany(x => CacheKeysFor(x.Type).Select(key => new { Descriptor = x, Key = key }))
-                .ToDictionary(xx => xx.Key, xx => xx.Descriptor);
+                .SelectMany(desc => 
+                    CacheKeysFor(desc.Type)
+                        .Select(key => new { Descriptor = desc, Key = key }))
+                .ToDictionary(anon => anon.Key, 
+                              anon => anon.Descriptor);
         }
 
         private static IEnumerable<string> CacheKeysFor(Type type)
@@ -52,8 +54,9 @@
             yield return type.FullName;
             yield return type.Name;
 
-            var attributeName = ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName);
-            if (attributeName != null && !String.Equals(attributeName, type.Name, StringComparison.OrdinalIgnoreCase))
+            var attributeName = GetHubName(type);
+
+            if (!String.Equals(attributeName, type.Name, StringComparison.OrdinalIgnoreCase))
             {
                 yield return attributeName;
             }
@@ -69,6 +72,12 @@
             {
                 return Enumerable.Empty<Type>();
             }
+        }
+
+        private static string GetHubName(Type type)
+        {
+            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName) 
+                   ?? type.Name;
         }
     }
 }

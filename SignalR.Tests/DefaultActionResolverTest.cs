@@ -1,17 +1,14 @@
 ﻿using System;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using SignalR.Hubs;
+using SignalR.Hubs.Extensions;
+using SignalR.Hubs.Lookup;
+using SignalR.Hubs.Lookup.Descriptors;
 using Xunit;
 
 namespace SignalR.Tests
 {
-    using System.Diagnostics;
-    using System.Linq;
-
-    using SignalR.Hubs.Extensions;
-    using SignalR.Hubs.Lookup;
-    using SignalR.Hubs.Lookup.Descriptors;
-
     public class DefaultActionResolverTest
     {
         [Fact]
@@ -172,22 +169,7 @@ namespace SignalR.Tests
             Assert.Equal(new Guid(arg), arg0);
         }
 
-        [Fact]
-        public void ResolveActionPerformanceForHundredThousandGuidResolves()
-        {
-            var resolver = new ReflectedActionDescriptorProvider();
-            var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
-
-            ActionDescriptor actionInfo;
-            var watch = Stopwatch.StartNew();
-            for (int i = 0; i < 100000; i++ )
-                resolver.TryGetAction(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithGuid", out actionInfo, new object[] { arg });
-            watch.Stop();
-            Console.WriteLine("Took " + watch.ElapsedMilliseconds + " ms.");
-            Assert.True(true);
-        }
-
-        internal class TestDerivedHub : TestHub
+        private class TestDerivedHub : TestHub
         {
             public void FooDerived()
             {
@@ -195,7 +177,7 @@ namespace SignalR.Tests
             }
         }
 
-        internal class TestHub : Hub
+        private class TestHub : Hub
         {
             public int Value { get; set; }
 

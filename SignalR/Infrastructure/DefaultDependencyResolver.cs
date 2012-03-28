@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using SignalR.Hubs;
+using SignalR.Hubs.Lookup;
 using SignalR.Infrastructure;
 using SignalR.MessageBus;
 using SignalR.Transports;
 
 namespace SignalR
 {
-    using SignalR.Hubs.Lookup;
-
     public class DefaultDependencyResolver : IDependencyResolver
     {
         private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
