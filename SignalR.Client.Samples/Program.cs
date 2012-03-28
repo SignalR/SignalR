@@ -12,7 +12,7 @@ namespace SignalR.Client.Samples
         {
             RunInMemoryHost();
 
-            //var hubConnection = new HubConnection("http://localhost:40476/");
+            // var hubConnection = new HubConnection("http://localhost:40476/");
 
             //RunDemoHub(hubConnection);
 
@@ -62,6 +62,7 @@ namespace SignalR.Client.Samples
             });
 
             hubConnection.Start().Wait();
+
 
             demo.Invoke("multipleCalls").ContinueWith(task =>
             {

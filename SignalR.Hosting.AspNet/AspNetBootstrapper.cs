@@ -1,17 +1,15 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using System.Web.Routing;
-
 using SignalR.Hosting.AspNet;
 using SignalR.Hosting.AspNet.Routing;
+using SignalR.Hosting.AspNet.Infrastructure;
 using SignalR.Infrastructure;
 
 [assembly: PreApplicationStartMethod(typeof(AspNetBootstrapper), "Initialize")]
+
 namespace SignalR.Hosting.AspNet
 {
-    using System;
-
-    using SignalR.Hosting.AspNet.Infrastructure;
-
     public static class AspNetBootstrapper
     {
         private static bool _initialized;
