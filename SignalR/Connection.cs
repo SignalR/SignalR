@@ -133,6 +133,7 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
+            Debug.WriteLine("Connection: Sending {0} {1}", key, value);
             return _messageBus.Send(_connectionId, key, new WrappedValue(value, _serializer)).Catch();
         }
 
