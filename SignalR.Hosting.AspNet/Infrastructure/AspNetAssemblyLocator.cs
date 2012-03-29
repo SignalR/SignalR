@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Compilation;
-using SignalR.Infrastructure;
+using SignalR.Hubs;
 
 namespace SignalR.Hosting.AspNet.Infrastructure
 {

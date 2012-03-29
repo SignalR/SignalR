@@ -1,4 +1,4 @@
-﻿namespace SignalR.MessageBus
+﻿namespace SignalR
 {
     /// <summary>
     /// All values saved to the messages store are wrapped by this type.

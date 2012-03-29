@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
-namespace SignalR.MessageBus
+namespace SignalR
 {
     public class InProcessMessageBus : InProcessMessageBus<ulong>
     {

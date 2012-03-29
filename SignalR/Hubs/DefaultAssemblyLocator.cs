@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace SignalR.Infrastructure
+namespace SignalR.Hubs
 {
     public class DefaultAssemblyLocator : IAssemblyLocator
     {

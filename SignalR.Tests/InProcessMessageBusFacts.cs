@@ -1,5 +1,4 @@
 ﻿using SignalR.Infrastructure;
-using SignalR.MessageBus;
 using Xunit;
 using System.Threading;
 

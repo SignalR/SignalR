@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace SignalR.Infrastructure
+namespace SignalR.Hubs
 {
     public interface IAssemblyLocator
     {

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SignalR.MessageBus
+namespace SignalR
 {
     public interface IMessageBus
     {

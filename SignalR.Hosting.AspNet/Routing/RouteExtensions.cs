@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web.Routing;
 using SignalR.Hosting.AspNet.Infrastructure;
-using SignalR.Infrastructure;
+using SignalR.Hubs;
 
 namespace SignalR.Hosting.AspNet.Routing
 {

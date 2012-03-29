@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SignalR.MessageBus
+namespace SignalR
 {
     public interface IIdGenerator<T> where T : IComparable<T>
     {

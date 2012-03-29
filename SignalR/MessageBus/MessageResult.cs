@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SignalR.MessageBus
+namespace SignalR
 {
     public struct MessageResult
     {

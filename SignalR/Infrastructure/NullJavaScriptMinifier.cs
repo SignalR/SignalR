@@ -1,5 +1,5 @@
 ﻿
-namespace SignalR.Infrastructure
+namespace SignalR
 {
     public class NullJavaScriptMinifier : IJavaScriptMinifier
     {

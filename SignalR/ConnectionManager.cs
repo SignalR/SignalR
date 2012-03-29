@@ -2,7 +2,6 @@
 using System.Linq;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
-using SignalR.MessageBus;
 
 namespace SignalR
 {

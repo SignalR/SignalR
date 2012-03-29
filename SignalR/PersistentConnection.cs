@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SignalR.Hosting;
 using SignalR.Infrastructure;
-using SignalR.MessageBus;
 using SignalR.Transports;
 
 namespace SignalR

@@ -1,4 +1,4 @@
-﻿namespace SignalR.Infrastructure
+﻿namespace SignalR
 {
     public interface IJavaScriptMinifier
     {
