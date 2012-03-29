@@ -35,9 +35,7 @@ namespace SignalR.Hubs
         /// <returns>Array of parameter values.</returns>
         public virtual object[] ResolveMethodParameters(MethodDescriptor method, params JToken[] values)
         {
-            return method.Parameters
-                .Select((p, index) => ResolveParameter(p, values[index]))
-                .ToArray();
+            return method.Parameters.Zip(values, ResolveParameter).ToArray();
         }
     }
 }
