@@ -22,8 +22,8 @@ namespace SignalR.Tests
             host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
             var connection = new Client.Connection("http://foo/echo");
 
-            // Maximum wait time for disconnect to fire (2 heart beat intervals)
-            var disconnectWait = host.Configuration.HeartBeatInterval + host.Configuration.HeartBeatInterval;
+            // Maximum wait time for disconnect to fire (3 heart beat intervals)
+            var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
 
             connection.Start(host).Wait();
 
@@ -46,8 +46,8 @@ namespace SignalR.Tests
             host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            // Maximum wait time for disconnect to fire (2 heart beat intervals)
-            var disconnectWait = host.Configuration.HeartBeatInterval + host.Configuration.HeartBeatInterval;
+            // Maximum wait time for disconnect to fire (3 heart beat intervals)
+            var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
 
             connection.Start(host).Wait();
 
