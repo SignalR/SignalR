@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Web.Routing;
+using SignalR.Hosting.AspNet.Infrastructure;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.AspNet.Routing
 {
@@ -40,6 +42,9 @@ namespace SignalR.Hosting.AspNet.Routing
             }
 
             routeUrl = routeUrl.TrimStart('~').TrimStart('/');
+
+            var locator = new Lazy<IAssemblyLocator>(() => new AspNetAssemblyLocator());
+            resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
             var route = new Route(routeUrl, new HubDispatcherRouteHandler(url, resolver));
             route.Constraints = new RouteValueDictionary();

@@ -19,10 +19,7 @@ namespace SignalR.Hosting.AspNet.Routing
         }
 
         public IHttpHandler GetHttpHandler(RequestContext requestContext)
-        {
-            var locator = new Lazy<IAssemblyLocator>(() => new AspNetAssemblyLocator());
-            _resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
-
+        {            
             var dispatcher = new HubDispatcher(_url);
             return new AspNetHandler(_resolver, dispatcher);
         }
