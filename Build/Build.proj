@@ -4,6 +4,7 @@
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+    <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
     <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
@@ -27,11 +28,12 @@
   </Target>
 
   <Target Name="RunTests">
-    <xunit Assembly="%(TestProjects.FullPath)" Verbose="true" />
+    <xunit Assembly="%(TestProjects.FullPath)" Xml="$(TestResultsPath)\SignalR.Tests.XunitResults.xml" Verbose="true" />
   </Target>
 
   <Target Name="CreateOutputDir">
     <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
+    <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
