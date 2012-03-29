@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SignalR.Hosting;
 
 namespace SignalR.Hubs
@@ -35,15 +36,15 @@ namespace SignalR.Hubs
 
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
-            var hubRequest = JsonConvert.DeserializeObject<HubRequest>(data);
+            var hubRequest = new HubRequest(data);
 
             // Create the hub
-            HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub);           
+            HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub);
 
-            var parameters = hubRequest.Data;
+            JToken[] parameterValues = hubRequest.ParameterValues;
 
             // Resolve the action
-            MethodDescriptor actionDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Action, parameters);
+            MethodDescriptor actionDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Action, parameterValues);
             if (actionDescriptor == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' action could not be resolved.", hubRequest.Action));
@@ -57,7 +58,7 @@ namespace SignalR.Hubs
             try
             {
                 // Invoke the action
-                object result = actionDescriptor.Invoker(hub, _binder.ResolveMethodParameters(actionDescriptor, parameters));
+                object result = actionDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(actionDescriptor, parameterValues));
                 Type returnType = result != null ? result.GetType() : actionDescriptor.ReturnType;
 
                 if (typeof(Task).IsAssignableFrom(returnType))
@@ -283,9 +284,19 @@ namespace SignalR.Hubs
 
         private class HubRequest
         {
+            public HubRequest(string data)
+            {
+                var rawRequest = JObject.Parse(data);
+                Hub = rawRequest.Value<string>("Hub");
+                Action = rawRequest.Value<string>("Action");
+                Id = rawRequest.Value<string>("Id");
+                State = rawRequest.Value<IDictionary<string, object>>("state");
+                ParameterValues = rawRequest["Data"].Children().ToArray();
+            }
+
             public string Hub { get; set; }
             public string Action { get; set; }
-            public object[] Data { get; set; }
+            public JToken[] ParameterValues { get; set; }
             public IDictionary<string, object> State { get; set; }
             public string Id { get; set; }
         }

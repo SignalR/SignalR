@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Hubs
 {
-    public class DefaultParameterResolver: IParameterResolver
+    public class DefaultParameterResolver : IParameterResolver
     {
         /// <summary>
         /// Resolves a parameter value based on the provided object.
@@ -16,9 +17,24 @@ namespace SignalR.Hubs
         {
             if (value == null)
             {
-                return descriptor.Type.IsValueType
-                           ? Activator.CreateInstance(descriptor.Type) 
-                           : null;
+                if (TypeAllowsNull(descriptor.Type))
+                {
+                    return null;
+                }
+
+                throw new InvalidOperationException(String.Format("Unable to resolve value for parameter '{0}'.", descriptor.Name));
+            }
+
+            var token = value as JToken;
+
+            if (token != null)
+            {
+                // A non generic implementation of ToObject<T> on JToken
+                using (var jsonReader = new JTokenReader(token))
+                {
+                    var serializer = new JsonSerializer();
+                    return serializer.Deserialize(jsonReader, descriptor.Type);
+                }
             }
 
             if (value.GetType() == descriptor.Type)
@@ -26,12 +42,7 @@ namespace SignalR.Hubs
                 return value;
             }
 
-            if (descriptor.Type == typeof(Guid))
-            {
-                return new Guid(value.ToString());
-            }
-
-            return JsonConvert.DeserializeObject(value.ToString(), descriptor.Type);
+            return Convert.ChangeType(value, descriptor.Type);
         }
 
         /// <summary>
@@ -45,6 +56,11 @@ namespace SignalR.Hubs
             return method.Parameters
                 .Select((p, index) => ResolveParameter(p, values[index]))
                 .ToArray();
+        }
+
+        private bool TypeAllowsNull(Type type)
+        {
+            return Nullable.GetUnderlyingType(type) != null || !type.IsValueType;
         }
     }
 }

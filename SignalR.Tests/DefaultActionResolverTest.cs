@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Hubs;
 using Xunit;
@@ -30,7 +32,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(actionInfo);
             Assert.Equal("Foo", actionInfo.Name);
-            Assert.Equal(0, actionInfo.Parameters.Count());
+            Assert.Equal(0, actionInfo.Parameters.Count);
         }
 
         [Fact]
@@ -62,7 +64,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(actionInfo);
             Assert.Equal("Foo", actionInfo.Name);
-            Assert.Equal(0, actionInfo.Parameters.Count());
+            Assert.Equal(0, actionInfo.Parameters.Count);
         }
 
         [Fact]
@@ -84,7 +86,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(actionInfo);
             Assert.Equal("Foo", actionInfo.Name);
-            Assert.Equal(1, actionInfo.Parameters.Count());
+            Assert.Equal(1, actionInfo.Parameters.Count);
         }
 
         [Fact]
@@ -163,14 +165,69 @@ namespace SignalR.Tests
             var resolver = new ReflectedMethodDescriptorProvider();
             var binder = new DefaultParameterResolver();
 
-            var arg = "1d6a1d30-599f-4495-ace7-303fd87204bb";
+            var arg = JTokenify(new Guid("1d6a1d30-599f-4495-ace7-303fd87204bb"));
 
             MethodDescriptor actionInfo;
             resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithGuid", out actionInfo, new object[] { arg });
 
             Assert.NotNull(actionInfo);
             var arg0 = (Guid)binder.ResolveMethodParameters(actionInfo, arg)[0];
-            Assert.Equal(new Guid(arg), arg0);
+            Assert.Equal(new Guid("1d6a1d30-599f-4495-ace7-303fd87204bb"), arg0);
+        }
+
+        [Fact]
+        public void ResolveActionBindsByteArray()
+        {
+            var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
+
+            var arg = JTokenify(Encoding.UTF8.GetBytes("Hello World!"));
+
+            MethodDescriptor actionInfo;
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithByteArray", out actionInfo, new object[] { arg });
+
+            Assert.NotNull(actionInfo);
+            var arg0 = (byte[])binder.ResolveMethodParameters(actionInfo, arg)[0];
+            Assert.Equal("Hello World!", Encoding.UTF8.GetString(arg0));
+        }
+
+        [Fact]
+        public void ResolveActionBindsArrayOfByteArray()
+        {
+            var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
+
+            var arg = JTokenify(new[] { Encoding.UTF8.GetBytes("Hello World!") });
+
+            MethodDescriptor actionInfo;
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodListOfByteArray", out actionInfo, new object[] { arg });
+
+            Assert.NotNull(actionInfo);
+            var arg0 = (List<byte[]>)binder.ResolveMethodParameters(actionInfo, arg)[0];
+            Assert.Equal("Hello World!", Encoding.UTF8.GetString(arg0[0]));
+        }
+
+        [Fact]
+        public void ResolveActionBindsNullables()
+        {
+            var resolver = new ReflectedMethodDescriptorProvider();
+            var binder = new DefaultParameterResolver();
+
+            var arg1 = JTokenify(null);
+            var arg2 = JTokenify(null);
+
+            MethodDescriptor actionInfo;
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithNullables", out actionInfo, new object[] { arg1, arg2 });
+
+            Assert.NotNull(actionInfo);
+            var args = binder.ResolveMethodParameters(actionInfo, arg1, arg2);
+            Assert.Null(args[0]);
+            Assert.Null(args[1]);
+        }
+
+        private JToken JTokenify(object value)
+        {
+            return JToken.Parse(JsonConvert.SerializeObject(value));
         }
 
         private class TestDerivedHub : TestHub
@@ -220,6 +277,26 @@ namespace SignalR.Tests
             }
 
             public void MethodWithGuid(Guid guid)
+            {
+
+            }
+
+            public void MethodWithByteArray(byte[] data)
+            {
+
+            }
+
+            public void MethodListOfByteArray(List<byte[]> datas)
+            {
+
+            }
+
+            public void MethodWithNullables(int? x, string y)
+            {
+
+            }
+
+            public void MethodWithNonNullable(int x)
             {
 
             }
