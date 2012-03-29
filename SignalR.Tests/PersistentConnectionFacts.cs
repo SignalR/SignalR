@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Memory;
 using Xunit;
-using System.Threading;
-using System;
-using System.Linq;
 
 namespace SignalR.Tests
 {
@@ -66,6 +66,8 @@ namespace SignalR.Tests
                 connection.Send("").Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                Debug.WriteLine(String.Join(", ", results));
 
                 Assert.Equal(4, results.Count);
                 Assert.Equal("OnConnectedAsync1", results[0]);
