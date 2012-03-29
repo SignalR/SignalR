@@ -13,7 +13,7 @@ namespace SignalR.Hubs.Lookup
         /// <param name="descriptor">Parameter descriptor.</param>
         /// <param name="value">Value to resolve the parameter value from.</param>
         /// <returns>The parameter value.</returns>
-        public object ResolveParameter(ParameterDescriptor descriptor, object value)
+        public virtual object ResolveParameter(ParameterDescriptor descriptor, object value)
         {
             if (value == null)
             {
@@ -41,7 +41,7 @@ namespace SignalR.Hubs.Lookup
         /// <param name="method">Method descriptor.</param>
         /// <param name="values">List of values to resolve parameter values from.</param>
         /// <returns>Array of parameter values.</returns>
-        public object[] ResolveMethodParameters(MethodDescriptor method, params object[] values)
+        public virtual object[] ResolveMethodParameters(MethodDescriptor method, params object[] values)
         {
             return method.Parameters
                 .Select((p, index) => ResolveParameter(p, values[index]))
