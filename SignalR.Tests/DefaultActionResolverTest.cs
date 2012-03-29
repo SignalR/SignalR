@@ -16,8 +16,8 @@ namespace SignalR.Tests
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo1;
             MethodDescriptor actionInfo2;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "AddToGroup", out actionInfo1, new object[] { "admin" });
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "RemoveFromGroup", out actionInfo2, new object[] { "admin" });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "AddToGroup", out actionInfo1, new [] { JTokenify("admin") });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "RemoveFromGroup", out actionInfo2, new [] { JTokenify("admin") });
 
             Assert.Null(actionInfo1);
             Assert.Null(actionInfo2);
@@ -28,7 +28,7 @@ namespace SignalR.Tests
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestDerivedHub), Name = "TestHub" }, "Foo", out actionInfo, new object[] { });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestDerivedHub), Name = "TestHub" }, "Foo", out actionInfo, new JToken[] { });
 
             Assert.NotNull(actionInfo);
             Assert.Equal("Foo", actionInfo.Name);
@@ -40,7 +40,7 @@ namespace SignalR.Tests
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "get_Value", out actionInfo, new object[] { });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "get_Value", out actionInfo, new JToken[] { });
 
             Assert.Null(actionInfo);
         }
@@ -50,7 +50,7 @@ namespace SignalR.Tests
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "get_Clients", out actionInfo, new object[] { });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "get_Clients", out actionInfo, new JToken[] { });
 
             Assert.Null(actionInfo);
         }
@@ -60,7 +60,7 @@ namespace SignalR.Tests
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "Foo", out actionInfo, new object[] { });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "Foo", out actionInfo, new JToken[] { });
 
             Assert.NotNull(actionInfo);
             Assert.Equal("Foo", actionInfo.Name);
@@ -72,7 +72,7 @@ namespace SignalR.Tests
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "Bar", out actionInfo, new object[] { 1 });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "Bar", out actionInfo, new [] { JTokenify(1) });
 
             Assert.Null(actionInfo);
         }
@@ -82,7 +82,7 @@ namespace SignalR.Tests
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "Foo", out actionInfo, new object[] { 1 });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "Foo", out actionInfo, new [] { JTokenify(1) });
 
             Assert.NotNull(actionInfo);
             Assert.Equal("Foo", actionInfo.Name);
@@ -103,7 +103,7 @@ namespace SignalR.Tests
 
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithComplex", out actionInfo, new object[] { arg });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithComplex", out actionInfo, new JToken[] { arg });
 
             Assert.NotNull(actionInfo);
             var complex = binder.ResolveMethodParameters(actionInfo, arg)[0] as Complex;
@@ -123,7 +123,7 @@ namespace SignalR.Tests
             var arg = new JArray(new[] { 1, 2, 3 });
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithArray", out actionInfo, new object[] { arg });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithArray", out actionInfo, new JToken[] { arg });
 
             Assert.NotNull(actionInfo);
             var args = binder.ResolveMethodParameters(actionInfo, arg)[0] as int[];
@@ -146,7 +146,7 @@ namespace SignalR.Tests
 
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithArrayOfComplete", out actionInfo, new object[] { new JArray(new object[] { arg }) });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithArrayOfComplete", out actionInfo, new JToken[] { new JArray(new object[] { arg }) });
 
             Assert.NotNull(actionInfo);
             var complexArray = binder.ResolveMethodParameters(actionInfo, new JArray(new object[] { arg }))[0] as Complex[];
@@ -168,7 +168,7 @@ namespace SignalR.Tests
             var arg = JTokenify(new Guid("1d6a1d30-599f-4495-ace7-303fd87204bb"));
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithGuid", out actionInfo, new object[] { arg });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithGuid", out actionInfo, new JToken[] { arg });
 
             Assert.NotNull(actionInfo);
             var arg0 = (Guid)binder.ResolveMethodParameters(actionInfo, arg)[0];
@@ -184,7 +184,7 @@ namespace SignalR.Tests
             var arg = JTokenify(Encoding.UTF8.GetBytes("Hello World!"));
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithByteArray", out actionInfo, new object[] { arg });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithByteArray", out actionInfo, new JToken[] { arg });
 
             Assert.NotNull(actionInfo);
             var arg0 = (byte[])binder.ResolveMethodParameters(actionInfo, arg)[0];
@@ -200,7 +200,7 @@ namespace SignalR.Tests
             var arg = JTokenify(new[] { Encoding.UTF8.GetBytes("Hello World!") });
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodListOfByteArray", out actionInfo, new object[] { arg });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodListOfByteArray", out actionInfo, new JToken[] { arg });
 
             Assert.NotNull(actionInfo);
             var arg0 = (List<byte[]>)binder.ResolveMethodParameters(actionInfo, arg)[0];
@@ -217,7 +217,7 @@ namespace SignalR.Tests
             var arg2 = JTokenify(null);
 
             MethodDescriptor actionInfo;
-            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithNullables", out actionInfo, new object[] { arg1, arg2 });
+            resolver.TryGetMethod(new HubDescriptor { Type = typeof(TestHub), Name = "TestHub" }, "MethodWithNullables", out actionInfo, new JToken[] { arg1, arg2 });
 
             Assert.NotNull(actionInfo);
             var args = binder.ResolveMethodParameters(actionInfo, arg1, arg2);

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
@@ -65,7 +66,7 @@ namespace SignalR.Hubs
                               StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params object[] parameters)
+        public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params JToken[] parameters)
         {
             IEnumerable<MethodDescriptor> overloads;
 

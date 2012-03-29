@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Hubs
 {
@@ -40,7 +41,7 @@ namespace SignalR.Hubs
             return hubs;
         }
 
-        public MethodDescriptor GetHubMethod(string hubName, string method, params object[] parameters)
+        public MethodDescriptor GetHubMethod(string hubName, string method, params JToken[] parameters)
         {
             HubDescriptor hub = GetHub(hubName);
 

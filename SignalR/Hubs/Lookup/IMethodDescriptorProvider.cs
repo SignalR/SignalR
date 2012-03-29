@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Hubs
 {
@@ -22,6 +23,6 @@ namespace SignalR.Hubs
         /// <param name="descriptor">Descriptor of the method, if found. Null otherwise.</param>
         /// <param name="parameters">Method parameters to match.</param>
         /// <returns>True, if a method has been found.</returns>
-        bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params object[] parameters);
+        bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params JToken[] parameters);
     }
 }
