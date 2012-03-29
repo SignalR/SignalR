@@ -45,6 +45,9 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Hosting.Common\Infrastructure\UriQueryUtility.cs">
+      <Link>Infrastructure\UriQueryUtility.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>

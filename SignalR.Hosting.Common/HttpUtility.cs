@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Common
 {
@@ -27,22 +28,10 @@ namespace SignalR.Hosting.Common
                     continue;
                 }
                 string value = kvp.Length > 1 ? kvp[1].Trim() : null;
-                nvc[key] = UrlDecode(value);
+                nvc[key] = UriQueryUtility.UrlDecode(value);
             }
 
             return nvc;
-        }
-
-        private static string UrlDecode(string url)
-        {
-            if (url == null)
-            {
-                return null;
-            }
-
-            // HACK: Uri.UnescapeDataString doesn't seem to handle +
-            // TODO: Copy impl from System.Web.HttpUtility.UrlDecode
-            return Uri.UnescapeDataString(url).Replace("+", " ");
         }
     }
 }

@@ -160,6 +160,9 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Hosting.Common\Infrastructure\UriQueryUtility.cs">
+      <Link>Infrastructure\UriQueryUtility.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

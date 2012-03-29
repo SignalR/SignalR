@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR.Client.Http
 {
@@ -142,7 +143,7 @@ namespace SignalR.Client.Http
                     continue;
                 }
 
-                sb.AppendFormat("{0}={1}", pair.Key, Uri.EscapeDataString(pair.Value));
+                sb.AppendFormat("{0}={1}", pair.Key, UriQueryUtility.UrlEncode(pair.Value));
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());
