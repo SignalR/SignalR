@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using SignalR.Client.Infrastructure;
+using SignalR.Client.Http;
 using SignalR.Client.Transports;
 
 namespace SignalR.Client

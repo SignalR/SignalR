@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using SignalR.Client.Infrastructure;
+using SignalR.Client.Http;
 
 namespace SignalR.Client
 {

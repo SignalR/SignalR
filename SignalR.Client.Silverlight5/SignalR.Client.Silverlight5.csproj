@@ -76,6 +76,30 @@
     <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Http\DefaultHttpClient.cs">
+      <Link>Http\DefaultHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\HttpHelper.cs">
+      <Link>Http\HttpHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\HttpWebRequestWrapper.cs">
+      <Link>Http\HttpWebRequestWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\HttpWebResponseWrapper.cs">
+      <Link>Http\HttpWebResponseWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\IHttpClient.cs">
+      <Link>Http\IHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\IHttpClientExtensions.cs">
+      <Link>Http\IHttpClientExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\IRequest.cs">
+      <Link>Http\IRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Http\IResponse.cs">
+      <Link>Http\IResponse.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubClientInvocation.cs">
       <Link>Hubs\HubClientInvocation.cs</Link>
     </Compile>
@@ -109,32 +133,8 @@
     <Compile Include="..\SignalR.Client\Infrastructure\ChunkBuffer.cs">
       <Link>Infrastructure\ChunkBuffer.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\DefaultHttpClient.cs">
-      <Link>Infrastructure\DefaultHttpClient.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\HttpHelper.cs">
-      <Link>Infrastructure\HttpHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\HttpWebRequestWrapper.cs">
-      <Link>Infrastructure\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\HttpWebResponseWrapper.cs">
-      <Link>Infrastructure\HttpWebResponseWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\IHttpClient.cs">
-      <Link>Infrastructure\IHttpClient.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\IHttpClientExtensions.cs">
-      <Link>Infrastructure\IHttpClientExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\IRequest.cs">
-      <Link>Infrastructure\IHttpRequest.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\IResponse.cs">
-      <Link>Infrastructure\IHttpResponse.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>

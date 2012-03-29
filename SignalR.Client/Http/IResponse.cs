@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace SignalR.Client.Infrastructure
+namespace SignalR.Client.Http
 {
     public interface IResponse
     {

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace SignalR.Client.Infrastructure
+namespace SignalR.Client.Http
 {
     public interface IRequest
     {

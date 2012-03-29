@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Client.Infrastructure;
+using SignalR.Client.Http;
 using SignalR.Hosting.Common;
 
-using IClientRequest = SignalR.Client.Infrastructure.IRequest;
-using IClientResponse = SignalR.Client.Infrastructure.IResponse;
+using IClientRequest = SignalR.Client.Http.IRequest;
+using IClientResponse = SignalR.Client.Http.IResponse;
 
 namespace SignalR.Hosting.Memory
 {

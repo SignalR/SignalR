@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using SignalR.Client.Infrastructure;
+using SignalR.Client.Http;
 
 namespace SignalR.Client.Transports
 {

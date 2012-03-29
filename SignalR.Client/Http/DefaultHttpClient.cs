@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SignalR.Client.Infrastructure
+namespace SignalR.Client.Http
 {
     public class DefaultHttpClient : IHttpClient
     {

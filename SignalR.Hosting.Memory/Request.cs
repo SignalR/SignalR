@@ -5,7 +5,7 @@ using System.Net;
 using System.Threading;
 using SignalR.Hosting.Common;
 
-using IClientRequest = SignalR.Client.Infrastructure.IRequest;
+using IClientRequest = SignalR.Client.Http.IRequest;
 
 namespace SignalR.Hosting.Memory
 {

@@ -6,7 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SignalR
+namespace SignalR.Client.Http
 {
     internal static class HttpHelper
     {

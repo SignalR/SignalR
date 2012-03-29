@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SignalR.Client.Infrastructure;
+using SignalR.Client.Http;
 
 namespace SignalR.Client.Transports
 {
