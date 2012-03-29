@@ -216,9 +216,9 @@ namespace SignalR.Hosting.Memory
                                 read = Read(buffer, offset, count);
                                 ar.SetAsCompleted(read, false);
                             }
-                        }
 
-                        _onWrite -= writeHandler;
+                            _onWrite -= writeHandler;
+                        }
                     };
 
                     _onWrite += writeHandler;

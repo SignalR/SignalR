@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
@@ -318,6 +319,8 @@ namespace SignalR.Client.Transports
                         return;
                     }
 
+                    Debug.WriteLine("SSE READ: " + sseEvent);
+
                     switch (sseEvent.Type)
                     {
                         case EventType.Id:
@@ -393,6 +396,11 @@ namespace SignalR.Client.Transports
 
                 public EventType Type { get; private set; }
                 public string Data { get; private set; }
+
+                public override string ToString()
+                {
+                    return Type + ": " + Data;
+                }
             }
 
             private enum EventType

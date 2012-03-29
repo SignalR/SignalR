@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,6 +91,8 @@ namespace SignalR
             PopulateResponseState(response);
 
             _trace.Source.TraceInformation("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
+
+            Debug.WriteLine("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
 
             return response;
         }

@@ -27,7 +27,7 @@
   </Target>
 
   <Target Name="RunTests">
-    <xunit Assembly="%(TestProjects.FullPath)" />
+    <xunit Assembly="%(TestProjects.FullPath)" Verbose="true" />
   </Target>
 
   <Target Name="CreateOutputDir">
