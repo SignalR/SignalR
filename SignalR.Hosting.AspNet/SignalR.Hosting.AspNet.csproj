@@ -52,10 +52,9 @@
     <Compile Include="AspNetRequest.cs" />
     <Compile Include="AspNetResponse.cs" />
     <Compile Include="AspNetShutDownDetector.cs" />
-    <Compile Include="BuildManagerTypeLocator.cs" />
-    <Compile Include="BuildManagerTypeResolver.cs" />
     <Compile Include="HttpCookieCollectionWrapper.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
+    <Compile Include="Infrastructure\AspNetAssemblyLocator.cs" />
     <Compile Include="Infrastructure\TaskWrapperAsyncResult.cs" />
     <Compile Include="AspNetHandler.cs" />
     <Compile Include="AspNetBootstrapper.cs" />

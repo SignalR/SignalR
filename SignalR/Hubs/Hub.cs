@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using SignalR.Infrastructure;
+
 namespace SignalR.Hubs
 {
     public abstract class Hub : IHub

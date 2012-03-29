@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SignalR.Hubs;
+using SignalR.Hubs.Lookup;
 using SignalR.Infrastructure;
 using SignalR.MessageBus;
 using SignalR.Transports;
@@ -16,6 +17,9 @@ namespace SignalR
         {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
 
+            var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
+            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
+
             Register(typeof(ITraceManager), () => traceManager.Value);
 
             var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
@@ -27,20 +31,20 @@ namespace SignalR
             Register(typeof(IJsonSerializer), () => serializer);
 
             // Hubs
-            var hubLocator = new Lazy<DefaultHubLocator>();
-            Register(typeof(IHubLocator), () => hubLocator.Value);
+            var actionDescriptorProvider = new Lazy<ReflectedMethodDescriptorProvider>();
+            Register(typeof(IMethodDescriptorProvider), () => actionDescriptorProvider.Value);
 
-            var hubTypeResolver = new Lazy<DefaultHubTypeResolver>(() => new DefaultHubTypeResolver(this));
-            Register(typeof(IHubTypeResolver), () => hubTypeResolver.Value);
+            var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>(() => new ReflectedHubDescriptorProvider(this));
+            Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);
 
-            var actionResolver = new Lazy<DefaultActionResolver>(() => new DefaultActionResolver());
-            Register(typeof(IActionResolver), () => actionResolver.Value);
+            var parameterBinder = new Lazy<DefaultParameterResolver>();
+            Register(typeof(IParameterResolver), () => parameterBinder.Value);
 
             var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));
             Register(typeof(IHubActivator), () => activator.Value);
 
-            var hubFactory = new Lazy<DefaultHubFactory>(() => new DefaultHubFactory(this));
-            Register(typeof(IHubFactory), () => hubFactory.Value);
+            var hubManager = new Lazy<DefaultHubManager>(() => new DefaultHubManager(this));
+            Register(typeof(IHubManager), () => hubManager.Value);
 
             var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
             Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);

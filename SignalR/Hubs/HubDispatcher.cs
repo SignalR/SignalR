@@ -7,17 +7,16 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Hosting;
-using SignalR.Infrastructure;
+using SignalR.Hubs.Lookup;
+using SignalR.Hubs.Lookup.Descriptors;
 
 namespace SignalR.Hubs
 {
     public class HubDispatcher : PersistentConnection
     {
-        private IHubFactory _hubFactory;
-        private IActionResolver _actionResolver;
         private IJavaScriptProxyGenerator _proxyGenerator;
-        private IHubLocator _hubLocator;
-        private IHubTypeResolver _hubTypeResolver;
+        private IHubManager _manager;
+        private IParameterResolver _binder;
         private HostContext _context;
 
         private readonly string _url;
@@ -29,11 +28,9 @@ namespace SignalR.Hubs
 
         public override void Initialize(IDependencyResolver resolver)
         {
-            _hubFactory = resolver.Resolve<IHubFactory>();
-            _actionResolver = resolver.Resolve<IActionResolver>();
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
-            _hubLocator = resolver.Resolve<IHubLocator>();
-            _hubTypeResolver = resolver.Resolve<IHubTypeResolver>();
+            _manager = resolver.Resolve<IHubManager>();
+            _binder = resolver.Resolve<IParameterResolver>();
 
             base.Initialize(resolver);
         }
@@ -43,34 +40,31 @@ namespace SignalR.Hubs
             var hubRequest = JsonConvert.DeserializeObject<HubRequest>(data);
 
             // Create the hub
-            IHub hub = _hubFactory.CreateHub(hubRequest.Hub);
+            HubDescriptor descriptor = _manager.GetHub(hubRequest.Hub);
+            if (descriptor == null)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' hub could not be resolved.", hubRequest.Hub));
+            }
 
-            // Deserialize the parameter name value pairs so we can match it up with the method's parameters
             var parameters = hubRequest.Data;
 
             // Resolve the action
-            ActionInfo actionInfo = _actionResolver.ResolveAction(hub.GetType(), hubRequest.Action, parameters);
-
-            if (actionInfo == null)
+            MethodDescriptor actionDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Action, parameters);
+            if (actionDescriptor == null)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' could not be resolved.", hubRequest.Action));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' action could not be resolved.", hubRequest.Action));
             }
 
-            string hubName = hub.GetType().FullName;
-
+            // Resolving the actual state object
             var state = new TrackingDictionary(hubRequest.State);
-            hub.Context = new HubContext(_context, connectionId);
-            hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
-            var agent = new ClientAgent(Connection, hubName);
-            hub.Agent = agent;
-            hub.GroupManager = agent;
+            var hub = CreateHub(descriptor, connectionId, state);
             Task resultTask;
 
             try
             {
-                // Execute the method
-                object result = actionInfo.Method.Invoke(hub, actionInfo.Arguments);
-                Type returnType = result != null ? result.GetType() : actionInfo.Method.ReturnType;
+                // Invoke the action
+                object result = actionDescriptor.Invoker(hub, _binder.ResolveMethodParameters(actionDescriptor, parameters));
+                Type returnType = result != null ? result.GetType() : actionDescriptor.ReturnType;
 
                 if (typeof(Task).IsAssignableFrom(returnType))
                 {
@@ -150,17 +144,11 @@ namespace SignalR.Hubs
 
         private Task ExecuteHubEventAsync<T>(string connectionId, Func<T, Task> action) where T : class
         {
-            var operations = new List<Task>();
-
-            foreach (Type type in GetHubsImplementingInterface(typeof(T)))
-            {
-                T instance = CreateHub(type, connectionId) as T;
-                if (instance != null)
-                {
-                    // Collect all the asyc operations
-                    operations.Add(action(instance) ?? TaskAsyncHelper.Empty);
-                }
-            }
+            var operations = GetHubsImplementingInterface(typeof(T))
+                .Select(hub => CreateHub(hub, connectionId))
+                .OfType<T>()
+                .Select(instance => action(instance) ?? TaskAsyncHelper.Empty)
+                .ToList();
 
             if (operations.Count == 0)
             {
@@ -188,17 +176,16 @@ namespace SignalR.Hubs
             return tcs.Task;
         }
 
-        public IHub CreateHub(Type type, string connectionId)
+        public IHub CreateHub(HubDescriptor descriptor, string connectionId, TrackingDictionary state = null)
         {
-            string hubName = type.FullName;
-            IHub hub = _hubFactory.CreateHub(hubName);
+            var hub = _manager.ResolveHub(descriptor.Name);
 
             if (hub != null)
             {
-                var state = new TrackingDictionary();
+                state = state ?? new TrackingDictionary();
                 hub.Context = new HubContext(_context, connectionId);
-                hub.Caller = new SignalAgent(Connection, connectionId, hubName, state);
-                var agent = new ClientAgent(Connection, hubName);
+                hub.Caller = new SignalAgent(Connection, connectionId, descriptor.Name, state);
+                var agent = new ClientAgent(Connection, descriptor.Name);
                 hub.Agent = agent;
                 hub.GroupManager = agent;
             }
@@ -206,12 +193,10 @@ namespace SignalR.Hubs
             return hub;
         }
 
-        private IEnumerable<Type> GetHubsImplementingInterface(Type interfaceType)
+        private IEnumerable<HubDescriptor> GetHubsImplementingInterface(Type interfaceType)
         {
             // Get hubs that implement the specified interface
-            return from type in _hubLocator.GetHubs()
-                   where interfaceType.IsAssignableFrom(type)
-                   select type;
+            return _manager.GetHubs(hub => interfaceType.IsAssignableFrom(hub.Type));
         }
 
         private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
@@ -271,15 +256,15 @@ namespace SignalR.Hubs
             };
 
             // Try to find the associated hub type
-            Type hubType = _hubTypeResolver.ResolveType(hubInfo.Name);
+            var hub = _manager.GetHub(hubInfo.Name);
 
-            if (hubType == null)
+            if (hub == null)
             {
                 throw new InvalidOperationException(String.Format("Unable to resolve hub {0}.", hubInfo.Name));
             }
 
             // Set the full type name
-            hubInfo.Name = hubType.FullName;
+            hubInfo.Name = hub.Name;
 
             // Create the signals for hubs
             return hubInfo.Methods.Select(hubInfo.CreateQualifiedName)
