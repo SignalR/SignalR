@@ -1,6 +1,6 @@
 using System;
 
-namespace SignalR.Hubs.Lookup.Descriptors
+namespace SignalR.Hubs
 {
     /// <summary>
     /// Holds information about a single hub.

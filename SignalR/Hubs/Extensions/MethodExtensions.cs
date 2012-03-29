@@ -1,6 +1,4 @@
-﻿using SignalR.Hubs.Lookup.Descriptors;
-
-namespace SignalR.Hubs.Extensions
+﻿namespace SignalR.Hubs
 {
     public static class MethodExtensions
     {

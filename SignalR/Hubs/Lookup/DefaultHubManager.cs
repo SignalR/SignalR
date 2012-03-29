@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SignalR.Hubs.Lookup.Descriptors;
 
-namespace SignalR.Hubs.Lookup
+namespace SignalR.Hubs
 {
     public class DefaultHubManager : IHubManager
     {

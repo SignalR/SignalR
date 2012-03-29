@@ -7,9 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Hosting;
-using SignalR.Hubs.Lookup;
-using SignalR.Hubs.Lookup.Descriptors;
-using SignalR.Hubs.Extensions;
 
 namespace SignalR.Hubs
 {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using SignalR.Hubs;
-using SignalR.Hubs.Lookup;
 using SignalR.Infrastructure;
 using SignalR.MessageBus;
 using SignalR.Transports;

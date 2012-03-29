@@ -1,9 +1,8 @@
 using System;
 using System.Linq;
 using Newtonsoft.Json;
-using SignalR.Hubs.Lookup.Descriptors;
 
-namespace SignalR.Hubs.Lookup
+namespace SignalR.Hubs
 {
     public class DefaultParameterResolver: IParameterResolver
     {

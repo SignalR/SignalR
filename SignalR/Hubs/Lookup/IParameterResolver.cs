@@ -1,6 +1,4 @@
-﻿using SignalR.Hubs.Lookup.Descriptors;
-
-namespace SignalR.Hubs.Lookup
+﻿namespace SignalR.Hubs
 {
     /// <summary>
     /// Describes a parameter resolver for resolving parameter-matching values based on provided information.

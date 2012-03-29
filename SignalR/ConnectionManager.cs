@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Linq;
 using SignalR.Hubs;
-using SignalR.Hubs.Lookup;
-using SignalR.Hubs.Lookup.Descriptors;
 using SignalR.Infrastructure;
 using SignalR.MessageBus;
-using SignalR.Hubs.Extensions;
 
 namespace SignalR
 {

@@ -2,9 +2,6 @@
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using SignalR.Hubs;
-using SignalR.Hubs.Extensions;
-using SignalR.Hubs.Lookup;
-using SignalR.Hubs.Lookup.Descriptors;
 using Xunit;
 
 namespace SignalR.Tests

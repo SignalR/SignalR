@@ -1,5 +1,4 @@
 ﻿using System;
-using SignalR.Hubs.Lookup.Descriptors;
 
 namespace SignalR.Hubs
 {

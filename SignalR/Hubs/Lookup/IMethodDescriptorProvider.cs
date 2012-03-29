@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using SignalR.Hubs.Lookup.Descriptors;
 
-namespace SignalR.Hubs.Lookup
+namespace SignalR.Hubs
 {
     /// <summary>
     /// Describes a hub method provider that builds a collection of available actions on a given hub.

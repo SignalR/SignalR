@@ -1,6 +1,4 @@
-﻿using SignalR.Hubs.Lookup.Descriptors;
-
-namespace SignalR.Hubs
+﻿namespace SignalR.Hubs
 {
     public interface IHubActivator
     {

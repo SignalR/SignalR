@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using SignalR.Hubs.Lookup;
-using SignalR.Hubs.Lookup.Descriptors;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
@@ -123,7 +121,7 @@ namespace SignalR.Hubs
                    group method by method.Name into overloads
                    let oload = (from overload in overloads
                                 orderby overload.Parameters.Count
-	  	                        select overload).FirstOrDefault()
+                                select overload).FirstOrDefault()
                    select oload;
         }
 

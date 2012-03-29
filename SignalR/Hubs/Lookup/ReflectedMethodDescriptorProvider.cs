@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SignalR.Hubs.Extensions;
-using SignalR.Hubs.Lookup.Descriptors;
 using SignalR.Infrastructure;
 
-namespace SignalR.Hubs.Lookup
+namespace SignalR.Hubs
 {
     public class ReflectedMethodDescriptorProvider : IMethodDescriptorProvider
     {

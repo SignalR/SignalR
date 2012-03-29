@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using SignalR.Hubs.Lookup.Descriptors;
 
-namespace SignalR.Hubs.Lookup
+namespace SignalR.Hubs
 {
     /// <summary>
     /// Describes hub descriptor provider, which provides information about available hubs.
