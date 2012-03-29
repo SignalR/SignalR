@@ -1,5 +1,5 @@
 ﻿using System;
-using SignalR.Infrastructure;
+using SignalR.Hubs.Lookup.Descriptors;
 
 namespace SignalR.Hubs
 {
@@ -12,9 +12,9 @@ namespace SignalR.Hubs
             _resolver = resolver;
         }
 
-        public IHub Create(Type hubType)
+        public IHub Create(HubDescriptor descriptor)
         {
-            object hub = _resolver.Resolve(hubType) ?? Activator.CreateInstance(hubType);
+            object hub = _resolver.Resolve(descriptor.Type) ?? Activator.CreateInstance(descriptor.Type);
             return hub as IHub;
         }
     }

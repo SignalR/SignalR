@@ -1,5 +1,4 @@
-﻿
-namespace SignalR.Hubs
+﻿namespace SignalR.Hubs
 {
     public interface IJavaScriptProxyGenerator
     {

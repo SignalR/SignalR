@@ -1,9 +1,9 @@
-﻿using System;
+﻿using SignalR.Hubs.Lookup.Descriptors;
 
 namespace SignalR.Hubs
 {
     public interface IHubActivator
     {
-        IHub Create(Type hubType);
+        IHub Create(HubDescriptor descriptor);
     }
 }
