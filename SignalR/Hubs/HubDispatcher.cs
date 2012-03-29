@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using SignalR.Hosting;
 using SignalR.Hubs.Lookup;
 using SignalR.Hubs.Lookup.Descriptors;
+using SignalR.Hubs.Extensions;
 
 namespace SignalR.Hubs
 {
@@ -40,11 +41,7 @@ namespace SignalR.Hubs
             var hubRequest = JsonConvert.DeserializeObject<HubRequest>(data);
 
             // Create the hub
-            HubDescriptor descriptor = _manager.GetHub(hubRequest.Hub);
-            if (descriptor == null)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' hub could not be resolved.", hubRequest.Hub));
-            }
+            HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub);           
 
             var parameters = hubRequest.Data;
 
@@ -256,12 +253,7 @@ namespace SignalR.Hubs
             };
 
             // Try to find the associated hub type
-            var hub = _manager.GetHub(hubInfo.Name);
-
-            if (hub == null)
-            {
-                throw new InvalidOperationException(String.Format("Unable to resolve hub {0}.", hubInfo.Name));
-            }
+            var hub = _manager.EnsureHub(hubInfo.Name);
 
             // Set the full type name
             hubInfo.Name = hub.Name;
