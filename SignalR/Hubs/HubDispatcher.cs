@@ -36,7 +36,7 @@ namespace SignalR.Hubs
 
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
-            var hubRequest = new HubRequest(data);
+            var hubRequest = HubRequest.Parse(data);
 
             // Create the hub
             HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub);
@@ -284,14 +284,27 @@ namespace SignalR.Hubs
 
         private class HubRequest
         {
-            public HubRequest(string data)
+            private static readonly JToken[] _emptyArgs = new JToken[0];
+
+            public static HubRequest Parse(string data)
             {
                 var rawRequest = JObject.Parse(data);
-                Hub = rawRequest.Value<string>("Hub");
-                Action = rawRequest.Value<string>("Action");
-                Id = rawRequest.Value<string>("Id");
-                State = rawRequest.Value<IDictionary<string, object>>("state");
-                ParameterValues = rawRequest["Data"].Children().ToArray();
+                var request = new HubRequest();
+
+                // TODO: Figure out case insensitivity in JObject.Parse, this should cover our clients for now
+                request.Hub = rawRequest.Value<string>("hub") ?? rawRequest.Value<string>("Hub");
+                request.Action = rawRequest.Value<string>("action") ?? rawRequest.Value<string>("Action");
+                request.Id = rawRequest.Value<string>("id") ?? rawRequest.Value<string>("Id");
+
+                var rawState = rawRequest["state"] ?? rawRequest["State"];
+                request.State = rawState == null ? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) :
+                                           rawState.ToObject<IDictionary<string, object>>();
+
+                var rawArgs = rawRequest["data"] ?? rawRequest["Data"];
+                request.ParameterValues = rawArgs == null ? _emptyArgs :
+                                                    rawArgs.Children().ToArray();
+
+                return request;
             }
 
             public string Hub { get; set; }
