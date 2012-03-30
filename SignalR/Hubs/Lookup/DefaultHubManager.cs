@@ -51,7 +51,7 @@ namespace SignalR.Hubs
             }
 
             MethodDescriptor descriptor = null;
-            if (_methodProviders.Count(p => p.TryGetMethod(hub, method, out descriptor, parameters)) == 1)
+            if (_methodProviders.FirstOrDefault(p => p.TryGetMethod(hub, method, out descriptor, parameters)) != null)
             {
                 return descriptor;
             }
