@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.Text;
+using System.Threading;
+using SignalR.Client.Http;
 using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports
@@ -9,61 +10,145 @@ namespace SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private const string ReaderKey = "sse.reader";
+        private int _initializedCalled;
+
+        private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
-            : base("serverSentEvents")
+            : this(new DefaultHttpClient())
         {
         }
 
-        protected override void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        public ServerSentEventsTransport(IHttpClient httpClient)
+            : base(httpClient, "serverSentEvents")
+        {
+            ConnectionTimeout = TimeSpan.FromSeconds(2);
+        }
+
+        /// <summary>
+        /// Time allowed before failing the connect request
+        /// </summary>
+        public TimeSpan ConnectionTimeout { get; set; }
+
+        protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             OpenConnection(connection, data, initializeCallback, errorCallback);
         }
 
-        private void OpenConnection(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        private void Reconnect(IConnection connection, string data)
         {
-            var url = connection.Url + GetReceiveQueryString(connection, data);
+            if (!connection.IsActive)
+            {
+                return;
+            }
 
-            Action<HttpWebRequest> prepareRequest = PrepareRequest(connection);
+            // Wait for a bit before reconnecting
+            Thread.Sleep(ReconnectDelay);
 
-            HttpHelper.GetAsync(url, request =>
+            // Now attempt a reconnect
+            OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+        }
+
+        private void OpenConnection(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        {
+            // If we're reconnecting add /connect to the url
+            bool reconnecting = initializeCallback == null;
+
+            var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
+
+            Action<IRequest> prepareRequest = PrepareRequest(connection);
+
+            _httpClient.GetAsync(url, request =>
             {
                 prepareRequest(request);
 
                 request.Accept = "text/event-stream";
 
-                if (connection.MessageId != null)
-                {
-                    request.Headers["Last-Event-ID"] = connection.MessageId.ToString();
-                }
-
             }).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
-                    errorCallback(task.Exception);
+                    var exception = task.Exception.GetBaseException();
+                    if (!IsRequestAborted(exception))
+                    {
+                        if (errorCallback != null &&
+                            Interlocked.Exchange(ref _initializedCalled, 1) == 0)
+                        {
+                            errorCallback(exception);
+                        }
+                        else if (reconnecting)
+                        {
+                            // Only raise the error event if we failed to reconnect
+                            connection.OnError(exception);
+                        }
+                    }
+
+                    if (reconnecting)
+                    {
+                        // Retry
+                        Reconnect(connection, data);
+                        return;
+                    }
                 }
                 else
                 {
                     // Get the reseponse stream and read it for messages
-                    var stream = task.Result.GetResponseStream();
-                    var reader = new AsyncStreamReader(stream, connection, initializeCallback, errorCallback);
+                    var response = task.Result;
+                    var stream = response.GetResponseStream();
+                    var reader = new AsyncStreamReader(stream,
+                                                       connection,
+                                                       () =>
+                                                       {
+                                                           if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
+                                                           {
+                                                               initializeCallback();
+                                                           }
+                                                       },
+                                                       () =>
+                                                       {
+                                                           response.Close();
+
+                                                           Reconnect(connection, data);
+                                                       });
+
+                    if (reconnecting)
+                    {
+                        // Raise the reconnect event if the connection comes back up
+                        connection.OnReconnected();
+                    }
+
                     reader.StartReading();
 
                     // Set the reader for this connection
                     connection.Items[ReaderKey] = reader;
                 }
             });
+
+            if (initializeCallback != null)
+            {
+                TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
+                {
+                    if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
+                    {
+                        // Stop the connection
+                        Stop(connection);
+
+                        // Connection timeout occured
+                        errorCallback(new TimeoutException());
+                    }
+                });
+            }
         }
 
-        protected override void OnBeforeAbort(Connection connection)
+        protected override void OnBeforeAbort(IConnection connection)
         {
             // Get the reader from the connection and stop it
             var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
             if (reader != null)
             {
-                // Stop reading data from the stream
-                reader.StopReading();
+                // Stop reading data from the stream, don't close it since we're going to end
+                // the request
+                reader.StopReading(raiseCloseCallback: false);
 
                 // Remove the reader
                 connection.Items.Remove(ReaderKey);
@@ -75,35 +160,51 @@ namespace SignalR.Client.Transports
             private readonly Stream _stream;
             private readonly ChunkBuffer _buffer;
             private readonly Action _initializeCallback;
-            private readonly Action<Exception> _errorCallback;
-            private readonly Connection _connection;
+            private readonly Action _closeCallback;
+            private readonly IConnection _connection;
             private int _processingQueue;
-            private bool _reading;
+            private int _reading;
             private bool _processingBuffer;
 
-            public AsyncStreamReader(Stream stream, Connection connection, Action initializeCallback, Action<Exception> errorCallback)
+            public AsyncStreamReader(Stream stream, IConnection connection, Action initializeCallback, Action closeCallback)
             {
                 _initializeCallback = initializeCallback;
-                _errorCallback = errorCallback;
+                _closeCallback = closeCallback;
                 _stream = stream;
                 _connection = connection;
                 _buffer = new ChunkBuffer();
             }
 
-            public void StartReading()
+            public bool Reading
             {
-                _reading = true;
-                ReadLoop();
+                get
+                {
+                    return _reading == 1;
+                }
             }
 
-            public void StopReading()
+            public void StartReading()
             {
-                _reading = false;
+                if (Interlocked.Exchange(ref _reading, 1) == 0)
+                {
+                    ReadLoop();
+                }
+            }
+
+            public void StopReading(bool raiseCloseCallback = true)
+            {
+                if (Interlocked.Exchange(ref _reading, 0) == 1)
+                {
+                    if (raiseCloseCallback)
+                    {
+                        _closeCallback();
+                    }
+                }
             }
 
             private void ReadLoop()
             {
-                if (!_reading)
+                if (!Reading)
                 {
                     return;
                 }
@@ -117,9 +218,12 @@ namespace SignalR.Client.Transports
 
                         if (!IsRequestAborted(exception))
                         {
-                            _connection.OnError(exception);
+                            if (!(exception is IOException))
+                            {
+                                _connection.OnError(exception);
+                            }
 
-                            _errorCallback(exception);
+                            StopReading();
                         }
                         return;
                     }
@@ -130,6 +234,13 @@ namespace SignalR.Client.Transports
                     {
                         // Put chunks in the buffer
                         _buffer.Add(buffer, read);
+                    }
+
+                    if (read == 0)
+                    {
+                        // Stop any reading we're doing
+                        StopReading();
+                        return;
                     }
 
                     // Keep reading the next set of data
@@ -145,7 +256,7 @@ namespace SignalR.Client.Transports
 
             private void ProcessBuffer()
             {
-                if (!_reading)
+                if (!Reading)
                 {
                     return;
                 }
@@ -163,7 +274,7 @@ namespace SignalR.Client.Transports
 
                 for (int i = 0; i < total; i++)
                 {
-                    if (!_reading)
+                    if (!Reading)
                     {
                         return;
                     }
@@ -181,7 +292,7 @@ namespace SignalR.Client.Transports
 
             private void ProcessChunks()
             {
-                while (_reading && _buffer.HasChunks)
+                while (Reading && _buffer.HasChunks)
                 {
                     string line = _buffer.ReadLine();
 
@@ -191,7 +302,7 @@ namespace SignalR.Client.Transports
                         break;
                     }
 
-                    if (!_reading)
+                    if (!Reading)
                     {
                         return;
                     }
@@ -203,10 +314,12 @@ namespace SignalR.Client.Transports
                         continue;
                     }
 
-                    if (!_reading)
+                    if (!Reading)
                     {
                         return;
                     }
+
+                    Debug.WriteLine("SSE READ: " + sseEvent);
 
                     switch (sseEvent.Type)
                     {
@@ -220,14 +333,32 @@ namespace SignalR.Client.Transports
                         case EventType.Data:
                             if (sseEvent.Data.Equals("initialized", StringComparison.OrdinalIgnoreCase))
                             {
-                                // Mark the connection as started
-                                _initializeCallback();
+                                if (_initializeCallback != null)
+                                {
+                                    // Mark the connection as started
+                                    _initializeCallback();
+                                }
                             }
                             else
                             {
-                                if (_reading)
+                                if (Reading)
                                 {
-                                    OnMessage(_connection, sseEvent.Data);
+                                    // We don't care about timedout messages here since it will just reconnect
+                                    // as part of being a long running request
+                                    bool timedOutReceived;
+                                    bool disconnectReceived;
+
+                                    ProcessResponse(_connection, sseEvent.Data, out timedOutReceived, out disconnectReceived);
+
+                                    if (disconnectReceived)
+                                    {
+                                        _connection.Stop();
+                                    }
+
+                                    if (timedOutReceived)
+                                    {
+                                        return;
+                                    }
                                 }
                             }
                             break;
@@ -265,60 +396,17 @@ namespace SignalR.Client.Transports
 
                 public EventType Type { get; private set; }
                 public string Data { get; private set; }
+
+                public override string ToString()
+                {
+                    return Type + ": " + Data;
+                }
             }
 
             private enum EventType
             {
                 Id,
                 Data
-            }
-
-            private class ChunkBuffer
-            {
-                private int _offset;
-                private readonly StringBuilder _buffer;
-                private readonly StringBuilder _lineBuilder;
-
-                public ChunkBuffer()
-                {
-                    _buffer = new StringBuilder();
-                    _lineBuilder = new StringBuilder();
-                }
-
-                public bool HasChunks
-                {
-                    get
-                    {
-                        return _offset < _buffer.Length;
-                    }
-                }
-
-                public string ReadLine()
-                {
-                    for (int i = _offset; i < _buffer.Length; i++, _offset++)
-                    {
-                        if (_buffer[i] == '\n')
-                        {
-                            _buffer.Remove(0, _offset + 1);
-                            string line = _lineBuilder.ToString();
-#if WINDOWS_PHONE
-                            _lineBuilder.Length = 0;
-#else
-                            _lineBuilder.Clear();
-#endif
-                            _offset = 0;
-                            return line;
-                        }
-                        _lineBuilder.Append(_buffer[i]);
-                    }
-
-                    return null;
-                }
-
-                public void Add(byte[] buffer, int length)
-                {
-                    _buffer.Append(Encoding.UTF8.GetString(buffer, 0, length));
-                }
             }
         }
     }

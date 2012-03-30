@@ -22,6 +22,14 @@ namespace SignalR.Hubs
             }
         }
 
+        public IConnection Connection
+        {
+            get
+            {
+                return _connection;
+            }
+        }
+
         public Task Invoke(string method, params object[] args)
         {
             return Invoke(_connection, method, _hubName, method, args);

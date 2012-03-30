@@ -36,6 +36,10 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.0.7.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.4.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -50,9 +54,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChunkBufferFacts.cs" />
+    <Compile Include="ConnectionFacts.cs" />
+    <Compile Include="DisconnectFacts.cs" />
     <Compile Include="HubProxyTest.cs" />
-    <Compile Include="InProcessMessageStoreTest.cs" />
+    <Compile Include="InProcessMessageBusFacts.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
+    <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -62,6 +70,14 @@
     <ProjectReference Include="..\SignalR.Client\SignalR.Client.csproj">
       <Project>{EB46B9C6-EE37-48F9-835E-E49580E40E0A}</Project>
       <Name>SignalR.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+      <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
+      <Name>SignalR.Hosting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignalR.Hosting.Memory\SignalR.Hosting.Memory.csproj">
+      <Project>{055F2118-FE29-4219-A28A-3D6F0889652E}</Project>
+      <Name>SignalR.Hosting.Memory</Name>
     </ProjectReference>
     <ProjectReference Include="..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>

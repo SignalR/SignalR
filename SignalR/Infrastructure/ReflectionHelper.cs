@@ -6,11 +6,12 @@ using SignalR.Hubs;
 
 namespace SignalR.Infrastructure
 {
-    internal static class ReflectionHelper
+    public static class ReflectionHelper
     {
-        private static readonly Type[] _excludeTypes = new[] { typeof(IHub), typeof(Hub), typeof(object) };
+        private static readonly Type[] _excludeTypes = new[] { typeof(Hub), typeof(object) };
+        private static readonly Type[] _excludeInterfaces = new[] { typeof(IHub), typeof(IDisconnect), typeof(IConnected) };
 
-        internal static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
+        public static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
         {
             if (!typeof(IHub).IsAssignableFrom(type))
             {
@@ -21,15 +22,27 @@ namespace SignalR.Infrastructure
             var getMethods = properties.Select(p => p.GetGetMethod());
             var setMethods = properties.Select(p => p.GetSetMethod());
             var allPropertyMethods = getMethods.Concat(setMethods);
+            var allInterfaceMethods = _excludeInterfaces.SelectMany(i => GetInterfaceMethods(type, i));
+            var allExcludes = allPropertyMethods.Concat(allInterfaceMethods);
 
             var actualMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
-            return actualMethods.Except(allPropertyMethods)
+            return actualMethods.Except(allExcludes)
                                 .Where(m => !_excludeTypes.Contains(m.DeclaringType));
 
         }
 
-        internal static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
+        private static IEnumerable<MethodInfo> GetInterfaceMethods(Type type, Type iface)
+        {
+            if (!iface.IsAssignableFrom(type))
+            {
+                return Enumerable.Empty<MethodInfo>();
+            }
+
+            return type.GetInterfaceMap(iface).TargetMethods;
+        }
+
+        public static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
             where TAttribute : Attribute
         {
             var attributes = source.GetCustomAttributes(typeof(TAttribute), false)

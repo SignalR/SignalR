@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{1E4BA77C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Silverlight", "SignalR.Client.Silverlight\SignalR.Client.Silverlight.csproj", "{C55F7A30-5F93-4837-A13A-8DA06C8A2A3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Silverlight5", "SignalR.Client.Silverlight5\SignalR.Client.Silverlight5.csproj", "{0220B607-1686-4D4A-AEF0-292EA9827531}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{C55F7A30-5F93-4837-A13A-8DA06C8A2A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C55F7A30-5F93-4837-A13A-8DA06C8A2A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C55F7A30-5F93-4837-A13A-8DA06C8A2A3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0220B607-1686-4D4A-AEF0-292EA9827531}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0220B607-1686-4D4A-AEF0-292EA9827531}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0220B607-1686-4D4A-AEF0-292EA9827531}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0220B607-1686-4D4A-AEF0-292EA9827531}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using SignalR.Client.Http;
 using SignalR.Client.Transports;
 
 namespace SignalR.Client
@@ -21,22 +21,43 @@ namespace SignalR.Client
         public event Action<string> Received;
         public event Action<Exception> Error;
         public event Action Closed;
+        public event Action Reconnected;
 
         public Connection(string url)
+            : this(url, (string)null)
         {
+
+        }
+
+        public Connection(string url, IDictionary<string, string> queryString)
+            : this(url, CreateQueryString(queryString))
+        {
+
+        }
+
+        public Connection(string url, string queryString)
+        {
+            if (url.Contains('?'))
+            {
+                throw new ArgumentException("Url cannot contain QueryString directly. Pass QueryString values in using available overload.", "url");
+            }
+
             if (!url.EndsWith("/"))
             {
                 url += "/";
             }
 
             Url = url;
+            QueryString = queryString;
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
+        public CookieContainer CookieContainer { get; set; }
+
         public ICredentials Credentials { get; set; }
 
-        public IEnumerable<string> Groups { get; internal set; }
+        public IEnumerable<string> Groups { get; set; }
 
         public Func<string> Sending { get; set; }
 
@@ -50,9 +71,21 @@ namespace SignalR.Client
 
         public IDictionary<string, object> Items { get; private set; }
 
+        public string QueryString { get; private set; }
+
         public Task Start()
         {
-            return Start(Transport.ServerSentEvents);
+            return Start(new DefaultHttpClient());
+        }
+
+        public Task Start(IHttpClient httpClient)
+        {
+#if WINDOWS_PHONE || SILVERLIGHT
+            return Start(new LongPollingTransport());
+#else
+            // Pick the best transport supported by the client
+            return Start(new AutoTransport(httpClient));
+#endif
         }
 
         public virtual Task Start(IClientTransport transport)
@@ -66,36 +99,41 @@ namespace SignalR.Client
 
             _transport = transport;
 
-            string data = null;
+            return Negotiate(transport);
+        }
 
-            if (Sending != null)
+        private Task Negotiate(IClientTransport transport)
+        {
+            var negotiateTcs = new TaskCompletionSource<object>();
+
+            transport.Negotiate(this).Then(negotiationResponse =>
             {
-                data = Sending();
-            }
-
-            string negotiateUrl = Url + "negotiate";
-
-            return HttpHelper.PostAsync(negotiateUrl, PrepareRequest).Then(response =>
-            {
-                string raw = response.ReadAsString();
-
-                if (raw == null)
-                {
-                    throw new InvalidOperationException("Server negotiation failed.");
-                }
-
-                var negotiationResponse = JsonConvert.DeserializeObject<NegotiationResponse>(raw);
-
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                return _transport.Start(this, data).Then(() => _initialized = true);
+                if (Sending != null)
+                {
+                    var data = Sending();
+                    StartTransport(data).ContinueWith(negotiateTcs);
+                }
+                else
+                {
+                    StartTransport(null).ContinueWith(negotiateTcs);
+                }
             })
-            .FastUnwrap();
+            .ContinueWithNotComplete(negotiateTcs);
+
+            return negotiateTcs.Task;
         }
 
-        private void VerifyProtocolVersion(string versionString)
+        private Task StartTransport(string data)
+        {
+            return _transport.Start(this, data)
+                             .Then(() => _initialized = true);
+        }
+
+        private static void VerifyProtocolVersion(string versionString)
         {
             Version version;
             if (String.IsNullOrEmpty(versionString) ||
@@ -108,14 +146,14 @@ namespace SignalR.Client
 
         public virtual void Stop()
         {
-            // Do nothing if the connection was never started
-            if (!_initialized)
-            {
-                return;
-            }
-
             try
             {
+                // Do nothing if the connection was never started
+                if (!_initialized)
+                {
+                    return;
+                }
+
                 _transport.Stop(this);
 
                 if (Closed != null)
@@ -145,7 +183,7 @@ namespace SignalR.Client
             return _transport.Send<T>(this, data);
         }
 
-        internal void OnReceived(string message)
+        void IConnection.OnReceived(string message)
         {
             if (Received != null)
             {
@@ -153,7 +191,7 @@ namespace SignalR.Client
             }
         }
 
-        internal void OnError(Exception error)
+        void IConnection.OnError(Exception error)
         {
             if (Error != null)
             {
@@ -161,13 +199,22 @@ namespace SignalR.Client
             }
         }
 
-        internal void PrepareRequest(HttpWebRequest request)
+        void IConnection.OnReconnected()
         {
+            if (Reconnected != null)
+            {
+                Reconnected();
+            }
+        }
+
+        void IConnection.PrepareRequest(IRequest request)
+        {
+#if WINDOWS_PHONE
+            // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
+            request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
+#else
 #if SILVERLIGHT
             // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
-#else
-#if WINDOWS_PHONE
-            request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
 #else
             request.UserAgent = CreateUserAgentString("SignalR.Client");
 #endif
@@ -175,6 +222,11 @@ namespace SignalR.Client
             if (Credentials != null)
             {
                 request.Credentials = Credentials;
+            }
+
+            if (CookieContainer != null)
+            {
+                request.CookieContainer = CookieContainer;
             }
         }
 
@@ -204,6 +256,11 @@ namespace SignalR.Client
 #else
             return Version.TryParse(versionString, out version);
 #endif
+        }
+
+        private static string CreateQueryString(IDictionary<string, string> queryString)
+        {
+            return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
         }
     }
 }

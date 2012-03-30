@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using SignalR.Client.Http;
 
 namespace SignalR.Client
 {
@@ -10,12 +11,14 @@ namespace SignalR.Client
         bool IsActive { get; }
         long? MessageId { get; set; }
         Func<string> Sending { get; set; }
-        IEnumerable<string> Groups { get; }
+        IEnumerable<string> Groups { get; set; }
         IDictionary<string, object> Items { get; }
         string ConnectionId { get; }
         string Url { get; }
+        string QueryString { get; }
 
         ICredentials Credentials { get; set; }
+        CookieContainer CookieContainer { get; set; }
 
         event Action Closed;
         event Action<Exception> Error;
@@ -24,5 +27,10 @@ namespace SignalR.Client
         void Stop();
         Task Send(string data);
         Task<T> Send<T>(string data);
+
+        void OnReceived(string data);
+        void OnError(Exception ex);
+        void OnReconnected();
+        void PrepareRequest(IRequest request);
     }
 }

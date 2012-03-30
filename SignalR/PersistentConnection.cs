@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SignalR.Abstractions;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
 using SignalR.Transports;
 
@@ -9,34 +9,29 @@ namespace SignalR
 {
     public abstract class PersistentConnection : IGroupManager
     {
-        private readonly Signaler _signaler;
-        private readonly IMessageStore _store;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly IConnectionIdFactory _connectionIdFactory;
-        private readonly ITransportManager _transportManager;
+        protected IMessageBus _messageBus;
+        protected IJsonSerializer _jsonSerializer;
+        protected IConnectionIdFactory _connectionIdFactory;
+        private ITransportManager _transportManager;
+        private bool _initialized;
 
+        protected ITraceManager _trace;
         protected ITransport _transport;
 
-        protected PersistentConnection()
-            : this(Signaler.Instance,
-                   DependencyResolver.Resolve<IConnectionIdFactory>(),
-                   DependencyResolver.Resolve<IMessageStore>(),
-                   DependencyResolver.Resolve<IJsonSerializer>(),
-                   DependencyResolver.Resolve<ITransportManager>())
+        public virtual void Initialize(IDependencyResolver resolver)
         {
-        }
+            if (_initialized)
+            {
+                return;
+            }
 
-        protected PersistentConnection(Signaler signaler,
-                                       IConnectionIdFactory connectionIdFactory,
-                                       IMessageStore store,
-                                       IJsonSerializer jsonSerializer,
-                                       ITransportManager transportManager)
-        {
-            _signaler = signaler;
-            _connectionIdFactory = connectionIdFactory;
-            _store = store;
-            _jsonSerializer = jsonSerializer;
-            _transportManager = transportManager;
+            _messageBus = resolver.Resolve<IMessageBus>();
+            _connectionIdFactory = resolver.Resolve<IConnectionIdFactory>();
+            _jsonSerializer = resolver.Resolve<IJsonSerializer>();
+            _transportManager = resolver.Resolve<ITransportManager>();
+            _trace = resolver.Resolve<ITraceManager>();
+
+            _initialized = true;
         }
 
         // Static events intended for use when measuring performance
@@ -61,6 +56,11 @@ namespace SignalR
 
         public virtual Task ProcessRequestAsync(HostContext context)
         {
+            if (!_initialized)
+            {
+                throw new InvalidOperationException("Connection not initialized.");
+            }
+
             if (IsNegotiationRequest(context.Request))
             {
                 return ProcessNegotiationRequest(context);
@@ -81,13 +81,18 @@ namespace SignalR
                 throw new InvalidOperationException("Protocol error: Missing connection id.");
             }
 
-            IEnumerable<string> groups = _transport.Groups;
+            var groups = new List<string>(_transport.Groups);
 
             Connection = CreateConnection(connectionId, groups, context.Request);
-            
+
             _transport.Connected = () =>
             {
                 return OnConnectedAsync(context.Request, connectionId);
+            };
+
+            _transport.Reconnected = () =>
+            {
+                return OnReconnectedAsync(context.Request, groups, connectionId);
             };
 
             _transport.Received = data =>
@@ -107,22 +112,36 @@ namespace SignalR
 
         protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
+            return new Connection(_messageBus,
+                                  _jsonSerializer,
+                                  DefaultSignal,
+                                  connectionId,
+                                  GetDefaultSignals(connectionId),
+                                  groups,
+                                  _trace);
+        }
+
+        protected IEnumerable<string> GetDefaultSignals(string connectionId)
+        {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
             // 3. connection id + SIGNALRCOMMAND -> for built in commands that we need to process
-            var signals = new string[] {
+            return new string[] {
                 DefaultSignal,
                 connectionId,
                 SignalCommand.AddCommandSuffix(connectionId)
             };
-
-            return new Connection(_store, _jsonSerializer, _signaler, DefaultSignal, connectionId, signals, groups);
         }
 
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
             OnClientConnected(connectionId);
+            return TaskAsyncHelper.Empty;
+        }
+
+        protected virtual Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
             return TaskAsyncHelper.Empty;
         }
 
@@ -146,7 +165,7 @@ namespace SignalR
         public Task Send(object value)
         {
             OnSending();
-            return _transport.Send(value);
+            return Connection.Send(value);
         }
 
         public Task Send(string connectionId, object value)
@@ -184,10 +203,10 @@ namespace SignalR
         private Task ProcessNegotiationRequest(HostContext context)
         {
             context.Response.ContentType = Json.MimeType;
-            return context.Response.WriteAsync(_jsonSerializer.Stringify(new
+            return context.Response.EndAsync(_jsonSerializer.Stringify(new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request),
+                ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request, context.User),
                 TryWebSockets = context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"

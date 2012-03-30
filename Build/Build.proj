@@ -1,63 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
-        <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
-        <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
-        <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
-        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
-        <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
-        <XunitPath>$(ToolsPath)xunit\</XunitPath>
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <MajorVersion>0</MajorVersion>
-        <MinorVersion>3</MinorVersion>
-        <Version>$(MajorVersion).$(MinorVersion).6</Version>
-    </PropertyGroup>
-    
-    <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
-               TaskName="Xunit.Runner.MSBuild.xunit" />
-               
+  <PropertyGroup>
+    <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+    <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
+    <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+    <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
+    <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
+    <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+    <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
+    <XunitPath>$(ToolsPath)xunit\</XunitPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <MajorVersion>0</MajorVersion>
+    <MinorVersion>5</MinorVersion>
+    <Version>$(MajorVersion).$(MinorVersion).0</Version>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
+             TaskName="Xunit.Runner.MSBuild.xunit" />
+
+  <ItemGroup>
+    <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
+  </ItemGroup>
+
+  <Target Name="Go" DependsOnTargets="Build; RunTests;">
+  </Target>
+
+  <Target Name="RunTests">
+    <xunit Assembly="%(TestProjects.FullPath)" Xml="$(TestResultsPath)\SignalR.Tests.XunitResults.xml" Verbose="true" />
+  </Target>
+
+  <Target Name="CreateOutputDir">
+    <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
+    <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="CreateOutputDir">
+    <MSBuild Projects="$(ProjectRoot)\SignalR.sln"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+
+    <MSBuild Projects="$(ProjectRoot)\SignalR.WP7.sln"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
+             Properties="Configuration=$(Configuration)" />
+
+    <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
+             Properties="Configuration=$(Configuration)" />
+  </Target>
+
+  <Target Name="BuildPackages">
     <ItemGroup>
-        <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
+      <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
+      <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
+      <Projects Include="$(ProjectRoot)\SignalR\SignalR.csproj" />
+      <Projects Include="$(ProjectRoot)\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj" />
+      <Projects Include="$(ProjectRoot)\SignalR.Client\SignalR.Client.csproj" />
+      <Projects Include="$(ProjectRoot)\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj" />
+      <Projects Include="$(ProjectRoot)\SignalR.Hosting.Owin\SignalR.Hosting.Owin.csproj" />
+      <Projects Include="$(ProjectRoot)\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj" />
     </ItemGroup>
+    
+    <MSBuild Projects="%(Projects.Identity)"
+             Targets="Build"
+             Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+    
+    <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
+    <MSBuild Projects="$(ProjectRoot)\SignalR.Client.WP7\SignalR.Client.WP7.csproj"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
+             Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
-    <Target Name="Go" DependsOnTargets="Build; RunTests; BuildPackages">
-    </Target>
-    
-    <Target Name="RunTests">
-        <xunit Assembly="%(TestProjects.FullPath)" />
-    </Target>
-    
-    <Target Name="CreateOutputDir">
-        <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
-    </Target>
-    
-    <Target Name="Build" DependsOnTargets="CreateOutputDir">
-        <MSBuild Projects="$(ProjectRoot)\SignalR.sln" 
-                 Targets="Build" 
-                 Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
-                 
-        <MSBuild Projects="$(ProjectRoot)\SignalR.WP7.sln" 
-                 Targets="Build" 
-                 Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
-                 Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+    <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight\SignalR.Client.Silverlight.csproj"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0')"
+             Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
-        <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln" 
-                 Targets="Build" 
-                 Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0')"
-                 Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
-    </Target>
-    
-    <Target Name="BuildPackages">
-        <ItemGroup>
-            <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
-            <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
-        </ItemGroup>
-        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -basePath &quot;$(ProjectRoot)\SignalR&quot;" 
-              LogStandardErrorAsError="true" />
-        <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -exclude **\*.cs"
-              LogStandardErrorAsError="true" />
-    </Target>
+    <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight5\SignalR.Client.Silverlight5.csproj"
+         Targets="Build"
+         Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
+         Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -basePath &quot;$(ProjectRoot)\SignalR&quot;"
+            LogStandardErrorAsError="true" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(Version) -exclude **\*.cs"
+          LogStandardErrorAsError="true" />
+  </Target>
 </Project>

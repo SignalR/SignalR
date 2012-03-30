@@ -11,7 +11,7 @@ namespace SignalR
             return eventKey + "." + SignalrCommand;
         }
 
-        internal static bool IsCommand(Message message)
+        public static bool IsCommand(Message message)
         {
             return message.SignalKey.EndsWith(SignalrCommand, StringComparison.OrdinalIgnoreCase);
         }

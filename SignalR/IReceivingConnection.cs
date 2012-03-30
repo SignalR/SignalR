@@ -1,14 +1,12 @@
-﻿using System;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace SignalR
 {
     public interface IReceivingConnection
     {
-        TimeSpan ReceiveTimeout { get; set; }
-
-        Task<PersistentResponse> ReceiveAsync();
-        Task<PersistentResponse> ReceiveAsync(long messageId);
+        Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken);
+        Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken);
 
         Task SendCommand(SignalCommand command);
     }

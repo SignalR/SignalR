@@ -4,8 +4,9 @@ namespace SignalR.Client.Transports
 {
     public interface IClientTransport
     {
-        Task Start(Connection connection, string data);
-        Task<T> Send<T>(Connection connection, string data);
-        void Stop(Connection connection);
+        Task<NegotiationResponse> Negotiate(IConnection connection);
+        Task Start(IConnection connection, string data);
+        Task<T> Send<T>(IConnection connection, string data);
+        void Stop(IConnection connection);
     }
 }

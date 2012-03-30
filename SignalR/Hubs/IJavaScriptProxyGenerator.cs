@@ -1,7 +1,4 @@
-﻿using System.Web;
-using SignalR.Abstractions;
-
-namespace SignalR.Hubs
+﻿namespace SignalR.Hubs
 {
     public interface IJavaScriptProxyGenerator
     {

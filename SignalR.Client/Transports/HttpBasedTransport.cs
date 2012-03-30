@@ -6,28 +6,54 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SignalR.Client.Http;
 
 namespace SignalR.Client.Transports
 {
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The receive query string
-        private const string _receiveQueryString = "?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}";
+        private const string _receiveQueryString = "?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}";
 
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionId={1}";
+        private const string _sendQueryString = "?transport={0}&connectionId={1}{2}";
 
         // The transport name
         protected readonly string _transport;
 
         protected const string HttpRequestKey = "http.Request";
 
-        public HttpBasedTransport(string transport)
+        protected readonly IHttpClient _httpClient;
+
+        public HttpBasedTransport(IHttpClient httpClient, string transport)
         {
+            _httpClient = httpClient;
             _transport = transport;
         }
 
-        public Task Start(Connection connection, string data)
+        public Task<NegotiationResponse> Negotiate(IConnection connection)
+        {
+            return GetNegotiationResponse(_httpClient, connection);
+        }
+
+        internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
+        {
+            string negotiateUrl = connection.Url + "negotiate";
+
+            return httpClient.PostAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
+            {
+                string raw = response.ReadAsString();
+
+                if (raw == null)
+                {
+                    throw new InvalidOperationException("Server negotiation failed.");
+                }
+
+                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
+            });
+        }
+
+        public Task Start(IConnection connection, string data)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -36,19 +62,20 @@ namespace SignalR.Client.Transports
             return tcs.Task;
         }
 
-        protected abstract void OnStart(Connection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
+        protected abstract void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
 
-        public Task<T> Send<T>(Connection connection, string data)
+        public Task<T> Send<T>(IConnection connection, string data)
         {
             string url = connection.Url + "send";
+            string customQueryString = GetCustomQueryString(connection);
 
-            url += String.Format(_sendQueryString, _transport, connection.ConnectionId);
+            url += String.Format(_sendQueryString, _transport, connection.ConnectionId, customQueryString);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }
             };
 
-            return HttpHelper.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
+            return _httpClient.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
             {
                 string raw = response.ReadAsString();
 
@@ -61,17 +88,18 @@ namespace SignalR.Client.Transports
             });
         }
 
-        protected string GetReceiveQueryString(Connection connection, string data)
+        protected string GetReceiveQueryString(IConnection connection, string data)
         {
             return String.Format(_receiveQueryString,
                                  _transport,
                                  Uri.EscapeDataString(connection.ConnectionId),
                                  Convert.ToString(connection.MessageId),
-                                 Uri.EscapeDataString(String.Join(",", connection.Groups.ToArray())),
-                                 data);
+                                 Uri.EscapeDataString(JsonConvert.SerializeObject(connection.Groups)),
+                                 data,
+                                 GetCustomQueryString(connection));
         }
 
-        protected virtual Action<HttpWebRequest> PrepareRequest(Connection connection)
+        protected virtual Action<IRequest> PrepareRequest(IConnection connection)
         {
             return request =>
             {
@@ -88,9 +116,9 @@ namespace SignalR.Client.Transports
             return (webException != null && webException.Status == WebExceptionStatus.RequestCanceled);
         }
 
-        public void Stop(Connection connection)
+        public void Stop(IConnection connection)
         {
-            var httpRequest = connection.GetValue<HttpWebRequest>(HttpRequestKey);
+            var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
             if (httpRequest != null)
             {
                 try
@@ -105,13 +133,21 @@ namespace SignalR.Client.Transports
             }
         }
 
-        protected virtual void OnBeforeAbort(Connection connection)
+        protected virtual void OnBeforeAbort(IConnection connection)
         {
 
         }
 
-        protected static void OnMessage(Connection connection, string response)
+        protected static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
+            timedOut = false;
+            disconnected = false;
+
+            if (String.IsNullOrEmpty(response))
+            {
+                return;
+            }
+
             if (connection.MessageId == null)
             {
                 connection.MessageId = 0;
@@ -126,8 +162,15 @@ namespace SignalR.Client.Transports
                     return;
                 }
 
-                var messages = result["Messages"] as JArray;
+                timedOut = result.Value<bool>("TimedOut");
+                disconnected = result.Value<bool>("Disconnected");
 
+                if (disconnected)
+                {
+                    return;
+                }
+
+                var messages = result["Messages"] as JArray;
                 if (messages != null)
                 {
                     foreach (var message in messages)
@@ -162,6 +205,13 @@ namespace SignalR.Client.Transports
                 Debug.WriteLine("Failed to response: {0}", ex);
                 connection.OnError(ex);
             }
+        }
+
+        private static string GetCustomQueryString(IConnection connection)
+        {
+            return String.IsNullOrEmpty(connection.QueryString)
+                            ? ""
+                            : "&" + connection.QueryString;
         }
     }
 }

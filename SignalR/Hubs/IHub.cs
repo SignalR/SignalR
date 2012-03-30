@@ -9,3 +9,4 @@ namespace SignalR.Hubs
         IGroupManager GroupManager { get; set; }
     }
 }
+

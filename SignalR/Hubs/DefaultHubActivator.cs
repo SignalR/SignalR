@@ -1,13 +1,19 @@
 ﻿using System;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
     public class DefaultHubActivator : IHubActivator
     {
-        public IHub Create(Type hubType)
+        private readonly IDependencyResolver _resolver;
+
+        public DefaultHubActivator(IDependencyResolver resolver)
         {
-            object hub = DependencyResolver.Resolve(hubType) ?? Activator.CreateInstance(hubType);
+            _resolver = resolver;
+        }
+
+        public IHub Create(HubDescriptor descriptor)
+        {
+            object hub = _resolver.Resolve(descriptor.Type) ?? Activator.CreateInstance(descriptor.Type);
             return hub as IHub;
         }
     }

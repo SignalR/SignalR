@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Web;
 using System.Threading.Tasks;
+using SignalR.Hosting;
 using SignalR.Infrastructure;
-using SignalR.Abstractions;
 
 namespace SignalR.Transports
 {
     public class ServerSentEventsTransport : ForeverTransport
     {
-        public ServerSentEventsTransport(HostContext context, IJsonSerializer jsonSerializer)
-            : base(context, jsonSerializer)
+        public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
+            : base(context, resolver)
         {
 
         }
@@ -18,7 +17,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return Context.Request.Headers["Last-Event-ID"] == null;
+                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -27,27 +26,17 @@ namespace SignalR.Transports
             var data = JsonSerializer.Stringify(response);
             OnSending(data);
 
-            if (Context.Response.IsClientConnected)
-            {
-                return Context.Response.WriteAsync("id: " + response.MessageId + "\n" + "data: " + data + "\n\n");
-            }
-            return TaskAsyncHelper.Empty;
+            return Context.Response.WriteAsync("id: " + response.MessageId + "\n" + "data: " + data + "\n\n");
         }
 
         protected override Task InitializeResponse(IReceivingConnection connection)
         {
-            long lastMessageId;
-            if (Int64.TryParse(Context.Request.Headers["Last-Event-ID"], out lastMessageId))
-            {
-                LastMessageId = lastMessageId;
-            }
-
             return base.InitializeResponse(connection)
-                .Then(() =>
-                {
-                    Context.Response.ContentType = "text/event-stream";
-                    return Context.Response.WriteAsync("data: initialized\n\n");
-                }).FastUnwrap();
+                       .Then(() =>
+                       {
+                           Context.Response.ContentType = "text/event-stream";
+                           return Context.Response.WriteAsync("data: initialized\n\n");
+                       });
         }
     }
 }
