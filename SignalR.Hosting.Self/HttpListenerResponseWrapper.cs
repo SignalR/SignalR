@@ -1,5 +1,5 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Self.Infrastructure;
 
@@ -8,12 +8,12 @@ namespace SignalR.Hosting.Self
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
-        private readonly object _lockObject = new object();
+        private readonly CancellationToken _cancellationToken;
 
-        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse)
+        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, CancellationToken cancellationToken)
         {
             _httpListenerResponse = httpListenerResponse;
-            IsClientConnected = true;
+            _cancellationToken = cancellationToken;
         }
 
         public string ContentType
@@ -30,53 +30,16 @@ namespace SignalR.Hosting.Self
 
         public bool IsClientConnected
         {
-            get;
-            private set;
+            get
+            {
+                return !_cancellationToken.IsCancellationRequested;
+            }
         }
 
         public Task WriteAsync(string data)
         {
-            return DoWrite(data).Then((response, lockObj) =>
-            {
-                lock (lockObj)
-                {
-                    try
-                    {
-                        response.OutputStream.Flush();
-                    }
-                    catch
-                    {
-                    }
-                }
-            }, 
-            _httpListenerResponse, 
-            _lockObject);
-        }
-
-        public bool Ping()
-        {
-            if (!IsClientConnected)
-            {
-                return false;
-            }
-
-            try
-            {
-                lock (_lockObject)
-                {
-                    _httpListenerResponse.OutputStream.WriteByte(0);
-                    _httpListenerResponse.OutputStream.Flush();
-                }
-
-                return true;
-            }
-            catch (Exception)
-            {
-                IsClientConnected = false;
-            }
-
-            return false;
-        }
+            return DoWrite(data).Then(response => response.OutputStream.Flush(), _httpListenerResponse);
+        } 
 
         public Task EndAsync(string data)
         {
@@ -90,21 +53,7 @@ namespace SignalR.Hosting.Self
                 return TaskAsyncHelper.Empty;
             }
 
-            lock (_lockObject)
-            {
-                return _httpListenerResponse.WriteAsync(data).ContinueWith(task =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        var ex = task.Exception.GetBaseException() as HttpListenerException;
-                        if (ex != null && ex.ErrorCode == 1229)
-                        {
-                            // Non existent connection or connection disposed
-                            IsClientConnected = false;
-                        }
-                    }
-                }).Catch();
-            }
+            return _httpListenerResponse.WriteAsync(data).Catch();
         }
     }
 }

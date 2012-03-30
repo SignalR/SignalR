@@ -77,7 +77,7 @@ namespace SignalR.Hosting.Self
                 using (var sw = new StreamReader(_httpListenerRequest.InputStream))
                 {
                     var body = sw.ReadToEnd();
-                    _form = HttpUtility.ParseDelimited(body);                    
+                    _form = HttpUtility.ParseDelimited(body);
                 }
             }
         }
