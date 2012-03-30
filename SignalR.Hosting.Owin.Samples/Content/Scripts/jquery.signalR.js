@@ -310,7 +310,7 @@
                 return url + "&" + connection.qs;
             }
 
-            return url + "&" + escape(connection.qs.toString());
+            return url + "&" + window.escape(connection.qs.toString());
         },
 
         getUrl: function (connection, transport, reconnecting) {
