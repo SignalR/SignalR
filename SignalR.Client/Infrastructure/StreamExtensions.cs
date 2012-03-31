@@ -17,5 +17,17 @@ namespace SignalR.Client.Infrastructure
                 return TaskAsyncHelper.FromError<int>(ex);
             }
         }
+
+        public static Task WriteAsync(this Stream stream, byte[] buffer)
+        {
+            try
+            {
+                return Task.Factory.FromAsync((cb, state) => stream.BeginWrite(buffer, 0, buffer.Length, cb, state), ar => stream.EndWrite(ar), null);
+            }
+            catch (Exception ex)
+            {
+                return TaskAsyncHelper.FromError(ex);
+            }
+        }
     }
 }

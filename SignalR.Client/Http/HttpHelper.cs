@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using SignalR.Client.Infrastructure;
 using SignalR.Infrastructure;
 
 namespace SignalR.Client.Http
@@ -147,18 +148,6 @@ namespace SignalR.Client.Http
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());
-        }
-
-        private static Task WriteAsync(this Stream stream, byte[] buffer)
-        {
-            try
-            {
-                return Task.Factory.FromAsync((cb, state) => stream.BeginWrite(buffer, 0, buffer.Length, cb, state), ar => stream.EndWrite(ar), null);
-            }
-            catch (Exception ex)
-            {
-                return TaskAsyncHelper.FromError(ex);
-            }
         }
     }
 }
