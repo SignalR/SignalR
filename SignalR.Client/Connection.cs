@@ -37,7 +37,7 @@ namespace SignalR.Client
 
         public Connection(string url, string queryString)
         {
-            if (url.Contains('?'))
+            if (url.Contains("?"))
             {
                 throw new ArgumentException("Url cannot contain QueryString directly. Pass QueryString values in using available overload.", "url");
             }
