@@ -43,10 +43,11 @@ namespace SignalR.Client.Transports
             }
 
             // Wait for a bit before reconnecting
-            Thread.Sleep(ReconnectDelay);
-
-            // Now attempt a reconnect
-            OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+            TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
+            {
+                // Now attempt a reconnect
+                OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+            });
         }
 
         private void OpenConnection(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
