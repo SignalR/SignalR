@@ -11,7 +11,7 @@ namespace SignalR.Client.Http
 {
     internal static class HttpHelper
     {
-        public static Task<HttpWebResponse> GetResponseAsync(this HttpWebRequest request)
+        public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace SignalR.Client.Http
             {
                 requestPreparer(request);
             }
-            return request.GetResponseAsync();
+            return request.GetHttpResponseAsync();
         }
 
         public static Task<HttpWebResponse> PostAsync(string url)
@@ -114,13 +114,13 @@ namespace SignalR.Client.Http
             if (buffer == null)
             {
                 // If there's nothing to be written to the request then just get the response
-                return request.GetResponseAsync();
+                return request.GetHttpResponseAsync();
             }
 
             // Write the post data to the request stream
             return request.GetRequestStreamAsync()
-                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Close()))
-                .Then(() => request.GetResponseAsync());
+                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
+                .Then(() => request.GetHttpResponseAsync());
         }
 
         private static byte[] ProcessPostData(IDictionary<string, string> postData)
