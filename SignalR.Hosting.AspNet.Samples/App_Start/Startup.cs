@@ -6,7 +6,7 @@ using SignalR.Hosting.AspNet.Routing;
 using SignalR.Samples.App_Start;
 using SignalR.Samples.Hubs.DemoHub;
 
-[assembly: WebActivator.PreApplicationStartMethod(typeof(Startup), "Start")]
+[assembly: WebActivator.PostApplicationStartMethod(typeof(Startup), "Start")]
 
 namespace SignalR.Samples.App_Start
 {
