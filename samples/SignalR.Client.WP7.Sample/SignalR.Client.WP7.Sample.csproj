@@ -109,7 +109,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SignalR.Client.WP71\SignalR.Client.WP71.csproj">
+    <ProjectReference Include="..\..\SignalR.Client.WP71\SignalR.Client.WP71.csproj">
       <Project>{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}</Project>
       <Name>SignalR.Client.WP71</Name>
     </ProjectReference>
