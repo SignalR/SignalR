@@ -151,7 +151,6 @@
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <Target Name="AfterBuild">
     <Exec Command="&quot;$(SolutionDir)tools\AjaxMin\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\jquery.signalR.js&quot; -out &quot;$(ProjectDir)Scripts\jquery.signalR.min.js&quot; -clobber" LogStandardErrorAsError="true" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Exec Command="mono &quot;$(SolutionDir)tools\AjaxMin\AjaxMin.exe&quot; &quot;Scripts\jquery.signalR.js&quot; -out &quot;Scripts\jquery.signalR.min.js&quot; -clobber" Condition=" '$(OS)' != 'Windows_NT' " />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
