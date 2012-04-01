@@ -2,18 +2,22 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)\..\</SolutionDir>
-        <NuGetToolsPath>$([System.IO.Path]::Combine($(SolutionDir), ".nuget"))</NuGetToolsPath>
-        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
 
         <!-- Windows specific commands -->
-        <NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
         <PackagesConfig Condition=" '$(OS)' == 'Windows_NT'">$([System.IO.Path]::Combine($(ProjectDir), "packages.config"))</PackagesConfig>
-
+        <NuGetToolsPath Condition=" '$(OS)' == 'Windows_NT'">$([System.IO.Path]::Combine($(SolutionDir)', ".nuget"))</NuGetToolsPath>
+        <PackagesDir Condition=" '$(OS)' == 'Windows_NT'">$([System.IO.Path]::Combine($(SolutionDir), "packages"))</PackagesDir>
+        
         <!-- We need to launch nuget.exe with the mono command if we're not on windows -->
-        <NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(NuGetExePath)</NuGetCommand>
         <PackagesConfig Condition=" '$(OS)' != 'Windows_NT' ">packages.config</PackagesConfig>
+        <NuGetToolsPath Condition=" '$(OS)' != 'Windows_NT'">$(SolutionDir).nuget</NuGetToolsPath>
+        <PackagesDir Condition=" '$(OS)' != 'Windows_NT'">$(SolutionDir)packages</PackagesDir>
+        
+        <!-- NuGet command -->
+        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+        <NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
+        <NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(NuGetExePath)</NuGetCommand>
 
-        <PackagesDir>$([System.IO.Path]::Combine($(SolutionDir), "packages"))</PackagesDir>
         <PackageOutputDir Condition="$(PackageOutputDir) == ''">$(TargetDir.Trim('\\'))</PackageOutputDir>
 
         <!-- Package sources used to restore packages. By default will used the registered sources under %APPDATA%\NuGet\NuGet.Config -->
