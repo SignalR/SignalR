@@ -36,7 +36,7 @@ namespace SignalR.Hubs
             var types = _locator.Value.GetAssemblies()
                 .Where(a => !a.GlobalAssemblyCache && !a.IsDynamic)
                 .SelectMany(GetTypesSafe)
-                .Where(type => typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract);
+                .Where(IsHubType);
 
             // Building a list of descriptors for each type
             var descriptors = types.Select(type => 
@@ -57,6 +57,18 @@ namespace SignalR.Hubs
                               StringComparer.OrdinalIgnoreCase);
 
             return cacheEntries;
+        }
+
+        private static bool IsHubType(Type type)
+        {
+            try
+            {
+                return typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static IEnumerable<string> CacheKeysFor(Type type)
