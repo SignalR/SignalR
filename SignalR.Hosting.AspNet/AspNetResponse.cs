@@ -12,13 +12,12 @@ namespace SignalR.Hosting.AspNet
 
         private const string IIS7WorkerRequestTypeName = "System.Web.Hosting.IIS7WorkerRequest";
         private static readonly Lazy<RemoveHeaderDel> IIS7RemoveHeader = new Lazy<RemoveHeaderDel>(GetRemoveHeaderDelegate);
-
         private readonly HttpContextBase _context;
+        private bool _bufferingDisabled;
 
         public AspNetResponse(HttpContextBase context)
         {
             _context = context;
-            DisableResponseBuffering();
         }
 
         public bool IsClientConnected
@@ -40,9 +39,19 @@ namespace SignalR.Hosting.AspNet
                 _context.Response.ContentType = value;
             }
         }
-
+     
         public Task WriteAsync(string data)
         {
+            return WriteAsync(data, disableBuffering: true);
+        }
+     
+        private Task WriteAsync(string data, bool disableBuffering)
+        {
+            if (disableBuffering)
+            {
+                DisableResponseBuffering();
+            }
+         
             return IsClientConnected
                 ? TaskAsyncHelper.FromMethod((response, value) => response.Write(value), _context.Response, data)
                 : TaskAsyncHelper.Empty;
@@ -50,11 +59,16 @@ namespace SignalR.Hosting.AspNet
 
         public Task EndAsync(string data)
         {
-            return WriteAsync(data);
+            return WriteAsync(data, disableBuffering: false);
         }
 
         private void DisableResponseBuffering()
         {
+            if (_bufferingDisabled)
+            {
+                return;
+            }
+         
             _context.Response.Buffer = false;
             _context.Response.BufferOutput = false;
 
@@ -65,6 +79,8 @@ namespace SignalR.Hosting.AspNet
 
             _context.Response.CacheControl = "no-cache";
             _context.Response.AddHeader("Connection", "keep-alive");
+         
+            _bufferingDisabled = true;
         }
 
         private void RemoveAcceptEncoding()
