@@ -7,6 +7,8 @@ namespace SignalR.Client.Transports
 {
     public class LongPollingTransport : HttpBasedTransport
     {
+        private static readonly TimeSpan _errorDelay = TimeSpan.FromSeconds(2);
+
         public TimeSpan ReconnectDelay { get; set; }
 
         public LongPollingTransport()
@@ -72,7 +74,6 @@ namespace SignalR.Client.Transports
                     else
                     {
                         bool requestAborted = false;
-                        bool continuePolling = true;
 
                         if (task.IsFaulted)
                         {
@@ -93,9 +94,6 @@ namespace SignalR.Client.Transports
 
                                 // Call the callback
                                 errorCallback(exception);
-
-                                // Don't continue polling if the error is on the first request
-                                continuePolling = false;
                             }
                             else
                             {
@@ -110,19 +108,26 @@ namespace SignalR.Client.Transports
                                     connection.OnError(exception);
 
                                     // If the connection is still active after raising the error event wait for 2 seconds
-                                    // before polling again so we aren't hammering the server
-                                    if (connection.IsActive)
+                                    // before polling again so we aren't hammering the server 
+                                    TaskAsyncHelper.Delay(_errorDelay).Then(() =>
                                     {
-                                        Thread.Sleep(2000);
-                                    }
+                                        PollingLoop(connection,
+                                            data,
+                                            initializeCallback: null,
+                                            errorCallback: null,
+                                            raiseReconnect: shouldRaiseReconnect);
+                                    });
                                 }
                             }
                         }
-
-                        // Only continue if the connection is still active and wasn't aborted
-                        if (continuePolling && !requestAborted && connection.IsActive)
+                        else
                         {
-                            PollingLoop(connection, data, null, null, shouldRaiseReconnect);
+                            // Continue polling if there was no error
+                            PollingLoop(connection,
+                                        data,
+                                        initializeCallback: null,
+                                        errorCallback: null,
+                                        raiseReconnect: shouldRaiseReconnect);
                         }
                     }
                 }

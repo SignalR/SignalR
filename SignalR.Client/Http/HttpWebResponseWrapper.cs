@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
 
 namespace SignalR.Client.Http
@@ -24,7 +25,7 @@ namespace SignalR.Client.Http
 
         public void Close()
         {
-            _response.Close();
+            ((IDisposable)_response).Dispose();
         }
     }
 }

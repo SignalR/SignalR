@@ -10,6 +10,7 @@
     <description>$description$</description>
     <dependencies>
         <dependency id="SignalR.Hosting.Common" version="0.5" />
+        <dependency id="Microsoft.Web.Infrastructure" version="1.0" />
     </dependencies>
   </metadata>
 </package>

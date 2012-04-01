@@ -32,7 +32,7 @@ namespace SignalR
                 {
                     var ex = innerTask.Exception;
                     // observe Exception
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
                 }, TaskContinuationOptions.OnlyOnFaulted);
@@ -399,6 +399,9 @@ namespace SignalR
 
         public static Task Delay(TimeSpan timeOut)
         {
+#if NETFX_CORE
+            return Task.Delay(timeOut);
+#else
             var tcs = new TaskCompletionSource<object>();
 
             var timer = new Timer(tcs.SetResult,
@@ -411,6 +414,7 @@ namespace SignalR
                 timer.Dispose();
             },
             TaskContinuationOptions.ExecuteSynchronously);
+#endif
         }
 
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
@@ -520,6 +524,7 @@ namespace SignalR
             return tcs.Task;
         }
 
+#if !NETFX_CORE
         public static TaskContinueWithMethod GetContinueWith(Type taskType)
         {
             var continueWith = (from m in taskType.GetMethods()
@@ -537,6 +542,7 @@ namespace SignalR
                 .FirstOrDefault();
             return continueWith;
         }
+#endif
 
         internal static Task FromError(Exception e)
         {

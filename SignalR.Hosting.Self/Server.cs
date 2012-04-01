@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Common;
@@ -27,7 +28,7 @@ namespace SignalR.Hosting.Self
         public Server(string url, IDependencyResolver resolver)
             : base(resolver)
         {
-            _url = url;
+            _url = url.Replace("*", @".*?");
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
         }
@@ -157,16 +158,17 @@ namespace SignalR.Hosting.Self
             }
         }
 
-        public string ResolvePath(Uri url)
+        private string ResolvePath(Uri url)
         {
             string baseUrl = url.GetComponents(UriComponents.Scheme | UriComponents.HostAndPort | UriComponents.Path, UriFormat.SafeUnescaped);
 
-            if (!baseUrl.StartsWith(_url, StringComparison.OrdinalIgnoreCase))
+            Match match = Regex.Match(baseUrl, "^" + _url);
+            if (!match.Success)
             {
                 throw new InvalidOperationException("Unable to resolve path");
             }
 
-            string path = baseUrl.Substring(_url.Length);
+            string path = baseUrl.Substring(match.Value.Length);
             if (!path.StartsWith("/"))
             {
                 return "/" + path;

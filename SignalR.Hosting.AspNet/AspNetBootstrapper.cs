@@ -22,6 +22,8 @@ namespace SignalR.Hosting.AspNet
                     if (!_initialized)
                     {
                         RouteTable.Routes.MapHubs("~/signalr");
+                     
+                        _detector.Initialize();
 
                         _initialized = true;
                     }

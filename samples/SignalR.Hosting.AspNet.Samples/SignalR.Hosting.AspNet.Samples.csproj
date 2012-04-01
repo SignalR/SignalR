@@ -13,8 +13,12 @@
     <AssemblyName>SignalR.Hosting.AspNet.Samples</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,18 +39,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Elmah">
-      <HintPath>..\packages\elmah.corelibrary.1.2\lib\Elmah.dll</HintPath>
+      <HintPath>..\..\packages\elmah.corelibrary.1.2\lib\Elmah.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework">
-      <HintPath>..\packages\EntityFramework.4.1.10331.0\lib\EntityFramework.dll</HintPath>
+      <HintPath>..\..\packages\EntityFramework.4.1.10331.0\lib\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizationLibrary">
-      <HintPath>..\packages\AntiXSS.4.0.1\lib\net35\HtmlSanitizationLibrary.dll</HintPath>
+      <HintPath>..\..\packages\AntiXSS.4.0.1\lib\net35\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -70,7 +74,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WebActivator, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\WebActivator.1.5\lib\net40\WebActivator.dll</HintPath>
+      <HintPath>..\..\packages\WebActivator.1.5\lib\net40\WebActivator.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -210,15 +214,15 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
+    <ProjectReference Include="..\..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
       <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
       <Name>SignalR.Hosting.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+    <ProjectReference Include="..\..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
       <Name>SignalR.Hosting.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SignalR\SignalR.csproj">
+    <ProjectReference Include="..\..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>SignalR</Name>
     </ProjectReference>
@@ -265,7 +269,7 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="..\SignalR\Scripts\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy SourceFiles="..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
 </Project>

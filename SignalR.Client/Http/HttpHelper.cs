@@ -5,14 +5,18 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using SignalR.Client.Infrastructure;
 using SignalR.Infrastructure;
 
 namespace SignalR.Client.Http
 {
     internal static class HttpHelper
     {
-        public static Task<HttpWebResponse> GetResponseAsync(this HttpWebRequest request)
+        public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
+#if NETFX_CORE
+            return request.GetResponseAsync().Then(response => (HttpWebResponse)response);
+#else
             try
             {
                 return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
@@ -21,10 +25,14 @@ namespace SignalR.Client.Http
             {
                 return TaskAsyncHelper.FromError<HttpWebResponse>(ex);
             }
+#endif
         }
 
-        public static Task<Stream> GetRequestStreamAsync(this HttpWebRequest request)
+        public static Task<Stream> GetHttpRequestStreamAsync(this HttpWebRequest request)
         {
+#if NETFX_CORE
+            return request.GetRequestStreamAsync();
+#else
             try
             {
                 return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
@@ -33,6 +41,7 @@ namespace SignalR.Client.Http
             {
                 return TaskAsyncHelper.FromError<Stream>(ex);
             }
+#endif
         }
 
         public static Task<HttpWebResponse> GetAsync(string url)
@@ -47,7 +56,7 @@ namespace SignalR.Client.Http
             {
                 requestPreparer(request);
             }
-            return request.GetResponseAsync();
+            return request.GetHttpResponseAsync();
         }
 
         public static Task<HttpWebResponse> PostAsync(string url)
@@ -106,7 +115,7 @@ namespace SignalR.Client.Http
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
             // Set the content length if the buffer is non-null
             request.ContentLength = buffer != null ? buffer.LongLength : 0;
 #endif
@@ -114,13 +123,13 @@ namespace SignalR.Client.Http
             if (buffer == null)
             {
                 // If there's nothing to be written to the request then just get the response
-                return request.GetResponseAsync();
+                return request.GetHttpResponseAsync();
             }
 
             // Write the post data to the request stream
-            return request.GetRequestStreamAsync()
-                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Close()))
-                .Then(() => request.GetResponseAsync());
+            return request.GetHttpRequestStreamAsync()
+                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
+                .Then(() => request.GetHttpResponseAsync());
         }
 
         private static byte[] ProcessPostData(IDictionary<string, string> postData)
@@ -147,18 +156,6 @@ namespace SignalR.Client.Http
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());
-        }
-
-        private static Task WriteAsync(this Stream stream, byte[] buffer)
-        {
-            try
-            {
-                return Task.Factory.FromAsync((cb, state) => stream.BeginWrite(buffer, 0, buffer.Length, cb, state), ar => stream.EndWrite(ar), null);
-            }
-            catch (Exception ex)
-            {
-                return TaskAsyncHelper.FromError(ex);
-            }
         }
     }
 }
