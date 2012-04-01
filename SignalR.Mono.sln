@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Samples", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Self.Samples", "samples\SignalR.Hosting.Self.Samples\SignalR.Hosting.Self.Samples.csproj", "{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{65DBC231-0173-4367-B830-8502F4A31711}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Tests", "SignalR.Tests\SignalR.Tests.csproj", "{FBA09237-84CC-4383-BD12-CDF58E4020E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,10 +93,19 @@ Global
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|x86.ActiveCfg = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|x86.Build.0 = Release|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Debug|x86.Build.0 = Debug|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Release|x86.ActiveCfg = Release|Any CPU
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5} = {FFE39DFF-2C8C-4B73-A6A2-659B6C80CBB4}
 		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9} = {FFE39DFF-2C8C-4B73-A6A2-659B6C80CBB4}
+		{FBA09237-84CC-4383-BD12-CDF58E4020E8} = {65DBC231-0173-4367-B830-8502F4A31711}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = SignalR\SignalR.csproj
