@@ -3,21 +3,21 @@ using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
 using SignalR.Hosting.AspNet.Routing;
-using SignalR.Samples.App_Start;
 using SignalR.Samples.Hubs.DemoHub;
+using SignalR.Samples.Raw;
+using SignalR.Samples.Streaming;
 
-[assembly: WebActivator.PostApplicationStartMethod(typeof(Startup), "Start")]
-
-namespace SignalR.Samples.App_Start
+namespace SignalR.Hosting.AspNet.Samples
 {
-    public class Startup
+    public class Global : System.Web.HttpApplication
     {
-        public static void Start()
+
+        protected void Application_Start(object sender, EventArgs e)
         {
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var connection = Global.Connections.GetConnection<Streaming.Streaming>();
-                var demoClients = Global.Connections.GetClients<DemoHub>();
+                var connection = SignalR.Global.Connections.GetConnection<Streaming>();
+                var demoClients = SignalR.Global.Connections.GetClients<DemoHub>();
 
                 while (true)
                 {
@@ -33,9 +33,9 @@ namespace SignalR.Samples.App_Start
                     Thread.Sleep(2000);
                 }
             });
-            
-            RouteTable.Routes.MapConnection<Raw.Raw>("raw", "raw/{*operation}");
-            RouteTable.Routes.MapConnection<Streaming.Streaming>("streaming", "streaming/{*operation}");
+
+            RouteTable.Routes.MapConnection<Raw>("raw", "raw/{*operation}");
+            RouteTable.Routes.MapConnection<Streaming>("streaming", "streaming/{*operation}");
         }
     }
 }
