@@ -15,11 +15,19 @@ namespace SignalR.Client.Http
         {
             get
             {
+#if NETFX_CORE
+                return _request.Headers[HttpRequestHeader.UserAgent];
+#else
                 return _request.UserAgent;
+#endif
             }
             set
             {
+#if NETFX_CORE
+                _request.Headers[HttpRequestHeader.UserAgent] = value;
+#else
                 _request.UserAgent = value;
+#endif
             }
         }
 

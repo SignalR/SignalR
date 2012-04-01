@@ -234,10 +234,18 @@ namespace SignalR.Client
         {
             if (_assemblyVersion == null)
             {
+#if NETFX_CORE
+                _assemblyVersion = new Version("0.5.0.0");
+#else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
+#endif
             }
 
+#if NETFX_CORE
+            return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, "Unknown OS");
+#else
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
+#endif
         }
 
         private static bool TryParseVersion(string versionString, out Version version)
