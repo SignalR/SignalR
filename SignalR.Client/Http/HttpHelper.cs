@@ -14,6 +14,9 @@ namespace SignalR.Client.Http
     {
         public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
+#if NETFX_CORE
+            return request.GetResponseAsync().Then(response => (HttpWebResponse)response);
+#else
             try
             {
                 return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
@@ -22,10 +25,14 @@ namespace SignalR.Client.Http
             {
                 return TaskAsyncHelper.FromError<HttpWebResponse>(ex);
             }
+#endif
         }
 
-        public static Task<Stream> GetRequestStreamAsync(this HttpWebRequest request)
+        public static Task<Stream> GetHttpRequestStreamAsync(this HttpWebRequest request)
         {
+#if NETFX_CORE
+            return request.GetRequestStreamAsync();
+#else
             try
             {
                 return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
@@ -34,6 +41,7 @@ namespace SignalR.Client.Http
             {
                 return TaskAsyncHelper.FromError<Stream>(ex);
             }
+#endif
         }
 
         public static Task<HttpWebResponse> GetAsync(string url)

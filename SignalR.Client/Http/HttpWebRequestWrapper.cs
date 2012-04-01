@@ -24,7 +24,8 @@ namespace SignalR.Client.Http
             set
             {
 #if NETFX_CORE
-                _request.Headers[HttpRequestHeader.UserAgent] = value;
+                // TODO: Figure out how to set the user agent in WINRT
+                // _request.Headers[HttpRequestHeader.UserAgent] = value;
 #else
                 _request.UserAgent = value;
 #endif
