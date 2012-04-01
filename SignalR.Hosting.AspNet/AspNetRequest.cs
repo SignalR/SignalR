@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Reflection;
 using System.Web;
-using Microsoft.Web.Infrastructure.DynamicValidationHelper;
 
 namespace SignalR.Hosting.AspNet
 {
@@ -11,6 +11,9 @@ namespace SignalR.Hosting.AspNet
         private readonly HttpCookieCollectionWrapper _cookies;
         private NameValueCollection _form;
         private NameValueCollection _queryString;
+
+        private delegate void GetUnvalidatedCollections(HttpContext context, out Func<NameValueCollection> formGetter, out Func<NameValueCollection> queryStringGetter);
+        private static Lazy<GetUnvalidatedCollections> _extractCollectionsMethod = new Lazy<GetUnvalidatedCollections>(ResolveCollectionsMethod);
 
         public AspNetRequest(HttpRequestBase request)
         {
@@ -64,33 +67,70 @@ namespace SignalR.Hosting.AspNet
         {
             // Since the ValidationUtility has a dependency on HttpContext (not HttpContextBase) we
             // need to check if we're out of HttpContext to preserve testability.
-            if (HttpContext.Current == null)
+            if (!ResolveUnvalidatedCollections())
             {
                 _form = _request.Form;
                 _queryString = _request.QueryString;
             }
-            else
+        }
+
+        private bool ResolveUnvalidatedCollections()
+        {
+            var context = HttpContext.Current;
+
+            if (context == null)
             {
-                try
+                return false;
+            }
+
+            try
+            {
+                if (_extractCollectionsMethod.Value == null)
                 {
-                    ResolveUnvalidatedCollections();
+                    return false;
                 }
-                catch
-                {
-                    // TODO: Cache this
-                    // Fallback to grabbing values from the request
-                    _form = _request.Form;
-                    _queryString = _request.QueryString;
-                }
+
+                Func<NameValueCollection> formGetter, queryStringGetter;
+                _extractCollectionsMethod.Value.Invoke(context, out formGetter, out queryStringGetter);
+
+                _form = formGetter.Invoke();
+                _queryString = queryStringGetter.Invoke();
+
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
-        private void ResolveUnvalidatedCollections()
+        private static GetUnvalidatedCollections ResolveCollectionsMethod()
         {
-            Func<NameValueCollection> formGetter, queryGetter;
-            ValidationUtility.GetUnvalidatedCollections(HttpContext.Current, out formGetter, out queryGetter);
-            _form = formGetter();
-            _queryString = queryGetter();
+            const string mwiAssemblyName = "Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            const string validationUtilityHelper = "Microsoft.Web.Infrastructure.DynamicValidationHelper.ValidationUtility";
+
+            Assembly mwiAssembly = Assembly.Load(mwiAssemblyName);
+
+            if (mwiAssembly == null)
+            {
+                return null;
+            }
+
+            Type validationUtilityHelperType = mwiAssembly.GetType(validationUtilityHelper);
+
+            if (validationUtilityHelperType == null)
+            {
+                return null;
+            }
+
+            MethodInfo getUnvalidatedCollectionsMethod = validationUtilityHelperType.GetMethod("GetUnvalidatedCollections", BindingFlags.Public | BindingFlags.Static);
+
+            if (getUnvalidatedCollectionsMethod == null)
+            {
+                return null;
+            }
+
+            return (GetUnvalidatedCollections)Delegate.CreateDelegate(typeof(GetUnvalidatedCollections), firstArgument: null, method: getUnvalidatedCollectionsMethod);
         }
     }
 }
