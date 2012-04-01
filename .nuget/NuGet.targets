@@ -2,13 +2,22 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Import Project="NuGet.settings.targets"/>
     
-    <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
+    <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites" Condition=" '$(OS)' == 'Windows_NT' ">
         <Exec Command="$(RestoreCommand)"
               LogStandardErrorAsError="true"
               Condition="Exists('$(PackagesConfig)')" />
     </Target>
 
-    <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
+    <Target Name="RestorePackages" Condition=" '$(OS)' != 'Windows_NT' ">
+        <Exec Command="$(RestoreCommand)"
+              Condition="Exists('$(PackagesConfig)')" />
+    </Target>
+
+    <Target Name="BuildPackage" Condition=" '$(OS)' != 'Windows_NT' ">
+        <Exec Command="$(BuildCommand)" />
+    </Target>
+
+    <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites" Condition=" '$(OS)' == 'Windows_NT' ">
         <Exec Command="$(BuildCommand)"
               LogStandardErrorAsError="true" />
     </Target>

@@ -4,7 +4,10 @@
         <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)\..\</SolutionDir>
         <NuGetToolsPath>$(SolutionDir).nuget</NuGetToolsPath>
         <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
-        <PackagesConfig>$(ProjectDir)packages.config</PackagesConfig>
+        <NuGetCommand Condition=" '$(OS)' == 'Windows_NT' ">"$(NuGetExePath)"</NuGetCommand>
+        <NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(NuGetExePath)</NuGetCommand>
+        <PackagesConfig Condition=" '$(OS)' == 'Windows_NT' ">$(ProjectDir)packages.config</PackagesConfig>
+        <PackagesConfig Condition=" '$(OS)' != 'Windows_NT' ">packages.config</PackagesConfig>
         <PackagesDir>$(SolutionDir)packages</PackagesDir>
         <PackageOutputDir Condition="$(PackageOutputDir) == ''">$(TargetDir.Trim('\\'))</PackageOutputDir>
 
@@ -18,8 +21,8 @@
         <BuildPackage Condition="$(BuildPackage) == ''">false</BuildPackage>
 
         <!-- Commands -->
-        <RestoreCommand>"$(NuGetExePath)" install "$(PackagesConfig)" -source $(PackageSources) -o "$(PackagesDir)"</RestoreCommand>
-        <BuildCommand>"$(NuGetExePath)" pack "$(ProjectPath)" -p Configuration=$(Configuration) -o "$(PackageOutputDir)" -symbols</BuildCommand>
+        <RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source $(PackageSources) -o "$(PackagesDir)"</RestoreCommand>
+        <BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -p Configuration=$(Configuration) -o "$(PackageOutputDir)" -symbols</BuildCommand>
 
         <!-- Make the build depend on restore packages -->
         <BuildDependsOn Condition="$(RestorePackages) == 'true'">
