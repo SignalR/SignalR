@@ -12,7 +12,7 @@ namespace SignalR.Hosting.Self.Samples
             Debug.Listeners.Add(new ConsoleTraceListener());
             Debug.AutoFlush = true;
 
-            string url = "http://localhost:8081/";
+            string url = "http://*:8081/";
             var server = new Server(url);
 
             // Map /echo to the persistent connection
