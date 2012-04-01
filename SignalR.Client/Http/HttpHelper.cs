@@ -127,7 +127,7 @@ namespace SignalR.Client.Http
             }
 
             // Write the post data to the request stream
-            return request.GetRequestStreamAsync()
+            return request.GetHttpRequestStreamAsync()
                 .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
                 .Then(() => request.GetHttpResponseAsync());
         }
