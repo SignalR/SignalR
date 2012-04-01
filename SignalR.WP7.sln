@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7", "Signa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP71", "SignalR.Client.WP71\SignalR.Client.WP71.csproj", "{1B2BD09D-ECFF-427F-BA58-C59A01EE6A2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7.Sample", "SignalR.Client.WP7.Sample\SignalR.Client.WP7.Sample.csproj", "{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WP7.Sample", "samples\SignalR.Client.WP7.Sample\SignalR.Client.WP7.Sample.csproj", "{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Samples", "SignalR.Client.Samples\SignalR.Client.Samples.csproj", "{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}"
 EndProject

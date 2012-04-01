@@ -15,6 +15,10 @@
     <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -210,15 +214,15 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
+    <ProjectReference Include="..\..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
       <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
       <Name>SignalR.Hosting.AspNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+    <ProjectReference Include="..\..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
       <Name>SignalR.Hosting.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SignalR\SignalR.csproj">
+    <ProjectReference Include="..\..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>SignalR</Name>
     </ProjectReference>
@@ -265,7 +269,7 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="..\SignalR\Scripts\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy SourceFiles="..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
 </Project>
