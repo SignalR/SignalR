@@ -69,28 +69,34 @@ namespace SignalR.Hosting.AspNet
 
         private void RemoveAcceptEncoding()
         {
-            var workerRequest = (HttpWorkerRequest)_context.GetService(typeof(HttpWorkerRequest));
-            if (IsIIS7WorkerRequest(workerRequest))
+            try
             {
-                // Optimized code path for IIS7, accessing Headers causes all headers to be read
-                IIS7RemoveHeader.Value.Invoke(workerRequest);
+                var workerRequest = (HttpWorkerRequest)_context.GetService(typeof(HttpWorkerRequest));
+                if (IsIIS7WorkerRequest(workerRequest))
+                {
+                    // Optimized code path for IIS7, accessing Headers causes all headers to be read
+                    IIS7RemoveHeader.Value.Invoke(workerRequest);
+                }
+                else
+                {
+                    try
+                    {
+                        _context.Request.Headers.Remove("Accept-Encoding");
+                    }
+                    catch (PlatformNotSupportedException)
+                    {
+                        // Happens on cassini
+                    }
+                }
             }
-            else
+            catch (NotImplementedException)
             {
-                try
-                {
-                    _context.Request.Headers.Remove("Accept-Encoding");
-                }
-                catch (PlatformNotSupportedException)
-                {
-                    // Happens on cassini
-                }
             }
         }
 
         private static bool IsIIS7WorkerRequest(HttpWorkerRequest workerRequest)
         {
-            return workerRequest.GetType().FullName == IIS7WorkerRequestTypeName;
+            return workerRequest != null && workerRequest.GetType().FullName == IIS7WorkerRequestTypeName;
         }
 
         private static RemoveHeaderDel GetRemoveHeaderDelegate()
