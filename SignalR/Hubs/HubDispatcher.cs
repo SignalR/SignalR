@@ -205,7 +205,7 @@ namespace SignalR.Hubs
 
         private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
         {
-            var exception = error != null ? error.GetBaseException() : null;
+            var exception = error.Unwrap();
             string stackTrace = (exception != null && _context.IsDebuggingEnabled()) ? exception.StackTrace : null;
             string errorMessage = exception != null ? exception.Message : null;
 
