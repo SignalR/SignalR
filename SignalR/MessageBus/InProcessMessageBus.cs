@@ -96,7 +96,7 @@ namespace SignalR
                 // Wait for new messages
                 _trace.Source.TraceInformation("MessageBus: New connection waiting for messages");
                 Debug.WriteLine("MessageBus: New connection waiting for messages");
-                return WaitForMessages(eventKeys, timeoutToken);
+                return WaitForMessages(eventKeys, timeoutToken, default(T));
             }
 
             try
@@ -110,7 +110,7 @@ namespace SignalR
                     // Connection already has the latest message, so start wating
                     _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id);
                     Debug.WriteLine("MessageBus: Connection waiting for new messages from id {0}", (object)id);
-                    return WaitForMessages(eventKeys, timeoutToken);
+                    return WaitForMessages(eventKeys, timeoutToken, uuid);
                 }
 
                 var messages = eventKeys.SelectMany(key => GetMessagesSince(key, uuid));
@@ -126,7 +126,7 @@ namespace SignalR
                 // Wait for new messages
                 _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id);
                 Debug.WriteLine("MessageBus: Connection waiting for new messages from id {0}", (object)id);
-                return WaitForMessages(eventKeys, timeoutToken);
+                return WaitForMessages(eventKeys, timeoutToken, uuid);
             }
             finally
             {
@@ -240,7 +240,7 @@ namespace SignalR
             return snapshot.GetRange(startIndex, snapshot.Count - startIndex);
         }
 
-        private Task<MessageResult> WaitForMessages(IEnumerable<string> eventKeys, CancellationToken timeoutToken)
+        private Task<MessageResult> WaitForMessages(IEnumerable<string> eventKeys, CancellationToken timeoutToken, T lastId)
         {
             var tcs = new TaskCompletionSource<MessageResult>();
             int callbackCalled = 0;
@@ -265,8 +265,18 @@ namespace SignalR
                 }
             });
 
-            callback = messages =>
+            callback = receivedMessages =>
             {
+                // REVIEW: Consider the case where lastId is a referene type and is null.
+                // What wouls this return? Does it matter?
+                var messages = receivedMessages.Where(m => m.Id.CompareTo(lastId) > 0)
+                                               .ToList();
+
+                if (messages.Count == 0)
+                {
+                    return;
+                }
+                
                 if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
                 {
                     tcs.TrySetResult(GetMessageResult(messages));
