@@ -92,7 +92,7 @@ namespace SignalR
 
             _trace.Source.TraceInformation("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
 
-            Debug.WriteLine("Connection: Connection {0} received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
+            Debug.WriteLine("Connection: Connection {0} received {1} messages, last id {2}. Payload {3}", _connectionId, result.Messages.Count, result.LastMessageId, _serializer.Stringify(result.Messages));
 
             return response;
         }
@@ -133,8 +133,8 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
-            Debug.WriteLine("Connection: Sending {0} {1}", key, value);
-            return _messageBus.Send(_connectionId, key, new WrappedValue(value, _serializer)).Catch();
+            var wrappedValue = new WrappedValue(value, _serializer);
+            return _messageBus.Send(_connectionId, key, wrappedValue).Catch();
         }
 
         private void PopulateResponseState(PersistentResponse response)
