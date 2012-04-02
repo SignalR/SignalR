@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 11 Express for Windows 8
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.WinRT.Client", "SignalR.WinRT.Client\SignalR.WinRT.Client.csproj", "{0D2276D4-E912-46A4-8A06-59C4B8A537FC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.WinRT", "SignalR.Client.WinRT\SignalR.Client.WinRT.csproj", "{0D2276D4-E912-46A4-8A06-59C4B8A537FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
