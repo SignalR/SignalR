@@ -54,7 +54,7 @@ namespace SignalR.Client.Samples
         }
         private static void RunDemoHub(HubConnection hubConnection)
         {
-            var demo = hubConnection.CreateProxy("SignalR.Samples.Hubs.DemoHub.DemoHub");
+            var demo = hubConnection.CreateProxy("demo");
 
             demo.On("invoke", i =>
             {
