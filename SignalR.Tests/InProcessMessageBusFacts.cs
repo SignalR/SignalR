@@ -1,6 +1,6 @@
-﻿using SignalR.Infrastructure;
+﻿using System.Threading;
+using SignalR.Infrastructure;
 using Xunit;
-using System.Threading;
 
 namespace SignalR.Tests
 {
@@ -25,41 +25,7 @@ namespace SignalR.Tests
                 var result = bus.GetMessages(new[] { "foo" }, "1", CancellationToken.None).Result;
                 Assert.Equal(2, result.Messages.Count);
             }
-
-            [Fact]
-            public void ReturnsNoMessagesWhenLastMessageIdIsEqualToLastMessage()
-            {
-                // id = 27
-                // 24, 25, 27
-                //         ^
-
-                var trace = new TraceManager();
-                var bus = new InProcessMessageBus(trace, false);
-                bus.Send("testclient", "foo", "1").Wait();
-                bus.Send("testclient", "foo", "2").Wait();
-
-                // REVIEW: Will block
-                //var result = bus.GetMessagesSince(new[] { "foo" }, 2).Result.ToList();
-                //Assert.Equal(0, result.Count);
-            }
-
-            [Fact]
-            public void ReturnsNoMessagesWhenLastMessageIdIsOnlyMessage()
-            {
-                // id = 27
-                // 27
-                // ^
-
-                var trace = new TraceManager();
-                var bus = new InProcessMessageBus(trace, false);
-                bus.Send("testclient", "bar", "1").Wait();
-                bus.Send("testclient", "foo", "2").Wait();
-
-                // REVIEW: Will block
-                //var result = bus.GetMessagesSince(new[] { "foo" }, 2).Result.ToList();
-                // Assert.Equal(0, result.Count);
-            }
-
+            
             [Fact]
             public void ReturnsMessagesGreaterThanLastMessageIdWhenLastMessageIdNotInStore()
             {
@@ -79,38 +45,6 @@ namespace SignalR.Tests
                 var result = bus.GetMessages(new[] { "foo" }, "3", CancellationToken.None).Result;
                 Assert.Equal(2, result.Messages.Count);
             }
-
-            [Fact]
-            public void ReturnsNoMessagesWhenLastMessageIdIsGreaterThanAllMessages()
-            {
-                // id = 27
-                // 14, 18, 25, 26
-                //             ^
-
-                var trace = new TraceManager();
-                var bus = new InProcessMessageBus(trace, false);
-                bus.Send("testclient", "foo", "1").Wait();
-                bus.Send("testclient", "foo", "2").Wait();
-                bus.Send("testclient", "bar", "3").Wait();
-                bus.Send("testclient", "bar", "4").Wait();
-
-                // REVIEW: Will block
-                // var result = bus.GetMessagesSince(new[] { "foo" }, 3).Result.ToList();
-                // Assert.Equal(0, result.Count);
-            }
-
-            [Fact]
-            public void ReturnsNoMessagesWhenThereAreNoMessages()
-            {
-                var trace = new TraceManager();
-                var bus = new InProcessMessageBus(trace, false);
-
-                // REVIEW: Will block
-                // var result = bus.GetMessagesSince(new[] { "foo" }, 1).Result.ToList();
-                // Assert.Equal(0, result.Count);
-            }
         }
-
-
     }
 }
