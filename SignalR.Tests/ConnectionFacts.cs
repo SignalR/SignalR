@@ -23,7 +23,7 @@ namespace SignalR.Client.Tests
                 }));
 
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
-                var ex = aggEx.GetBaseException();
+                var ex = aggEx.Unwrap();
                 Assert.IsType(typeof(InvalidOperationException), ex);
                 Assert.Equal("Incompatible protocol version.", ex.Message);
             }

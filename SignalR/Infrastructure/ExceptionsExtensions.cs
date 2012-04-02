@@ -11,14 +11,15 @@ namespace SignalR
                 return null;
             }
 
-            var unwrapped = ex.GetBaseException();
-            var aggEx = unwrapped as AggregateException;
-            if (aggEx != null)
+            var next = ex.GetBaseException();
+            while (next.InnerException != null)
             {
                 // On mono GetBaseException() doesn't seem to do anything
-                return aggEx.InnerException;
+                // so just walk the inner exception chain.
+                next = next.InnerException;
             }
-            return unwrapped;
+
+            return next;
         }
     }
 }

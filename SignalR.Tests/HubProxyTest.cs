@@ -125,7 +125,7 @@ namespace SignalR.Tests
             }
             catch (AggregateException ex)
             {
-                Assert.Equal(ex.GetBaseException().Message, message);
+                Assert.Equal(ex.Unwrap().Message, message);
             }
         }
     }
