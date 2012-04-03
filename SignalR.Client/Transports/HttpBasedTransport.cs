@@ -163,7 +163,7 @@ namespace SignalR.Client.Transports
                 }
 
                 timedOut = result.Value<bool>("TimedOut");
-                disconnected = result.Value<bool>("Disconnected");
+                disconnected = result.Value<bool>("Disconnect");
 
                 if (disconnected)
                 {
