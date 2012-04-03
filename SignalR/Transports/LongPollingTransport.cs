@@ -72,11 +72,17 @@ namespace SignalR.Transports
             }
         }
 
+<<<<<<< HEAD
         private bool IsReconnectRequest
         {
             get
             {
                 return Context.Request.Url.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
+=======
+        private bool IsJsonp {
+            get {
+                return !string.IsNullOrEmpty(JsonpCallback);
+>>>>>>> adding long polling support
             }
         }
 
@@ -94,6 +100,10 @@ namespace SignalR.Transports
             {
                 return Context.Request.QueryString["messageId"];
             }
+        }
+
+        private string JsonpCallback {
+            get { return Context.Request.QueryString["callback"]; }
         }
 
         public Func<string, Task> Received { get; set; }
@@ -146,18 +156,21 @@ namespace SignalR.Transports
         public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
+            if (IsJsonp) {
+                payload = string.Format("{0}({1});", JsonpCallback, payload);
+            }
             if (Sending != null)
             {
                 Sending(payload);
             }
 
-            Context.Response.ContentType = Json.MimeType;
+            Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
             return Context.Response.EndAsync(payload);
         }
 
         private Task ProcessSendRequest()
         {
-            string data = Context.Request.Form["data"];
+            string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
 
             if (Receiving != null)
             {

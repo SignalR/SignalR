@@ -202,15 +202,25 @@ namespace SignalR
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
+            var payload = new
+             {
+                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
+                 ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request, context.User),
+                 TryWebSockets = context.SupportsWebSockets(),
+                 WebSocketServerUrl = context.WebSocketServerUrl(),
+                 ProtocolVersion = "1.0"
+             };
+
+            if (!string.IsNullOrEmpty(context.Request.QueryString["callback"])) {
+                return ProcessJsonpNegotiationRequest(context, payload);
+            }
+
             context.Response.ContentType = Json.MimeType;
-            return context.Response.EndAsync(_jsonSerializer.Stringify(new
-            {
-                Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request, context.User),
-                TryWebSockets = context.SupportsWebSockets(),
-                WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.0"
-            }));
+            return context.Response.EndAsync(_jsonSerializer.Stringify(payload));
+        }
+        private Task ProcessJsonpNegotiationRequest(HostContext context, object payload) {
+            context.Response.ContentType = Json.JsonpMimeType;
+            return context.Response.EndAsync(string.Format("{0}({1});",context.Request.QueryString["callback"], _jsonSerializer.Stringify(payload)));
         }
 
         private string CreateQualifiedName(string groupName)
