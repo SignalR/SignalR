@@ -124,7 +124,28 @@ namespace SignalR.Client
             })
             .ContinueWithNotComplete(negotiateTcs);
 
-            return negotiateTcs.Task;
+            var tcs = new TaskCompletionSource<object>();
+            negotiateTcs.Task.ContinueWith(task =>
+            {
+                // If there's any errors starting then Stop the connection                
+                if (task.IsFaulted)
+                {
+                    tcs.SetException(task.Exception);
+                    Stop();
+                }
+                else if (task.IsCanceled)
+                {
+                    tcs.SetCanceled();
+                    Stop();
+                }
+                else
+                {
+                    tcs.SetResult(null);
+                }
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
+
+            return tcs.Task;
         }
 
         private Task StartTransport(string data)
