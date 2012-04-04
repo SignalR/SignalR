@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hosting;
 using SignalR.Infrastructure;
+using System.Text;
 
 namespace SignalR.Transports
 {
@@ -72,17 +73,11 @@ namespace SignalR.Transports
             }
         }
 
-<<<<<<< HEAD
         private bool IsReconnectRequest
         {
             get
             {
                 return Context.Request.Url.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
-=======
-        private bool IsJsonp {
-            get {
-                return !string.IsNullOrEmpty(JsonpCallback);
->>>>>>> adding long polling support
             }
         }
 
@@ -91,6 +86,14 @@ namespace SignalR.Transports
             get
             {
                 return Context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        private bool IsJsonp
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(JsonpCallback);
             }
         }
 
@@ -156,8 +159,10 @@ namespace SignalR.Transports
         public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
-            if (IsJsonp) {
-                payload = string.Format("{0}({1});", JsonpCallback, payload);
+            if (IsJsonp)
+            {
+                var sb = new StringBuilder();
+                payload = sb.AppendFormat("{0}(", JsonpCallback).Append(payload).Append(");").ToString();
             }
             if (Sending != null)
             {
