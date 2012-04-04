@@ -72,6 +72,14 @@ namespace SignalR.Transports
             }
         }
 
+        private bool IsReconnectRequest
+        {
+            get
+            {
+                return Context.Request.Url.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         private bool IsSendRequest
         {
             get
@@ -114,7 +122,7 @@ namespace SignalR.Transports
                 }
                 else if (MessageId != null)
                 {
-                    if (Reconnected != null)
+                    if (IsReconnectRequest && Reconnected != null)
                     {
                         // Return a task that completes when the reconnected event task & the receive loop task are both finished
                         return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
@@ -166,6 +174,8 @@ namespace SignalR.Transports
 
         private Task ProcessConnectRequest(IReceivingConnection connection)
         {
+            HeartBeat.AddConnection(this);
+
             if (Connected != null)
             {
                 // Return a task that completes when the connected event task & the receive loop task are both finished
@@ -177,7 +187,6 @@ namespace SignalR.Transports
 
         private Task ProcessReceiveRequest(IReceivingConnection connection, Action postReceive = null)
         {
-            HeartBeat.AddConnection(this);
             HeartBeat.MarkConnection(this);
 
             // ReceiveAsync() will async wait until a message arrives then return

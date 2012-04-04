@@ -49,8 +49,22 @@ namespace SignalR.Transports
 
         public void MarkConnection(ITrackingConnection connection)
         {
+            // Update the connection
+            _connections.Remove(connection);
+            _connections.Add(connection);
+
+            // See if there's an old metadata value
+            ConnectionMetadata oldMetadata;
+            _connectionMetadata.TryGetValue(connection, out oldMetadata);
+            
             // Mark this time this connection was used
             var metadata = _connectionMetadata.GetOrAdd(connection, _ => new ConnectionMetadata());
+            if (oldMetadata != null)
+            {
+                // Use the same initial time (if it exists)
+                metadata.Initial = oldMetadata.Initial;
+            }
+
             metadata.LastMarked = DateTime.UtcNow;
         }
 
@@ -105,6 +119,8 @@ namespace SignalR.Transports
                         {
                             // If we're past the expiration time then just timeout the connection                            
                             connection.Timeout();
+
+                            RemoveConnection(connection);
                         }
                         else
                         {

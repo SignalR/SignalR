@@ -313,7 +313,7 @@
             return url + "&" + window.escape(connection.qs.toString());
         },
 
-        getUrl: function (connection, transport, reconnecting) {
+        getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var url = connection.url,
                 qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
@@ -325,6 +325,10 @@
             if (!reconnecting) {
                 url = url + "/connect";
             } else {
+                if (appendReconnectUrl) {
+                    url = url + "/reconnect";
+                }
+
                 if (connection.messageId) {
                     qs += "&messageId=" + connection.messageId;
                 }
@@ -772,7 +776,7 @@
 
                         var messageId = instance.messageId,
                             connect = (messageId === null),
-                            url = transportLogic.getUrl(instance, that.name, !connect),
+                            url = transportLogic.getUrl(instance, that.name, !connect, raiseReconnect),
                             reconnectTimeOut = null,
                             reconnectFired = false;
 
