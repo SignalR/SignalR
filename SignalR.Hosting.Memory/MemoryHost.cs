@@ -66,6 +66,8 @@ namespace SignalR.Hosting.Memory
                     {
                         tcs.TrySetResult(response);
                     }
+
+                    response.Close();
                 });
 
                 return tcs.Task;

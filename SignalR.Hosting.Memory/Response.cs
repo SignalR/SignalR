@@ -151,7 +151,7 @@ namespace SignalR.Hosting.Memory
 
                     // Get the max len
                     int read = Math.Min(count, (int)_ms.Length - _readPosition);
-                    
+
                     // Copy it to the output buffer
                     Array.Copy(followingBuffer, _readPosition, buffer, offset, read);
 
@@ -189,6 +189,7 @@ namespace SignalR.Hosting.Memory
 
                 if (Ended)
                 {
+                    ar.SetAsCompleted(0, true);
                     return ar;
                 }
 
