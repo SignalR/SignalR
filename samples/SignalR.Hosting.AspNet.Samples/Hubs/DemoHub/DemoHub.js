@@ -27,7 +27,7 @@
         o.doIt();
     };
 
-    $.connection.hub.start({ transport: activeTransport }, function () {
+    $.connection.hub.start(options, function () {
         demo.doSomethingAndCallError();
 
         demo.getValue(function (value) {

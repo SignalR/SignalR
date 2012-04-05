@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using SignalR.Samples.Raw;
 
 namespace SignalR.Hosting.Self.Samples
 {
@@ -15,8 +15,10 @@ namespace SignalR.Hosting.Self.Samples
             string url = "http://*:8081/";
             var server = new Server(url);
 
-            // Map /echo to the persistent connection
-            server.MapConnection<MyConnection>("/echo");
+            // Map connections
+            server.MapConnection<MyConnection>("/echo")
+                  .MapConnection<Raw>("/raw")
+                  .MapHubs();
 
             server.Start();
 

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 using SignalR.Hosting;
 
 namespace SignalR.Samples.Raw
@@ -35,8 +34,7 @@ namespace SignalR.Samples.Raw
 
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
-            var serializer = new JavaScriptSerializer();
-            var message = serializer.Deserialize<Message>(data);
+            var message = JsonConvert.DeserializeObject<Message>(data);
 
             switch (message.Type)
             {
