@@ -80,6 +80,14 @@ namespace SignalR.Transports
             }
         }
 
+        private bool IsJsonp
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(JsonpCallback);
+            }
+        }
+
         private bool IsSendRequest
         {
             get
@@ -93,6 +101,14 @@ namespace SignalR.Transports
             get
             {
                 return Context.Request.QueryString["messageId"];
+            }
+        }
+
+        private string JsonpCallback
+        {
+            get
+            {
+                return Context.Request.QueryString["callback"];
             }
         }
 
@@ -146,18 +162,22 @@ namespace SignalR.Transports
         public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
+            if (IsJsonp)
+            {
+                payload = Json.CreateJsonpCallback(JsonpCallback, payload);
+            }
             if (Sending != null)
             {
                 Sending(payload);
             }
 
-            Context.Response.ContentType = Json.MimeType;
+            Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
             return Context.Response.EndAsync(payload);
         }
 
         private Task ProcessSendRequest()
         {
-            string data = Context.Request.Form["data"];
+            string data = IsJsonp ? Context.Request.QueryString["data"] : Context.Request.Form["data"];
 
             if (Receiving != null)
             {

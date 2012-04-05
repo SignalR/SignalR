@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 namespace SignalR
 {
@@ -17,6 +18,18 @@ namespace SignalR
         public static string MimeType
         {
             get { return "application/json"; }
+        }
+
+        public static string JsonpMimeType
+        {
+            get { return "text/javascript"; }
+        }
+
+        public static string CreateJsonpCallback(string callback, string payload)
+        {
+            var sb = new StringBuilder();
+            sb.AppendFormat("{0}(", callback).Append(payload).Append(");");
+            return sb.ToString();
         }
     }
 }
