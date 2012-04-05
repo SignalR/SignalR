@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
@@ -43,6 +44,8 @@ namespace SignalR.Client.Transports
             }
 
             url += GetReceiveQueryString(connection, data);
+
+            Debug.WriteLine("LP: {0}", (object)url);
 
             _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {

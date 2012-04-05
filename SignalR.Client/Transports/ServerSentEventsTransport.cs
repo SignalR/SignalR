@@ -59,6 +59,8 @@ namespace SignalR.Client.Transports
 
             Action<IRequest> prepareRequest = PrepareRequest(connection);
 
+            Debug.WriteLine("SSE: GET {0}", (object)url);
+
             _httpClient.GetAsync(url, request =>
             {
                 prepareRequest(request);
