@@ -76,6 +76,54 @@ namespace SignalR.Tests
                 Assert.Equal("OnReceivedAsync2", results[3]);
             }
         }
+
+        public class OnReconnectedAsync
+        {
+            public void ReconnectFiresAfterTimeOutSSE()
+            {
+                var host = new MemoryHost();
+                var conn = new MyReconnect();
+                host.Configuration.ReconnectionTimeout = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                host.MapConnection<MyReconnect>("/endpoint");
+
+                var connection = new Client.Connection("http://foo/endpoint");                
+                connection.Start(host).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+
+                Assert.Equal(2, conn.Reconnects);
+            }
+
+            public void ReconnectFiresAfterTimeOutLongPolling()
+            {
+                var host = new MemoryHost();
+                var conn = new MyReconnect();
+                host.Configuration.ReconnectionTimeout = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                host.MapConnection<MyReconnect>("/endpoint");
+
+                var connection = new Client.Connection("http://foo/endpoint");
+                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+
+                Assert.Equal(2, conn.Reconnects);
+            }
+        }
+    }
+
+    public class MyReconnect : PersistentConnection
+    {
+        public int Reconnects { get; set; }
+
+        protected override Task OnReconnectedAsync(Hosting.IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            Reconnects++;
+            return base.OnReconnectedAsync(request, groups, connectionId);
+        }
     }
 
     public class MySendingConnection : PersistentConnection
