@@ -18,5 +18,9 @@ namespace SignalR
         {
             get { return "application/json"; }
         }
+
+        public static string JsonpMimeType {
+            get { return "text/javascript"; }
+        }
     }
 }

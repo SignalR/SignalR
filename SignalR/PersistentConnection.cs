@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using SignalR.Hosting;
 using SignalR.Infrastructure;
 using SignalR.Transports;
+using System.Text;
 
 namespace SignalR
 {
@@ -202,15 +203,32 @@ namespace SignalR
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
+            var payload = new
+             {
+                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
+                 ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request, context.User),
+                 TryWebSockets = context.SupportsWebSockets(),
+                 WebSocketServerUrl = context.WebSocketServerUrl(),
+                 ProtocolVersion = "1.0"
+             };
+
+            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"])) {
+                return ProcessJsonpNegotiationRequest(context, payload);
+            }
+
             context.Response.ContentType = Json.MimeType;
-            return context.Response.EndAsync(_jsonSerializer.Stringify(new
-            {
-                Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request, context.User),
-                TryWebSockets = context.SupportsWebSockets(),
-                WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.0"
-            }));
+            return context.Response.EndAsync(_jsonSerializer.Stringify(payload));
+        }
+
+        private Task ProcessJsonpNegotiationRequest(HostContext context, object payload)
+        {
+            context.Response.ContentType = Json.JsonpMimeType;
+
+            var sb = new StringBuilder();
+            sb.AppendFormat("{0}(").Append(context.Request.QueryString["callback"])
+                .Append(_jsonSerializer.Stringify(payload)).Append(");");
+
+            return context.Response.EndAsync(sb.ToString());
         }
 
         private string CreateQualifiedName(string groupName)
