@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hosting;
 using SignalR.Infrastructure;
-using System.Text;
 
 namespace SignalR.Transports
 {
@@ -165,8 +164,7 @@ namespace SignalR.Transports
             var payload = _jsonSerializer.Stringify(value);
             if (IsJsonp)
             {
-                var sb = new StringBuilder();
-                payload = sb.AppendFormat("{0}(", JsonpCallback).Append(payload).Append(");").ToString();
+                payload = Json.CreateJsonpCallback(JsonpCallback, payload);
             }
             if (Sending != null)
             {

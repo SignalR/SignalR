@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using SignalR.Hosting;
 using SignalR.Infrastructure;
 using SignalR.Transports;
-using System.Text;
 
 namespace SignalR
 {
@@ -224,12 +223,9 @@ namespace SignalR
         private Task ProcessJsonpNegotiationRequest(HostContext context, object payload)
         {
             context.Response.ContentType = Json.JsonpMimeType;
+            var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], _jsonSerializer.Stringify(payload));
 
-            var sb = new StringBuilder();
-            sb.AppendFormat("{0}(", context.Request.QueryString["callback"])
-                .Append(_jsonSerializer.Stringify(payload)).Append(");");
-
-            return context.Response.EndAsync(sb.ToString());
+            return context.Response.EndAsync(data);
         }
 
         private string CreateQualifiedName(string groupName)
