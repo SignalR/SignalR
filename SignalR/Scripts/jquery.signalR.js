@@ -1,4 +1,5 @@
-﻿/// <reference path="jquery-1.6.2.js" />
+﻿
+/// <reference path="jquery-1.6.2.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
     "use strict";
@@ -65,6 +66,7 @@
                 this.logging = logging;
             }
         },
+        ajaxDataType: "json",
 
         logging: false,
 
@@ -76,7 +78,8 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
-                    transport: "auto"
+                    transport: "auto",
+                    xdomain: false
                 },
                 initialize,
                 deferred = $.Deferred();
@@ -96,6 +99,7 @@
                     callback = config.callback;
                 }
             }
+            connection.ajaxDataType = config.xdomain ? "jsonp" : "json";
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -130,7 +134,7 @@
                     global: false,
                     type: "POST",
                     data: {},
-                    dataType: "json",
+                    dataType: connection.ajaxDataType,
                     error: function (error) {
                         $(connection).trigger(events.onError, [error]);
                         deferred.reject("SignalR: Error during negotiation request: " + error);
@@ -342,12 +346,13 @@
         },
 
         ajaxSend: function (connection, data) {
+
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
             url = this.addQs(url, connection);
             $.ajax(url, {
                 global: false,
                 type: "POST",
-                dataType: "json",
+                dataType: connection.ajaxDataType,
                 data: {
                     data: data
                 },
@@ -785,7 +790,7 @@
 
                             type: "GET",
 
-                            dataType: "json",
+                            dataType: connection.ajaxDataType,
 
                             success: function (data) {
                                 var delay = 0,
