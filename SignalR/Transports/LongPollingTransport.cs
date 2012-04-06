@@ -162,10 +162,12 @@ namespace SignalR.Transports
         public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
+            
             if (IsJsonp)
             {
                 payload = Json.CreateJsonpCallback(JsonpCallback, payload);
             }
+
             if (Sending != null)
             {
                 Sending(payload);
