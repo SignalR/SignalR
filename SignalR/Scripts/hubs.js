@@ -1,4 +1,14 @@
-﻿/// <reference path="jquery-1.6.2.js" />
+﻿/*!
+* SignalR JavaScript Library v0.5
+* http://signalr.net/
+*
+* Copyright David Fowler and Damian Edwards 2012
+* Licensed under the MIT.
+* https://github.com/SignalR/SignalR/blob/master/LICENSE.md
+*
+*/
+
+/// <reference path="jquery-1.6.2.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
     "use strict";
