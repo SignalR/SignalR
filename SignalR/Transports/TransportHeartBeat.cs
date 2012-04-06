@@ -36,7 +36,11 @@ namespace SignalR.Transports
             // Remove the metadata for new connections
             ConnectionMetadata old;
             _connectionMetadata.TryRemove(connection, out old);
-            _connectionMetadata.TryAdd(connection, new ConnectionMetadata());
+            var metadata = new ConnectionMetadata();
+            if (_connectionMetadata.TryAdd(connection, metadata))
+            {
+                metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
+            }
         }
 
         private void RemoveConnection(ITrackingConnection connection)
@@ -112,8 +116,11 @@ namespace SignalR.Transports
                     }
                     else
                     {
+                        TimeSpan? keepAlive = _configurationManager.KeepAlive;
+
                         TimeSpan elapsed;
-                        if (!connection.IsTimedOut && 
+                        if (keepAlive == null &&
+                            !connection.IsTimedOut &&
                             TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
                             elapsed >= _configurationManager.ReconnectionTimeout)
                         {
@@ -127,6 +134,16 @@ namespace SignalR.Transports
                             // The connection is still alive so we need to keep it alive with a server side "ping".
                             // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
                             // of us handling timeout's or disconencts gracefully
+
+                            ConnectionMetadata metadata;
+                            if (keepAlive != null &&
+                                _connectionMetadata.TryGetValue(connection, out metadata) &&
+                                DateTime.UtcNow >= metadata.KeepAliveTime)
+                            {
+                                connection.KeepAlive();
+                                metadata.UpdateKeepAlive(keepAlive);
+                            }
+                            
                             MarkConnection(connection);
                         }
                     }
@@ -179,6 +196,17 @@ namespace SignalR.Transports
 
             public DateTime LastMarked { get; set; }
             public DateTime Initial { get; set; }
+            public DateTime KeepAliveTime { get; set; }
+
+            public void UpdateKeepAlive(TimeSpan? keepAliveInterval)
+            {
+                if (keepAliveInterval == null)
+                {
+                    return;
+                }
+
+                KeepAliveTime = DateTime.UtcNow + keepAliveInterval.Value;
+            }
         }
     }
 }

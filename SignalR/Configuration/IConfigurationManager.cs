@@ -7,5 +7,6 @@ namespace SignalR
         TimeSpan ReconnectionTimeout { get; set; }
         TimeSpan DisconnectTimeout { get; set; }
         TimeSpan HeartBeatInterval { get; set; }
+        TimeSpan? KeepAlive { get; set; }
     }
 }

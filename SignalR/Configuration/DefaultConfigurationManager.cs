@@ -23,6 +23,12 @@ namespace SignalR
             set;
         }
 
+        public TimeSpan? KeepAlive
+        {
+            get;
+            set;
+        }
+
         public TimeSpan HeartBeatInterval
         {
             get;

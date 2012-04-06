@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using SignalR.Hosting;
-using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -36,6 +36,13 @@ namespace SignalR.Transports
             }
         }
 
+        public override void KeepAlive()
+        {
+            Debug.WriteLine("Sending empty keep alive packet to client");
+            var script = "<script>r(c, {});</script>\r\n";
+            Context.Response.WriteAsync(script).Catch();
+        }
+
         public override Task Send(PersistentResponse response)
         {
             var data = JsonSerializer.Stringify(response);
@@ -47,7 +54,7 @@ namespace SignalR.Transports
                 script += "<div>" + data + "</div>\r\n";
             }
 
-            return Context.Response.WriteAsync(script);            
+            return Context.Response.WriteAsync(script);
         }
 
         protected override Task InitializeResponse(IReceivingConnection connection)

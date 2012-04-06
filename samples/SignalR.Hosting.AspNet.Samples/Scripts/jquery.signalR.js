@@ -409,8 +409,14 @@
                         }
                     });
                 }
-                connection.messageId = data.MessageId;
-                connection.groups = data.TransportData.Groups;
+
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
+
+                if (data.TransportData) {
+                    connection.groups = data.TransportData.Groups;
+                }
             }
         },
 
@@ -818,7 +824,9 @@
                                 }
 
                                 transportLogic.processMessages(instance, data);
-                                if (data && $.type(data.TransportData.LongPollDelay) === "number") {
+                                if (data &&
+                                    data.TransportData &&
+                                    $.type(data.TransportData.LongPollDelay) === "number") {
                                     delay = data.TransportData.LongPollDelay;
                                 }
 

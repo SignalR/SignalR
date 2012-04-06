@@ -11,5 +11,6 @@ namespace SignalR.Transports
         TimeSpan DisconnectThreshold { get; }
         Task Disconnect();
         void Timeout();
+        void KeepAlive();
     }
 }
