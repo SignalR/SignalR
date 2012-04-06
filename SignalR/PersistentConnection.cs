@@ -70,7 +70,7 @@ namespace SignalR
 
             if (_transport == null)
             {
-                throw new InvalidOperationException("Unknown transport.");
+                throw new InvalidOperationException("Protocol error: Unknown transport.");
             }
 
             string connectionId = _transport.ConnectionId;
