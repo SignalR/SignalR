@@ -63,7 +63,7 @@ namespace SignalR.Hubs
         {
             try
             {
-                return typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract;
+                return typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract && type.IsPublic;
             }
             catch
             {
