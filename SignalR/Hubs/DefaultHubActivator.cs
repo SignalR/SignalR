@@ -13,6 +13,11 @@ namespace SignalR.Hubs
 
         public IHub Create(HubDescriptor descriptor)
         {
+            if(descriptor.Type == null)
+            {
+                return null;
+            }
+
             object hub = _resolver.Resolve(descriptor.Type) ?? Activator.CreateInstance(descriptor.Type);
             return hub as IHub;
         }
