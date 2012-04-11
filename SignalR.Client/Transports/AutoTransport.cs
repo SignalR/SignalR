@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using SignalR.Client.Http;
 
 namespace SignalR.Client.Transports
@@ -43,6 +44,13 @@ namespace SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
+                    // Make sure we observe the exception
+                    var ex = task.Exception;
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
+                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
+#endif
+                    Debug.WriteLine("Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name);
+
                     // If that transport fails to initialize then fallback
                     var next = index + 1;
                     if (next < _transports.Length)
@@ -64,6 +72,7 @@ namespace SignalR.Client.Transports
                     // Complete the process
                     tcs.SetResult(null);
                 }
+
             });
         }
 
