@@ -5,7 +5,6 @@
 * Copyright David Fowler and Damian Edwards 2012
 * Licensed under the MIT.
 * https://github.com/SignalR/SignalR/blob/master/LICENSE.md
-*
 */
 
 /// <reference path="jquery-1.6.2.js" />
