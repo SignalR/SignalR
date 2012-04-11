@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+</head>
+<body>
+
+    <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.6.2.js"></script>
+    <script src="../../Scripts/jquery.signalR.js"></script>
+    <script src="../../Scripts/jquery.color.js" type="text/javascript"></script>
+    <script src="../../signalr/hubs"></script>
+
+    <button id="hitme">hit me</button> | <button id="hitus">hit us</button> <select id="clientCalls"><option value="10">10</option> <option value="100">100</option><option value="1000">1000</option><option value="10000">10000</option><option value="100000">100000</option></select>
+    <ul id="messages"></ul>
+    <script type="text/javascript">
+
+
+        //hitMe / hitUs : sends the server the current timestamp and the number of calls to make back to the client.  hitMe: just the callign client, hitUs: all clients on the hub.
+        //stepOne / stepAll : increments a counter
+        //doneOne / doneAll : prints # of messages and total duration.
+
+        $(function () {
+            function log(message) {
+                var $newMessage = $("<li/>", { text: message });
+                $("#messages").append($newMessage);
+                return $newMessage;
+            };
+
+            var bench = $.connection.hubBench,
+                countOne = 0,
+                countAll = 0;
+
+            bench.stepOne = function () {
+                ++countOne;
+            };
+            bench.doneOne = function (start, expected) {
+                var duration = new Date().getTime() - start;
+                var $msg = log(countOne + " in " + duration + "ms");
+                if (expected != countOne) {
+                    $msg.css('color', 'red');
+                }
+
+                countOne = 0;
+            };
+
+            bench.stepAll = function () {
+                ++countAll;
+            };
+
+            bench.doneAll = function (start, expected, numConnections) {
+                var duration = new Date().getTime() - start;
+                var $msg = log(countAll + " in " + duration + "ms.  " + numConnections + " connections");
+                if (expected != countAll) {
+                    $msg.css('color', 'red');
+                }
+                countAll = 0;
+            };
+
+            $.connection.hub.start({ transport: activeTransport }, function () { log("connected"); });
+
+            //benchmark messages to just me
+            $("#hitme").click(function () {
+                var numCalls = parseInt($("#clientCalls").val());
+                var now = new Date().getTime();
+                bench.hitMe(now, numCalls, $.connection.hub.id);
+            });
+
+            //benchmark messages to all clients
+            $("#hitus").click(function () {
+                var numCalls = parseInt($("#clientCalls").val());
+                var now = new Date().getTime();
+                bench.hitUs(now, numCalls);
+            });
+        });
+    </script>
+</body>
+</html>

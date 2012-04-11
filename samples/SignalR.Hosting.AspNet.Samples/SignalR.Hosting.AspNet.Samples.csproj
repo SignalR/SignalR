@@ -118,6 +118,7 @@
     <Content Include="Content\themes\smoothness\jquery-ui-1.8.12.css" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Hubs\Benchmark\index.htm" />
     <Content Include="Hubs\Chat\Mobile.css" />
     <Content Include="Hubs\Chat\mobile.htm" />
     <Content Include="Hubs\ConnectDisconnect\Status.js" />
@@ -177,6 +178,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Hubs\Benchmark\HubBench.cs" />
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
     <Compile Include="Hubs\DemoHub\DemoHub.cs" />
     <Compile Include="Hubs\Chat\Chat.cs" />
