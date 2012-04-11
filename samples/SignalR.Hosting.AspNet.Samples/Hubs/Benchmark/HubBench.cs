@@ -13,18 +13,20 @@ namespace SignalR.Samples.Hubs.Benchmark
         {
             for (int i = 0; i < clientCalls; i++)
             {
-                Clients[connectionId].stepOne();
+                Clients[connectionId].stepOne().Wait();
             }
-            Clients[connectionId].doneOne(start, clientCalls);
+
+            Clients[connectionId].doneOne(start, clientCalls).Wait();
         }
 
         public void HitUs(long start, int clientCalls)
         {
             for (int i = 0; i < clientCalls; i++)
             {
-                Clients.stepAll();
+                Clients.stepAll().Wait();
             }
-            Clients.doneAll(start, clientCalls, Connections);
+
+            Clients.doneAll(start, clientCalls, Connections).Wait();
         }
 
         public Task Connect()

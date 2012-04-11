@@ -22,7 +22,7 @@
         $(function () {
             function log(message) {
                 var $newMessage = $("<li/>", { text: message });
-                $("#messages").append($newMessage);
+                $("#messages").prepend($newMessage);
                 return $newMessage;
             };
 
@@ -33,6 +33,7 @@
             bench.stepOne = function () {
                 ++countOne;
             };
+
             bench.doneOne = function (start, expected) {
                 var duration = new Date().getTime() - start;
                 var $msg = log(countOne + " in " + duration + "ms");
