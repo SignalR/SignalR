@@ -11,10 +11,13 @@ namespace SignalR.Samples.Hubs.Benchmark
 
         public void HitMe(long start, int clientCalls, string connectionId)
         {
+            var tasks = new List<Task>();
             for (int i = 0; i < clientCalls; i++)
             {
-                Clients[connectionId].stepOne().Wait();
+                tasks.Add(Clients[connectionId].stepOne());
             }
+
+            Task.WaitAll(tasks.ToArray());
 
             Clients[connectionId].doneOne(start, clientCalls).Wait();
         }

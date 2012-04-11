@@ -118,6 +118,8 @@
     <Content Include="Content\themes\smoothness\jquery-ui-1.8.12.css" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Hubs\Benchmark\crossdomain.htm" />
+    <Content Include="Hubs\Benchmark\Benchmark.js" />
     <Content Include="Hubs\Benchmark\index.htm" />
     <Content Include="Hubs\Chat\Mobile.css" />
     <Content Include="Hubs\Chat\mobile.htm" />
