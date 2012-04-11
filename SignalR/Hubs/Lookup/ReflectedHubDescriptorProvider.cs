@@ -6,7 +6,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
-    public class ReflectedHubDescriptorProvider: IHubDescriptorProvider
+    public class ReflectedHubDescriptorProvider : IHubDescriptorProvider
     {
         private readonly Lazy<IDictionary<string, HubDescriptor>> _hubs;
         private readonly Lazy<IAssemblyLocator> _locator;
@@ -39,7 +39,7 @@ namespace SignalR.Hubs
                 .Where(IsHubType);
 
             // Building a list of descriptors for each type
-            var descriptors = types.Select(type => 
+            var descriptors = types.Select(type =>
                     new HubDescriptor
                     {
                         Name = GetHubName(type),
@@ -52,7 +52,7 @@ namespace SignalR.Hubs
             var cacheEntries = descriptors
                 .SelectMany(desc => CacheKeysFor(desc.Type)
                 .Select(key => new { Descriptor = desc, Key = key }))
-                .ToDictionary(anon => anon.Key, 
+                .ToDictionary(anon => anon.Key,
                               anon => anon.Descriptor,
                               StringComparer.OrdinalIgnoreCase);
 
@@ -63,7 +63,10 @@ namespace SignalR.Hubs
         {
             try
             {
-                return typeof(IHub).IsAssignableFrom(type) && !type.IsAbstract && type.IsPublic;
+                return typeof(IHub).IsAssignableFrom(type) &&
+                       !type.IsAbstract &&
+                       (type.Attributes.HasFlag(TypeAttributes.Public) || 
+                        type.Attributes.HasFlag(TypeAttributes.NestedPublic));
             }
             catch
             {
@@ -98,7 +101,7 @@ namespace SignalR.Hubs
 
         private static string GetHubName(Type type)
         {
-            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName) 
+            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName)
                    ?? type.Name;
         }
     }

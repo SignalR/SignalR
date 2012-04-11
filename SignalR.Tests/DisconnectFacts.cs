@@ -31,7 +31,7 @@ namespace SignalR.Tests
 
             connection.Start(host).Wait();
 
-            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(100)), "Connect never fired");
+            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
 
             connection.Stop();
 
@@ -55,7 +55,7 @@ namespace SignalR.Tests
 
             connection.Start(host).Wait();
 
-            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(100)), "Connect never fired");
+            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
 
             connection.Stop();
 
@@ -167,7 +167,7 @@ namespace SignalR.Tests
             }
         }
 
-        private class MyHub : Hub, IDisconnect, IConnected
+        public class MyHub : Hub, IDisconnect, IConnected
         {
             private ManualResetEventSlim _connectWh;
             private ManualResetEventSlim _disconnectWh;
