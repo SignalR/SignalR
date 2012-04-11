@@ -69,6 +69,8 @@ namespace SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
+                        Debug.WriteLine("LP Receive: {0}", (object)raw);
+
                         ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
                     }
                 }
