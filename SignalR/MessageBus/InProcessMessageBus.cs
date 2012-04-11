@@ -188,6 +188,8 @@ namespace SignalR
 
                 if (delegates.Count == 0)
                 {
+                    _trace.Source.TraceInformation("MessageBus: Sending message {0} with eventKey {1} to 0 waiting connections", message.Id, eventKey);
+                    Debug.WriteLine("MessageBus: Sending message {0} with eventKey {1} to 0 waiting connections", message.Id, eventKey);
                     return;
                 }
 
