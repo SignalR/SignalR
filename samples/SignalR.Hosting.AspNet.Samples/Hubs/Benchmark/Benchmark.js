@@ -25,7 +25,7 @@ $(function () {
         countOne = 0;
         if (expected != theCount) {
             $msg.css('color', 'red');
-            console.log(idSet);
+            // console.log(idSet);
         }
         else {
             $("#hitme").trigger('click');
@@ -41,10 +41,15 @@ $(function () {
     bench.doneAll = function (start, expected, numConnections) {
         var duration = new Date().getTime() - start;
         var $msg = log(countAll + " in " + duration + "ms.  " + numConnections + " connections");
-        if (expected != countAll) {
-            $msg.css('color', 'red');
-        }
+        var theCount = countAll;
         countAll = 0;
+        if (expected != theCount) {
+            $msg.css('color', 'red');
+            // console.log(idSet);
+        }
+        else {
+            $("#hitus").trigger('click');
+        }
     };
 
     $.connection.hub.start(options, function () { log("connected"); });
@@ -68,6 +73,7 @@ $(function () {
     //benchmark messages to all clients
     $("#hitus").click(function () {
         var numCalls = parseInt($("#clientCalls").val());
+        initSet(numCalls);
         var now = new Date().getTime();
         bench.hitUs(now, numCalls);
     });
