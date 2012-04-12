@@ -13,21 +13,28 @@ $(function () {
                 countOne = 0,
                 countAll = 0;
 
-    bench.stepOne = function () {
+    bench.stepOne = function (ndx) {
+        delete idSet[ndx + ""];
         ++countOne;
     };
 
     bench.doneOne = function (start, expected) {
         var duration = new Date().getTime() - start;
         var $msg = log(countOne + " in " + duration + "ms");
-        if (expected != countOne) {
+        var theCount = countOne;
+        countOne = 0;
+        if (expected != theCount) {
             $msg.css('color', 'red');
+            console.log(idSet);
+        }
+        else {
+            $("#hitme").trigger('click');
         }
 
-        countOne = 0;
     };
 
-    bench.stepAll = function () {
+    bench.stepAll = function (ndx) {
+        delete idSet[ndx + ""];
         ++countAll;
     };
 
@@ -42,9 +49,18 @@ $(function () {
 
     $.connection.hub.start(options, function () { log("connected"); });
 
+    var idSet;
+    function initSet(numCalls) {
+        idSet = {};
+        for (var i = 0; i < numCalls; i++) {
+            idSet[i + ""] = i;
+        }
+
+    }
     //benchmark messages to just me
     $("#hitme").click(function () {
         var numCalls = parseInt($("#clientCalls").val());
+        initSet(numCalls);
         var now = new Date().getTime();
         bench.hitMe(now, numCalls, $.connection.hub.id);
     });

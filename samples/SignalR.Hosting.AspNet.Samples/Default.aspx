@@ -14,6 +14,7 @@
             <li class="chat"><a href="Hubs/Chat/"><p class="title">Chat</p></a></li>
             <li class="mouse-tracking"><a href="Hubs/MouseTracking/"><p class="title">Mouse Tracking</p></a></li>
             <li class="shape-share"><a href="Hubs/ShapeShare/"><p class="title">Shape Share</p></a></li>
+            <li class="hub-bench"><a href="Hubs/Benchmark/"><p class="title">Hub Ping</p></a></li>
         </ul>
     </div>
     <div class="clear"></div>
