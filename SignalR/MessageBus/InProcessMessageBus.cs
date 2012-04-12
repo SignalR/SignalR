@@ -52,8 +52,6 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>> _waitingTasks =
             new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>>();
 
-        private readonly ConcurrentQueue<BroadcastData> _broadcastQueue = new ConcurrentQueue<BroadcastData>();
-
         private readonly ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>> _cache =
             new ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>>();
 
@@ -157,20 +155,14 @@ namespace SignalR
                 // last message id to resubscribe with. Moving this outside the lock can enable
                 // a subsequent send to overtake the previous send, resulting in the waiting connection
                 // getting a last message id that is after the first save, hence missing a message.
-                _broadcastQueue.Enqueue(new BroadcastData(eventKey, message));
+                Broadcast(eventKey, message);
             }
             finally
             {    
-                _cacheLock.ExitWriteLock();   
+                _cacheLock.ExitWriteLock();
             }
 
-            return Task.Factory.StartNew(() => {
-                BroadcastData item;
-                if (_broadcastQueue.TryDequeue(out item))
-                {
-                    Broadcast(item.EventKey, item.Message);
-                }
-            });
+            return TaskAsyncHelper.Empty;
         }
 
         private T GenerateId()
