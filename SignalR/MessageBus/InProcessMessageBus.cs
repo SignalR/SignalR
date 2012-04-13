@@ -103,7 +103,15 @@ namespace SignalR
                 _cacheLock.EnterReadLock();
                 T uuid = _idGenerator.ConvertFromString(id);
 
-                if (uuid.CompareTo(_lastMessageId) >= 0)
+                if (uuid.CompareTo(_lastMessageId) > 0)
+                {
+                    // BUG 24: Connection already has the latest message, so reset the id
+                    // This can happen if the server is reset (appdomain or entire server incase of self host)
+                    _trace.Source.TraceInformation("MessageBus: Connection asking for message id {0} when the largest is {1}. Resetting id", id, _lastMessageId);
+                    Debug.WriteLine("MessageBus: Connection asking for message id {0} when the largest is {1}. Resetting id", id, _lastMessageId);
+                    uuid = default(T);
+                }
+                else if (uuid.CompareTo(_lastMessageId) == 0)
                 {
                     // Connection already has the latest message, so start wating
                     _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", id);
@@ -158,7 +166,7 @@ namespace SignalR
                 Broadcast(eventKey, message);
             }
             finally
-            {    
+            {
                 _cacheLock.ExitWriteLock();
             }
 
@@ -270,7 +278,7 @@ namespace SignalR
                 {
                     return;
                 }
-                
+
                 if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
                 {
                     tcs.TrySetResult(GetMessageResult(messages));

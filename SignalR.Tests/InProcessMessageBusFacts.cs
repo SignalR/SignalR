@@ -25,7 +25,7 @@ namespace SignalR.Tests
                 var result = bus.GetMessages(new[] { "foo" }, "1", CancellationToken.None).Result;
                 Assert.Equal(2, result.Messages.Count);
             }
-            
+
             [Fact]
             public void ReturnsMessagesGreaterThanLastMessageIdWhenLastMessageIdNotInStore()
             {
@@ -44,6 +44,25 @@ namespace SignalR.Tests
 
                 var result = bus.GetMessages(new[] { "foo" }, "3", CancellationToken.None).Result;
                 Assert.Equal(2, result.Messages.Count);
+            }
+
+            [Fact]
+            public void GetAllSinceReturnsAllMessagesIfIdGreaterThanMaxId()
+            {
+                var trace = new TraceManager();
+                var bus = new InProcessMessageBus(trace, false);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    bus.Send("testclient", "a", i).Wait();
+                }
+
+                var result = bus.GetMessages(new[] { "a" }, "100", CancellationToken.None).Result;
+                Assert.Equal(10, result.Messages.Count);
+                for (int i = 0; i < 10; i++)
+                {
+                    Assert.Equal(i, result.Messages[i].Value);
+                }
             }
         }
     }
