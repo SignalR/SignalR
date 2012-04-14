@@ -26,7 +26,7 @@ namespace SignalR
 
         public dynamic GetClients<T>() where T : IHub
         {
-            return GetClients(typeof(T).FullName);
+            return GetClients(typeof(T).GetHubName());
         }
 
         public dynamic GetClients(string hubName)
