@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
@@ -38,22 +37,17 @@ namespace SignalR.Hubs
                 .SelectMany(GetTypesSafe)
                 .Where(IsHubType);
 
-            // Building a list of descriptors for each type
-            var descriptors = types.Select(type =>
-                    new HubDescriptor
-                    {
-                        Name = GetHubName(type),
-                        Type = type
-                    });
-
             // Building cache entries for each descriptor
-            // Each descriptor is stored in dictionary under several keys for allowing quick lookup:
-            // full type name, short type name and optionally a name given by attribute
-            var cacheEntries = descriptors
-                .SelectMany(desc => CacheKeysFor(desc.Type)
-                .Select(key => new { Descriptor = desc, Key = key }))
-                .ToDictionary(anon => anon.Key,
-                              anon => anon.Descriptor,
+            // Each descriptor is stored in dictionary under a key
+            // that is it's name or the name provided by an attribute
+            var cacheEntries = types
+                .Select(type => new HubDescriptor
+                                {
+                                    Name = type.GetHubName(),
+                                    Type = type
+                                })
+                .ToDictionary(hub => hub.Name,
+                              hub => hub,
                               StringComparer.OrdinalIgnoreCase);
 
             return cacheEntries;
@@ -74,19 +68,6 @@ namespace SignalR.Hubs
             }
         }
 
-        private static IEnumerable<string> CacheKeysFor(Type type)
-        {
-            yield return type.FullName;
-            yield return type.Name;
-
-            var attributeName = GetHubName(type);
-
-            if (!String.Equals(attributeName, type.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                yield return attributeName;
-            }
-        }
-
         private static IEnumerable<Type> GetTypesSafe(Assembly a)
         {
             try
@@ -97,12 +78,6 @@ namespace SignalR.Hubs
             {
                 return Enumerable.Empty<Type>();
             }
-        }
-
-        private static string GetHubName(Type type)
-        {
-            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName)
-                   ?? type.Name;
         }
     }
 }
