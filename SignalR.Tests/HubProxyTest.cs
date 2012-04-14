@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using SignalR.Client.Hubs;
+using SignalR.Hosting.Memory;
+using SignalR.Hubs;
 using Xunit;
 
 namespace SignalR.Tests
@@ -117,6 +120,29 @@ namespace SignalR.Tests
             Assert.Equal("baz", subscriptions[1]);
         }
 
+        [Fact]
+        public void EndToEndTest()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+
+            var hubConnection = new HubConnection("http://fake");
+            IHubProxy proxy = hubConnection.CreateProxy("ChatHub");
+            var called = false;
+
+            proxy.On("addMessage", data =>
+            {
+                called = true;
+                Assert.Equal("hello", data);
+            });
+
+            hubConnection.Start(host).Wait();
+
+            proxy.Invoke("Send", "hello").Wait();
+
+            Assert.True(called);
+        }
+
         private void AssertAggregateException(Action action, string message)
         {
             try
@@ -126,6 +152,14 @@ namespace SignalR.Tests
             catch (AggregateException ex)
             {
                 Assert.Equal(ex.Unwrap().Message, message);
+            }
+        }
+
+        public class ChatHub : Hub
+        {
+            public Task Send(string message)
+            {
+                return Clients.addMessage(message);
             }
         }
     }

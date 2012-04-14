@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -173,19 +174,28 @@ namespace SignalR.Hubs
 
         public IHub CreateHub(HubDescriptor descriptor, string connectionId, TrackingDictionary state = null)
         {
-            var hub = _manager.ResolveHub(descriptor.Name);
-
-            if (hub != null)
+            try
             {
-                state = state ?? new TrackingDictionary();
-                hub.Context = new HubContext(_context, connectionId);
-                hub.Caller = new SignalAgent(Connection, connectionId, descriptor.Name, state);
-                var agent = new ClientAgent(Connection, descriptor.Name);
-                hub.Agent = agent;
-                hub.GroupManager = agent;
-            }
+                var hub = _manager.ResolveHub(descriptor.Name);
 
-            return hub;
+                if (hub != null)
+                {
+                    state = state ?? new TrackingDictionary();
+                    hub.Context = new HubContext(_context, connectionId);
+                    hub.Caller = new SignalAgent(Connection, connectionId, descriptor.Name, state);
+                    var agent = new ClientAgent(Connection, descriptor.Name);
+                    hub.Agent = agent;
+                    hub.GroupManager = agent;
+                }
+
+                return hub;
+            }
+            catch (Exception ex)
+            {
+                _trace.Source.TraceInformation("Error creating hub {0}. " + ex.Message, descriptor.Name);
+                Debug.WriteLine("HubDispatcher: Error creating hub {0}. " + ex.Message, (object)descriptor.Name);
+                return null;
+            }
         }
 
         private IEnumerable<HubDescriptor> GetHubsImplementingInterface(Type interfaceType)
