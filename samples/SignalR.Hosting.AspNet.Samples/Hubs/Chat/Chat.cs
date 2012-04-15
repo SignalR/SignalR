@@ -195,7 +195,7 @@ namespace SignalR.Samples.Hubs.Chat
                     {
                         if (String.IsNullOrEmpty(name) || !_users.ContainsKey(name))
                         {
-                            var user = AddUser(newUserName);
+                            AddUser(newUserName);
                         }
                         else
                         {
