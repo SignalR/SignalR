@@ -182,7 +182,7 @@ namespace SignalR.Tests
             {
                 _disconnectWh.Set();
 
-                return TaskAsyncHelper.Empty;
+                return null;
             }
 
             public Task Connect()
