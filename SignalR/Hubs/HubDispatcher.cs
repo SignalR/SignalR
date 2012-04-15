@@ -143,7 +143,7 @@ namespace SignalR.Hubs
             var operations = GetHubsImplementingInterface(typeof(T))
                 .Select(hub => CreateHub(hub, connectionId))
                 .OfType<T>()
-                .Select(instance => action(instance) ?? TaskAsyncHelper.Empty)
+                .Select(instance => action(instance).Catch() ?? TaskAsyncHelper.Empty)
                 .ToList();
 
             if (operations.Count == 0)
