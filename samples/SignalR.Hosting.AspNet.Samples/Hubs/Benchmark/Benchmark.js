@@ -56,7 +56,7 @@ $(function () {
 
     $.connection.hub.start(options, function () { log("connected"); });
 
-    var idSet;
+    var idSet = {};
     function initSet(numCalls) {
         idSet = {};
         for (var i = 0; i < numCalls; i++) {
