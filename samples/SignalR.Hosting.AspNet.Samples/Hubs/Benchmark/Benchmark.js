@@ -38,7 +38,7 @@ $(function () {
         ++countAll;
     };
 
-    bench.doneAll = function (start, expected, numConnections) {
+    bench.doneAll = function (start, expected, numConnections, connectionId) {
         var duration = new Date().getTime() - start;
         var $msg = log(countAll + " in " + duration + "ms.  " + numConnections + " connections");
         var theCount = countAll;
@@ -48,7 +48,9 @@ $(function () {
             // console.log(idSet);
         }
         else {
-            $("#hitus").trigger('click');
+            if (connectionId == $.connection.hub.id) {
+                $("#hitus").trigger('click');
+            }
         }
     };
 

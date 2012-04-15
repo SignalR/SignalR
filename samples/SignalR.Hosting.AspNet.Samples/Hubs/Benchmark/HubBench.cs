@@ -29,7 +29,7 @@ namespace SignalR.Samples.Hubs.Benchmark
                 Clients.stepAll().Wait();
             }
 
-            Clients.doneAll(start, clientCalls, Connections).Wait();
+            Clients.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
         }
 
         public Task Connect()
