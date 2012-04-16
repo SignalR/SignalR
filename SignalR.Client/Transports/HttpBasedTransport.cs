@@ -57,7 +57,7 @@ namespace SignalR.Client.Transports
         {
             var tcs = new TaskCompletionSource<object>();
 
-            OnStart(connection, data, () => tcs.SetResult(null), exception => tcs.SetException(exception));
+            OnStart(connection, data, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
 
             return tcs.Task;
         }

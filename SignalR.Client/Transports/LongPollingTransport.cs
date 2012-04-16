@@ -34,6 +34,9 @@ namespace SignalR.Client.Transports
             var reconnectTokenSource = new CancellationTokenSource();
             int reconnectFired = 0;
 
+            // This is only necessary for the initial request where initializeCallback and errorCallback are non-null
+            int callbackFired = 0;
+
             if (connection.MessageId == null)
             {
                 url += "connect";
@@ -96,7 +99,8 @@ namespace SignalR.Client.Transports
                             Exception exception = task.Exception.GetBaseException();
 
                             // If the error callback isn't null then raise it and don't continue polling
-                            if (errorCallback != null)
+                            if (errorCallback != null && 
+                                Interlocked.Exchange(ref callbackFired, 1) == 0)
                             {
                                 // Raise on error
                                 connection.OnError(exception);
@@ -150,7 +154,10 @@ namespace SignalR.Client.Transports
 
             if (initializeCallback != null)
             {
-                initializeCallback();
+                if (Interlocked.Exchange(ref callbackFired, 1) == 0)
+                {
+                    initializeCallback();
+                }
             }
 
             if (raiseReconnect)
