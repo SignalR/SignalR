@@ -131,6 +131,7 @@
     <Content Include="Hubs\Chat\Chat.css" />
     <Content Include="Hubs\Chat\Chat.js" />
     <Content Include="Hubs\Chat\index.htm" />
+    <Content Include="Hubs\DrawingPad\index.htm" />
     <Content Include="Hubs\MouseTracking\images\wand.png" />
     <Content Include="Hubs\MouseTracking\MouseTracking.css" />
     <Content Include="Hubs\MouseTracking\index.htm" />
@@ -140,6 +141,8 @@
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\index.htm" />
+    <Content Include="Scripts\jcanvas.js" />
+    <Content Include="Hubs\DrawingPad\drawingpad.js" />
     <Content Include="Scripts\signalr.samples.js" />
     <Content Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.2.js" />
@@ -189,6 +192,7 @@
     <Compile Include="Hubs\Chat\ContentProviders\IContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\ImageContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
+    <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
     <Compile Include="Hubs\MouseTracking\MouseTracking.cs" />
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
