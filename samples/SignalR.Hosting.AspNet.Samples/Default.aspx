@@ -13,6 +13,7 @@
             <li class="status"><a href="Hubs/ConnectDisconnect/"><p class="title">Connection Status</p></a></li>
             <li class="chat"><a href="Hubs/Chat/"><p class="title">Chat</p></a></li>
             <li class="mouse-tracking"><a href="Hubs/MouseTracking/"><p class="title">Mouse Tracking</p></a></li>
+            <li class="drawing-pad"><a href="Hubs/DrawingPad"><p class="title">Drawing pad</p></a></li>
             <li class="shape-share"><a href="Hubs/ShapeShare/"><p class="title">Shape Share</p></a></li>
             <li class="hub-bench"><a href="Hubs/Benchmark/"><p class="title">Hub Ping</p></a></li>
         </ul>
