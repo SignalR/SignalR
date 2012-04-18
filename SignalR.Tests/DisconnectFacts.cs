@@ -194,7 +194,7 @@ namespace SignalR.Tests
 
             public Task Reconnect(IEnumerable<string> groups)
             {
-                throw new NotImplementedException();
+                return TaskAsyncHelper.Empty;
             }
         }
 
