@@ -9,7 +9,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>$description$</description>
         <dependencies>
-            <dependency id="SignalR.Server" version="0.5" />
+            <dependency id="SignalR.Server" version="$version$" />
         </dependencies>
     </metadata>
 </package>
