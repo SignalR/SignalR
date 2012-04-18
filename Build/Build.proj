@@ -109,23 +109,23 @@
     
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Build"
-             Properties="BuildPackage=true;PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
     
     <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
     <!--<MSBuild Projects="$(ProjectRoot)\SignalR.Client.WP7\SignalR.Client.WP7.csproj"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
-             Properties="BuildPackage=true;PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />-->
+             Properties="BuildPackage=true;Version=$(PackageVersion)PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />-->
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight\SignalR.Client.Silverlight.csproj"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0')"
-             Properties="BuildPackage=true;PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+             Properties="BuildPackage=true;Version=$(PackageVersion)PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight5\SignalR.Client.Silverlight5.csproj"
          Targets="Build"
          Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
-         Properties="BuildPackage=true;PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+         Properties="BuildPackage=true;Version=$(PackageVersion)PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ProjectRoot)\SignalR&quot;"
             LogStandardErrorAsError="true" />
