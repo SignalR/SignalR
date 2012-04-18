@@ -11,7 +11,7 @@
     <RootNamespace>SignalR.Hosting.Self</RootNamespace>
     <AssemblyName>SignalR.Hosting.Self</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\SignalR\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

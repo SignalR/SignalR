@@ -11,7 +11,7 @@
     <RootNamespace>SignalR.Hosting.Owin</RootNamespace>
     <AssemblyName>SignalR.Hosting.Owin</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\SignalR\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

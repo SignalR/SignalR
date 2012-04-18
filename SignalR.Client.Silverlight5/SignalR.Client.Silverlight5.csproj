@@ -17,7 +17,7 @@
     <SilverlightApplication>false</SilverlightApplication>
     <ValidateXaml>true</ValidateXaml>
     <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\SignalR\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <!-- This property group is only here to support building this project using the 
