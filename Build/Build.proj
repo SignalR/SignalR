@@ -1,22 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
-    <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
-    <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
-    <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
-    <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
-    <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
-    <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
-    <XunitPath>$(ToolsPath)xunit\</XunitPath>
-  </PropertyGroup>
+    <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
 
-  <PropertyGroup>
-    <MajorVersion>0</MajorVersion>
-    <MinorVersion>5</MinorVersion>
-    <Version>$(MajorVersion).$(MinorVersion).0</Version>
-  </PropertyGroup>
-
+    <PropertyGroup>
+        <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+        <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
+        <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+        <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
+        <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
+        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+        <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
+        <XunitPath>$(ToolsPath)xunit\</XunitPath>
+    </PropertyGroup>
+  
+    <PropertyGroup>
+        <MajorVersion>0</MajorVersion>
+        <MinorVersion>5</MinorVersion>
+    </PropertyGroup>
+  
+    <PropertyGroup Condition="$(BUILD_NUMBER) != ''">
+        <!-- Ensure that we come up with a new version every 65535 years -->
+        <VersionStartYear>2012</VersionStartYear>
+      
+        <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
+        <Build>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</Build>
+        <Revision>$(BUILD_NUMBER)</Revision>
+    </PropertyGroup>
+  
+    <PropertyGroup Condition="$(BUILD_NUMBER) == ''">
+        <Build>0</Build>
+        <Revision>0</Revision>
+    </PropertyGroup>
+  
+    <PropertyGroup>  
+       <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
+    </PropertyGroup>
+  
+    <ItemGroup>
+        <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
+            <Find>\d+\.\d+\.\d+\.\d+</Find>
+            <ReplaceWith>$(Version)</ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(ProjectRoot)\SignalR.Client\Properties\VersionInfo.cs">
+            <Find>\d+\.\d+\.\d+\.\d+</Find>
+            <ReplaceWith>$(Version)</ReplaceWith>
+        </RegexTransform>
+    </ItemGroup>
+    
+    <Target Name="UpdateVersion" Condition="'$(BUILD_NUMBER)' != ''">
+        <RegexTransform Items="@(RegexTransform)" />
+    </Target>
+  
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
@@ -24,7 +58,7 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="Go" DependsOnTargets="Build; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
   </Target>
 
   <Target Name="RunTests">
@@ -69,10 +103,10 @@
              Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
     
     <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
-    <MSBuild Projects="$(ProjectRoot)\SignalR.Client.WP7\SignalR.Client.WP7.csproj"
+    <!--<MSBuild Projects="$(ProjectRoot)\SignalR.Client.WP7\SignalR.Client.WP7.csproj"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
-             Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+             Properties="BuildPackage=true;Version=$(Version);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />-->
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight\SignalR.Client.Silverlight.csproj"
              Targets="Build"
