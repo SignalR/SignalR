@@ -41,6 +41,10 @@
             <Find>\d+\.\d+\.\d+\.\d+</Find>
             <ReplaceWith>$(Version)</ReplaceWith>
         </RegexTransform>
+        <RegexTransform Include="$(ProjectRoot)\**\AssemblyInfo.cs">
+            <Find>\d+\.\d+\.\d+\.\d+</Find>
+            <ReplaceWith>$(Version)</ReplaceWith>
+        </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR.Client\Properties\VersionInfo.cs">
             <Find>\d+\.\d+\.\d+\.\d+</Find>
             <ReplaceWith>$(Version)</ReplaceWith>
@@ -86,7 +90,7 @@
              Properties="Configuration=$(Configuration)" />
   </Target>
 
-  <Target Name="BuildPackages" DependsOnTargets="UpdateVersion; CreateOutputDir">
+  <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
       <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
       <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
