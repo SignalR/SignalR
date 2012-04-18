@@ -52,7 +52,7 @@
              Properties="Configuration=$(Configuration)" />
   </Target>
 
-  <Target Name="BuildPackages">
+  <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
       <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
       <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
