@@ -43,7 +43,7 @@
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.WP7.sln"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')"
              Properties="Configuration=$(Configuration)" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln"

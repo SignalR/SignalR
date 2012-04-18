@@ -682,7 +682,7 @@
                     frameId = (transportLogic.foreverFrame.count += 1),
                     url,
                     connectTimeOut,
-                    frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;width:0;height:0;visibility:hidden;'></iframe>");
+                    frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;'></iframe>");
 
                 if (window.EventSource) {
                     // If the browser supports SSE, don't use Forever Frame
