@@ -59,6 +59,10 @@
             <Find>SignalR JavaScript Library v\d+\.\d+</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
+        <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\hubs.js">
+            <Find>SignalR JavaScript Library v\d+\.\d+</Find>
+            <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
+        </RegexTransform>
     </ItemGroup>
     
     <Target Name="UpdateVersion" Condition="'$(BUILD_NUMBER)' != ''">
