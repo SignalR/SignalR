@@ -140,7 +140,7 @@
             window.setTimeout(function () {
                 $.ajax(connection.url + "/negotiate", {
                     global: false,
-                    type: "POST",
+                    type: "GET",
                     data: {},
                     dataType: connection.ajaxDataType,
                     error: function (error) {

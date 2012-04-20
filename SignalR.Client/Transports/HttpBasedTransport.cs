@@ -40,7 +40,7 @@ namespace SignalR.Client.Transports
         {
             string negotiateUrl = connection.Url + "negotiate";
 
-            return httpClient.PostAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
+            return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
 
