@@ -11,6 +11,7 @@
         <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
         <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
         <XunitPath>$(ToolsPath)xunit\</XunitPath>
+        <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
     </PropertyGroup>
   
     <PropertyGroup>
@@ -131,8 +132,14 @@
          Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
          Properties="BuildPackage=true;Version=$(PackageVersion)PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
-    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ProjectRoot)\SignalR&quot;"
+    <MakeDir Directories="$(ScriptTempPath)" Condition="!Exists('$(ScriptTempPath)')" />
+    
+    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(PackageVersion).js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR.min-$(PackageVersion).js" />
+
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />
+            
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -exclude **\*.cs"
           LogStandardErrorAsError="true" />
   </Target>
