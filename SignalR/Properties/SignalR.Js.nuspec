@@ -13,6 +13,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="jquery.signalR.*" target="content\Scripts" />
+    <file src="jquery.signalR*" target="content\Scripts" />
   </files>
 </package>

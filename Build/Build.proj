@@ -36,6 +36,7 @@
     <PropertyGroup>  
        <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
        <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)-pre</PackageVersion>
+       <JsVersion>$(MajorVersion).$(MinorVersion)pre</JsVersion>
     </PropertyGroup>
   
     <ItemGroup>
@@ -57,11 +58,11 @@
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js">
             <Find>SignalR JavaScript Library v\d+\.\d+</Find>
-            <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
+            <ReplaceWith>SignalR JavaScript Library v$(JsVersion)</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\hubs.js">
             <Find>SignalR JavaScript Library v\d+\.\d+</Find>
-            <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
+            <ReplaceWith>SignalR JavaScript Library v$(JsVersion)</ReplaceWith>
         </RegexTransform>
     </ItemGroup>
     
@@ -136,10 +137,11 @@
          Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
          Properties="BuildPackage=true;Version=$(PackageVersion)PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(ScriptTempPath)" Condition="!Exists('$(ScriptTempPath)')" />
+    <RemoveDir Directories="$(ScriptTempPath)" />
+    <MakeDir Directories="$(ScriptTempPath)" />
     
-    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(PackageVersion).js" />
-    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR.min-$(PackageVersion).js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />
