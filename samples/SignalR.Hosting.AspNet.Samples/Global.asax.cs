@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
-using SignalR.Hosting.AspNet.Routing;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
 using SignalR.Samples.Streaming;
@@ -11,7 +10,6 @@ namespace SignalR.Hosting.AspNet.Samples
 {
     public class Global : System.Web.HttpApplication
     {
-
         protected void Application_Start(object sender, EventArgs e)
         {
             ThreadPool.QueueUserWorkItem(_ =>
