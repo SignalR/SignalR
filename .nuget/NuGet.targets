@@ -2,17 +2,23 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)\..\</SolutionDir>
+    </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
         <!-- Windows specific commands -->
-        <NuGetToolsPath Condition=" '$(OS)' == 'Windows_NT'">$([System.IO.Path]::Combine($(SolutionDir), ".nuget"))</NuGetToolsPath>
-        <PackagesConfig Condition=" '$(OS)' == 'Windows_NT'">$([System.IO.Path]::Combine($(ProjectDir), "packages.config"))</PackagesConfig>
-        <PackagesDir Condition=" '$(OS)' == 'Windows_NT'">$([System.IO.Path]::Combine($(SolutionDir), "packages"))</PackagesDir>
-
+        <NuGetToolsPath>$([System.IO.Path]::Combine($(SolutionDir), ".nuget"))</NuGetToolsPath>
+        <PackagesConfig>$([System.IO.Path]::Combine($(ProjectDir), "packages.config"))</PackagesConfig>
+        <PackagesDir>$([System.IO.Path]::Combine($(SolutionDir), "packages"))</PackagesDir>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(OS)' != 'Windows_NT'">
         <!-- We need to launch nuget.exe with the mono command if we're not on windows -->
-        <NuGetToolsPath Condition=" '$(OS)' != 'Windows_NT'">$(SolutionDir).nuget</NuGetToolsPath>
-        <PackagesConfig Condition=" '$(OS)' != 'Windows_NT' ">packages.config</PackagesConfig>
-        <PackagesDir Condition=" '$(OS)' != 'Windows_NT'">$(SolutionDir)packages</PackagesDir>
-        
+        <NuGetToolsPath>$(SolutionDir).nuget</NuGetToolsPath>
+        <PackagesConfig>packages.config</PackagesConfig>
+        <PackagesDir>$(SolutionDir)packages</PackagesDir>
+    </PropertyGroup>
+    
+    <PropertyGroup>
         <!-- NuGet command -->
         <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
         <NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
