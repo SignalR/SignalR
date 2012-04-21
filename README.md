@@ -35,5 +35,12 @@ use `Ctrl+C` to break out (We're still working on this).
 
 Open SignalR.Mono.sln to do development.
 
+## Continuous Integration
+
+We have a CI Server setup on codebetter (http://teamcity.codebetter.com/project.html?projectId=project188)
+
+We generate packages from our ci builds to this feed http://www.myget.org/F/signalr/. If you want to live on the bleeding
+edge and don't want to clone the source. You can try things out this way.
+
 ## Questions?
 The SignalR team hangs out in the [signalr](http://jabbr.net/#/rooms/signalr) room at on [JabbR](http://jabbr.net/).
