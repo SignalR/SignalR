@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Web.Routing;
 using SignalR.Hosting.AspNet.Infrastructure;
+using SignalR.Hosting.AspNet.Routing;
 using SignalR.Hubs;
 
-namespace SignalR.Hosting.AspNet.Routing
+namespace SignalR
 {
     public static class RouteExtensions
     {
