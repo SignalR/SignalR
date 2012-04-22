@@ -162,24 +162,47 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Sends a message to the incoming connection id associated with the <see cref="PersistentConnection"/>.
+        /// </summary>
+        /// <param name="value">The value to send</param>
+        /// <returns>A task that represents when the send is complete.</returns>
         public Task Send(object value)
         {
             OnSending();
-            return Connection.Send(value);
+            return Connection.Send(_transport.ConnectionId, value);
         }
 
+        /// <summary>
+        /// Sends a value to the specified connection id.
+        /// </summary>
+        /// <param name="connectionId">The id of the connection to send to.</param>
+        /// <param name="value">The value to send.</param>
+        /// <returns>A task that represents when the send is complete.</returns>
         public Task Send(string connectionId, object value)
         {
             OnSending();
             return Connection.Send(connectionId, value);
         }
 
+        /// <summary>
+        /// Sends a value to all connections in the specified group.
+        /// </summary>
+        /// <param name="groupName">The name of the group.</param>
+        /// <param name="value">The value to send.</param>
+        /// <returns>A task that represents when the send is complete.</returns>
         public Task SendToGroup(string groupName, object value)
         {
             OnSending();
             return Connection.Send(CreateQualifiedName(groupName), value);
         }
 
+        /// <summary>
+        /// Adds a connection to the specified group. 
+        /// </summary>
+        /// <param name="connectionId">The connection id to add to the group.</param>
+        /// <param name="groupName">The name of the group.</param>
+        /// <returns>A task that represents the connection id being added to the group.</returns>
         public Task AddToGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
@@ -190,6 +213,12 @@ namespace SignalR
             });
         }
 
+        /// <summary>
+        /// Removes a connection from the specified group.
+        /// </summary>
+        /// <param name="connectionId">The connection id to remove from the group.</param>
+        /// <param name="groupName">The name of the group.</param>
+        /// <returns>A task that represents the connection id being removed from the group.</returns>
         public Task RemoveFromGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);

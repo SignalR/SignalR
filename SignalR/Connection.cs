@@ -54,11 +54,6 @@ namespace SignalR
             return SendMessage(signal, value);
         }
 
-        public Task Send(object value)
-        {
-            return SendMessage(_connectionId, value);
-        }
-
         public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
         {
             _trace.Source.TraceInformation("Connection: Waiting for new messages");
