@@ -188,18 +188,6 @@ namespace SignalR
             return Connection.Send(_transport.ConnectionId, value);
         }
 
-        /// <summary>
-        /// Sends a value to the specified connection id.
-        /// </summary>
-        /// <param name="connectionId">The id of the connection to send to.</param>
-        /// <param name="value">The value to send.</param>
-        /// <returns>A task that represents when the send is complete.</returns>
-        public Task Send(string connectionId, object value)
-        {
-            OnSending();
-            return Connection.Send(connectionId, value);
-        }
-
         private Task ProcessNegotiationRequest(HostContext context)
         {
             var payload = new

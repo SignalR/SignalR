@@ -69,7 +69,7 @@ namespace SignalR.Samples.Raw
                     string user = parts[0];
                     string msg = parts[1];
                     string id = GetClient(user);
-                    Send(id, new
+                    Connection.Send(id, new
                     {
                         from = GetUser(connectionId),
                         data = msg
