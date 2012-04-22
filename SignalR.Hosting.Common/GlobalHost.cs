@@ -8,7 +8,7 @@ namespace SignalR
         private static readonly Lazy<IDependencyResolver> _defaultResolver = new Lazy<IDependencyResolver>(() => new DefaultDependencyResolver());
 
         /// <summary>
-        /// Current dependency resolver.
+        /// Provides access to the default <see cref="IDependencyResolver"/>
         /// </summary>
         public static IDependencyResolver DependencyResolver
         {
@@ -19,7 +19,7 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Provides access to server configuration.
+        /// Provides access to the default <see cref="IConfigurationManager"/>
         /// </summary>
         public static IConfigurationManager Configuration
         {
@@ -30,7 +30,7 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Returns the connection manager.
+        /// Provides access to the default <see cref="IConnectionManager"/>
         /// </summary>
         public static IConnectionManager ConnectionManager
         {
@@ -40,6 +40,10 @@ namespace SignalR
             }
         }
 
+        /// <summary>
+        /// Set the default dependency resolver.
+        /// </summary>
+        /// <param name="resolver">The new dependency resolver</param>
         public static void SetResolver(IDependencyResolver resolver)
         {
             _resolver = resolver;
