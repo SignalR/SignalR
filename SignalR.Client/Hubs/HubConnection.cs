@@ -29,6 +29,11 @@ namespace SignalR.Client.Hubs
             base.Stop();
         }
 
+        /// <summary>
+        /// Creates a proxy to the <see cref="Hub"/> with the specified name.
+        /// </summary>
+        /// <param name="hubName">The name of the hub.</param>
+        /// <returns>A <see cref="IHubProxy"/></returns>
         public IHubProxy CreateProxy(string hubName)
         {
             HubProxy hubProxy;

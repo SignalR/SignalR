@@ -17,7 +17,7 @@ namespace SignalR
         /// <param name="url">url pattern of the route. Should end with catch-all parameter.</param>
         /// <returns>The registered route</returns>
         /// <example>
-        /// routes.MapConnection&gt;MyConnection&lt;("echo", "echo/{*operation}");
+        /// routes.MapConnection&lt;MyConnection&ht;("echo", "echo/{*operation}");
         /// </example>
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url) where T : PersistentConnection
         {
