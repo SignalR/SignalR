@@ -83,7 +83,7 @@ namespace SignalR.Tests
             {
                 var host = new MemoryHost();
                 var conn = new MyReconnect();
-                host.Configuration.ReconnectionTimeout = TimeSpan.FromSeconds(5);
+                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
                 host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");
@@ -100,7 +100,7 @@ namespace SignalR.Tests
             {
                 var host = new MemoryHost();
                 var conn = new MyReconnect();
-                host.Configuration.ReconnectionTimeout = TimeSpan.FromSeconds(5);
+                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
                 host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");

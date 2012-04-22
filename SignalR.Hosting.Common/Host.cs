@@ -5,7 +5,7 @@
         private readonly IDependencyResolver _resolver;
 
         public Host()
-            : this(Global.DependencyResolver)
+            : this(GlobalHost.DependencyResolver)
         {
 
         }

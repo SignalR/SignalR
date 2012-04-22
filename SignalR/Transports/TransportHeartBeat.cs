@@ -122,7 +122,7 @@ namespace SignalR.Transports
                         if (keepAlive == null &&
                             !connection.IsTimedOut &&
                             TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
-                            elapsed >= _configurationManager.ReconnectionTimeout)
+                            elapsed >= _configurationManager.ConnectionTimeout)
                         {
                             // If we're past the expiration time then just timeout the connection                            
                             connection.Timeout();

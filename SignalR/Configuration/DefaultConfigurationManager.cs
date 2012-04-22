@@ -6,12 +6,12 @@ namespace SignalR
     {
         public DefaultConfigurationManager()
         {
-            ReconnectionTimeout = TimeSpan.FromSeconds(110);
+            ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(20);
             HeartBeatInterval = TimeSpan.FromSeconds(10);
         }
 
-        public TimeSpan ReconnectionTimeout
+        public TimeSpan ConnectionTimeout
         {
             get;
             set;

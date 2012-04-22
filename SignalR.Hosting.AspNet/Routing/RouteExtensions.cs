@@ -10,7 +10,7 @@ namespace SignalR
     {
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url) where T : PersistentConnection
         {
-            return MapConnection(routes, name, url, typeof(T), Global.DependencyResolver);
+            return MapConnection(routes, name, url, typeof(T), GlobalHost.DependencyResolver);
         }
 
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url, IDependencyResolver resolver) where T : PersistentConnection
@@ -20,12 +20,12 @@ namespace SignalR
 
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type)
         {
-            return MapConnection(routes, name, url, type, Global.DependencyResolver);
+            return MapConnection(routes, name, url, type, GlobalHost.DependencyResolver);
         }
 
         public static RouteBase MapHubs(this RouteCollection routes, string url)
         {
-            return MapHubs(routes, url, Global.DependencyResolver);
+            return MapHubs(routes, url, GlobalHost.DependencyResolver);
         }
 
         public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)

@@ -39,7 +39,7 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Global.cs" />
+    <Compile Include="GlobalHost.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="Infrastructure\UriQueryUtility.cs" />
     <Compile Include="RoutingHost.cs" />

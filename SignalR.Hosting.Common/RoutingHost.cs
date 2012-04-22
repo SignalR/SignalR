@@ -7,7 +7,7 @@ namespace SignalR.Hosting.Common
         private readonly RouteManager _routeManager;
 
         public RoutingHost()
-            : this(Global.DependencyResolver)
+            : this(GlobalHost.DependencyResolver)
         {
         }
 
