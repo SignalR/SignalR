@@ -171,13 +171,13 @@ namespace SignalR
         public Task Send(string connectionId, object value)
         {
             OnSending();
-            return Connection.Broadcast(connectionId, value);
+            return Connection.Send(connectionId, value);
         }
 
         public Task SendToGroup(string groupName, object value)
         {
             OnSending();
-            return Connection.Broadcast(CreateQualifiedName(groupName), value);
+            return Connection.Send(CreateQualifiedName(groupName), value);
         }
 
         public Task AddToGroup(string connectionId, string groupName)

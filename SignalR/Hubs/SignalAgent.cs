@@ -76,7 +76,7 @@ namespace SignalR.Hubs
                 State = _state.GetChanges()
             };
 
-            return _connection.Broadcast(signal, invocation);
+            return _connection.Send(signal, invocation);
         }
     }
 }

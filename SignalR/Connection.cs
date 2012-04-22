@@ -46,12 +46,12 @@ namespace SignalR
 
         public virtual Task Broadcast(object value)
         {
-            return Broadcast(_baseSignal, value);
+            return Send(_baseSignal, value);
         }
 
-        public virtual Task Broadcast(string key, object value)
+        public virtual Task Send(string signal, object value)
         {
-            return SendMessage(key, value);
+            return SendMessage(signal, value);
         }
 
         public Task Send(object value)

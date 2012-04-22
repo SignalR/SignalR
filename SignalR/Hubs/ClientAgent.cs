@@ -58,7 +58,7 @@ namespace SignalR.Hubs
                 Args = args
             };
 
-            return connection.Broadcast(signal, invocation);
+            return connection.Send(signal, invocation);
         }
 
         public Task AddToGroup(string connectionId, string groupName)
@@ -83,7 +83,7 @@ namespace SignalR.Hubs
                 Value = commandValue
             };
 
-            return _connection.Broadcast(signal, groupCommand);
+            return _connection.Send(signal, groupCommand);
         }
     }
 }
