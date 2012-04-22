@@ -34,11 +34,10 @@ namespace SignalR
         /// <returns>A task that represents the connection id being added to the group.</returns>
         public Task AddToGroup(string connectionId, string groupName)
         {
-            groupName = CreateQualifiedName(groupName);
             return _connection.SendCommand(connectionId, new SignalCommand
             {
                 Type = CommandType.AddToGroup,
-                Value = groupName
+                Value = CreateQualifiedName(groupName)
             });
         }
 
@@ -50,11 +49,10 @@ namespace SignalR
         /// <returns>A task that represents the connection id being removed from the group.</returns>
         public Task RemoveFromGroup(string connectionId, string groupName)
         {
-            groupName = CreateQualifiedName(groupName);
             return _connection.SendCommand(connectionId, new SignalCommand
             {
                 Type = CommandType.RemoveFromGroup,
-                Value = groupName
+                Value = CreateQualifiedName(groupName)
             });
         }
 
