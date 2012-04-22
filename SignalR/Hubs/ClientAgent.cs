@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using System.Threading.Tasks;
 
 namespace SignalR.Hubs
@@ -71,6 +72,11 @@ namespace SignalR.Hubs
         {
             groupName = _hubName + "." + groupName;
             return SendCommand(connectionId, CommandType.RemoveFromGroup, groupName);
+        }
+        
+        public Task SendToGroup(string groupName, object value)
+        {
+            throw new NotSupportedException("Use the dynamic object to send messages to a specific group.");
         }
 
         private Task SendCommand(string connectionId, CommandType commandType, object commandValue)

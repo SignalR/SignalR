@@ -113,6 +113,7 @@
     <Compile Include="IReceivingConnection.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
+    <Compile Include="PersistentConnectionGroupManager.cs" />
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />

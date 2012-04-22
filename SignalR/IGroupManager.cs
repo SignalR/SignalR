@@ -5,6 +5,14 @@ namespace SignalR
     public interface IGroupManager
     {
         /// <summary>
+        /// Sends a value to the specified group.
+        /// </summary>
+        /// <param name="groupName">The name of the group.</param>
+        /// <param name="value">The value to send.</param>
+        /// <returns>A task that represents when send is complete.</returns>
+        Task SendToGroup(string groupName, object value);
+
+        /// <summary>
         /// Adds a connection to the specified group. 
         /// </summary>
         /// <param name="connectionId">The connection id to add to the group.</param>

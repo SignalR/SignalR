@@ -7,7 +7,7 @@ using SignalR.Transports;
 
 namespace SignalR
 {
-    public abstract class PersistentConnection : IGroupManager
+    public abstract class PersistentConnection
     {
         protected IMessageBus _messageBus;
         protected IJsonSerializer _jsonSerializer;
@@ -40,7 +40,19 @@ namespace SignalR
         public static event Action<string> ClientConnected;
         public static event Action<string> ClientDisconnected;
 
+        /// <summary>
+        /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
+        /// </summary>
         public IConnection Connection
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IGroupManager"/> for the <see cref="PersistentConnection"/>.
+        /// </summary>
+        public IGroupManager GroupManager
         {
             get;
             private set;
@@ -84,6 +96,8 @@ namespace SignalR
             var groups = new List<string>(_transport.Groups);
 
             Connection = CreateConnection(connectionId, groups, context.Request);
+
+            GroupManager = new PersistentConnectionGroupManager(Connection, DefaultSignal);
 
             _transport.Connected = () =>
             {
@@ -185,50 +199,6 @@ namespace SignalR
             return Connection.Send(connectionId, value);
         }
 
-        /// <summary>
-        /// Sends a value to all connections in the specified group.
-        /// </summary>
-        /// <param name="groupName">The name of the group.</param>
-        /// <param name="value">The value to send.</param>
-        /// <returns>A task that represents when the send is complete.</returns>
-        public Task SendToGroup(string groupName, object value)
-        {
-            OnSending();
-            return Connection.Send(CreateQualifiedName(groupName), value);
-        }
-
-        /// <summary>
-        /// Adds a connection to the specified group. 
-        /// </summary>
-        /// <param name="connectionId">The connection id to add to the group.</param>
-        /// <param name="groupName">The name of the group.</param>
-        /// <returns>A task that represents the connection id being added to the group.</returns>
-        public Task AddToGroup(string connectionId, string groupName)
-        {
-            groupName = CreateQualifiedName(groupName);
-            return Connection.SendCommand(new SignalCommand
-            {
-                Type = CommandType.AddToGroup,
-                Value = groupName
-            });
-        }
-
-        /// <summary>
-        /// Removes a connection from the specified group.
-        /// </summary>
-        /// <param name="connectionId">The connection id to remove from the group.</param>
-        /// <param name="groupName">The name of the group.</param>
-        /// <returns>A task that represents the connection id being removed from the group.</returns>
-        public Task RemoveFromGroup(string connectionId, string groupName)
-        {
-            groupName = CreateQualifiedName(groupName);
-            return Connection.SendCommand(new SignalCommand
-            {
-                Type = CommandType.RemoveFromGroup,
-                Value = groupName
-            });
-        }
-
         private Task ProcessNegotiationRequest(HostContext context)
         {
             var payload = new
@@ -255,11 +225,6 @@ namespace SignalR
             var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], _jsonSerializer.Stringify(payload));
 
             return context.Response.EndAsync(data);
-        }
-
-        private string CreateQualifiedName(string groupName)
-        {
-            return DefaultSignal + "." + groupName;
         }
 
         private bool IsNegotiationRequest(IRequest request)
