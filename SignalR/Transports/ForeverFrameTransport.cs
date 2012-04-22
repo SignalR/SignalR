@@ -57,7 +57,7 @@ namespace SignalR.Transports
             return Context.Response.WriteAsync(script);
         }
 
-        protected override Task InitializeResponse(IReceivingConnection connection)
+        protected override Task InitializeResponse(ITransportConnection connection)
         {
             return base.InitializeResponse(connection)
                 .Then(initScript => Context.Response.WriteAsync(initScript),

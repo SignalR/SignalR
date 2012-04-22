@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -113,7 +114,7 @@ namespace SignalR.Transports
         {
         }
 
-        protected IReceivingConnection Connection { get; set; }
+        protected ITransportConnection Connection { get; set; }
 
         protected HostContext Context
         {

@@ -2,7 +2,7 @@
 
 namespace SignalR
 {
-    public interface IConnection : IReceivingConnection
+    public interface IConnection
     {
         /// <summary>
         /// Sends a message to all connections waiting for the specified signal.

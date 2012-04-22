@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace SignalR
 {
-    public interface IReceivingConnection
+    public interface ITransportConnection
     {
         Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken);
         Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken);

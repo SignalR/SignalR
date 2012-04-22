@@ -231,7 +231,7 @@ namespace SignalR.Hubs
             return _transport.Send(hubResult);
         }
 
-        protected override IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
+        protected override Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
             string data = request.QueryStringOrForm("connectionData");
 

@@ -55,7 +55,7 @@
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
-    <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="Infrastructure\ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubManagerExtensions.cs" />
     <Compile Include="Hubs\Lookup\DefaultParameterResolver.cs" />
@@ -76,6 +76,7 @@
     <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
     <Compile Include="MessageBus\WrappedValue.cs" />
+    <Compile Include="PersistentConnectionContext.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdFactory.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\MethodDescriptor.cs" />
@@ -110,7 +111,7 @@
     <Compile Include="Infrastructure\IDependencyResolver.cs" />
     <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
-    <Compile Include="IReceivingConnection.cs" />
+    <Compile Include="ITransportConnection.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="PersistentConnectionGroupManager.cs" />

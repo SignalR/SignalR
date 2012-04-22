@@ -95,9 +95,10 @@ namespace SignalR
 
             var groups = new List<string>(_transport.Groups);
 
-            Connection = CreateConnection(connectionId, groups, context.Request);
-
-            GroupManager = new PersistentConnectionGroupManager(Connection, DefaultSignal);
+            Connection connection = CreateConnection(connectionId, groups, context.Request);
+            
+            Connection = connection;
+            GroupManager = new PersistentConnectionGroupManager(connection, GetType());
 
             _transport.Connected = () =>
             {
@@ -121,10 +122,10 @@ namespace SignalR
                 return OnDisconnectAsync(connectionId);
             };
 
-            return _transport.ProcessRequest(Connection) ?? TaskAsyncHelper.Empty;
+            return _transport.ProcessRequest(connection) ?? TaskAsyncHelper.Empty;
         }
 
-        protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
+        protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
             return new Connection(_messageBus,
                                   _jsonSerializer,

@@ -14,14 +14,14 @@ namespace SignalR.Hosting.AspNet.Samples
         {
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var connection = GlobalHost.ConnectionManager.GetConnection<Streaming>();
+                var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();
                 var demoClients = GlobalHost.ConnectionManager.GetClients<DemoHub>();
 
                 while (true)
                 {
                     try
                     {
-                        connection.Broadcast(DateTime.Now.ToString());
+                        context.Connection.Broadcast(DateTime.Now.ToString());
                         demoClients.fromArbitraryCode(DateTime.Now.ToString());
                     }
                     catch (Exception ex)

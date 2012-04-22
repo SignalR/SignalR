@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR
 {
@@ -7,10 +9,10 @@ namespace SignalR
         private readonly IConnection _connection;
         private readonly string _defaultSignal;
 
-        public PersistentConnectionGroupManager(IConnection connection, string defaultSignal)
+        public PersistentConnectionGroupManager(IConnection connection, Type connectionType)
         {
             _connection = connection;
-            _defaultSignal = defaultSignal;
+            _defaultSignal = connectionType.FullName;
         }
 
         /// <summary>
@@ -33,7 +35,7 @@ namespace SignalR
         public Task AddToGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
-            return _connection.SendCommand(new SignalCommand
+            return _connection.SendCommand(connectionId, new SignalCommand
             {
                 Type = CommandType.AddToGroup,
                 Value = groupName
@@ -49,7 +51,7 @@ namespace SignalR
         public Task RemoveFromGroup(string connectionId, string groupName)
         {
             groupName = CreateQualifiedName(groupName);
-            return _connection.SendCommand(new SignalCommand
+            return _connection.SendCommand(connectionId, new SignalCommand
             {
                 Type = CommandType.RemoveFromGroup,
                 Value = groupName

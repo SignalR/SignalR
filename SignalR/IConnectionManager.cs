@@ -22,10 +22,10 @@ namespace SignalR
         dynamic GetClients(string hubName);
 
         /// <summary>
-        /// Returns a connection representing all clients connected to the specified <see cref="PersistentConnection"/>.
+        /// Returns a <see cref="PersistentConnectionContext"/> representing all clients connected to the specified <see cref="PersistentConnection"/>.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="PersistentConnection"/></typeparam>
-        /// <returns>An IConnection representing all clients connected to the specified <see cref="PersistentConnection"/></returns>
-        IConnection GetConnection<T>() where T : PersistentConnection;
+        /// <returns>An <see cref="PersistentConnectionContext"/> representing all clients connected to the specified <see cref="PersistentConnection"/></returns>
+        PersistentConnectionContext GetConnectionContext<T>() where T : PersistentConnection;
     }
 }

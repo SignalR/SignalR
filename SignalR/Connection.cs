@@ -8,7 +8,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class Connection : IConnection, IReceivingConnection
+    public class Connection : IConnection, ITransportConnection
     {
         private readonly IMessageBus _messageBus;
         private readonly IJsonSerializer _serializer;

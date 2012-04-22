@@ -122,7 +122,7 @@ namespace SignalR.Transports
 
         public Func<Exception, Task> Error { get; set; }
 
-        public Task ProcessRequest(IReceivingConnection connection)
+        public Task ProcessRequest(ITransportConnection connection)
         {
             Connection = connection;
 
@@ -194,7 +194,7 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessConnectRequest(IReceivingConnection connection)
+        private Task ProcessConnectRequest(ITransportConnection connection)
         {
             HeartBeat.AddConnection(this);
 
@@ -207,7 +207,7 @@ namespace SignalR.Transports
             return ProcessReceiveRequest(connection);
         }
 
-        private Task ProcessReceiveRequest(IReceivingConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
             HeartBeat.MarkConnection(this);
 
