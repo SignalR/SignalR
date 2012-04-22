@@ -16,7 +16,7 @@
         }
 
         /// <summary>
-        /// Provides access to the <see cref="IDependencyResolver"/> for this host.
+        /// Gets the <see cref="IDependencyResolver"/> for this host.
         /// </summary>
         public IDependencyResolver DependencyResolver
         {
@@ -27,7 +27,7 @@
         }
 
         /// <summary>
-        /// Provides access to the <see cref="IConnectionManager"/> for this host.
+        /// Gets the <see cref="IConnectionManager"/> for this host.
         /// </summary>
         public IConnectionManager ConnectionManager
         {
@@ -38,7 +38,7 @@
         }
 
         /// <summary>
-        /// Provides access to the <see cref="IConfigurationManager"/> for this host.
+        /// Gets the <see cref="IConfigurationManager"/> for this host.
         /// </summary>
         public IConfigurationManager Configuration
         {
