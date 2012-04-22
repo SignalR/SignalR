@@ -124,7 +124,7 @@
     <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.WP7\SignalR.Client.WP7.csproj"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\')"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')"
              Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight\SignalR.Client.Silverlight.csproj"
