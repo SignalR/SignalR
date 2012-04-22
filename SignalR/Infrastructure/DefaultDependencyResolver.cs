@@ -47,8 +47,8 @@ namespace SignalR
             var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
             Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);
 
-            var connectionIdFactory = new GuidConnectionIdFactory();
-            Register(typeof(IConnectionIdFactory), () => connectionIdFactory);
+            var connectionIdGenerator = new GuidConnectionIdGenerator();
+            Register(typeof(IConnectionIdGenerator), () => connectionIdGenerator);
 
             var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
             Register(typeof(ITransportManager), () => transportManager.Value);

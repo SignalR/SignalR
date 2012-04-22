@@ -4,9 +4,9 @@ using SignalR.Hosting;
 
 namespace SignalR
 {
-    public class GuidConnectionIdFactory : IConnectionIdFactory
+    public class GuidConnectionIdGenerator : IConnectionIdGenerator
     {
-        public string CreateConnectionId(IRequest request, IPrincipal user)
+        public string GenerateConnectionId(IRequest request, IPrincipal user)
         {
             return Guid.NewGuid().ToString("d");
         }

@@ -116,7 +116,8 @@ namespace SignalR.Tests
                 Server.DependencyResolver.Register(typeof(FarmConnection), () => Connection);
                 Server.DependencyResolver.Register(typeof(IMessageBus), () => bus);
 
-                _connection = Server.ConnectionManager.GetConnection<FarmConnection>();
+                var context = Server.ConnectionManager.GetConnectionContext<FarmConnection>();
+                _connection = context.Connection;
             }
 
             public void Broadcast(string message)

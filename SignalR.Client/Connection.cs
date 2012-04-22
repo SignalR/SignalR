@@ -11,6 +11,9 @@ using SignalR.Client.Transports;
 
 namespace SignalR.Client
 {
+    /// <summary>
+    /// Provides client connections for SignalR services.
+    /// </summary>
     public class Connection : IConnection
     {
         private static Version _assemblyVersion;
@@ -18,23 +21,51 @@ namespace SignalR.Client
         private IClientTransport _transport;
         private bool _initialized;
 
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> has received data from the server.
+        /// </summary>
         public event Action<string> Received;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> has encountered an error.
+        /// </summary>
         public event Action<Exception> Error;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> is stopped.
+        /// </summary>
         public event Action Closed;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
+        /// </summary>
         public event Action Reconnected;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Connection"/> class.
+        /// </summary>
+        /// <param name="url">The url to connect to.</param>
         public Connection(string url)
             : this(url, (string)null)
         {
-
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Connection"/> class.
+        /// </summary>
+        /// <param name="url">The url to connect to.</param>
+        /// <param name="queryString">The query string data to pass to the server.</param>
         public Connection(string url, IDictionary<string, string> queryString)
             : this(url, CreateQueryString(queryString))
         {
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Connection"/> class.
+        /// </summary>
+        /// <param name="url">The url to connect to.</param>
+        /// <param name="queryString">The query string data to pass to the server.</param>
         public Connection(string url, string queryString)
         {
             if (url.Contains("?"))
@@ -53,31 +84,67 @@ namespace SignalR.Client
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Gets or sets the cookies associated with the connection.
+        /// </summary>
         public CookieContainer CookieContainer { get; set; }
 
+        /// <summary>
+        /// Gets or sets authentication information for the connection.
+        /// </summary>
         public ICredentials Credentials { get; set; }
 
+        /// <summary>
+        /// Gets or sets the groups for the connection.
+        /// </summary>
         public IEnumerable<string> Groups { get; set; }
 
         public Func<string> Sending { get; set; }
 
+        /// <summary>
+        /// Gets the url for the connection.
+        /// </summary>
         public string Url { get; private set; }
 
+        /// <summary>
+        /// Gets a value that indicates whether the connection is active or not.
+        /// </summary>
         public bool IsActive { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the last message id for the connection.
+        /// </summary>
         public long? MessageId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection id for the connection.
+        /// </summary>
         public string ConnectionId { get; set; }
 
+        /// <summary>
+        /// Gets a dictionary for storing state for a the connection.
+        /// </summary>
         public IDictionary<string, object> Items { get; private set; }
 
+        /// <summary>
+        /// Gets the querystring specified in the ctor.
+        /// </summary>
         public string QueryString { get; private set; }
 
+        /// <summary>
+        /// Starts the <see cref="Connection"/>.
+        /// </summary>
+        /// <returns>A task that represents when the connection has started.</returns>
         public Task Start()
         {
             return Start(new DefaultHttpClient());
         }
 
+        /// <summary>
+        /// Starts the <see cref="Connection"/>.
+        /// </summary>
+        /// <param name="httpClient">The http client</param>
+        /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IHttpClient httpClient)
         {
 #if WINDOWS_PHONE || SILVERLIGHT
@@ -88,6 +155,11 @@ namespace SignalR.Client
 #endif
         }
 
+        /// <summary>
+        /// Starts the <see cref="Connection"/>.
+        /// </summary>
+        /// <param name="transport">The transport to use.</param>
+        /// <returns>A task that represents when the connection has started.</returns>
         public virtual Task Start(IClientTransport transport)
         {
             if (IsActive)
@@ -165,6 +237,9 @@ namespace SignalR.Client
             }
         }
 
+        /// <summary>
+        /// Stops the <see cref="Connection"/>.
+        /// </summary>
         public virtual void Stop()
         {
             try
@@ -189,12 +264,17 @@ namespace SignalR.Client
             }
         }
 
+        /// <summary>
+        /// Sends data asynchronously over the connection.
+        /// </summary>
+        /// <param name="data">The data to send.</param>
+        /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(string data)
         {
-            return Send<object>(data);
+            return ((IConnection)this).Send<object>(data);
         }
 
-        public Task<T> Send<T>(string data)
+        Task<T> IConnection.Send<T>(string data)
         {
             if (!_initialized)
             {

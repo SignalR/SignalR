@@ -5,7 +5,7 @@
         private readonly IDependencyResolver _resolver;
 
         public Host()
-            : this(Global.DependencyResolver)
+            : this(GlobalHost.DependencyResolver)
         {
 
         }
@@ -15,6 +15,9 @@
             _resolver = resolver;
         }
 
+        /// <summary>
+        /// Gets the <see cref="IDependencyResolver"/> for this host.
+        /// </summary>
         public IDependencyResolver DependencyResolver
         {
             get
@@ -23,6 +26,9 @@
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="IConnectionManager"/> for this host.
+        /// </summary>
         public IConnectionManager ConnectionManager
         {
             get
@@ -31,6 +37,9 @@
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="IConfigurationManager"/> for this host.
+        /// </summary>
         public IConfigurationManager Configuration
         {
             get

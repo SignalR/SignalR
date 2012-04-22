@@ -19,12 +19,21 @@ namespace SignalR.Hosting.Self
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
+        /// <summary>
+        /// Initializes new instance of <see cref="Server"/>.
+        /// </summary>
+        /// <param name="url">The url to host the server on.</param>
         public Server(string url)
-            : this(url, Global.DependencyResolver)
+            : this(url, GlobalHost.DependencyResolver)
         {
 
         }
 
+        /// <summary>
+        /// Initializes new instance of <see cref="Server"/>.
+        /// </summary>
+        /// <param name="url">The url to host the server on.</param>
+        /// <param name="resolver">The dependency resolver for the server.</param>
         public Server(string url, IDependencyResolver resolver)
             : base(resolver)
         {
@@ -33,6 +42,9 @@ namespace SignalR.Hosting.Self
             _listener.Prefixes.Add(url);
         }
 
+        /// <summary>
+        /// Starts the server connection.
+        /// </summary>
         public void Start()
         {
             _listener.Start();
@@ -47,6 +59,9 @@ namespace SignalR.Hosting.Self
             ReceiveLoop();
         }
 
+        /// <summary>
+        /// Stops the server.
+        /// </summary>
         public void Stop()
         {
             _listener.Stop();

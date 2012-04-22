@@ -7,11 +7,11 @@ using SignalR.Transports;
 
 namespace SignalR
 {
-    public abstract class PersistentConnection : IGroupManager
+    public abstract class PersistentConnection
     {
         protected IMessageBus _messageBus;
         protected IJsonSerializer _jsonSerializer;
-        protected IConnectionIdFactory _connectionIdFactory;
+        protected IConnectionIdGenerator _connectionIdGenerator;
         private ITransportManager _transportManager;
         private bool _initialized;
 
@@ -26,7 +26,7 @@ namespace SignalR
             }
 
             _messageBus = resolver.Resolve<IMessageBus>();
-            _connectionIdFactory = resolver.Resolve<IConnectionIdFactory>();
+            _connectionIdGenerator = resolver.Resolve<IConnectionIdGenerator>();
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
@@ -40,7 +40,19 @@ namespace SignalR
         public static event Action<string> ClientConnected;
         public static event Action<string> ClientDisconnected;
 
+        /// <summary>
+        /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
+        /// </summary>
         public IConnection Connection
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IGroupManager"/> for the <see cref="PersistentConnection"/>.
+        /// </summary>
+        public IGroupManager GroupManager
         {
             get;
             private set;
@@ -83,7 +95,10 @@ namespace SignalR
 
             var groups = new List<string>(_transport.Groups);
 
-            Connection = CreateConnection(connectionId, groups, context.Request);
+            Connection connection = CreateConnection(connectionId, groups, context.Request);
+            
+            Connection = connection;
+            GroupManager = new PersistentConnectionGroupManager(connection, GetType());
 
             _transport.Connected = () =>
             {
@@ -107,10 +122,10 @@ namespace SignalR
                 return OnDisconnectAsync(connectionId);
             };
 
-            return _transport.ProcessRequest(Connection) ?? TaskAsyncHelper.Empty;
+            return _transport.ProcessRequest(connection) ?? TaskAsyncHelper.Empty;
         }
 
-        protected virtual IConnection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
+        protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
             return new Connection(_messageBus,
                                   _jsonSerializer,
@@ -162,42 +177,27 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Sends a message to the incoming connection id associated with the <see cref="PersistentConnection"/>.
+        /// </summary>
+        /// <param name="value">The value to send</param>
+        /// <returns>A task that represents when the send is complete.</returns>
         public Task Send(object value)
         {
             OnSending();
-            return Connection.Send(value);
+            return Connection.Send(_transport.ConnectionId, value);
         }
 
+        /// <summary>
+        /// Sends a value to the specified connection id.
+        /// </summary>
+        /// <param name="connectionId">The id of the connection to send to.</param>
+        /// <param name="value">The value to send.</param>
+        /// <returns>A task that represents when the send is complete.</returns>
         public Task Send(string connectionId, object value)
         {
             OnSending();
-            return Connection.Broadcast(connectionId, value);
-        }
-
-        public Task SendToGroup(string groupName, object value)
-        {
-            OnSending();
-            return Connection.Broadcast(CreateQualifiedName(groupName), value);
-        }
-
-        public Task AddToGroup(string connectionId, string groupName)
-        {
-            groupName = CreateQualifiedName(groupName);
-            return Connection.SendCommand(new SignalCommand
-            {
-                Type = CommandType.AddToGroup,
-                Value = groupName
-            });
-        }
-
-        public Task RemoveFromGroup(string connectionId, string groupName)
-        {
-            groupName = CreateQualifiedName(groupName);
-            return Connection.SendCommand(new SignalCommand
-            {
-                Type = CommandType.RemoveFromGroup,
-                Value = groupName
-            });
+            return Connection.Send(connectionId, value);
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
@@ -205,7 +205,7 @@ namespace SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdFactory.CreateConnectionId(context.Request, context.User),
+                ConnectionId = _connectionIdGenerator.GenerateConnectionId(context.Request, context.User),
                 TryWebSockets = context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"
@@ -226,11 +226,6 @@ namespace SignalR
             var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], _jsonSerializer.Stringify(payload));
 
             return context.Response.EndAsync(data);
-        }
-
-        private string CreateQualifiedName(string groupName)
-        {
-            return DefaultSignal + "." + groupName;
         }
 
         private bool IsNegotiationRequest(IRequest request)

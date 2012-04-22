@@ -22,7 +22,7 @@ namespace SignalR.Samples.Raw
 
             string user = GetUser(connectionId);
 
-            return AddToGroup(connectionId, "foo").ContinueWith(_ => 
+            return GroupManager.AddToGroup(connectionId, "foo").ContinueWith(_ => 
                    Connection.Broadcast(DateTime.Now + ": " + user + " joined")).Unwrap();
         }
 
@@ -76,16 +76,16 @@ namespace SignalR.Samples.Raw
                     });
                     break;
                 case MessageType.AddToGroup:
-                    AddToGroup(connectionId, message.Value);
+                    GroupManager.AddToGroup(connectionId, message.Value);
                     break;
                 case MessageType.RemoveFromGroup:
-                    RemoveFromGroup(connectionId, message.Value);
+                    GroupManager.RemoveFromGroup(connectionId, message.Value);
                     break;
                 case MessageType.SendToGroup:
                     var parts2 = message.Value.Split('|');
                     string groupName = parts2[0];
                     string val = parts2[1];
-                    SendToGroup(groupName, val);
+                    GroupManager.SendToGroup(groupName, val);
                     break;
                 default:
                     break;

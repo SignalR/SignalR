@@ -8,7 +8,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class Connection : IConnection, IReceivingConnection
+    public class Connection : IConnection, ITransportConnection
     {
         private readonly IMessageBus _messageBus;
         private readonly IJsonSerializer _serializer;
@@ -46,17 +46,12 @@ namespace SignalR
 
         public virtual Task Broadcast(object value)
         {
-            return Broadcast(_baseSignal, value);
+            return Send(_baseSignal, value);
         }
 
-        public virtual Task Broadcast(string key, object value)
+        public virtual Task Send(string signal, object value)
         {
-            return SendMessage(key, value);
-        }
-
-        public Task Send(object value)
-        {
-            return SendMessage(_connectionId, value);
+            return SendMessage(signal, value);
         }
 
         public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)

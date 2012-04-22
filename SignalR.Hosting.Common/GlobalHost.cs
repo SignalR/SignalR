@@ -2,11 +2,14 @@
 
 namespace SignalR
 {
-    public static class Global
+    public static class GlobalHost
     {
         private static IDependencyResolver _resolver;
         private static readonly Lazy<IDependencyResolver> _defaultResolver = new Lazy<IDependencyResolver>(() => new DefaultDependencyResolver());
 
+        /// <summary>
+        /// Gets the the default <see cref="IDependencyResolver"/>
+        /// </summary>
         public static IDependencyResolver DependencyResolver
         {
             get
@@ -15,6 +18,9 @@ namespace SignalR
             }
         }
 
+        /// <summary>
+        /// Gets the default <see cref="IConfigurationManager"/>
+        /// </summary>
         public static IConfigurationManager Configuration
         {
             get
@@ -23,7 +29,10 @@ namespace SignalR
             }
         }
 
-        public static IConnectionManager Connections
+        /// <summary>
+        /// Gets the default <see cref="IConnectionManager"/>
+        /// </summary>
+        public static IConnectionManager ConnectionManager
         {
             get
             {
@@ -31,6 +40,10 @@ namespace SignalR
             }
         }
 
+        /// <summary>
+        /// Sets the default dependency resolver.
+        /// </summary>
+        /// <param name="resolver">The new dependency resolver</param>
         public static void SetResolver(IDependencyResolver resolver)
         {
             _resolver = resolver;

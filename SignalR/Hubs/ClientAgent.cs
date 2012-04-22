@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using System.Threading.Tasks;
 
 namespace SignalR.Hubs
@@ -58,7 +59,7 @@ namespace SignalR.Hubs
                 Args = args
             };
 
-            return connection.Broadcast(signal, invocation);
+            return connection.Send(signal, invocation);
         }
 
         public Task AddToGroup(string connectionId, string groupName)
@@ -72,6 +73,11 @@ namespace SignalR.Hubs
             groupName = _hubName + "." + groupName;
             return SendCommand(connectionId, CommandType.RemoveFromGroup, groupName);
         }
+        
+        public Task SendToGroup(string groupName, object value)
+        {
+            throw new NotSupportedException("Use the dynamic object to send messages to a specific group.");
+        }
 
         private Task SendCommand(string connectionId, CommandType commandType, object commandValue)
         {
@@ -83,7 +89,7 @@ namespace SignalR.Hubs
                 Value = commandValue
             };
 
-            return _connection.Broadcast(signal, groupCommand);
+            return _connection.Send(signal, groupCommand);
         }
     }
 }

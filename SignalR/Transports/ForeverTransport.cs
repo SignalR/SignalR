@@ -89,7 +89,7 @@ namespace SignalR.Transports
 
         public Func<Exception, Task> Error { get; set; }
 
-        public Task ProcessRequest(IReceivingConnection connection)
+        public Task ProcessRequest(ITransportConnection connection)
         {
             Connection = connection;
 
@@ -140,7 +140,7 @@ namespace SignalR.Transports
             get { return true; }
         }
 
-        protected virtual Task InitializeResponse(IReceivingConnection connection)
+        protected virtual Task InitializeResponse(ITransportConnection connection)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -162,7 +162,7 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessReceiveRequest(IReceivingConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
             HeartBeat.AddConnection(this);
             HeartBeat.MarkConnection(this);
@@ -171,14 +171,14 @@ namespace SignalR.Transports
                     .Then((c, pr) => ProcessMessages(c, pr), connection, postReceive);
         }
 
-        private Task ProcessMessages(IReceivingConnection connection, Action postReceive = null)
+        private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
             ProcessMessagesImpl(tcs, connection, postReceive);
             return tcs.Task;
         }
 
-        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, IReceivingConnection connection, Action postReceive = null)
+        private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, ITransportConnection connection, Action postReceive = null)
         {
             if (!IsTimedOut && !IsDisconnected && Context.Response.IsClientConnected)
             {

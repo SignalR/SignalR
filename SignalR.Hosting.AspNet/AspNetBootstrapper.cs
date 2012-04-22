@@ -13,6 +13,9 @@ namespace SignalR.Hosting.AspNet
         private static object _lockObject = new object();
         private static readonly AspNetShutDownDetector _detector = new AspNetShutDownDetector(OnAppDomainShutdown);
 
+        /// <summary>
+        /// Initializes the ASP.NET host and sets up the default hub route (~/signalr). Do not call this from your code.
+        /// </summary>
         public static void Initialize()
         {
             if (!_initialized)
