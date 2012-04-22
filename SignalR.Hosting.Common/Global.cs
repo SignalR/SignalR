@@ -23,7 +23,7 @@ namespace SignalR
             }
         }
 
-        public static IConnectionManager Connections
+        public static IConnectionManager ConnectionManager
         {
             get
             {

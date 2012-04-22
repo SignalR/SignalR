@@ -14,8 +14,8 @@ namespace SignalR.Hosting.AspNet.Samples
         {
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var connection = SignalR.Global.Connections.GetConnection<Streaming>();
-                var demoClients = SignalR.Global.Connections.GetClients<DemoHub>();
+                var connection = SignalR.Global.ConnectionManager.GetConnection<Streaming>();
+                var demoClients = SignalR.Global.ConnectionManager.GetClients<DemoHub>();
 
                 while (true)
                 {
