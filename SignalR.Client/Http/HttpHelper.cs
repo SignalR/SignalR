@@ -14,9 +14,6 @@ namespace SignalR.Client.Http
     {
         public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
-#if NETFX_CORE
-            return request.GetResponseAsync().Then(response => (HttpWebResponse)response);
-#else
             try
             {
                 return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
@@ -25,14 +22,10 @@ namespace SignalR.Client.Http
             {
                 return TaskAsyncHelper.FromError<HttpWebResponse>(ex);
             }
-#endif
         }
 
         public static Task<Stream> GetHttpRequestStreamAsync(this HttpWebRequest request)
         {
-#if NETFX_CORE
-            return request.GetRequestStreamAsync();
-#else
             try
             {
                 return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
@@ -41,7 +34,6 @@ namespace SignalR.Client.Http
             {
                 return TaskAsyncHelper.FromError<Stream>(ex);
             }
-#endif
         }
 
         public static Task<HttpWebResponse> GetAsync(string url)
@@ -115,7 +107,7 @@ namespace SignalR.Client.Http
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
+#if !WINDOWS_PHONE && !SILVERLIGHT
             // Set the content length if the buffer is non-null
             request.ContentLength = buffer != null ? buffer.LongLength : 0;
 #endif
