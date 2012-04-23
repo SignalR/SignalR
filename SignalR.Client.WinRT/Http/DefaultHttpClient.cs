@@ -23,7 +23,18 @@ namespace SignalR.Client.Http
             var cts = new CancellationTokenSource();
             var handler = new DefaultHttpHandler(prepareRequest, cts.Cancel);
             var client = new HttpClient(handler);
-            HttpResponseMessage responseMessage = await client.PostAsync(url, new FormUrlEncodedContent(postData), cts.Token);
+
+            HttpContent content = null;
+            if (postData == null)
+            {
+                content = new StringContent(String.Empty);
+            }
+            else
+            {
+                content = new FormUrlEncodedContent(postData);
+            }
+
+            HttpResponseMessage responseMessage = await client.PostAsync(url, content, cts.Token);
             return new HttpResponseMessageWrapper(responseMessage);
         }
     }
