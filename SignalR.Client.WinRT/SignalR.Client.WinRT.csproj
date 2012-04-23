@@ -114,18 +114,6 @@
     <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Http\DefaultHttpClient.cs">
-      <Link>Http\DefaultHttpClient.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Http\HttpHelper.cs">
-      <Link>Http\HttpHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Http\HttpWebRequestWrapper.cs">
-      <Link>Http\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Http\HttpWebResponseWrapper.cs">
-      <Link>Http\HttpWebResponseWrapper.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR.Client\Http\IHttpClient.cs">
       <Link>Http\IHttpClient.cs</Link>
     </Compile>
@@ -210,6 +198,9 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="Http\DefaultHttpClient.cs" />
+    <Compile Include="Http\DefaultHttpHandler.cs" />
+    <Compile Include="Http\HttpResponseMessageWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
