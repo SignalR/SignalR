@@ -7,6 +7,9 @@ using SignalR.Transports;
 
 namespace SignalR
 {
+    /// <summary>
+    /// Represents a connection between client and server.
+    /// </summary>
     public abstract class PersistentConnection
     {
         protected IMessageBus _messageBus;

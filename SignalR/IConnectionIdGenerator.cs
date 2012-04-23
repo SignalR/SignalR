@@ -3,6 +3,9 @@ using SignalR.Hosting;
 
 namespace SignalR
 {
+    /// <summary>
+    /// Used to generate connection ids.
+    /// </summary>
     public interface IConnectionIdGenerator
     {
         /// <summary>
