@@ -36,6 +36,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>Bin\Debug\SignalR.Client.Silverlight5.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -46,6 +47,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>Bin\Release\SignalR.Client.Silverlight5.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -53,8 +55,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.4.5.1\lib\sl4\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System.Threading.Tasks.SL5">
-      <HintPath>..\packages\System.Threading.Tasks.3.0\lib\sl50\System.Threading.Tasks.SL5.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.SL5, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Threading.Tasks.3.0.1\lib\sl50\System.Threading.Tasks.SL5.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="system" />
