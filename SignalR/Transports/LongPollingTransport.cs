@@ -209,6 +209,7 @@ namespace SignalR.Transports
 
         private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
+            HeartBeat.UpdateConnection(this);
             HeartBeat.MarkConnection(this);
 
             // ReceiveAsync() will async wait until a message arrives then return

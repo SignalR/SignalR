@@ -29,9 +29,7 @@ namespace SignalR.Transports
 
         public void AddConnection(ITrackingConnection connection)
         {
-            // Remove and re-add the connection so we have the correct object reference
-            _connections.Remove(connection);
-            _connections.Add(connection);
+            UpdateConnection(connection);
 
             // Remove the metadata for new connections
             ConnectionMetadata old;
@@ -51,12 +49,15 @@ namespace SignalR.Transports
             _connectionMetadata.TryRemove(connection, out old);
         }
 
-        public void MarkConnection(ITrackingConnection connection)
+        public void UpdateConnection(ITrackingConnection connection)
         {
-            // Update the connection
+            // Remove and re-add the connection so we have the correct object reference
             _connections.Remove(connection);
             _connections.Add(connection);
+        }
 
+        public void MarkConnection(ITrackingConnection connection)
+        {
             // See if there's an old metadata value
             ConnectionMetadata oldMetadata;
             _connectionMetadata.TryGetValue(connection, out oldMetadata);
