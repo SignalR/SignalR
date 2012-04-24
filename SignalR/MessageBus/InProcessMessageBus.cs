@@ -249,51 +249,66 @@ namespace SignalR
             var tcs = new TaskCompletionSource<MessageResult>();
             int callbackCalled = 0;
             Action<IList<InMemoryMessage<T>>> callback = null;
+            CancellationTokenRegistration registration = default(CancellationTokenRegistration);
 
-            timeoutToken.Register(() =>
+            registration = timeoutToken.Register(() =>
             {
-                if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
+                try
                 {
-                    string id = _idGenerator.ConvertToString(_lastMessageId);
-                    tcs.TrySetResult(new MessageResult(id, timedOut: true));
-                }
-
-                // Remove callback for all keys
-                foreach (var eventKey in eventKeys)
-                {
-                    LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
-                    if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                    if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
                     {
-                        callbacks.RemoveWithLock(callback);
+                        string id = _idGenerator.ConvertToString(_lastMessageId);
+                        tcs.TrySetResult(new MessageResult(id, timedOut: true));
                     }
+
+                    // Remove callback for all keys
+                    foreach (var eventKey in eventKeys)
+                    {
+                        LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
+                        if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                        {
+                            callbacks.RemoveWithLock(callback);
+                        }
+                    }
+                }
+                finally
+                {
+                    registration.Dispose();
                 }
             });
 
             callback = receivedMessages =>
             {
-                // REVIEW: Consider the case where lastId is a referene type and is null.
-                // What wouls this return? Does it matter?
-                var messages = receivedMessages.Where(m => m.Id.CompareTo(lastId) > 0)
-                                               .ToList();
-
-                if (messages.Count == 0)
+                try
                 {
-                    return;
-                }
+                    // REVIEW: Consider the case where lastId is a referene type and is null.
+                    // What wouls this return? Does it matter?
+                    var messages = receivedMessages.Where(m => m.Id.CompareTo(lastId) > 0)
+                                                   .ToList();
 
-                if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
-                {
-                    tcs.TrySetResult(GetMessageResult(messages));
-                }
-
-                // Remove callback for all keys
-                foreach (var eventKey in eventKeys)
-                {
-                    LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
-                    if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                    if (messages.Count == 0)
                     {
-                        callbacks.RemoveWithLock(callback);
+                        return;
                     }
+
+                    if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
+                    {
+                        tcs.TrySetResult(GetMessageResult(messages));
+                    }
+
+                    // Remove callback for all keys
+                    foreach (var eventKey in eventKeys)
+                    {
+                        LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
+                        if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                        {
+                            callbacks.RemoveWithLock(callback);
+                        }
+                    }
+                }
+                finally
+                {
+                    registration.Dispose();
                 }
             };
 
