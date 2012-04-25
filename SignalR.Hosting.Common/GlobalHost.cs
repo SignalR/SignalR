@@ -2,9 +2,11 @@
 
 namespace SignalR
 {
+    /// <summary>
+    /// Provides access to default host information.
+    /// </summary>
     public static class GlobalHost
     {
-        private static IDependencyResolver _resolver;
         private static readonly Lazy<IDependencyResolver> _defaultResolver = new Lazy<IDependencyResolver>(() => new DefaultDependencyResolver());
 
         /// <summary>
@@ -14,7 +16,7 @@ namespace SignalR
         {
             get
             {
-                return _resolver ?? _defaultResolver.Value;
+                return _defaultResolver.Value;
             }
         }
 
@@ -38,15 +40,6 @@ namespace SignalR
             {
                 return DependencyResolver.Resolve<IConnectionManager>();
             }
-        }
-
-        /// <summary>
-        /// Sets the default dependency resolver.
-        /// </summary>
-        /// <param name="resolver">The new dependency resolver</param>
-        public static void SetResolver(IDependencyResolver resolver)
-        {
-            _resolver = resolver;
         }
     }
 }

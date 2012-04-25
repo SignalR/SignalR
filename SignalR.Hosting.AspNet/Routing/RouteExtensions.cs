@@ -55,8 +55,20 @@ namespace SignalR
         }
 
         /// <summary>
+        /// Changes the dependency resolver for the default hub route (~/signalr).
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <param name="resolver">The dependency resolver to use for the hub connection</param>
+        /// <returns>The registered route</returns>
+        public static RouteBase MapHubs(this RouteCollection routes, IDependencyResolver resolver)
+        {
+            return MapHubs(routes, "~/signalr", resolver);
+        }
+
+        /// <summary>
         /// Changes the default hub route from ~/signalr to a specified url.
         /// </summary>
+        /// <param name="routes">The route table</param>
         /// <param name="url">The url of the hubs route. This should *NOT* contain catch-all parameter.</param>
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string url)
