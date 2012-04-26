@@ -1,18 +1,17 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class PersistentConnectionGroupManager : IGroupManager
+    public class GroupManager : IGroupManager
     {
         private readonly IConnection _connection;
-        private readonly string _defaultSignal;
-
-        public PersistentConnectionGroupManager(IConnection connection, Type connectionType)
+        private readonly string _groupPrefix;
+        
+        public GroupManager(IConnection connection, string groupPrefix)
         {
             _connection = connection;
-            _defaultSignal = connectionType.FullName;
+            _groupPrefix = groupPrefix;
         }
 
         public Task Send(string groupName, object value)
@@ -22,7 +21,7 @@ namespace SignalR
 
         public Task Add(string connectionId, string groupName)
         {
-            return _connection.SendCommand(connectionId, new SignalCommand
+            return _connection.SendCommand(CreateQualifiedName(connectionId), new SignalCommand
             {
                 Type = CommandType.AddToGroup,
                 Value = CreateQualifiedName(groupName)
@@ -31,7 +30,7 @@ namespace SignalR
 
         public Task Remove(string connectionId, string groupName)
         {
-            return _connection.SendCommand(connectionId, new SignalCommand
+            return _connection.SendCommand(CreateQualifiedName(connectionId), new SignalCommand
             {
                 Type = CommandType.RemoveFromGroup,
                 Value = CreateQualifiedName(groupName)
@@ -40,7 +39,7 @@ namespace SignalR
 
         private string CreateQualifiedName(string groupName)
         {
-            return _defaultSignal + "." + groupName;
+            return _groupPrefix + "." + groupName;
         }
     }
 }

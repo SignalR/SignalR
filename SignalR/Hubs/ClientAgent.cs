@@ -1,10 +1,9 @@
-﻿using System;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
-    public class ClientAgent : DynamicObject, IGroupManager
+    public class ClientAgent : DynamicObject
     {
         private readonly IConnection _connection;
         private readonly string _hubName;
@@ -35,25 +34,6 @@ namespace SignalR.Hubs
             return true;
         }
 
-        public Task Add(string connectionId, string groupName)
-        {
-            return SendCommand(connectionId, 
-                               CommandType.AddToGroup, 
-                               CreateQualifiedName(groupName));
-        }
-
-        public Task Remove(string connectionId, string groupName)
-        {
-            return SendCommand(connectionId, 
-                               CommandType.RemoveFromGroup, 
-                               CreateQualifiedName(groupName));
-        }
-        
-        Task IGroupManager.Send(string groupName, object value)
-        {
-            throw new NotSupportedException("Use the dynamic object to send messages to a specific group.");
-        }
-        
         private Task Invoke(string method, params object[] args)
         {
             var invocation = new
@@ -64,24 +44,6 @@ namespace SignalR.Hubs
             };
 
             return _connection.Send(_hubName, invocation);
-        }
-
-        private Task SendCommand(string connectionId, CommandType commandType, object commandValue)
-        {
-            string signal = SignalCommand.AddCommandSuffix(CreateQualifiedName(connectionId));
-
-            var command = new SignalCommand
-            {
-                Type = commandType,
-                Value = commandValue
-            };
-
-            return _connection.Send(signal, command);
-        }
-
-        private string CreateQualifiedName(string unqualifiedName)
-        {
-            return _hubName + "." + unqualifiedName;
         }
     }
 }
