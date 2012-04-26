@@ -73,6 +73,11 @@ namespace SignalR.Samples.Hubs.DemoHub
             }
         }
 
+        public string ReadStateValue()
+        {
+            return Caller.name;
+        } 
+
         public void ComplexArray(Person[] people)
         {
 

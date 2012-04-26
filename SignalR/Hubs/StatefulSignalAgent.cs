@@ -19,6 +19,12 @@ namespace SignalR.Hubs
             return true;
         }
 
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            result = _state[binder.Name];
+            return true;
+        }
+
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             result = InvokeWithState(binder.Name, args);

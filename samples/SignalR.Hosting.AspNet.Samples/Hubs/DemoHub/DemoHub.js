@@ -89,5 +89,10 @@
         });
 
         demo.addToGroups();
+
+        demo.name = 'Testing state!';
+        demo.readStateValue().done(function (name) {
+            $('#readStateValue').html('Read some state! => ' + name);
+        });
     });
 });
