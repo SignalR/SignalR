@@ -33,7 +33,7 @@ namespace SignalR.Hubs
         private IDictionary<string, IEnumerable<MethodDescriptor>> FetchMethodsFor(HubDescriptor hub)
         {
             return _methods.GetOrAdd(
-                hub.Name, 
+                hub.Name,
                 key => BuildMethodCacheFor(hub));
         }
 
@@ -49,7 +49,7 @@ namespace SignalR.Hubs
             return ReflectionHelper.GetExportedHubMethods(hub.Type)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
-                              group => group.Select(oload => 
+                              group => group.Select(oload =>
                                   new MethodDescriptor
                                   {
                                       ReturnType = oload.ReturnType,
@@ -57,12 +57,12 @@ namespace SignalR.Hubs
                                       Invoker = oload.Invoke,
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
-                                              {
-                                                  Name = p.Name,
-                                                  Type = p.ParameterType,
-                                              })
+                                          {
+                                              Name = p.Name,
+                                              Type = p.ParameterType,
+                                          })
                                           .ToList()
-                                  }), 
+                                  }),
                               StringComparer.OrdinalIgnoreCase);
         }
 
@@ -72,12 +72,9 @@ namespace SignalR.Hubs
 
             if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
             {
-                var matches = overloads.Where(o => o.Matches(parameters)).ToList();
-                if(matches.Count == 1)
-                {
-                    descriptor = matches.First();
-                    return true;
-                }
+                descriptor = overloads.Where(o => o.Matches(parameters)).FirstOrDefault();
+
+                return descriptor != null;
             }
 
             descriptor = null;
