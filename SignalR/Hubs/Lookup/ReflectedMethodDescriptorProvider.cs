@@ -72,12 +72,8 @@ namespace SignalR.Hubs
 
             if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
             {
-                var matches = overloads.Where(o => o.Matches(parameters)).ToList();
-                if(matches.Count == 1)
-                {
-                    descriptor = matches.First();
-                    return true;
-                }
+                descriptor = overloads.FirstOrDefault(o => o.Matches(parameters));
+                return true;
             }
 
             descriptor = null;
