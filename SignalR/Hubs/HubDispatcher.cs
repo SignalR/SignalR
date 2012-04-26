@@ -256,10 +256,7 @@ namespace SignalR.Hubs
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
             // Try to find the associated hub type
-            var hub = _manager.EnsureHub(hubInfo.Name);
-
-            // Set the full type name
-            hubInfo.Name = hub.Name;
+            _manager.EnsureHub(hubInfo.Name);
 
             // Create the signals for hubs
             var clientSignals = new[] {
@@ -269,7 +266,6 @@ namespace SignalR.Hubs
             };
 
             return clientSignals;
-
         }
 
         private class ClientHubInfo
