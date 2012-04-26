@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
-    public class ClientAgent : DynamicObject, IClientAgent, IGroupManager
+    public class ClientAgent : DynamicObject, IGroupManager
     {
         private readonly IConnection _connection;
         private readonly string _hubName;
@@ -23,19 +23,6 @@ namespace SignalR.Hubs
             }
         }
 
-        public IConnection Connection
-        {
-            get
-            {
-                return _connection;
-            }
-        }
-
-        public Task Invoke(string method, params object[] args)
-        {
-            return Invoke(_connection, _hubName, method, args);
-        }
-
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = this[binder.Name];
@@ -48,46 +35,53 @@ namespace SignalR.Hubs
             return true;
         }
 
-        public static Task Invoke(IConnection connection, string hubName, string method, object[] args)
-        {
-            var invocation = new
-            {
-                Hub = hubName,
-                Method = method,
-                Args = args
-            };
-
-            return connection.Send(hubName, invocation);
-        }
-
         public Task Add(string connectionId, string groupName)
         {
-            groupName = _hubName + "." + groupName;
-            return SendCommand(connectionId, CommandType.AddToGroup, groupName);
+            return SendCommand(connectionId, 
+                               CommandType.AddToGroup, 
+                               CreateQualifiedName(groupName));
         }
 
         public Task Remove(string connectionId, string groupName)
         {
-            groupName = _hubName + "." + groupName;
-            return SendCommand(connectionId, CommandType.RemoveFromGroup, groupName);
+            return SendCommand(connectionId, 
+                               CommandType.RemoveFromGroup, 
+                               CreateQualifiedName(groupName));
         }
         
-        public Task Send(string groupName, object value)
+        Task IGroupManager.Send(string groupName, object value)
         {
             throw new NotSupportedException("Use the dynamic object to send messages to a specific group.");
+        }
+        
+        private Task Invoke(string method, params object[] args)
+        {
+            var invocation = new
+            {
+                Hub = _hubName,
+                Method = method,
+                Args = args
+            };
+
+            return _connection.Send(_hubName, invocation);
         }
 
         private Task SendCommand(string connectionId, CommandType commandType, object commandValue)
         {
-            string signal = SignalCommand.AddCommandSuffix(_hubName + "." + connectionId);
+            string signal = SignalCommand.AddCommandSuffix(CreateQualifiedName(connectionId));
 
-            var groupCommand = new SignalCommand
+            var command = new SignalCommand
             {
                 Type = commandType,
                 Value = commandValue
             };
 
-            return _connection.Send(signal, groupCommand);
+            return _connection.Send(signal, command);
+        }
+
+        private string CreateQualifiedName(string unqualifiedName)
+        {
+            return _hubName + "." + unqualifiedName;
         }
     }
 }

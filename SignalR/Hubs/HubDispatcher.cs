@@ -259,6 +259,9 @@ namespace SignalR.Hubs
             _manager.EnsureHub(hubInfo.Name);
 
             // Create the signals for hubs
+            // 1. The hub name e.g. MyHub
+            // 2. The connection id for this hub e.g. MyHub.{guid}
+            // 3. The command signal for this connection
             var clientSignals = new[] {
                 hubInfo.Name,
                 hubInfo.CreateQualifiedName(connectionId),

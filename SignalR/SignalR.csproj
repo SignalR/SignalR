@@ -105,7 +105,6 @@
     <Compile Include="Hubs\ClientAgent.cs" />
     <Compile Include="Hubs\HubContext.cs" />
     <Compile Include="Hubs\HubDispatcher.cs" />
-    <Compile Include="Hubs\IClientAgent.cs" />
     <Compile Include="Hubs\Lookup\IHubDescriptorProvider.cs" />
     <Compile Include="Hubs\SignalAgent.cs" />
     <Compile Include="Infrastructure\NullJavaScriptMinifier.cs" />

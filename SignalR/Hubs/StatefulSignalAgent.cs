@@ -1,5 +1,4 @@
 ﻿using System.Dynamic;
-using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
@@ -24,26 +23,16 @@ namespace SignalR.Hubs
             result = _state[binder.Name];
             return true;
         }
-
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+        
+        protected override object GetInvocationData(string method, object[] args)
         {
-            result = InvokeWithState(binder.Name, args);
-            return true;
-        }
-
-        private Task InvokeWithState(string method, object[] args)
-        {
-            string signal = _hubName + "." + _signal;
-
-            var invocation = new
+            return new
             {
                 Hub = _hubName,
                 Method = method,
                 Args = args,
                 State = _state.GetChanges()
             };
-
-            return _connection.Send(signal, invocation);
         }
     }
 }
