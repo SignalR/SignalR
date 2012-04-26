@@ -181,7 +181,7 @@ namespace SignalR.Hubs
                 if (hub != null)
                 {
                     state = state ?? new TrackingDictionary();
-                    hub.Context = new HubContext(_context, connectionId);
+                    hub.Context = new HubCallerContext(_context, connectionId);
                     hub.Caller = new StatefulSignalAgent(Connection, connectionId, descriptor.Name, state);
                     var groupManager = new GroupManager(Connection, descriptor.Name);
                     hub.Clients = new ClientAgent(Connection, descriptor.Name);

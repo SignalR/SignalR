@@ -14,12 +14,12 @@ namespace SignalR
             _resolver = resolver;
         }
 
-        public PersistentConnectionContext GetConnectionContext<T>() where T : PersistentConnection
+        public IPersistentConnectionContext GetConnectionContext<T>() where T : PersistentConnection
         {
             return GetConnection(typeof(T));
         }
 
-        public PersistentConnectionContext GetConnection(Type type)
+        public IPersistentConnectionContext GetConnection(Type type)
         {
             string connectionName = type.FullName;
             IConnection connection = GetConnection(connectionName);
@@ -27,18 +27,20 @@ namespace SignalR
             return new PersistentConnectionContext(connection, new GroupManager(connection, connectionName));
         }
 
-        public dynamic GetClients<T>() where T : IHub
+        public IHubContext GetHubContext<T>() where T : IHub
         {
-            return GetClients(typeof(T).GetHubName());
+            return GetHubContext(typeof(T).GetHubName());
         }
 
-        public dynamic GetClients(string hubName)
+        public IHubContext GetHubContext(string hubName)
         {
             var connection = GetConnection(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
             HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName);
-            
-            return new ClientAgent(connection, hubDescriptor.Name);
+
+            dynamic clients = new ClientAgent(connection, hubDescriptor.Name);
+
+            return new HubContext(clients, new GroupManager(connection, hubName));
         }
 
         private IConnection GetConnection(string connectionName)

@@ -15,7 +15,7 @@
         /// <summary>
         /// Provides information about the calling client.
         /// </summary>
-        public HubContext Context { get; set; }
+        public HubCallerContext Context { get; set; }
 
         /// <summary>
         /// The group manager for this hub instance.
