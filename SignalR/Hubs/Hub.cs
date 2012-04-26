@@ -1,21 +1,11 @@
-﻿using System.Threading.Tasks;
-
-namespace SignalR.Hubs
+﻿namespace SignalR.Hubs
 {
     public abstract class Hub : IHub
     {
-        public IClientAgent Agent { get; set; }
-
         /// <summary>
         /// A dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>
-        public dynamic Clients
-        {
-            get
-            {
-                return Agent;
-            }
-        }
+        public dynamic Clients { get; set; }
 
         /// <summary>
         /// A dynamic object that represents the calling client.

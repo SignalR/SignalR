@@ -184,7 +184,7 @@ namespace SignalR.Hubs
                     hub.Context = new HubContext(_context, connectionId);
                     hub.Caller = new StatefulSignalAgent(Connection, connectionId, descriptor.Name, state);
                     var agent = new ClientAgent(Connection, descriptor.Name);
-                    hub.Agent = agent;
+                    hub.Clients = agent;
                     hub.Groups = agent;
                 }
 
