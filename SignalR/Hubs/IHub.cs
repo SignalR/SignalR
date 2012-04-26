@@ -5,7 +5,7 @@
         IClientAgent Agent { get; set; }
         dynamic Caller { get; set; }
         HubContext Context { get; set; }
-        IGroupManager GroupManager { get; set; }
+        IGroupManager Groups { get; set; }
     }
 }
 

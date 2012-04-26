@@ -55,7 +55,7 @@ namespace SignalR
         /// <summary>
         /// Gets the <see cref="IGroupManager"/> for the <see cref="PersistentConnection"/>.
         /// </summary>
-        public IGroupManager GroupManager
+        public IGroupManager Groups
         {
             get;
             private set;
@@ -101,7 +101,7 @@ namespace SignalR
             Connection connection = CreateConnection(connectionId, groups, context.Request);
             
             Connection = connection;
-            GroupManager = new PersistentConnectionGroupManager(connection, GetType());
+            Groups = new PersistentConnectionGroupManager(connection, GetType());
 
             _transport.Connected = () =>
             {

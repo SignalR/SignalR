@@ -15,12 +15,12 @@ namespace SignalR
             _defaultSignal = connectionType.FullName;
         }
 
-        public Task SendToGroup(string groupName, object value)
+        public Task Send(string groupName, object value)
         {
             return _connection.Send(CreateQualifiedName(groupName), value);
         }
 
-        public Task AddToGroup(string connectionId, string groupName)
+        public Task Add(string connectionId, string groupName)
         {
             return _connection.SendCommand(connectionId, new SignalCommand
             {
@@ -29,7 +29,7 @@ namespace SignalR
             });
         }
 
-        public Task RemoveFromGroup(string connectionId, string groupName)
+        public Task Remove(string connectionId, string groupName)
         {
             return _connection.SendCommand(connectionId, new SignalCommand
             {

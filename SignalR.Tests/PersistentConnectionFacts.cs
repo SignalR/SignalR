@@ -149,7 +149,7 @@ namespace SignalR.Tests
     {
         protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
         {
-            return GroupManager.SendToGroup("test", "hey");
+            return Groups.Send("test", "hey");
         }
     }
 }

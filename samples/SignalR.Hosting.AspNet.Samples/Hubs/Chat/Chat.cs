@@ -277,7 +277,7 @@ namespace SignalR.Samples.Hubs.Chat
                             _rooms[room].Users.Remove(name);
 
                             Clients[room].leave(_users[name]);
-                            RemoveFromGroup(room);
+                            Groups.Remove(Context.ConnectionId, room);
                         }
 
                         _userRooms[name].Add(newRoom);
@@ -291,7 +291,7 @@ namespace SignalR.Samples.Hubs.Chat
                         // Set the room on the caller
                         Caller.room = newRoom;
 
-                        AddToGroup(newRoom);
+                        Groups.Add(Context.ConnectionId, newRoom);
 
                         Caller.refreshRoom(newRoom);
 
@@ -359,7 +359,7 @@ namespace SignalR.Samples.Hubs.Chat
                                 Clients[room].leave(_users[name]);
                             }
 
-                            RemoveFromGroup(room);
+                            Groups.Remove(Context.ConnectionId, room);
 
                             Caller.room = null;
 

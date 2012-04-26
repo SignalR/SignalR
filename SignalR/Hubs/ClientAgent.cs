@@ -60,19 +60,19 @@ namespace SignalR.Hubs
             return connection.Send(hubName, invocation);
         }
 
-        public Task AddToGroup(string connectionId, string groupName)
+        public Task Add(string connectionId, string groupName)
         {
             groupName = _hubName + "." + groupName;
             return SendCommand(connectionId, CommandType.AddToGroup, groupName);
         }
 
-        public Task RemoveFromGroup(string connectionId, string groupName)
+        public Task Remove(string connectionId, string groupName)
         {
             groupName = _hubName + "." + groupName;
             return SendCommand(connectionId, CommandType.RemoveFromGroup, groupName);
         }
         
-        public Task SendToGroup(string groupName, object value)
+        public Task Send(string groupName, object value)
         {
             throw new NotSupportedException("Use the dynamic object to send messages to a specific group.");
         }
