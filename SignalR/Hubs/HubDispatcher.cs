@@ -240,7 +240,7 @@ namespace SignalR.Hubs
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            var clientHubInfo = JsonConvert.DeserializeObject<IEnumerable<ClientHubInfo>>(data);
+            var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {
