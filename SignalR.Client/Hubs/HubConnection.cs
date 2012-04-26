@@ -49,8 +49,7 @@ namespace SignalR.Client.Hubs
         {
             var data = _hubs.Select(p => new HubRegistrationData
             {
-                Name = p.Key,
-                Methods = p.Value.GetSubscriptions()
+                Name = p.Key
             });
 
             return JsonConvert.SerializeObject(data);

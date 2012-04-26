@@ -33,7 +33,7 @@ namespace SignalR.Hubs
 
         public Task Invoke(string method, params object[] args)
         {
-            return Invoke(_connection, method, _hubName, method, args);
+            return Invoke(_connection, _hubName, method, args);
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -48,10 +48,8 @@ namespace SignalR.Hubs
             return true;
         }
 
-        public static Task Invoke(IConnection connection, string signal, string hubName, string method, object[] args)
+        public static Task Invoke(IConnection connection, string hubName, string method, object[] args)
         {
-            signal = hubName + "." + signal;
-
             var invocation = new
             {
                 Hub = hubName,
@@ -59,7 +57,7 @@ namespace SignalR.Hubs
                 Args = args
             };
 
-            return connection.Send(signal, invocation);
+            return connection.Send(hubName, invocation);
         }
 
         public Task AddToGroup(string connectionId, string groupName)

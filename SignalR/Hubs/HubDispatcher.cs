@@ -182,7 +182,7 @@ namespace SignalR.Hubs
                 {
                     state = state ?? new TrackingDictionary();
                     hub.Context = new HubContext(_context, connectionId);
-                    hub.Caller = new SignalAgent(Connection, connectionId, descriptor.Name, state);
+                    hub.Caller = new StatefulSignalAgent(Connection, connectionId, descriptor.Name, state);
                     var agent = new ClientAgent(Connection, descriptor.Name);
                     hub.Agent = agent;
                     hub.GroupManager = agent;
@@ -255,11 +255,6 @@ namespace SignalR.Hubs
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
-            var clientSignals = new[] { 
-                hubInfo.CreateQualifiedName(connectionId),
-                SignalCommand.AddCommandSuffix(hubInfo.CreateQualifiedName(connectionId))
-            };
-
             // Try to find the associated hub type
             var hub = _manager.EnsureHub(hubInfo.Name);
 
@@ -267,15 +262,19 @@ namespace SignalR.Hubs
             hubInfo.Name = hub.Name;
 
             // Create the signals for hubs
-            return hubInfo.Methods.Select(hubInfo.CreateQualifiedName)
-                                  .Concat(clientSignals);
+            var clientSignals = new[] {
+                hubInfo.Name,
+                hubInfo.CreateQualifiedName(connectionId),
+                SignalCommand.AddCommandSuffix(hubInfo.CreateQualifiedName(connectionId))
+            };
+
+            return clientSignals;
 
         }
 
         private class ClientHubInfo
         {
             public string Name { get; set; }
-            public string[] Methods { get; set; }
 
             public string CreateQualifiedName(string unqualifiedName)
             {

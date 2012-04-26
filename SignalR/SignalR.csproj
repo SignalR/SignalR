@@ -55,6 +55,7 @@
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
+    <Compile Include="Hubs\StatefulSignalAgent.cs" />
     <Compile Include="Infrastructure\ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubManagerExtensions.cs" />

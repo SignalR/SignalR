@@ -129,10 +129,5 @@ namespace SignalR.Client.Hubs
                 eventObj.OnData(args);
             }
         }
-
-        public IEnumerable<string> GetSubscriptions()
-        {
-            return _subscriptions.Keys;
-        }
     }
 }
