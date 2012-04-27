@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 
 namespace SignalR.Client
@@ -28,7 +29,7 @@ namespace SignalR.Client
         Task Send(string data);
         Task<T> Send<T>(string data);
 
-        void OnReceived(string data);
+        void OnReceived(JToken data);
         void OnError(Exception ex);
         void OnReconnected();
         void PrepareRequest(IRequest request);

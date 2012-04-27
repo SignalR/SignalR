@@ -45,10 +45,10 @@ namespace SignalR.Hubs
             JToken[] parameterValues = hubRequest.ParameterValues;
 
             // Resolve the action
-            MethodDescriptor actionDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Action, parameterValues);
-            if (actionDescriptor == null)
+            MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
+            if (methodDescriptor == null)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' action could not be resolved.", hubRequest.Action));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' method could not be resolved.", hubRequest.Method));
             }
 
             // Resolving the actual state object
@@ -59,8 +59,8 @@ namespace SignalR.Hubs
             try
             {
                 // Invoke the action
-                object result = actionDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(actionDescriptor, parameterValues));
-                Type returnType = result != null ? result.GetType() : actionDescriptor.ReturnType;
+                object result = methodDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(methodDescriptor, parameterValues));
+                Type returnType = result != null ? result.GetType() : methodDescriptor.ReturnType;
 
                 if (typeof(Task).IsAssignableFrom(returnType))
                 {
@@ -301,14 +301,14 @@ namespace SignalR.Hubs
 
                 // TODO: Figure out case insensitivity in JObject.Parse, this should cover our clients for now
                 request.Hub = rawRequest.Value<string>("hub") ?? rawRequest.Value<string>("Hub");
-                request.Action = rawRequest.Value<string>("action") ?? rawRequest.Value<string>("Action");
+                request.Method = rawRequest.Value<string>("method") ?? rawRequest.Value<string>("Method");
                 request.Id = rawRequest.Value<string>("id") ?? rawRequest.Value<string>("Id");
 
                 var rawState = rawRequest["state"] ?? rawRequest["State"];
                 request.State = rawState == null ? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) :
                                            rawState.ToObject<IDictionary<string, object>>();
 
-                var rawArgs = rawRequest["data"] ?? rawRequest["Data"];
+                var rawArgs = rawRequest["args"] ?? rawRequest["Args"];
                 request.ParameterValues = rawArgs == null ? _emptyArgs :
                                                     rawArgs.Children().ToArray();
 
@@ -316,7 +316,7 @@ namespace SignalR.Hubs
             }
 
             public string Hub { get; set; }
-            public string Action { get; set; }
+            public string Method { get; set; }
             public JToken[] ParameterValues { get; set; }
             public IDictionary<string, object> State { get; set; }
             public string Id { get; set; }

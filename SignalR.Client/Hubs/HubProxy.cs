@@ -68,11 +68,11 @@ namespace SignalR.Client.Hubs
                 throw new ArgumentNullException("method");
             }
 
-            var hubData = new HubServerInvocation
+            var hubData = new HubInvocation
             {
                 Hub = _hubName,
-                Action = method,
-                Data = args,
+                Method = method,
+                Args = args,
                 State = _state
             };
 

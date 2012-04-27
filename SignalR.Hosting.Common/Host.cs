@@ -3,13 +3,7 @@
     public class Host
     {
         private readonly IDependencyResolver _resolver;
-
-        public Host()
-            : this(GlobalHost.DependencyResolver)
-        {
-
-        }
-
+        
         public Host(IDependencyResolver resolver)
         {
             _resolver = resolver;

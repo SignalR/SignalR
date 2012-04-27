@@ -126,9 +126,6 @@
     <Compile Include="..\SignalR.Client\Http\IResponse.cs">
       <Link>Http\IResponse.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Hubs\HubClientInvocation.cs">
-      <Link>Hubs\HubClientInvocation.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR.Client\Hubs\HubConnection.cs">
       <Link>Hubs\HubConnection.cs</Link>
     </Compile>
@@ -147,8 +144,8 @@
     <Compile Include="..\SignalR.Client\Hubs\Hubservable.cs">
       <Link>Hubs\Hubservable.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Hubs\HubServerInvocation.cs">
-      <Link>Hubs\HubServerInvocation.cs</Link>
+    <Compile Include="..\SignalR.Client\Hubs\HubInvocation.cs">
+      <Link>Hubs\HubInvocation.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Hubs\IHubProxy.cs">
       <Link>Hubs\IHubProxy.cs</Link>
