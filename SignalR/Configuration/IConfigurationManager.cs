@@ -8,22 +8,22 @@ namespace SignalR
     public interface IConfigurationManager
     {
         /// <summary>
-        /// A TimeSpan representing the amount of time to leave a connection open before timing out.
+        /// Gets of sets a <see cref="TimeSpan"/> representing the amount of time to leave a connection open before timing out.
         /// </summary>
         TimeSpan ConnectionTimeout { get; set; }
 
         /// <summary>
-        /// A TimeSpan representing the amount of time to wait after a connection goes away before raising the disconnect event.
+        /// Gets of sets a <see cref="TimeSpan"/> representing the amount of time to wait after a connection goes away before raising the disconnect event.
         /// </summary>
         TimeSpan DisconnectTimeout { get; set; }
 
         /// <summary>
-        /// The time interval between for checking the state of a connection. 
+        /// Gets of sets a <see cref="TimeSpan"/> representing the interval for checking the state of a connection. 
         /// </summary>
         TimeSpan HeartBeatInterval { get; set; }
 
         /// <summary>
-        /// A TimeSpan representing the amount of time to wait before sending a keep alive packet over an idle connection. Set to null to disable keep alive.
+        /// Gets of sets a <see cref="TimeSpan"/> representing the amount of time to wait before sending a keep alive packet over an idle connection. Set to null to disable keep alive.
         /// </summary>
         TimeSpan? KeepAlive { get; set; }
     }
