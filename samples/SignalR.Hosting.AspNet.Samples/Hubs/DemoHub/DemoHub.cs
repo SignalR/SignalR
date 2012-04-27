@@ -19,8 +19,8 @@ namespace SignalR.Samples.Hubs.DemoHub
 
         public void AddToGroups()
         {
-            AddToGroup("foo");
-            AddToGroup("bar");
+            Groups.Add(Context.ConnectionId, "foo");
+            Groups.Add(Context.ConnectionId, "bar");
             Caller.groupAdded();
         }
 
@@ -72,6 +72,11 @@ namespace SignalR.Samples.Hubs.DemoHub
             {
             }
         }
+
+        public string ReadStateValue()
+        {
+            return Caller.name;
+        } 
 
         public void ComplexArray(Person[] people)
         {

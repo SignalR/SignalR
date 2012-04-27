@@ -181,11 +181,11 @@ namespace SignalR.Hubs
                 if (hub != null)
                 {
                     state = state ?? new TrackingDictionary();
-                    hub.Context = new HubContext(_context, connectionId);
-                    hub.Caller = new SignalAgent(Connection, connectionId, descriptor.Name, state);
-                    var agent = new ClientAgent(Connection, descriptor.Name);
-                    hub.Agent = agent;
-                    hub.GroupManager = agent;
+                    hub.Context = new HubCallerContext(_context, connectionId);
+                    hub.Caller = new StatefulSignalAgent(Connection, connectionId, descriptor.Name, state);
+                    var groupManager = new GroupManager(Connection, descriptor.Name);
+                    hub.Clients = new ClientAgent(Connection, descriptor.Name);
+                    hub.Groups = new GroupManager(Connection, descriptor.Name);
                 }
 
                 return hub;
@@ -240,7 +240,7 @@ namespace SignalR.Hubs
                 return base.CreateConnection(connectionId, groups, request);
             }
 
-            var clientHubInfo = JsonConvert.DeserializeObject<IEnumerable<ClientHubInfo>>(data);
+            var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
 
             if (clientHubInfo == null || !clientHubInfo.Any())
             {
@@ -255,27 +255,25 @@ namespace SignalR.Hubs
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
-            var clientSignals = new[] { 
+            // Try to find the associated hub type
+            _manager.EnsureHub(hubInfo.Name);
+
+            // Create the signals for hubs
+            // 1. The hub name e.g. MyHub
+            // 2. The connection id for this hub e.g. MyHub.{guid}
+            // 3. The command signal for this connection
+            var clientSignals = new[] {
+                hubInfo.Name,
                 hubInfo.CreateQualifiedName(connectionId),
                 SignalCommand.AddCommandSuffix(hubInfo.CreateQualifiedName(connectionId))
             };
 
-            // Try to find the associated hub type
-            var hub = _manager.EnsureHub(hubInfo.Name);
-
-            // Set the full type name
-            hubInfo.Name = hub.Name;
-
-            // Create the signals for hubs
-            return hubInfo.Methods.Select(hubInfo.CreateQualifiedName)
-                                  .Concat(clientSignals);
-
+            return clientSignals;
         }
 
         private class ClientHubInfo
         {
             public string Name { get; set; }
-            public string[] Methods { get; set; }
 
             public string CreateQualifiedName(string unqualifiedName)
             {

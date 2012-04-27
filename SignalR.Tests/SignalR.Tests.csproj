@@ -51,11 +51,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
+      <Link>DemoHub.cs</Link>
+    </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="ConnectionFacts.cs" />
     <Compile Include="DefaultHubResolverTest.cs" />
     <Compile Include="DisconnectFacts.cs" />
     <Compile Include="HubProxyTest.cs" />
+    <Compile Include="HubFacts.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />

@@ -55,7 +55,7 @@ namespace SignalR
         /// <summary>
         /// Gets the <see cref="IGroupManager"/> for the <see cref="PersistentConnection"/>.
         /// </summary>
-        public IGroupManager GroupManager
+        public IGroupManager Groups
         {
             get;
             private set;
@@ -99,9 +99,9 @@ namespace SignalR
             var groups = new List<string>(_transport.Groups);
 
             Connection connection = CreateConnection(connectionId, groups, context.Request);
-            
+
             Connection = connection;
-            GroupManager = new PersistentConnectionGroupManager(connection, GetType());
+            Groups = new GroupManager(connection, DefaultSignal);
 
             _transport.Connected = () =>
             {
@@ -144,10 +144,16 @@ namespace SignalR
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
-            // 3. connection id + SIGNALRCOMMAND -> for built in commands that we need to process
+            // 3. Scoped Connection id + SIGNALRCOMMAND -> for built in commands that we need to process (for this connection only)
+            // 4. Connection id + SIGNALRCOMMAND -> for built in commands that we need to process
+
+            // Create a scoped connection id
+            string scopedConnectionId = DefaultSignal + "." + connectionId;
+
             return new string[] {
                 DefaultSignal,
                 connectionId,
+                SignalCommand.AddCommandSuffix(scopedConnectionId),
                 SignalCommand.AddCommandSuffix(connectionId)
             };
         }

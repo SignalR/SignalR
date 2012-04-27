@@ -55,6 +55,9 @@
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
+    <Compile Include="Hubs\HubContext.cs" />
+    <Compile Include="Hubs\IHubContext.cs" />
+    <Compile Include="Hubs\StatefulSignalAgent.cs" />
     <Compile Include="Infrastructure\ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubManagerExtensions.cs" />
@@ -72,6 +75,7 @@
     <Compile Include="Hubs\Lookup\IHubManager.cs" />
     <Compile Include="IConnectionManager.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="IPersistentConnectionContext.cs" />
     <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
@@ -102,9 +106,8 @@
     <Compile Include="Hubs\Lookup\ReflectedHubDescriptorProvider.cs" />
     <Compile Include="Hubs\Hub.cs" />
     <Compile Include="Hubs\ClientAgent.cs" />
-    <Compile Include="Hubs\HubContext.cs" />
+    <Compile Include="Hubs\HubCallerContext.cs" />
     <Compile Include="Hubs\HubDispatcher.cs" />
-    <Compile Include="Hubs\IClientAgent.cs" />
     <Compile Include="Hubs\Lookup\IHubDescriptorProvider.cs" />
     <Compile Include="Hubs\SignalAgent.cs" />
     <Compile Include="Infrastructure\NullJavaScriptMinifier.cs" />
@@ -114,7 +117,7 @@
     <Compile Include="ITransportConnection.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
-    <Compile Include="PersistentConnectionGroupManager.cs" />
+    <Compile Include="GroupManager.cs" />
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />

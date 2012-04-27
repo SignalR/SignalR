@@ -45,11 +45,9 @@
         if (hub) {
             signalR.hub.processState(hubName, hub.obj, state);
 
-            if (hub[fn]) {
-                hubMethod = hub.obj[fn];
-                if (hubMethod) {
-                    hubMethod.apply(hub.obj, args);
-                }
+            hubMethod = hub.obj[fn];
+            if (hubMethod) {
+                hubMethod.apply(hub.obj, args);
             }
         }
     }
@@ -57,15 +55,13 @@
     function updateClientMembers(instance) {
         var newHubs = {},
             obj,
-            hubName = "",
-            newHub,
             memberValue,
             key,
             memberKey;
 
         for (key in instance) {
             if (instance.hasOwnProperty(key)) {
-
+                // This is a client hub
                 obj = instance[key];
 
                 if ($.type(obj) !== "object" ||
@@ -73,28 +69,7 @@
                     continue;
                 }
 
-                newHub = null;
-                hubName = obj._.hubName;
-
-                for (memberKey in obj) {
-                    if (obj.hasOwnProperty(memberKey)) {
-                        memberValue = obj[memberKey];
-
-                        if (memberKey === "_" ||
-                                $.type(memberValue) !== "function" ||
-                                $.inArray(memberKey, obj._.ignoreMembers) >= 0) {
-                            continue;
-                        }
-
-                        if (!newHub) {
-                            newHub = { obj: obj };
-
-                            newHubs[hubName] = newHub;
-                        }
-
-                        newHub[memberKey] = memberValue;
-                    }
-                }
+                newHubs[obj._.hubName] = { obj : obj };
             }
         }
 
@@ -165,17 +140,7 @@
             var localHubs = [];
 
             $.each(hubs, function (key) {
-                var methods = [];
-
-                $.each(this, function (key) {
-                    if (key === "obj") {
-                        return true;
-                    }
-
-                    methods.push(key);
-                });
-
-                localHubs.push({ name: key, methods: methods });
+                localHubs.push({ name: key });
             });
 
             this.data = window.JSON.stringify(localHubs);

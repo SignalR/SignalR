@@ -14,41 +14,44 @@ namespace SignalR
             _resolver = resolver;
         }
 
-        public PersistentConnectionContext GetConnectionContext<T>() where T : PersistentConnection
+        public IPersistentConnectionContext GetConnectionContext<T>() where T : PersistentConnection
         {
             return GetConnection(typeof(T));
         }
 
-        public PersistentConnectionContext GetConnection(Type type)
+        public IPersistentConnectionContext GetConnection(Type type)
         {
-            IConnection connection = GetConnection(type.FullName);
+            string connectionName = type.FullName;
+            IConnection connection = GetConnection(connectionName);
 
-            return new PersistentConnectionContext(connection, new PersistentConnectionGroupManager(connection, type));
+            return new PersistentConnectionContext(connection, new GroupManager(connection, connectionName));
         }
 
-        public dynamic GetClients<T>() where T : IHub
+        public IHubContext GetHubContext<T>() where T : IHub
         {
-            return GetClients(typeof(T).GetHubName());
+            return GetHubContext(typeof(T).GetHubName());
         }
 
-        public dynamic GetClients(string hubName)
+        public IHubContext GetHubContext(string hubName)
         {
-            var connection = GetConnection(connectionType: null);
+            var connection = GetConnection(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
             HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName);
 
-            return new ClientAgent(connection, hubDescriptor.Name);
+            dynamic clients = new ClientAgent(connection, hubDescriptor.Name);
+
+            return new HubContext(clients, new GroupManager(connection, hubName));
         }
 
-        private IConnection GetConnection(string connectionType)
+        private IConnection GetConnection(string connectionName)
         {
-            var signals = connectionType == null ? Enumerable.Empty<string>() : new[] { connectionType };
+            var signals = connectionName == null ? Enumerable.Empty<string>() : new[] { connectionName };
 
             // Give this a unique id
             var connectionId = Guid.NewGuid().ToString();
             return new Connection(_resolver.Resolve<IMessageBus>(),
                                   _resolver.Resolve<IJsonSerializer>(),
-                                  connectionType,
+                                  connectionName,
                                   connectionId,
                                   signals,
                                   Enumerable.Empty<string>(),
