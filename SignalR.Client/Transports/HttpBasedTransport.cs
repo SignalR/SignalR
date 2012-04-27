@@ -173,11 +173,11 @@ namespace SignalR.Client.Transports
                 var messages = result["Messages"] as JArray;
                 if (messages != null)
                 {
-                    foreach (var message in messages)
+                    foreach (JToken message in messages)
                     {
                         try
                         {
-                            connection.OnReceived(message.ToString());
+                            connection.OnReceived(message);
                         }
                         catch (Exception ex)
                         {

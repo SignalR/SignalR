@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 using SignalR.Client.Transports;
 
@@ -284,11 +285,16 @@ namespace SignalR.Client
             return _transport.Send<T>(this, data);
         }
 
-        void IConnection.OnReceived(string message)
+        void IConnection.OnReceived(JToken message)
+        {
+            OnReceived(message);
+        }
+
+        protected virtual void OnReceived(JToken message)
         {
             if (Received != null)
             {
-                Received(message);
+                Received(message.ToString());
             }
         }
 
