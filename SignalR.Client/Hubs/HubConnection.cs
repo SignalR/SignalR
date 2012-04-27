@@ -30,7 +30,7 @@ namespace SignalR.Client.Hubs
 
         protected override void OnReceived(JToken message)
         {
-            var invocation = message.ToObject<HubClientInvocation>();
+            var invocation = message.ToObject<HubInvocation>();
             HubProxy hubProxy;
             if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
             {

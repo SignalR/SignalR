@@ -103,7 +103,7 @@
                 ? args.slice(0, -1) // all but last
                 : args,
             argValues = methodArgs.map(getArgValue),
-            data = { hub: hub._.hubName, action: methodName, data: argValues, state: copy(hub, ["_"]), id: callbackId },
+            data = { hub: hub._.hubName, method: methodName, args: argValues, state: copy(hub, ["_"]), id: callbackId },
             d = $.Deferred(),
             cb = function (result) {
                 signalR.hub.processState(hub._.hubName, hub, result.State);
