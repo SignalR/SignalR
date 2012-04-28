@@ -127,6 +127,29 @@ namespace SignalR.Tests
             Assert.True(called);
         }
 
+        [Fact]
+        public void HubNamesAreNotCaseSensitive()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+
+            var hubConnection = new HubConnection("http://fake");
+            IHubProxy proxy = hubConnection.CreateProxy("chatHub");
+            var called = false;
+
+            proxy.On("addMessage", data =>
+            {
+                called = true;
+                Assert.Equal("hello", data);
+            });
+
+            hubConnection.Start(host).Wait();
+
+            proxy.Invoke("Send", "hello").Wait();
+
+            Assert.True(called);
+        }
+
         private void AssertAggregateException(Action action, string message)
         {
             try

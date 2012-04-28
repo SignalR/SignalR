@@ -256,7 +256,10 @@ namespace SignalR.Hubs
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
             // Try to find the associated hub type
-            _manager.EnsureHub(hubInfo.Name);
+            HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name);
+
+            // Update the name (Issue #344)
+            hubInfo.Name = hubDescriptor.Name;
 
             // Create the signals for hubs
             // 1. The hub name e.g. MyHub
