@@ -13,6 +13,7 @@
         <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
         <XunitPath>$(ToolsPath)xunit\</XunitPath>
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
+        <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
     </PropertyGroup>
   
@@ -116,6 +117,7 @@
       <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.Common\bin\$(Configuration)\SignalR.Hosting.Common.dll" />
     </ItemGroup>
     <Exec Command="&quot;$(DocuExePath)&quot; @(DocProjects, ' ')" WorkingDirectory="$(DocsPath)" />
+    <Exec Command="&quot;$(ZipExe)&quot; a ..\..\docs.v$(Version).zip" WorkingDirectory="$(DocsPath)\output" />
   </Target>
   
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
