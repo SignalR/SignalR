@@ -150,6 +150,20 @@ namespace SignalR.Tests
             Assert.True(called);
         }
 
+        [Fact]
+        public void UnableToCreateHubThrowsError()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+
+            var hubConnection = new HubConnection("http://fake");
+            IHubProxy proxy = hubConnection.CreateProxy("MyHub2");
+            
+            hubConnection.Start(host).Wait();
+
+            Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());
+        }
+
         private void AssertAggregateException(Action action, string message)
         {
             try
@@ -159,6 +173,19 @@ namespace SignalR.Tests
             catch (AggregateException ex)
             {
                 Assert.Equal(ex.Unwrap().Message, message);
+            }
+        }
+
+        public class MyHub2 : Hub
+        {
+            public MyHub2(int n)
+            {
+
+            }
+
+            public void Send(string value)
+            {
+
             }
         }
 
