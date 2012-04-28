@@ -12,6 +12,8 @@ namespace SignalR
     /// </summary>
     public abstract class PersistentConnection
     {
+        private const string WebSocketsTransportName = "webSockets";
+
         protected IMessageBus _messageBus;
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdGenerator _connectionIdGenerator;
@@ -203,7 +205,7 @@ namespace SignalR
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdGenerator.GenerateConnectionId(context.Request, context.User),
-                TryWebSockets = context.SupportsWebSockets(),
+                TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"
             };
