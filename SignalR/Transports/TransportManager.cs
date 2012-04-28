@@ -45,5 +45,15 @@ namespace SignalR.Transports
 
             return null;
         }
+
+        public bool SupportsTransport(string transportName)
+        {
+            if (String.IsNullOrEmpty(transportName))
+            {
+                return false;
+            }
+
+            return _transports.ContainsKey(transportName);
+        }
     }
 }
