@@ -18,6 +18,7 @@ namespace SignalR.Hubs
         private IHubManager _manager;
         private IParameterResolver _binder;
         private HostContext _context;
+        private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
 
         private readonly string _url;
 
@@ -208,7 +209,7 @@ namespace SignalR.Hubs
         private IEnumerable<HubDescriptor> GetHubsImplementingInterface(Type interfaceType)
         {
             // Get hubs that implement the specified interface
-            return _manager.GetHubs(hub => interfaceType.IsAssignableFrom(hub.Type));
+            return _hubs.Where(hub => interfaceType.IsAssignableFrom(hub.Type));
         }
 
         private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
@@ -264,6 +265,9 @@ namespace SignalR.Hubs
         {
             // Try to find the associated hub type
             HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name);
+
+            // Add this to the list of hub desciptors this connection is interested in
+            _hubs.Add(hubDescriptor);
 
             // Update the name (Issue #344)
             hubInfo.Name = hubDescriptor.Name;

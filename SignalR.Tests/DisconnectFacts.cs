@@ -50,6 +50,8 @@ namespace SignalR.Tests
             host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
+            connection.CreateProxy("MyHub");
+
             // Maximum wait time for disconnect to fire (3 heart beat intervals)
             var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
 
