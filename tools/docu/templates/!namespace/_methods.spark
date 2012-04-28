@@ -1,0 +1,46 @@
+﻿<if condition="methods.Count() > 0">
+	<h3 class="section">${title}</h3>
+
+	<div id="${method.Name}" class="method" each="var method in methods">
+		<h4>
+			${Format(method.ReturnType)} <strong>${h(method.PrettyName)}</strong>(${OutputMethodParams(method)})
+		</h4>
+		<div class="content">
+			<comment content="method.Summary" />
+			<remarks content="method.Remarks" />
+
+			<var hasReturn="method.ReturnType.PrettyName != 'void'" />
+			<var hasParams="method.Parameters.Any(x => x.HasDocumentation)" />
+
+			<div class="parameters" if="hasParams">
+				<h5>Parameters</h5>
+				<dl>
+					<for each="var param in method.Parameters">
+						<dt>
+							<code>${Format(param.Reference)}</code> ${param.Name}
+						</dt>
+						<dd if="!param.Summary.IsEmpty">
+							<comment content="param.Summary" />
+						</dd>
+					</for>
+				</dl>
+			</div>
+
+			<div class="return" if="!method.Returns.IsEmpty">
+
+				<h5>Returns</h5>
+				<dl>
+					<dt>
+						<code>${Format(method.ReturnType)}</code>
+					</dt>
+					<dd>
+						<comment content="method.Returns" />
+					</dd>
+				</dl>
+			</div>
+
+			<value content="method.Value" />
+			<example content="method.Example" />
+		</div>
+	</div>
+</if>

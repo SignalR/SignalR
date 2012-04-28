@@ -1,0 +1,10 @@
+﻿<nav id="types">
+	<h2 class="fixed">All Types</h2>
+	<div class="scroll">
+		<ul>
+			<for each="var ns in Namespaces">
+				<li each="var type in ns.Types">${Format(type)}</li>
+			</for>
+		</ul>
+	</div>
+</nav>

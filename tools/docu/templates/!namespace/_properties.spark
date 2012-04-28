@@ -1,0 +1,27 @@
+﻿<if condition="properties.Count() > 0">
+	<h3 class="section">${title}</h3>
+
+	<div id="${property.Name}" class="method" each="var property in properties">
+		<h4>
+			${Format(property.ReturnType)} <strong>${h(property.Name)}</strong> <if condition="property.HasGet">get;</if> <if condition="property.HasSet">set;</if>
+		</h4>
+		<div class="content">
+			<comment content="property.Summary" />
+			<remarks content="property.Remarks" />
+
+			<div class="return" if="property.ReturnType.HasDocumentation">
+				<h5>Property type</h5>
+				<dl>
+					<dt>
+						<code>${Format(property.ReturnType)}</code>
+					</dt>
+					<dd>
+						<comment content="property.ReturnType.Summary" />
+					</dd>
+				</dl>
+			</div>
+			<value content="property.Value" />
+			<example content="property.Example" />
+		</div>
+	</div>
+</if>

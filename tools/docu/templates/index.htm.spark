@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+		<title>${WriteProductName(Assemblies[0])} API Documentation</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<link type="text/css" rel="stylesheet" href="main.css" />
+	</head>
+	<body>
+	<header><h1>${WriteProductName(Assemblies[0])} : API Documentation</h1>
+	</header>
+    <namespaces />
+    <types />
+	<article>
+    <header>
+		<p class="class">${WriteProductName(Assemblies[0])} Documentation</p>
+	</header>
+	</article>
+    <use file="_common_footer" />
+  </body>
+</html>

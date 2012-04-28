@@ -7,10 +7,12 @@
         <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
         <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
         <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
+        <DocsPath>$(ArtifactsDir)\docs</DocsPath>
         <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
         <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
         <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
         <XunitPath>$(ToolsPath)xunit\</XunitPath>
+        <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
     </PropertyGroup>
   
@@ -77,7 +79,7 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; BuildDocs; RunTests;">
   </Target>
 
   <Target Name="RunTests">
@@ -87,6 +89,7 @@
   <Target Name="CreateOutputDir">
     <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
+    <MakeDir Directories="$(DocsPath)" Condition="!Exists('$(DocsPath)')" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
@@ -105,6 +108,16 @@
              Properties="Configuration=$(Configuration)" />
   </Target>
 
+  <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
+    <ItemGroup>
+      <DocProjects Include="$(ProjectRoot)\SignalR\bin\$(Configuration)\SignalR.dll" />
+      <DocProjects Include="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\SignalR.Client.dll" />
+      <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.Self\bin\$(Configuration)\SignalR.Hosting.Self.dll" />
+      <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.Common\bin\$(Configuration)\SignalR.Hosting.Common.dll" />
+    </ItemGroup>
+    <Exec Command="&quot;$(DocuExePath)&quot; @(DocProjects, ' ')" WorkingDirectory="$(DocsPath)" />
+  </Target>
+  
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
       <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />

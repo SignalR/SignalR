@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+    <title>${h(Type.PrettyName)} - ${WriteProductName(Assemblies[0])} Documentation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link type="text/css" rel="stylesheet" href="../main.css" />
+    <script type="text/javascript" src="../js/jquery-1.3.2.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.scrollTo-min.js"></script>
+    <script type="text/javascript" src="../js/navigation.js"></script>
+    <script type="text/javascript" src="../js/example.js"></script>
+  </head>
+  <body>
+  	<header><h1>${WriteProductName(Assemblies[0])} : API Documentation</h1>
+	</header>
+
+    <namespaces />
+    <types />
+	<article>
+    <header>
+		<p class="class"><strong>Type</strong> ${h(Type.PrettyName)}</p>
+	</header>
+	<section>
+		<header>
+		<p><strong>Namespace</strong> ${Namespace.Name}</p>
+		<p if="Type.ParentType != null && Type.ParentType.PrettyName != 'object'"><strong>Parent</strong> ${Format(Type.ParentType)}</p>
+		<p if="Type.Interfaces.Count > 0"><strong>Interfaces</strong> ${WriteInterfaces(Type.Interfaces)}</p>
+		</header>
+    <div class="sub-header">
+		<if condition="(Type.Summary != null && Type.Summary.Children.Count() > 0) || (Type.Remarks != null && Type.Remarks.Children.Count() > 0)">
+			<div id="summary">
+				<comment content="Type.Summary" />
+				<remarks content="Type.Remarks" />
+				<example content="Type.Example" />
+			</div>
+		</if>
+		
+		<if condition="Type.Events.Count > 0">
+			<h3 class="section">Events</h3>
+			<ul>
+				<li each="var ev in Type.Events">${Format(ev)}</li>
+			</ul>
+		</if>
+		
+		<if condition="Type.Methods.Count > 0">
+			<h3 class="section">Methods</h3>
+			<ul>
+				<li each="var method in Type.Methods">${Format(method)}</li>
+			</ul>
+		</if>
+		
+		<if condition="Type.Properties.Count > 0">
+			<h3 class="section">Properties</h3>
+			<ul>
+				<li each="var property in Type.Properties">${Format(property)}</li>
+			</ul>
+		</if>
+		
+		<if condition="Type.Fields.Count > 0">
+			<h3 class="section">Fields</h3>
+			<ul>
+				<li each="var field in Type.Fields">${Format(field)}</li>
+			</ul>
+		</if>
+	</div>
+	<events events="Type.Events" title="'Events'" />
+	
+	<var publicInstanceMethods="Type.Methods.Where(x => x.IsPublic && !x.IsStatic)" />
+	<methods methods="publicInstanceMethods" title="'Public instance methods'" />
+	
+	<var publicStaticMethods="Type.Methods.Where(x => x.IsPublic && x.IsStatic)" />
+	<methods methods="publicStaticMethods" title="'Public static methods'" />
+	
+	<properties properties="Type.Properties" title="'Public properties'" />
+	<fields fields="Type.Fields" title="'Public fields'" />
+	</section>
+	</article>
+	<use file="../_common_footer" />
+  </body>
+</html>

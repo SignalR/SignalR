@@ -1,0 +1,14 @@
+﻿<nav id="types">
+  <h2 class="fixed">Types in ${Namespace.PrettyName}</h2>
+	<div class="scroll">
+		<ul>
+				<li each="var type in Namespace.Types">
+          <if condition="type == Type">
+            ${Format(type, class => "current")}
+          <else />
+            ${Format(type)}
+          </if>
+        </li>
+		</ul>
+	</div>
+</nav>

@@ -1,0 +1,4 @@
+﻿<div class="example" if="content != null && content.Children.Count() > 0">
+  <a href="javascript:void(0)">Show Example</a>
+  <pre>${Format(content)}</pre>
+</div>
