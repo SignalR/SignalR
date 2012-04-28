@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -9,7 +10,7 @@ namespace SignalR.Client.Hubs
 {
     public class HubConnection : Connection
     {
-        private readonly Dictionary<string, HubProxy> _hubs = new Dictionary<string, HubProxy>();
+        private readonly Dictionary<string, HubProxy> _hubs = new Dictionary<string, HubProxy>(StringComparer.OrdinalIgnoreCase);
 
         public HubConnection(string url)
             : base(GetUrl(url))

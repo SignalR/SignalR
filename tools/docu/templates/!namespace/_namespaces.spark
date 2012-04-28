@@ -1,0 +1,14 @@
+﻿<nav id="namespaces">
+	<h2 class="fixed">Namespaces</h2>
+	<div class="scroll">
+		<ul>
+			<li each="var ns in Namespaces">
+        <if condition="ns == Namespace">
+          ${Format(ns, class => "current")}
+        <else />
+          ${Format(ns)}
+        </if>
+      </li>
+		</ul>
+	</div>
+</nav>

@@ -53,7 +53,8 @@ namespace SignalR.Hubs
 
             // Resolving the actual state object
             var state = new TrackingDictionary(hubRequest.State);
-            var hub = CreateHub(descriptor, connectionId, state);
+            var hub = CreateHub(descriptor, connectionId, state, throwIfFailedToCreate: true);
+
             Task resultTask;
 
             try
@@ -172,7 +173,7 @@ namespace SignalR.Hubs
             return tcs.Task;
         }
 
-        public IHub CreateHub(HubDescriptor descriptor, string connectionId, TrackingDictionary state = null)
+        private IHub CreateHub(HubDescriptor descriptor, string connectionId, TrackingDictionary state = null, bool throwIfFailedToCreate = false)
         {
             try
             {
@@ -194,6 +195,12 @@ namespace SignalR.Hubs
             {
                 _trace.Source.TraceInformation("Error creating hub {0}. " + ex.Message, descriptor.Name);
                 Debug.WriteLine("HubDispatcher: Error creating hub {0}. " + ex.Message, (object)descriptor.Name);
+
+                if (throwIfFailedToCreate)
+                {
+                    throw;
+                }
+
                 return null;
             }
         }
@@ -256,7 +263,10 @@ namespace SignalR.Hubs
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
             // Try to find the associated hub type
-            _manager.EnsureHub(hubInfo.Name);
+            HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name);
+
+            // Update the name (Issue #344)
+            hubInfo.Name = hubDescriptor.Name;
 
             // Create the signals for hubs
             // 1. The hub name e.g. MyHub

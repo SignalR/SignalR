@@ -1,0 +1,19 @@
+﻿<if condition="fields.Count() > 0">
+  <h3 class="section">${title}</h3>
+
+  <div id="${field.Name}" class="method" each="var field in fields">
+    <h4>${h(field.ReturnType.PrettyName)} <strong>${h(field.Name)}</strong></h4>
+    <div class="content">
+      <comment content="field.Summary" />
+      <remarks content="field.Remarks" />
+      <table>
+        <tr>
+          <td>
+            <code>return ${Format(field.ReturnType)}</code>
+          </td>
+        </tr>
+      </table>
+      <example content="field.Example" />
+    </div>
+  </div>
+</if>

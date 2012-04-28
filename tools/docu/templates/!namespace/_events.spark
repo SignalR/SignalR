@@ -1,0 +1,12 @@
+﻿<if condition="events.Count() > 0">
+  <h3 class="section">${title}</h3>
+
+  <div id="${ev.Name}" class="method" each="var ev in events">
+    <h4><strong>${h(ev.Name)}</strong></h4>
+    <div class="content">
+      <comment content="ev.Summary" />
+      <remarks content="ev.Remarks" />
+      <example content="ev.Example" />
+    </div>
+  </div>
+</if>
