@@ -113,6 +113,7 @@
     <ItemGroup>
       <DocProjects Include="$(ProjectRoot)\SignalR\bin\$(Configuration)\SignalR.dll" />
       <DocProjects Include="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\SignalR.Client.dll" />
+      <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.AspNet\bin\$(Configuration)\SignalR.Hosting.AspNet.dll" />
       <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.Self\bin\$(Configuration)\SignalR.Hosting.Self.dll" />
       <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.Common\bin\$(Configuration)\SignalR.Hosting.Common.dll" />
     </ItemGroup>
