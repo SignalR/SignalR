@@ -18,6 +18,5 @@ namespace SignalR
 
         public CommandType Type { get; set; }
         public object Value { get; set; }
-        public TimeSpan? ExpiresAfter { get; set; }
     }
 }
