@@ -44,7 +44,7 @@ namespace SignalR.Hubs
 
             JToken[] parameterValues = hubRequest.ParameterValues;
 
-            // Resolve the action
+            // Resolve the method
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
             if (methodDescriptor == null)
             {
@@ -59,7 +59,7 @@ namespace SignalR.Hubs
 
             try
             {
-                // Invoke the action
+                // Invoke the method
                 object result = methodDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(methodDescriptor, parameterValues));
                 Type returnType = result != null ? result.GetType() : methodDescriptor.ReturnType;
 

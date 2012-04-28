@@ -18,7 +18,7 @@ namespace SignalR.Hubs
         /// </summary>
         /// <param name="hubName">Name of the hub.</param>
         /// <param name="descriptor">Retrieved descriptor object.</param>
-        /// <returns>True, if action has been found</returns>
+        /// <returns>True, if hub has been found</returns>
         bool TryGetHub(string hubName, out HubDescriptor descriptor);
     }
 }

@@ -4,10 +4,10 @@ namespace SignalR.Hubs
 {
     public static class MethodExtensions
     {
-        public static bool Matches(this MethodDescriptor action, params JToken[] parameters)
+        public static bool Matches(this MethodDescriptor methodDescriptor, params JToken[] parameters)
         {
-            if ((action.Parameters.Count > 0 && parameters == null)
-                || action.Parameters.Count != parameters.Length)
+            if ((methodDescriptor.Parameters.Count > 0 && parameters == null)
+                || methodDescriptor.Parameters.Count != parameters.Length)
             {
                 return false;
             }
