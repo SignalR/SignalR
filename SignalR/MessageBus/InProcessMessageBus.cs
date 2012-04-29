@@ -365,17 +365,5 @@ namespace SignalR
                 Interlocked.Exchange(ref _gcRunning, 0);
             }
         }
-
-        private class BroadcastData
-        {
-            public readonly string EventKey;
-            public readonly InMemoryMessage<T> Message;
-
-            public BroadcastData(string eventKey, InMemoryMessage<T> message)
-            {
-                EventKey = eventKey;
-                Message = message;
-            }
-        }
     }
 }
