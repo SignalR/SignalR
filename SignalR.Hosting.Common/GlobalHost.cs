@@ -11,7 +11,7 @@ namespace SignalR
         private static IDependencyResolver _resolver;
 
         /// <summary>
-        /// Gets the the default <see cref="IDependencyResolver"/>
+        /// Gets or sets the the default <see cref="IDependencyResolver"/>
         /// </summary>
         public static IDependencyResolver DependencyResolver
         {
