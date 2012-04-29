@@ -8,6 +8,7 @@ namespace SignalR
     public static class GlobalHost
     {
         private static readonly Lazy<IDependencyResolver> _defaultResolver = new Lazy<IDependencyResolver>(() => new DefaultDependencyResolver());
+        private static IDependencyResolver _resolver;
 
         /// <summary>
         /// Gets the the default <see cref="IDependencyResolver"/>
@@ -16,7 +17,11 @@ namespace SignalR
         {
             get
             {
-                return _defaultResolver.Value;
+                return _resolver ?? _defaultResolver.Value;
+            }
+            set
+            {
+                _resolver = value;
             }
         }
 

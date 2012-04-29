@@ -6,6 +6,9 @@ using SignalR.Hubs;
 
 namespace SignalR
 {
+    /// <summary>
+    /// Extensions to ASP.NET routing for SignalR
+    /// </summary>
     public static class RouteExtensions
     {
         /// <summary>
@@ -52,6 +55,16 @@ namespace SignalR
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type)
         {
             return MapConnection(routes, name, url, type, GlobalHost.DependencyResolver);
+        }
+
+        /// <summary>
+        /// Initializes the default hub route (~/signalr).
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <returns>The registered route</returns>
+        public static RouteBase MapHubs(this RouteCollection routes)
+        {
+            return MapHubs(routes, GlobalHost.DependencyResolver);
         }
 
         /// <summary>

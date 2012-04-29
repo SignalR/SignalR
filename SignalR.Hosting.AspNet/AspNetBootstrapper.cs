@@ -1,12 +1,14 @@
 ﻿using System.Web;
 using System.Web.Routing;
 using SignalR.Hosting.AspNet;
-using SignalR.Hosting.AspNet.Routing;
 
 [assembly: PreApplicationStartMethod(typeof(AspNetBootstrapper), "Initialize")]
 
 namespace SignalR.Hosting.AspNet
 {
+    /// <summary>
+    /// Initializes the AspNet hosting pipeline
+    /// </summary>
     public static class AspNetBootstrapper
     {
         private static bool _initialized;
@@ -24,7 +26,7 @@ namespace SignalR.Hosting.AspNet
                 {
                     if (!_initialized)
                     {
-                        RouteTable.Routes.MapHubs("~/signalr");
+                        RouteTable.Routes.MapHubs();
                      
                         _detector.Initialize();
 
