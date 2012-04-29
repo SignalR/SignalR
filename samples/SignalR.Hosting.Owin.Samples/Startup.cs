@@ -3,8 +3,7 @@ using System.IO;
 using Gate;
 using Gate.Middleware;
 using Owin;
-using SignalR.Hosting.Owin;
-using SignalR.Hubs;
+using SignalR.Samples.Raw;
 
 namespace SignalR.Hosting.Owin.Samples
 {
@@ -18,8 +17,8 @@ namespace SignalR.Hosting.Owin.Samples
             builder
                 .Use(LogToConsole)
                 .UseShowExceptions()
-                .UseSignalR("/signalr")
-                .UseSignalR<RawConnection>("/Raw/Connection")
+                .UseSignalRHubs()
+                .UseSignalR<Raw>("/Raw/Connection")
                 .Use(Alias, "/", "/index.html")
                 .UseStatic(contentFolder);
         }

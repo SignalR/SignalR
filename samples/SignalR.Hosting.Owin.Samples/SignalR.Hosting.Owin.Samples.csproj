@@ -73,6 +73,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Gate.Middleware.0.3.2\lib\net40\Gate.Middleware.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.0.7\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -86,12 +89,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
-    <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
-    <Compile Include="Hubs\DemoHub\DemoHub.cs" />
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Hubs\Benchmark\HubBench.cs">
+      <Link>Hubs\Benchmark\HubBench.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Hubs\ConnectDisconnect\Status.cs">
+      <Link>Hubs\ConnectDisconnect\Status.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
+      <Link>Hubs\DemoHub\DemoHub.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Hubs\MouseTracking\MouseTracking.cs">
+      <Link>Hubs\MouseTracking\MouseTracking.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Hubs\ShapeShare\ShapeShare.cs">
+      <Link>Hubs\ShapeShare\ShapeShare.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Raw\Raw.cs">
+      <Link>Raw\Raw.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Hubs\MouseTracking\MouseTracking.cs" />
-    <Compile Include="Raw\RawConnection.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Workaround.cs" />
   </ItemGroup>
@@ -112,6 +128,8 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Content\bg.jpg" />
+    <Content Include="Content\Hubs\Benchmark\Benchmark.js" />
+    <Content Include="Content\Hubs\Benchmark\index.html" />
     <Content Include="Content\Hubs\ConnectDisconnect\index.html" />
     <Content Include="Content\Hubs\ConnectDisconnect\Status.js" />
     <Content Include="Content\Hubs\DemoHub\DemoHub.js" />

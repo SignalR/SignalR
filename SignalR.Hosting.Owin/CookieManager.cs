@@ -7,12 +7,12 @@ namespace SignalR.Hosting.Owin
     {
         public Cookie this[string name]
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return 0; }
         }
     }
 }
