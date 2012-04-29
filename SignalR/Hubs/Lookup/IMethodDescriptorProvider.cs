@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 namespace SignalR.Hubs
 {
     /// <summary>
-    /// Describes a hub method provider that builds a collection of available actions on a given hub.
+    /// Describes a hub method provider that builds a collection of available methods on a given hub.
     /// </summary>
     public interface IMethodDescriptorProvider
     {

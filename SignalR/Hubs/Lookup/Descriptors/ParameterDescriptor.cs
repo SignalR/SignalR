@@ -3,7 +3,7 @@
 namespace SignalR.Hubs
 {
     /// <summary>
-    /// Holds information about a single hub action parameter.
+    /// Holds information about a single hub method parameter.
     /// </summary>
     public class ParameterDescriptor
     {

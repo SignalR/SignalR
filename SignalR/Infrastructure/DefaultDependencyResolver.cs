@@ -29,8 +29,8 @@ namespace SignalR
             Register(typeof(IJsonSerializer), () => serializer);
 
             // Hubs
-            var actionDescriptorProvider = new Lazy<ReflectedMethodDescriptorProvider>();
-            Register(typeof(IMethodDescriptorProvider), () => actionDescriptorProvider.Value);
+            var methodDescriptorProvider = new Lazy<ReflectedMethodDescriptorProvider>();
+            Register(typeof(IMethodDescriptorProvider), () => methodDescriptorProvider.Value);
 
             var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>(() => new ReflectedHubDescriptorProvider(this));
             Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);

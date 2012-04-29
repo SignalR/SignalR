@@ -15,19 +15,19 @@ namespace SignalR.Client.Hubs
         /// <summary>
         /// Executes a method on the server side <see cref="IHub"/> asynchronously.
         /// </summary>
-        /// <param name="action">The name of the method.</param>
+        /// <param name="method">The name of the method.</param>
         /// <param name="args">The arguments</param>
         /// <returns>A task that represents when invocation returned.</returns>
-        Task Invoke(string action, params object[] args);
+        Task Invoke(string method, params object[] args);
 
         /// <summary>
         /// Executes a method on the server side <see cref="IHub"/> asynchronously.
         /// </summary>
         /// <typeparam name="T">The type of result returned from the hub</typeparam>
-        /// <param name="action">The name of the method.</param>
+        /// <param name="method">The name of the method.</param>
         /// <param name="args">The arguments</param>
         /// <returns>A task that represents when invocation returned.</returns>
-        Task<T> Invoke<T>(string action, params object[] args);
+        Task<T> Invoke<T>(string method, params object[] args);
 
         /// <summary>
         /// Registers an event for the <see cref="Hub"/>.

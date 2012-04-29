@@ -57,7 +57,8 @@
             obj,
             memberValue,
             key,
-            memberKey;
+            memberKey,
+            hasSubscription = false;
 
         for (key in instance) {
             if (instance.hasOwnProperty(key)) {
@@ -69,7 +70,26 @@
                     continue;
                 }
 
-                newHubs[obj._.hubName] = { obj : obj };
+                hasSubscription = false;
+
+                for (memberKey in obj) {
+                    if (obj.hasOwnProperty(memberKey)) {
+                        memberValue = obj[memberKey];
+
+                        if (memberKey === "_" ||
+                                $.type(memberValue) !== "function" ||
+                                $.inArray(memberKey, obj._.ignoreMembers) >= 0) {
+                            continue;
+                        }
+
+                        hasSubscription = true;
+                        break;
+                    }
+                }
+
+                if (hasSubscription === true) {
+                    newHubs[obj._.hubName] = { obj: obj };
+                }
             }
         }
 

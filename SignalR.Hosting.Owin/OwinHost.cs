@@ -5,9 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gate;
 using Owin;
-using SignalR.Hosting;
 using SignalR.Hubs;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Owin
 {
@@ -16,7 +14,7 @@ namespace SignalR.Hosting.Owin
         /// <summary>
         /// Add HubDispatcher to pipeline at default "/signalr" path
         /// </summary>
-        public static IAppBuilder UseSignalR(this IAppBuilder builder)
+        public static IAppBuilder UseSignalRHubs(this IAppBuilder builder)
         {
             return builder.Map("/signalr", x => x.RunSignalR());
         }
@@ -38,7 +36,7 @@ namespace SignalR.Hosting.Owin
         /// <param name="builder"></param>
         /// <param name="url">Base path for hub requests</param>
         /// <returns></returns>
-        public static IAppBuilder UseSignalR(this IAppBuilder builder, string url)
+        public static IAppBuilder UseSignalRHubs(this IAppBuilder builder, string url)
         {
             return builder.Map(url, x => x.RunSignalR());
         }
@@ -50,7 +48,7 @@ namespace SignalR.Hosting.Owin
         /// <param name="url">Base path for hub requests</param>
         /// <param name="resolver">Used by components to acquire the services they depend on</param>
         /// <returns></returns>
-        public static IAppBuilder UseSignalR(this IAppBuilder builder, string url, IDependencyResolver resolver)
+        public static IAppBuilder UseSignalRHubs(this IAppBuilder builder, string url, IDependencyResolver resolver)
         {
             return builder.Map(url, x => x.RunSignalR(resolver));
         }
@@ -88,7 +86,7 @@ namespace SignalR.Hosting.Owin
         /// <returns></returns>
         public static IAppBuilder RunSignalR(this IAppBuilder builder)
         {
-            return RunSignalR(builder, new DefaultDependencyResolver());
+            return RunSignalR(builder, GlobalHost.DependencyResolver);
         }
 
         /// <summary>
@@ -117,7 +115,7 @@ namespace SignalR.Hosting.Owin
         /// <returns></returns>
         public static IAppBuilder RunSignalR<T>(this IAppBuilder builder) where T : PersistentConnection
         {
-            return RunSignalR<T>(builder, new DefaultDependencyResolver());
+            return RunSignalR<T>(builder, GlobalHost.DependencyResolver);
         }
 
         /// <summary>
@@ -155,7 +153,7 @@ namespace SignalR.Hosting.Owin
                     {
                         var request = new OwinRequest(environment, task.Result);
                         var response = new OwinResponse(result);
-                        var hostContext = new HostContext(request, response, null);
+                        var hostContext = new HostContext(request, response, Thread.CurrentPrincipal);
 
                         try
                         {
