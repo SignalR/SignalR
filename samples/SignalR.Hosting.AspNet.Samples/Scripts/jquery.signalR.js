@@ -114,6 +114,7 @@
                     callback.call(connection);
                 }
                 deferred.resolve(connection);
+                $(connection).unbind(events.onStart);
             });
 
             initialize = function (transports, index) {
