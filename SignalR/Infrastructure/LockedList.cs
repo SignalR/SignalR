@@ -34,6 +34,21 @@ namespace SignalR.Infrastructure
             }
         }
 
+        public void RemoveWithLock(Predicate<T> match)
+        {
+            try
+            {
+                _listLock.EnterWriteLock();
+
+                // REVIEW: Should we only lock if there's any matches?
+                RemoveAll(match);
+            }
+            finally
+            {
+                _listLock.ExitWriteLock();
+            }
+        }
+
         public List<T> CopyWithLock()
         {
             try
