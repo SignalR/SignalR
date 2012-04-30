@@ -11,10 +11,12 @@ namespace SignalR.Hubs
     public class ReflectedMethodDescriptorProvider : IMethodDescriptorProvider
     {
         private readonly ConcurrentDictionary<string, IDictionary<string, IEnumerable<MethodDescriptor>>> _methods;
+        private readonly ConcurrentDictionary<string, MethodDescriptor> _executableMethods;
 
         public ReflectedMethodDescriptorProvider()
         {
             _methods = new ConcurrentDictionary<string, IDictionary<string, IEnumerable<MethodDescriptor>>>(StringComparer.OrdinalIgnoreCase);
+            _executableMethods = new ConcurrentDictionary<string, MethodDescriptor>(StringComparer.OrdinalIgnoreCase);
         }
 
         public IEnumerable<MethodDescriptor> GetMethods(HubDescriptor hub)
@@ -68,20 +70,32 @@ namespace SignalR.Hubs
 
         public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params JToken[] parameters)
         {
-            IEnumerable<MethodDescriptor> overloads;
+            string hubMethodKey = hub.Name + "::" + method;
 
-            if (FetchMethodsFor(hub).TryGetValue(method, out overloads))
+            if(!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
             {
-                var matches = overloads.Where(o => o.Matches(parameters)).ToList();
-                if (matches.Count == 1)
+                IEnumerable<MethodDescriptor> overloads;
+
+                if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
                 {
-                    descriptor = matches.First();
-                    return true;
+                    var matches = overloads.Where(o => o.Matches(parameters)).ToList();
+
+                    // If only one match is found, that is the "executable" version, otherwise none of the methods can be returned because we don't know which one was actually being targeted
+                    descriptor =  matches.Count == 1 ? matches[0] : null;
+                }
+                else
+                {
+                    descriptor = null;
+                }
+
+                // If an executable method was found, cache it for future lookups (NOTE: we don't cache null instances because it could be a surface area for DoS attack by supplying random method names to flood the cache)
+                if(descriptor != null)
+                {
+                    _executableMethods.TryAdd(hubMethodKey, descriptor);
                 }
             }
 
-            descriptor = null;
-            return false;
+            return descriptor != null;
         }
 
         private static string GetMethodName(MethodInfo method)
