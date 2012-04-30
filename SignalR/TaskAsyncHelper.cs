@@ -40,6 +40,23 @@ namespace SignalR
             return task;
         }
 
+        public static TTask Catch<TTask>(this TTask task, Action<Exception> handler) where TTask : Task
+        {
+            if (task != null && task.Status != TaskStatus.RanToCompletion)
+            {
+                task.ContinueWith(innerTask =>
+                {
+                    var ex = innerTask.Exception;
+                    // observe Exception
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
+                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
+#endif
+                    handler(ex);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+            return task;
+        }
+
         public static void ContinueWithNotComplete(this Task task, TaskCompletionSource<object> tcs)
         {
             task.ContinueWith(t =>

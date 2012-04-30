@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Self.Infrastructure;
@@ -8,11 +9,16 @@ namespace SignalR.Hosting.Self
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
+        private readonly Action _onInitialWrite;
         private readonly CancellationToken _cancellationToken;
 
-        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, CancellationToken cancellationToken)
+        private bool _ended;
+        private int _writeInitialized;
+
+        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, Action onInitialWrite, CancellationToken cancellationToken)
         {
             _httpListenerResponse = httpListenerResponse;
+            _onInitialWrite = onInitialWrite;
             _cancellationToken = cancellationToken;
         }
 
@@ -32,18 +38,31 @@ namespace SignalR.Hosting.Self
         {
             get
             {
-                return !_cancellationToken.IsCancellationRequested;
+                return !_ended && !_cancellationToken.IsCancellationRequested;
             }
         }
 
         public Task WriteAsync(string data)
         {
-            return DoWrite(data).Then(response => response.OutputStream.Flush(), _httpListenerResponse);
-        } 
+            if (Interlocked.Exchange(ref _writeInitialized, 1) == 0)
+            {
+                _onInitialWrite();
+            }
+
+            return DoWrite(data).Then(response => response.OutputStream.Flush(), _httpListenerResponse)
+                                .Catch(ex => _ended = true);
+        }
 
         public Task EndAsync(string data)
         {
-            return DoWrite(data).Then(response => response.CloseSafe(), _httpListenerResponse);
+            return DoWrite(data).Then(response =>
+            {
+                response.CloseSafe();
+
+                // Mark the connection as ended after we close it
+                _ended = true;
+            }, 
+            _httpListenerResponse);
         }
 
         private Task DoWrite(string data)
