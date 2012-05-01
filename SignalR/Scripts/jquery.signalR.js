@@ -138,7 +138,9 @@
             };
 
             window.setTimeout(function () {
-                $.ajax(connection.url + "/negotiate", {
+                var url = connection.url + "/negotiate";
+                $.ajax({
+                    url: url,
                     global: false,
                     cache: false,
                     type: "GET",
@@ -358,7 +360,8 @@
 
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
             url = this.addQs(url, connection);
-            $.ajax(url, {
+            $.ajax({
+                url: url,
                 global: false,
                 type: "POST",
                 dataType: connection.ajaxDataType,
@@ -804,13 +807,11 @@
                             reconnectTimeOut = null,
                             reconnectFired = false;
 
-                        instance.pollXhr = $.ajax(url, {
+                        instance.pollXhr = $.ajax({
+                            url: url,
                             global: false,
-
                             type: "GET",
-
                             dataType: connection.ajaxDataType,
-
                             success: function (data) {
                                 var delay = 0,
                                     timedOutReceived = false;
