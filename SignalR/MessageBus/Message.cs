@@ -18,20 +18,20 @@ namespace SignalR
         public string SignalKey { get; set; }
         public object Value { get; private set; }
         public DateTime Created { get; private set; }
+        private DateTime ExpiresAt { get; set; }
 
         public bool Expired
         {
             get
             {
-                // TODO: Handle disconnect timeout
-                return DateTime.Now.Subtract(Created) >= ExpiresAfter;
+                return DateTime.UtcNow >= ExpiresAt;
             }
         }
 
         private Message() { }
 
         public Message(string signalKey, object value)
-            : this(signalKey, value, DateTime.Now)
+            : this(signalKey, value, DateTime.UtcNow)
         {
 
         }
@@ -41,6 +41,7 @@ namespace SignalR
             SignalKey = signalKey;
             Value = value;
             Created = created;
-        }        
+            ExpiresAt = created.Add(ExpiresAfter);
+        }
     }
 }

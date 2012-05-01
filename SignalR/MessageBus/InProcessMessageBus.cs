@@ -344,15 +344,7 @@ namespace SignalR
                 // Remove all the expired ones
                 foreach (var entry in entries)
                 {
-                    var messages = entry.Value.CopyWithLock();
-
-                    foreach (var item in messages)
-                    {
-                        if (item.Expired)
-                        {
-                            entry.Value.RemoveWithLock(item);
-                        }
-                    }
+                    entry.Value.RemoveWithLock(item => item.Expired);
                 }
             }
             catch (Exception ex)

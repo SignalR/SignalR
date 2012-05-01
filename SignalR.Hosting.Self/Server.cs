@@ -80,44 +80,11 @@ namespace SignalR.Hosting.Self
                 {
                     return;
                 }
-
-                var cts = new CancellationTokenSource();
-
-                // Get the connection id value
-                var connectionIdField = typeof(HttpListenerRequest).GetField("m_ConnectionId", BindingFlags.Instance | BindingFlags.NonPublic);
-                if (_requestQueueHandle != null && connectionIdField != null)
-                {
-                    ulong connectionId = (ulong)connectionIdField.GetValue(context.Request);
-                    // Create a nativeOverlapped callback so we can register for disconnect callback
-                    var overlapped = new Overlapped();
-                    var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOVERLAP) =>
-                    {
-                        // Free the overlapped
-                        Overlapped.Free(pOVERLAP);
-
-                        // Mark the client as disconnected
-                        cts.Cancel();
-                    },
-                    null);
-
-                    uint hr = NativeMethods.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
-
-                    if (hr != NativeMethods.HttpErrors.ERROR_IO_PENDING &&
-                        hr != NativeMethods.HttpErrors.NO_ERROR)
-                    {
-                        // We got an unknown result so throw
-                        throw new InvalidOperationException("Unable to register disconnect callback");
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("Unable to resolve requestQueue handle. Disconnect notifications will be ignored");
-                }
-
+                
                 ReceiveLoop();
 
                 // Process the request async
-                ProcessRequestAsync(context, cts.Token).ContinueWith(task =>
+                ProcessRequestAsync(context).ContinueWith(task =>
                 {
                     if (task.IsFaulted)
                     {
@@ -133,11 +100,49 @@ namespace SignalR.Hosting.Self
             }, null);
         }
 
-        private Task ProcessRequestAsync(HttpListenerContext context, CancellationToken token)
+        private void RegisterForDisconnect(HttpListenerContext context, Action disconnectCallback)
+        {
+            // Get the connection id value
+            FieldInfo connectionIdField = typeof(HttpListenerRequest).GetField("m_ConnectionId", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (_requestQueueHandle != null && connectionIdField != null)
+            {
+                Debug.WriteLine("Server: Registering for disconnect");
+
+                ulong connectionId = (ulong)connectionIdField.GetValue(context.Request);
+                // Create a nativeOverlapped callback so we can register for disconnect callback
+                var overlapped = new Overlapped();
+                var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOVERLAP) =>
+                {
+                    Debug.WriteLine("Server: http.sys disconnect callback fired.");
+
+                    // Free the overlapped
+                    Overlapped.Free(pOVERLAP);
+
+                    // Mark the client as disconnected
+                    disconnectCallback();
+                },
+                null);
+
+                uint hr = NativeMethods.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
+
+                if (hr != NativeMethods.HttpErrors.ERROR_IO_PENDING &&
+                    hr != NativeMethods.HttpErrors.NO_ERROR)
+                {
+                    // We got an unknown result so throw
+                    throw new InvalidOperationException("Unable to register disconnect callback");
+                }
+            }
+            else
+            {
+                Debug.WriteLine("Server: Unable to resolve requestQueue handle. Disconnect notifications will be ignored");
+            }
+        }
+
+        private Task ProcessRequestAsync(HttpListenerContext context)
         {
             try
             {
-                Debug.WriteLine("Incoming request to {0}.", context.Request.Url);
+                Debug.WriteLine("Server: Incoming request to {0}.", context.Request.Url);
 
                 PersistentConnection connection;
 
@@ -145,8 +150,10 @@ namespace SignalR.Hosting.Self
 
                 if (TryGetConnection(path, out connection))
                 {
+                    var cts = new CancellationTokenSource();
+
                     var request = new HttpListenerRequestWrapper(context.Request);
-                    var response = new HttpListenerResponseWrapper(context.Response, token);
+                    var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
                     var hostContext = new HostContext(request, response, context.User);
 
                     if (OnProcessRequest != null)

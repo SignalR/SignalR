@@ -14,6 +14,7 @@ namespace SignalR.Hosting.Self.Samples
 
             string url = "http://*:8081/";
             var server = new Server(url);
+            server.Configuration.DisconnectTimeout = TimeSpan.Zero;
 
             // Map connections
             server.MapConnection<MyConnection>("/echo")
@@ -23,20 +24,34 @@ namespace SignalR.Hosting.Self.Samples
             server.Start();
 
             Console.WriteLine("Server running on {0}", url);
-
-            Console.ReadKey();
+            
+            while (true)
+            {
+                ConsoleKeyInfo ki = Console.ReadKey(true);
+                if (ki.Key == ConsoleKey.X)
+                {
+                    break;
+                }
+            }
         }
 
         public class MyConnection : PersistentConnection
         {
             protected override Task OnConnectedAsync(IRequest request, string connectionId)
             {
-                return Connection.Broadcast(String.Format("{0} connected from {1}", connectionId, request.Headers["User-Agent"]));
+                Console.WriteLine("{0} connected", connectionId);
+                return base.OnConnectedAsync(request, connectionId);
             }
 
             protected override Task OnReceivedAsync(string connectionId, string data)
             {
                 return Connection.Broadcast(data);
+            }
+
+            protected override Task OnDisconnectAsync(string connectionId)
+            {
+                Console.WriteLine("{0} left", connectionId);
+                return base.OnDisconnectAsync(connectionId);
             }
         }
     }
