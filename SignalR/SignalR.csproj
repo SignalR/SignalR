@@ -75,7 +75,10 @@
     <Compile Include="Hubs\Lookup\IHubManager.cs" />
     <Compile Include="IConnectionManager.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="Infrastructure\IServerIdManager.cs" />
+    <Compile Include="Infrastructure\ServerIdManager.cs" />
     <Compile Include="IPersistentConnectionContext.cs" />
+    <Compile Include="Infrastructure\IServerCommandHandler.cs" />
     <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
@@ -118,6 +121,9 @@
     <Compile Include="JsonConvertAdapter.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="GroupManager.cs" />
+    <Compile Include="Infrastructure\ServerCommand.cs" />
+    <Compile Include="Infrastructure\ServerCommandType.cs" />
+    <Compile Include="Infrastructure\ServerCommandHandler.cs" />
     <Compile Include="SignalCommand.cs" />
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
@@ -126,6 +132,7 @@
     <Compile Include="Transports\ITransport.cs" />
     <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />
+    <Compile Include="Transports\ConnectionReference.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
     <Compile Include="Transports\TransportDisconnectBase.cs" />
     <Compile Include="Transports\TransportHeartBeat.cs" />

@@ -20,6 +20,12 @@ namespace SignalR
 
             Register(typeof(ITraceManager), () => traceManager.Value);
 
+            var serverIdManager = new ServerIdManager();
+            Register(typeof(IServerIdManager), () => serverIdManager);
+
+            var serverMessageHandler = new Lazy<IServerCommandHandler>(() => new ServerCommandHandler(this));
+            Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
+
             var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
 
             Register(typeof(IMessageBus), () => messageBus.Value);
