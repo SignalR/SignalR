@@ -81,6 +81,8 @@ namespace SignalR.Transports
 
         public Func<string, Task> Received { get; set; }
 
+        public Func<Task> TransportConnected { get; set; }
+
         public Func<Task> Connected { get; set; }
 
         public Func<Task> Reconnected { get; set; }
@@ -167,8 +169,21 @@ namespace SignalR.Transports
             HeartBeat.AddConnection(this);
             HeartBeat.MarkConnection(this);
 
+            Action afterReceive = () =>
+            {
+                if (TransportConnected != null)
+                {
+                    TransportConnected().Catch();
+                }
+
+                if (postReceive != null)
+                {
+                    postReceive();
+                }
+            };
+
             return InitializeResponse(connection)
-                    .Then((c, pr) => ProcessMessages(c, pr), connection, postReceive);
+                    .Then((c, pr) => ProcessMessages(c, pr), connection, afterReceive);
         }
 
         private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)

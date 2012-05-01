@@ -8,6 +8,7 @@ namespace SignalR.Transports
     {
         Func<string, Task> Received { get; set; }
         Func<Task> Connected { get; set; }
+        Func<Task> TransportConnected { get; set; }
         Func<Task> Reconnected { get; set; }
         Func<Task> Disconnected { get; set; }
         Func<Exception, Task> Error { get; set; }

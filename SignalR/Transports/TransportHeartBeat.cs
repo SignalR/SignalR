@@ -13,18 +13,40 @@ namespace SignalR.Transports
         private readonly ConcurrentDictionary<ITrackingConnection, ConnectionMetadata> _connectionMetadata = new ConcurrentDictionary<ITrackingConnection, ConnectionMetadata>(new ConnectionIdEqualityComparer());
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
+        private readonly IServerCommandHandler _serverCommandHandler;
+        private readonly string _serverId;
 
         private int _running;
 
         public TransportHeartBeat(IDependencyResolver resolver)
         {
             _configurationManager = resolver.Resolve<IConfigurationManager>();
+            _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
+            _serverId = resolver.Resolve<IServerIdManager>().ServerId;
+
+            _serverCommandHandler.Command = ProcessServerCommand;
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
                                null,
                                _configurationManager.HeartBeatInterval,
                                _configurationManager.HeartBeatInterval);
+        }
+
+        private void ProcessServerCommand(ServerCommand command)
+        {
+            switch (command.Type)
+            {
+                case ServerCommandType.RemoveConnection:
+                    // Only remove connections if this command didn't originate from the owner
+                    if (!command.IsFromSelf(_serverId))
+                    {
+                        RemoveConnection((string)command.Value);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void AddConnection(ITrackingConnection connection)
@@ -39,6 +61,12 @@ namespace SignalR.Transports
             {
                 metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
             }
+        }
+
+        private void RemoveConnection(string connectionId)
+        {
+            // Remove the connection
+            RemoveConnection(new ConnectionReference(connectionId));
         }
 
         private void RemoveConnection(ITrackingConnection connection)

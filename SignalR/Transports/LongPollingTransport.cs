@@ -114,6 +114,8 @@ namespace SignalR.Transports
 
         public Func<string, Task> Received { get; set; }
 
+        public Func<Task> TransportConnected { get; set; }
+
         public Func<Task> Connected { get; set; }
 
         public Func<Task> Reconnected { get; set; }
@@ -211,6 +213,11 @@ namespace SignalR.Transports
         {
             HeartBeat.UpdateConnection(this);
             HeartBeat.MarkConnection(this);
+
+            if (TransportConnected != null)
+            {
+                TransportConnected().Catch();
+            }
 
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?

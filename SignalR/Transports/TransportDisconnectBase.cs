@@ -87,7 +87,7 @@ namespace SignalR.Transports
                             if (t.IsFaulted)
                             {
                                 // Observe & trace any exception
-                                Trace.TraceError("SignalR: Error during ForeverTransport disconnect: {0}", t.Exception);
+                                Trace.TraceError("SignalR: Error during transport disconnect: {0}", t.Exception);
                             }
                             return Connection.Close();
                         })

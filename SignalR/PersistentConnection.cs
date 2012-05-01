@@ -22,6 +22,7 @@ namespace SignalR
 
         protected ITraceManager _trace;
         protected ITransport _transport;
+        private IServerCommandHandler _serverMessageHandler;
 
         public virtual void Initialize(IDependencyResolver resolver)
         {
@@ -35,6 +36,7 @@ namespace SignalR
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
+            _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
 
             _initialized = true;
         }
@@ -104,6 +106,17 @@ namespace SignalR
 
             Connection = connection;
             Groups = new GroupManager(connection, DefaultSignal);
+
+            _transport.TransportConnected = () =>
+            {
+                var command = new ServerCommand
+                {
+                    Type = ServerCommandType.RemoveConnection,
+                    Value = connectionId
+                };
+
+                return _serverMessageHandler.SendCommand(command);
+            };
 
             _transport.Connected = () =>
             {

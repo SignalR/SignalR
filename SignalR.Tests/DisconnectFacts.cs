@@ -64,7 +64,7 @@ namespace SignalR.Tests
             Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
         }
 
-        [Fact(Skip = "Known issue https://github.com/SignalR/SignalR/issues/69")]
+        [Fact]
         public void FarmDisconnectOnlyRaisesEventOnce()
         {
             // Each node shares the same bus but are indepenent servers
@@ -96,6 +96,8 @@ namespace SignalR.Tests
                 nodes[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1));
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
+
+            connection.Stop();
 
             Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
