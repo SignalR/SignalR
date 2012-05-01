@@ -203,13 +203,13 @@ namespace SignalR.Client
                 // If there's any errors starting then Stop the connection                
                 if (task.IsFaulted)
                 {
-                    tcs.SetException(task.Exception);
                     Stop();
+                    tcs.SetException(task.Exception);
                 }
                 else if (task.IsCanceled)
                 {
-                    tcs.SetCanceled();
                     Stop();
+                    tcs.SetCanceled();
                 }
                 else
                 {
