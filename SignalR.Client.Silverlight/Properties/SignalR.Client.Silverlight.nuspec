@@ -9,8 +9,5 @@
     <projectUrl>https://github.com/SignalR/SignalR</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <dependencies>
-        <dependency id="Newtonsoft.Json" version="[4.0.7]" />
-    </dependencies>
   </metadata>
 </package>
