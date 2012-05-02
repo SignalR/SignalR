@@ -11,5 +11,6 @@
   </metadata>
   <files>
     <file src="..\..\SignalR.Client.WP71\bin\$configuration$\SignalR.Client.WP7.dll" target="lib\sl4-wp71" />
+    <file src="..\..\SignalR.Client.WP71\bin\$configuration$\SignalR.Client.WP7.xml" target="lib\sl4-wp71" />
   </files>
 </package>
