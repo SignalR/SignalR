@@ -1,6 +1,6 @@
 # SignalR Release Notes
 
-## v0.5.81 RC (Stable Prerelease)
+## v0.5.84 RC (Stable Prerelease)
 * Performance: Only register for disconnect for chunked requests on self host. (#352)
 * Provide way to override default resolver in ASP.NET other than through routing. (#347)
 * Performance: Only subscribe to hubs that have method subscriptions (#346)
