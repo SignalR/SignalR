@@ -1,5 +1,19 @@
 # SignalR Release Notes
 
+## v0.5.81 RC (Stable Prerelease)
+* Performance: Only register for disconnect for chunked requests on self host. (#352)
+* Provide way to override default resolver in ASP.NET other than through routing. (#347)
+* Performance: Only subscribe to hubs that have method subscriptions (#346)
+* Don't create all hub instances on connect/reconnect/disconnect (#345)
+* Hub names are case sensitive. (#344)
+* Crappy error message when failing to create a hub (#343)
+* Performance: InProcessMessageBus<T>.RemoveExpiredEntries takes N+1 locks to remove N entries (#335)
+* Performance: Use DateTime.UtcNow instead of DateTime.Now. (7edef25411)
+* Fixed incompatibility with jQuery.Validate (#328, #145).
+* .NET Client Fixed race condition in Stop() after connection fails. (cd87d40583)
+* ReflectedMethodDescriptor::TryGetMethod Executable Method Caching (#351)
+* Disconnect is broken in webfarms (#69)
+
 ## v0.5.63 (Stable Prerelease)
 
 ### Bugs Fixed
@@ -17,7 +31,7 @@
 * Regression: Reconnect client after server restart (#24)
 * Fixed Guids in Hub method parameters (#194)
 * SelfHost Server not recognising remote disconnections (#214)
-* Removed double deserialize from .NET client.
+* Removed double deserialize from .NET client. (fbb3ea615d)
 
 ### Features
 * Mono support (#58)
