@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using SignalR.Infrastructure;
+using System.Globalization;
 
 namespace SignalR.Hubs
 {
@@ -70,23 +71,11 @@ namespace SignalR.Hubs
 
         public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params JToken[] parameters)
         {
-            string hubMethodKey = hub.Name + "::" + method;
-
+            string hubMethodKey = hub.Name + "::" + method + "(" + (parameters != null ? parameters.Length.ToString(CultureInfo.InvariantCulture) : string.Empty) + ")";
+            
             if(!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
             {
-                IEnumerable<MethodDescriptor> overloads;
-
-                if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
-                {
-                    var matches = overloads.Where(o => o.Matches(parameters)).ToList();
-
-                    // If only one match is found, that is the "executable" version, otherwise none of the methods can be returned because we don't know which one was actually being targeted
-                    descriptor =  matches.Count == 1 ? matches[0] : null;
-                }
-                else
-                {
-                    descriptor = null;
-                }
+                descriptor = ResolveExecutableMethod(hub, method, descriptor, parameters);
 
                 // If an executable method was found, cache it for future lookups (NOTE: we don't cache null instances because it could be a surface area for DoS attack by supplying random method names to flood the cache)
                 if(descriptor != null)
@@ -96,6 +85,25 @@ namespace SignalR.Hubs
             }
 
             return descriptor != null;
+        }
+
+        private MethodDescriptor ResolveExecutableMethod(HubDescriptor hub, string method, MethodDescriptor descriptor, JToken[] parameters)
+        {
+            IEnumerable<MethodDescriptor> overloads;
+
+            if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
+            {
+                var matches = overloads.Where(o => o.Matches(parameters)).ToList();
+
+                // If only one match is found, that is the "executable" version, otherwise none of the methods can be returned because we don't know which one was actually being targeted
+                descriptor = matches.Count == 1 ? matches[0] : null;
+            }
+            else
+            {
+                descriptor = null;
+            }
+
+            return descriptor;
         }
 
         private static string GetMethodName(MethodInfo method)
