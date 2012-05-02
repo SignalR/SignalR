@@ -38,8 +38,8 @@
   
     <PropertyGroup>  
        <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
-       <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)-pre</PackageVersion>
-       <JsVersion>$(MajorVersion).$(MinorVersion)pre</JsVersion>
+       <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)-rc</PackageVersion>
+       <JsVersion>$(MajorVersion).$(MinorVersion)rc</JsVersion>
     </PropertyGroup>
   
     <ItemGroup>

@@ -71,5 +71,22 @@ namespace SignalR.Tests
 
             Assert.Equal("Exception of type 'System.Exception' was thrown.", ex.GetBaseException().Message);
         } 
+
+        [Fact]
+        public void Overloads()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo/");
+
+            var hub = connection.CreateProxy("demo");
+
+            connection.Start(host).Wait();
+
+            hub.Invoke("Overload").Wait();
+            int n = hub.Invoke<int>("Overload", 1).Result;
+
+            Assert.Equal(1, n);
+        }
     }
 }
