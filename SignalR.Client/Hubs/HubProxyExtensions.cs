@@ -4,6 +4,9 @@ using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Hubs
 {
+    /// <summary>
+    /// Extensions to the <see cref="IHubProxy"/>.
+    /// </summary>
     public static class HubProxyExtensions
     {
         /// <summary>
@@ -226,7 +229,7 @@ namespace SignalR.Client.Hubs
         /// </summary>
         /// <param name="proxy">The <see cref="IHubProxy"/></param>
         /// <param name="eventName">The name of the event.</param>
-        /// <returns>An <see cref="IObservable{object[]}"/>.</returns>
+        /// <returns>An <see cref="T:System.IObservable{object[]}"/>.</returns>
         public static IObservable<object[]> Observe(this IHubProxy proxy, string eventName)
         {
             return new Hubservable(proxy, eventName);

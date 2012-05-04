@@ -4,7 +4,7 @@ using SignalR.Client.Infrastructure;
 namespace SignalR.Client.Hubs
 {
     /// <summary>
-    /// <see cref="IObservable{object[]}"/> implementation of a hub event.
+    /// <see cref="T:System.IObservable{object[]}"/> implementation of a hub event.
     /// </summary>
     public class Hubservable : IObservable<object[]>
     {
