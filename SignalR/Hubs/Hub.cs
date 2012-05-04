@@ -1,5 +1,8 @@
 ﻿namespace SignalR.Hubs
 {
+    /// <summary>
+    /// Provides methods that communicate with SignalR connections that connected to a <see cref="Hub"/>.
+    /// </summary>
     public abstract class Hub : IHub
     {
         /// <summary>

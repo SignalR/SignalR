@@ -88,10 +88,15 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Handles all requests for 
+        /// Handles all requests for <see cref="PersistentConnection"/>s.
         /// </summary>
         /// <param name="context">The <see cref="HostContext"/> for the current request.</param>
         /// <returns>A <see cref="Task"/> that completes when the <see cref="PersistentConnection"/> pipeline is complete.</returns>
+        /// <exception cref="T:System.InvalidOperationException">
+        /// Thrown if connection wasn't initialized.
+        /// Thrown if the transport wasn't specified.
+        /// Thrown if the connection id wasn't specified.
+        /// </exception>
         public virtual Task ProcessRequestAsync(HostContext context)
         {
             if (!_initialized)
