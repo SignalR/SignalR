@@ -41,11 +41,25 @@ namespace SignalR
             _initialized = true;
         }
 
-        // Static events intended for use when measuring performance
+        /// <summary>
+        /// Occurs when data is sent to the calling connection.
+        /// </summary>
         public static event Action Sending;
+        
+        /// <summary>
+        /// Occurs when a data is received from a connection.
+        /// </summary>
         public static event Action Receiving;
-        public static event Action<string> ClientConnected;
-        public static event Action<string> ClientDisconnected;
+
+        /// <summary>
+        /// Occurs when a new connection is established.
+        /// </summary>
+        public static event Action<string> Connected;
+
+        /// <summary>
+        /// Occurs when an existing connection ends.
+        /// </summary>
+        public static event Action<string> Disconnected;
 
         /// <summary>
         /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
@@ -73,6 +87,11 @@ namespace SignalR
             }
         }
 
+        /// <summary>
+        /// Handles all requests for 
+        /// </summary>
+        /// <param name="context">The <see cref="HostContext"/> for the current request.</param>
+        /// <returns>A <see cref="Task"/> that completes when the <see cref="PersistentConnection"/> pipeline is complete.</returns>
         public virtual Task ProcessRequestAsync(HostContext context)
         {
             if (!_initialized)
@@ -154,6 +173,11 @@ namespace SignalR
                                   _trace);
         }
 
+        /// <summary>
+        /// Returns the default signals for the <see cref="PersistentConnection"/>.
+        /// </summary>
+        /// <param name="connectionId">The id of the incoming connection.</param>
+        /// <returns>The default signals for this <see cref="PersistentConnection"/>.</returns>
         protected IEnumerable<string> GetDefaultSignals(string connectionId)
         {
             // The list of default signals this connection cares about:
@@ -173,30 +197,59 @@ namespace SignalR
             };
         }
 
+        /// <summary>
+        /// Called when a new connection is made.
+        /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
+        /// <param name="connectionId">The id of the connecting client.</param>
+        /// <returns>A <see cref="Task"/> that completes when the connect operation is complete.</returns>
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
             OnClientConnected(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Called when a connection reconnects after a timeout.
+        /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
+        /// <param name="groups">The groups the calling connection is a part of.</param>
+        /// <param name="connectionId">The id of the re-connecting client.</param>
+        /// <returns>A <see cref="Task"/> that completes when the re-connect operation is complete.</returns>
         protected virtual Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Called when data is received from a connection.
+        /// </summary>
+        /// <param name="connectionId">The id of the connection sending the data.</param>
+        /// <param name="data">The payload sent to the connection.</param>
+        /// <returns>A <see cref="Task"/> that completes when the receive operation is complete.</returns>
         protected virtual Task OnReceivedAsync(string connectionId, string data)
         {
             OnReceiving();
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Called when a connection disconnects.
+        /// </summary>
+        /// <param name="connectionId">The id of the disconnected connection.</param>
+        /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
         protected virtual Task OnDisconnectAsync(string connectionId)
         {
             OnClientDisconnected(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
-        protected virtual Task OnErrorAsync(Exception e)
+        /// <summary>
+        /// Called when there's an error on the connection.
+        /// </summary>
+        /// <param name="error">The <see cref="Exception"/> that occurred.</param>
+        /// <returns>A <see cref="Task"/> that completes when the error operation is complete.</returns>
+        protected virtual Task OnErrorAsync(Exception error)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -205,7 +258,7 @@ namespace SignalR
         /// Sends a message to the incoming connection id associated with the <see cref="PersistentConnection"/>.
         /// </summary>
         /// <param name="value">The value to send</param>
-        /// <returns>A task that represents when the send is complete.</returns>
+        /// <returns>A <see cref="Task"/> that represents when the send is complete.</returns>
         public Task Send(object value)
         {
             OnSending();
@@ -268,17 +321,17 @@ namespace SignalR
 
         private static void OnClientConnected(string id)
         {
-            if (ClientConnected != null)
+            if (Connected != null)
             {
-                ClientConnected(id);
+                Connected(id);
             }
         }
 
         private static void OnClientDisconnected(string id)
         {
-            if (ClientDisconnected != null)
+            if (Disconnected != null)
             {
-                ClientDisconnected(id);
+                Disconnected(id);
             }
         }
     }

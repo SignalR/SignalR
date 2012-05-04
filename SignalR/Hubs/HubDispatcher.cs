@@ -6,12 +6,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Hosting;
 
 namespace SignalR.Hubs
 {
+    /// <summary>
+    /// Handles all communication over the hubs persistent connection.
+    /// </summary>
     public class HubDispatcher : PersistentConnection
     {
         private IJavaScriptProxyGenerator _proxyGenerator;
@@ -22,6 +24,10 @@ namespace SignalR.Hubs
 
         private readonly string _url;
 
+        /// <summary>
+        /// Initializes an instance of the <see cref="HubDispatcher"/> class.
+        /// </summary>
+        /// <param name="url">The base url of the connection url.</param>
         public HubDispatcher(string url)
         {
             _url = url;
@@ -36,6 +42,9 @@ namespace SignalR.Hubs
             base.Initialize(resolver);
         }
 
+        /// <summary>
+        /// Processes the hub's incoming method calls.
+        /// </summary>
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
             var hubRequest = HubRequest.Parse(data);
