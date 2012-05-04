@@ -47,7 +47,7 @@ namespace SignalR.Samples.Raw
                     });
                     break;
                 case MessageType.Send:
-                    Send(new
+                    Connection.Send(connectionId, new
                     {
                         type = MessageType.Send,
                         from = GetUser(connectionId),
@@ -58,7 +58,7 @@ namespace SignalR.Samples.Raw
                     string name = message.Value;
                     _clients[connectionId] = name;
                     _users[name] = connectionId;
-                    Send(new
+                    Connection.Send(connectionId, new
                     {
                         type = MessageType.Join,
                         data = message.Value

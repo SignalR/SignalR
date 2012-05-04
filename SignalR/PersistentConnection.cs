@@ -42,11 +42,6 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Occurs when data is sent to the calling connection.
-        /// </summary>
-        public static event Action Sending;
-        
-        /// <summary>
         /// Occurs when a data is received from a connection.
         /// </summary>
         public static event Action Receiving;
@@ -259,17 +254,6 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        /// <summary>
-        /// Sends a message to the incoming connection id associated with the <see cref="PersistentConnection"/>.
-        /// </summary>
-        /// <param name="value">The value to send</param>
-        /// <returns>A <see cref="Task"/> that represents when the send is complete.</returns>
-        public Task Send(object value)
-        {
-            OnSending();
-            return Connection.Send(_transport.ConnectionId, value);
-        }
-
         private Task ProcessNegotiationRequest(HostContext context)
         {
             var payload = new
@@ -306,14 +290,6 @@ namespace SignalR
         private ITransport GetTransport(HostContext context)
         {
             return _transportManager.GetTransport(context);
-        }
-
-        private static void OnSending()
-        {
-            if (Sending != null)
-            {
-                Sending();
-            }
         }
 
         private static void OnReceiving()
