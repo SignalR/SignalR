@@ -3,7 +3,7 @@
 namespace SignalR.Hubs
 {
     /// <summary>
-    /// 
+    /// Provides access to information about a <see cref="IHub"/>.
     /// </summary>
     public interface IHubContext
     {

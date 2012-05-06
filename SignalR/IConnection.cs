@@ -13,7 +13,7 @@ namespace SignalR
         /// </summary>
         /// <param name="signal">The signal to broacast to</param>
         /// <param name="value">The value to broadcast.</param>
-        /// <returns>A task that represents when the broadcast is complete.</returns>        
+        /// <returns>A task that represents when the broadcast is complete.</returns>
         Task Send(string signal, object value);
 
         /// <summary>

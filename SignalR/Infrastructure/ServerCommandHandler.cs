@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace SignalR.Infrastructure
 {
     /// <summary>
-    /// Provides a way for SignalR servers to communicate with each other
+    /// Default <see cref="IServerCommandHandler"/> implementation.
     /// </summary>
     public class ServerCommandHandler : IServerCommandHandler
     {

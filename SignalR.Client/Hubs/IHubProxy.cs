@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace SignalR.Client.Hubs
 {
+    /// <summary>
+    ///  A client side proxy for a server side hub.
+    /// </summary>
     public interface IHubProxy
     {
         /// <summary>

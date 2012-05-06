@@ -7,6 +7,9 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
+    /// <summary>
+    /// Default implementation of <see cref="ITransportHeartBeat"/>.
+    /// </summary>
     public class TransportHeartBeat : ITransportHeartBeat
     {
         private readonly SafeSet<ITrackingConnection> _connections = new SafeSet<ITrackingConnection>(new ConnectionIdEqualityComparer());
@@ -18,6 +21,10 @@ namespace SignalR.Transports
 
         private int _running;
 
+        /// <summary>
+        /// Initializes and instance of the <see cref="TransportHeartBeat"/> class.
+        /// </summary>
+        /// <param name="resolver">The <see cref="IDependencyResolver"/>.</param>
         public TransportHeartBeat(IDependencyResolver resolver)
         {
             _configurationManager = resolver.Resolve<IConfigurationManager>();
@@ -49,6 +56,10 @@ namespace SignalR.Transports
             }
         }
 
+        /// <summary>
+        /// Adds a new connection to the list of tracked connections.
+        /// </summary>
+        /// <param name="connection">The connection to be added.</param>
         public void AddConnection(ITrackingConnection connection)
         {
             UpdateConnection(connection);
@@ -77,6 +88,10 @@ namespace SignalR.Transports
             _connectionMetadata.TryRemove(connection, out old);
         }
 
+        /// <summary>
+        /// Updates an existing connection and it's metadata.
+        /// </summary>
+        /// <param name="connection">The connection to be updated.</param>
         public void UpdateConnection(ITrackingConnection connection)
         {
             // Remove and re-add the connection so we have the correct object reference
@@ -84,6 +99,10 @@ namespace SignalR.Transports
             _connections.Add(connection);
         }
 
+        /// <summary>
+        /// Marks an existing connection as active.
+        /// </summary>
+        /// <param name="connection">The connection to mark.</param>
         public void MarkConnection(ITrackingConnection connection)
         {
             // See if there's an old metadata value
