@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace SignalR.Hubs
 {
+    /// <summary>
+    /// A change tracking dictionary.
+    /// </summary>
     public class TrackingDictionary
     {
         private readonly IDictionary<string, object> _values;
