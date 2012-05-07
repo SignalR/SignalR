@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using SignalR.Client.Hubs;
 using SignalR.Hosting.Memory;
 using Xunit;
 
@@ -87,6 +89,30 @@ namespace SignalR.Tests
             int n = hub.Invoke<int>("Overload", 1).Result;
 
             Assert.Equal(1, n);
+        }
+
+        [Fact]
+        public void ChangeHubUrl()
+        {
+            var host = new MemoryHost();
+            host.MapHubs("/foo");
+            var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
+
+            var hub = connection.CreateProxy("demo");
+
+            var wh = new ManualResetEvent(false);
+
+            hub.On("signal", id =>
+            {
+                Assert.NotNull(id);
+                wh.Set();
+            });
+            
+            connection.Start(host).Wait();
+
+            hub.Invoke("DynamicTask").Wait();
+
+            Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
         }
     }
 }

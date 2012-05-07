@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using SignalR.Client.Hubs;
@@ -112,19 +112,19 @@ namespace SignalR.Tests
 
             var hubConnection = new HubConnection("http://fake");
             IHubProxy proxy = hubConnection.CreateProxy("ChatHub");
-            var called = false;
+            var wh = new ManualResetEvent(false);
 
             proxy.On("addMessage", data =>
             {
-                called = true;
                 Assert.Equal("hello", data);
+                wh.Set();
             });
 
             hubConnection.Start(host).Wait();
 
             proxy.Invoke("Send", "hello").Wait();
 
-            Assert.True(called);
+            Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
