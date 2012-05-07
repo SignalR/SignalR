@@ -114,6 +114,16 @@ namespace SignalR.Samples.Hubs.DemoHub
             return n;
         }
 
+        public void UnsupportedOverload(string x)
+        {
+
+        }
+
+        public void UnsupportedOverload(int x)
+        {
+
+        }
+
         public class Person
         {
             public string Name { get; set; }
