@@ -22,7 +22,7 @@ namespace SignalR.Samples.Raw
 
             string user = GetUser(connectionId);
 
-            return Groups.Add(connectionId, "foo").ContinueWith(_ => 
+            return Groups.Add(connectionId, "foo").ContinueWith(_ =>
                    Connection.Broadcast(DateTime.Now + ": " + user + " joined")).Unwrap();
         }
 
@@ -32,7 +32,7 @@ namespace SignalR.Samples.Raw
             return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
         }
 
-        protected override Task OnReceivedAsync(string connectionId, string data)
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             var message = JsonConvert.DeserializeObject<Message>(data);
 
@@ -91,7 +91,7 @@ namespace SignalR.Samples.Raw
                     break;
             }
 
-            return base.OnReceivedAsync(connectionId, data);
+            return base.OnReceivedAsync(request, connectionId, data);
         }
 
         private string GetUser(string connectionId)

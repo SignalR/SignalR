@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Reflection;
+using System.Security.Principal;
 using System.Web;
 
 namespace SignalR.Hosting.AspNet
@@ -8,18 +9,17 @@ namespace SignalR.Hosting.AspNet
     public class AspNetRequest : IRequest
     {
         private readonly HttpRequestBase _request;
-        private readonly HttpCookieCollectionWrapper _cookies;
         private NameValueCollection _form;
         private NameValueCollection _queryString;
 
         private delegate void GetUnvalidatedCollections(HttpContext context, out Func<NameValueCollection> formGetter, out Func<NameValueCollection> queryStringGetter);
         private static Lazy<GetUnvalidatedCollections> _extractCollectionsMethod = new Lazy<GetUnvalidatedCollections>(ResolveCollectionsMethod);
 
-        public AspNetRequest(HttpRequestBase request)
+        public AspNetRequest(HttpRequestBase request, IPrincipal user)
         {
             _request = request;
-            _cookies = new HttpCookieCollectionWrapper(request.Cookies);
-
+            Cookies = new HttpCookieCollectionWrapper(request.Cookies);
+            User = user;
             ResolveFormAndQueryString();
         }
 
@@ -57,10 +57,14 @@ namespace SignalR.Hosting.AspNet
 
         public IRequestCookieCollection Cookies
         {
-            get
-            {
-                return _cookies;
-            }
+            get;
+            private set;
+        }
+
+        public IPrincipal User
+        {
+            get;
+            private set;
         }
 
         private void ResolveFormAndQueryString()

@@ -28,13 +28,17 @@ namespace SignalR.Hubs
 
         public IPrincipal User { get; private set; }
 
-        public HubCallerContext(HostContext context, string connectionId)
+        public HubCallerContext(IRequest request, string connectionId)
         {
             ConnectionId = connectionId;
-            RequestCookies = context.Request.Cookies;
-            Headers = context.Request.Headers;
-            QueryString = context.Request.QueryString;
-            User = context.User;
+
+            if (request != null)
+            {
+                RequestCookies = request.Cookies;
+                Headers = request.Headers;
+                QueryString = request.QueryString;
+                User = request.User;
+            }
         }
     }
 }

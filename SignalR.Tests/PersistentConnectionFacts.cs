@@ -88,7 +88,7 @@ namespace SignalR.Tests
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");
 
-                var connection = new Client.Connection("http://foo/endpoint");                
+                var connection = new Client.Connection("http://foo/endpoint");
                 connection.Start(host).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(15));
@@ -136,12 +136,12 @@ namespace SignalR.Tests
             return base.OnConnectedAsync(request, connectionId);
         }
 
-        protected override Task OnReceivedAsync(string connectionId, string data)
+        protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
         {
             Connection.Send(connectionId, "OnReceivedAsync1");
             Connection.Send(connectionId, "OnReceivedAsync2");
 
-            return base.OnReceivedAsync(connectionId, data);
+            return base.OnReceivedAsync(request, connectionId, data);
         }
     }
 

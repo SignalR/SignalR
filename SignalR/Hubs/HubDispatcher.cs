@@ -19,8 +19,8 @@ namespace SignalR.Hubs
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
         private IParameterResolver _binder;
-        private HostContext _context;
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
+        private bool _isDebuggingEnabled;
 
         private readonly string _url;
 
@@ -45,7 +45,7 @@ namespace SignalR.Hubs
         /// <summary>
         /// Processes the hub's incoming method calls.
         /// </summary>
-        protected override Task OnReceivedAsync(string connectionId, string data)
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             var hubRequest = HubRequest.Parse(data);
 
@@ -63,7 +63,7 @@ namespace SignalR.Hubs
 
             // Resolving the actual state object
             var state = new TrackingDictionary(hubRequest.State);
-            var hub = CreateHub(descriptor, connectionId, state, throwIfFailedToCreate: true);
+            var hub = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
 
             Task resultTask;
 
@@ -116,7 +116,7 @@ namespace SignalR.Hubs
             }
 
             return resultTask
-                .ContinueWith(_ => base.OnReceivedAsync(connectionId, data))
+                .ContinueWith(_ => base.OnReceivedAsync(request, connectionId, data))
                 .FastUnwrap();
         }
 
@@ -129,30 +129,30 @@ namespace SignalR.Hubs
                 return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url));
             }
 
-            _context = context;
+            _isDebuggingEnabled = context.IsDebuggingEnabled();
 
             return base.ProcessRequestAsync(context);
         }
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Connect());
+            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Connect());
         }
 
         protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(connectionId, hub => hub.Reconnect(groups));
+            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Reconnect(groups));
         }
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            return ExecuteHubEventAsync<IDisconnect>(connectionId, hub => hub.Disconnect());
+            return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => hub.Disconnect());
         }
 
-        private Task ExecuteHubEventAsync<T>(string connectionId, Func<T, Task> action) where T : class
+        private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<T, Task> action) where T : class
         {
             var operations = GetHubsImplementingInterface(typeof(T))
-                .Select(hub => CreateHub(hub, connectionId))
+                .Select(hub => CreateHub(request, hub, connectionId))
                 .OfType<T>()
                 .Select(instance => action(instance).Catch() ?? TaskAsyncHelper.Empty)
                 .ToList();
@@ -183,7 +183,7 @@ namespace SignalR.Hubs
             return tcs.Task;
         }
 
-        private IHub CreateHub(HubDescriptor descriptor, string connectionId, TrackingDictionary state = null, bool throwIfFailedToCreate = false)
+        private IHub CreateHub(IRequest request, HubDescriptor descriptor, string connectionId, TrackingDictionary state = null, bool throwIfFailedToCreate = false)
         {
             try
             {
@@ -192,7 +192,7 @@ namespace SignalR.Hubs
                 if (hub != null)
                 {
                     state = state ?? new TrackingDictionary();
-                    hub.Context = new HubCallerContext(_context, connectionId);
+                    hub.Context = new HubCallerContext(request, connectionId);
                     hub.Caller = new StatefulSignalAgent(Connection, connectionId, descriptor.Name, state);
                     var groupManager = new GroupManager(Connection, descriptor.Name);
                     hub.Clients = new ClientAgent(Connection, descriptor.Name);
@@ -233,7 +233,7 @@ namespace SignalR.Hubs
         private Task ProcessResult(TrackingDictionary state, object result, HubRequest request, Exception error)
         {
             var exception = error.Unwrap();
-            string stackTrace = (exception != null && _context.IsDebuggingEnabled()) ? exception.StackTrace : null;
+            string stackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;
             string errorMessage = exception != null ? exception.Message : null;
 
             var hubResult = new HubResult
