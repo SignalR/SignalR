@@ -21,7 +21,7 @@
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
         <MinorVersion>5</MinorVersion>
-        <PackageBuild>0</PackageBuild>
+        <PackageBuild>1</PackageBuild>
     </PropertyGroup>
   
     <PropertyGroup Condition="$(BUILD_NUMBER) != ''">
