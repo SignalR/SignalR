@@ -153,7 +153,7 @@ namespace SignalR.Hosting.Owin
                     {
                         var request = new OwinRequest(environment, task.Result);
                         var response = new OwinResponse(result);
-                        var hostContext = new HostContext(request, response, Thread.CurrentPrincipal);
+                        var hostContext = new HostContext(request, response);
 
                         try
                         {

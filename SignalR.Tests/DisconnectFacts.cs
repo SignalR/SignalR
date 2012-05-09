@@ -166,7 +166,7 @@ namespace SignalR.Tests
                 return base.OnDisconnectAsync(connectionId);
             }
 
-            protected override Task OnReceivedAsync(string connectionId, string data)
+            protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }
