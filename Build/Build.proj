@@ -38,18 +38,12 @@
         <Revision>0</Revision>
     </PropertyGroup>
   
-    <PropertyGroup Condition="$(PrereleaseTag) != ''">
+    <PropertyGroup>
        <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
-       <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)$(PrereleaseTagWithSeparator)</PackageVersion>
-       <JsVersion>$(MajorVersion).$(MinorVersion)$(PrereleaseTag)</JsVersion>
+       <PackageVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)$(PrereleaseTagWithSeparator)</PackageVersion>
+       <JsVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)$(PrereleaseTag)</JsVersion>
     </PropertyGroup>
     
-    <PropertyGroup Condition="$(PrereleaseTag) == ''">
-       <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
-       <PackageVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)</PackageVersion>
-       <JsVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)</JsVersion>
-    </PropertyGroup>
-  
     <ItemGroup>
         <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
             <Find>\d+\.\d+\.\d+\.\d+</Find>
