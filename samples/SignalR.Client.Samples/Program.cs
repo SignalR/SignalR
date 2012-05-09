@@ -113,7 +113,7 @@ namespace SignalR.Client.Samples
                 return base.OnReconnectedAsync(request, groups, connectionId);
             }
 
-            protected override Task OnReceivedAsync(string connectionId, string data)
+            protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }

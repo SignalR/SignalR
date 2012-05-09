@@ -15,11 +15,13 @@
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
+        <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
     </PropertyGroup>
   
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
         <MinorVersion>5</MinorVersion>
+        <PackageBuild>0</PackageBuild>
     </PropertyGroup>
   
     <PropertyGroup Condition="$(BUILD_NUMBER) != ''">
@@ -36,10 +38,16 @@
         <Revision>0</Revision>
     </PropertyGroup>
   
-    <PropertyGroup>  
+    <PropertyGroup Condition="$(PrereleaseTag) != ''">
        <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
-       <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)-rc</PackageVersion>
-       <JsVersion>$(MajorVersion).$(MinorVersion)rc</JsVersion>
+       <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)$(PrereleaseTagWithSeparator)</PackageVersion>
+       <JsVersion>$(MajorVersion).$(MinorVersion)$(PrereleaseTag)</JsVersion>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="$(PrereleaseTag) == ''">
+       <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
+       <PackageVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)</PackageVersion>
+       <JsVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)</JsVersion>
     </PropertyGroup>
   
     <ItemGroup>
@@ -48,8 +56,8 @@
             <ReplaceWith>$(Version)</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
-            <Find>\d+\.\d+\.\d+-pre</Find>
-            <ReplaceWith>$(PackageVersion)</ReplaceWith>
+            <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+.\d+"\)</Find>
+            <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\**\AssemblyInfo.cs">
             <Find>\d+\.\d+\.\d+\.\d+</Find>
