@@ -92,6 +92,22 @@ namespace SignalR.Tests
         }
 
         [Fact]
+        public void UnsupportedOverloads()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo/");
+
+            var hub = connection.CreateProxy("demo");
+
+            connection.Start(host).Wait();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => hub.Invoke("UnsupportedOverload", 13177).Wait());
+
+            Assert.Equal("'UnsupportedOverload' method could not be resolved.", ex.GetBaseException().Message);
+        }
+
+        [Fact]
         public void ChangeHubUrl()
         {
             var host = new MemoryHost();
