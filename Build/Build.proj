@@ -107,7 +107,7 @@
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
              Properties="Configuration=$(Configuration)" />
   </Target>
 
@@ -153,7 +153,7 @@
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight5\SignalR.Client.Silverlight5.csproj"
          Targets="Build"
-         Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
+         Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
          Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
     <RemoveDir Directories="$(ScriptTempPath)" />
