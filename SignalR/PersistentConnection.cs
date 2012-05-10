@@ -42,11 +42,6 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Occurs when data is sent to the calling connection.
-        /// </summary>
-        public static event Action Sending;
-        
-        /// <summary>
         /// Occurs when a data is received from a connection.
         /// </summary>
         public static event Action Receiving;
@@ -154,7 +149,7 @@ namespace SignalR
 
             _transport.Received = data =>
             {
-                return OnReceivedAsync(connectionId, data);
+                return OnReceivedAsync(context.Request, connectionId, data);
             };
 
             _transport.Error = OnErrorAsync;
@@ -229,10 +224,11 @@ namespace SignalR
         /// <summary>
         /// Called when data is received from a connection.
         /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the connection sending the data.</param>
         /// <param name="data">The payload sent to the connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the receive operation is complete.</returns>
-        protected virtual Task OnReceivedAsync(string connectionId, string data)
+        protected virtual Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             OnReceiving();
             return TaskAsyncHelper.Empty;
@@ -259,23 +255,12 @@ namespace SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        /// <summary>
-        /// Sends a message to the incoming connection id associated with the <see cref="PersistentConnection"/>.
-        /// </summary>
-        /// <param name="value">The value to send</param>
-        /// <returns>A <see cref="Task"/> that represents when the send is complete.</returns>
-        public Task Send(object value)
-        {
-            OnSending();
-            return Connection.Send(_transport.ConnectionId, value);
-        }
-
         private Task ProcessNegotiationRequest(HostContext context)
         {
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdGenerator.GenerateConnectionId(context.Request, context.User),
+                ConnectionId = _connectionIdGenerator.GenerateConnectionId(context.Request),
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"
@@ -306,14 +291,6 @@ namespace SignalR
         private ITransport GetTransport(HostContext context)
         {
             return _transportManager.GetTransport(context);
-        }
-
-        private static void OnSending()
-        {
-            if (Sending != null)
-            {
-                Sending();
-            }
         }
 
         private static void OnReceiving()

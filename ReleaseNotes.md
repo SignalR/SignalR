@@ -1,5 +1,12 @@
 # SignalR Release Notes
 
+## v0.5.0 (Official Release)
+* Server Send Events connections not closing ([#369](https://github.com/SignalR/SignalR/issues/369))
+* Allow HubConnection to specify hub url ([#368](https://github.com/SignalR/SignalR/issues/368))
+* Added current IPrincipal to IRequest. ([e381ef1cb6](https://github.com/SignalR/SignalR/commit/e381ef1cb6c0c13087c221abdfa2833c0ae841a6))
+* Remove implicit Send overload from PersistentConnection. ([44ff03aafa](https://github.com/SignalR/SignalR/commit/44ff03aafa5f5e2f3b73a5a19ac5a2437674891b))
+* Regression: Method overloads no longer work in hubs because of caching. ([#362](https://github.com/SignalR/SignalR/issues/362))
+
 ## v0.5.84 RC (Stable Prerelease)
 * Performance: Only register for disconnect for chunked requests on self host. (#352)
 * Provide way to override default resolver in ASP.NET other than through routing. (#347)

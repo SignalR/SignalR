@@ -15,11 +15,13 @@
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
+        <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
     </PropertyGroup>
   
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
         <MinorVersion>5</MinorVersion>
+        <PackageBuild>1</PackageBuild>
     </PropertyGroup>
   
     <PropertyGroup Condition="$(BUILD_NUMBER) != ''">
@@ -36,20 +38,20 @@
         <Revision>0</Revision>
     </PropertyGroup>
   
-    <PropertyGroup>  
+    <PropertyGroup>
        <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
-       <PackageVersion>$(MajorVersion).$(MinorVersion).$(Revision)-rc</PackageVersion>
-       <JsVersion>$(MajorVersion).$(MinorVersion)rc</JsVersion>
+       <PackageVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)$(PrereleaseTagWithSeparator)</PackageVersion>
+       <JsVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)$(PrereleaseTag)</JsVersion>
     </PropertyGroup>
-  
+    
     <ItemGroup>
         <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
             <Find>\d+\.\d+\.\d+\.\d+</Find>
             <ReplaceWith>$(Version)</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
-            <Find>\d+\.\d+\.\d+-pre</Find>
-            <ReplaceWith>$(PackageVersion)</ReplaceWith>
+            <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+.\d+"\)</Find>
+            <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\**\AssemblyInfo.cs">
             <Find>\d+\.\d+\.\d+\.\d+</Find>
@@ -105,7 +107,7 @@
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
              Properties="Configuration=$(Configuration)" />
   </Target>
 
@@ -151,7 +153,7 @@
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight5\SignalR.Client.Silverlight5.csproj"
          Targets="Build"
-         Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0')"
+         Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
          Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
     <RemoveDir Directories="$(ScriptTempPath)" />

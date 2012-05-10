@@ -152,9 +152,9 @@ namespace SignalR.Hosting.Self
                 {
                     var cts = new CancellationTokenSource();
 
-                    var request = new HttpListenerRequestWrapper(context.Request);
+                    var request = new HttpListenerRequestWrapper(context.Request, context.User);
                     var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
-                    var hostContext = new HostContext(request, response, context.User);
+                    var hostContext = new HostContext(request, response);
 
                     if (OnProcessRequest != null)
                     {

@@ -43,7 +43,7 @@ namespace SignalR.Hosting.Self.Samples
                 return base.OnConnectedAsync(request, connectionId);
             }
 
-            protected override Task OnReceivedAsync(string connectionId, string data)
+            protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }

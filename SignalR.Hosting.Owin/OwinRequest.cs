@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Security.Principal;
+using System.Threading;
 using Gate;
 using SignalR.Hosting.Common;
 
@@ -61,6 +63,14 @@ namespace SignalR.Hosting.Owin
         {
             get;
             private set;
+        }
+
+        public IPrincipal User
+        {
+            get
+            {
+                return Thread.CurrentPrincipal;
+            }
         }
 
         /// <summary>

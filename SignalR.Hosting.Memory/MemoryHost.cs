@@ -48,7 +48,7 @@ namespace SignalR.Hosting.Memory
 
                 Response response = null;
                 response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response));
-                var hostContext = new HostContext(request, response, null);
+                var hostContext = new HostContext(request, response);
 
                 connection.Initialize(DependencyResolver);
 

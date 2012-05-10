@@ -29,10 +29,7 @@ namespace SignalR.Hosting.AspNet
         {
             try
             {
-                if (!immediate)
-                {
-                    _onShutdown();
-                }
+                _onShutdown();
             }
             catch
             {
