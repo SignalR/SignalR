@@ -154,8 +154,12 @@ namespace SignalR.Client.Transports
         protected override void OnBeforeAbort(IConnection connection)
         {
             // Get the reader from the connection and stop it
+#if NET20
+            var reader = ConnectionExtensions.GetValue<AsyncStreamReader>(connection, ReaderKey);
+#else
             var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
-            if (reader != null)
+#endif
+			if (reader != null)
             {
                 // Stop reading data from the stream, don't close it since we're going to end
                 // the request
@@ -221,7 +225,11 @@ namespace SignalR.Client.Transports
                 }
 
                 var buffer = new byte[1024];
+#if NET20
+                StreamExtensions.ReadAsync(_stream, buffer).ContinueWith(task =>
+#else
                 _stream.ReadAsync(buffer).ContinueWith(task =>
+#endif
                 {
                     if (task.IsFaulted)
                     {

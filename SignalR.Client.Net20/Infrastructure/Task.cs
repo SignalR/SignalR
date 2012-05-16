@@ -47,6 +47,19 @@ namespace SignalR.Client.Net20.Infrastructure
 		{
 			throw new NotImplementedException();
 		}
+
+		internal static class Factory
+		{
+			public static Task<T> FromAsync<T>(Func<AsyncCallback,object,IAsyncResult> beginMethod, Func<IAsyncResult,T> endMethod, object state)
+			{
+				throw new NotImplementedException();
+			}
+
+			public static Task FromAsync(Func<AsyncCallback, object, IAsyncResult> beginMethod, Action<IAsyncResult> endMethod, object state)
+			{
+				throw new NotImplementedException();
+			}
+		}
 	}
 
 	public static class TaskAsyncHelper

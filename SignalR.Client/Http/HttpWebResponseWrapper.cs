@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Http
 {
@@ -15,8 +16,12 @@ namespace SignalR.Client.Http
 
         public string ReadAsString()
         {
+#if NET20
+            return HttpHelper.ReadAsString(_response);
+#else
             return _response.ReadAsString();   
-        }
+#endif
+		}
 
         public Stream GetResponseStream()
         {

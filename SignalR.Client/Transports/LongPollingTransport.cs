@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -58,7 +59,7 @@ namespace SignalR.Client.Transports
             Debug.WriteLine("LP: {0}", (object)url);
 #endif
 
-            _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
+            _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).ContinueWith(task =>
             {
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);

@@ -16,7 +16,11 @@ namespace SignalR.Client.Http
 {
     internal static class HttpHelper
     {
-        public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
+#if NET20
+        public static Task<HttpWebResponse> GetHttpResponseAsync(HttpWebRequest request)
+#else
+		public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
+#endif
         {
             try
             {
@@ -28,8 +32,12 @@ namespace SignalR.Client.Http
             }
         }
 
+#if NET20
+        public static Task<Stream> GetHttpRequestStreamAsync(HttpWebRequest request)
+#else
         public static Task<Stream> GetHttpRequestStreamAsync(this HttpWebRequest request)
-        {
+#endif
+		{
             try
             {
                 return Task.Factory.FromAsync<Stream>(request.BeginGetRequestStream, request.EndGetRequestStream, null);
@@ -52,8 +60,12 @@ namespace SignalR.Client.Http
             {
                 requestPreparer(request);
             }
+#if NET20
+            return GetHttpResponseAsync(request);
+#else
             return request.GetHttpResponseAsync();
-        }
+#endif
+		}
 
         public static Task<HttpWebResponse> PostAsync(string url)
         {
@@ -75,7 +87,11 @@ namespace SignalR.Client.Http
             return PostInternal(url, requestPreparer, postData);
         }
 
-        public static string ReadAsString(this HttpWebResponse response)
+#if NET20
+        public static string ReadAsString(HttpWebResponse response)
+#else
+		public static string ReadAsString(this HttpWebResponse response)
+#endif
         {
             try
             {
@@ -123,13 +139,23 @@ namespace SignalR.Client.Http
             if (buffer == null)
             {
                 // If there's nothing to be written to the request then just get the response
-                return request.GetHttpResponseAsync();
+#if NET20
+				return GetHttpResponseAsync(request);
+#else
+				return request.GetHttpResponseAsync();
+#endif
             }
 
             // Write the post data to the request stream
+#if NET20
+			return (Task<HttpWebResponse>)GetHttpRequestStreamAsync(request)
+                          	.Then(stream => StreamExtensions.WriteAsync(stream,buffer).Then(() => stream.Dispose()))
+							.Then(() => GetHttpResponseAsync(request));
+#else
             return (Task<HttpWebResponse>) request.GetHttpRequestStreamAsync()
                           	.Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
                           	.Then(() => request.GetHttpResponseAsync());
+#endif
         }
 
         private static byte[] ProcessPostData(IDictionary<string, string> postData)

@@ -10,9 +10,16 @@ namespace SignalR.Client.Http
 {
     public static class IHttpClientExtensions
     {
+#if NET20
+        public static Task<IResponse> PostAsync(IHttpClient client, string url, Action<IRequest> prepareRequest)
+        {
+            return client.PostAsync(url, prepareRequest, postData: null);
+        }
+#else
         public static Task<IResponse> PostAsync(this IHttpClient client, string url, Action<IRequest> prepareRequest)
         {
             return client.PostAsync(url, prepareRequest, postData: null);
         }
+#endif
     }
 }

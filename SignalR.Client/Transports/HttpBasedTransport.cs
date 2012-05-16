@@ -123,7 +123,11 @@ namespace SignalR.Client.Transports
 
         public void Stop(IConnection connection)
         {
+#if NET20
+            var httpRequest = ConnectionExtensions.GetValue<IRequest>(connection, HttpRequestKey);
+#else
             var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
+#endif
             if (httpRequest != null)
             {
                 try

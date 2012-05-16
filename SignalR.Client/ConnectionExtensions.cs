@@ -5,8 +5,12 @@ namespace SignalR.Client
 {
     public static class ConnectionExtensions
     {
+#if NET20
+        public static T GetValue<T>(IConnection connection, string key)
+#else
         public static T GetValue<T>(this IConnection connection, string key)
-        {
+#endif
+		{
             object value;
             if (connection.Items.TryGetValue(key, out value))
             {
