@@ -242,12 +242,10 @@ namespace SignalR.Client.Hubs
                 return default(T);
             }
 
-#if !NETFX_CORE
             if (typeof(T).IsAssignableFrom(obj.GetType()))
             {
                 return (T)obj;
             }
-#endif
 
             return JsonConvert.DeserializeObject<T>(obj.ToString());
         }
