@@ -1,6 +1,9 @@
 ﻿using System;
 using Newtonsoft.Json;
 using SignalR.Client.Infrastructure;
+#if NET20
+using Newtonsoft.Json.Serialization;
+#endif
 
 namespace SignalR.Client.Hubs
 {
@@ -133,7 +136,7 @@ namespace SignalR.Client.Hubs
             return new DisposableAction(() => subscription.Data -= handler);
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NET20
         /// <summary>
         /// Registers for an event with the specified name and callback
         /// </summary>

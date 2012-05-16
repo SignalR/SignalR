@@ -4,7 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+#else
+	using System.Threading.Tasks;
+#endif
 using SignalR.Client.Infrastructure;
 using SignalR.Infrastructure;
 
@@ -88,7 +92,11 @@ namespace SignalR.Client.Http
             }
             catch (Exception ex)
             {
+#if NET20
+				Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"Failed to read resonse: {0}", ex));
+#else
                 Debug.WriteLine("Failed to read resonse: {0}", ex);
+#endif
                 // Swallow exceptions when reading the response stream and just try again.
                 return null;
             }
@@ -119,9 +127,9 @@ namespace SignalR.Client.Http
             }
 
             // Write the post data to the request stream
-            return request.GetHttpRequestStreamAsync()
-                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
-                .Then(() => request.GetHttpResponseAsync());
+            return (Task<HttpWebResponse>) request.GetHttpRequestStreamAsync()
+                          	.Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
+                          	.Then(() => request.GetHttpResponseAsync());
         }
 
         private static byte[] ProcessPostData(IDictionary<string, string> postData)

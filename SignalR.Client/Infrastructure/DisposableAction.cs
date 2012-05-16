@@ -1,4 +1,7 @@
 ﻿using System;
+#if NET20
+using Newtonsoft.Json.Serialization;
+#endif
 
 namespace SignalR.Client.Infrastructure
 {

@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#else
+using System.Linq;
+using System.Threading.Tasks;
+#endif
 
 namespace SignalR.Client.Transports
 {
@@ -155,7 +160,7 @@ namespace SignalR.Client.Transports
 
             try
             {
-                var result = JValue.Parse(response);
+                var result = JToken.Parse(response);
 
                 if (!result.HasValues)
                 {
@@ -181,7 +186,11 @@ namespace SignalR.Client.Transports
                         }
                         catch (Exception ex)
                         {
+#if NET20
+							Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+#else
                             Debug.WriteLine("Failed to process message: {0}", ex);
+#endif
                             connection.OnError(ex);
                         }
                     }
@@ -195,15 +204,28 @@ namespace SignalR.Client.Transports
                         var groups = (JArray)transportData["Groups"];
                         if (groups != null)
                         {
+#if NET20
+							var groupList = new List<string>();
+							foreach (var groupFromTransport in groups)
+							{
+								groupList.Add(groupFromTransport.Value<string>());
+							}
+                        	connection.Groups = groupList;
+#else
                             connection.Groups = groups.Select(token => token.Value<string>());
+#endif
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Failed to response: {0}", ex);
-                connection.OnError(ex);
+#if NET20
+                Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
+#else
+				Debug.WriteLine("Failed to response: {0}", ex);
+#endif
+				connection.OnError(ex);
             }
         }
 

@@ -1,5 +1,9 @@
 ﻿using System.Diagnostics;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+#else
 using System.Threading.Tasks;
+#endif
 using SignalR.Client.Http;
 
 namespace SignalR.Client.Transports
@@ -49,7 +53,13 @@ namespace SignalR.Client.Transports
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
+#if NET20
+                	Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                	                              "Auto: Failed to connect to using transport {0}",
+                	                              transport.GetType().Name));
+#else
                     Debug.WriteLine("Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name);
+#endif
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;

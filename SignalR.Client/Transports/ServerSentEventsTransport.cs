@@ -4,6 +4,10 @@ using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
 using SignalR.Client.Infrastructure;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#endif
 
 namespace SignalR.Client.Transports
 {
@@ -59,9 +63,13 @@ namespace SignalR.Client.Transports
 
             Action<IRequest> prepareRequest = PrepareRequest(connection);
 
-            Debug.WriteLine("SSE: GET {0}", (object)url);
+#if NET20
+            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
+#else
+			Debug.WriteLine("SSE: GET {0}", (object)url);
+#endif
 
-            _httpClient.GetAsync(url, request =>
+			_httpClient.GetAsync(url, request =>
             {
                 prepareRequest(request);
 

@@ -1,14 +1,20 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 using SignalR.Client.Transports;
+#if NET20
+using System.Collections.ObjectModel;
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#else
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Concurrent;
+#endif
 
 namespace SignalR.Client
 {
@@ -81,8 +87,13 @@ namespace SignalR.Client
 
             Url = url;
             QueryString = queryString;
+#if NET20
+			Groups = new Collection<string>();
+			Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+#else
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+#endif
         }
 
         /// <summary>
@@ -357,7 +368,7 @@ namespace SignalR.Client
 
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE || NET20
             try
             {
                 version = new Version(versionString);
@@ -375,7 +386,16 @@ namespace SignalR.Client
 
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
+#if NET20
+			var stringList = new List<string>();
+			foreach (var keyValue in queryString)
+			{
+				stringList.Add(keyValue.Key + "=" + keyValue.Value);
+			} 
+			return String.Join("&", stringList.ToArray());
+#else
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
+#endif
         }
     }
 }

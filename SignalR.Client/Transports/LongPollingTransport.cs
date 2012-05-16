@@ -3,6 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#endif
 
 namespace SignalR.Client.Transports
 {
@@ -48,7 +52,11 @@ namespace SignalR.Client.Transports
 
             url += GetReceiveQueryString(connection, data);
 
+#if NET20
+			Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"LP: {0}", url));
+#else
             Debug.WriteLine("LP: {0}", (object)url);
+#endif
 
             _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
@@ -72,9 +80,13 @@ namespace SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
+#if NET20
+						Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", raw));
+#else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
+#endif
 
-                        ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
+						ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
                     }
                 }
                 finally

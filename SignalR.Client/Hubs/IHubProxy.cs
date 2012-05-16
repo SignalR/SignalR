@@ -1,5 +1,9 @@
 ﻿using System;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+#else
 using System.Threading.Tasks;
+#endif
 
 namespace SignalR.Client.Hubs
 {
