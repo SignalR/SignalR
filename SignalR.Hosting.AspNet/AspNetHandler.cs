@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -11,6 +12,8 @@ namespace SignalR.Hosting.AspNet
 
         private readonly PersistentConnection _connection;
         private readonly IDependencyResolver _resolver;
+
+        private const string WebSocketVersionServerVariable = "WEBSOCKET_VERSION";
 
         public AspNetHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -35,10 +38,8 @@ namespace SignalR.Hosting.AspNet
             var response = new AspNetResponse(context);
             var hostContext = new HostContext(request, response);
 
-#if NET45
             // Determine if the client should bother to try a websocket request
-            hostContext.Items[HostConstants.SupportsWebSockets] = true;
-#endif
+            hostContext.Items[HostConstants.SupportsWebSockets] = !String.IsNullOrEmpty(context.Request.ServerVariables[WebSocketVersionServerVariable]);
 
             // Set the debugging flag
             hostContext.Items[HostConstants.DebugMode] = context.IsDebuggingEnabled;
