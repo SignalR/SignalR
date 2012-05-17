@@ -63,7 +63,7 @@ namespace SignalR.Transports
 
         public Func<Task> Disconnected { get; set; }
 
-        public bool IsAlive
+        public virtual bool IsAlive
         {
             get { return _context.Response.IsClientConnected; }
         }

@@ -7,6 +7,15 @@ namespace SignalR.Transports
     {
         private readonly HostContext _context;
         private IWebSocket _socket;
+        private bool isAlive = true;
+
+        public WebSocketTransport(HostContext context,
+                                  IDependencyResolver resolver)
+            : this(context, 
+                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<ITransportHeartBeat>())
+        {
+        }
 
         public WebSocketTransport(HostContext context, 
                                   IJsonSerializer serializer, 
@@ -16,7 +25,15 @@ namespace SignalR.Transports
             _context = context;
         }
 
-        public Task ProcessRequest(ITransportConnection connection)
+        public override bool IsAlive
+        {
+            get
+            {
+                return _isAlive;
+            }
+        }
+
+        public override Task ProcessRequest(ITransportConnection connection)
         {
             _context.Request.AcceptWebSocketRequest(socket =>
             {
@@ -28,6 +45,8 @@ namespace SignalR.Transports
                     {
                         Disconnected().Catch();
                     }
+
+                    _isAlive = false;
                 };
 
                 socket.OnMessage = message =>

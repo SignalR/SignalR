@@ -31,7 +31,7 @@ namespace SignalR.Hosting.AspNet
 
 
         {
-            var request = new AspNetRequest(context.Request, context.User);
+            var request = new AspNetRequest(context);
             var response = new AspNetResponse(context);
             var hostContext = new HostContext(request, response);
 

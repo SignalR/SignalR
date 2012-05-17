@@ -179,7 +179,7 @@ namespace SignalR.Transports
 
         private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, ITransportConnection connection, Action postReceive = null)
         {
-            if (!IsTimedOut && !IsDisconnected && Context.Response.IsClientConnected)
+            if (!IsTimedOut && !IsDisconnected && IsAlive)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending

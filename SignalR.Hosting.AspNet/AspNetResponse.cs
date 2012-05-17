@@ -24,6 +24,13 @@ namespace SignalR.Hosting.AspNet
         {
             get
             {
+#if NET45
+                // Return true for websocket requests since connectivity is handled by SignalR's transport
+                if (_context.IsWebSocketRequest)
+                {
+                    return true;
+                }
+#endif
                 return _context.Response.IsClientConnected;
             }
         }
@@ -39,12 +46,12 @@ namespace SignalR.Hosting.AspNet
                 _context.Response.ContentType = value;
             }
         }
-     
+
         public Task WriteAsync(string data)
         {
             return WriteAsync(data, disableBuffering: true);
         }
-     
+
         private Task WriteAsync(string data, bool disableBuffering)
         {
             if (disableBuffering)
@@ -78,7 +85,7 @@ namespace SignalR.Hosting.AspNet
             {
                 return;
             }
-         
+
             _context.Response.Buffer = false;
             _context.Response.BufferOutput = false;
 
@@ -89,7 +96,7 @@ namespace SignalR.Hosting.AspNet
 
             _context.Response.CacheControl = "no-cache";
             _context.Response.AddHeader("Connection", "keep-alive");
-         
+
             _bufferingDisabled = true;
         }
 

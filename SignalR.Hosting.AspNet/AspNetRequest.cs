@@ -9,18 +9,18 @@ namespace SignalR.Hosting.AspNet
 {
     public class AspNetRequest : IRequest
     {
-        private readonly HttpRequestBase _request;
+        private readonly HttpContextBase _context;
         private NameValueCollection _form;
         private NameValueCollection _queryString;
 
         private delegate void GetUnvalidatedCollections(HttpContext context, out Func<NameValueCollection> formGetter, out Func<NameValueCollection> queryStringGetter);
         private static Lazy<GetUnvalidatedCollections> _extractCollectionsMethod = new Lazy<GetUnvalidatedCollections>(ResolveCollectionsMethod);
 
-        public AspNetRequest(HttpRequestBase request, IPrincipal user)
+        public AspNetRequest(HttpContextBase context)
         {
-            _request = request;
-            Cookies = new HttpCookieCollectionWrapper(request.Cookies);
-            User = user;
+            _context = context;
+            Cookies = new HttpCookieCollectionWrapper(context.Request.Cookies);
+            User = context.User;
             ResolveFormAndQueryString();
         }
 
@@ -28,7 +28,7 @@ namespace SignalR.Hosting.AspNet
         {
             get
             {
-                return _request.Url;
+                return _context.Request.Url;
             }
         }
 
@@ -44,7 +44,7 @@ namespace SignalR.Hosting.AspNet
         {
             get
             {
-                return _request.Headers;
+                return _context.Request.Headers;
             }
         }
 
@@ -74,8 +74,8 @@ namespace SignalR.Hosting.AspNet
             // need to check if we're out of HttpContext to preserve testability.
             if (!ResolveUnvalidatedCollections())
             {
-                _form = _request.Form;
-                _queryString = _request.QueryString;
+                _form = _context.Request.Form;
+                _queryString = _context.Request.QueryString;
             }
         }
 
@@ -140,7 +140,14 @@ namespace SignalR.Hosting.AspNet
 
         public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-
+#if NET45
+            _context.AcceptWebSocketRequest(ws =>
+            {
+                var handler = new AspNetWebSocketHandler();
+                handler.ProcessWebSocketRequestAsync(ws);
+                return callback(handler);
+            });
+#endif
         }
     }
 }
