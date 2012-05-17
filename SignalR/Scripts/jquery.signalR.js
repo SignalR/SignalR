@@ -399,7 +399,6 @@
             url = this.addQs(url, connection);
             $.ajax({
                 url: url,
-                async: false,
                 global: false,
                 type: "POST",
                 dataType: connection.ajaxDataType,
