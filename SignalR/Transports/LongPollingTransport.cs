@@ -43,7 +43,7 @@ namespace SignalR.Transports
         {
             get { return TimeSpan.FromMilliseconds(LongPollDelay); }
         }
-        
+
         protected override bool IsConnectRequest
         {
             get
@@ -110,6 +110,10 @@ namespace SignalR.Transports
             {
                 return ProcessSendRequest();
             }
+            else if (IsKillRequest)
+            {
+                return Disconnect();
+            }
             else
             {
                 if (IsConnectRequest)
@@ -142,7 +146,7 @@ namespace SignalR.Transports
         public virtual Task Send(object value)
         {
             var payload = _jsonSerializer.Stringify(value);
-            
+
             if (IsJsonp)
             {
                 payload = Json.CreateJsonpCallback(JsonpCallback, payload);
@@ -207,7 +211,15 @@ namespace SignalR.Transports
                 postReceive();
             }
 
-            return receiveTask.Then(response => Send(response));
+            return receiveTask.Then(response =>
+            {
+                if (response.Disconnect)
+                {
+                    OnDisconnect();
+                }
+
+                Send(response);
+            });
         }
 
         private PersistentResponse AddTransportData(PersistentResponse response)

@@ -24,7 +24,7 @@ namespace SignalR.Transports
             _jsonSerializer = jsonSerializer;
             _heartBeat = heartBeat;
             _timeoutTokenSource = new CancellationTokenSource();
-            
+
             // Register the callback to cancel this connection
             var hostShutdownToken = context.HostShutdownToken();
             if (hostShutdownToken != CancellationToken.None)
@@ -105,7 +105,20 @@ namespace SignalR.Transports
             }
         }
 
+        protected bool IsKillRequest
+        {
+            get
+            {
+                return Context.Request.Url.LocalPath.EndsWith("/kill", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         public Task Disconnect()
+        {
+            return Connection.Close();
+        }
+
+        public Task OnDisconnect()
         {
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
@@ -113,28 +126,11 @@ namespace SignalR.Transports
                 if (disconnected != null)
                 {
                     Debug.WriteLine("TransportDisconnectBase: Disconnect fired for connection {0}", (object)ConnectionId);
-                    return disconnected()
-                        .ContinueWith(t =>
-                        {
-                            if (t.IsFaulted)
-                            {
-                                // Observe & trace any exception
-                                Trace.TraceError("SignalR: Error during transport disconnect: {0}", t.Exception);
-                            }
-                            return Connection.Close();
-                        })
-                        .FastUnwrap();
-                }
-                else
-                {
-                    return Connection.Close();
+                    return disconnected().Catch();
                 }
             }
-            else
-            {
-                // somebody else already fired the Disconnect event
-                return TaskAsyncHelper.Empty;
-            }
+
+            return TaskAsyncHelper.Empty;
         }
 
         public void Timeout()

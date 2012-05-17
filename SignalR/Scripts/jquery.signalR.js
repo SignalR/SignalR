@@ -132,6 +132,11 @@
                 transport.start(connection, function () {
                     connection.transport = transport;
                     $(connection).trigger(events.onStart);
+
+                    $(window).unload(function () {
+                        connection.stop();
+                    });
+
                 }, function () {
                     initialize(transports, index + 1);
                 });
@@ -385,7 +390,18 @@
                 }
             });
         },
-
+        ajaxKill: function (connection) {
+            var url = connection.url + "/kill" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
+            url = this.addQs(url, connection);
+            $.ajax({
+                url: url,
+                async: false,
+                global: false,
+                type: "POST",
+                dataType: connection.ajaxDataType,
+                data: {}
+            });
+        },
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
@@ -673,6 +689,8 @@
                     connection.eventSource = null;
                     delete connection.eventSource;
                 }
+
+                transportLogic.ajaxKill(connection);
             }
         },
 
@@ -763,6 +781,8 @@
                     delete connection.frame;
                     delete connection.frameId;
                 }
+
+                transportLogic.ajaxKill(connection);
             },
 
             getConnection: function (id) {
@@ -850,7 +870,7 @@
                                 }
 
                                 if (reconnectTimeOut) {
-                                    // If the request failed then we clear the timeout so that the 
+                                    // If the request failed then we clear the timeout so that the
                                     // reconnect event doesn't get fired
                                     clearTimeout(reconnectTimeOut);
                                 }
@@ -873,10 +893,10 @@
                             that.reconnectDelay);
                         }
 
-                    } (connection));
+                    }(connection));
 
                     // Now connected
-                    // There's no good way know when the long poll has actually started so 
+                    // There's no good way know when the long poll has actually started so
                     // we assume it only takes around 150ms (max) to start the connection
                     window.setTimeout(onSuccess, 150);
 
@@ -895,6 +915,8 @@
                     connection.pollXhr = null;
                     delete connection.pollXhr;
                 }
+
+                transportLogic.ajaxKill(connection);
             }
         }
     };
@@ -914,4 +936,4 @@
 
     $.connection = $.signalR = signalR;
 
-} (window.jQuery, window));
+}(window.jQuery, window));

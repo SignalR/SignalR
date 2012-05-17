@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Hosting;
 
@@ -55,7 +53,7 @@ namespace SignalR.Transports
                 Sending(payload);
             }
         }
-        
+
         protected static void OnReceiving(string data)
         {
             if (Receiving != null)
@@ -85,6 +83,10 @@ namespace SignalR.Transports
             if (Context.Request.Url.LocalPath.EndsWith("/send"))
             {
                 return ProcessSendRequest();
+            }
+            else if (IsKillRequest)
+            {
+                return Disconnect();
             }
             else
             {
@@ -200,6 +202,11 @@ namespace SignalR.Transports
                     Task sendTask = Send(response);
                     if (response.Disconnect || response.TimedOut)
                     {
+                        if (response.Disconnect)
+                        {
+                            OnDisconnect();
+                        }
+
                         // Signal the tcs when the task is done
                         return sendTask.Then(tcs => tcs.SetResult(null), taskCompletetionSource);
                     }
@@ -222,6 +229,11 @@ namespace SignalR.Transports
 
                 // Stop execution here
                 return;
+            }
+
+            if (!IsTimedOut)
+            {
+                OnDisconnect();
             }
 
             taskCompletetionSource.SetResult(null);
