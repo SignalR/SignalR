@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace SignalR.Hosting.AspNet
@@ -135,6 +136,11 @@ namespace SignalR.Hosting.AspNet
             }
 
             return (GetUnvalidatedCollections)Delegate.CreateDelegate(typeof(GetUnvalidatedCollections), firstArgument: null, method: getUnvalidatedCollectionsMethod);
+        }
+
+        public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        {
+
         }
     }
 }

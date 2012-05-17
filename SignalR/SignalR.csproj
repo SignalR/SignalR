@@ -55,6 +55,7 @@
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
+    <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hubs\HubContext.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\StatefulSignalAgent.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\TransportManager.cs" />
     <Compile Include="Infrastructure\ExceptionsExtensions.cs" />
+    <Compile Include="Transports\WebSocketTransport.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

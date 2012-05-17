@@ -20,7 +20,7 @@ namespace SignalR.Transports
         }
 
         public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
-            : base(context, heartBeat)
+            : base(context, jsonSerializer, heartBeat)
         {
             _jsonSerializer = jsonSerializer;
         }
@@ -33,6 +33,7 @@ namespace SignalR.Transports
                 {
                     _lastMessageId = Context.Request.QueryString["messageId"];
                 }
+
                 return _lastMessageId;
             }
             private set
@@ -46,32 +47,20 @@ namespace SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        public IEnumerable<string> Groups
-        {
-            get
-            {
-                if (IsConnectRequest)
-                {
-                    return Enumerable.Empty<string>();
-                }
-
-                string groupValue = Context.Request.QueryString["groups"];
-
-                if (String.IsNullOrEmpty(groupValue))
-                {
-                    return Enumerable.Empty<string>();
-                }
-
-                return _jsonSerializer.Parse<string[]>(groupValue);
-            }
-        }
-
         protected virtual void OnSending(string payload)
         {
             HeartBeat.MarkConnection(this);
             if (Sending != null)
             {
                 Sending(payload);
+            }
+        }
+        
+        protected static void OnReceiving(string data)
+        {
+            if (Receiving != null)
+            {
+                Receiving(data);
             }
         }
 
@@ -87,11 +76,9 @@ namespace SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
-        public override Func<Task> Disconnected { get; set; }
-
         public Func<Exception, Task> Error { get; set; }
 
-        public Task ProcessRequest(ITransportConnection connection)
+        protected Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;
 
@@ -122,6 +109,11 @@ namespace SignalR.Transports
             }
         }
 
+        public virtual Task ProcessRequest(ITransportConnection connection)
+        {
+            return ProcessRequestCore(connection);
+        }
+
         public virtual Task Send(PersistentResponse response)
         {
             HeartBeat.MarkConnection(this);
@@ -137,11 +129,6 @@ namespace SignalR.Transports
             return Context.Response.EndAsync(data);
         }
 
-        protected virtual bool IsConnectRequest
-        {
-            get { return true; }
-        }
-
         protected virtual Task InitializeResponse(ITransportConnection connection)
         {
             return TaskAsyncHelper.Empty;
@@ -151,10 +138,7 @@ namespace SignalR.Transports
         {
             string data = Context.Request.Form["data"];
 
-            if (Receiving != null)
-            {
-                Receiving(data);
-            }
+            OnReceiving(data);
 
             if (Received != null)
             {

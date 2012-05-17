@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting;
@@ -11,13 +13,15 @@ namespace SignalR.Transports
     {
         private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
+        private readonly IJsonSerializer _jsonSerializer;
 
         protected int _isDisconnected;
         private readonly CancellationTokenSource _timeoutTokenSource;
 
-        public TransportDisconnectBase(HostContext context, ITransportHeartBeat heartBeat)
+        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
             _context = context;
+            _jsonSerializer = jsonSerializer;
             _heartBeat = heartBeat;
             _timeoutTokenSource = new CancellationTokenSource();
             
@@ -37,7 +41,27 @@ namespace SignalR.Transports
             }
         }
 
-        public abstract Func<Task> Disconnected { get; set; }
+        public IEnumerable<string> Groups
+        {
+            get
+            {
+                if (IsConnectRequest)
+                {
+                    return Enumerable.Empty<string>();
+                }
+
+                string groupValue = Context.Request.QueryString["groups"];
+
+                if (String.IsNullOrEmpty(groupValue))
+                {
+                    return Enumerable.Empty<string>();
+                }
+
+                return _jsonSerializer.Parse<string[]>(groupValue);
+            }
+        }
+
+        public Func<Task> Disconnected { get; set; }
 
         public bool IsAlive
         {
@@ -71,6 +95,14 @@ namespace SignalR.Transports
         public virtual TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromSeconds(5); }
+        }
+
+        protected virtual bool IsConnectRequest
+        {
+            get
+            {
+                return true;
+            }
         }
 
         public Task Disconnect()

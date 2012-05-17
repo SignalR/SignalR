@@ -2,8 +2,9 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using SignalR.Hosting.Common;
 using System.Security.Principal;
+using System.Threading.Tasks;
+using SignalR.Hosting.Common;
 
 namespace SignalR.Hosting.Self
 {
@@ -88,6 +89,11 @@ namespace SignalR.Hosting.Self
                     _form = HttpUtility.ParseDelimited(body);
                 }
             }
+        }
+
+        public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        {
+            
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace SignalR.Hosting
 {
@@ -12,5 +13,7 @@ namespace SignalR.Hosting
         NameValueCollection Form { get; }
         IRequestCookieCollection Cookies { get; }
         IPrincipal User { get; }
+
+        void AcceptWebSocketRequest(Func<IWebSocket, Task> callback);
     }
 }
