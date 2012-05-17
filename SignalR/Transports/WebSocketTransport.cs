@@ -7,7 +7,7 @@ namespace SignalR.Transports
     {
         private readonly HostContext _context;
         private IWebSocket _socket;
-        private bool isAlive = true;
+        private bool _isAlive = true;
 
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
