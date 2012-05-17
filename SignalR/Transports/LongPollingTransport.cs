@@ -218,7 +218,7 @@ namespace SignalR.Transports
                     OnDisconnect();
                 }
 
-                Send(response);
+                return Send(response);
             });
         }
 
