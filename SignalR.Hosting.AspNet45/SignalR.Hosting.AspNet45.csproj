@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6F53F576-0E35-4E89-8D4D-B6B40084A16C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SignalR.Hosting.AspNet</RootNamespace>
+    <AssemblyName>SignalR.Hosting.AspNet</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET45</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NET45</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\AspNetBootstrapper.cs">
+      <Link>AspNetBootstrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\AspNetHandler.cs">
+      <Link>AspNetHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\AspNetRequest.cs">
+      <Link>AspNetRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\AspNetResponse.cs">
+      <Link>AspNetResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\AspNetShutDownDetector.cs">
+      <Link>AspNetShutDownDetector.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\HttpCookieCollectionWrapper.cs">
+      <Link>HttpCookieCollectionWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\Infrastructure\AspNetAssemblyLocator.cs">
+      <Link>Infrastructure\AspNetAssemblyLocator.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\Routing\HubDispatcherRouteHandler.cs">
+      <Link>Routing\HubDispatcherRouteHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\Routing\IgnoreJsRouteConstraint.cs">
+      <Link>Routing\IgnoreJsRouteConstraint.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\Routing\IncomingOnlyRouteConstraint.cs">
+      <Link>Routing\IncomingOnlyRouteConstraint.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\Routing\PersistentRouteHandler.cs">
+      <Link>Routing\PersistentRouteHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\Routing\RouteExtensions.cs">
+      <Link>Routing\RouteExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\TaskAsyncHelper.cs">
+      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+      <Project>{3b71f0ae-d4b6-4f47-bf62-333d45615673}</Project>
+      <Name>SignalR.Hosting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignalR\SignalR.csproj">
+      <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
+      <Name>SignalR</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

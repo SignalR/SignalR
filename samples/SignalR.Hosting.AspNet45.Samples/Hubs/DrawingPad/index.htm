@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.signalR.js" type="text/javascript"></script>
+    <script src="../../Scripts/jcanvas.js" type="text/javascript"></script>
+    <script src="../../signalr/hubs" type="text/javascript"></script>
+    <script src="drawingpad.js" type="text/javascript"></script>
+    <style type="text/css">
+        #pad {
+            border: 3px solid navy;
+        }
+    </style>
+</head>
+<body>
+    <div id="connecting">
+        Please while the connection is established...
+    </div>
+    <div id="connected" style="display: none">
+        <canvas width="500" height="400" id="pad">
+            <p>Unsupported brower</p>
+        </canvas>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+
+            var signalR = $.connection;
+            var id = -1;
+
+            // someone draw something
+            signalR.drawingPad.lineDrawed = function (senderId, value) {
+                if (senderId != id) { // Do not redraw own data, in order to avoid infinit loop
+                    value.Callback = true;
+                    $("#pad").drawingpad("line", value);
+                }
+            };
+
+            signalR.hub.start({ transport: activeTransport }, function () {
+
+                signalR.drawingPad.join(function () {
+                    $("#connecting").hide();
+                    $("#connected").show();
+
+                    id = signalR.drawingPad.id;
+                    color = signalR.drawingPad.color;
+
+                    // Listen for drawing
+                    $("#pad").drawingpad({linecolor : color}).bind('line.drawingpad', function (event, args) {
+                        if(!args.Callback)
+                            signalR.drawingPad.drawLine(args);
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
