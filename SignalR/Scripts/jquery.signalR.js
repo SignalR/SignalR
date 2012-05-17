@@ -391,6 +391,10 @@
             });
         },
         ajaxKill: function (connection) {
+            if (typeof (connection.transport) === "undefined") {
+                return;
+            }
+
             var url = connection.url + "/kill" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
             url = this.addQs(url, connection);
             $.ajax({
