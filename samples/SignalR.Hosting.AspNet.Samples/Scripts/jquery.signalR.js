@@ -392,7 +392,7 @@
                 }
             });
         },
-        ajaxKill: function (connection) {
+        ajaxAbort: function (connection) {
             if (typeof (connection.transport) === "undefined") {
                 return;
             }
@@ -401,6 +401,8 @@
             url = this.addQs(url, connection);
             $.ajax({
                 url: url,
+                async: false,
+                timeout: 1000,
                 global: false,
                 type: "POST",
                 dataType: connection.ajaxDataType,
@@ -416,9 +418,6 @@
 
                     // Disconnected by the server
                     connection.stop();
-
-                    // Trigger the disconnect event
-                    $connection.trigger(events.onDisconnect);
                     return;
                 }
 
@@ -699,7 +698,7 @@
                 }
             },
             abort: function (connection) {
-                transportLogic.ajaxKill(connection);
+                transportLogic.ajaxAbort(connection);
             }
         },
 
@@ -791,11 +790,11 @@
                     delete connection.frameId;
                 }
 
-                transportLogic.ajaxKill(connection);
+                transportLogic.ajaxAbort(connection);
             },
 
             abort: function (connection) {
-                transportLogic.ajaxKill(connection);
+                transportLogic.ajaxAbort(connection);
             },
 
             getConnection: function (id) {
@@ -930,7 +929,7 @@
                 }
             },
             abort: function (connection) {
-                transportLogic.ajaxKill(connection);
+                transportLogic.ajaxAbort(connection);
             }
         }
     };
