@@ -134,7 +134,7 @@
                     $(connection).trigger(events.onStart);
 
                     $(window).unload(function () {
-                        connection.stop();
+                        connection.stop(false /* async */);
                     });
 
                 }, function () {
@@ -290,14 +290,13 @@
             return connection;
         },
 
-        stop: function () {
+        stop: function (async) {
             /// <summary>Stops listening</summary>
             /// <returns type="signalR" />
             var connection = this;
 
             if (connection.transport) {
-                // TODO: Clean this up
-                connection.transport.abort(connection);
+                connection.transport.abort(connection, async);
                 connection.transport.stop(connection);
                 connection.transport = null;
             }
@@ -393,16 +392,19 @@
                 }
             });
         },
-        ajaxAbort: function (connection) {
+        ajaxAbort: function (connection, async) {
             if (typeof (connection.transport) === "undefined") {
                 return;
             }
+
+            // Async by default unless explicitly overidden
+            async = typeof async === "undefined" ? true : async;
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
             url = this.addQs(url, connection);
             $.ajax({
                 url: url,
-                async: false,
+                async: async,
                 timeout: 1000,
                 global: false,
                 type: "POST",
@@ -410,7 +412,7 @@
                 data: {}
             });
 
-            log("Fired ajax abort");
+            log("Fired ajax abort async = " + async);
         },
         processMessages: function (connection, data) {
             var $connection = $(connection);
@@ -420,7 +422,7 @@
                     log("Disconnect command received from server", connection.logging);
 
                     // Disconnected by the server
-                    connection.stop();
+                    connection.transport.stop(connection);
                     return;
                 }
 
@@ -707,8 +709,8 @@
                     delete connection.eventSource;
                 }
             },
-            abort: function (connection) {
-                transportLogic.ajaxAbort(connection);
+            abort: function (connection, async) {
+                transportLogic.ajaxAbort(connection, async);
             }
         },
 
@@ -804,12 +806,10 @@
                     delete connection.frameId;
                     log("Stopping forever frame");
                 }
-
-                transportLogic.ajaxAbort(connection);
             },
 
-            abort: function (connection) {
-                transportLogic.ajaxAbort(connection);
+            abort: function (connection, async) {
+                transportLogic.ajaxAbort(connection, async);
             },
 
             getConnection: function (id) {
@@ -949,8 +949,8 @@
                     delete connection.pollXhr;
                 }
             },
-            abort: function (connection) {
-                transportLogic.ajaxAbort(connection);
+            abort: function (connection, async) {
+                transportLogic.ajaxAbort(connection, async);
             }
         }
     };
