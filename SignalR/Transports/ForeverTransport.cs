@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -84,9 +85,9 @@ namespace SignalR.Transports
             {
                 return ProcessSendRequest();
             }
-            else if (IsKillRequest)
+            else if (IsAbortRequest)
             {
-                return Disconnect();
+                return Connection.Close();
             }
             else
             {

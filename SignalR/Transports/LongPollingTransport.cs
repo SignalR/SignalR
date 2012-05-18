@@ -110,9 +110,9 @@ namespace SignalR.Transports
             {
                 return ProcessSendRequest();
             }
-            else if (IsKillRequest)
+            else if (IsAbortRequest)
             {
-                return Disconnect();
+                return Connection.Close();
             }
             else
             {

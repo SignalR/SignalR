@@ -295,6 +295,8 @@
             var connection = this;
 
             if (connection.transport) {
+                // TODO: Clean this up
+                connection.transport.abort(connection);
                 connection.transport.stop(connection);
                 connection.transport = null;
             }
@@ -395,7 +397,7 @@
                 return;
             }
 
-            var url = connection.url + "/kill" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
+            var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
             url = this.addQs(url, connection);
             $.ajax({
                 url: url,
@@ -540,6 +542,9 @@
                     connection.socket.close();
                     connection.socket = null;
                 }
+            },
+
+            abort: function (connection) {
             }
         },
 
@@ -692,7 +697,8 @@
                     connection.eventSource = null;
                     delete connection.eventSource;
                 }
-
+            },
+            abort: function (connection) {
                 transportLogic.ajaxKill(connection);
             }
         },
@@ -785,6 +791,10 @@
                     delete connection.frameId;
                 }
 
+                transportLogic.ajaxKill(connection);
+            },
+
+            abort: function (connection) {
                 transportLogic.ajaxKill(connection);
             },
 
@@ -896,7 +906,7 @@
                             that.reconnectDelay);
                         }
 
-                    }(connection));
+                    } (connection));
 
                     // Now connected
                     // There's no good way know when the long poll has actually started so
@@ -918,7 +928,8 @@
                     connection.pollXhr = null;
                     delete connection.pollXhr;
                 }
-
+            },
+            abort: function (connection) {
                 transportLogic.ajaxKill(connection);
             }
         }
@@ -939,4 +950,4 @@
 
     $.connection = $.signalR = signalR;
 
-}(window.jQuery, window));
+} (window.jQuery, window));

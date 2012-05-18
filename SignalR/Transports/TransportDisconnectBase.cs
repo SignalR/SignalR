@@ -105,17 +105,17 @@ namespace SignalR.Transports
             }
         }
 
-        protected bool IsKillRequest
+        protected bool IsAbortRequest
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/kill", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.Url.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
             }
         }
 
         public Task Disconnect()
         {
-            return Connection.Close();
+            return OnDisconnect().Then(() => Connection.Close());
         }
 
         public Task OnDisconnect()
