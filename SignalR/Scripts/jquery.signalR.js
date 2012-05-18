@@ -144,6 +144,7 @@
 
             window.setTimeout(function () {
                 var url = connection.url + "/negotiate";
+                log("Negotiating with '" + url + "'.");
                 $.ajax({
                     url: url,
                     global: false,
@@ -408,6 +409,8 @@
                 dataType: connection.ajaxDataType,
                 data: {}
             });
+
+            log("Fired ajax abort");
         },
         processMessages: function (connection, data) {
             var $connection = $(connection);
@@ -491,9 +494,11 @@
                         url += "?transport=webSockets&connectionId=" + connection.id;
                     }
 
+                    log("Connecting to websocket endpoint '" + url + "'");
                     connection.socket = new window.WebSocket(url);
                     connection.socket.onopen = function () {
                         opened = true;
+                        log("Websocket opened");
                         if (onSuccess) {
                             onSuccess();
                         }
@@ -504,11 +509,13 @@
                             if (onFailed) {
                                 onFailed();
                             }
+                            log("Websocket closed");
                         } else if (typeof event.wasClean != "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).trigger(events.onError);
                             // TODO: Support reconnect attempt here, need to ensure last message id, groups, and connection data go up on reconnect
+                            log("Unclean disconnect from websocket");
                         }
                         connection.socket = null;
                     };
@@ -561,11 +568,13 @@
                     connectTimeOut;
 
                 if (connection.eventSource) {
+                    log("The connection already has an event source. Stopping it.");
                     connection.stop();
                 }
 
                 if (!window.EventSource) {
                     if (onFailed) {
+                        log("This browser doesn't support SSE.");
                         onFailed();
                     }
                     return;
@@ -576,6 +585,7 @@
                 url = transportLogic.getUrl(connection, this.name, reconnecting);
 
                 try {
+                    log("Attempting to connect to SSE endpoint '" + url + "'");
                     connection.eventSource = new window.EventSource(url);
                 }
                 catch (e) {
@@ -717,6 +727,7 @@
                 if (window.EventSource) {
                     // If the browser supports SSE, don't use Forever Frame
                     if (onFailed) {
+                        log("This brower supports SSE, skipping Forever Frame.");
                         onFailed();
                     }
                     return;
@@ -731,6 +742,7 @@
                 frame.prop("src", url);
                 transportLogic.foreverFrame.connections[frameId] = connection;
 
+                log("Binding to iframe's readystatechange event.");
                 frame.bind("readystatechange", function () {
                     if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
                         log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting", connection.logging);
@@ -751,6 +763,7 @@
                 // and raise on failed
                 connectTimeOut = window.setTimeout(function () {
                     if (connection.onSuccess) {
+                        log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
                         that.stop(connection);
 
                         if (onFailed) {
@@ -765,6 +778,7 @@
                 window.setTimeout(function () {
                     var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
+                    log("Upating iframe src to '" + src + "'.");
                     frame.src = src;
                 }, connection.reconnectDelay);
             },
@@ -788,6 +802,7 @@
                     connection.frameId = null;
                     delete connection.frame;
                     delete connection.frameId;
+                    log("Stopping forever frame");
                 }
 
                 transportLogic.ajaxAbort(connection);
@@ -824,6 +839,7 @@
                 /// <param name="connection" type="signalR">The SignalR connection to start</param>
                 var that = this;
                 if (connection.pollXhr) {
+                    log("Polling xhr requests already exists, aborting.");
                     connection.stop();
                 }
 
@@ -839,6 +855,7 @@
                             reconnectTimeOut = null,
                             reconnectFired = false;
 
+                        log("Attempting to connect to '" + url + "' using longPolling.");
                         instance.pollXhr = $.ajax({
                             url: url,
                             global: false,
@@ -851,6 +868,7 @@
                                 if (raiseReconnect === true) {
                                     // Fire the reconnect event if it hasn't been fired as yet
                                     if (reconnectFired === false) {
+                                        log("Raising the reconnect event");
                                         $(instance).trigger(events.onReconnect);
                                         reconnectFired = true;
                                     }
@@ -878,8 +896,11 @@
 
                             error: function (data, textStatus) {
                                 if (textStatus === "abort") {
+                                    log("Aborted xhr requst.");
                                     return;
                                 }
+
+                                log("An error occurred using longPolling " + data);
 
                                 if (reconnectTimeOut) {
                                     // If the request failed then we clear the timeout so that the
