@@ -120,6 +120,10 @@ namespace SignalR.Transports
 
         public Task OnDisconnect()
         {
+            // When a connection is aborted (graceful disconnect) we send a command to it
+            // telling to to disconnect. At that moment, we raise the disconnect event and
+            // remove this connection from the heartbeat so we don't end up raising it for the same connection.
+            HeartBeat.RemoveConnection(this);
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
                 var disconnected = Disconnected; // copy before invoking event to avoid race

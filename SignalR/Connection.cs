@@ -18,6 +18,7 @@ namespace SignalR
         private readonly HashSet<string> _groups;
         private readonly ITraceManager _trace;
         private bool _disconnected;
+        private bool _aborted;
 
         public Connection(IMessageBus messageBus,
                           IJsonSerializer jsonSerializer,
@@ -87,6 +88,7 @@ namespace SignalR
                 MessageId = result.LastMessageId,
                 Messages = messageValues,
                 Disconnect = _disconnected,
+                Aborted = _aborted,
                 TimedOut = result.TimedOut
             };
 
@@ -132,6 +134,9 @@ namespace SignalR
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;
+                    break;
+                case CommandType.Abort:
+                    _aborted = true;
                     break;
             }
         }

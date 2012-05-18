@@ -112,7 +112,7 @@ namespace SignalR.Transports
             }
             else if (IsAbortRequest)
             {
-                return Connection.Close();
+                return Connection.Abort();
             }
             else
             {
@@ -213,8 +213,9 @@ namespace SignalR.Transports
 
             return receiveTask.Then(response =>
             {
-                if (response.Disconnect)
+                if (response.Aborted)
                 {
+                    // If this was a clean disconnect then raise the event
                     OnDisconnect();
                 }
 

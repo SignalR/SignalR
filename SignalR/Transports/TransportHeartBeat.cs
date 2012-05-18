@@ -80,7 +80,11 @@ namespace SignalR.Transports
             RemoveConnection(new ConnectionReference(connectionId));
         }
 
-        private void RemoveConnection(ITrackingConnection connection)
+        /// <summary>
+        /// Removes a connection from the list of tracked connections.
+        /// </summary>
+        /// <param name="connection">The connection to remove.</param>
+        public void RemoveConnection(ITrackingConnection connection)
         {
             // Remove the connection and associated metadata
             _connections.Remove(connection);

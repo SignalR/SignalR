@@ -22,5 +22,11 @@
         /// </summary>
         /// <param name="connection">The connection to mark.</param>
         void MarkConnection(ITrackingConnection connection);
+
+        /// <summary>
+        /// Removes a connection from the list of tracked connections.
+        /// </summary>
+        /// <param name="connection">The connection to remove.</param>
+        void RemoveConnection(ITrackingConnection connection);
     }
 }

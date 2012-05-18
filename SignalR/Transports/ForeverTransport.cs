@@ -87,7 +87,7 @@ namespace SignalR.Transports
             }
             else if (IsAbortRequest)
             {
-                return Connection.Close();
+                return Connection.Abort();
             }
             else
             {
@@ -201,10 +201,11 @@ namespace SignalR.Transports
                     // If the response has the Disconnect flag, just send the response and exit the loop,
                     // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
                     Task sendTask = Send(response);
-                    if (response.Disconnect || response.TimedOut)
+                    if (response.Disconnect || response.TimedOut || response.Aborted)
                     {
-                        if (response.Disconnect)
+                        if (response.Aborted)
                         {
+                            // If this was a clean disconnect raise the event.
                             OnDisconnect();
                         }
 
@@ -230,11 +231,6 @@ namespace SignalR.Transports
 
                 // Stop execution here
                 return;
-            }
-
-            if (!IsTimedOut)
-            {
-                OnDisconnect();
             }
 
             taskCompletetionSource.SetResult(null);

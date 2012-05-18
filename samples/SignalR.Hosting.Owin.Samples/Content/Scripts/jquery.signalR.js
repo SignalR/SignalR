@@ -422,7 +422,7 @@
                     log("Disconnect command received from server", connection.logging);
 
                     // Disconnected by the server
-                    connection.transport.stop(connection);
+                    connection.stop();
                     return;
                 }
 
@@ -837,7 +837,9 @@
             start: function (connection, onSuccess, onFailed) {
                 /// <summary>Starts the long polling connection</summary>
                 /// <param name="connection" type="signalR">The SignalR connection to start</param>
-                var that = this;
+                var that = this,
+                    initialConnectFired = false;
+
                 if (connection.pollXhr) {
                     log("Polling xhr requests already exists, aborting.");
                     connection.stop();
@@ -865,6 +867,11 @@
                                 var delay = 0,
                                     timedOutReceived = false;
 
+                                if (initialConnectFired == false) {
+                                    onSuccess();
+                                    initialConnectFired = true;
+                                }
+
                                 if (raiseReconnect === true) {
                                     // Fire the reconnect event if it hasn't been fired as yet
                                     if (reconnectFired === false) {
@@ -883,6 +890,10 @@
 
                                 if (data && data.TimedOut) {
                                     timedOutReceived = data.TimedOut;
+                                }
+
+                                if (data && data.Disconnect) {
+                                    return;
                                 }
 
                                 if (delay > 0) {
@@ -931,7 +942,12 @@
                     // Now connected
                     // There's no good way know when the long poll has actually started so
                     // we assume it only takes around 150ms (max) to start the connection
-                    window.setTimeout(onSuccess, 150);
+                    window.setTimeout(function () {
+                        if (initialConnectFired === false) {
+                            onSuccess();
+                            initialConnectFired = true;
+                        }
+                    }, 150);
 
                 }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
             },
