@@ -69,7 +69,15 @@ namespace SignalR.Hosting.AspNet
 
 #else
             return IsClientConnected
-                ? TaskAsyncHelper.FromMethod((response, value) => response.Write(value), _context.Response, data)
+                ? TaskAsyncHelper.FromMethod((response, value) =>
+                {
+                    if (IsClientConnected)
+                    {
+                        response.Write(value);
+                        response.Flush();
+                    }
+
+                }, _context.Response, data)
                 : TaskAsyncHelper.Empty;
 #endif
         }
@@ -85,9 +93,6 @@ namespace SignalR.Hosting.AspNet
             {
                 return;
             }
-
-            _context.Response.Buffer = false;
-            _context.Response.BufferOutput = false;
 
             // This forces the IIS compression module to leave this response alone.
             // If we don't do this, it will buffer the response to suit its own compression
