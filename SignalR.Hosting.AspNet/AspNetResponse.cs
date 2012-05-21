@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -31,7 +32,16 @@ namespace SignalR.Hosting.AspNet
                     return true;
                 }
 #endif
-                return _context.Response.IsClientConnected;
+                try
+                {
+                    return _context.Response.IsClientConnected;
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError("SignalR AspNet host error checking for connected clients: {0}", ex.Message);
+                    // This happens on cassini (built in webserver in VS)
+                    return false;
+                }
             }
         }
 
