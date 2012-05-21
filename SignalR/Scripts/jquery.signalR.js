@@ -483,9 +483,18 @@
                     }
                     else {
                         // Determine the protocol
-                        protocol = document.location.protocol === "https:" ? "wss://" : "ws://";
+                        var info = document.location;
+                        if (info.protocol !== "http:" && info.protocol !== "https:") {
+                            // If the url isn't isn't http or https, use the specified url instead of 
+                            // the document url.
+                            // REVIEW: We need to make sure connection.url is absolute
+                            var info = document.createElement('a');
+                            info.href = connection.url;
+                        }
 
-                        url = protocol + document.location.host + connection.appRelativeUrl;
+                        protocol = info.protocol === "https:" ? "wss://" : "ws://";
+
+                        url = protocol + info.host + connection.appRelativeUrl;
                     }
 
                     // Build the url
