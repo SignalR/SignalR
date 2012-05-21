@@ -68,8 +68,9 @@ namespace SignalR.Hosting.AspNet
             return Task.Factory.FromAsync((cb, state) => _context.Response.BeginFlush(cb, state), ar => _context.Response.EndFlush(ar), null);
 
 #else
-            return IsClientConnected
-                ? TaskAsyncHelper.FromMethod((response, value) =>
+            if (IsClientConnected)
+            {
+                return TaskAsyncHelper.FromMethod((response, value) =>
                 {
                     if (IsClientConnected)
                     {
@@ -77,8 +78,10 @@ namespace SignalR.Hosting.AspNet
                         response.Flush();
                     }
 
-                }, _context.Response, data)
-                : TaskAsyncHelper.Empty;
+                }, _context.Response, data);
+            }
+
+            return TaskAsyncHelper.Empty;
 #endif
         }
 
