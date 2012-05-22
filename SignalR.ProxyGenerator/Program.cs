@@ -14,7 +14,7 @@ namespace SignalR.ProxyGenerator
 
             if (args.Length < 1)
             {
-                Console.WriteLine("Usage: {0} [url] (/minify) (/absolute)", typeof(Program).Assembly.GetName().Name);                
+                Console.WriteLine("Usage: {0} [url] (/minify) (/absolute)", typeof(Program).Assembly.GetName().Name);
                 return;
             }
 
@@ -27,7 +27,7 @@ namespace SignalR.ProxyGenerator
                 url += "/";
             }
 
-            if(!url.EndsWith("signalr"))
+            if (!url.EndsWith("signalr"))
             {
                 url += "signalr/";
             }
@@ -45,7 +45,10 @@ namespace SignalR.ProxyGenerator
             string js = wc.DownloadString(uri);
             if (absolute)
             {
-                js = Regex.Replace(js, @"\(""(.*?/signalr)""\)", m => "(\"" + baseUrl + "\")");
+                js = Regex.Replace(js, @"=(\w+)\(""(.*?/signalr)""\)", m =>
+                {
+                    return "=" + m.Groups[1].Value + "(\"" + baseUrl + "\")";
+                });
             }
 
             if (minify)
