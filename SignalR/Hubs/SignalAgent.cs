@@ -24,11 +24,16 @@ namespace SignalR.Hubs
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
-            result = Invoke(binder.Name, args);
+            result = Invoker(binder.Name, args);
             return true;
         }
 
-        private Task Invoke(string method, params object[] args)
+        public Task Invoke(string method, params object[] args)
+        {
+            return Invoker(method, args);
+        }
+
+        private Task Invoker(string method, params object[] args)
         {
             var invocation = GetInvocationData(method, args);
 
