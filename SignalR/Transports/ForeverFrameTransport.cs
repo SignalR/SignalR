@@ -46,7 +46,10 @@ namespace SignalR.Transports
         public override Task Send(PersistentResponse response)
         {
             var data = JsonSerializer.Stringify(response);
+
             OnSending(data);
+
+            data = EscapeAnyInlineScriptTags(data);
 
             var script = "<script>r(c, " + data + ");</script>\r\n";
             if (_isDebug)
@@ -62,6 +65,11 @@ namespace SignalR.Transports
             return base.InitializeResponse(connection)
                 .Then(initScript => Context.Response.WriteAsync(initScript),
                       _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
+        }
+
+        private static string EscapeAnyInlineScriptTags(string input)
+        {
+            return input.Replace("</script>", "</\"+\"script>");
         }
     }
 }
