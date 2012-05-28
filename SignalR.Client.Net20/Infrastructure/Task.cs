@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
 using Newtonsoft.Json.Serialization;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
 	public class Task
 	{
+		protected virtual void Execute()
+		{
+		}
+
 		public void ContinueWith(Task task)
 		{
 			throw new NotImplementedException();
@@ -86,17 +87,17 @@ namespace SignalR.Client.Net20.Infrastructure
 			return tcs.Task;
 		}
 
-		internal static Task FromError(Exception e)
+		internal static Task FromError(Exception exception)
 		{
 			var tcs = new TaskCompletionSource<object>();
-			tcs.SetException(e);
+			tcs.SetException(exception);
 			return tcs.Task;
 		}
 
-		internal static Task<T> FromError<T>(Exception e)
+		internal static Task<T> FromError<T>(Exception exception)
 		{
 			var tcs = new TaskCompletionSource<T>();
-			tcs.SetException(e);
+			tcs.SetException(exception);
 			return tcs.Task;
 		}
 
@@ -108,14 +109,42 @@ namespace SignalR.Client.Net20.Infrastructure
 
 	public class Task<T> : Task
 	{
+		private readonly AsyncTaskStuff.AsyncTask<T> _action;
+
+		public Task(Func<T> action)
+		{
+			_action = new AsyncTaskStuff.AsyncTask<T>(action);
+		}
+
+		private Task(Action<T> action)
+		{
+			_action = new AsyncTaskStuff.AsyncTask<T>(()=>action);
+		}
+
+		private Task(Func<T, object> action)
+		{
+			_action = new AsyncTaskStuff.AsyncTask<T>(action);
+		}
+
+		protected override void Execute()
+		{
+			if (_action!=null)
+			{
+				//var task = AsyncTaskStuff.BeginTask(() => _action);
+				//task();
+			}
+		}
+
 		public Task<T> Then(Action<T> action)
 		{
-			throw new NotImplementedException();
+			AsyncTaskStuff.BeginTask(_action);
+			return new Task<T>(action);
 		}
 
 		public Task<T2> Then<T2>(Func<T,T2> action)
 		{
-			throw new NotImplementedException();
+			AsyncTaskStuff.BeginTask(_action);
+			return new Task<T>(action);
 		}
 
 		public void ContinueWith(Action<Task<T>> action)
@@ -128,14 +157,26 @@ namespace SignalR.Client.Net20.Infrastructure
 			get { throw new NotImplementedException(); }
 		}
 
-		public void ContinueWithNotComplete(TaskCompletionSource<object> taskCompletionSource)
+		public void ContinueWithNotComplete(TaskCompletionSource<object> tcs)
 		{
-			throw new NotImplementedException();
+			ContinueWith(t =>
+			{
+				if (t.IsFaulted)
+				{
+					tcs.SetException(t.Exception);
+				}
+				else if (t.IsCanceled)
+				{
+					tcs.SetCanceled();
+				}
+			},
+			   TaskContinuationOptions.NotOnRanToCompletion);
 		}
 	}
 
 	public enum TaskContinuationOptions
 	{
-		ExecuteSynchronously
+		ExecuteSynchronously,
+		NotOnRanToCompletion
 	}
 }
