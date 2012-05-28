@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using Newtonsoft.Json.Serialization;
 
@@ -51,9 +52,13 @@ namespace SignalR.Client.Net20.Infrastructure
 			var handler = OnFinish;
 			if (handler==null)
 			{
-				if (iteration>10) throw new InvalidOperationException("An event handler must be attached within a reasonable amount of time.");
+				if (iteration>10)
+				{
+					Debug.WriteLine("An event handler must be attached within a reasonable amount of time.");
+					return;
+				}
 				InnerFinish(result,exception,++iteration);
-				Thread.SpinWait(1000);
+				Thread.SpinWait(10000);
 				return;
 			}
 
