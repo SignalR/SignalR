@@ -62,7 +62,13 @@ namespace SignalR.Client.Hubs
 
         public Task Invoke(string method, params object[] args)
         {
+#if NET20
+        	var newTask = new Task();
+            Invoke<object>(method, args).OnFinish += (sender,e) => newTask.OnFinished(e.ResultWrapper.Result,e.ResultWrapper.Exception);
+        	return newTask;
+#else
             return Invoke<object>(method, args);
+#endif
         }
 
         public Task<T> Invoke<T>(string method, params object[] args)
@@ -82,7 +88,11 @@ namespace SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
+#if NET20
+            return _connection.Send<HubResult<T>>(value).FollowedBy(result =>
+#else
             return _connection.Send<HubResult<T>>(value).Then(result =>
+#endif
             {
                 if (result != null)
                 {

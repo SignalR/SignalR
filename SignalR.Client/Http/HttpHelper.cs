@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 #if NET20
+using System.Threading;
 using SignalR.Client.Net20.Infrastructure;
 #else
 	using System.Threading.Tasks;
@@ -17,10 +18,78 @@ namespace SignalR.Client.Http
     internal static class HttpHelper
     {
 #if NET20
-        public static Task<HttpWebResponse> GetHttpResponseAsync(HttpWebRequest request)
+		public static Task<HttpWebResponse> GetHttpResponseAsync(HttpWebRequest request)
+		{
+			var signal = new Task<HttpWebResponse>();
+			try
+			{
+				request.BeginGetResponse(GetResponseCallback,
+										 new RequestState<HttpWebResponse> { Request = request, PostData = new byte[] { }, Response = signal });
+			}
+			catch (Exception ex)
+			{
+				signal.OnFinished(null,ex);
+			}
+			return signal;
+		}
+
+		public static Task<Stream> GetHttpRequestStreamAsync(HttpWebRequest request)
+		{
+			var signal = new Task<Stream>();
+			try
+			{
+				request.BeginGetRequestStream(GetRequestStreamCallback,
+										 new RequestState<Stream> { Request = request, PostData = new byte[] { }, Response = signal });
+			}
+			catch (Exception ex)
+			{
+				signal.OnFinished(null, ex);
+			}
+			return signal;
+		}
+
+
+		private static void GetRequestStreamCallback(IAsyncResult asynchronousResult)
+		{
+			RequestState<Stream> requestState = (RequestState<Stream>)asynchronousResult.AsyncState;
+
+			// End the operation
+			try
+			{
+				Stream postStream = requestState.Request.EndGetRequestStream(asynchronousResult);
+
+				// Write to the request stream.
+				postStream.Write(requestState.PostData, 0, requestState.PostData.Length);
+				postStream.Close();
+			}
+			catch (WebException exception)
+			{
+				requestState.Response.OnFinished(null,exception);
+				return;
+			}
+
+			// Start the asynchronous operation to get the response
+			requestState.Request.BeginGetResponse(GetResponseCallback, requestState);
+		}
+
+		private static void GetResponseCallback(IAsyncResult asynchronousResult)
+		{
+			RequestState<HttpWebResponse> requestState = (RequestState<HttpWebResponse>)asynchronousResult.AsyncState;
+
+			// End the operation
+			try
+			{
+				HttpWebResponse response = (HttpWebResponse)requestState.Request.EndGetResponse(asynchronousResult);
+				requestState.Response.OnFinished(response,null);
+			}
+			catch (Exception ex)
+			{
+				requestState.Response.OnFinished(null,ex);
+			}
+		}
+
 #else
 		public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
-#endif
         {
             try
             {
@@ -32,11 +101,7 @@ namespace SignalR.Client.Http
             }
         }
 
-#if NET20
-        public static Task<Stream> GetHttpRequestStreamAsync(HttpWebRequest request)
-#else
         public static Task<Stream> GetHttpRequestStreamAsync(this HttpWebRequest request)
-#endif
 		{
             try
             {
@@ -47,6 +112,7 @@ namespace SignalR.Client.Http
                 return TaskAsyncHelper.FromError<Stream>(ex);
             }
         }
+#endif
 
         public static Task<HttpWebResponse> GetAsync(string url)
         {
@@ -148,9 +214,34 @@ namespace SignalR.Client.Http
 
             // Write the post data to the request stream
 #if NET20
-			return (Task<HttpWebResponse>)GetHttpRequestStreamAsync(request)
-                          	.Then(stream => StreamExtensions.WriteAsync(stream,buffer).Then(() => stream.Dispose()))
-							.Then(() => GetHttpResponseAsync(request));
+        	return (Task<HttpWebResponse>) GetHttpRequestStreamAsync(request)
+        	                               	.FollowedBy(stream =>
+        	                               	            	{
+        	                               	            		StreamExtensions.WriteAsync(stream, buffer);
+        	                               	            		return stream;
+        	                               	            	}).FollowedBy(stream =>
+        	                               	            	              	{
+        	                               	            	              		stream.Dispose();
+        	                               	            	              		return 1;
+        	                               	            	              	}).FollowedBy(previousResult =>
+        	                               	            	              	              	{
+        	                               	            	              	              		var result =
+        	                               	            	              	              			GetHttpResponseAsync(request);
+        	                               	            	              	              		var resetEvent =
+        	                               	            	              	              			new ManualResetEvent(false);
+        	                               	            	              	              		HttpWebResponse response = null;
+        	                               	            	              	              		result.OnFinish += (sender, e) =>
+        	                               	            	              	              		                   	{
+        	                               	            	              	              		                   		response =
+        	                               	            	              	              		                   			e.
+        	                               	            	              	              		                   				ResultWrapper
+        	                               	            	              	              		                   				.Result;
+        	                               	            	              	              		                   		resetEvent.Set
+        	                               	            	              	              		                   			();
+        	                               	            	              	              		                   	};
+        	                               	            	              	              		resetEvent.Set();
+        	                               	            	              	              		return response;
+        	                               	            	              	              	});
 #else
             return (Task<HttpWebResponse>) request.GetHttpRequestStreamAsync()
                           	.Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
@@ -184,4 +275,11 @@ namespace SignalR.Client.Http
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
     }
+
+	public class RequestState<T>
+	{
+		public HttpWebRequest Request { get; set; }
+		public Task<T> Response { get; set; }
+		public byte[] PostData { get; set; }
+	}
 }

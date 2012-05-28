@@ -45,8 +45,12 @@ namespace SignalR.Client.Transports
         {
             string negotiateUrl = connection.Url + "negotiate";
 
+#if NET20
+            return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).FollowedBy(response =>
+#else
             return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
-            {
+#endif
+			{
                 string raw = response.ReadAsString();
 
                 if (raw == null)
@@ -80,7 +84,11 @@ namespace SignalR.Client.Transports
                 { "data", data }
             };
 
+#if NET20
+            return _httpClient.PostAsync(url, connection.PrepareRequest, postData).FollowedBy(response =>
+#else
             return _httpClient.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
+#endif
             {
                 string raw = response.ReadAsString();
 

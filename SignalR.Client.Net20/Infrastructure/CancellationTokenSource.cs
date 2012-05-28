@@ -1,89 +1,54 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
 	public class CancellationTokenSource
 	{
+		private volatile bool _canceled;
+
 		public void Cancel()
 		{
-			throw new NotImplementedException();
+			_canceled = true;
 		}
 
 		public bool IsCancellationRequested
 		{
-			get { throw new NotImplementedException(); }
+			get { return _canceled; }
 		}
 	}
 
 	public class TaskCompletionSource<T>
 	{
+		private readonly Task _internalTask = new Task(); 
+
 		public void SetException(Exception exception)
 		{
-			throw new NotImplementedException();
+			_internalTask.OnFinished(null,exception);
 		}
 
 		public void SetResult(T result)
 		{
-			throw new NotImplementedException();
+			_internalTask.OnFinished(result,null);
 		}
 
-		public Task<T> Task
+		public Task Task
 		{
-			get { throw new NotImplementedException(); }
+			get { return _internalTask; }
 		}
 
 		public void SetCanceled()
 		{
-			throw new NotImplementedException();
+			_internalTask.OnFinished(null,null);
 		}
 
 		public void TrySetException(Exception exception)
 		{
-			throw new NotImplementedException();
+			SetException(exception);
 		}
 
 		public void TrySetResult(T result)
 		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public class AsyncTaskStuff
-	{
-		public delegate R AsyncTask<R>();
-
-		public static AsyncTask<R> BeginTask<R>(AsyncTask<R> function)
-		{
-			R retv = default(R);
-			bool completed = false;
-
-			object sync = new object();
-
-			IAsyncResult asyncResult = function.BeginInvoke(
-				iAsyncResult =>
-					{
-						lock (sync)
-						{
-							completed = true;
-							retv = function.EndInvoke(iAsyncResult);
-							Monitor.Pulse(sync);
-						}
-					}, null);
-
-			return delegate
-			       	{
-			       		lock (sync)
-			       		{
-			       			if (!completed)
-			       			{
-			       				Monitor.Wait(sync);
-			       			}
-			       			return retv;
-			       		}
-			       	};
+			SetResult(result);
 		}
 	}
 }

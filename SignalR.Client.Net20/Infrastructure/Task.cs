@@ -1,182 +1,103 @@
 ﻿using System;
+using System.Threading;
 using Newtonsoft.Json.Serialization;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
-	public class Task
+	public class Task : Task<object>
 	{
-		protected virtual void Execute()
+	}
+
+	public class Task<T>
+	{
+		public event EventHandler<CustomResultArgs<T>> OnFinish;
+
+		public Task<TFollowing> FollowedBy<TFollowing>(Func<T,TFollowing> nextAction)
 		{
+			var nextEventTask = new Task<TFollowing>();
+			OnFinish += (sender, e) => nextEventTask.OnFinished(nextAction(e.ResultWrapper.Result),e.ResultWrapper.Exception);
+			return nextEventTask;
 		}
 
-		public void ContinueWith(Task task)
+		public Task FollowedBy(Action<T> nextAction)
 		{
-			throw new NotImplementedException();
+			var nextEventTask = new Task();
+			OnFinish += (sender, e) =>
+			            	{
+			            		nextAction(e.ResultWrapper.Result);
+			            		nextEventTask.OnFinished(null, e.ResultWrapper.Exception);
+			            	};
+			return nextEventTask;
 		}
 
-		public void ContinueWith(TaskCompletionSource<object> task)
+		public Task FollowedByWithResult(Action<ResultWrapper<T>> nextAction)
 		{
-			throw new NotImplementedException();
-		}
-
-		public void ContinueWith(Action<Task> action)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task Then(Action action)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool IsFaulted
-		{
-			get { return false; }
-		}
-
-		public Exception Exception
-		{
-			get { throw new NotImplementedException(); }
-		}
-
-		public bool IsCanceled
-		{
-			get { throw new NotImplementedException(); }
-		}
-
-		public void ContinueWith(Action<Task> action, TaskContinuationOptions taskContinuationOptions)
-		{
-			throw new NotImplementedException();
-		}
-
-		internal static class Factory
-		{
-			public static Task<T> FromAsync<T>(Func<AsyncCallback,object,IAsyncResult> beginMethod, Func<IAsyncResult,T> endMethod, object state)
+			var nextEventTask = new Task();
+			OnFinish += (sender, e) =>
 			{
-				throw new NotImplementedException();
+				nextAction(e.ResultWrapper);
+				nextEventTask.OnFinished(null, e.ResultWrapper.Exception);
+			};
+			return nextEventTask;
+		}
+
+		public void OnFinished(T result,Exception exception)
+		{
+			InnerFinish(result,exception,1);
+		}
+
+		private void InnerFinish(T result,Exception exception,int iteration)
+		{
+			var handler = OnFinish;
+			if (handler==null)
+			{
+				if (iteration>10) throw new InvalidOperationException("An event handler must be attached within a reasonable amount of time.");
+				InnerFinish(result,exception,++iteration);
+				Thread.SpinWait(1000);
+				return;
 			}
 
-			public static Task FromAsync(Func<AsyncCallback, object, IAsyncResult> beginMethod, Action<IAsyncResult> endMethod, object state)
-			{
-				throw new NotImplementedException();
-			}
+			handler(this,
+			        new CustomResultArgs<T>
+			        	{
+			        		ResultWrapper =
+			        			new ResultWrapper<T> {Result = result, Exception = exception, IsFaulted = exception != null}
+			        	});
 		}
+	}
+
+	public class CustomResultArgs<T> : EventArgs
+	{
+		public ResultWrapper<T> ResultWrapper { get; set; }
+	}
+
+	public class ResultWrapper<T>
+	{
+		public T Result { get; set; }
+		public bool IsFaulted { get; set; }
+		public Exception Exception { get; set; }
+
+		public bool IsCanceled { get; set; }
 	}
 
 	public static class TaskAsyncHelper
 	{
-		private static readonly Task _emptyTask = MakeEmpty();
-
-		private static Task MakeEmpty()
+		public static Task Delay(TimeSpan timeSpan)
 		{
-			return FromResult<object>(null);
+			var newEvent = new Task();
+			Thread.Sleep(timeSpan);
+			newEvent.OnFinished(null, null);
+			return newEvent;
 		}
 
 		public static Task Empty
 		{
 			get
 			{
-				return _emptyTask;
+				var task = new Task();
+				task.OnFinished(null,null);
+				return task;
 			}
 		}
-
-		public static Task<T> FromResult<T>(T value)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			tcs.SetResult(value);
-			return tcs.Task;
-		}
-
-		internal static Task FromError(Exception exception)
-		{
-			var tcs = new TaskCompletionSource<object>();
-			tcs.SetException(exception);
-			return tcs.Task;
-		}
-
-		internal static Task<T> FromError<T>(Exception exception)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			tcs.SetException(exception);
-			return tcs.Task;
-		}
-
-		public static Task Delay(TimeSpan timeSpan)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public class Task<T> : Task
-	{
-		private readonly AsyncTaskStuff.AsyncTask<T> _action;
-
-		public Task(Func<T> action)
-		{
-			_action = new AsyncTaskStuff.AsyncTask<T>(action);
-		}
-
-		private Task(Action<T> action)
-		{
-			_action = new AsyncTaskStuff.AsyncTask<T>(()=>action);
-		}
-
-		private Task(Func<T, object> action)
-		{
-			_action = new AsyncTaskStuff.AsyncTask<T>(action);
-		}
-
-		protected override void Execute()
-		{
-			if (_action!=null)
-			{
-				//var task = AsyncTaskStuff.BeginTask(() => _action);
-				//task();
-			}
-		}
-
-		public Task<T> Then(Action<T> action)
-		{
-			AsyncTaskStuff.BeginTask(_action);
-			return new Task<T>(action);
-		}
-
-		public Task<T2> Then<T2>(Func<T,T2> action)
-		{
-			AsyncTaskStuff.BeginTask(_action);
-			return new Task<T>(action);
-		}
-
-		public void ContinueWith(Action<Task<T>> action)
-		{
-			throw new NotImplementedException();
-		}
-
-		public T Result
-		{
-			get { throw new NotImplementedException(); }
-		}
-
-		public void ContinueWithNotComplete(TaskCompletionSource<object> tcs)
-		{
-			ContinueWith(t =>
-			{
-				if (t.IsFaulted)
-				{
-					tcs.SetException(t.Exception);
-				}
-				else if (t.IsCanceled)
-				{
-					tcs.SetCanceled();
-				}
-			},
-			   TaskContinuationOptions.NotOnRanToCompletion);
-		}
-	}
-
-	public enum TaskContinuationOptions
-	{
-		ExecuteSynchronously,
-		NotOnRanToCompletion
 	}
 }
