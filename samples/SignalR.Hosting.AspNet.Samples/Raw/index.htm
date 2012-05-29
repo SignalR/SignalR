@@ -46,11 +46,15 @@
                           .appendTo($("#messages"));
             });
 
+            connection.disconnected(function () {
+                $("#stopStart").val("Start")
+                               .prop("disabled", false);
+            });
 
             var start = function () {
                 connection.start({ transport: activeTransport })
                     .then(function () {
-                        $("#stopStart").prop("disabled", false);
+                        $("#stopStart").val("Stop").prop("disabled", false);
                     });
             };
             start();
@@ -88,11 +92,8 @@
                 $el.prop("disabled", true);
                 if ($el.val() === "Stop") {
                     connection.stop();
-                    $el.val("Start")
-                       .prop("disabled", false);
                 } else {
                     start();
-                    $el.val("Stop");
                 }
             });
         });

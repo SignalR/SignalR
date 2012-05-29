@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -24,7 +25,23 @@ namespace SignalR.Hosting.AspNet
         {
             get
             {
-                return _context.Response.IsClientConnected;
+#if NET45
+                // Return true for websocket requests since connectivity is handled by SignalR's transport
+                if (_context.IsWebSocketRequest)
+                {
+                    return true;
+                }
+#endif
+                try
+                {
+                    return _context.Response.IsClientConnected;
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError("SignalR AspNet host error checking for connected clients: {0}", ex.Message);
+                    // This happens on cassini (built in webserver in VS)
+                    return false;
+                }
             }
         }
 
@@ -39,22 +56,43 @@ namespace SignalR.Hosting.AspNet
                 _context.Response.ContentType = value;
             }
         }
-     
+
         public Task WriteAsync(string data)
         {
             return WriteAsync(data, disableBuffering: true);
         }
-     
+
         private Task WriteAsync(string data, bool disableBuffering)
         {
             if (disableBuffering)
             {
                 DisableResponseBuffering();
             }
-         
-            return IsClientConnected
-                ? TaskAsyncHelper.FromMethod((response, value) => response.Write(value), _context.Response, data)
-                : TaskAsyncHelper.Empty;
+#if NET45
+            if (!IsClientConnected)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            _context.Response.Write(data);
+            return Task.Factory.FromAsync((cb, state) => _context.Response.BeginFlush(cb, state), ar => _context.Response.EndFlush(ar), null);
+
+#else
+            if (IsClientConnected)
+            {
+                return TaskAsyncHelper.FromMethod((response, value) =>
+                {
+                    if (IsClientConnected)
+                    {
+                        response.Write(value);
+                        response.Flush();
+                    }
+
+                }, _context.Response, data);
+            }
+
+            return TaskAsyncHelper.Empty;
+#endif
         }
 
         public Task EndAsync(string data)
@@ -68,9 +106,6 @@ namespace SignalR.Hosting.AspNet
             {
                 return;
             }
-         
-            _context.Response.Buffer = false;
-            _context.Response.BufferOutput = false;
 
             // This forces the IIS compression module to leave this response alone.
             // If we don't do this, it will buffer the response to suit its own compression
@@ -79,7 +114,7 @@ namespace SignalR.Hosting.AspNet
 
             _context.Response.CacheControl = "no-cache";
             _context.Response.AddHeader("Connection", "keep-alive");
-         
+
             _bufferingDisabled = true;
         }
 

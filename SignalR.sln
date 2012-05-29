@@ -30,6 +30,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7E3D992A-8F37-4C5D-AD42-E052522816C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.AspNet.Samples", "samples\SignalR.Hosting.AspNet.Samples\SignalR.Hosting.AspNet.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
+	ProjectSection(ProjectDependencies) = postProject
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7} = {12609D9C-B4C9-4553-B364-D2C297F85CE7}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Owin.Samples", "samples\SignalR.Hosting.Owin.Samples\SignalR.Hosting.Owin.Samples.csproj", "{8BF43A5B-4C96-4490-A9AF-5A057AC37C24}"
 EndProject
@@ -46,6 +49,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Net20", "SignalR.Client.Net20\SignalR.Client.Net20.csproj", "{BF086E1E-72EC-44EA-BFA5-C79463748019}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Net20.Samples", "SignalR.Client.Net20.Samples\SignalR.Client.Net20.Samples.csproj", "{94B412D5-F314-456D-8FEA-0DB73C915162}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.ProxyGenerator", "SignalR.ProxyGenerator\SignalR.ProxyGenerator.csproj", "{12609D9C-B4C9-4553-B364-D2C297F85CE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -209,6 +213,16 @@ Global
 		{94B412D5-F314-456D-8FEA-0DB73C915162}.Release|Mixed Platforms.Build.0 = Release|x86
 		{94B412D5-F314-456D-8FEA-0DB73C915162}.Release|x86.ActiveCfg = Release|x86
 		{94B412D5-F314-456D-8FEA-0DB73C915162}.Release|x86.Build.0 = Release|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|x86.ActiveCfg = Debug|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|x86.Build.0 = Debug|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|Any CPU.ActiveCfg = Release|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|Mixed Platforms.Build.0 = Release|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|x86.ActiveCfg = Release|x86
+		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using Gate;
 using SignalR.Hosting.Common;
 
@@ -86,6 +87,11 @@ namespace SignalR.Hosting.Owin
             }
 
             return new Uri(url);
-        }        
+        }
+
+        public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        {
+            
+        }
     }
 }
