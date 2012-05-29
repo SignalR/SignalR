@@ -32,7 +32,10 @@ namespace SignalR.Client.Net20.Http
 		public Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData)
 		{
 			return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)), postData)
-							 .FollowedBy(response => (IResponse)new HttpWebResponseWrapper(response));
+				.FollowedBy(response =>
+				            	
+				            		(IResponse) new HttpWebResponseWrapper(response)
+				            	);
 		}
 	}
 }

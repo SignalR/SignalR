@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using SignalR.Client.Net20.Infrastructure;
 #else
-	using System.Threading.Tasks;
+using System.Threading.Tasks;
 #endif
 using SignalR.Client.Infrastructure;
 using SignalR.Infrastructure;
@@ -209,30 +209,31 @@ namespace SignalR.Client.Http
 
             // Write the post data to the request stream
 #if NET20
-        	return (Task<HttpWebResponse>) GetHttpRequestStreamAsync(request)
-        	                               	.FollowedBy(stream =>
-        	                               	            	{
-        	                               	            		StreamExtensions.WriteAsync(stream, buffer);
-        	                               	            		return stream;
-        	                               	            	}).FollowedBy(stream =>
-        	                               	            	              	{
-        	                               	            	              		stream.Dispose();
-        	                               	            	              		return 1;
-        	                               	            	              	}).FollowedBy(previousResult =>
-        	                               	            	              	              	{
-        	                               	            	              	              		var result =
-        	                               	            	              	              			GetHttpResponseAsync(request);
-        	                               	            	              	              		var resetEvent =
-        	                               	            	              	              			new ManualResetEvent(false);
-        	                               	            	              	              		HttpWebResponse response = null;
-        	                               	            	              	              		result.OnFinish += (sender, e) =>
-        	                               	            	              	              		                   	{
-        	                               	            	              	              		                   		response = e.ResultWrapper.Result;
-        	                               	            	              	              		                   		resetEvent.Set();
-        	                               	            	              	              		                   	};
-        	                               	            	              	              		
-        	                               	            	              	              		return response;
-        	                               	            	              	              	});
+        	return GetHttpRequestStreamAsync(request)
+        		.FollowedBy(stream =>
+        		            	{
+        		            		StreamExtensions.WriteAsync(stream, buffer);
+        		            		return stream;
+        		            	}).FollowedBy(stream =>
+        		            	              	{
+        		            	              		stream.Dispose();
+        		            	              		return 1;
+        		            	              	}).FollowedBy(previousResult =>
+        		            	              	              	{
+        		            	              	              		var result =
+        		            	              	              			GetHttpResponseAsync(request);
+        		            	              	              		var resetEvent =
+        		            	              	              			new ManualResetEvent(false);
+        		            	              	              		HttpWebResponse response = null;
+        		            	              	              		result.OnFinish += (sender, e) =>
+        		            	              	              		                   	{
+        		            	              	              		                   		response = e.ResultWrapper.Result;
+        		            	              	              		                   		resetEvent.Set();
+        		            	              	              		                   	};
+
+        		            	              	              		resetEvent.WaitOne(TimeSpan.FromSeconds(20));
+        		            	              	              		return response;
+        		            	              	              	});
 #else
             return (Task<HttpWebResponse>) request.GetHttpRequestStreamAsync()
                           	.Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))

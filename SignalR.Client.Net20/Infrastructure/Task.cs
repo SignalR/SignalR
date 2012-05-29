@@ -16,7 +16,14 @@ namespace SignalR.Client.Net20.Infrastructure
 		public Task<TFollowing> FollowedBy<TFollowing>(Func<T,TFollowing> nextAction)
 		{
 			var nextEventTask = new Task<TFollowing>();
-			OnFinish += (sender, e) => nextEventTask.OnFinished(nextAction(e.ResultWrapper.Result),e.ResultWrapper.Exception);
+			OnFinish += (sender, e) =>
+			            	{
+								if (e.ResultWrapper.IsFaulted)
+								{
+									throw e.ResultWrapper.Exception;
+								}
+			            		nextEventTask.OnFinished(nextAction(e.ResultWrapper.Result), e.ResultWrapper.Exception);
+			            	};
 			return nextEventTask;
 		}
 
