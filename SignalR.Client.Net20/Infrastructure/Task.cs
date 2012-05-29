@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Newtonsoft.Json.Serialization;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
+	[ComVisible(false)]
 	public class Task : Task<object>
 	{
 	}
@@ -97,8 +99,10 @@ namespace SignalR.Client.Net20.Infrastructure
 		public static Task Delay(TimeSpan timeSpan)
 		{
 			var newEvent = new Task();
-			var resetEvent = new ManualResetEvent(false);
-			resetEvent.WaitOne(timeSpan);
+			using (var resetEvent = new ManualResetEvent(false))
+			{
+				resetEvent.WaitOne(timeSpan);
+			}
 			newEvent.OnFinished(null, null);
 			return newEvent;
 		}
