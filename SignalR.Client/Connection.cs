@@ -1,14 +1,21 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 using SignalR.Client.Transports;
+#if NET20
+using SignalR.Client.Net20.Http;
+using System.Collections.ObjectModel;
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#else
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Concurrent;
+#endif
 
 namespace SignalR.Client
 {
@@ -81,8 +88,13 @@ namespace SignalR.Client
 
             Url = url;
             QueryString = queryString;
+#if NET20
+			Groups = new Collection<string>();
+			Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+#else
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+#endif
         }
 
         /// <summary>
@@ -175,7 +187,53 @@ namespace SignalR.Client
             return Negotiate(transport);
         }
 
+#if NET20
         private Task Negotiate(IClientTransport transport)
+        {
+            var negotiateTcs = new TaskCompletionSource<object>();
+
+            transport.Negotiate(this).FollowedBy(negotiationResponse =>
+            {
+                VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
+
+                ConnectionId = negotiationResponse.ConnectionId;
+
+                if (Sending != null)
+                {
+                    var data = Sending();
+					StartTransport(data).FollowedBy(o => negotiateTcs.SetResult(null));
+                }
+                else
+                {
+                    StartTransport(null).FollowedBy(o => negotiateTcs.SetResult(null));
+                }
+            });
+
+            var tcs = new TaskCompletionSource<object>();
+            negotiateTcs.Task.OnFinish += (sender,e) =>
+                                          	{
+                                          		var task = e.ResultWrapper;
+                // If there's any errors starting then Stop the connection                
+                if (task.IsFaulted)
+                {
+                    Stop();
+                    tcs.SetException(task.Exception);
+                }
+                else if (task.IsCanceled)
+                {
+                    Stop();
+                    tcs.SetCanceled();
+                }
+                else
+                {
+                    tcs.SetResult(null);
+                }
+            };
+
+            return tcs.Task;
+        }
+#else
+		private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
 
@@ -220,11 +278,19 @@ namespace SignalR.Client
 
             return tcs.Task;
         }
+#endif
 
         private Task StartTransport(string data)
         {
-            return _transport.Start(this, data)
+        	return _transport.Start(this, data)
+#if NET20
+        		.FollowedBy(o =>
+        		            	{
+        		            		_initialized = true;
+        		            	});
+#else
                              .Then(() => _initialized = true);
+#endif
         }
 
         private static void VerifyProtocolVersion(string versionString)
@@ -272,7 +338,13 @@ namespace SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(string data)
         {
+#if NET20
+        	var newTask = new Task();
+            ((IConnection)this).Send<object>(data).OnFinish += (sender,e) => newTask.OnFinished(e.ResultWrapper.Result,e.ResultWrapper.Exception);
+        	return newTask;
+#else
             return ((IConnection)this).Send<object>(data);
+#endif
         }
 
         Task<T> IConnection.Send<T>(string data)
@@ -357,7 +429,7 @@ namespace SignalR.Client
 
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE || NET20
             try
             {
                 version = new Version(versionString);
@@ -375,7 +447,16 @@ namespace SignalR.Client
 
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
+#if NET20
+			var stringList = new List<string>();
+			foreach (var keyValue in queryString)
+			{
+				stringList.Add(keyValue.Key + "=" + keyValue.Value);
+			} 
+			return String.Join("&", stringList.ToArray());
+#else
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
+#endif
         }
     }
 }

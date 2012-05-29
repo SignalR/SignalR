@@ -1,5 +1,9 @@
 ﻿using System.Diagnostics;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+#else
 using System.Threading.Tasks;
+#endif
 using SignalR.Client.Http;
 
 namespace SignalR.Client.Transports
@@ -35,13 +39,56 @@ namespace SignalR.Client.Transports
             return tcs.Task;
         }
 
+#if NET20
         private void ResolveTransport(IConnection connection, string data, TaskCompletionSource<object> tcs, int index)
         {
             // Pick the current transport
             IClientTransport transport = _transports[index];
 
-            transport.Start(connection, data).ContinueWith(task =>
-            {
+            transport.Start(connection, data).OnFinish += (sender,e) =>
+                                                          	{
+                                                          		var task = e.ResultWrapper;
+                if (task.IsFaulted)
+                {
+                    // Make sure we observe the exception
+                    var ex = task.Exception;
+
+					Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                	                              "Auto: Failed to connect to using transport {0}",
+                	                              transport.GetType().Name));
+
+                    // If that transport fails to initialize then fallback
+                    var next = index + 1;
+                    if (next < _transports.Length)
+                    {
+                        // Try the next transport
+                        ResolveTransport(connection, data, tcs, next);
+                    }
+                    else
+                    {
+                        // If there's nothing else to try then just fail
+                        tcs.SetException(task.Exception);
+                    }
+                }
+                else
+                {
+                    // Set the active transport
+                    _transport = transport;
+
+                    // Complete the process
+                    tcs.SetResult(null);
+                }
+
+            };
+        }
+#else
+        private void ResolveTransport(IConnection connection, string data, TaskCompletionSource<object> tcs, int index)
+        {
+            // Pick the current transport
+            IClientTransport transport = _transports[index];
+
+			transport.Start(connection, data).ContinueWith(task =>
+			{
                 if (task.IsFaulted)
                 {
                     // Make sure we observe the exception
@@ -75,8 +122,10 @@ namespace SignalR.Client.Transports
 
             });
         }
+		
+#endif
 
-        public Task<T> Send<T>(IConnection connection, string data)
+		public Task<T> Send<T>(IConnection connection, string data)
         {
             return _transport.Send<T>(connection, data);
         }

@@ -4,6 +4,11 @@ using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
 using SignalR.Client.Infrastructure;
+#if NET20
+using SignalR.Client.Net20.Http;
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#endif
 
 namespace SignalR.Client.Transports
 {
@@ -43,7 +48,11 @@ namespace SignalR.Client.Transports
             }
 
             // Wait for a bit before reconnecting
+#if NET20
+            TaskAsyncHelper.Delay(ReconnectDelay).FollowedBy(_ => 
+#else
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
+#endif
             {
                 // Now attempt a reconnect
                 OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
@@ -59,16 +68,24 @@ namespace SignalR.Client.Transports
 
             Action<IRequest> prepareRequest = PrepareRequest(connection);
 
-            Debug.WriteLine("SSE: GET {0}", (object)url);
+#if NET20
+            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
+        	var resetEvent = new ManualResetEvent(false);
+#else
+			Debug.WriteLine("SSE: GET {0}", (object)url);
+#endif
 
-            _httpClient.GetAsync(url, request =>
+			_httpClient.GetAsync(url, request =>
             {
                 prepareRequest(request);
 
                 request.Accept = "text/event-stream";
-
+#if NET20
+            }).FollowedByWithResult(task =>
+#else
             }).ContinueWith(task =>
-            {
+#endif
+			{
                 if (task.IsFaulted)
                 {
                     var exception = task.Exception.GetBaseException();
@@ -106,6 +123,9 @@ namespace SignalR.Client.Transports
                                                            {
                                                                initializeCallback();
                                                            }
+#if NET20
+														   resetEvent.Set();
+#endif
                                                        },
                                                        () =>
                                                        {
@@ -125,11 +145,15 @@ namespace SignalR.Client.Transports
                     // Set the reader for this connection
                     connection.Items[ReaderKey] = reader;
                 }
-            });
+			});
 
             if (initializeCallback != null)
             {
+#if NET20
+            	resetEvent.WaitOne(ConnectionTimeout);
+#else
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
+#endif
                 {
                     if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
                     {
@@ -139,15 +163,22 @@ namespace SignalR.Client.Transports
                         // Connection timeout occured
                         errorCallback(new TimeoutException());
                     }
-                });
+                }
+#if !NET20
+				);
+#endif
             }
         }
 
         protected override void OnBeforeAbort(IConnection connection)
         {
             // Get the reader from the connection and stop it
+#if NET20
+            var reader = ConnectionExtensions.GetValue<AsyncStreamReader>(connection, ReaderKey);
+#else
             var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
-            if (reader != null)
+#endif
+			if (reader != null)
             {
                 // Stop reading data from the stream, don't close it since we're going to end
                 // the request
@@ -205,59 +236,69 @@ namespace SignalR.Client.Transports
                 }
             }
 
-            private void ReadLoop()
-            {
-                if (!Reading)
-                {
-                    return;
-                }
+			private void ReadLoop()
+			{
+				if (!Reading)
+				{
+					return;
+				}
 
-                var buffer = new byte[1024];
+				var buffer = new byte[1024];
+#if NET20
+				StreamExtensions.ReadAsync(_stream, buffer).OnFinish += (sender, e) =>
+				                                                        	{
+				                                                        		var task = e.ResultWrapper;
+#else
                 _stream.ReadAsync(buffer).ContinueWith(task =>
                 {
-                    if (task.IsFaulted)
-                    {
-                        Exception exception = task.Exception.GetBaseException();
+#endif
+				                                                        		if (task.IsFaulted)
+				                                                        		{
+				                                                        			Exception exception = task.Exception.GetBaseException();
 
-                        if (!IsRequestAborted(exception))
-                        {
-                            if (!(exception is IOException))
-                            {
-                                _connection.OnError(exception);
-                            }
+				                                                        			if (!IsRequestAborted(exception))
+				                                                        			{
+				                                                        				if (!(exception is IOException))
+				                                                        				{
+				                                                        					_connection.OnError(exception);
+				                                                        				}
 
-                            StopReading();
-                        }
-                        return;
-                    }
+				                                                        				StopReading();
+				                                                        			}
+				                                                        			return;
+				                                                        		}
 
-                    int read = task.Result;
+				                                                        		int read = task.Result;
 
-                    if (read > 0)
-                    {
-                        // Put chunks in the buffer
-                        _buffer.Add(buffer, read);
-                    }
+				                                                        		if (read > 0)
+				                                                        		{
+				                                                        			// Put chunks in the buffer
+				                                                        			_buffer.Add(buffer, read);
+				                                                        		}
 
-                    if (read == 0)
-                    {
-                        // Stop any reading we're doing
-                        StopReading();
-                        return;
-                    }
+				                                                        		if (read == 0)
+				                                                        		{
+				                                                        			// Stop any reading we're doing
+				                                                        			StopReading();
+				                                                        			return;
+				                                                        		}
 
-                    // Keep reading the next set of data
-                    ReadLoop();
+				                                                        		// Keep reading the next set of data
+				                                                        		ReadLoop();
 
-                    if (read <= buffer.Length)
-                    {
-                        // If we read less than we wanted or if we filled the buffer, process it
-                        ProcessBuffer();
-                    }
-                });
-            }
+				                                                        		if (read <= buffer.Length)
+				                                                        		{
+				                                                        			// If we read less than we wanted or if we filled the buffer, process it
+				                                                        			ProcessBuffer();
+				                                                        		}
+#if NET20
+				                                                        	};
+#else
+																				});
+#endif
+			}
 
-            private void ProcessBuffer()
+        	private void ProcessBuffer()
             {
                 if (!Reading)
                 {

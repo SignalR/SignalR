@@ -1,5 +1,9 @@
 ﻿using System;
 using SignalR.Client.Infrastructure;
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+using Newtonsoft.Json.Serialization;
+#endif
 
 namespace SignalR.Client
 {
@@ -17,7 +21,7 @@ namespace SignalR.Client
 
             if (convert == null)
             {
-                throw new ArgumentNullException("converter");
+                throw new ArgumentNullException("convert");
             }
 
             _convert = convert;
@@ -53,4 +57,9 @@ namespace SignalR.Client
             });
         }
     }
+
+	public interface IObservable<T>
+	{
+		IDisposable Subscribe(IObserver<T> observer);
+	}
 }

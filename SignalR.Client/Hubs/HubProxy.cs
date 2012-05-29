@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-#if !WINDOWS_PHONE
+#if !WINDOWS_PHONE && !NET20
 using System.Dynamic;
 #endif
+#if NET20
+using SignalR.Client.Net20.Infrastructure;
+#else
 using System.Threading.Tasks;
+#endif
 using Newtonsoft.Json;
 
 namespace SignalR.Client.Hubs
 {
     public class HubProxy :
-#if !WINDOWS_PHONE
+#if !WINDOWS_PHONE && !NET20
  DynamicObject,
 #endif
  IHubProxy
@@ -58,7 +62,13 @@ namespace SignalR.Client.Hubs
 
         public Task Invoke(string method, params object[] args)
         {
+#if NET20
+        	var newTask = new Task();
+            Invoke<object>(method, args).OnFinish += (sender,e) => newTask.OnFinished(e.ResultWrapper.Result,e.ResultWrapper.Exception);
+        	return newTask;
+#else
             return Invoke<object>(method, args);
+#endif
         }
 
         public Task<T> Invoke<T>(string method, params object[] args)
@@ -78,7 +88,11 @@ namespace SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
+#if NET20
+            return _connection.Send<HubResult<T>>(value).FollowedBy(result =>
+#else
             return _connection.Send<HubResult<T>>(value).Then(result =>
+#endif
             {
                 if (result != null)
                 {
@@ -101,7 +115,7 @@ namespace SignalR.Client.Hubs
             });
         }
 
-#if !WINDOWS_PHONE
+#if !WINDOWS_PHONE && !NET20
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             _state[binder.Name] = value;

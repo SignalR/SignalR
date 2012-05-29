@@ -22,7 +22,7 @@ namespace SignalR.Client.Infrastructure
 #endif
         }
 
-        public static Task WriteAsync(this Stream stream, byte[] buffer)
+		public static Task WriteAsync(this Stream stream, byte[] buffer)
         {
 #if NETFX_CORE
             return stream.WriteAsync(buffer, 0, buffer.Length);
