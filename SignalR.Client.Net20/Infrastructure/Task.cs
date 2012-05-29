@@ -44,7 +44,7 @@ namespace SignalR.Client.Net20.Infrastructure
 
 		public void OnFinished(T result,Exception exception)
 		{
-			InnerFinish(result,exception,1);
+			ThreadPool.QueueUserWorkItem(o=>InnerFinish(result,exception,1));
 		}
 
 		private void InnerFinish(T result,Exception exception,int iteration)
@@ -58,7 +58,7 @@ namespace SignalR.Client.Net20.Infrastructure
 					return;
 				}
 				InnerFinish(result,exception,++iteration);
-				Thread.SpinWait(10000);
+				Thread.SpinWait(100000);
 				return;
 			}
 
@@ -90,7 +90,8 @@ namespace SignalR.Client.Net20.Infrastructure
 		public static Task Delay(TimeSpan timeSpan)
 		{
 			var newEvent = new Task();
-			Thread.Sleep(timeSpan);
+			var resetEvent = new ManualResetEvent(false);
+			resetEvent.WaitOne(timeSpan);
 			newEvent.OnFinished(null, null);
 			return newEvent;
 		}

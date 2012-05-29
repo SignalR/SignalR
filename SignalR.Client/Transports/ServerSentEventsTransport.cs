@@ -70,6 +70,7 @@ namespace SignalR.Client.Transports
 
 #if NET20
             Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
+        	var resetEvent = new ManualResetEvent(false);
 #else
 			Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif
@@ -122,6 +123,9 @@ namespace SignalR.Client.Transports
                                                            {
                                                                initializeCallback();
                                                            }
+#if NET20
+														   resetEvent.Set();
+#endif
                                                        },
                                                        () =>
                                                        {
@@ -141,12 +145,12 @@ namespace SignalR.Client.Transports
                     // Set the reader for this connection
                     connection.Items[ReaderKey] = reader;
                 }
-            });
+			});
 
             if (initializeCallback != null)
             {
 #if NET20
-                TaskAsyncHelper.Delay(ConnectionTimeout).FollowedBy(_ =>
+            	resetEvent.WaitOne(ConnectionTimeout);
 #else
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
 #endif
@@ -159,7 +163,10 @@ namespace SignalR.Client.Transports
                         // Connection timeout occured
                         errorCallback(new TimeoutException());
                     }
-                });
+                }
+#if !NET20
+				);
+#endif
             }
         }
 

@@ -12,7 +12,7 @@ namespace SignalR.Client.Net20.Samples
 
 			RunDemoHub(hubConnection);
 
-			RunStreamingSample();
+			//RunStreamingSample();
 
 			Console.ReadKey();
 		}
@@ -23,7 +23,7 @@ namespace SignalR.Client.Net20.Samples
 
 			demo.Subscribe("invoke").Data += i =>
 			                  	{
-			                  		Console.WriteLine("{0} client state index -> {1}", i, demo["index"]);
+			                  		Console.WriteLine("{0} client state index -> {1}", i[0], demo["index"]);
 			                  	};
 
 			hubConnection.Start().FollowedBy(_ =>
@@ -35,9 +35,15 @@ namespace SignalR.Client.Net20.Samples
 			                                 		                                         				e.ResultWrapper.Exception);
 			                                 		                                         	};
 
-			                                 		Thread.Sleep(7000);
-			                                 		hubConnection.Stop();
+			                                 		
 			                                 	});
+
+			ThreadPool.QueueUserWorkItem(o =>
+			{
+				Thread.Sleep(70000);
+				hubConnection.Stop();
+			});
+			
 		}
 
 		private static void RunStreamingSample()

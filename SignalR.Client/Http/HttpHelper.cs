@@ -24,7 +24,7 @@ namespace SignalR.Client.Http
 			try
 			{
 				request.BeginGetResponse(GetResponseCallback,
-										 new RequestState<HttpWebResponse> { Request = request, PostData = new byte[] { }, Response = signal });
+										 new RequestState<HttpWebResponse> { Request = request, Response = signal });
 			}
 			catch (Exception ex)
 			{
@@ -39,7 +39,7 @@ namespace SignalR.Client.Http
 			try
 			{
 				request.BeginGetRequestStream(GetRequestStreamCallback,
-										 new RequestState<Stream> { Request = request, PostData = new byte[] { }, Response = signal });
+										 new RequestState<Stream> { Request = request, Response = signal });
 			}
 			catch (Exception ex)
 			{
@@ -59,17 +59,12 @@ namespace SignalR.Client.Http
 				Stream postStream = requestState.Request.EndGetRequestStream(asynchronousResult);
 
 				// Write to the request stream.
-				postStream.Write(requestState.PostData, 0, requestState.PostData.Length);
-				postStream.Close();
+				requestState.Response.OnFinished(postStream,null);
 			}
 			catch (WebException exception)
 			{
 				requestState.Response.OnFinished(null,exception);
-				return;
 			}
-
-			// Start the asynchronous operation to get the response
-			requestState.Request.BeginGetResponse(GetResponseCallback, requestState);
 		}
 
 		private static void GetResponseCallback(IAsyncResult asynchronousResult)
@@ -175,9 +170,9 @@ namespace SignalR.Client.Http
             catch (Exception ex)
             {
 #if NET20
-				Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"Failed to read resonse: {0}", ex));
+				Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"Failed to read response: {0}", ex));
 #else
-                Debug.WriteLine("Failed to read resonse: {0}", ex);
+                Debug.WriteLine("Failed to read response: {0}", ex);
 #endif
                 // Swallow exceptions when reading the response stream and just try again.
                 return null;
@@ -232,14 +227,10 @@ namespace SignalR.Client.Http
         	                               	            	              	              		HttpWebResponse response = null;
         	                               	            	              	              		result.OnFinish += (sender, e) =>
         	                               	            	              	              		                   	{
-        	                               	            	              	              		                   		response =
-        	                               	            	              	              		                   			e.
-        	                               	            	              	              		                   				ResultWrapper
-        	                               	            	              	              		                   				.Result;
-        	                               	            	              	              		                   		resetEvent.Set
-        	                               	            	              	              		                   			();
+        	                               	            	              	              		                   		response = e.ResultWrapper.Result;
+        	                               	            	              	              		                   		resetEvent.Set();
         	                               	            	              	              		                   	};
-        	                               	            	              	              		resetEvent.Set();
+        	                               	            	              	              		
         	                               	            	              	              		return response;
         	                               	            	              	              	});
 #else
@@ -276,10 +267,13 @@ namespace SignalR.Client.Http
         }
     }
 
-	public class RequestState<T>
+	public class RequestState
 	{
 		public HttpWebRequest Request { get; set; }
+	}
+
+	public class RequestState<T> : RequestState
+	{
 		public Task<T> Response { get; set; }
-		public byte[] PostData { get; set; }
 	}
 }
