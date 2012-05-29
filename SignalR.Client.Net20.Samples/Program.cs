@@ -12,7 +12,7 @@ namespace SignalR.Client.Net20.Samples
 
 			RunDemoHub(hubConnection);
 
-			//RunStreamingSample();
+			RunStreamingSample();
 
 			Console.ReadKey();
 		}
