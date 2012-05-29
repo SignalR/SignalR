@@ -38,12 +38,8 @@ namespace SignalR.Client.Net20.Samples
 			                                 		
 			                                 	});
 
-			ThreadPool.QueueUserWorkItem(o =>
-			{
-				Thread.Sleep(70000);
+				Thread.Sleep(7000);
 				hubConnection.Stop();
-			});
-			
 		}
 
 		private static void RunStreamingSample()
