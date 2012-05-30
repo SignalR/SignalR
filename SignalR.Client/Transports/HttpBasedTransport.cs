@@ -45,11 +45,7 @@ namespace SignalR.Client.Transports
         {
             string negotiateUrl = connection.Url + "negotiate";
 
-#if NET20
-            return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).FollowedBy(response =>
-#else
             return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
-#endif
             {
                 string raw = response.ReadAsString();
 
@@ -84,11 +80,7 @@ namespace SignalR.Client.Transports
                 { "data", data }
             };
 
-#if NET20
-            return _httpClient.PostAsync(url, connection.PrepareRequest, postData).FollowedBy(response =>
-#else
             return _httpClient.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
-#endif
             {
                 string raw = response.ReadAsString();
 
@@ -233,7 +225,7 @@ namespace SignalR.Client.Transports
             catch (Exception ex)
             {
 #if NET20
-                Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
+                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
 #else
                 Debug.WriteLine("Failed to response: {0}", ex);
 #endif

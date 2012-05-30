@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
 #if NET20
-using SignalR.Client.Net20.Http;
 using SignalR.Client.Net20.Infrastructure;
 using Newtonsoft.Json.Serialization;
 #endif
@@ -56,12 +55,11 @@ namespace SignalR.Client.Transports
 
 #if NET20
             Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", url));
-            _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).FollowedByWithResult(task =>
 #else
             Debug.WriteLine("LP: {0}", (object)url);
-            _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).ContinueWith(task =>
 #endif
 
+            _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).ContinueWith(task =>
             {
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);
@@ -138,7 +136,7 @@ namespace SignalR.Client.Transports
                                     // If the connection is still active after raising the error event wait for 2 seconds
                                     // before polling again so we aren't hammering the server 
 #if NET20
-                                    TaskAsyncHelper.Delay(_errorDelay).FollowedBy(_ =>
+                                    TaskAsyncHelper.Delay(_errorDelay).Then(_ =>
 #else
                                     TaskAsyncHelper.Delay(_errorDelay).Then(() =>
 #endif
@@ -182,7 +180,7 @@ namespace SignalR.Client.Transports
             if (raiseReconnect)
             {
 #if NET20
-                TaskAsyncHelper.Delay(ReconnectDelay).FollowedBy(_ =>
+                TaskAsyncHelper.Delay(ReconnectDelay).Then(o =>
 #else
                 TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
 #endif

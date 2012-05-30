@@ -88,11 +88,7 @@ namespace SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
-#if NET20
-            return _connection.Send<HubResult<T>>(value).FollowedBy(result =>
-#else
             return _connection.Send<HubResult<T>>(value).Then(result =>
-#endif
             {
                 if (result != null)
                 {

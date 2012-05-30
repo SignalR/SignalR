@@ -26,7 +26,7 @@ namespace SignalR.Client.Net20.Samples
 			                  		Console.WriteLine("{0} client state index -> {1}", i[0], demo["index"]);
 			                  	};
 
-			hubConnection.Start().FollowedBy(_ =>
+			hubConnection.Start().Then(_ =>
 			                                 	{
 			                                 		demo.Invoke("multipleCalls").OnFinish += (sender, e) =>
 			                                 		                                         	{

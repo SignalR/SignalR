@@ -15,7 +15,7 @@ namespace SignalR.Client.Net20.Infrastructure
     {
         public event EventHandler<CustomResultArgs<T>> OnFinish;
 
-        public Task<TFollowing> FollowedBy<TFollowing>(Func<T,TFollowing> nextAction)
+        public Task<TFollowing> Then<TFollowing>(Func<T,TFollowing> nextAction)
         {
             var nextEventTask = new Task<TFollowing>();
             OnFinish += (sender, e) =>
@@ -29,7 +29,7 @@ namespace SignalR.Client.Net20.Infrastructure
             return nextEventTask;
         }
 
-        public Task FollowedBy(Action<T> nextAction)
+        public Task Then(Action<T> nextAction)
         {
             var nextEventTask = new Task();
             OnFinish += (sender, e) =>
@@ -40,7 +40,7 @@ namespace SignalR.Client.Net20.Infrastructure
             return nextEventTask;
         }
 
-        public Task FollowedByWithResult(Action<ResultWrapper<T>> nextAction)
+        public Task ContinueWith(Action<ResultWrapper<T>> nextAction)
         {
             var nextEventTask = new Task();
             OnFinish += (sender, e) =>

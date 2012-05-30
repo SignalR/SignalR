@@ -50,6 +50,9 @@
     <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Http\DefaultHttpClient.cs">
+      <Link>Http\DefaultHttpClient.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Http\HttpHelper.cs">
       <Link>Http\HttpHelper.cs</Link>
     </Compile>
@@ -128,7 +131,6 @@
     <Compile Include="..\SignalR.Hosting.Common\Infrastructure\UriQueryUtility.cs">
       <Link>Infrastructure\UriQueryUtility.cs</Link>
     </Compile>
-    <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Infrastructure\CancellationTokenSource.cs" />
     <Compile Include="Infrastructure\IObservable.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />

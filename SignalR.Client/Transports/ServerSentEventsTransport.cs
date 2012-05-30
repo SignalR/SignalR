@@ -5,7 +5,6 @@ using System.Threading;
 using SignalR.Client.Http;
 using SignalR.Client.Infrastructure;
 #if NET20
-using SignalR.Client.Net20.Http;
 using SignalR.Client.Net20.Infrastructure;
 using Newtonsoft.Json.Serialization;
 #endif
@@ -49,7 +48,7 @@ namespace SignalR.Client.Transports
 
             // Wait for a bit before reconnecting
 #if NET20
-            TaskAsyncHelper.Delay(ReconnectDelay).FollowedBy(_ => 
+            TaskAsyncHelper.Delay(ReconnectDelay).Then(o => 
 #else
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
 #endif
@@ -80,11 +79,7 @@ namespace SignalR.Client.Transports
                 prepareRequest(request);
 
                 request.Accept = "text/event-stream";
-#if NET20
-            }).FollowedByWithResult(task =>
-#else
             }).ContinueWith(task =>
-#endif
             {
                 if (task.IsFaulted)
                 {

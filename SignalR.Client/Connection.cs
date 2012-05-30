@@ -7,7 +7,6 @@ using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 using SignalR.Client.Transports;
 #if NET20
-using SignalR.Client.Net20.Http;
 using System.Collections.ObjectModel;
 using SignalR.Client.Net20.Infrastructure;
 using Newtonsoft.Json.Serialization;
@@ -192,7 +191,7 @@ namespace SignalR.Client
         {
             var negotiateTcs = new TaskCompletionSource<object>();
 
-            transport.Negotiate(this).FollowedBy(negotiationResponse =>
+            transport.Negotiate(this).Then(negotiationResponse =>
             {
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
@@ -201,11 +200,11 @@ namespace SignalR.Client
                 if (Sending != null)
                 {
                     var data = Sending();
-                    StartTransport(data).FollowedBy(o => negotiateTcs.SetResult(null));
+                    StartTransport(data).Then(o => negotiateTcs.SetResult(null));
                 }
                 else
                 {
-                    StartTransport(null).FollowedBy(o => negotiateTcs.SetResult(null));
+                    StartTransport(null).Then(o => negotiateTcs.SetResult(null));
                 }
             });
 
@@ -284,7 +283,7 @@ namespace SignalR.Client
         {
             return _transport.Start(this, data)
 #if NET20
-                .FollowedBy(o =>
+                .Then(o =>
                                 {
                                     _initialized = true;
                                 });

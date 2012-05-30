@@ -210,15 +210,15 @@ namespace SignalR.Client.Http
             // Write the post data to the request stream
 #if NET20
             return GetHttpRequestStreamAsync(request)
-                .FollowedBy(stream =>
+                .Then(stream =>
                                 {
                                     StreamExtensions.WriteAsync(stream, buffer);
                                     return stream;
-                                }).FollowedBy(stream =>
+                                }).Then(stream =>
                                                   {
                                                       stream.Dispose();
                                                       return 1;
-                                                  }).FollowedBy(previousResult =>
+                                                  }).Then(previousResult =>
                                                                     {
                                                                         var result =
                                                                             GetHttpResponseAsync(request);
