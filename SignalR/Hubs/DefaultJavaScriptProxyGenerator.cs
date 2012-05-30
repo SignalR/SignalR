@@ -46,14 +46,14 @@ namespace SignalR.Hubs
 
             var hubs = new StringBuilder();
             var first = true;
-            foreach (var descriptor in _manager.GetHubs())
+            foreach (var descriptor in _manager.GetHubs().OrderBy(h => h.Name))
             {
                 if (!first)
                 {
                     hubs.AppendLine(",");
                     hubs.Append("        ");
                 }
-                this.GenerateType(hubs, descriptor);
+                GenerateType(hubs, descriptor);
                 first = false;
             }
 
@@ -74,7 +74,7 @@ namespace SignalR.Hubs
             // Get only actions with minimum number of parameters.
             var methods = GetMethods(descriptor);
 
-            var members = methods.Select(m => m.Name).ToList();
+            var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
             members.Add("namespace");
             members.Add("ignoreMembers");
             members.Add("callbacks");
@@ -127,7 +127,7 @@ namespace SignalR.Hubs
 
         private void GenerateMethod(StringBuilder sb, MethodDescriptor method)
         {
-            var parameterNames = method.Parameters.Select(p => p.Name).ToList();
+            var parameterNames = method.Parameters.Select(p => p.Name).OrderBy(name => name).ToList();
             parameterNames.Add("callback");
             sb.AppendLine();
             sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
