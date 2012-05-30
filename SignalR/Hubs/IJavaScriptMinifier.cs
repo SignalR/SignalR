@@ -1,4 +1,4 @@
-﻿namespace SignalR
+﻿namespace SignalR.Hubs
 {
     public interface IJavaScriptMinifier
     {

@@ -1,5 +1,6 @@
-﻿
-namespace SignalR
+﻿using SignalR.Hubs;
+
+namespace SignalR.Hubs
 {
     public class NullJavaScriptMinifier : IJavaScriptMinifier
     {

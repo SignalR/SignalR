@@ -114,9 +114,9 @@
     <Compile Include="Hubs\HubDispatcher.cs" />
     <Compile Include="Hubs\Lookup\IHubDescriptorProvider.cs" />
     <Compile Include="Hubs\SignalAgent.cs" />
-    <Compile Include="Infrastructure\NullJavaScriptMinifier.cs" />
+    <Compile Include="Hubs\NullJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\IDependencyResolver.cs" />
-    <Compile Include="Infrastructure\IJavaScriptMinifier.cs" />
+    <Compile Include="Hubs\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
     <Compile Include="ITransportConnection.cs" />
     <Compile Include="JsonConvertAdapter.cs" />
