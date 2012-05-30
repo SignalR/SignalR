@@ -63,9 +63,9 @@ namespace SignalR.Client.Hubs
         public Task Invoke(string method, params object[] args)
         {
 #if NET20
-        	var newTask = new Task();
+            var newTask = new Task();
             Invoke<object>(method, args).OnFinish += (sender,e) => newTask.OnFinished(e.ResultWrapper.Result,e.ResultWrapper.Exception);
-        	return newTask;
+            return newTask;
 #else
             return Invoke<object>(method, args);
 #endif

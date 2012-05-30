@@ -21,7 +21,7 @@ namespace SignalR.Client.Http
 #else
             return _response.ReadAsString();   
 #endif
-		}
+        }
 
         public Stream GetResponseStream()
         {

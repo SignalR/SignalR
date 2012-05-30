@@ -37,11 +37,11 @@ namespace SignalR.Client.Hubs
         /// <param name="onData">The callback</param>
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
 #if NET20
-		public static IDisposable On( IHubProxy proxy, string eventName, Action onData)
+        public static IDisposable On( IHubProxy proxy, string eventName, Action onData)
 #else
-		public static IDisposable On(this IHubProxy proxy, string eventName, Action onData)
+        public static IDisposable On(this IHubProxy proxy, string eventName, Action onData)
 #endif
-		{
+        {
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<object[]> handler = args =>

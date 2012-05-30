@@ -70,12 +70,12 @@ namespace SignalR.Client.Transports
 
 #if NET20
             Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
-        	var resetEvent = new ManualResetEvent(false);
+            var resetEvent = new ManualResetEvent(false);
 #else
-			Debug.WriteLine("SSE: GET {0}", (object)url);
+            Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif
 
-			_httpClient.GetAsync(url, request =>
+            _httpClient.GetAsync(url, request =>
             {
                 prepareRequest(request);
 
@@ -85,7 +85,7 @@ namespace SignalR.Client.Transports
 #else
             }).ContinueWith(task =>
 #endif
-			{
+            {
                 if (task.IsFaulted)
                 {
                     var exception = task.Exception.GetBaseException();
@@ -124,7 +124,7 @@ namespace SignalR.Client.Transports
                                                                initializeCallback();
                                                            }
 #if NET20
-														   resetEvent.Set();
+                                                           resetEvent.Set();
 #endif
                                                        },
                                                        () =>
@@ -145,12 +145,12 @@ namespace SignalR.Client.Transports
                     // Set the reader for this connection
                     connection.Items[ReaderKey] = reader;
                 }
-			});
+            });
 
             if (initializeCallback != null)
             {
 #if NET20
-            	resetEvent.WaitOne(ConnectionTimeout);
+                resetEvent.WaitOne(ConnectionTimeout);
 #else
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
 #endif
@@ -165,7 +165,7 @@ namespace SignalR.Client.Transports
                     }
                 }
 #if !NET20
-				);
+                );
 #endif
             }
         }
@@ -178,7 +178,7 @@ namespace SignalR.Client.Transports
 #else
             var reader = connection.GetValue<AsyncStreamReader>(ReaderKey);
 #endif
-			if (reader != null)
+            if (reader != null)
             {
                 // Stop reading data from the stream, don't close it since we're going to end
                 // the request
@@ -236,69 +236,69 @@ namespace SignalR.Client.Transports
                 }
             }
 
-			private void ReadLoop()
-			{
-				if (!Reading)
-				{
-					return;
-				}
+            private void ReadLoop()
+            {
+                if (!Reading)
+                {
+                    return;
+                }
 
-				var buffer = new byte[1024];
+                var buffer = new byte[1024];
 #if NET20
-				StreamExtensions.ReadAsync(_stream, buffer).OnFinish += (sender, e) =>
-				                                                        	{
-				                                                        		var task = e.ResultWrapper;
+                StreamExtensions.ReadAsync(_stream, buffer).OnFinish += (sender, e) =>
+                                                                            {
+                                                                                var task = e.ResultWrapper;
 #else
                 _stream.ReadAsync(buffer).ContinueWith(task =>
                 {
 #endif
-				                                                        		if (task.IsFaulted)
-				                                                        		{
-				                                                        			Exception exception = task.Exception.GetBaseException();
+                                                                                if (task.IsFaulted)
+                                                                                {
+                                                                                    Exception exception = task.Exception.GetBaseException();
 
-				                                                        			if (!IsRequestAborted(exception))
-				                                                        			{
-				                                                        				if (!(exception is IOException))
-				                                                        				{
-				                                                        					_connection.OnError(exception);
-				                                                        				}
+                                                                                    if (!IsRequestAborted(exception))
+                                                                                    {
+                                                                                        if (!(exception is IOException))
+                                                                                        {
+                                                                                            _connection.OnError(exception);
+                                                                                        }
 
-				                                                        				StopReading();
-				                                                        			}
-				                                                        			return;
-				                                                        		}
+                                                                                        StopReading();
+                                                                                    }
+                                                                                    return;
+                                                                                }
 
-				                                                        		int read = task.Result;
+                                                                                int read = task.Result;
 
-				                                                        		if (read > 0)
-				                                                        		{
-				                                                        			// Put chunks in the buffer
-				                                                        			_buffer.Add(buffer, read);
-				                                                        		}
+                                                                                if (read > 0)
+                                                                                {
+                                                                                    // Put chunks in the buffer
+                                                                                    _buffer.Add(buffer, read);
+                                                                                }
 
-				                                                        		if (read == 0)
-				                                                        		{
-				                                                        			// Stop any reading we're doing
-				                                                        			StopReading();
-				                                                        			return;
-				                                                        		}
+                                                                                if (read == 0)
+                                                                                {
+                                                                                    // Stop any reading we're doing
+                                                                                    StopReading();
+                                                                                    return;
+                                                                                }
 
-				                                                        		// Keep reading the next set of data
-				                                                        		ReadLoop();
+                                                                                // Keep reading the next set of data
+                                                                                ReadLoop();
 
-				                                                        		if (read <= buffer.Length)
-				                                                        		{
-				                                                        			// If we read less than we wanted or if we filled the buffer, process it
-				                                                        			ProcessBuffer();
-				                                                        		}
+                                                                                if (read <= buffer.Length)
+                                                                                {
+                                                                                    // If we read less than we wanted or if we filled the buffer, process it
+                                                                                    ProcessBuffer();
+                                                                                }
 #if NET20
-				                                                        	};
+                                                                            };
 #else
-																				});
+                                                                                });
 #endif
-			}
+            }
 
-        	private void ProcessBuffer()
+            private void ProcessBuffer()
             {
                 if (!Reading)
                 {

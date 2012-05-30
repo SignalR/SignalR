@@ -50,7 +50,7 @@ namespace SignalR.Client.Transports
 #else
             return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
 #endif
-			{
+            {
                 string raw = response.ReadAsString();
 
                 if (raw == null)
@@ -199,7 +199,7 @@ namespace SignalR.Client.Transports
                         catch (Exception ex)
                         {
 #if NET20
-							Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+                            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
 #else
                             Debug.WriteLine("Failed to process message: {0}", ex);
 #endif
@@ -217,12 +217,12 @@ namespace SignalR.Client.Transports
                         if (groups != null)
                         {
 #if NET20
-							var groupList = new List<string>();
-							foreach (var groupFromTransport in groups)
-							{
-								groupList.Add(groupFromTransport.Value<string>());
-							}
-                        	connection.Groups = groupList;
+                            var groupList = new List<string>();
+                            foreach (var groupFromTransport in groups)
+                            {
+                                groupList.Add(groupFromTransport.Value<string>());
+                            }
+                            connection.Groups = groupList;
 #else
                             connection.Groups = groups.Select(token => token.Value<string>());
 #endif
@@ -235,9 +235,9 @@ namespace SignalR.Client.Transports
 #if NET20
                 Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
 #else
-				Debug.WriteLine("Failed to response: {0}", ex);
+                Debug.WriteLine("Failed to response: {0}", ex);
 #endif
-				connection.OnError(ex);
+                connection.OnError(ex);
             }
         }
 

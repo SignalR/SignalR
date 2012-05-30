@@ -1,8 +1,8 @@
 ﻿using System;
 #if NET20
-	using SignalR.Client.Net20.Infrastructure;
+    using SignalR.Client.Net20.Infrastructure;
 #else
-	using System.Threading.Tasks;
+    using System.Threading.Tasks;
 #endif
 
 

@@ -109,11 +109,11 @@ namespace SignalR.Client.Hubs
         private string OnConnectionSending()
         {
 #if NET20
-			var data = new List<HubRegistrationData>();
-			foreach (var hub in _hubs)
-			{
-				data.Add(new HubRegistrationData { Name = hub.Key });
-			}
+            var data = new List<HubRegistrationData>();
+            foreach (var hub in _hubs)
+            {
+                data.Add(new HubRegistrationData { Name = hub.Key });
+            }
 #else
             var data = _hubs.Select(p => new HubRegistrationData
             {

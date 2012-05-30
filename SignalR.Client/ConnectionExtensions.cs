@@ -10,7 +10,7 @@ namespace SignalR.Client
 #else
         public static T GetValue<T>(this IConnection connection, string key)
 #endif
-		{
+        {
             object value;
             if (connection.Items.TryGetValue(key, out value))
             {

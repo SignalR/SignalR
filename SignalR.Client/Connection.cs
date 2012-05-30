@@ -89,8 +89,8 @@ namespace SignalR.Client
             Url = url;
             QueryString = queryString;
 #if NET20
-			Groups = new Collection<string>();
-			Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Groups = new Collection<string>();
+            Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 #else
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -201,7 +201,7 @@ namespace SignalR.Client
                 if (Sending != null)
                 {
                     var data = Sending();
-					StartTransport(data).FollowedBy(o => negotiateTcs.SetResult(null));
+                    StartTransport(data).FollowedBy(o => negotiateTcs.SetResult(null));
                 }
                 else
                 {
@@ -211,8 +211,8 @@ namespace SignalR.Client
 
             var tcs = new TaskCompletionSource<object>();
             negotiateTcs.Task.OnFinish += (sender,e) =>
-                                          	{
-                                          		var task = e.ResultWrapper;
+                                              {
+                                                  var task = e.ResultWrapper;
                 // If there's any errors starting then Stop the connection                
                 if (task.IsFaulted)
                 {
@@ -233,7 +233,7 @@ namespace SignalR.Client
             return tcs.Task;
         }
 #else
-		private Task Negotiate(IClientTransport transport)
+        private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
 
@@ -282,12 +282,12 @@ namespace SignalR.Client
 
         private Task StartTransport(string data)
         {
-        	return _transport.Start(this, data)
+            return _transport.Start(this, data)
 #if NET20
-        		.FollowedBy(o =>
-        		            	{
-        		            		_initialized = true;
-        		            	});
+                .FollowedBy(o =>
+                                {
+                                    _initialized = true;
+                                });
 #else
                              .Then(() => _initialized = true);
 #endif
@@ -339,9 +339,9 @@ namespace SignalR.Client
         public Task Send(string data)
         {
 #if NET20
-        	var newTask = new Task();
+            var newTask = new Task();
             ((IConnection)this).Send<object>(data).OnFinish += (sender,e) => newTask.OnFinished(e.ResultWrapper.Result,e.ResultWrapper.Exception);
-        	return newTask;
+            return newTask;
 #else
             return ((IConnection)this).Send<object>(data);
 #endif
@@ -448,12 +448,12 @@ namespace SignalR.Client
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
 #if NET20
-			var stringList = new List<string>();
-			foreach (var keyValue in queryString)
-			{
-				stringList.Add(keyValue.Key + "=" + keyValue.Value);
-			} 
-			return String.Join("&", stringList.ToArray());
+            var stringList = new List<string>();
+            foreach (var keyValue in queryString)
+            {
+                stringList.Add(keyValue.Key + "=" + keyValue.Value);
+            } 
+            return String.Join("&", stringList.ToArray());
 #else
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
 #endif

@@ -55,8 +55,8 @@ namespace SignalR.Client.Transports
             url += GetReceiveQueryString(connection, data);
 
 #if NET20
-			Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", url));
-			_httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).FollowedByWithResult(task =>
+            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", url));
+            _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).FollowedByWithResult(task =>
 #else
             Debug.WriteLine("LP: {0}", (object)url);
             _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).ContinueWith(task =>
@@ -84,12 +84,12 @@ namespace SignalR.Client.Transports
                         var raw = task.Result.ReadAsString();
 
 #if NET20
-						Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", raw));
+                        Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", raw));
 #else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
 #endif
 
-						ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
+                        ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
                     }
                 }
                 finally
@@ -142,7 +142,7 @@ namespace SignalR.Client.Transports
 #else
                                     TaskAsyncHelper.Delay(_errorDelay).Then(() =>
 #endif
-									{
+                                    {
                                         if (connection.IsActive)
                                         {
                                             PollingLoop(connection,
@@ -186,7 +186,7 @@ namespace SignalR.Client.Transports
 #else
                 TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
 #endif
-				{
+                {
                     // Fire the reconnect event after the delay. This gives the 
                     FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
                 });
