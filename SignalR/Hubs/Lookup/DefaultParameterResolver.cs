@@ -1,6 +1,4 @@
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace SignalR.Hubs
 {
@@ -12,19 +10,14 @@ namespace SignalR.Hubs
         /// <param name="descriptor">Parameter descriptor.</param>
         /// <param name="value">Value to resolve the parameter value from.</param>
         /// <returns>The parameter value.</returns>
-        public virtual object ResolveParameter(ParameterDescriptor descriptor, JToken value)
+        public virtual object ResolveParameter(ParameterDescriptor descriptor, IParameterValue value)
         {
             if (value.GetType() == descriptor.Type)
             {
                 return value;
             }
 
-            // A non generic implementation of ToObject<T> on JToken
-            using (var jsonReader = new JTokenReader(value))
-            {
-                var serializer = new JsonSerializer();
-                return serializer.Deserialize(jsonReader, descriptor.Type);
-            }
+            return value.ConvertTo(descriptor.Type);
         }
 
         /// <summary>
@@ -33,7 +26,7 @@ namespace SignalR.Hubs
         /// <param name="method">Method descriptor.</param>
         /// <param name="values">List of values to resolve parameter values from.</param>
         /// <returns>Array of parameter values.</returns>
-        public virtual object[] ResolveMethodParameters(MethodDescriptor method, params JToken[] values)
+        public virtual object[] ResolveMethodParameters(MethodDescriptor method, params IParameterValue[] values)
         {
             return method.Parameters.Zip(values, ResolveParameter).ToArray();
         }

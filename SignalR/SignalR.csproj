@@ -57,7 +57,13 @@
     <Compile Include="CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hubs\HubContext.cs" />
+    <Compile Include="Hubs\HubRequest.cs" />
+    <Compile Include="Hubs\HubRequestParser.cs" />
+    <Compile Include="Hubs\HubResponse.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
+    <Compile Include="Hubs\IHubRequestParser.cs" />
+    <Compile Include="Hubs\Lookup\IParameterValue.cs" />
+    <Compile Include="Hubs\Lookup\JTokenParameterValue.cs" />
     <Compile Include="Hubs\StatefulSignalAgent.cs" />
     <Compile Include="Infrastructure\ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
