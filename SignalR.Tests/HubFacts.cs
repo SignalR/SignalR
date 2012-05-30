@@ -9,7 +9,7 @@ namespace SignalR.Tests
     public class HubFacts
     {
         [Fact]
-        public void SettingState()
+        public void ReadingState()
         {
             var host = new MemoryHost();
             host.MapHubs();
@@ -24,6 +24,22 @@ namespace SignalR.Tests
             var result = hub.Invoke<string>("ReadStateValue").Result;
 
             Assert.Equal("test", result);
+        }
+
+        [Fact]
+        public void SettingState()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo/");
+
+            var hub = connection.CreateProxy("demo");
+            connection.Start(host).Wait();
+
+            var result = hub.Invoke<string>("SetStateValue", "test").Result;
+
+            Assert.Equal("test", result);
+            Assert.Equal("test", hub["Company"]);
         }
 
         [Fact]

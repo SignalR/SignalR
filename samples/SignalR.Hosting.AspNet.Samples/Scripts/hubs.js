@@ -149,6 +149,83 @@
 
     // Create hub signalR instance
     $.extend(signalR, {
+        chat: {
+            _: {
+                hubName: 'Chat',
+                ignoreMembers: ['join', 'send', 'getUsers', 'namespace', 'ignoreMembers', 'callbacks'],
+                connection: function () { return signalR.hub; }
+            },
+
+            join: function (callback) {
+                return serverCall(this, "Join", $.makeArray(arguments));
+            },
+
+            send: function (content, callback) {
+                return serverCall(this, "Send", $.makeArray(arguments));
+            },
+
+            getUsers: function (callback) {
+                return serverCall(this, "GetUsers", $.makeArray(arguments));
+            }
+        },
+        drawingPad: {
+            _: {
+                hubName: 'DrawingPad',
+                ignoreMembers: ['join', 'drawLine', 'namespace', 'ignoreMembers', 'callbacks'],
+                connection: function () { return signalR.hub; }
+            },
+
+            join: function (callback) {
+                return serverCall(this, "Join", $.makeArray(arguments));
+            },
+
+            drawLine: function (data, callback) {
+                return serverCall(this, "DrawLine", $.makeArray(arguments));
+            }
+        },
+        shapeShare: {
+            _: {
+                hubName: 'ShapeShare',
+                ignoreMembers: ['getShapes', 'join', 'changeUserName', 'createShape', 'changeShape', 'deleteShape', 'deleteAllShapes', 'namespace', 'ignoreMembers', 'callbacks'],
+                connection: function () { return signalR.hub; }
+            },
+
+            getShapes: function (callback) {
+                return serverCall(this, "GetShapes", $.makeArray(arguments));
+            },
+
+            join: function (userName, callback) {
+                return serverCall(this, "Join", $.makeArray(arguments));
+            },
+
+            changeUserName: function (currentUserName, newUserName, callback) {
+                return serverCall(this, "ChangeUserName", $.makeArray(arguments));
+            },
+
+            createShape: function (type, callback) {
+                return serverCall(this, "CreateShape", $.makeArray(arguments));
+            },
+
+            changeShape: function (id, x, y, w, h, callback) {
+                return serverCall(this, "ChangeShape", $.makeArray(arguments));
+            },
+
+            deleteShape: function (id, callback) {
+                return serverCall(this, "DeleteShape", $.makeArray(arguments));
+            },
+
+            deleteAllShapes: function (callback) {
+                return serverCall(this, "DeleteAllShapes", $.makeArray(arguments));
+            }
+        },
+        status: {
+            _: {
+                hubName: 'Status',
+                ignoreMembers: ['namespace', 'ignoreMembers', 'callbacks'],
+                connection: function () { return signalR.hub; }
+            }
+
+        },
         hubBench: {
             _: {
                 hubName: 'HubBench',
@@ -164,18 +241,25 @@
                 return serverCall(this, "HitUs", $.makeArray(arguments));
             }
         },
-        status: {
+        mouseTracking: {
             _: {
-                hubName: 'Status',
-                ignoreMembers: ['namespace', 'ignoreMembers', 'callbacks'],
+                hubName: 'MouseTracking',
+                ignoreMembers: ['join', 'move', 'namespace', 'ignoreMembers', 'callbacks'],
                 connection: function () { return signalR.hub; }
-            }
+            },
 
+            join: function (callback) {
+                return serverCall(this, "Join", $.makeArray(arguments));
+            },
+
+            move: function (x, y, callback) {
+                return serverCall(this, "Move", $.makeArray(arguments));
+            }
         },
         demo: {
             _: {
                 hubName: 'demo',
-                ignoreMembers: ['getValue', 'addToGroups', 'doSomethingAndCallError', 'dynamicTask', 'plainTask', 'genericTaskTypedAsPlain', 'taskWithException', 'genericTaskWithException', 'simpleArray', 'readStateValue', 'complexArray', 'complexType', 'passingDynamicComplex', 'multipleCalls', 'overload', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
+                ignoreMembers: ['getValue', 'addToGroups', 'doSomethingAndCallError', 'dynamicTask', 'plainTask', 'genericTaskTypedAsPlain', 'taskWithException', 'genericTaskWithException', 'simpleArray', 'readStateValue', 'setStateValue', 'complexArray', 'complexType', 'passingDynamicComplex', 'multipleCalls', 'overload', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
                 connection: function () { return signalR.hub; }
             },
 
@@ -219,6 +303,10 @@
                 return serverCall(this, "ReadStateValue", $.makeArray(arguments));
             },
 
+            setStateValue: function (value, callback) {
+                return serverCall(this, "SetStateValue", $.makeArray(arguments));
+            },
+
             complexArray: function (people, callback) {
                 return serverCall(this, "ComplexArray", $.makeArray(arguments));
             },
@@ -241,90 +329,6 @@
 
             unsupportedOverload: function (x, callback) {
                 return serverCall(this, "UnsupportedOverload", $.makeArray(arguments));
-            }
-        },
-        chat: {
-            _: {
-                hubName: 'Chat',
-                ignoreMembers: ['join', 'send', 'getUsers', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-
-            join: function (callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
-            },
-
-            send: function (content, callback) {
-                return serverCall(this, "Send", $.makeArray(arguments));
-            },
-
-            getUsers: function (callback) {
-                return serverCall(this, "GetUsers", $.makeArray(arguments));
-            }
-        },
-        drawingPad: {
-            _: {
-                hubName: 'DrawingPad',
-                ignoreMembers: ['join', 'drawLine', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-
-            join: function (callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
-            },
-
-            drawLine: function (data, callback) {
-                return serverCall(this, "DrawLine", $.makeArray(arguments));
-            }
-        },
-        mouseTracking: {
-            _: {
-                hubName: 'MouseTracking',
-                ignoreMembers: ['join', 'move', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-
-            join: function (callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
-            },
-
-            move: function (x, y, callback) {
-                return serverCall(this, "Move", $.makeArray(arguments));
-            }
-        },
-        shapeShare: {
-            _: {
-                hubName: 'ShapeShare',
-                ignoreMembers: ['getShapes', 'join', 'changeUserName', 'createShape', 'changeShape', 'deleteShape', 'deleteAllShapes', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-
-            getShapes: function (callback) {
-                return serverCall(this, "GetShapes", $.makeArray(arguments));
-            },
-
-            join: function (userName, callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
-            },
-
-            changeUserName: function (currentUserName, newUserName, callback) {
-                return serverCall(this, "ChangeUserName", $.makeArray(arguments));
-            },
-
-            createShape: function (type, callback) {
-                return serverCall(this, "CreateShape", $.makeArray(arguments));
-            },
-
-            changeShape: function (id, x, y, w, h, callback) {
-                return serverCall(this, "ChangeShape", $.makeArray(arguments));
-            },
-
-            deleteShape: function (id, callback) {
-                return serverCall(this, "DeleteShape", $.makeArray(arguments));
-            },
-
-            deleteAllShapes: function (callback) {
-                return serverCall(this, "DeleteAllShapes", $.makeArray(arguments));
             }
         }
     });

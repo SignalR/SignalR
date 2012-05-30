@@ -76,7 +76,14 @@ namespace SignalR.Samples.Hubs.DemoHub
         public string ReadStateValue()
         {
             return Caller.name;
-        } 
+        }
+
+        public string SetStateValue(string value)
+        {
+            Caller.Company = value;
+
+            return Caller.Company;
+        }
 
         public void ComplexArray(Person[] people)
         {
