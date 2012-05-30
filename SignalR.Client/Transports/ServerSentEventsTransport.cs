@@ -69,6 +69,8 @@ namespace SignalR.Client.Transports
 
 #if NET20
             Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
+
+            //Using a manual reset event instead of Delay as that wasn't working as expected in this case.
             var resetEvent = new ManualResetEvent(false);
 #else
             Debug.WriteLine("SSE: GET {0}", (object)url);
@@ -240,57 +242,54 @@ namespace SignalR.Client.Transports
 
                 var buffer = new byte[1024];
 #if NET20
-                StreamExtensions.ReadAsync(_stream, buffer).OnFinish += (sender, e) =>
-                                                                            {
-                                                                                var task = e.ResultWrapper;
+                StreamExtensions.ReadAsync(_stream, buffer).ContinueWith(task =>
 #else
                 _stream.ReadAsync(buffer).ContinueWith(task =>
-                {
 #endif
-                                                                                if (task.IsFaulted)
-                                                                                {
-                                                                                    Exception exception = task.Exception.GetBaseException();
+                                                                             {
+                                                                                 if (task.IsFaulted)
+                                                                                 {
+                                                                                     Exception exception =
+                                                                                         task.Exception.GetBaseException
+                                                                                             ();
 
-                                                                                    if (!IsRequestAborted(exception))
-                                                                                    {
-                                                                                        if (!(exception is IOException))
-                                                                                        {
-                                                                                            _connection.OnError(exception);
-                                                                                        }
+                                                                                     if (!IsRequestAborted(exception))
+                                                                                     {
+                                                                                         if (!(exception is IOException))
+                                                                                         {
+                                                                                             _connection.OnError(
+                                                                                                 exception);
+                                                                                         }
 
-                                                                                        StopReading();
-                                                                                    }
-                                                                                    return;
-                                                                                }
+                                                                                         StopReading();
+                                                                                     }
+                                                                                     return;
+                                                                                 }
 
-                                                                                int read = task.Result;
+                                                                                 int read = task.Result;
 
-                                                                                if (read > 0)
-                                                                                {
-                                                                                    // Put chunks in the buffer
-                                                                                    _buffer.Add(buffer, read);
-                                                                                }
+                                                                                 if (read > 0)
+                                                                                 {
+                                                                                     // Put chunks in the buffer
+                                                                                     _buffer.Add(buffer, read);
+                                                                                 }
 
-                                                                                if (read == 0)
-                                                                                {
-                                                                                    // Stop any reading we're doing
-                                                                                    StopReading();
-                                                                                    return;
-                                                                                }
+                                                                                 if (read == 0)
+                                                                                 {
+                                                                                     // Stop any reading we're doing
+                                                                                     StopReading();
+                                                                                     return;
+                                                                                 }
 
-                                                                                // Keep reading the next set of data
-                                                                                ReadLoop();
+                                                                                 // Keep reading the next set of data
+                                                                                 ReadLoop();
 
-                                                                                if (read <= buffer.Length)
-                                                                                {
-                                                                                    // If we read less than we wanted or if we filled the buffer, process it
-                                                                                    ProcessBuffer();
-                                                                                }
-#if NET20
-                                                                            };
-#else
-                                                                                });
-#endif
+                                                                                 if (read <= buffer.Length)
+                                                                                 {
+                                                                                     // If we read less than we wanted or if we filled the buffer, process it
+                                                                                     ProcessBuffer();
+                                                                                 }
+                                                                             });
             }
 
             private void ProcessBuffer()

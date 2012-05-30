@@ -1,26 +1,18 @@
 ﻿using System;
-using System.IO;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
+    /// <summary>Provides a mechanism for receiving push-based notifications.</summary>
+    /// <remarks>This is here because this interface was introduced in a later version of the framework.</remarks>
     public interface IObserver<T>
     {
         void OnNext(T value);
         void OnCompleted();
+
+        /// <summary>
+        /// Called upon exception.
+        /// </summary>
+        /// <param name="exception">The exception details.</param>
         void OnError(Exception exception);
-    }
-
-    internal class ReadStreamState
-    {
-        public Stream Stream { get; set; }
-        public byte[] Buffer { get; set; }
-        public Task<int> Response { get; set; }
-    }
-
-    internal class WriteStreamState
-    {
-        public Stream Stream { get; set; }
-        public byte[] Buffer { get; set; }
-        public Task Response { get; set; }
     }
 }

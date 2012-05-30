@@ -6,20 +6,37 @@ using Newtonsoft.Json.Serialization;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
+    /// <summary>
+    /// Represents a non-generic task that will be executed eventually.
+    /// </summary>
     [ComVisible(false)]
     public class Task : Task<object>
     {
     }
 
+    /// <summary>
+    /// Represents a task that will be executed eventually.
+    /// </summary>
+    /// <typeparam name="T">The type of result from this task.</typeparam>
     public class Task<T>
     {
+        /// <summary>
+        /// The event that is called when this task is finised.
+        /// </summary>
         public event EventHandler<CustomResultArgs<T>> OnFinish;
 
+        /// <summary>
+        /// Call the given function when this task is finished.
+        /// </summary>
+        /// <typeparam name="TFollowing">The return type of the given function.</typeparam>
+        /// <param name="nextAction">The function that will be called when this task is finished.</param>
+        /// <returns>A task that will return the given result type.</returns>
         public Task<TFollowing> Then<TFollowing>(Func<T,TFollowing> nextAction)
         {
             var nextEventTask = new Task<TFollowing>();
             OnFinish += (sender, e) =>
                             {
+                                //Fail fast here. Need to evaluate the appropriate action in this case.
                                 if (e.ResultWrapper.IsFaulted)
                                 {
                                     throw e.ResultWrapper.Exception;
@@ -29,6 +46,11 @@ namespace SignalR.Client.Net20.Infrastructure
             return nextEventTask;
         }
 
+        /// <summary>
+        /// Call the given function when this task is finished.
+        /// </summary>
+        /// <param name="nextAction">The function that will be called when this task is finished.</param>
+        /// <returns>A non-generic task.</returns>
         public Task Then(Action<T> nextAction)
         {
             var nextEventTask = new Task();
@@ -40,6 +62,11 @@ namespace SignalR.Client.Net20.Infrastructure
             return nextEventTask;
         }
 
+        /// <summary>
+        /// Continue with the given function when this task is finished.
+        /// </summary>
+        /// <param name="nextAction">The function that will be called when this task is finished.</param>
+        /// <returns>A non-generic task.</returns>
         public Task ContinueWith(Action<ResultWrapper<T>> nextAction)
         {
             var nextEventTask = new Task();
@@ -51,6 +78,11 @@ namespace SignalR.Client.Net20.Infrastructure
             return nextEventTask;
         }
 
+        /// <summary>
+        /// This is the method to call when this task is finished.
+        /// </summary>
+        /// <param name="result">The result from the operation.</param>
+        /// <param name="exception">The exception from the operation, if any occucred.</param>
         public void OnFinished(T result,Exception exception)
         {
             ThreadPool.QueueUserWorkItem(o=>InnerFinish(result,exception,1));
@@ -63,10 +95,13 @@ namespace SignalR.Client.Net20.Infrastructure
             {
                 if (iteration>10)
                 {
+                    //Write some debug information about this.
                     Debug.WriteLine("An event handler must be attached within a reasonable amount of time.");
                     return;
                 }
                 InnerFinish(result,exception,++iteration);
+
+                //Wait some time to give the consumer the opportunity to attach an event handler for OnFinish.
                 Thread.SpinWait(100000);
                 return;
             }
@@ -77,44 +112,6 @@ namespace SignalR.Client.Net20.Infrastructure
                             ResultWrapper =
                                 new ResultWrapper<T> {Result = result, Exception = exception, IsFaulted = exception != null}
                         });
-        }
-    }
-
-    public class CustomResultArgs<T> : EventArgs
-    {
-        public ResultWrapper<T> ResultWrapper { get; set; }
-    }
-
-    public class ResultWrapper<T>
-    {
-        public T Result { get; set; }
-        public bool IsFaulted { get; set; }
-        public Exception Exception { get; set; }
-
-        public bool IsCanceled { get; set; }
-    }
-
-    public static class TaskAsyncHelper
-    {
-        public static Task Delay(TimeSpan timeSpan)
-        {
-            var newEvent = new Task();
-            using (var resetEvent = new ManualResetEvent(false))
-            {
-                resetEvent.WaitOne(timeSpan);
-            }
-            newEvent.OnFinished(null, null);
-            return newEvent;
-        }
-
-        public static Task Empty
-        {
-            get
-            {
-                var task = new Task();
-                task.OnFinished(null,null);
-                return task;
-            }
         }
     }
 }

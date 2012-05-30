@@ -209,9 +209,8 @@ namespace SignalR.Client
             });
 
             var tcs = new TaskCompletionSource<object>();
-            negotiateTcs.Task.OnFinish += (sender,e) =>
+            negotiateTcs.Task.ContinueWith(task =>
                                               {
-                                                  var task = e.ResultWrapper;
                 // If there's any errors starting then Stop the connection                
                 if (task.IsFaulted)
                 {
@@ -227,7 +226,7 @@ namespace SignalR.Client
                 {
                     tcs.SetResult(null);
                 }
-            };
+            });
 
             return tcs.Task;
         }

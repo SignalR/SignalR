@@ -3,8 +3,17 @@ using System.IO;
 
 namespace SignalR.Client.Net20.Infrastructure
 {
+    /// <summary>
+    /// Alternative implementation of stream extensions that is compatible with .net 2.0 framework.
+    /// </summary>
     internal static class StreamExtensions
     {
+        /// <summary>
+        /// Creates a task to write a buffer to a stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="buffer">The buffer.</param>
+        /// <returns>A non-generic task.</returns>
         public static Task WriteAsync(Stream stream, byte[] buffer)
         {
             var signal = new Task();
@@ -14,7 +23,7 @@ namespace SignalR.Client.Net20.Infrastructure
             return signal;
         }
 
-        internal static void WriteAsyncInternal(WriteStreamState writeStreamState)
+        private static void WriteAsyncInternal(WriteStreamState writeStreamState)
         {
             try
             {
@@ -26,6 +35,12 @@ namespace SignalR.Client.Net20.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Creates a task to read into a buffer from a stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="buffer">The buffer.</param>
+        /// <returns></returns>
         public static Task<int> ReadAsync(Stream stream, byte[] buffer)
         {
             var signal = new Task<int>();
@@ -35,7 +50,7 @@ namespace SignalR.Client.Net20.Infrastructure
             return signal;
         }
 
-        internal static void ReadAsyncInternal(ReadStreamState readStreamState)
+        private static void ReadAsyncInternal(ReadStreamState readStreamState)
         {
             try
             {
