@@ -55,7 +55,7 @@ namespace SignalR.Client.Transports
             url += GetReceiveQueryString(connection, data);
 
 #if NET20
-            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", url));
+            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", url));
             _httpClient.PostAsync(url, PrepareRequest(connection), new Dictionary<string, string>()).FollowedByWithResult(task =>
 #else
             Debug.WriteLine("LP: {0}", (object)url);
@@ -84,7 +84,7 @@ namespace SignalR.Client.Transports
                         var raw = task.Result.ReadAsString();
 
 #if NET20
-                        Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", raw));
+                        Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", raw));
 #else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
 #endif

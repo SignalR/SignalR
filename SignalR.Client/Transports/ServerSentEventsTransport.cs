@@ -69,7 +69,7 @@ namespace SignalR.Client.Transports
             Action<IRequest> prepareRequest = PrepareRequest(connection);
 
 #if NET20
-            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
+            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture,"SSE: GET {0}", url));
             var resetEvent = new ManualResetEvent(false);
 #else
             Debug.WriteLine("SSE: GET {0}", (object)url);

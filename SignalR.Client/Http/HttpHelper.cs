@@ -51,12 +51,12 @@ namespace SignalR.Client.Http
 
         private static void GetRequestStreamCallback(IAsyncResult asynchronousResult)
         {
-            RequestState<Stream> requestState = (RequestState<Stream>)asynchronousResult.AsyncState;
+            var requestState = (RequestState<Stream>)asynchronousResult.AsyncState;
 
             // End the operation
             try
             {
-                Stream postStream = requestState.Request.EndGetRequestStream(asynchronousResult);
+                var postStream = requestState.Request.EndGetRequestStream(asynchronousResult);
 
                 // Write to the request stream.
                 requestState.Response.OnFinished(postStream,null);
@@ -69,12 +69,12 @@ namespace SignalR.Client.Http
 
         private static void GetResponseCallback(IAsyncResult asynchronousResult)
         {
-            RequestState<HttpWebResponse> requestState = (RequestState<HttpWebResponse>)asynchronousResult.AsyncState;
+            var requestState = (RequestState<HttpWebResponse>)asynchronousResult.AsyncState;
 
             // End the operation
             try
             {
-                HttpWebResponse response = (HttpWebResponse)requestState.Request.EndGetResponse(asynchronousResult);
+                var response = (HttpWebResponse)requestState.Request.EndGetResponse(asynchronousResult);
                 requestState.Response.OnFinished(response,null);
             }
             catch (Exception ex)
@@ -170,7 +170,7 @@ namespace SignalR.Client.Http
             catch (Exception ex)
             {
 #if NET20
-                Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,"Failed to read response: {0}", ex));
+                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture,"Failed to read response: {0}", ex));
 #else
                 Debug.WriteLine("Failed to read response: {0}", ex);
 #endif

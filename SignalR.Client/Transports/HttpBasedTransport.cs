@@ -199,7 +199,7 @@ namespace SignalR.Client.Transports
                         catch (Exception ex)
                         {
 #if NET20
-                            Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+                            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
 #else
                             Debug.WriteLine("Failed to process message: {0}", ex);
 #endif

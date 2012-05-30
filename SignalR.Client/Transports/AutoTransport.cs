@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 #if NET20
 using SignalR.Client.Net20.Infrastructure;
 #else
@@ -53,9 +54,9 @@ namespace SignalR.Client.Transports
                     // Make sure we observe the exception
                     var ex = task.Exception;
 
-                    Debug.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                                                  "Auto: Failed to connect to using transport {0}",
-                                                  transport.GetType().Name));
+                    Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                                  "Auto: Failed to connect to using transport {0}, Exception: {1}",
+                                                  transport.GetType().Name,ex));
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;
