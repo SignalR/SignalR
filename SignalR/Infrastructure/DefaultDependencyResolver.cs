@@ -13,11 +13,15 @@ namespace SignalR
 
         public DefaultDependencyResolver()
         {
+            RegisterDefaultServices();
+
+            // Hubs
+            RegisterHubExtensions();
+        }
+
+        private void RegisterDefaultServices()
+        {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
-
-            var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
-            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
-
             Register(typeof(ITraceManager), () => traceManager.Value);
 
             var serverIdManager = new ServerIdManager();
@@ -27,13 +31,11 @@ namespace SignalR
             Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
 
             var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
-
             Register(typeof(IMessageBus), () => messageBus.Value);
 
             var serializer = new Lazy<JsonConvertAdapter>();
-
             Register(typeof(IJsonSerializer), () => serializer.Value);
-            
+
             var connectionIdGenerator = new GuidConnectionIdGenerator();
             Register(typeof(IConnectionIdGenerator), () => connectionIdGenerator);
 
@@ -48,9 +50,6 @@ namespace SignalR
 
             var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
             Register(typeof(IConnectionManager), () => connectionManager.Value);
-
-            // Hubs
-            RegisterHubExtensions();
         }
 
         private void RegisterHubExtensions()
@@ -75,6 +74,9 @@ namespace SignalR
 
             var requestParser = new Lazy<HubRequestParser>();
             Register(typeof(IHubRequestParser), () => requestParser.Value);
+
+            var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
+            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
         }
 
         public virtual object GetService(Type serviceType)
