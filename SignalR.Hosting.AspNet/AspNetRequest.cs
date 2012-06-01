@@ -148,6 +148,8 @@ namespace SignalR.Hosting.AspNet
                 callback(handler).Then(h => h.CleanClose(), handler);
                 return task;
             });
+#else
+            throw new NotSupportedException();
 #endif
         }
     }
