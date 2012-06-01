@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace SignalR.Hubs
+namespace SignalR
 {
     /// <summary>
-    /// Represents a parameter value.
+    /// Represents a JSON value.
     /// </summary>
-    public interface IParameterValue
+    public interface IJsonValue
     {
         /// <summary>
         /// Converts the parameter value to the specified <see cref="Type"/>.

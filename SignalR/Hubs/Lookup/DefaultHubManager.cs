@@ -41,7 +41,7 @@ namespace SignalR.Hubs
             return hubs;
         }
 
-        public MethodDescriptor GetHubMethod(string hubName, string method, params IParameterValue[] parameters)
+        public MethodDescriptor GetHubMethod(string hubName, string method, params IJsonValue[] parameters)
         {
             HubDescriptor hub = GetHub(hubName);
 

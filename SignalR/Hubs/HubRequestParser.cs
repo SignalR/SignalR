@@ -7,7 +7,7 @@ namespace SignalR.Hubs
 {
     internal class HubRequestParser : IHubRequestParser
     {
-        private static readonly IParameterValue[] _emptyArgs = new IParameterValue[0];
+        private static readonly IJsonValue[] _emptyArgs = new IJsonValue[0];
 
         public HubRequest Parse(string data)
         {
@@ -25,7 +25,7 @@ namespace SignalR.Hubs
 
             var rawArgs = rawRequest["args"] ?? rawRequest["Args"];
             request.ParameterValues = rawArgs == null ? _emptyArgs :
-                                                rawArgs.Children().Select(value => new JTokenParameterValue(value)).ToArray();
+                                                rawArgs.Children().Select(value => new JTokenValue(value)).ToArray();
 
             return request;
         }

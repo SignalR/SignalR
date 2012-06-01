@@ -6,23 +6,23 @@ namespace SignalR
     /// <summary>
     /// Default <see cref="IJsonSerializer"/> implementation over Json.NET.
     /// </summary>
-    public class JsonConvertAdapter : IJsonSerializer
+    public class JsonNetSerializer : IJsonSerializer
     {
         private readonly JsonSerializerSettings _settings;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonConvertAdapter"/> class.
+        /// Initializes a new instance of the <see cref="JsonNetSerializer"/> class.
         /// </summary>
-        public JsonConvertAdapter()
+        public JsonNetSerializer()
             : this(new JsonSerializerSettings())
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonConvertAdapter"/> class.
+        /// Initializes a new instance of the <see cref="JsonNetSerializer"/> class.
         /// </summary>
         /// <param name="settings">The <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> to use when serializing and deserializing.</param>
-        public JsonConvertAdapter(JsonSerializerSettings settings)
+        public JsonNetSerializer(JsonSerializerSettings settings)
         {
             if (settings == null)
             {

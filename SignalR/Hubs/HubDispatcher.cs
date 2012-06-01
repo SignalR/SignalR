@@ -53,7 +53,7 @@ namespace SignalR.Hubs
             // Create the hub
             HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub);
 
-            IParameterValue[] parameterValues = hubRequest.ParameterValues;
+            IJsonValue[] parameterValues = hubRequest.ParameterValues;
 
             // Resolve the method
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);

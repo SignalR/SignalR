@@ -6,7 +6,7 @@ namespace SignalR.Hubs
     {
         public string Hub { get; set; }
         public string Method { get; set; }
-        public IParameterValue[] ParameterValues { get; set; }
+        public IJsonValue[] ParameterValues { get; set; }
         public IDictionary<string, object> State { get; set; }
         public string Id { get; set; }
     }

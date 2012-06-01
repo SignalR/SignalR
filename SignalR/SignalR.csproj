@@ -62,8 +62,8 @@
     <Compile Include="Hubs\HubResponse.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
-    <Compile Include="Hubs\Lookup\IParameterValue.cs" />
-    <Compile Include="Hubs\Lookup\JTokenParameterValue.cs" />
+    <Compile Include="Json\IJsonValue.cs" />
+    <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalAgent.cs" />
     <Compile Include="Infrastructure\ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
@@ -100,7 +100,7 @@
     <Compile Include="Hubs\IDisconnect.cs" />
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="IConnectionIdGenerator.cs" />
-    <Compile Include="IJsonSerializer.cs" />
+    <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
@@ -125,8 +125,8 @@
     <Compile Include="Hubs\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
     <Compile Include="ITransportConnection.cs" />
-    <Compile Include="JsonConvertAdapter.cs" />
-    <Compile Include="Json.cs" />
+    <Compile Include="Json\JsonNetSerializer.cs" />
+    <Compile Include="Json\Json.cs" />
     <Compile Include="GroupManager.cs" />
     <Compile Include="Infrastructure\ServerCommand.cs" />
     <Compile Include="Infrastructure\ServerCommandType.cs" />

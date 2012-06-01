@@ -2,13 +2,16 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SignalR.Hubs
+namespace SignalR
 {
-    internal class JTokenParameterValue : IParameterValue
+    /// <summary>
+    /// An implementation of IJsonValue over JSON.NET
+    /// </summary>
+    internal class JTokenValue : IJsonValue
     {
         private readonly JToken _value;
 
-        public JTokenParameterValue(JToken value)
+        public JTokenValue(JToken value)
         {
             _value = value;
         }
@@ -26,7 +29,7 @@ namespace SignalR.Hubs
         public bool CanConvertTo(Type type)
         {
             // TODO: Implement when we implement better method overload resolution
-            return false;
+            return true;
         }
     }
 }

@@ -13,6 +13,6 @@ namespace SignalR.Hubs
         /// <param name="method">Method descriptor.</param>
         /// <param name="values">List of values to resolve parameter values from.</param>
         /// <returns>Array of parameter values.</returns>
-        object[] ResolveMethodParameters(MethodDescriptor method, params IParameterValue[] values);
+        object[] ResolveMethodParameters(MethodDescriptor method, params IJsonValue[] values);
     }
 }

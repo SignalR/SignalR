@@ -4,7 +4,7 @@ namespace SignalR.Hubs
 {
     public static class MethodExtensions
     {
-        public static bool Matches(this MethodDescriptor methodDescriptor, params IParameterValue[] parameters)
+        public static bool Matches(this MethodDescriptor methodDescriptor, params IJsonValue[] parameters)
         {
             if ((methodDescriptor.Parameters.Count > 0 && parameters == null)
                 || methodDescriptor.Parameters.Count != parameters.Length)
