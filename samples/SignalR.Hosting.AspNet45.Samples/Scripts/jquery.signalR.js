@@ -337,13 +337,13 @@
 
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
-            var url = connection.url,
+            var url = connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
             }
-
+            
             if (!reconnecting) {
                 url = url + "/connect";
             } else {
@@ -466,6 +466,8 @@
             start: function (connection, onSuccess, onFailed) {
                 var url,
                     opened = false,
+                    that = this,
+                    reconnecting = !onSuccess,
                     protocol;
 
                 if (window.MozWebSocket) {
@@ -494,16 +496,13 @@
 
                         protocol = info.protocol === "https:" ? "wss://" : "ws://";
 
-                        url = protocol + info.host + connection.appRelativeUrl;
+                        url = protocol + info.host;
                     }
 
                     // Build the url
                     $(connection).trigger(events.onSending);
-                    if (connection.data) {
-                        url += "?connectionData=" + connection.data + "&transport=webSockets&connectionId=" + connection.id;
-                    } else {
-                        url += "?transport=webSockets&connectionId=" + connection.id;
-                    }
+
+                    url += transportLogic.getUrl(connection, this.name, reconnecting);
 
                     log("Connecting to websocket endpoint '" + url + "'");
                     connection.socket = new window.WebSocket(url);
@@ -520,15 +519,20 @@
                             if (onFailed) {
                                 onFailed();
                             }
-                            log("Websocket closed");
-                        } else if (typeof event.wasClean != "undefined" && event.wasClean === false) {
+
+                        }
+                        else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).trigger(events.onError);
+                            $(connection).trigger(events.onError, [event.reason]);
                             // TODO: Support reconnect attempt here, need to ensure last message id, groups, and connection data go up on reconnect
-                            log("Unclean disconnect from websocket");
+                            log("Unclean disconnect from websocket." + event.reason);
                         }
-                        connection.socket = null;
+                        else {
+                            log("Websocket closed");
+                            that.stop(connection);
+                            that.start(connection);
+                        }                        
                     };
 
                     connection.socket.onmessage = function (event) {
@@ -537,15 +541,8 @@
                         if (data) {
                             $connection = $(connection);
 
-                            if (data.Messages) {
-                                $.each(data.Messages, function () {
-                                    try {
-                                        $connection.trigger(events.onReceived, [this]);
-                                    }
-                                    catch (e) {
-                                        log("Error raising received " + e, connection.logging);
-                                    }
-                                });
+                            if (data.Messages) { 
+                                transportLogic.processMessages(connection, data);
                             } else {
                                 $connection.trigger(events.onReceived, [data]);
                             }
@@ -928,7 +925,7 @@
                                     clearTimeout(reconnectTimeOut);
                                 }
 
-                                $(instance).trigger(events.onError, [data]);
+                                $(instance).trigger(events.onError, [data.responseText]);
 
                                 window.setTimeout(function () {
                                     poll(instance, true);

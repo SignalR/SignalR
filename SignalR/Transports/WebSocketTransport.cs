@@ -41,10 +41,7 @@ namespace SignalR.Transports
 
                 socket.OnClose = () =>
                 {
-                    if (Disconnected != null)
-                    {
-                        Disconnected().Catch();
-                    }
+                    OnDisconnect();
 
                     _isAlive = false;
                 };

@@ -17,6 +17,7 @@ namespace SignalR.Transports
 
         protected int _isDisconnected;
         private readonly CancellationTokenSource _timeoutTokenSource;
+        private readonly CancellationToken _hostShutdownToken;
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
@@ -24,13 +25,7 @@ namespace SignalR.Transports
             _jsonSerializer = jsonSerializer;
             _heartBeat = heartBeat;
             _timeoutTokenSource = new CancellationTokenSource();
-
-            // Register the callback to cancel this connection
-            var hostShutdownToken = context.HostShutdownToken();
-            if (hostShutdownToken != CancellationToken.None)
-            {
-                hostShutdownToken.Register(_timeoutTokenSource.Cancel);
-            }
+            _hostShutdownToken = context.HostShutdownToken();
         }
 
         public string ConnectionId
@@ -68,11 +63,19 @@ namespace SignalR.Transports
             get { return _context.Response.IsClientConnected; }
         }
 
-        public CancellationToken TimeoutToken
+        protected CancellationToken TimeoutToken
         {
             get
             {
                 return _timeoutTokenSource.Token;
+            }
+        }
+
+        protected CancellationToken HostShutdownToken
+        {
+            get
+            {
+                return _hostShutdownToken;
             }
         }
 
@@ -101,7 +104,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return true;
+                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 

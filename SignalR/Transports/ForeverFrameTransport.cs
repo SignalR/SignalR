@@ -28,14 +28,6 @@ namespace SignalR.Transports
             _isDebug = context.IsDebuggingEnabled();
         }
 
-        protected override bool IsConnectRequest
-        {
-            get
-            {
-                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
         public override void KeepAlive()
         {
             Debug.WriteLine("Sending empty keep alive packet to client");

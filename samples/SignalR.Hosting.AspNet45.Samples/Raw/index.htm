@@ -24,7 +24,7 @@
     <script>
         $(function () {
             "use strict";
-            var connection = $.connection("Raw");
+            var connection = $.connection('Raw');
             connection.logging = true;
 
             connection.received(function (data) {
@@ -41,8 +41,8 @@
                           .appendTo($("#messages"));
             });
 
-            connection.error(function (e) {
-                $("<li/>").html(e.responseText)
+            connection.error(function (err) {
+                $("<li/>").html(err)
                           .appendTo($("#messages"));
             });
 

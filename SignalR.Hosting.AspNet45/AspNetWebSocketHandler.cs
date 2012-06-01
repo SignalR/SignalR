@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Web.WebSockets;
 
@@ -7,8 +6,15 @@ namespace SignalR.Hosting.AspNet
 {
     public class AspNetWebSocketHandler : WebSocketHandler, IWebSocket
     {
+        private bool _raiseEvent = true;
+
         public override void OnClose()
         {
+            if (!_raiseEvent)
+            {
+                return;
+            }
+
             Action onClose = ((IWebSocket)this).OnClose;
             if (onClose != null)
             {
@@ -22,7 +28,7 @@ namespace SignalR.Hosting.AspNet
             if (onError != null)
             {
                 // REVIEW: What error do we throw here?
-                onError(new Exception());
+                onError(Error);
             }
         }
 
@@ -62,6 +68,12 @@ namespace SignalR.Hosting.AspNet
         {
             Send(value);
             return TaskAsyncHelper.Empty;
+        }
+
+        public void CleanClose()
+        {
+            _raiseEvent = false;
+            Close();
         }
     }
 }

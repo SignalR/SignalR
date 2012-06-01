@@ -144,8 +144,9 @@ namespace SignalR.Hosting.AspNet
             _context.AcceptWebSocketRequest(ws =>
             {
                 var handler = new AspNetWebSocketHandler();
-                handler.ProcessWebSocketRequestAsync(ws);
-                return callback(handler);
+                var task = handler.ProcessWebSocketRequestAsync(ws);
+                callback(handler).Then(h => h.CleanClose(), handler);
+                return task;
             });
 #endif
         }
