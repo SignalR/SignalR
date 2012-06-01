@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SignalR.Hubs;
 
-namespace SignalR.Infrastructure
+namespace SignalR.Hubs
 {
     public static class ReflectionHelper
     {

@@ -106,7 +106,7 @@
     <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
-    <Compile Include="Infrastructure\ReflectionHelper.cs" />
+    <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
     <Compile Include="MessageBus\InProcessMessageBus.cs" />
