@@ -34,6 +34,13 @@ namespace SignalR.Hosting.AspNet
 
 
         {
+            string origin = context.Request.Headers["Origin"];
+            if (!String.IsNullOrEmpty(origin))
+            {
+                context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+                context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+            }
+
             var request = new AspNetRequest(context);
             var response = new AspNetResponse(context);
             var hostContext = new HostContext(request, response);

@@ -102,7 +102,7 @@
             var connection = this,
                 config = {
                     transport: "auto",
-                    xdomain: false
+                    jsonp: false
                 },
                 initialize,
                 deferred = $.Deferred();
@@ -133,15 +133,30 @@
                 connection.baseUrl = parser.protocol + "//" + parser.host;
             }
 
-            if (config.xdomain === false && isCrossDomain(connection.url)) {
+            if (isCrossDomain(connection.url)) {
                 log("Auto detected cross domain url.");
-                config.xdomain = true;
-                if (config.transport === "auto") {
-                    config.transport = ["websockets", "longPolling"];
+
+                if (config.transport === "auto") { 
+                    // If you didn't say you wanted to use jsonp, determine if it's your only choice
+                    // i.e. if your browser doesn't supports cors
+                    if (config.jsonp === false) {
+                        config.jsonp = !$.support.cors;
+                    }
+
+                    // If we're using jsonp thn just change to longpolling
+                    if (config.jsonp === true) {
+                        config.transport = "longPolling";
+                    }
+                    else {
+                        // Otherwise try websockets and longPolling since SSE doesn't support cors
+                        // TODO: Figure out foreverFrame
+                        config.transport = ["webSockets", "longPolling"];
+                    }
                 }
             }
 
-            connection.ajaxDataType = config.xdomain ? "jsonp" : "json";
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
+
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -370,7 +385,10 @@
         },
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
-            var url = connection.baseUrl + connection.appRelativeUrl,
+
+            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl;
+
+            var url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
 
             if (connection.data) {
@@ -950,7 +968,7 @@
                                     return;
                                 }
 
-                                log("An error occurred using longPolling " + data);
+                                log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
 
                                 if (reconnectTimeOut) {
                                     // If the request failed then we clear the timeout so that the

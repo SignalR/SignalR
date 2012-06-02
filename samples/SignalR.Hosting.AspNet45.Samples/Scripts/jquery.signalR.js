@@ -22,6 +22,21 @@
         throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
     }
 
+    function isCrossDomain(url) {
+        var link;
+
+        url = $.trim(url);
+        if (url.indexOf("http") !== 0) {
+            return false;
+        }
+
+        // Create an anchor tag.
+        var link = window.document.createElement("a");
+        link.href = url;
+
+        return link.protocol + link.host !== window.location.protocol + window.location.host;
+    }
+
     var signalR,
         _connection,
         events = {
@@ -87,7 +102,7 @@
             var connection = this,
                 config = {
                     transport: "auto",
-                    xdomain: false
+                    jsonp: false
                 },
                 initialize,
                 deferred = $.Deferred();
@@ -107,7 +122,41 @@
                     callback = config.callback;
                 }
             }
-            connection.ajaxDataType = config.xdomain ? "jsonp" : "json";
+
+            // Resolve the full url
+            var parser = document.createElement('a');
+            parser.href = connection.url;
+            if (parser.protocol === ":") {
+                connection.baseUrl = document.location.protocol + "//" + document.location.host;
+            }
+            else {
+                connection.baseUrl = parser.protocol + "//" + parser.host;
+            }
+
+            if (isCrossDomain(connection.url)) {
+                log("Auto detected cross domain url.");
+
+                if (config.transport === "auto") { 
+                    // If you didn't say you wanted to use jsonp, determine if it's your only choice
+                    // i.e. if your browser doesn't supports cors
+                    if (config.jsonp === false) {
+                        config.jsonp = !$.support.cors;
+                    }
+
+                    // If we're using jsonp thn just change to longpolling
+                    if (config.jsonp === true) {
+                        config.transport = "longPolling";
+                    }
+                    else {
+                        // Otherwise try websockets and longPolling since SSE doesn't support cors
+                        // TODO: Figure out foreverFrame
+                        config.transport = ["webSockets", "longPolling"];
+                    }
+                }
+            }
+
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
+
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -334,16 +383,18 @@
 
             return url + "&" + window.escape(connection.qs.toString());
         },
-
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
-            var url = connection.appRelativeUrl,
+
+            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl;
+
+            var url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
             }
-            
+
             if (!reconnecting) {
                 url = url + "/connect";
             } else {
@@ -532,7 +583,7 @@
                             log("Websocket closed");
                             that.stop(connection);
                             that.start(connection);
-                        }                        
+                        }
                     };
 
                     connection.socket.onmessage = function (event) {
@@ -541,7 +592,7 @@
                         if (data) {
                             $connection = $(connection);
 
-                            if (data.Messages) { 
+                            if (data.Messages) {
                                 transportLogic.processMessages(connection, data);
                             } else {
                                 $connection.trigger(events.onReceived, [data]);
@@ -917,7 +968,7 @@
                                     return;
                                 }
 
-                                log("An error occurred using longPolling " + data);
+                                log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
 
                                 if (reconnectTimeOut) {
                                     // If the request failed then we clear the timeout so that the
