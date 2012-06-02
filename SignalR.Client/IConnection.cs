@@ -9,7 +9,6 @@ namespace SignalR.Client
 {
     public interface IConnection
     {
-        bool IsActive { get; }
         long? MessageId { get; set; }
         Func<string> Sending { get; set; }
         IEnumerable<string> Groups { get; set; }
@@ -17,13 +16,10 @@ namespace SignalR.Client
         string ConnectionId { get; }
         string Url { get; }
         string QueryString { get; }
+        ConnectionState State { get; set; }
 
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
-
-        event Action Closed;
-        event Action<Exception> Error;
-        event Action<string> Received;
 
         void Stop();
         Task Send(string data);

@@ -79,15 +79,34 @@ namespace SignalR
             {
                 if (t.IsFaulted)
                 {
-                    tcs.SetException(t.Exception);
+                    tcs.TrySetException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {
-                    tcs.SetCanceled();
+                    tcs.TrySetCanceled();
                 }
                 else
                 {
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
+                }
+            });
+        }
+
+        public static void ContinueWith<T>(this Task<T> task, TaskCompletionSource<T> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.TrySetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else
+                {
+                    tcs.TrySetResult(t.Result);
                 }
             });
         }

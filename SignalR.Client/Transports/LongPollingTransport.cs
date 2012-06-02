@@ -44,6 +44,8 @@ namespace SignalR.Client.Transports
             else if (raiseReconnect)
             {
                 url += "reconnect";
+
+                connection.State = ConnectionState.Reconnecting;
             }
 
             url += GetReceiveQueryString(connection, data);
@@ -102,9 +104,6 @@ namespace SignalR.Client.Transports
                             if (errorCallback != null && 
                                 Interlocked.Exchange(ref callbackFired, 1) == 0)
                             {
-                                // Raise on error
-                                connection.OnError(exception);
-
                                 // Call the callback
                                 errorCallback(exception);
                             }
@@ -124,7 +123,7 @@ namespace SignalR.Client.Transports
                                     // before polling again so we aren't hammering the server 
                                     TaskAsyncHelper.Delay(_errorDelay).Then(() =>
                                     {
-                                        if (connection.IsActive)
+                                        if (!connection.IsDisconnecting())
                                         {
                                             PollingLoop(connection,
                                                 data,
@@ -138,7 +137,7 @@ namespace SignalR.Client.Transports
                         }
                         else
                         {
-                            if (connection.IsActive)
+                            if (!connection.IsDisconnecting())
                             {
                                 // Continue polling if there was no error
                                 PollingLoop(connection,
@@ -179,6 +178,9 @@ namespace SignalR.Client.Transports
             {
                 if (Interlocked.Exchange(ref reconnectedFired, 1) == 0)
                 {
+                    // Mark the connection as connected
+                    connection.State = ConnectionState.Connected;
+
                     connection.OnReconnected();
                 }
             }

@@ -5,10 +5,10 @@ namespace SignalR.Client
 {
     public class ObservableConnection<T> : IObservable<T>
     {
-        private readonly IConnection _connection;
+        private readonly Connection _connection;
         private readonly Func<string, T> _convert;
 
-        public ObservableConnection(IConnection connection, Func<string, T> convert)
+        public ObservableConnection(Connection connection, Func<string, T> convert)
         {
             if (connection == null)
             {

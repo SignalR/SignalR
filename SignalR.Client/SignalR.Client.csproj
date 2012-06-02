@@ -54,6 +54,7 @@
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="Hubs\HubInvocation.cs" />
+    <Compile Include="ConnectionState.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
     <Compile Include="Hubs\HubProxy.cs" />
     <Compile Include="Hubs\HubRegistrationData.cs" />

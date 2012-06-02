@@ -67,6 +67,9 @@
     <Compile Include="..\SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\ConnectionState.cs">
+      <Link>ConnectionState.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Http\DefaultHttpClient.cs">
       <Link>Http\DefaultHttpClient.cs</Link>
     </Compile>

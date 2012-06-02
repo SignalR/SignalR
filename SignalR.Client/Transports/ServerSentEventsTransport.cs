@@ -37,7 +37,7 @@ namespace SignalR.Client.Transports
 
         private void Reconnect(IConnection connection, string data)
         {
-            if (!connection.IsActive)
+            if (connection.IsDisconnecting())
             {
                 return;
             }
@@ -88,6 +88,8 @@ namespace SignalR.Client.Transports
 
                     if (reconnecting)
                     {
+                        connection.State = ConnectionState.Reconnecting;
+
                         // Retry
                         Reconnect(connection, data);
                         return;
@@ -111,11 +113,16 @@ namespace SignalR.Client.Transports
                                                        {
                                                            response.Close();
 
+                                                           connection.State = ConnectionState.Reconnecting;
+
                                                            Reconnect(connection, data);
                                                        });
 
                     if (reconnecting)
                     {
+                        // Change the status to connected
+                        connection.State = ConnectionState.Connected;
+
                         // Raise the reconnect event if the connection comes back up
                         connection.OnReconnected();
                     }
@@ -228,6 +235,7 @@ namespace SignalR.Client.Transports
 
                             StopReading();
                         }
+
                         return;
                     }
 
