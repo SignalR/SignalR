@@ -22,6 +22,21 @@
         throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
     }
 
+    function isCrossDomain(url) {
+        var link;
+
+        url = $.trim(url);
+        if (url.indexOf("http") !== 0) {
+            return false;
+        }
+
+        // Create an anchor tag.
+        var link = window.document.createElement("a");
+        link.href = url;
+
+        return link.protocol + link.host !== window.location.protocol + window.location.host;
+    }
+
     var signalR,
         _connection,
         events = {
@@ -107,6 +122,25 @@
                     callback = config.callback;
                 }
             }
+
+            // Resolve the full url
+            var parser = document.createElement('a');
+            parser.href = connection.url;
+            if (parser.protocol === ":") {
+                connection.baseUrl = document.location.protocol + "//" + document.location.host;
+            }
+            else {
+                connection.baseUrl = parser.protocol + "//" + parser.host;
+            }
+
+            if (config.xdomain === false && isCrossDomain(connection.url)) {
+                log("Auto detected cross domain url.");
+                config.xdomain = true;
+                if (config.transport === "auto") {
+                    config.transport = ["websockets", "longPolling"];
+                }
+            }
+
             connection.ajaxDataType = config.xdomain ? "jsonp" : "json";
 
             $(connection).bind(events.onStart, function (e, data) {
@@ -334,16 +368,15 @@
 
             return url + "&" + window.escape(connection.qs.toString());
         },
-
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
-            var url = connection.appRelativeUrl,
+            var url = connection.baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
             }
-            
+
             if (!reconnecting) {
                 url = url + "/connect";
             } else {
@@ -541,7 +574,7 @@
                         if (data) {
                             $connection = $(connection);
 
-                            if (data.Messages) { 
+                            if (data.Messages) {
                                 transportLogic.processMessages(connection, data);
                             } else {
                                 $connection.trigger(events.onReceived, [data]);
