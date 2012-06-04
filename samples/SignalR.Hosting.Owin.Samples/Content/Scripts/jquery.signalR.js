@@ -135,7 +135,7 @@
 
             if (isCrossDomain(connection.url)) {
                 log("Auto detected cross domain url.");
-            
+
                 if (config.transport === "auto") { 
                     // If you didn't say you wanted to use jsonp, determine if it's your only choice
                     // i.e. if your browser doesn't supports cors
@@ -968,7 +968,7 @@
                                     return;
                                 }
 
-                                log("An error occurred using longPolling " + data);
+                                log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
 
                                 if (reconnectTimeOut) {
                                     // If the request failed then we clear the timeout so that the
