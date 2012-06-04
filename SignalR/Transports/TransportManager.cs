@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using SignalR.Hosting;
 
 namespace SignalR.Transports
 {

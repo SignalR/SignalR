@@ -6,7 +6,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using SignalR.Hosting;
 
 namespace SignalR.Hubs
 {

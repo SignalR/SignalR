@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SignalR.Hosting
+namespace SignalR
 {
     public interface IResponse
     {

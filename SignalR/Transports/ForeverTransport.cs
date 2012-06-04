@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports

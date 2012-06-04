@@ -1,6 +1,5 @@
 ﻿using System.Collections.Specialized;
 using System.Security.Principal;
-using SignalR.Hosting;
 
 namespace SignalR.Hubs
 {

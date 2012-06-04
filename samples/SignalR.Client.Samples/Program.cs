@@ -101,19 +101,19 @@ namespace SignalR.Client.Samples
 
         public class MyConnection : PersistentConnection
         {
-            protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+            protected override Task OnConnectedAsync(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} Connected", connectionId);
                 return base.OnConnectedAsync(request, connectionId);
             }
 
-            protected override Task OnReconnectedAsync(Hosting.IRequest request, System.Collections.Generic.IEnumerable<string> groups, string connectionId)
+            protected override Task OnReconnectedAsync(IRequest request, System.Collections.Generic.IEnumerable<string> groups, string connectionId)
             {
                 Console.WriteLine("{0} Reconnected", connectionId);
                 return base.OnReconnectedAsync(request, groups, connectionId);
             }
 
-            protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
+            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }

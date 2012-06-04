@@ -119,7 +119,7 @@ namespace SignalR.Tests
     {
         public int Reconnects { get; set; }
 
-        protected override Task OnReconnectedAsync(Hosting.IRequest request, IEnumerable<string> groups, string connectionId)
+        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             Reconnects++;
             return base.OnReconnectedAsync(request, groups, connectionId);
@@ -128,7 +128,7 @@ namespace SignalR.Tests
 
     public class MySendingConnection : PersistentConnection
     {
-        protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
             Connection.Send(connectionId, "OnConnectedAsync1");
             Connection.Send(connectionId, "OnConnectedAsync2");
@@ -136,7 +136,7 @@ namespace SignalR.Tests
             return base.OnConnectedAsync(request, connectionId);
         }
 
-        protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             Connection.Send(connectionId, "OnReceivedAsync1");
             Connection.Send(connectionId, "OnReceivedAsync2");
@@ -147,7 +147,7 @@ namespace SignalR.Tests
 
     public class MyConnection : PersistentConnection
     {
-        protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
             return Groups.Send("test", "hey");
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SignalR.Hosting
+namespace SignalR
 {
     /// <summary>
     /// Represents a web socket

@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Client.Http;
 using SignalR.Hosting.Memory;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
 using Xunit;
+
+using IClientRequest = SignalR.Client.Http.IRequest;
+using IClientResponse = SignalR.Client.Http.IResponse;
 
 namespace SignalR.Tests
 {
@@ -130,16 +132,16 @@ namespace SignalR.Tests
             }
         }
 
-        private class LoadBalancer : IHttpClient
+        private class LoadBalancer : SignalR.Client.Http.IHttpClient
         {
             private int _counter;
-            private readonly IHttpClient[] _servers;
-            public LoadBalancer(params IHttpClient[] servers)
+            private readonly SignalR.Client.Http.IHttpClient[] _servers;
+            public LoadBalancer(params SignalR.Client.Http.IHttpClient[] servers)
             {
                 _servers = servers;
             }
 
-            public Task<IResponse> GetAsync(string url, Action<IRequest> prepareRequest)
+            public Task<IClientResponse> GetAsync(string url, Action<IClientRequest> prepareRequest)
             {
                 Debug.WriteLine("Server {0}: GET {1}", _counter, url);
                 int index = _counter;
@@ -147,7 +149,7 @@ namespace SignalR.Tests
                 return _servers[index].GetAsync(url, prepareRequest);
             }
 
-            public Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData)
+            public Task<IClientResponse> PostAsync(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
             {
                 Debug.WriteLine("Server {0}: POST {1}", _counter, url);
                 int index = _counter;
@@ -166,7 +168,7 @@ namespace SignalR.Tests
                 return base.OnDisconnectAsync(connectionId);
             }
 
-            protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
+            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }
@@ -214,7 +216,7 @@ namespace SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+            protected override Task OnConnectedAsync(IRequest request, string connectionId)
             {
                 _connectWh.Set();
                 return base.OnConnectedAsync(request, connectionId);

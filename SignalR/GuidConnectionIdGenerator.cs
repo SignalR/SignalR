@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Security.Principal;
-using SignalR.Hosting;
 
 namespace SignalR
 {

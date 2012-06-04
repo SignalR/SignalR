@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace SignalR.Hosting
+namespace SignalR
 {
     public interface IRequest
     {

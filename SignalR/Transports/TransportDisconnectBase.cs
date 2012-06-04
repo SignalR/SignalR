@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hosting;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports

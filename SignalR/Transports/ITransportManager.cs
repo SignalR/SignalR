@@ -1,6 +1,4 @@
-﻿using SignalR.Hosting;
-
-namespace SignalR.Transports
+﻿namespace SignalR.Transports
 {
     /// <summary>
     /// Manages the transports for connections.
