@@ -11,8 +11,4 @@ namespace SignalR.Client
 		void OnError(Exception exception);
 		void OnNext(T value);
 	}
-
-	public interface IObservable<T>
-	{
-	}
 }
