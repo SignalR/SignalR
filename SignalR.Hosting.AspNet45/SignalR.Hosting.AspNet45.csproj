@@ -67,6 +67,9 @@
     <Compile Include="..\SignalR.Hosting.AspNet\HttpCookieCollectionWrapper.cs">
       <Link>HttpCookieCollectionWrapper.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet\HttpResponseExtensions.cs">
+      <Link>HttpResponseExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Hosting.AspNet\Infrastructure\AspNetAssemblyLocator.cs">
       <Link>Infrastructure\AspNetAssemblyLocator.cs</Link>
     </Compile>

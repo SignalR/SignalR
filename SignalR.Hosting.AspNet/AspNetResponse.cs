@@ -68,31 +68,21 @@ namespace SignalR.Hosting.AspNet
             {
                 DisableResponseBuffering();
             }
-#if NET45
+
             if (!IsClientConnected)
             {
                 return TaskAsyncHelper.Empty;
             }
-            
-            _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
-            return Task.Factory.FromAsync((cb, state) => _context.Response.BeginFlush(cb, state), ar => _context.Response.EndFlush(ar), null);
 
-#else
-            if (IsClientConnected)
+            try
             {
-                return TaskAsyncHelper.FromMethod((response, value) =>
-                {
-                    if (IsClientConnected)
-                    {
-                        response.OutputStream.Write(value.Array, value.Offset, value.Count);
-                        response.Flush();
-                    }
-
-                }, _context.Response, data);
+                _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
+                return _context.Response.FlushAsync();
             }
-
-            return TaskAsyncHelper.Empty;
-#endif
+            catch(Exception ex)
+            {
+                return TaskAsyncHelper.FromError(ex);
+            }
         }
 
         public Task EndAsync(ArraySegment<byte> data)
