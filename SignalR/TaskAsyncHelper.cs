@@ -442,9 +442,23 @@ namespace SignalR
 
             var assemblyName = typeof (Task).Assembly.FullName;
             var timerCallbackType = Type.GetType("System.Threading.TimerCallback, " + assemblyName);
-            var timerType = Type.GetType("System.Threading.Timer, " + assemblyName);
-            var construct = timerType.GetConstructor(new[]{timerCallbackType,typeof(Object),typeof(TimeSpan),typeof(TimeSpan)});
+            if (timerCallbackType == null)
+                throw new NullReferenceException(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                                               "The timer callback type could not be found in the assembly {0}.",
+                                                               assemblyName));
             
+            var timerType = Type.GetType("System.Threading.Timer, " + assemblyName);
+            if (timerType == null)
+                throw new NullReferenceException(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                                               "The timer type could not be found in the assembly {0}.",
+                                                               assemblyName));
+
+            var construct = timerType.GetConstructor(new[]{timerCallbackType,typeof(Object),typeof(TimeSpan),typeof(TimeSpan)});
+            if (construct == null)
+                throw new NullReferenceException(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                                               "The given constructor for the timer type could not be found in the assembly {0}.",
+                                                               assemblyName));
+
             Delegate delegateInstance = Delegate.CreateDelegate(timerCallbackType, tcs, "SetResult");
 
             var timer = (IDisposable)construct.Invoke(new object[]{ delegateInstance, null, timeOut, TimeSpan.FromMilliseconds(-1)});
