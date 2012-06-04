@@ -181,7 +181,12 @@ namespace SignalR.Client.Transports
                         }
                         catch (Exception ex)
                         {
+#if NET35
+                            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+#else
                             Debug.WriteLine("Failed to process message: {0}", ex);
+#endif
+
                             connection.OnError(ex);
                         }
                     }
@@ -202,7 +207,11 @@ namespace SignalR.Client.Transports
             }
             catch (Exception ex)
             {
+#if NET35
+                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
+#else
                 Debug.WriteLine("Failed to response: {0}", ex);
+#endif
                 connection.OnError(ex);
             }
         }

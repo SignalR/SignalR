@@ -59,7 +59,11 @@ namespace SignalR.Client.Transports
 
             Action<IRequest> prepareRequest = PrepareRequest(connection);
 
+#if NET35
+            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "SSE: GET {0}", (object)url));
+#else
             Debug.WriteLine("SSE: GET {0}", (object)url);
+#endif
 
             _httpClient.GetAsync(url, request =>
             {
