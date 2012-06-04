@@ -133,7 +133,7 @@ namespace SignalR.Client.Hubs
             return new DisposableAction(() => subscription.Data -= handler);
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
         /// <summary>
         /// Registers for an event with the specified name and callback
         /// </summary>

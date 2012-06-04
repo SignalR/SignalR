@@ -408,7 +408,7 @@ namespace SignalR.Client
 
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE || NET35
             try
             {
                 version = new Version(versionString);

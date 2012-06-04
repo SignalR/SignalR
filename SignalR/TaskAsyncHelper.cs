@@ -437,6 +437,23 @@ namespace SignalR
         {
 #if NETFX_CORE
             return Task.Delay(timeOut);
+#elif NET35
+            var tcs = new TaskCompletionSource<object>();
+
+            var assemblyName = typeof (Task).Assembly.FullName;
+            var timerCallbackType = Type.GetType("System.Threading.TimerCallback, " + assemblyName);
+            var timerType = Type.GetType("System.Threading.Timer, " + assemblyName);
+            var construct = timerType.GetConstructor(new[]{timerCallbackType,typeof(Object),typeof(TimeSpan),typeof(TimeSpan)});
+            
+            Delegate delegateInstance = Delegate.CreateDelegate(timerCallbackType, tcs, "SetResult");
+
+            var timer = (IDisposable)construct.Invoke(new object[]{ delegateInstance, null, timeOut, TimeSpan.FromMilliseconds(-1)});
+
+            return tcs.Task.ContinueWith(_ =>
+            {
+                timer.Dispose();
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
 #else
             var tcs = new TaskCompletionSource<object>();
 

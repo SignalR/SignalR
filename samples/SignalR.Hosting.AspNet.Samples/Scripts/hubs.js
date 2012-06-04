@@ -171,7 +171,7 @@
         demo: {
             _: {
                 hubName: 'demo',
-                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
+                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'simpleArray', 'taskWithException', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
                 connection: function () { return signalR.hub; }
             },
 
@@ -213,10 +213,6 @@
 
             readStateValue: function (callback) {
                 return serverCall(this, "ReadStateValue", $.makeArray(arguments));
-            },
-
-            setStateValue: function (value, callback) {
-                return serverCall(this, "SetStateValue", $.makeArray(arguments));
             },
 
             complexArray: function (people, callback) {
