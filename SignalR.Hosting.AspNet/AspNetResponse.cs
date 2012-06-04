@@ -57,12 +57,12 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
-        public Task WriteAsync(string data)
+        public Task WriteAsync(ArraySegment<byte> data)
         {
             return WriteAsync(data, disableBuffering: true);
         }
 
-        private Task WriteAsync(string data, bool disableBuffering)
+        private Task WriteAsync(ArraySegment<byte> data, bool disableBuffering)
         {
             if (disableBuffering)
             {
@@ -73,8 +73,8 @@ namespace SignalR.Hosting.AspNet
             {
                 return TaskAsyncHelper.Empty;
             }
-
-            _context.Response.Write(data);
+            
+            _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
             return Task.Factory.FromAsync((cb, state) => _context.Response.BeginFlush(cb, state), ar => _context.Response.EndFlush(ar), null);
 
 #else
@@ -84,7 +84,7 @@ namespace SignalR.Hosting.AspNet
                 {
                     if (IsClientConnected)
                     {
-                        response.Write(value);
+                        response.OutputStream.Write(value.Array, value.Offset, value.Count);
                         response.Flush();
                     }
 
@@ -95,7 +95,7 @@ namespace SignalR.Hosting.AspNet
 #endif
         }
 
-        public Task EndAsync(string data)
+        public Task EndAsync(ArraySegment<byte> data)
         {
             return WriteAsync(data, disableBuffering: false);
         }

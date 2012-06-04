@@ -35,12 +35,12 @@ namespace SignalR.Hosting.Owin
             private set;
         }
 
-        public Task WriteAsync(string data)
+        public Task WriteAsync(ArraySegment<byte> data)
         {
             return WriteAsync(data, end: false);
         }
 
-        public Task EndAsync(string data)
+        public Task EndAsync(ArraySegment<byte> data)
         {
             return WriteAsync(data, end: true);
         }
@@ -50,7 +50,7 @@ namespace SignalR.Hosting.Owin
             return EnsureResponseStarted().Then(cb => cb(), _responseCompete);
         }
 
-        private Task WriteAsync(string data, bool end)
+        private Task WriteAsync(ArraySegment<byte> data, bool end)
         {
             return EnsureResponseStarted()
                 .Then((d, e) => DoWrite(d, e), data, end);
@@ -95,7 +95,7 @@ namespace SignalR.Hosting.Owin
             IsClientConnected = false;
         }
 
-        private Task DoWrite(string data, bool end)
+        private Task DoWrite(ArraySegment<byte> data, bool end)
         {
             if (!IsClientConnected)
             {
@@ -106,18 +106,17 @@ namespace SignalR.Hosting.Owin
 
             try
             {
-                var value = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data));
                 if (end)
                 {
                     // Write and send the response immediately
-                    _responseNext(value, null);
+                    _responseNext(data, null);
                     _responseCompete();
 
                     tcs.SetResult(null);
                 }
                 else
                 {
-                    if (!_responseNext(value, () => tcs.SetResult(null)))
+                    if (!_responseNext(data, () => tcs.SetResult(null)))
                     {
                         tcs.SetResult(null);
                     }
