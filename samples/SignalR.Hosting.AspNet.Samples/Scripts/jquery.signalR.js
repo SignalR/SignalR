@@ -544,8 +544,7 @@
                         if (info.protocol !== "http:" && info.protocol !== "https:") {
                             // If the url isn't isn't http or https, use the specified url instead of 
                             // the document url.
-                            // REVIEW: We need to make sure connection.url is absolute
-                            var info = document.createElement('a');
+                            var info = window.document.createElement('a');
                             info.href = connection.url;
                         }
 
@@ -581,14 +580,13 @@
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).trigger(events.onError, [event.reason]);
                             log("Unclean disconnect from websocket." + event.reason);
-
-                            that.stop(connection);
                         }
                         else {
                             log("Websocket closed");
-                            that.stop(connection);
-                            that.start(connection);
                         }
+
+                        that.stop(connection);
+                        that.start(connection);
                     };
 
                     connection.socket.onmessage = function (event) {
