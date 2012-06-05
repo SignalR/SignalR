@@ -185,7 +185,7 @@ namespace SignalR.Client
         public Task Start(IHttpClient httpClient)
         {
 #if WINDOWS_PHONE || SILVERLIGHT || NETFX_CORE
-            return Start(new LongPollingTransport());
+            return Start(new LongPollingTransport(httpClient));
 #else
             // Pick the best transport supported by the client
             return Start(new AutoTransport(httpClient));

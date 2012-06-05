@@ -13,14 +13,14 @@ namespace SignalR.Client.Samples
         static void Main(string[] args)
         {
 #if !NET35
-            RunInMemoryHost();
+            // RunInMemoryHost();
 #endif
 
-            //var hubConnection = new HubConnection("http://localhost:40476/");
+            // var hubConnection = new HubConnection("http://localhost:40476/");
 
             //RunDemoHub(hubConnection);
 
-            //RunStreamingSample();
+            RunStreamingSample();
 
             Console.ReadKey();
         }
@@ -86,7 +86,7 @@ namespace SignalR.Client.Samples
 
         private static void RunStreamingSample()
         {
-            var connection = new Connection("http://localhost:40476/Raw/raw");
+            var connection = new Connection("http://localhost:40476/Raw/Raw");
 
             connection.Received += data =>
             {
@@ -96,6 +96,11 @@ namespace SignalR.Client.Samples
             connection.Reconnected += () =>
             {
                 Console.WriteLine("[{0}]: Connection restablished", DateTime.Now);
+            };
+
+            connection.StateChanged += newState =>
+            {
+                Console.WriteLine("{0} => {1}", connection.State, newState);
             };
 
             connection.Error += e =>

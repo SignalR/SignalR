@@ -48,7 +48,7 @@
 
 
             var start = function () {
-                connection.start({ transport: 'longPolling', xdomain: true })
+                connection.start()
                     .then(function () {
                         $("#stopStart").prop("disabled", false);
                     });

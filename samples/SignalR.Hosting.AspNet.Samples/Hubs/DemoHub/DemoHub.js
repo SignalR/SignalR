@@ -27,7 +27,7 @@
         o.doIt();
     };
 
-    $.connection.hub.start(options, function () {
+    $.connection.hub.start(function () {
         demo.doSomethingAndCallError();
 
         demo.getValue(function (value) {

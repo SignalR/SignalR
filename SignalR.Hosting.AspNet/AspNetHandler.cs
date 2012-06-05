@@ -34,6 +34,14 @@ namespace SignalR.Hosting.AspNet
 
 
         {
+            // https://developer.mozilla.org/En/HTTP_Access_Control
+            string origin = context.Request.Headers["Origin"];
+            if (!String.IsNullOrEmpty(origin))
+            {
+                context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+                context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+            }
+
             var request = new AspNetRequest(context);
             var response = new AspNetResponse(context);
             var hostContext = new HostContext(request, response);
