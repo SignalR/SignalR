@@ -124,6 +124,11 @@ namespace SignalR.Client.Transports
                 try
                 {
                     OnBeforeAbort(connection);
+
+                    // Abort the server side connection
+                    AbortConnection(connection);
+
+                    // Now abort the client connection
                     httpRequest.Abort();
                 }
                 catch (NotImplementedException)
@@ -132,6 +137,23 @@ namespace SignalR.Client.Transports
                 }
             }
         }
+
+        private void AbortConnection(IConnection connection)
+        {
+            string url = connection.Url + "abort" + String.Format(_sendQueryString, _transport, connection.ConnectionId, null);
+
+            try
+            {
+                // Attempt to perform a clean disconnect, but only wait 2 seconds
+                _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
+            }
+            catch(Exception ex)
+            {
+                // Swallow any exceptions, but log them
+                Debug.WriteLine("Clean disconnect failed. " + ex.GetBaseException().Message);
+            }
+        }
+
 
         protected virtual void OnBeforeAbort(IConnection connection)
         {
