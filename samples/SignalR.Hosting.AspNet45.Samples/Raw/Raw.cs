@@ -26,6 +26,13 @@ namespace SignalR.Samples.Raw
                    Connection.Broadcast(DateTime.Now + ": " + user + " joined")).Unwrap();
         }
 
+        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            string user = GetUser(connectionId);
+
+            return Connection.Broadcast(DateTime.Now + ": " + user + " reconnected");
+        }
+
         protected override Task OnDisconnectAsync(string connectionId)
         {
             _users.Remove(connectionId);
