@@ -91,9 +91,9 @@ namespace SignalR.Client.Samples
                 Console.WriteLine("[{0}]: Connection restablished", DateTime.Now);
             };
 
-            connection.StateChanged += newState =>
+            connection.StateChanged += change =>
             {
-                Console.WriteLine("{0} => {1}", connection.State, newState);
+                Console.WriteLine("{0} => {1}", change.OldState, change.NewState);
             };
 
             connection.Error += e =>

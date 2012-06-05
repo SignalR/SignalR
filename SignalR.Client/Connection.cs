@@ -45,7 +45,7 @@ namespace SignalR.Client
         /// <summary>
         /// Occurs when the <see cref="Connection"/> state changes.
         /// </summary>
-        public event Action<ConnectionState> StateChanged;
+        public event Action<StateChange> StateChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Connection"/> class.
@@ -132,7 +132,7 @@ namespace SignalR.Client
         /// Gets the querystring specified in the ctor.
         /// </summary>
         public string QueryString { get; private set; }
-        
+
         /// <summary>
         /// Gets the current <see cref="ConnectionState"/> of the connection.
         /// </summary>
@@ -148,7 +148,7 @@ namespace SignalR.Client
                 {
                     if (StateChanged != null)
                     {
-                        StateChanged(value);
+                        StateChanged(new StateChange(_state, value));
                     }
 
                     _state = value;
