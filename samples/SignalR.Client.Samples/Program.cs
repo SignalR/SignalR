@@ -2,7 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Hubs;
+#if !NET35
 using SignalR.Hosting.Memory;
+#endif
 
 namespace SignalR.Client.Samples
 {
@@ -10,9 +12,11 @@ namespace SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
+#if !NET35
             // RunInMemoryHost();
+#endif
 
-            // var hubConnection = new HubConnection("http://localhost:40476/");
+            //var hubConnection = new HubConnection("http://localhost:40476/");
 
             //RunDemoHub(hubConnection);
 
@@ -21,6 +25,7 @@ namespace SignalR.Client.Samples
             Console.ReadKey();
         }
 
+#if !NET35
         private static void RunInMemoryHost()
         {
             var host = new MemoryHost();
@@ -52,11 +57,13 @@ namespace SignalR.Client.Samples
                 }
             });
         }
+#endif
+
         private static void RunDemoHub(HubConnection hubConnection)
         {
             var demo = hubConnection.CreateProxy("demo");
 
-            demo.On("invoke", i =>
+            demo.On<int>("invoke", i =>
             {
                 Console.WriteLine("{0} client state index -> {1}", i, demo["index"]);
             });
@@ -79,7 +86,7 @@ namespace SignalR.Client.Samples
 
         private static void RunStreamingSample()
         {
-            var connection = new Connection("http://localhost:40476/streaming/streaming");
+            var connection = new Connection("http://localhost:40476/Raw/raw");
 
             connection.Received += data =>
             {
@@ -91,11 +98,6 @@ namespace SignalR.Client.Samples
                 Console.WriteLine("[{0}]: Connection restablished", DateTime.Now);
             };
 
-            connection.StateChanged += change =>
-            {
-                Console.WriteLine("{0} => {1}", change.OldState, change.NewState);
-            };
-
             connection.Error += e =>
             {
                 Console.WriteLine(e);
@@ -104,6 +106,7 @@ namespace SignalR.Client.Samples
             connection.Start().Wait();
         }
 
+#if !NET35
         public class MyConnection : PersistentConnection
         {
             protected override Task OnConnectedAsync(IRequest request, string connectionId)
@@ -123,5 +126,6 @@ namespace SignalR.Client.Samples
                 return Connection.Broadcast(data);
             }
         }
+#endif
     }
 }
