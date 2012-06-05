@@ -28,7 +28,7 @@ namespace SignalR.Client
                    connection.State == ConnectionState.Connecting;
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
         public static IObservable<string> AsObservable(this Connection connection)
         {
             return connection.AsObservable(value => value);

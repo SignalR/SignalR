@@ -100,9 +100,6 @@
     <Compile Include="..\SignalR.Client\Hubs\HubResult.cs">
       <Link>Hubs\HubResult.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR.Client\Hubs\Hubservable.cs">
-      <Link>Hubs\Hubservable.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR.Client\Hubs\IHubProxy.cs">
       <Link>Hubs\IHubProxy.cs</Link>
     </Compile>
@@ -123,9 +120,6 @@
     </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\ObservableConnection.cs">
-      <Link>ObservableConnection.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
       <Link>Transports\AutoTransport.cs</Link>
@@ -148,8 +142,6 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="IObservable.cs" />
-    <Compile Include="IObserver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\VersionInfo.cs" />
   </ItemGroup>
