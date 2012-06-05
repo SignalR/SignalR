@@ -66,7 +66,7 @@
         },
         changeState = function (connection, state) {
             if (state !== connection.state) {
-                $(connection).trigger(events.onStateChanged, [state]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
                 connection.state = state;
             }
         };
