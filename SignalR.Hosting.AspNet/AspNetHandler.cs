@@ -34,6 +34,7 @@ namespace SignalR.Hosting.AspNet
 
 
         {
+            // https://developer.mozilla.org/En/HTTP_Access_Control
             string origin = context.Request.Headers["Origin"];
             if (!String.IsNullOrEmpty(origin))
             {
