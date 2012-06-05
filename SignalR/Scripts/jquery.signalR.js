@@ -46,6 +46,7 @@
             onReceived: "onReceived",
             onError: "onError",
             onReconnect: "onReconnect",
+            onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
         },
         log = function (msg, logging) {
@@ -61,6 +62,12 @@
                 window.console.debug(m);
             } else if (window.console.log) {
                 window.console.log(m);
+            }
+        },
+        changeState = function (connection, state) {
+            if (state !== connection.state) {
+                $(connection).trigger(events.onStateChanged, [state]);
+                connection.state = state;
             }
         };
 
@@ -81,6 +88,14 @@
         return new signalR.fn.init(url, qs, logging);
     };
 
+    signalR.connectionState = {
+        connecting: 0,
+        connected: 1,
+        reconnecting: 2,
+        disconnecting: 3,
+        disconnected: 4
+    };
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
@@ -92,6 +107,8 @@
         ajaxDataType: "json",
 
         logging: false,
+
+        state: signalR.connectionState.disconnected,
 
         reconnectDelay: 2000,
 
@@ -108,11 +125,15 @@
                 deferred = $.Deferred(),
                 parser = document.createElement('a');
 
-            if (connection.transport) {
+            if (connection.state === signalR.connectionState.connecting ||
+                connection.state === signalR.connectionState.connected) {
                 // Already started, just return
                 deferred.resolve(connection);
                 return deferred.promise();
             }
+
+            // Set the state to connecting
+            changeState(connection, signalR.connectionState.connecting);
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -184,7 +205,10 @@
 
                 transport.start(connection, function () {
                     connection.transport = transport;
+
                     $(connection).trigger(events.onStart);
+
+                    changeState(connection, signalR.connectionState.connected);
 
                     $(window).unload(function () {
                         connection.stop(false /* async */);
@@ -208,6 +232,8 @@
                     error: function (error) {
                         $(connection).trigger(events.onError, [error.responseText]);
                         deferred.reject("SignalR: Error during negotiation request: " + error);
+                        // Stop the connection if negotiate failed
+                        connection.stop();
                     },
                     success: function (res) {
                         connection.appRelativeUrl = res.Url;
@@ -310,6 +336,17 @@
             return connection;
         },
 
+        stateChanged: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the connection state changes</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection state changes</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind(events.onStateChanged, function (e, data) {
+                callback.call(connection, data);
+            });
+            return connection;
+        },
+
         error: function (callback) {
             /// <summary>Adds a callback that will be invoked after an error occurs with the connection</summary>
             /// <param name="callback" type="Function">A callback function to execute when an error occurs on the connection</param>
@@ -348,17 +385,29 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (connection.transport) {
-                connection.transport.abort(connection, async);
-                connection.transport.stop(connection);
-                connection.transport = null;
+            if (connection.state === signalR.connectionState.disconnecting ||
+                connection.state === signalR.connectionState.disconnected) {
+                return;
             }
 
-            delete connection.messageId;
-            delete connection.groups;
+            try {
+                changeState(connection, signalR.connectionState.disconnecting);
 
-            // Trigger the disconnect event
-            $(connection).trigger(events.onDisconnect);
+                if (connection.transport) {
+                    connection.transport.abort(connection, async);
+                    connection.transport.stop(connection);
+                    connection.transport = null;
+                }
+
+                // Trigger the disconnect event
+                $(connection).trigger(events.onDisconnect);
+
+                delete connection.messageId;
+                delete connection.groups;
+            }
+            finally {
+                changeState(connection, signalR.connectionState.disconnected);
+            }
 
             return connection;
         },
@@ -566,6 +615,9 @@
                         if (onSuccess) {
                             onSuccess();
                         }
+                        else {
+                            changeState(connection, signalR.connectionState.connected);
+                        }
                     };
 
                     connection.socket.onclose = function (event) {
@@ -584,6 +636,8 @@
                         else {
                             log("Websocket closed");
                         }
+
+                        changeState(connection, signalR.connectionState.reconnecting);
 
                         that.stop(connection);
                         that.start(connection);
@@ -704,6 +758,8 @@
 
                         if (reconnecting) {
                             $connection.trigger(events.onReconnect);
+
+                            changeState(connection, signalR.connectionState.connected);
                         }
                     }
                 }, false);
@@ -734,6 +790,9 @@
                             // to change the URL to not include the /connect suffix, and pass
                             // the last message id we received.
                             log("EventSource reconnecting due to the server connection ending");
+
+                            changeState(connection, signalR.connectionState.reconnecting);
+
                             that.reconnect(connection);
                         }
                         else {
@@ -808,6 +867,9 @@
                 frame.bind("readystatechange", function () {
                     if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
                         log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+
+                        changeState(connection, signalR.connectionState.reconnecting);
+
                         that.reconnect(connection);
                     }
                 });
@@ -885,6 +947,8 @@
                 else {
                     // If there's no onSuccess handler we assume this is a reconnect
                     $(connection).trigger(events.onReconnect);
+
+                    changeState(connection, signalR.connectionState.connected);
                 }
             }
         },
@@ -913,9 +977,14 @@
 
                         var messageId = instance.messageId,
                             connect = (messageId === null),
-                            url = transportLogic.getUrl(instance, that.name, !connect, raiseReconnect),
+                            reconnecting = !connect,
+                            url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect),
                             reconnectTimeOut = null,
                             reconnectFired = false;
+
+                        if (reconnecting === true && raiseReconnect === true) {
+                            changeState(connection, signalR.connectionState.reconnecting);
+                        }
 
                         log("Attempting to connect to '" + url + "' using longPolling.");
                         instance.pollXhr = $.ajax({
@@ -936,6 +1005,9 @@
                                     // Fire the reconnect event if it hasn't been fired as yet
                                     if (reconnectFired === false) {
                                         log("Raising the reconnect event");
+
+                                        changeState(connection, signalR.connectionState.connected);
+
                                         $(instance).trigger(events.onReconnect);
                                         reconnectFired = true;
                                     }
@@ -990,6 +1062,8 @@
                         if (raiseReconnect === true) {
                             reconnectTimeOut = window.setTimeout(function () {
                                 if (reconnectFired === false) {
+                                    changeState(connection, signalR.connectionState.connected);
+
                                     $(instance).trigger(events.onReconnect);
                                     reconnectFired = true;
                                 }

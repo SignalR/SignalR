@@ -42,10 +42,26 @@
             });
 
             connection.error(function (err) {
-                $("<li/>").html(err)
+                $("<li/>").html(err || "Error occurred")
                           .appendTo($("#messages"));
             });
 
+            connection.stateChanged(function (state) {
+                var old = null,
+                    newState = null;
+                for (var p in $.signalR.connectionState) {
+                    if ($.signalR.connectionState[p] === connection.state) {
+                        old = p;
+                    }
+
+                    if ($.signalR.connectionState[p] === state) {
+                        newState = p;
+                    }
+                }
+
+                $("<li/>").html(old + " => " + newState)
+                          .appendTo($("#messages"));
+            });
 
             var start = function () {
                 connection.start()
