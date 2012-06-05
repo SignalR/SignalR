@@ -155,7 +155,7 @@
             }
 
             if (isCrossDomain(connection.url)) {
-                log("Auto detected cross domain url.");
+                connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {
                     // If you didn't say you wanted to use jsonp, determine if it's your only choice
@@ -164,7 +164,7 @@
                         config.jsonp = !$.support.cors;
 
                         if (config.jsonp) {
-                            log("Using jsonp because this browser doesn't support cors");
+                            connection.log("Using jsonp because this browser doesn't support cors");
                         }
                     }
 
@@ -221,7 +221,7 @@
 
             window.setTimeout(function () {
                 var url = connection.url + "/negotiate";
-                log("Negotiating with '" + url + "'.");
+                connection.log("Negotiating with '" + url + "'.");
                 $.ajax({
                     url: url,
                     global: false,
@@ -516,14 +516,14 @@
                 data: {}
             });
 
-            log("Fired ajax abort async = " + async);
+            connection.log("Fired ajax abort async = " + async);
         },
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
             if (data) {
                 if (data.Disconnect) {
-                    log("Disconnect command received from server");
+                    connection.log("Disconnect command received from server");
 
                     // Disconnected by the server
                     connection.stop();
@@ -536,7 +536,7 @@
                             $connection.trigger(events.onReceived, [this]);
                         }
                         catch (e) {
-                            log("Error raising received " + e);
+                            connection.log("Error raising received " + e);
                             $(connection).trigger(events.onError, [e]);
                         }
                     });
@@ -607,11 +607,11 @@
 
                     url += transportLogic.getUrl(connection, this.name, reconnecting);
 
-                    log("Connecting to websocket endpoint '" + url + "'");
+                    connection.log("Connecting to websocket endpoint '" + url + "'");
                     connection.socket = new window.WebSocket(url);
                     connection.socket.onopen = function () {
                         opened = true;
-                        log("Websocket opened");
+                        connection.log("Websocket opened");
                         if (onSuccess) {
                             onSuccess();
                         }
@@ -631,10 +631,10 @@
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).trigger(events.onError, [event.reason]);
-                            log("Unclean disconnect from websocket." + event.reason);
+                            connection.log("Unclean disconnect from websocket." + event.reason);
                         }
                         else {
-                            log("Websocket closed");
+                            connection.log("Websocket closed");
                         }
 
                         changeState(connection, signalR.connectionState.reconnecting);
@@ -684,13 +684,13 @@
                     connectTimeOut;
 
                 if (connection.eventSource) {
-                    log("The connection already has an event source. Stopping it.");
+                    connection.log("The connection already has an event source. Stopping it.");
                     connection.stop();
                 }
 
                 if (!window.EventSource) {
                     if (onFailed) {
-                        log("This browser doesn't support SSE.");
+                        connection.log("This browser doesn't support SSE.");
                         onFailed();
                     }
                     return;
@@ -701,11 +701,11 @@
                 url = transportLogic.getUrl(connection, this.name, reconnecting);
 
                 try {
-                    log("Attempting to connect to SSE endpoint '" + url + "'");
+                    connection.log("Attempting to connect to SSE endpoint '" + url + "'");
                     connection.eventSource = new window.EventSource(url);
                 }
                 catch (e) {
-                    log("EventSource failed trying to connect with error " + e.Message);
+                    connection.log("EventSource failed trying to connect with error " + e.Message);
                     if (onFailed) {
                         // The connection failed, call the failed callback
                         onFailed();
@@ -714,7 +714,7 @@
                         $connection.trigger(events.onError, [e]);
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            log("EventSource reconnecting");
+                            connection.log("EventSource reconnecting");
                             that.reconnect(connection);
                         }
                     }
@@ -725,7 +725,7 @@
                 // and raise on failed
                 connectTimeOut = window.setTimeout(function () {
                     if (opened === false) {
-                        log("EventSource timed out trying to connect");
+                        connection.log("EventSource timed out trying to connect");
 
                         if (onFailed) {
                             onFailed();
@@ -733,9 +733,10 @@
 
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            log("EventSource reconnecting");
+                            connection.log("EventSource reconnecting");
                             that.reconnect(connection);
                         } else {
+                            connection.log("EventSource stopping the connection.");
                             that.stop(connection);
                         }
                     }
@@ -743,7 +744,7 @@
                 that.timeOut);
 
                 connection.eventSource.addEventListener("open", function (e) {
-                    log("EventSource connected");
+                    connection.log("EventSource connected");
 
                     if (connectTimeOut) {
                         window.clearTimeout(connectTimeOut);
@@ -780,7 +781,7 @@
                         return;
                     }
 
-                    log("EventSource readyState: " + connection.eventSource.readyState);
+                    connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
                     if (e.eventPhase === window.EventSource.CLOSED) {
                         // connection closed
@@ -789,7 +790,7 @@
                             // doesn't allow us to change the URL when reconnecting. We need
                             // to change the URL to not include the /connect suffix, and pass
                             // the last message id we received.
-                            log("EventSource reconnecting due to the server connection ending");
+                            connection.log("EventSource reconnecting due to the server connection ending");
 
                             changeState(connection, signalR.connectionState.reconnecting);
 
@@ -798,12 +799,12 @@
                         else {
                             // The EventSource has closed, either because its close() method was called,
                             // or the server sent down a "don't reconnect" frame.
-                            log("EventSource closed");
+                            connection.log("EventSource closed");
                             that.stop(connection);
                         }
                     } else {
                         // connection error
-                        log("EventSource error");
+                        connection.log("EventSource error");
                         $connection.trigger(events.onError);
                     }
                 }, false);
@@ -848,7 +849,7 @@
                 if (window.EventSource) {
                     // If the browser supports SSE, don't use Forever Frame
                     if (onFailed) {
-                        log("This brower supports SSE, skipping Forever Frame.");
+                        connection.log("This brower supports SSE, skipping Forever Frame.");
                         onFailed();
                     }
                     return;
@@ -863,10 +864,10 @@
                 frame.prop("src", url);
                 transportLogic.foreverFrame.connections[frameId] = connection;
 
-                log("Binding to iframe's readystatechange event.");
+                connection.log("Binding to iframe's readystatechange event.");
                 frame.bind("readystatechange", function () {
                     if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
-                        log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+                        connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
 
                         changeState(connection, signalR.connectionState.reconnecting);
 
@@ -887,7 +888,7 @@
                 // and raise on failed
                 connectTimeOut = window.setTimeout(function () {
                     if (connection.onSuccess) {
-                        log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
+                        connection.log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
                         that.stop(connection);
 
                         if (onFailed) {
@@ -902,7 +903,7 @@
                 window.setTimeout(function () {
                     var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
-                    log("Upating iframe src to '" + src + "'.");
+                    connection.log("Upating iframe src to '" + src + "'.");
                     frame.src = src;
                 }, connection.reconnectDelay);
             },
@@ -926,7 +927,7 @@
                     connection.frameId = null;
                     delete connection.frame;
                     delete connection.frameId;
-                    log("Stopping forever frame");
+                    connection.log("Stopping forever frame");
                 }
             },
 
@@ -965,7 +966,7 @@
                     initialConnectFired = false;
 
                 if (connection.pollXhr) {
-                    log("Polling xhr requests already exists, aborting.");
+                    connection.log("Polling xhr requests already exists, aborting.");
                     connection.stop();
                 }
 
@@ -986,7 +987,7 @@
                             changeState(connection, signalR.connectionState.reconnecting);
                         }
 
-                        log("Attempting to connect to '" + url + "' using longPolling.");
+                        connection.log("Attempting to connect to '" + url + "' using longPolling.");
                         instance.pollXhr = $.ajax({
                             url: url,
                             global: false,
@@ -1004,7 +1005,7 @@
                                 if (raiseReconnect === true) {
                                     // Fire the reconnect event if it hasn't been fired as yet
                                     if (reconnectFired === false) {
-                                        log("Raising the reconnect event");
+                                        connection.log("Raising the reconnect event");
 
                                         changeState(connection, signalR.connectionState.connected);
 
@@ -1039,11 +1040,11 @@
 
                             error: function (data, textStatus) {
                                 if (textStatus === "abort") {
-                                    log("Aborted xhr requst.");
+                                    connection.log("Aborted xhr requst.");
                                     return;
                                 }
 
-                                log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
 
                                 if (reconnectTimeOut) {
                                     // If the request failed then we clear the timeout so that the
