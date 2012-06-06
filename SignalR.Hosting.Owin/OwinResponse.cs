@@ -14,11 +14,13 @@ namespace SignalR.Hosting.Owin
         private Action<Exception> _responseError;
         private Action _responseCompete;
         private readonly CookieManager _cookies;
+        private readonly string _origin;
 
-        public OwinResponse(ResultDelegate responseCallback)
+        public OwinResponse(ResultDelegate responseCallback, string origin)
         {
             _responseCallback = responseCallback;
             _cookies = new CookieManager();
+            _origin = origin;
 
             IsClientConnected = true;
         }
@@ -67,12 +69,21 @@ namespace SignalR.Hosting.Owin
             var tcs = new TaskCompletionSource<object>();
             try
             {
+                var headers = new Dictionary<string, IEnumerable<string>>
+                {
+                    { "Content-Type", new[] { ContentType ?? "text/plain" } },
+                };
+
+                // https://developer.mozilla.org/En/HTTP_Access_Control
+                if (!String.IsNullOrEmpty(_origin))
+                {
+                    headers.Add("Access-Control-Allow-Origin", new[] { _origin });
+                    headers.Add("Access-Control-Allow-Credentials", new[] { "true" });
+                }
+
                 responseCallback(
                     "200 OK",
-                    new Dictionary<string, IEnumerable<string>>
-                        {
-                            { "Content-Type", new[] { ContentType ?? "text/plain" } },
-                        },
+                    headers,
                     (write, flush, end, cancel) =>
                     {
                         _responseNext = (data, continuation) => write(data) && flush(continuation);
