@@ -66,9 +66,13 @@
         },
         changeState = function (connection, state) {
             if (state !== connection.state) {
-                $(connection).trigger(events.onStateChanged, [state]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
                 connection.state = state;
             }
+        },
+        isDisconnecting = function (connection) {
+            return connection.state === signalR.connectionState.disconnecting ||
+                   connection.state === signalR.connectionState.disconnected;
         };
 
     signalR = function (url, qs, logging) {
@@ -715,7 +719,9 @@
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
                             connection.log("EventSource reconnecting");
-                            that.reconnect(connection);
+                            if (isDisconnecting(connection) === false) {
+                                that.reconnect(connection);
+                            }
                         }
                     }
                     return;
@@ -794,7 +800,9 @@
 
                             changeState(connection, signalR.connectionState.reconnecting);
 
-                            that.reconnect(connection);
+                            if (isDisconnecting(connection) === false) {
+                                that.reconnect(connection);
+                            }
                         }
                         else {
                             // The EventSource has closed, either because its close() method was called,
@@ -871,7 +879,9 @@
 
                         changeState(connection, signalR.connectionState.reconnecting);
 
-                        that.reconnect(connection);
+                        if (isDisconnecting(connection) === false) {
+                            that.reconnect(connection);
+                        }
                     }
                 });
 
@@ -1029,6 +1039,10 @@
                                     return;
                                 }
 
+                                if (isDisconnecting(instance) === true) {
+                                    return;
+                                }
+
                                 if (delay > 0) {
                                     window.setTimeout(function () {
                                         poll(instance, timedOutReceived);
@@ -1055,7 +1069,9 @@
                                 $(instance).trigger(events.onError, [data.responseText]);
 
                                 window.setTimeout(function () {
-                                    poll(instance, true);
+                                    if (isDisconnecting(instance) === false) {
+                                        poll(instance, true);
+                                    }
                                 }, connection.reconnectDelay);
                             }
                         });
