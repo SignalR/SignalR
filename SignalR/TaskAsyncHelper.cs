@@ -437,8 +437,6 @@ namespace SignalR
         {
 #if NETFX_CORE
             return Task.Delay(timeOut);
-#elif NET35
-            return Task.Factory.StartNew(() => Thread.Sleep(timeOut));
 #else
             var tcs = new TaskCompletionSource<object>();
 
