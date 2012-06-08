@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,9 +13,6 @@ namespace SignalR.Client.Transports
 {
     public abstract class HttpBasedTransport : IClientTransport
     {
-        // The receive query string
-        private const string _receiveQueryString = "?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}";
-
         // The send query string
         private const string _sendQueryString = "?transport={0}&connectionId={1}{2}";
 
@@ -29,6 +27,12 @@ namespace SignalR.Client.Transports
         {
             _httpClient = httpClient;
             _transport = transport;
+        }
+
+        public CancellationToken CancellationToken
+        {
+            get;
+            private set;
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
@@ -53,9 +57,12 @@ namespace SignalR.Client.Transports
             });
         }
 
-        public Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, CancellationToken cancellationToken, string data)
         {
             var tcs = new TaskCompletionSource<object>();
+
+            // Set the cancellation token for this operation
+            CancellationToken = cancellationToken;
 
             OnStart(connection, data, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
 
@@ -90,13 +97,35 @@ namespace SignalR.Client.Transports
 
         protected string GetReceiveQueryString(IConnection connection, string data)
         {
-            return String.Format(_receiveQueryString,
-                                 _transport,
-                                 Uri.EscapeDataString(connection.ConnectionId),
-                                 Convert.ToString(connection.MessageId),
-                                 Uri.EscapeDataString(JsonConvert.SerializeObject(connection.Groups)),
-                                 data,
-                                 GetCustomQueryString(connection));
+            // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
+            var qsBuilder = new StringBuilder();
+            qsBuilder.Append("?transport=" + _transport)
+                     .Append("&connectionId=" + Uri.EscapeDataString(connection.ConnectionId));
+
+            if (connection.MessageId != null)
+            {
+                qsBuilder.Append("&messageId=" + connection.MessageId);
+            }
+
+            if (connection.Groups != null && connection.Groups.Any())
+            {
+                qsBuilder.Append("&groups=" + Uri.EscapeDataString(JsonConvert.SerializeObject(connection.Groups)));
+            }
+
+            if (data != null)
+            {
+                qsBuilder.Append("&connectionData=" + data);
+            }
+
+            string customQuery = GetCustomQueryString(connection);
+
+            if (!String.IsNullOrEmpty(customQuery))
+            {
+                qsBuilder.Append("&")
+                         .Append(customQuery);
+            }
+
+            return qsBuilder.ToString();
         }
 
         protected virtual Action<IRequest> PrepareRequest(IConnection connection)
@@ -141,7 +170,7 @@ namespace SignalR.Client.Transports
                 // Attempt to perform a clean disconnect, but only wait 2 seconds
                 _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // Swallow any exceptions, but log them
                 Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
@@ -21,6 +22,7 @@ namespace SignalR.Client
 
         private IClientTransport _transport;
         private ConnectionState _state;
+        private CancellationTokenSource _cancel;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -133,6 +135,14 @@ namespace SignalR.Client
         /// </summary>
         public string QueryString { get; private set; }
 
+        public CancellationToken CancellationToken
+        {
+            get
+            {
+                return _cancel.Token;
+            }
+        }
+
         /// <summary>
         /// Gets the current <see cref="ConnectionState"/> of the connection.
         /// </summary>
@@ -206,6 +216,7 @@ namespace SignalR.Client
             }
 
             State = ConnectionState.Connecting;
+            _cancel = new CancellationTokenSource();
 
             _transport = transport;
 
@@ -260,7 +271,7 @@ namespace SignalR.Client
 
         private Task StartTransport(string data)
         {
-            return _transport.Start(this, data)
+            return _transport.Start(this, _cancel.Token, data)
                              .Then(() => State = ConnectionState.Connected);
         }
 
@@ -290,6 +301,7 @@ namespace SignalR.Client
 
                 State = ConnectionState.Disconnecting;
 
+                _cancel.Cancel(throwOnFirstException: false);
                 _transport.Stop(this);
 
                 if (Closed != null)

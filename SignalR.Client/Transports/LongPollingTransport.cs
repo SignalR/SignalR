@@ -124,7 +124,7 @@ namespace SignalR.Client.Transports
                                     // before polling again so we aren't hammering the server 
                                     TaskAsyncHelper.Delay(_errorDelay).Then(() =>
                                     {
-                                        if (!connection.IsDisconnecting())
+                                        if (!CancellationToken.IsCancellationRequested)
                                         {
                                             PollingLoop(connection,
                                                 data,
@@ -138,7 +138,7 @@ namespace SignalR.Client.Transports
                         }
                         else
                         {
-                            if (!connection.IsDisconnecting())
+                            if (!CancellationToken.IsCancellationRequested)
                             {
                                 // Continue polling if there was no error
                                 PollingLoop(connection,

@@ -28,6 +28,8 @@ namespace SignalR.Tests
                 connection.Start(host).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                connection.Stop();
             }
 
             [Fact]
@@ -47,6 +49,8 @@ namespace SignalR.Tests
                 connection.Start(transport).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                connection.Stop();
             }
 
             [Fact]
@@ -66,6 +70,8 @@ namespace SignalR.Tests
                 connection.Send("").Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                connection.Stop();
 
                 Debug.WriteLine(String.Join(", ", results));
 
@@ -95,6 +101,8 @@ namespace SignalR.Tests
 
                 Thread.Sleep(TimeSpan.FromSeconds(15));
 
+                connection.Stop();
+
                 Assert.InRange(conn.Reconnects, 1, 4);
             }
 
@@ -113,6 +121,8 @@ namespace SignalR.Tests
                 connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(15));
+
+                connection.Stop();
 
                 Assert.InRange(conn.Reconnects, 1, 4);
             }

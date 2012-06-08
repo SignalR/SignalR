@@ -18,6 +18,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
 
         private int _reading;
         private Action _setOpened;
+        private readonly CancellationToken _cancellationToken;
 
         /// <summary>
         /// Invoked when the connection is open.
@@ -43,6 +44,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
         /// 
         /// </summary>
         /// <param name="stream"></param>
+        /// <param name="cancellationToken"></param>
         public EventSourceStreamReader(Stream stream)
         {
             _stream = stream;

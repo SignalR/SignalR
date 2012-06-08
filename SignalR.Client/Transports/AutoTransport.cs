@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Http;
 
@@ -25,22 +26,22 @@ namespace SignalR.Client.Transports
             return HttpBasedTransport.GetNegotiationResponse(_httpClient, connection);
         }
 
-        public Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, CancellationToken cancellationToken, string data)
         {
             var tcs = new TaskCompletionSource<object>();
 
             // Resolve the transport
-            ResolveTransport(connection, data, tcs, 0);
+            ResolveTransport(connection, cancellationToken, data, tcs, 0);
 
             return tcs.Task;
         }
 
-        private void ResolveTransport(IConnection connection, string data, TaskCompletionSource<object> tcs, int index)
+        private void ResolveTransport(IConnection connection, CancellationToken cancellationToken, string data, TaskCompletionSource<object> tcs, int index)
         {
             // Pick the current transport
             IClientTransport transport = _transports[index];
 
-            transport.Start(connection, data).ContinueWith(task =>
+            transport.Start(connection, cancellationToken, data).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -56,7 +57,7 @@ namespace SignalR.Client.Transports
                     if (next < _transports.Length)
                     {
                         // Try the next transport
-                        ResolveTransport(connection, data, tcs, next);
+                        ResolveTransport(connection, cancellationToken, data, tcs, next);
                     }
                     else
                     {

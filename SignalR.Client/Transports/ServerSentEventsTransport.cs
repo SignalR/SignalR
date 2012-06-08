@@ -36,7 +36,7 @@ namespace SignalR.Client.Transports
 
         private void Reconnect(IConnection connection, string data)
         {
-            if (connection.IsDisconnecting())
+            if (CancellationToken.IsCancellationRequested)
             {
                 return;
             }
@@ -85,7 +85,7 @@ namespace SignalR.Client.Transports
                         }
                     }
 
-                    if (reconnecting)
+                    if (reconnecting && !CancellationToken.IsCancellationRequested)
                     {
                         connection.State = ConnectionState.Reconnecting;
 
@@ -96,12 +96,14 @@ namespace SignalR.Client.Transports
                 }
                 else
                 {
-                    // Get the reseponse stream and read it for messages
                     var response = task.Result;
                     var stream = response.GetResponseStream();
 
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
+
+                    // When this fires close the event source
+                    CancellationToken.Register(() => eventSource.Close());
 
                     eventSource.Opened = () =>
                     {
@@ -146,7 +148,7 @@ namespace SignalR.Client.Transports
                     {
                         response.Close();
 
-                        if (retry)
+                        if (retry && !CancellationToken.IsCancellationRequested)
                         {
                             // If we're retrying then just go again
                             connection.State = ConnectionState.Reconnecting;
