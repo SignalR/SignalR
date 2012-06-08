@@ -110,12 +110,6 @@ namespace SignalR.Client.Transports
             };
         }
 
-        protected static bool IsRequestAborted(Exception exception)
-        {
-            var webException = exception as WebException;
-            return (webException != null && webException.Status == WebExceptionStatus.RequestCanceled);
-        }
-
         public void Stop(IConnection connection)
         {
             var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
@@ -150,7 +144,7 @@ namespace SignalR.Client.Transports
             catch(Exception ex)
             {
                 // Swallow any exceptions, but log them
-                Debug.WriteLine("Clean disconnect failed. " + ex.GetBaseException().Message);
+                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
             }
         }
 

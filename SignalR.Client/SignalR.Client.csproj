@@ -48,6 +48,9 @@
     <Compile Include="..\SignalR.Hosting.Common\Infrastructure\UriQueryUtility.cs">
       <Link>Infrastructure\UriQueryUtility.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR\Infrastructure\ExceptionsExtensions.cs">
+      <Link>Infrastructure\ExceptionsExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
@@ -63,7 +66,8 @@
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
-    <Compile Include="Infrastructure\ChunkBuffer.cs" />
+    <Compile Include="Infrastructure\ExceptionHelper.cs" />
+    <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Http\HttpHelper.cs" />
@@ -73,6 +77,7 @@
     <Compile Include="Http\IHttpClientExtensions.cs" />
     <Compile Include="Http\IRequest.cs" />
     <Compile Include="Http\IResponse.cs" />
+    <Compile Include="Transports\ServerSentEvents\EventSourceStreamReader.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />
     <Compile Include="NegotiationResponse.cs" />
     <Compile Include="ObservableConnection.cs" />
@@ -85,6 +90,8 @@
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
     <Compile Include="Properties\VersionInfo.cs" />
+    <Compile Include="Transports\ServerSentEvents\EventType.cs" />
+    <Compile Include="Transports\ServerSentEvents\SseEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

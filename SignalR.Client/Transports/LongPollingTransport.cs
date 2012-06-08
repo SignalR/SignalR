@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
+using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports
 {
@@ -98,7 +99,7 @@ namespace SignalR.Client.Transports
                             shouldRaiseReconnect = true;
 
                             // Get the underlying exception
-                            Exception exception = task.Exception.GetBaseException();
+                            Exception exception = task.Exception.Unwrap();
 
                             // If the error callback isn't null then raise it and don't continue polling
                             if (errorCallback != null && 
@@ -110,7 +111,7 @@ namespace SignalR.Client.Transports
                             else
                             {
                                 // Figure out if the request was aborted
-                                requestAborted = IsRequestAborted(exception);
+                                requestAborted = ExceptionHelper.IsRequestAborted(exception);
 
                                 // Sometimes a connection might have been closed by the server before we get to write anything
                                 // so just try again and don't raise OnError.

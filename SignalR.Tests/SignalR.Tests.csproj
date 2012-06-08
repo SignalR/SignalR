@@ -58,6 +58,7 @@
     <Compile Include="ConnectionFacts.cs" />
     <Compile Include="DefaultHubResolverTest.cs" />
     <Compile Include="DisconnectFacts.cs" />
+    <Compile Include="EventSourceStreamReaderFacts.cs" />
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="HubFacts.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />

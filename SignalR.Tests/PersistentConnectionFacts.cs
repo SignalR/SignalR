@@ -79,29 +79,33 @@ namespace SignalR.Tests
 
         public class OnReconnectedAsync
         {
+            [Fact]
             public void ReconnectFiresAfterTimeOutSSE()
             {
                 var host = new MemoryHost();
                 var conn = new MyReconnect();
+                host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");
 
                 var connection = new Client.Connection("http://foo/endpoint");
-                connection.Start(host).Wait();
+                connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(15));
 
-                Assert.Equal(2, conn.Reconnects);
+                Assert.InRange(conn.Reconnects, 1, 4);
             }
 
+            [Fact]
             public void ReconnectFiresAfterTimeOutLongPolling()
             {
                 var host = new MemoryHost();
                 var conn = new MyReconnect();
+                host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");
 
@@ -110,7 +114,7 @@ namespace SignalR.Tests
 
                 Thread.Sleep(TimeSpan.FromSeconds(15));
 
-                Assert.Equal(2, conn.Reconnects);
+                Assert.InRange(conn.Reconnects, 1, 4);
             }
         }
     }

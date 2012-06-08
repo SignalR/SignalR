@@ -69,8 +69,26 @@
     <Compile Include="..\SignalR.Client\ConnectionState.cs">
       <Link>ConnectionState.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\ExceptionHelper.cs">
+      <Link>Infrastructure\ExceptionHelper.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEvents\ChunkBuffer.cs">
+      <Link>Transports\ServerSentEvents\ChunkBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEvents\EventSourceStreamReader.cs">
+      <Link>Transports\ServerSentEvents\EventSourceStreamReader.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEvents\EventType.cs">
+      <Link>Transports\ServerSentEvents\EventType.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Transports\ServerSentEvents\SseEvent.cs">
+      <Link>Transports\ServerSentEvents\SseEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\Infrastructure\ExceptionsExtensions.cs">
+      <Link>Infrastructure\ExceptionsExtensions.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -134,9 +152,6 @@
     </Compile>
     <Compile Include="..\SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Infrastructure\ChunkBuffer.cs">
-      <Link>Infrastructure\ChunkBuffer.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>

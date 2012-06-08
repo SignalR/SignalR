@@ -79,7 +79,7 @@ namespace SignalR.Client.Samples
 
         private static void RunStreamingSample()
         {
-            var connection = new Connection("http://localhost:40476/Raw/Raw");
+            var connection = new Connection("http://localhost:40476/streaming/streaming");
 
             connection.Received += data =>
             {

@@ -4,7 +4,7 @@ namespace SignalR
 {
     public static class ExceptionsExtensions
     {
-        public static Exception Unwrap(this Exception ex)
+        internal static Exception Unwrap(this Exception ex)
         {
             if (ex == null)
             {
