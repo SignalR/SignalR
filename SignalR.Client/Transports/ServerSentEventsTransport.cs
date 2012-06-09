@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using SignalR.Client.Http;
 using SignalR.Client.Infrastructure;
@@ -96,8 +97,8 @@ namespace SignalR.Client.Transports
                 }
                 else
                 {
-                    var response = task.Result;
-                    var stream = response.GetResponseStream();
+                    IResponse response = task.Result;
+                    Stream stream = response.GetResponseStream();
 
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
@@ -161,7 +162,10 @@ namespace SignalR.Client.Transports
                         }
                     };
 
-                    eventSource.Start();
+                    if (!CancellationToken.IsCancellationRequested)
+                    {
+                        eventSource.Start();
+                    }
                 }
             });
 
