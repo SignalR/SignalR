@@ -144,7 +144,12 @@
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Owin\SignalR.Hosting.Owin.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj" />
+      <WinRTClient Include="$(ProjectRoot)\SignalR.Client.WinRT\bin\$(Configuration)\SignalR.Client.*"></WinRTClient>
     </ItemGroup>
+    
+    <!-- To workaround a bug in nuget -->
+    <MakeDir Directories="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\winrt" />
+    <Copy SourceFiles="%(WinRTClient.Identity)" DestinationFolder="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\winrt" />
     
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Build"
