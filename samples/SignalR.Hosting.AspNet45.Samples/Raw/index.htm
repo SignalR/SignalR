@@ -51,20 +51,20 @@
                                .prop("disabled", false);
             });
 
-            connection.stateChanged(function (state) {
-                var old = null,
+            connection.stateChanged(function (change) {
+                var oldState = null,
                     newState = null;
                 for (var p in $.signalR.connectionState) {
-                    if ($.signalR.connectionState[p] === connection.state) {
-                        old = p;
+                    if ($.signalR.connectionState[p] === change.oldState) {
+                        oldState = p;
                     }
 
-                    if ($.signalR.connectionState[p] === state) {
+                    if ($.signalR.connectionState[p] === change.newState) {
                         newState = p;
                     }
                 }
 
-                $("<li/>").html(old + " => " + newState)
+                $("<li/>").html(oldState + " => " + newState)
                           .appendTo($("#messages"));
             });
 
