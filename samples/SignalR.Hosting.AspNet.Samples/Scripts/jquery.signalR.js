@@ -637,7 +637,7 @@
                             if (onFailed) {
                                 onFailed();
                             }
-
+                            return;
                         }
                         else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
