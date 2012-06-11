@@ -22,23 +22,9 @@
         throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
     }
 
-    function isCrossDomain(url) {
-        var link;
-
-        url = $.trim(url);
-        if (url.indexOf("http") !== 0) {
-            return false;
-        }
-
-        // Create an anchor tag.
-        var link = window.document.createElement("a");
-        link.href = url;
-
-        return link.protocol + link.host !== window.location.protocol + window.location.host;
-    }
-
     var signalR,
         _connection,
+
         events = {
             onStart: "onStart",
             onStarting: "onStarting",
@@ -49,6 +35,7 @@
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
         },
+
         log = function (msg, logging) {
             if (logging === false) {
                 return;
@@ -64,12 +51,30 @@
                 window.console.log(m);
             }
         },
+
+        isCrossDomain = function (url) {
+            var link;
+
+            url = $.trim(url);
+            if (url.indexOf("http") !== 0) {
+                return false;
+            }
+
+            // Create an anchor tag.
+            link = window.document.createElement("a");
+            link.href = url;
+
+            return link.protocol + link.host !== window.location.protocol + window.location.host;
+        },
+
         changeState = function (connection, state) {
             if (state !== connection.state) {
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
+                // REVIEW: Should event fire before or after the state change actually occurs?
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state }]);
                 connection.state = state;
             }
         },
+
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnecting ||
                    connection.state === signalR.connectionState.disconnected;
@@ -108,6 +113,7 @@
                 this.logging = logging;
             }
         },
+
         ajaxDataType: "json",
 
         logging: false,
@@ -127,7 +133,7 @@
                 },
                 initialize,
                 deferred = $.Deferred(),
-                parser = document.createElement('a');
+                parser = window.document.createElement("a");
 
             if (connection.state === signalR.connectionState.connecting ||
                 connection.state === signalR.connectionState.connected) {
@@ -163,12 +169,12 @@
 
                 if (config.transport === "auto") {
                     // If you didn't say you wanted to use jsonp, determine if it's your only choice
-                    // i.e. if your browser doesn't supports cors
+                    // i.e. if your browser doesn't supports CORS
                     if (!config.jsonp) {
                         config.jsonp = !$.support.cors;
 
                         if (config.jsonp) {
-                            connection.log("Using jsonp because this browser doesn't support cors");
+                            connection.log("Using jsonp because this browser doesn't support CORS");
                         }
                     }
 
@@ -177,15 +183,14 @@
                         config.transport = "longPolling";
                     }
                     else {
-                        // Otherwise try websockets and longPolling since SSE doesn't support cors
-                        // TODO: Support XDM with iframes
+                        // Otherwise try webSockets and longPolling since SSE doesn't support CORS
+                        // TODO: Support XDM with foreverFrame
                         config.transport = ["webSockets", "longPolling"];
                     }
                 }
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
-
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -207,14 +212,14 @@
                 var transportName = transports[index],
                     transport = $.type(transportName) === "object" ? transportName : signalR.transports[transportName];
 
-                transport.start(connection, function () {
+                transport.start(connection, function () { // success
                     connection.transport = transport;
 
                     $(connection).trigger(events.onStart);
 
                     changeState(connection, signalR.connectionState.connected);
 
-                    $(window).unload(function () {
+                    $(window).unload(function () { // failure
                         connection.stop(false /* async */);
                     });
 
@@ -308,13 +313,13 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (!connection.transport) {
+            if (connection.state !== signalR.connectionState.connected) {
                 // Connection hasn't been started yet
                 throw "SignalR: Connection must be started before data can be sent. Call .start() before .send()";
             }
 
             connection.transport.send(connection, data);
-
+            // REVIEW: Should we return deferred here?
             return connection;
         },
 
@@ -442,6 +447,7 @@
 
             return url + "&" + window.escape(connection.qs.toString());
         },
+
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
@@ -458,7 +464,6 @@
                 if (appendReconnectUrl) {
                     url = url + "/reconnect";
                 }
-
                 if (connection.messageId) {
                     qs += "&messageId=" + connection.messageId;
                 }
@@ -472,7 +477,6 @@
         },
 
         ajaxSend: function (connection, data) {
-
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
             url = this.addQs(url, connection);
             $.ajax({
@@ -500,6 +504,7 @@
                 }
             });
         },
+
         ajaxAbort: function (connection, async) {
             if (typeof (connection.transport) === "undefined") {
                 return;
@@ -522,37 +527,40 @@
 
             connection.log("Fired ajax abort async = " + async);
         },
+
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
-            if (data) {
-                if (data.Disconnect) {
-                    connection.log("Disconnect command received from server");
+            if (!data) {
+                return;
+            }
 
-                    // Disconnected by the server
-                    connection.stop();
-                    return;
-                }
+            if (data.Disconnect) {
+                connection.log("Disconnect command received from server");
 
-                if (data.Messages) {
-                    $.each(data.Messages, function () {
-                        try {
-                            $connection.trigger(events.onReceived, [this]);
-                        }
-                        catch (e) {
-                            connection.log("Error raising received " + e);
-                            $(connection).trigger(events.onError, [e]);
-                        }
-                    });
-                }
+                // Disconnected by the server
+                connection.stop();
+                return;
+            }
 
-                if (data.MessageId) {
-                    connection.messageId = data.MessageId;
-                }
+            if (data.Messages) {
+                $.each(data.Messages, function () {
+                    try {
+                        $connection.trigger(events.onReceived, [this]);
+                    }
+                    catch (e) {
+                        connection.log("Error raising received " + e);
+                        $(connection).trigger(events.onError, [e]);
+                    }
+                });
+            }
 
-                if (data.TransportData) {
-                    connection.groups = data.TransportData.Groups;
-                }
+            if (data.MessageId) {
+                connection.messageId = data.MessageId;
+            }
+
+            if (data.TransportData) {
+                connection.groups = data.TransportData.Groups;
             }
         },
 
@@ -896,6 +904,7 @@
 
                 // After connecting, if after the specified timeout there's no response stop the connection
                 // and raise on failed
+                // REVIEW: Why is connectTimeOut set here and never used again?
                 connectTimeOut = window.setTimeout(function () {
                     if (connection.onSuccess) {
                         connection.log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
@@ -1116,6 +1125,7 @@
                     delete connection.pollXhr;
                 }
             },
+
             abort: function (connection, async) {
                 transportLogic.ajaxAbort(connection, async);
             }
