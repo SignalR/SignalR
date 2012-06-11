@@ -1,5 +1,5 @@
-﻿/*!
-* SignalR JavaScript Library v0.5
+/*!
+* SignalR JavaScript Library v0.5.1.1
 * http://signalr.net/
 *
 * Copyright David Fowler and Damian Edwards 2012
@@ -215,9 +215,9 @@
                 transport.start(connection, function () { // success
                     connection.transport = transport;
 
-                    $(connection).trigger(events.onStart);
-
                     changeState(connection, signalR.connectionState.connected);
+
+                    $(connection).trigger(events.onStart);
 
                     $(window).unload(function () { // failure
                         connection.stop(false /* async */);
