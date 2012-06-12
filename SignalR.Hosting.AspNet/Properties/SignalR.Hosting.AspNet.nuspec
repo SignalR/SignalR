@@ -13,4 +13,8 @@
         <dependency id="Microsoft.Web.Infrastructure" version="1.0" />
     </dependencies>
   </metadata>
+  <files>
+      <file src="..\..\SignalR.Hosting.AspNet45\bin*\$configuration$\SignalR.Hosting.AspNet.d*" target="lib\net45" />
+      <file src="..\..\SignalR.Hosting.AspNet45\bin*\$configuration$\SignalR.Hosting.AspNet.x*" target="lib\net45" />
+  </files>
 </package>

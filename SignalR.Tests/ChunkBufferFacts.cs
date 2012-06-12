@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using SignalR.Client.Infrastructure;
+using SignalR.Client.Transports.ServerSentEvents;
 using Xunit;
 
 namespace SignalR.Client.Tests

@@ -1,5 +1,20 @@
 # SignalR Release Notes
 
+# 0.5.1 (Official Release)
+* Windows RT client support ([#171](https://github.com/SignalR/SignalR/issues/171))
+* Fixed Race condition in .NET SSE transport ([#341](https://github.com/SignalR/SignalR/issues/341))
+* Added reconnect support for Websocket transport ([#395](https://github.com/SignalR/SignalR/issues/395))
+* Implemented clean disconnect support on browser close ([#396](https://github.com/SignalR/SignalR/issues/396))
+* Added async flush support for ASP.NET 4.5 ([#402](https://github.com/SignalR/SignalR/issues/402))
+* Fixed websockets in WinJS client ([407](https://github.com/SignalR/SignalR/issues/407))
+* Added connection state and new state changed event to js and .NET client ([431](https://github.com/SignalR/SignalR/issues/431))
+* Check connection state before retrying in js client ([af2ae94133](https://github.com/SignalR/SignalR/commit/af2ae941339082ab21d8ea888e486a3c902e4b34))
+* Turn keep alive on by default ([47e17b68ce](https://github.com/SignalR/SignalR/commit/47e17b68ce93d74a690dd9a7f918fddeb842fb02))
+* Auto detect cross domain ([0a5c62438b](https://github.com/SignalR/SignalR/commit/0a5c62438bc928452bb61f75553635e5bf9e821e))
+* Changed IResponse.Write and End to take ArraySegment<byte> instead of string ([f521fd2e6a](https://github.com/SignalR/SignalR/commit/f521fd2e6af967ce3603244bd7ed8606313f48a5))
+* Added hubify.exe to generate the hubs file at build time ([e7672ebb60](https://github.com/SignalR/SignalR/commit/e7672ebb60e826d13528783967a88f9db7af56a2))
+* Built WebSockets transport into the core.
+
 ## v0.5.0 (Official Release)
 * Server Send Events connections not closing ([#369](https://github.com/SignalR/SignalR/issues/369))
 * Allow HubConnection to specify hub url ([#368](https://github.com/SignalR/SignalR/issues/368))
@@ -7,7 +22,7 @@
 * Remove implicit Send overload from PersistentConnection. ([44ff03aafa](https://github.com/SignalR/SignalR/commit/44ff03aafa5f5e2f3b73a5a19ac5a2437674891b))
 * Regression: Method overloads no longer work in hubs because of caching. ([#362](https://github.com/SignalR/SignalR/issues/362))
 
-## v0.5.84 RC (Stable Prerelease)
+## v0.5.0 RC (Stable Prerelease)
 * Performance: Only register for disconnect for chunked requests on self host. (#352)
 * Provide way to override default resolver in ASP.NET other than through routing. (#347)
 * Performance: Only subscribe to hubs that have method subscriptions (#346)
@@ -21,7 +36,7 @@
 * ReflectedMethodDescriptor::TryGetMethod Executable Method Caching (#351)
 * Disconnect is broken in webfarms (#69)
 
-## v0.5.63 (Stable Prerelease)
+## v0.5.0 (Stable Prerelease)
 
 ### Bugs Fixed
 * Missing messages in some cases (#307)

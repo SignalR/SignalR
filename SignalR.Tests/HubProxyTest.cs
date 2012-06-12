@@ -135,19 +135,19 @@ namespace SignalR.Tests
 
             var hubConnection = new HubConnection("http://fake");
             IHubProxy proxy = hubConnection.CreateProxy("chatHub");
-            var called = false;
+            var wh = new ManualResetEvent(false);
 
             proxy.On("addMessage", data =>
             {
-                called = true;
                 Assert.Equal("hello", data);
+                wh.Set();
             });
 
             hubConnection.Start(host).Wait();
 
             proxy.Invoke("Send", "hello").Wait();
 
-            Assert.True(called);
+            Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace SignalR.Tests
 
             var hubConnection = new HubConnection("http://fake");
             IHubProxy proxy = hubConnection.CreateProxy("MyHub2");
-            
+
             hubConnection.Start(host).Wait();
 
             Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());

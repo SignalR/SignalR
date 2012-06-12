@@ -28,7 +28,7 @@ namespace SignalR.Hubs
             return true;
         }
 
-        private Task Invoke(string method, params object[] args)
+        public Task Invoke(string method, params object[] args)
         {
             var invocation = GetInvocationData(method, args);
 

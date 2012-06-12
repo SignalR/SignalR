@@ -24,6 +24,8 @@ namespace SignalR.Tests
             var result = hub.Invoke<string>("ReadStateValue").Result;
 
             Assert.Equal("test", result);
+
+            connection.Stop();
         }
 
         [Fact]
@@ -40,6 +42,8 @@ namespace SignalR.Tests
 
             Assert.Equal("test", result);
             Assert.Equal("test", hub["Company"]);
+
+            connection.Stop();
         }
 
         [Fact]
@@ -56,6 +60,7 @@ namespace SignalR.Tests
             var result = hub.Invoke<int>("GetValue").Result;
 
             Assert.Equal(10, result);
+            connection.Stop();
         }
 
         [Fact]
@@ -72,6 +77,7 @@ namespace SignalR.Tests
             var ex = Assert.Throws<AggregateException>(() => hub.Invoke("TaskWithException").Wait());
 
             Assert.Equal("Exception of type 'System.Exception' was thrown.", ex.GetBaseException().Message);
+            connection.Stop();
         }
 
         [Fact]
@@ -88,6 +94,7 @@ namespace SignalR.Tests
             var ex = Assert.Throws<AggregateException>(() => hub.Invoke("GenericTaskWithException").Wait());
 
             Assert.Equal("Exception of type 'System.Exception' was thrown.", ex.GetBaseException().Message);
+            connection.Stop();
         } 
 
         [Fact]
@@ -105,6 +112,7 @@ namespace SignalR.Tests
             int n = hub.Invoke<int>("Overload", 1).Result;
 
             Assert.Equal(1, n);
+            connection.Stop();
         }
 
         [Fact]
@@ -121,6 +129,7 @@ namespace SignalR.Tests
             var ex = Assert.Throws<InvalidOperationException>(() => hub.Invoke("UnsupportedOverload", 13177).Wait());
 
             Assert.Equal("'UnsupportedOverload' method could not be resolved.", ex.GetBaseException().Message);
+            connection.Stop();
         }
 
         [Fact]
@@ -145,6 +154,7 @@ namespace SignalR.Tests
             hub.Invoke("DynamicTask").Wait();
 
             Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+            connection.Stop();
         }
     }
 }

@@ -5,4 +5,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription("Async signaling library for .NET to help build real-time, multi-user interactive web applications.")]
 [assembly: InternalsVisibleTo("SignalR.ScaleOut")]
 [assembly: InternalsVisibleTo("SignalR.Tests")]
-[assembly: AssemblyVersion("0.5.0.0")]
+[assembly: AssemblyVersion("0.5.1.0")]

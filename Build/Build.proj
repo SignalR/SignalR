@@ -109,6 +109,16 @@
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
              Properties="Configuration=$(Configuration)" />
+             
+    <MSBuild Projects="$(ProjectRoot)\SignalR.WinRT.sln"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
+             Properties="Configuration=$(Configuration)" />
+             
+    <MSBuild Projects="$(ProjectRoot)\SignalR.Hosting.AspNet45.sln"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
+             Properties="Configuration=$(Configuration)" />
   </Target>
 
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
@@ -134,7 +144,12 @@
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Owin\SignalR.Hosting.Owin.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj" />
+      <WinRTClient Include="$(ProjectRoot)\SignalR.Client.WinRT\bin\$(Configuration)\SignalR.Client.*"></WinRTClient>
     </ItemGroup>
+    
+    <!-- To workaround a bug in nuget -->
+    <MakeDir Directories="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\winrt" />
+    <Copy SourceFiles="%(WinRTClient.Identity)" DestinationFolder="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\winrt" />
     
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Build"

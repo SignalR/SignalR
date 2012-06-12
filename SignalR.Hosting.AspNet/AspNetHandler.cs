@@ -31,8 +31,6 @@ namespace SignalR.Hosting.AspNet
 #else
         public override Task ProcessRequestAsync(HttpContextBase context)
 #endif
-
-
         {
             // https://developer.mozilla.org/En/HTTP_Access_Control
             string origin = context.Request.Headers["Origin"];
@@ -47,8 +45,11 @@ namespace SignalR.Hosting.AspNet
             var hostContext = new HostContext(request, response);
 
             // Determine if the client should bother to try a websocket request
-            hostContext.Items[HostConstants.SupportsWebSockets] = !String.IsNullOrEmpty(context.Request.ServerVariables[WebSocketVersionServerVariable]);
-
+#if NET45
+            hostContext.Items[HostConstants.SupportsWebSockets] = HttpRuntime.IISVersion != null && HttpRuntime.IISVersion.Major >= 8 && !String.IsNullOrEmpty(context.Request.ServerVariables[WebSocketVersionServerVariable]);
+#else
+            hostContext.Items[HostConstants.SupportsWebSockets] = false;
+#endif
             // Set the debugging flag
             hostContext.Items[HostConstants.DebugMode] = context.IsDebuggingEnabled;
 
@@ -62,7 +63,15 @@ namespace SignalR.Hosting.AspNet
             // Initialize the connection
             _connection.Initialize(_resolver);
 
-            return _connection.ProcessRequestAsync(hostContext);
+            try
+            {
+                return _connection.ProcessRequestAsync(hostContext);
+            }
+            catch (NotSupportedException) // WebSockets not supported
+            {
+                context.Response.StatusCode = 501; // HTTP 501 Not Implemented
+                return TaskAsyncHelper.Empty;
+            }
         }
     }
 }

@@ -1,6 +1,9 @@
 ﻿using System.Web;
 using System.Web.Routing;
 using SignalR.Hosting.AspNet;
+#if NET45
+using SignalR.Hosting.AspNet.WebSockets;
+#endif
 
 [assembly: PreApplicationStartMethod(typeof(AspNetBootstrapper), "Initialize")]
 
@@ -29,6 +32,13 @@ namespace SignalR.Hosting.AspNet
                         RouteTable.Routes.MapHubs();
                      
                         _detector.Initialize();
+
+#if NET45
+                        if (HttpRuntime.UsingIntegratedPipeline)
+                        {
+                            HttpApplication.RegisterModule(typeof(WebSocketFixModule));
+                        }
+#endif
 
                         _initialized = true;
                     }

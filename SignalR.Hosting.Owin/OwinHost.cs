@@ -152,7 +152,10 @@ namespace SignalR.Hosting.Owin
                     else
                     {
                         var request = new OwinRequest(environment, task.Result);
-                        var response = new OwinResponse(result);
+
+                        var origin = request.Headers["Origin"];
+
+                        var response = new OwinResponse(result, origin);
                         var hostContext = new HostContext(request, response);
 
                         try

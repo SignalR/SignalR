@@ -13,7 +13,7 @@ namespace SignalR.Hosting.Memory
     public class MemoryHost : RoutingHost, IHttpClient
     {
         public MemoryHost()
-            : base()
+            : this(new DefaultDependencyResolver())
         {
 
         }
