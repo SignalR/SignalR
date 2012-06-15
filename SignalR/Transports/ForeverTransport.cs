@@ -14,7 +14,6 @@ namespace SignalR.Transports
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>())
         {
-
         }
 
         public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
@@ -181,13 +180,13 @@ namespace SignalR.Transports
 
         private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, ITransportConnection connection, Action postReceive = null)
         {
-            if (!IsTimedOut && !IsDisconnected && IsAlive && !HostShutdownToken.IsCancellationRequested)
+            if (!IsTimedOut && !IsDisconnected && IsAlive && !ConnectionEndToken.IsCancellationRequested)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = LastMessageId == null
-                    ? connection.ReceiveAsync(TimeoutToken)
-                    : connection.ReceiveAsync(LastMessageId, TimeoutToken);
+                    ? connection.ReceiveAsync(ConnectionEndToken)
+                    : connection.ReceiveAsync(LastMessageId, ConnectionEndToken);
 
                 if (postReceive != null)
                 {

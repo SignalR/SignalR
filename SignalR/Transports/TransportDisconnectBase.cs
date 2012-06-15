@@ -17,6 +17,7 @@ namespace SignalR.Transports
         protected int _isDisconnected;
         private readonly CancellationTokenSource _timeoutTokenSource;
         private readonly CancellationToken _hostShutdownToken;
+        private readonly CancellationTokenSource _connectionEndToken;
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
@@ -25,6 +26,9 @@ namespace SignalR.Transports
             _heartBeat = heartBeat;
             _timeoutTokenSource = new CancellationTokenSource();
             _hostShutdownToken = context.HostShutdownToken();
+
+            // Create a token that represents the end of this connection's life
+            _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _hostShutdownToken);
         }
 
         public string ConnectionId
@@ -62,19 +66,11 @@ namespace SignalR.Transports
             get { return _context.Response.IsClientConnected; }
         }
 
-        protected CancellationToken TimeoutToken
+        protected CancellationToken ConnectionEndToken
         {
             get
             {
-                return _timeoutTokenSource.Token;
-            }
-        }
-
-        protected CancellationToken HostShutdownToken
-        {
-            get
-            {
-                return _hostShutdownToken;
+                return _connectionEndToken.Token;
             }
         }
 

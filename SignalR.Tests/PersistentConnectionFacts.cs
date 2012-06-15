@@ -86,6 +86,26 @@ namespace SignalR.Tests
         public class OnReconnectedAsync
         {
             [Fact]
+            public void ReconnectFiresAfterHostShutDown()
+            {
+                var host = new MemoryHost();
+                var conn = new MyReconnect();
+                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                host.MapConnection<MyReconnect>("/endpoint");
+
+                var connection = new Client.Connection("http://foo/endpoint");
+                connection.Start(host).Wait();
+
+                host.Dispose();
+
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
+
+                connection.Stop();
+            }
+
+            [Fact]
             public void ReconnectFiresAfterTimeOutSSE()
             {
                 var host = new MemoryHost();

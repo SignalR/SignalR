@@ -10,8 +10,10 @@ using IClientResponse = SignalR.Client.Http.IResponse;
 
 namespace SignalR.Hosting.Memory
 {
-    public class MemoryHost : RoutingHost, IHttpClient
+    public class MemoryHost : RoutingHost, IHttpClient, IDisposable
     {
+        private readonly CancellationTokenSource _shutDownToken = new CancellationTokenSource();
+
         public MemoryHost()
             : this(new DefaultDependencyResolver())
         {
@@ -37,9 +39,9 @@ namespace SignalR.Hosting.Memory
         private Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
         {
             var uri = new Uri(url);
-
             PersistentConnection connection;
-            if (TryGetConnection(uri.LocalPath, out connection))
+
+            if (!_shutDownToken.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
                 var clientTokenSource = new CancellationTokenSource();
@@ -49,6 +51,7 @@ namespace SignalR.Hosting.Memory
                 Response response = null;
                 response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response));
                 var hostContext = new HostContext(request, response);
+                hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;
 
                 connection.Initialize(DependencyResolver);
 
@@ -74,6 +77,11 @@ namespace SignalR.Hosting.Memory
             }
 
             return TaskAsyncHelper.FromError<IClientResponse>(new InvalidOperationException("Not a valid end point"));
+        }
+
+        public void Dispose()
+        {
+            _shutDownToken.Cancel(throwOnFirstException: false);
         }
     }
 }

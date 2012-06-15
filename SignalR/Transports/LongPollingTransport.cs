@@ -202,8 +202,8 @@ namespace SignalR.Transports
 
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
-                              connection.ReceiveAsync(TimeoutToken) :
-                              connection.ReceiveAsync(MessageId, TimeoutToken);
+                              connection.ReceiveAsync(ConnectionEndToken) :
+                              connection.ReceiveAsync(MessageId, ConnectionEndToken);
 
             if (postReceive != null)
             {
