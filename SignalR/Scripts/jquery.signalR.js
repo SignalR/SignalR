@@ -740,15 +740,20 @@
                 connectTimeOut = window.setTimeout(function () {
                     if (opened === false) {
                         connection.log("EventSource timed out trying to connect");
+                        connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
                         if (onFailed) {
                             onFailed();
                         }
 
                         if (reconnecting) {
-                            // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            connection.log("EventSource reconnecting");
-                            that.reconnect(connection);
+                            // If we're reconnecting and the event source is attempting to connect,
+                            // don't keep retrying. This causes duplicate connections to spawn.
+                            if (connection.eventSource.readyState !== window.EventSource.CONNECTING) {
+                                // If we were reconnecting, rather than doing initial connect, then try reconnect again
+                                connection.log("EventSource reconnecting");
+                                that.reconnect(connection);
+                            }
                         } else {
                             connection.log("EventSource stopping the connection.");
                             that.stop(connection);
@@ -1066,7 +1071,7 @@
                                     // reconnect event doesn't get fired
                                     clearTimeout(reconnectTimeOut);
                                 }
- 
+
                                 $(instance).trigger(events.onError, [data.responseText]);
 
                                 window.setTimeout(function () {
