@@ -70,7 +70,7 @@
         changeState = function (connection, state) {
             if (state !== connection.state) {
                 // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state }]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
                 connection.state = state;
             }
         },
@@ -798,26 +798,18 @@
                     connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
                     if (e.eventPhase === window.EventSource.CLOSED) {
-                        // connection closed
-                        if (connection.eventSource.readyState === window.EventSource.CONNECTING) {
-                            // We don't use the EventSource's native reconnect function as it
-                            // doesn't allow us to change the URL when reconnecting. We need
-                            // to change the URL to not include the /connect suffix, and pass
-                            // the last message id we received.
-                            connection.log("EventSource reconnecting due to the server connection ending");
+                        // We don't use the EventSource's native reconnect function as it
+                        // doesn't allow us to change the URL when reconnecting. We need
+                        // to change the URL to not include the /connect suffix, and pass
+                        // the last message id we received.
+                        connection.log("EventSource reconnecting due to the server connection ending");
 
-                            changeState(connection, signalR.connectionState.reconnecting);
+                        changeState(connection, signalR.connectionState.reconnecting);
 
-                            if (isDisconnecting(connection) === false) {
-                                that.reconnect(connection);
-                            }
+                        if (isDisconnecting(connection) === false) {
+                            that.reconnect(connection);
                         }
-                        else {
-                            // The EventSource has closed, either because its close() method was called,
-                            // or the server sent down a "don't reconnect" frame.
-                            connection.log("EventSource closed");
-                            that.stop(connection);
-                        }
+
                     } else {
                         // connection error
                         connection.log("EventSource error");
@@ -1075,7 +1067,9 @@
                                     clearTimeout(reconnectTimeOut);
                                 }
 
-                                $(instance).trigger(events.onError, [data.responseText]);
+                                if (reconnecting === false) {
+                                    $(instance).trigger(events.onError, [data.responseText]);
+                                }
 
                                 window.setTimeout(function () {
                                     if (isDisconnecting(instance) === false) {
