@@ -1066,10 +1066,8 @@
                                     // reconnect event doesn't get fired
                                     clearTimeout(reconnectTimeOut);
                                 }
-
-                                if (reconnecting === false) {
-                                    $(instance).trigger(events.onError, [data.responseText]);
-                                }
+ 
+                                $(instance).trigger(events.onError, [data.responseText]);
 
                                 window.setTimeout(function () {
                                     if (isDisconnecting(instance) === false) {
