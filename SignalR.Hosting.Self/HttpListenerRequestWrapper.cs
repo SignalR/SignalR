@@ -11,26 +11,25 @@ namespace SignalR.Hosting.Self
     public class HttpListenerRequestWrapper : IRequest
     {
         private readonly HttpListenerRequest _httpListenerRequest;
-        private readonly NameValueCollection _qs;
         private NameValueCollection _form;
-        private readonly NameValueCollection _headers;
-        private readonly CookieCollectionWrapper _cookies;
 
         public HttpListenerRequestWrapper(HttpListenerRequest httpListenerRequest, IPrincipal user)
         {
             _httpListenerRequest = httpListenerRequest;
-            _qs = new NameValueCollection(httpListenerRequest.QueryString);
-            _headers = new NameValueCollection(httpListenerRequest.Headers);
-            _cookies = new CookieCollectionWrapper(_httpListenerRequest.Cookies);
+            QueryString = new NameValueCollection(httpListenerRequest.QueryString);
+            Headers = new NameValueCollection(httpListenerRequest.Headers);
+            Cookies = new CookieCollectionWrapper(_httpListenerRequest.Cookies);
+            ServerVariables = new NameValueCollection();
             User = user;
+
+            // Set the client IP
+            ServerVariables["REMOTE_ADDR"] = _httpListenerRequest.RemoteEndPoint.Address.ToString();
         }
 
         public IRequestCookieCollection Cookies
         {
-            get
-            {
-                return _cookies;
-            }
+            get;
+            private set;
         }
 
         public NameValueCollection Form
@@ -44,10 +43,14 @@ namespace SignalR.Hosting.Self
 
         public NameValueCollection Headers
         {
-            get
-            {
-                return _headers;
-            }
+            get;
+            private set;
+        }
+
+        public NameValueCollection ServerVariables
+        {
+            get;
+            private set;
         }
 
         public Uri Url
@@ -60,10 +63,8 @@ namespace SignalR.Hosting.Self
 
         public NameValueCollection QueryString
         {
-            get
-            {
-                return _qs;
-            }
+            get;
+            private set;
         }
 
         public IPrincipal User

@@ -20,13 +20,15 @@ namespace SignalR.Hosting.Owin
 
             Url = BuildUrl(env);
             Headers = new NameValueCollection();
+            // TODO: Fill this up
+            ServerVariables = new NameValueCollection();
 
             foreach (var pair in headers)
             {
                 foreach (var value in pair.Value)
                 {
-                    Headers.Add(pair.Key, value);  
-                }                
+                    Headers.Add(pair.Key, value);
+                }
             }
 
             _cookies = new CookieManager();
@@ -49,6 +51,12 @@ namespace SignalR.Hosting.Owin
         }
 
         public NameValueCollection Headers
+        {
+            get;
+            private set;
+        }
+
+        public NameValueCollection ServerVariables
         {
             get;
             private set;
@@ -91,7 +99,7 @@ namespace SignalR.Hosting.Owin
 
         public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-            
+
         }
     }
 }

@@ -48,6 +48,14 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
+        public NameValueCollection ServerVariables
+        {
+            get
+            {
+                return _context.Request.ServerVariables;
+            }
+        }
+
         public NameValueCollection Form
         {
             get

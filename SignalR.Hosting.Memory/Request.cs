@@ -20,6 +20,7 @@ namespace SignalR.Hosting.Memory
             _clientTokenSource = clientTokenSource;
             Form = new NameValueCollection();
             Headers = new NameValueCollection();
+            ServerVariables = new NameValueCollection();
             QueryString = HttpUtility.ParseDelimited(Url.Query.TrimStart('?'));
 
             if (postData != null)
@@ -77,6 +78,12 @@ namespace SignalR.Hosting.Memory
         }
 
         public NameValueCollection Headers
+        {
+            get;
+            private set;
+        }
+        
+        public NameValueCollection ServerVariables
         {
             get;
             private set;

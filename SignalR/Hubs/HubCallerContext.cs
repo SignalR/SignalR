@@ -11,20 +11,28 @@ namespace SignalR.Hubs
         public string ConnectionId { get; private set; }
 
         /// <summary>
-        /// Gets the cookies for the request
+        /// Gets the cookies for the request.
         /// </summary>
         public IRequestCookieCollection RequestCookies { get; private set; }
 
         /// <summary>
-        /// Gets the headers for the request
+        /// Gets the headers for the request.
         /// </summary>
         public NameValueCollection Headers { get; private set; }
 
         /// <summary>
-        /// Gets the querystring for the request
+        /// Gets the server variables for the request.
+        /// </summary>
+        public NameValueCollection ServerVariables { get; private set; }
+
+        /// <summary>
+        /// Gets the querystring for the request.
         /// </summary>
         public NameValueCollection QueryString { get; private set; }
 
+        /// <summary>
+        /// Gets the <see cref="IPrincipal"/> for the request.
+        /// </summary>
         public IPrincipal User { get; private set; }
 
         public HubCallerContext(IRequest request, string connectionId)
@@ -37,6 +45,7 @@ namespace SignalR.Hubs
                 Headers = request.Headers;
                 QueryString = request.QueryString;
                 User = request.User;
+                ServerVariables = request.ServerVariables;
             }
         }
     }
