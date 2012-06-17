@@ -15,7 +15,7 @@ namespace SignalR.Transports
                                            "        c =  ff ? ff.getConnection('";
 
         private const string _initSuffix = "') : null,\r\n" +
-                                            "        r = ff ? ff.receive : function() {{}};\r\n" +
+                                            "        r = ff ? ff.receive : function() {};\r\n" +
                                             "    ff ? ff.started(c) : '';" +
                                             "</script>";
 
@@ -54,8 +54,12 @@ namespace SignalR.Transports
         protected override Task InitializeResponse(ITransportConnection connection)
         {
             return base.InitializeResponse(connection)
-                .Then(initScript => Context.Response.WriteAsync(initScript),
-                      _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
+                .Then(initScript =>
+                {
+                    Context.Response.ContentType = "text/html";
+                    Context.Response.WriteAsync(initScript);
+                },
+                _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }
 
         private static string EscapeAnyInlineScriptTags(string input)
