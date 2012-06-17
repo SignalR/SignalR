@@ -88,7 +88,11 @@ namespace SignalR.Client.Http
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Failed to read resonse: {0}", ex);
+#if NET35
+                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to read response: {0}", ex));
+#else
+                Debug.WriteLine("Failed to read response: {0}", ex);
+#endif
                 // Swallow exceptions when reading the response stream and just try again.
                 return null;
             }

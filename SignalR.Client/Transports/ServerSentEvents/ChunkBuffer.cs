@@ -38,7 +38,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
                     _buffer.Remove(0, _offset + 1);
 
                     string line = _lineBuilder.ToString();
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE || NET35
                     _lineBuilder.Length = 0;
 #else
                     _lineBuilder.Clear();

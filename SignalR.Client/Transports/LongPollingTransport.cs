@@ -51,7 +51,11 @@ namespace SignalR.Client.Transports
 
             url += GetReceiveQueryString(connection, data);
 
+#if NET35
+            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", (object)url));
+#else
             Debug.WriteLine("LP: {0}", (object)url);
+#endif
 
             _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
@@ -75,7 +79,11 @@ namespace SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
+#if NET35
+                        Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
+#else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
+#endif
 
                         ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
                     }

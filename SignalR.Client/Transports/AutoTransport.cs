@@ -50,7 +50,11 @@ namespace SignalR.Client.Transports
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
+#if NET35
+                    Debug.WriteLine(System.String.Format(System.Globalization.CultureInfo.InvariantCulture, "Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name));
+#else
                     Debug.WriteLine("Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name);
+#endif
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;
