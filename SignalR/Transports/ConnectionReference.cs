@@ -32,6 +32,11 @@ namespace SignalR.Transports
         {
             get { throw new NotImplementedException(); }
         }
+        
+        public Uri Url
+        {
+            get { throw new NotImplementedException(); }
+        }
 
         public System.Threading.Tasks.Task Disconnect()
         {

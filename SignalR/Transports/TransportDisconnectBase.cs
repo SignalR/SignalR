@@ -155,5 +155,10 @@ namespace SignalR.Transports
         {
             get { return _heartBeat; }
         }
+
+        public Uri Url
+        {
+            get { return _context.Request.Url; }
+        }
     }
 }

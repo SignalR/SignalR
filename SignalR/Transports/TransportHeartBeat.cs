@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using SignalR.Infrastructure;
 
@@ -122,6 +123,11 @@ namespace SignalR.Transports
             }
 
             metadata.LastMarked = DateTime.UtcNow;
+        }
+
+        public IList<ITrackingConnection> GetConnections()
+        {
+            return _connections.GetSnapshot().ToList();
         }
 
         private void Beat(object state)

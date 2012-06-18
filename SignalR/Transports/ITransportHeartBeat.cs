@@ -1,4 +1,6 @@
-﻿namespace SignalR.Transports
+﻿using System.Collections.Generic;
+
+namespace SignalR.Transports
 {
     /// <summary>
     /// Manages tracking the state of connections.
@@ -28,5 +30,11 @@
         /// </summary>
         /// <param name="connection">The connection to remove.</param>
         void RemoveConnection(ITrackingConnection connection);
+
+        /// <summary>
+        /// Gets a list of connections being tracked.
+        /// </summary>
+        /// <returns>A list of connections.</returns>
+        IList<ITrackingConnection> GetConnections();
     }
 }

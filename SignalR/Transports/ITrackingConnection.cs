@@ -29,6 +29,11 @@ namespace SignalR.Transports
         TimeSpan DisconnectThreshold { get; }
 
         /// <summary>
+        /// Gets the uri of the connection.
+        /// </summary>
+        Uri Url { get; }
+
+        /// <summary>
         /// Causes the connection to disconnect.
         /// </summary>
         Task Disconnect();
