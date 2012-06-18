@@ -313,7 +313,7 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (connection.state !== signalR.connectionState.connected) {
+            if (!connection.transport) {
                 // Connection hasn't been started yet
                 throw "SignalR: Connection must be started before data can be sent. Call .start() before .send()";
             }
