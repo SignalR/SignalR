@@ -6,9 +6,10 @@ namespace SignalR.Transports
 {
     public class ForeverFrameTransport : ForeverTransport
     {
-        private const string _initPrefix = "<!DOCTYPE html><html><head>" +
-                                           "<title>SignalR Forever Frame Transport Stream</title></head>\r\n" +
-                                           "<body>\r\n" +
+        private const string _initPrefix = "<!DOCTYPE html>" +
+                                           "<html>" +
+                                           "<head>" +
+                                           "<title>SignalR Forever Frame Transport Stream</title>\r\n" +
                                            "<script>\r\n" + //"    debugger;\r\n"+
                                            "    var $ = window.parent.jQuery,\r\n" +
                                            "        ff = $ ? $.signalR.transports.foreverFrame : null,\r\n" +
@@ -17,7 +18,8 @@ namespace SignalR.Transports
         private const string _initSuffix = "') : null,\r\n" +
                                             "        r = ff ? ff.receive : function() {};\r\n" +
                                             "    ff ? ff.started(c) : '';" +
-                                            "</script>";
+                                            "</script></head>" + 
+                                            "<body>\r\n";
 
         private readonly bool _isDebug;
 
