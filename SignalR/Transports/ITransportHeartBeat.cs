@@ -11,13 +11,7 @@ namespace SignalR.Transports
         /// Adds a new connection to the list of tracked connections.
         /// </summary>
         /// <param name="connection">The connection to be added.</param>
-        void AddConnection(ITrackingConnection connection);
-
-        /// <summary>
-        /// Updates an existing connection and it's metadata.
-        /// </summary>
-        /// <param name="connection">The connection to be updated.</param>
-        void UpdateConnection(ITrackingConnection connection);
+        bool AddConnection(ITrackingConnection connection);
 
         /// <summary>
         /// Marks an existing connection as active.

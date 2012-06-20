@@ -13,8 +13,7 @@ namespace SignalR.Transports
     /// </summary>
     public class TransportHeartBeat : ITransportHeartBeat
     {
-        private readonly SafeSet<ITrackingConnection> _connections = new SafeSet<ITrackingConnection>(new ConnectionIdEqualityComparer());
-        private readonly ConcurrentDictionary<ITrackingConnection, ConnectionMetadata> _connectionMetadata = new ConcurrentDictionary<ITrackingConnection, ConnectionMetadata>(new ConnectionIdEqualityComparer());
+        private readonly ConcurrentDictionary<string, ConnectionMetadata> _connections = new ConcurrentDictionary<string, ConnectionMetadata>();
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
         private readonly IServerCommandHandler _serverCommandHandler;
@@ -61,24 +60,42 @@ namespace SignalR.Transports
         /// Adds a new connection to the list of tracked connections.
         /// </summary>
         /// <param name="connection">The connection to be added.</param>
-        public void AddConnection(ITrackingConnection connection)
+        public bool AddConnection(ITrackingConnection connection)
         {
-            UpdateConnection(connection);
+            var newMetadata = new ConnectionMetadata(connection);
+            ConnectionMetadata oldMetadata = null;
+            bool isNewConnection = true;
 
-            // Remove the metadata for new connections
-            ConnectionMetadata old;
-            _connectionMetadata.TryRemove(connection, out old);
-            var metadata = new ConnectionMetadata();
-            if (_connectionMetadata.TryAdd(connection, metadata))
+            _connections.AddOrUpdate(connection.ConnectionId, newMetadata, (key, old) =>
             {
-                metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
+                oldMetadata = old;
+                return newMetadata;
+            });
+
+            if (oldMetadata != null)
+            {
+                // Kick out the older connection. This should only happen when 
+                // a previous connection attempt fails on the client side (e.g. transport fallback).
+                oldMetadata.Connection.End();
+
+                // If we have old metadata this isn't a new connection
+                isNewConnection = false;
             }
+
+            // Set the initial connection time
+            newMetadata.Initial = DateTime.UtcNow;
+
+            // Set the keep alive time
+            newMetadata.UpdateKeepAlive(_configurationManager.KeepAlive);
+
+            return isNewConnection;
         }
 
         private void RemoveConnection(string connectionId)
         {
             // Remove the connection
-            RemoveConnection(new ConnectionReference(connectionId));
+            ConnectionMetadata metadata;
+            _connections.TryRemove(connectionId, out metadata);
         }
 
         /// <summary>
@@ -88,20 +105,7 @@ namespace SignalR.Transports
         public void RemoveConnection(ITrackingConnection connection)
         {
             // Remove the connection and associated metadata
-            _connections.Remove(connection);
-            ConnectionMetadata old;
-            _connectionMetadata.TryRemove(connection, out old);
-        }
-
-        /// <summary>
-        /// Updates an existing connection and it's metadata.
-        /// </summary>
-        /// <param name="connection">The connection to be updated.</param>
-        public void UpdateConnection(ITrackingConnection connection)
-        {
-            // Remove and re-add the connection so we have the correct object reference
-            _connections.Remove(connection);
-            _connections.Add(connection);
+            RemoveConnection(connection.ConnectionId);
         }
 
         /// <summary>
@@ -110,24 +114,16 @@ namespace SignalR.Transports
         /// <param name="connection">The connection to mark.</param>
         public void MarkConnection(ITrackingConnection connection)
         {
-            // See if there's an old metadata value
-            ConnectionMetadata oldMetadata;
-            _connectionMetadata.TryGetValue(connection, out oldMetadata);
-            
-            // Mark this time this connection was used
-            var metadata = _connectionMetadata.GetOrAdd(connection, _ => new ConnectionMetadata());
-            if (oldMetadata != null)
+            ConnectionMetadata metadata;
+            if (_connections.TryGetValue(connection.ConnectionId, out metadata))
             {
-                // Use the same initial time (if it exists)
-                metadata.Initial = oldMetadata.Initial;
+                metadata.LastMarked = DateTime.UtcNow;
             }
-
-            metadata.LastMarked = DateTime.UtcNow;
         }
 
         public IList<ITrackingConnection> GetConnections()
         {
-            return _connections.GetSnapshot().ToList();
+            return _connections.Values.Select(metadata => metadata.Connection).ToList();
         }
 
         private void Beat(object state)
@@ -140,70 +136,16 @@ namespace SignalR.Transports
 
             try
             {
-                foreach (var connection in _connections.GetSnapshot())
+                foreach (var metadata in _connections.Values)
                 {
-                    if (!connection.IsAlive)
+                    if (metadata.Connection.IsAlive)
                     {
-                        // The transport is currently disconnected, it could just be reconnecting though
-                        // so we need to check it's last active time to see if it's over the disconnect
-                        // threshold
-                        TimeSpan elapsed;
-                        if (TryGetElapsed(connection, metadata => metadata.LastMarked, out elapsed))
-                        {
-                            // The threshold for disconnect is the transport threshold + (potential network issues)
-                            var threshold = connection.DisconnectThreshold + _configurationManager.DisconnectTimeout;
-
-                            if (elapsed < threshold)
-                            {
-                                continue;
-                            }
-                        }
-
-                        try
-                        {
-                            // Remove the connection from the list
-                            RemoveConnection(connection);
-
-                            // Fire disconnect on the connection
-                            connection.Disconnect();
-                        }
-                        catch
-                        {
-                            // Swallow exceptions that might happen during disconnect
-                        }
+                        CheckTimeoutAndKeepAlive(metadata);
                     }
                     else
                     {
-                        TimeSpan? keepAlive = _configurationManager.KeepAlive;
-
-                        TimeSpan elapsed;
-                        if (keepAlive == null &&
-                            !connection.IsTimedOut &&
-                            TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
-                            elapsed >= _configurationManager.ConnectionTimeout)
-                        {
-                            // If we're past the expiration time then just timeout the connection                            
-                            connection.Timeout();
-
-                            RemoveConnection(connection);
-                        }
-                        else
-                        {
-                            // The connection is still alive so we need to keep it alive with a server side "ping".
-                            // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
-                            // of us handling timeout's or disconencts gracefully
-
-                            ConnectionMetadata metadata;
-                            if (keepAlive != null &&
-                                _connectionMetadata.TryGetValue(connection, out metadata) &&
-                                DateTime.UtcNow >= metadata.KeepAliveTime)
-                            {
-                                connection.KeepAlive();
-                                metadata.UpdateKeepAlive(keepAlive);
-                            }
-                            
-                            MarkConnection(connection);
-                        }
+                        // Check if we need to disconnect this connection
+                        CheckDisconnect(metadata);
                     }
                 }
             }
@@ -217,43 +159,116 @@ namespace SignalR.Transports
             }
         }
 
-        private bool TryGetElapsed(ITrackingConnection connection, Func<ConnectionMetadata, DateTime> selector, out TimeSpan elapsed)
+        private void CheckTimeoutAndKeepAlive(ConnectionMetadata metadata)
         {
-            ConnectionMetadata metadata;
-            if (_connectionMetadata.TryGetValue(connection, out metadata))
+            if (RaiseTimeout(metadata))
             {
-                // Calculate how long this connection has been inactive
-                elapsed = DateTime.UtcNow - selector(metadata);
-                return true;
-            }
+                // If we're past the expiration time then just timeout the connection                            
+                metadata.Connection.Timeout();
 
-            elapsed = TimeSpan.Zero;
-            return false;
+                RemoveConnection(metadata.Connection);
+            }
+            else
+            {
+                // The connection is still alive so we need to keep it alive with a server side "ping".
+                // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
+                // of us handling timeout's or disconnects gracefully
+                if (RaiseKeepAlive(metadata))
+                {
+                    metadata.Connection.KeepAlive();
+                    metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
+                }
+
+                MarkConnection(metadata.Connection);
+            }
         }
 
-        private class ConnectionIdEqualityComparer : IEqualityComparer<ITrackingConnection>
+        private void CheckDisconnect(ConnectionMetadata metadata)
         {
-            public bool Equals(ITrackingConnection x, ITrackingConnection y)
+            try
             {
-                return String.Equals(x.ConnectionId, y.ConnectionId, StringComparison.OrdinalIgnoreCase);
+                if (RaiseDisconnect(metadata))
+                {
+                    // Remove the connection from the list
+                    RemoveConnection(metadata.Connection);
+
+                    // Fire disconnect on the connection
+                    metadata.Connection.Disconnect();
+                }
+            }
+            catch
+            {
+                // Swallow exceptions that might happen during disconnect
+            }
+        }
+
+        private bool RaiseDisconnect(ConnectionMetadata metadata)
+        {
+            // The transport is currently dead but it could just be reconnecting 
+            // so we to check it's last active time to see if it's over the disconnect
+            // threshold
+            TimeSpan elapsed = DateTime.UtcNow - metadata.LastMarked;
+
+            // The threshold for disconnect is the transport threshold + (potential network issues)
+            var threshold = metadata.Connection.DisconnectThreshold + _configurationManager.DisconnectTimeout;
+
+            return elapsed >= threshold;
+        }
+
+        private bool RaiseKeepAlive(ConnectionMetadata metadata)
+        {
+            TimeSpan? keepAlive = _configurationManager.KeepAlive;
+
+            if (keepAlive == null)
+            {
+                return false;
             }
 
-            public int GetHashCode(ITrackingConnection obj)
+            // Raise keep alive if the keep alive value has passed
+            return DateTime.UtcNow >= metadata.KeepAliveTime;
+        }
+
+        private bool RaiseTimeout(ConnectionMetadata metadata)
+        {
+            // The connection already timed out so do nothing
+            if (metadata.Connection.IsTimedOut)
             {
-                return obj.ConnectionId.GetHashCode();
+                return false;
             }
+
+            TimeSpan? keepAlive = _configurationManager.KeepAlive;
+            // If keep alive is configured and the connection supports keep alive
+            // don't ever time out
+            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
+            {
+                return false;
+            }
+
+            TimeSpan elapsed = DateTime.UtcNow - metadata.Initial;
+
+            // Only raise timeout if we're past the configured connection timeout.
+            return elapsed >= _configurationManager.ConnectionTimeout;
         }
 
         private class ConnectionMetadata
         {
-            public ConnectionMetadata()
+            public ConnectionMetadata(ITrackingConnection connection)
             {
+                Connection = connection;
                 Initial = DateTime.UtcNow;
                 LastMarked = DateTime.UtcNow;
             }
 
+            // The connection instance
+            public ITrackingConnection Connection { get; set; }
+
+            // The last time the connection had any activity
             public DateTime LastMarked { get; set; }
+
+            // The initial connection time of the connection
             public DateTime Initial { get; set; }
+
+            // The time to send the keep alive ping
             public DateTime KeepAliveTime { get; set; }
 
             public void UpdateKeepAlive(TimeSpan? keepAliveInterval)

@@ -47,6 +47,7 @@ namespace SignalR.Transports
         protected virtual void OnSending(string payload)
         {
             HeartBeat.MarkConnection(this);
+
             if (Sending != null)
             {
                 Sending(payload);
@@ -94,7 +95,16 @@ namespace SignalR.Transports
                     if (Connected != null)
                     {
                         // Return a task that completes when the connected event task & the receive loop task are both finished
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Connected, connection);
+                        bool newConnection = HeartBeat.AddConnection(this);
+                        return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
+                        {
+                            if (newConnection)
+                            {
+                                return Connected();
+                            }
+                            return TaskAsyncHelper.Empty;
+                        }
+                        , connection);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -117,16 +127,19 @@ namespace SignalR.Transports
 
         public virtual Task Send(PersistentResponse response)
         {
-            HeartBeat.MarkConnection(this);
             var data = _jsonSerializer.Stringify(response);
+            
             OnSending(data);
+            
             return Context.Response.WriteAsync(data);
         }
 
         public virtual Task Send(object value)
         {
             var data = _jsonSerializer.Stringify(value);
+            
             OnSending(data);
+
             return Context.Response.EndAsync(data);
         }
 
@@ -152,8 +165,11 @@ namespace SignalR.Transports
         private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
             HeartBeat.AddConnection(this);
-            HeartBeat.MarkConnection(this);
+            return ProcessReceiveRequestWithoutTracking(connection, postReceive);
+        }
 
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        {
             Action afterReceive = () =>
             {
                 if (TransportConnected != null)

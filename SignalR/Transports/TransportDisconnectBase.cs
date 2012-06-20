@@ -16,6 +16,7 @@ namespace SignalR.Transports
 
         protected int _isDisconnected;
         private readonly CancellationTokenSource _timeoutTokenSource;
+        private readonly CancellationTokenSource _endTokenSource;
         private readonly CancellationToken _hostShutdownToken;
         private readonly CancellationTokenSource _connectionEndToken;
 
@@ -25,10 +26,11 @@ namespace SignalR.Transports
             _jsonSerializer = jsonSerializer;
             _heartBeat = heartBeat;
             _timeoutTokenSource = new CancellationTokenSource();
+            _endTokenSource = new CancellationTokenSource();
             _hostShutdownToken = context.HostShutdownToken();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _hostShutdownToken);
+            _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _hostShutdownToken);
         }
 
         public string ConnectionId
@@ -90,6 +92,14 @@ namespace SignalR.Transports
             }
         }
 
+        public virtual bool SupportsKeepAlive
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public virtual TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromSeconds(5); }
@@ -142,6 +152,11 @@ namespace SignalR.Transports
 
         public virtual void KeepAlive()
         {
+        }
+
+        public void End()
+        {
+            _endTokenSource.Cancel();
         }
 
         protected ITransportConnection Connection { get; set; }

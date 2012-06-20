@@ -91,6 +91,14 @@ namespace SignalR.Transports
             }
         }
 
+        public override bool SupportsKeepAlive
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public Func<string, Task> Received { get; set; }
 
         public Func<Task> TransportConnected { get; set; }
@@ -179,12 +187,20 @@ namespace SignalR.Transports
 
         private Task ProcessConnectRequest(ITransportConnection connection)
         {
-            HeartBeat.AddConnection(this);
-
             if (Connected != null)
             {
+                bool newConnection = HeartBeat.AddConnection(this);
+
                 // Return a task that completes when the connected event task & the receive loop task are both finished
-                return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Connected, connection);
+                return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
+                {
+                    if (newConnection)
+                    {
+                        return Connected();
+                    }
+                    return TaskAsyncHelper.Empty;
+                },
+                connection);
             }
 
             return ProcessReceiveRequest(connection);
@@ -192,9 +208,12 @@ namespace SignalR.Transports
 
         private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
-            HeartBeat.UpdateConnection(this);
-            HeartBeat.MarkConnection(this);
+            HeartBeat.AddConnection(this);
+            return ProcessReceiveRequestWithoutTracking(connection, postReceive);
+        }
 
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        {
             if (TransportConnected != null)
             {
                 TransportConnected().Catch();

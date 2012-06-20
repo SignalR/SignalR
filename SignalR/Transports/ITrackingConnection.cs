@@ -24,6 +24,11 @@ namespace SignalR.Transports
         bool IsTimedOut { get; }
 
         /// <summary>
+        /// Gets a value that represents if the connection supprots keep alive.
+        /// </summary>
+        bool SupportsKeepAlive { get; }
+
+        /// <summary>
         /// Gets a value indicating the amount of time to wait after the connection dies before firing the disconnecting the connection.
         /// </summary>
         TimeSpan DisconnectThreshold { get; }
@@ -47,5 +52,10 @@ namespace SignalR.Transports
         /// Sends a keep alive ping over the connection.
         /// </summary>
         void KeepAlive();
+
+        /// <summary>
+        /// Kills the connection.
+        /// </summary>
+        void End();
     }
 }

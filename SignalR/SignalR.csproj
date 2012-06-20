@@ -140,7 +140,6 @@
     <Compile Include="Transports\ITransport.cs" />
     <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />
-    <Compile Include="Transports\ConnectionReference.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
     <Compile Include="Transports\TransportDisconnectBase.cs" />
     <Compile Include="Transports\TransportHeartBeat.cs" />
