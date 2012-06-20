@@ -157,7 +157,7 @@
 
             // Resolve the full url
             parser.href = connection.url;
-            if (parser.protocol === ":") {
+            if (!parser.protocol || parser.protocol === ":") {
                 connection.baseUrl = window.document.location.protocol + "//" + window.document.location.host;
             }
             else {
