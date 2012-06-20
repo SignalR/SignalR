@@ -27,10 +27,9 @@ namespace SignalR.Transports
             _isDebug = context.IsDebuggingEnabled();
         }
 
-        public override void KeepAlive()
+        public override void KeepAlive(TimeSpan? keepAlive)
         {
-            Debug.WriteLine("Sending empty keep alive packet to client");
-            var script = "<script>r(c, {});</script>\r\n";
+            var script = "<script>r(c, {\"ka\":" + keepAlive.Value.TotalSeconds + "});</script>\r\n";
             Context.Response.WriteAsync(script).Catch();
         }
 

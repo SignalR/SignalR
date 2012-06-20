@@ -70,7 +70,7 @@
         changeState = function (connection, state) {
             if (state !== connection.state) {
                 // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state }]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
                 connection.state = state;
             }
         },
@@ -530,9 +530,17 @@
 
         processMessages: function (connection, data) {
             var $connection = $(connection);
-
+            console.log(data);
             if (!data) {
                 return;
+            }
+
+            if (jQuery.isEmptyObject(data)) {
+                console.log('keepAlive');
+            }
+
+            if (data.ka != 0) {
+                console.log('keepAlive:' + data.ka);
             }
 
             if (data.Disconnect) {

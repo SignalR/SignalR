@@ -33,7 +33,8 @@
             onError: "onError",
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
-            onDisconnect: "onDisconnect"
+            onDisconnect: "onDisconnect",
+            onKeepAliveTimeout: "onKeepAliveTimeout"
         },
 
         log = function (msg, logging) {
@@ -70,7 +71,7 @@
         changeState = function (connection, state) {
             if (state !== connection.state) {
                 // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state }]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
                 connection.state = state;
             }
         },
@@ -345,6 +346,7 @@
             return connection;
         },
 
+
         stateChanged: function (callback) {
             /// <summary>Adds a callback that will be invoked when the connection state changes</summary>
             /// <param name="callback" type="Function">A callback function to execute when the connection state changes</param>
@@ -418,6 +420,17 @@
                 changeState(connection, signalR.connectionState.disconnected);
             }
 
+            return connection;
+        },
+
+        keepAliveTimeout: function (callback) {
+            /// <summary>Adds a callback that will be invoked when keepAlive isn't received</summary>
+            /// <param name="callback" type="Function">A callback function to execute when keepAlive isn't received</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind(events.onKeepAliveTimeout, function (e) {
+                callback.call(connection);
+            });
             return connection;
         },
 
@@ -530,9 +543,16 @@
 
         processMessages: function (connection, data) {
             var $connection = $(connection);
-
             if (!data) {
                 return;
+            }
+
+            if (data.ka != 0) {
+                clearTimeout(this.keepAliveTimeout);
+                this.keepAliveTimeout = setTimeout(function () {
+                    connection.log("Keep Alive timedout");
+                    $(connection).trigger(events.onKeepAliveTimeout);
+                }, data.ka * 1100); //+10% for network delays...Only concern I have is if the events.OnReceived is blocked below could get erroneous onKeepAliveTimeout fired?
             }
 
             if (data.Disconnect) {
@@ -563,6 +583,8 @@
                 connection.groups = data.TransportData.Groups;
             }
         },
+
+        keepAliveTimeout: null,
 
         foreverFrame: {
             count: 0,

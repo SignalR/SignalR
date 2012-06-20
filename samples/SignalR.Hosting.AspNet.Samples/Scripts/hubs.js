@@ -273,6 +273,17 @@
                 return serverCall(this, "HitUs", $.makeArray(arguments));
             }
         },
+        keepAlive: {
+            _: {
+                hubName: 'KeepAlive',
+                ignoreMembers: ['setKeepAlive', 'namespace', 'ignoreMembers', 'callbacks'],
+                connection: function () { return signalR.hub; }
+            },
+
+            setKeepAlive: function (seconds, callback) {
+                return serverCall(this, "SetKeepAlive", $.makeArray(arguments));
+            }
+        },
         mouseTracking: {
             _: {
                 hubName: 'MouseTracking',

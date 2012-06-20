@@ -114,6 +114,8 @@
     <Content Include="Hubs\Chat\Chat.js" />
     <Content Include="Hubs\Chat\index.htm" />
     <Content Include="Hubs\DrawingPad\index.htm" />
+    <Content Include="Hubs\KeepAlive\KeepAlive.js" />
+    <Content Include="Hubs\KeepAlive\index.htm" />
     <Content Include="Hubs\MouseTracking\images\wand.png" />
     <Content Include="Hubs\MouseTracking\MouseTracking.css" />
     <Content Include="Hubs\MouseTracking\index.htm" />
@@ -176,6 +178,7 @@
     <Compile Include="Hubs\Chat\ContentProviders\ImageContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
+    <Compile Include="Hubs\KeepAlive\KeepAlive.cs" />
     <Compile Include="Hubs\MouseTracking\MouseTracking.cs" />
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

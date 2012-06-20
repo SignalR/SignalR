@@ -15,11 +15,15 @@ namespace SignalR.Transports
         private readonly SafeSet<ITrackingConnection> _connections = new SafeSet<ITrackingConnection>(new ConnectionIdEqualityComparer());
         private readonly ConcurrentDictionary<ITrackingConnection, ConnectionMetadata> _connectionMetadata = new ConcurrentDictionary<ITrackingConnection, ConnectionMetadata>(new ConnectionIdEqualityComparer());
         private readonly Timer _timer;
+        private readonly Timer _beatTimer;
+        private readonly Timer _keepAliveTimer;
         private readonly IConfigurationManager _configurationManager;
         private readonly IServerCommandHandler _serverCommandHandler;
         private readonly string _serverId;
 
         private int _running;
+        private int _keepAliveRunning;
+        private TimeSpan? _lastKeepAlive;
 
         /// <summary>
         /// Initializes and instance of the <see cref="TransportHeartBeat"/> class.
@@ -33,11 +37,13 @@ namespace SignalR.Transports
 
             _serverCommandHandler.Command = ProcessServerCommand;
 
-            // REVIEW: When to dispose the timer?
-            _timer = new Timer(Beat,
+            // REVIEW: When to dispose the timers?
+            _beatTimer = new Timer(Beat,
                                null,
                                _configurationManager.HeartBeatInterval,
                                _configurationManager.HeartBeatInterval);
+
+            _keepAliveTimer = new Timer(KeepAlive, null, new TimeSpan(0, 0, 1), new TimeSpan(0, 0, 1));
         }
 
         private void ProcessServerCommand(ServerCommand command)
@@ -124,6 +130,59 @@ namespace SignalR.Transports
             metadata.LastMarked = DateTime.UtcNow;
         }
 
+        private void KeepAlive(object state)
+        {
+            if (Interlocked.Exchange(ref _keepAliveRunning, 1) == 1)
+            {
+                Trace.TraceInformation("SIGNALR: KeepAlive timer handler took longer than current interval");
+                return;
+            }
+
+            try
+            {
+                TimeSpan? keepAlive = _configurationManager.KeepAlive;
+                if (keepAlive == null)
+                    return;
+
+                if ((_lastKeepAlive == null) || (_lastKeepAlive.Value.CompareTo(keepAlive.Value) != 0))
+                {
+                    //set/update the interval
+                    _lastKeepAlive = keepAlive;
+                    //_keepAliveTimer.Change(_lastKeepAlive.Value, _lastKeepAlive.Value);
+                }
+
+                foreach (var connection in _connections.GetSnapshot())
+                {
+                    if (!connection.IsAlive)
+                        continue;
+
+                    // The connection is still alive so we need to keep it alive with a server side "ping".
+                    // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
+                    // of us handling timeout's or disconencts gracefully
+
+                    ConnectionMetadata metadata;
+                    if (_connectionMetadata.TryGetValue(connection, out metadata) &&
+                        DateTime.UtcNow >= metadata.KeepAliveTime)
+                    {
+                        connection.KeepAlive(keepAlive);
+                        metadata.UpdateKeepAlive(keepAlive);
+                        MarkConnection(connection);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("SignalR error during keep alive heart beat on background thread: {0}", ex);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _keepAliveRunning, 0);
+            }
+        }
+
+
+
         private void Beat(object state)
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
@@ -168,11 +227,8 @@ namespace SignalR.Transports
                     }
                     else
                     {
-                        TimeSpan? keepAlive = _configurationManager.KeepAlive;
-
                         TimeSpan elapsed;
-                        if (keepAlive == null &&
-                            !connection.IsTimedOut &&
+                        if (!connection.IsTimedOut &&
                             TryGetElapsed(connection, metadata => metadata.Initial, out elapsed) &&
                             elapsed >= _configurationManager.ConnectionTimeout)
                         {
@@ -180,23 +236,6 @@ namespace SignalR.Transports
                             connection.Timeout();
 
                             RemoveConnection(connection);
-                        }
-                        else
-                        {
-                            // The connection is still alive so we need to keep it alive with a server side "ping".
-                            // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
-                            // of us handling timeout's or disconencts gracefully
-
-                            ConnectionMetadata metadata;
-                            if (keepAlive != null &&
-                                _connectionMetadata.TryGetValue(connection, out metadata) &&
-                                DateTime.UtcNow >= metadata.KeepAliveTime)
-                            {
-                                connection.KeepAlive();
-                                metadata.UpdateKeepAlive(keepAlive);
-                            }
-                            
-                            MarkConnection(connection);
                         }
                     }
                 }

@@ -43,7 +43,7 @@ namespace SignalR.Transports
             throw new NotImplementedException();
         }
 
-        public void KeepAlive()
+        public void KeepAlive(TimeSpan? keepAlive)
         {
             throw new NotImplementedException();
         }

@@ -41,6 +41,7 @@ namespace SignalR.Transports
         /// <summary>
         /// Sends a keep alive ping over the connection.
         /// </summary>
-        void KeepAlive();
+        /// <param name="keepAlive"> </param>
+        void KeepAlive(TimeSpan? keepAlive);
     }
 }

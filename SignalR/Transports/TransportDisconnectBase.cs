@@ -140,7 +140,7 @@ namespace SignalR.Transports
             _timeoutTokenSource.Cancel();
         }
 
-        public virtual void KeepAlive()
+        public virtual void KeepAlive(TimeSpan? keepAlive)
         {
         }
 

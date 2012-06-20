@@ -12,6 +12,7 @@ namespace SignalR.Hosting.AspNet.Samples
     {
         protected void Application_Start(object sender, EventArgs e)
         {
+            //GlobalHost.Configuration.KeepAlive = new TimeSpan(0, 0, 5);
             ThreadPool.QueueUserWorkItem(_ =>
             {
                 var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();

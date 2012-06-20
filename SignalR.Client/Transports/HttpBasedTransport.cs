@@ -207,6 +207,7 @@ namespace SignalR.Client.Transports
                     return;
                 }
 
+
                 timedOut = result.Value<bool>("TimedOut");
                 disconnected = result.Value<bool>("Disconnect");
 
@@ -214,6 +215,13 @@ namespace SignalR.Client.Transports
                 {
                     return;
                 }
+
+                var keepAlive = result["ka"];
+                if (keepAlive != null)
+                {
+                    Debug.WriteLine("KeepAlive:{0}"+keepAlive);
+                }
+
 
                 var messages = result["Messages"] as JArray;
                 if (messages != null)

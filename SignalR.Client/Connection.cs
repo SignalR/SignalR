@@ -50,6 +50,11 @@ namespace SignalR.Client
         public event Action<StateChange> StateChanged;
 
         /// <summary>
+        /// Occurs when the <see cref="Connection"/> hasn't received a KeepAlive message if GlobalHost.Configuration.KeepAlive is set
+        /// </summary>
+        public event Action KeepAliveTimeout;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Connection"/> class.
         /// </summary>
         /// <param name="url">The url to connect to.</param>

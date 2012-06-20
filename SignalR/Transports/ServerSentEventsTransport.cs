@@ -12,10 +12,9 @@ namespace SignalR.Transports
 
         }
 
-        public override void KeepAlive()
+        public override void KeepAlive(TimeSpan? keepAlive)
         {
-            Debug.WriteLine("Sending empty keep alive packet to client");
-            Context.Response.WriteAsync("data: {}\n\n").Catch();
+            Context.Response.WriteAsync("data: {\"ka\":" + keepAlive.Value.TotalSeconds + "}\n\n").Catch();
         }
 
         public override Task Send(PersistentResponse response)
