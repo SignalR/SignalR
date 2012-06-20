@@ -203,7 +203,6 @@ namespace SignalR.Hubs
             catch (Exception ex)
             {
                 _trace.Source.TraceInformation("Error creating hub {0}. " + ex.Message, descriptor.Name);
-                Debug.WriteLine("HubDispatcher: Error creating hub {0}. " + ex.Message, (object)descriptor.Name);
 
                 if (throwIfFailedToCreate)
                 {

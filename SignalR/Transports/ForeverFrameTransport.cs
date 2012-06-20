@@ -31,7 +31,6 @@ namespace SignalR.Transports
 
         public override void KeepAlive()
         {
-            Debug.WriteLine("Sending empty keep alive packet to client");
             var script = "<script>r(c, {});</script>\r\n";
             Context.Response.WriteAsync(script).Catch();
         }

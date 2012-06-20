@@ -93,7 +93,6 @@ namespace SignalR
             {
                 // Wait for new messages
                 _trace.Source.TraceInformation("MessageBus: New connection waiting for messages");
-                Debug.WriteLine("MessageBus: New connection waiting for messages");
                 return WaitForMessages(eventKeys, timeoutToken, default(T));
             }
 
@@ -108,14 +107,12 @@ namespace SignalR
                     // BUG 24: Connection already has the latest message, so reset the id
                     // This can happen if the server is reset (appdomain or entire server incase of self host)
                     _trace.Source.TraceInformation("MessageBus: Connection asking for message id {0} when the largest is {1}. Resetting id", id, _lastMessageId);
-                    Debug.WriteLine("MessageBus: Connection asking for message id {0} when the largest is {1}. Resetting id", id, _lastMessageId);
                     uuid = default(T);
                 }
                 else if (uuid.CompareTo(_lastMessageId) == 0)
                 {
                     // Connection already has the latest message, so start wating
                     _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", uuid);
-                    Debug.WriteLine("MessageBus: Connection waiting for new messages from id {0}", (object)uuid);
                     return WaitForMessages(eventKeys, timeoutToken, uuid);
                 }
 
@@ -125,13 +122,11 @@ namespace SignalR
                 {
                     // Messages already in store greater than last received id so return them
                     _trace.Source.TraceInformation("MessageBus: Connection getting messages from cache from id {0}", uuid);
-                    Debug.WriteLine("MessageBus: Connection getting messages from cache from id {0}", (object)uuid);
                     return TaskAsyncHelper.FromResult(GetMessageResult(messages.OrderBy(msg => msg.Id).ToList()));
                 }
 
                 // Wait for new messages
                 _trace.Source.TraceInformation("MessageBus: Connection waiting for new messages from id {0}", uuid);
-                Debug.WriteLine("MessageBus: Connection waiting for new messages from id {0}", (object)uuid);
                 return WaitForMessages(eventKeys, timeoutToken, uuid);
             }
             finally
@@ -154,9 +149,6 @@ namespace SignalR
                 // Only 1 save allowed at a time, to ensure messages are added to the list in order
                 message = new InMemoryMessage<T>(eventKey, value, GenerateId());
                 _trace.Source.TraceInformation("MessageBus: Saving message {0} with eventKey '{1}' to cache on AppDomain {2}", message.Id, eventKey, AppDomain.CurrentDomain.Id);
-                Debug.WriteLine("MessageBus: Saving message {0} with eventKey '{1}' to cache on AppDomain {2}.", message.Id, eventKey, AppDomain.CurrentDomain.Id);
-                Debug.WriteLine("MessageBus: Payload");
-                Debug.WriteLine(value.ToString());
                 list.AddWithLock(message);
 
                 // Send to waiting callers.
@@ -191,12 +183,10 @@ namespace SignalR
                 if (delegates.Count == 0)
                 {
                     _trace.Source.TraceInformation("MessageBus: Sending message {0} with eventKey '{1}' to 0 waiting connections", message.Id, eventKey);
-                    Debug.WriteLine("MessageBus: Sending message {0} with eventKey '{1}' to 0 waiting connections", message.Id, eventKey);
                     return;
                 }
 
                 _trace.Source.TraceInformation("MessageBus: Sending message {0} with eventKey '{1}' to {2} waiting connections", message.Id, eventKey, delegates.Count);
-                Debug.WriteLine("MessageBus: Sending message {0} with eventKey '{1}' to {2} waiting connections", message.Id, eventKey, delegates.Count);
 
                 foreach (var callback in delegates)
                 {

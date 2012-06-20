@@ -58,7 +58,6 @@ namespace SignalR
         public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
         {
             _trace.Source.TraceInformation("Connection: Waiting for new messages");
-            Debug.WriteLine("Connection: Waiting for new messages.");
 
             return _messageBus.GetMessages(Signals, null, timeoutToken)
                               .Then(result => GetResponse(result));
@@ -67,7 +66,6 @@ namespace SignalR
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
         {
             _trace.Source.TraceInformation("Connection: Waiting for messages from {0}.", messageId);
-            Debug.WriteLine("Connection: Waiting for messages from {0}.", (object)messageId);
 
             return _messageBus.GetMessages(Signals, messageId, timeoutToken)
                               .Then(result => GetResponse(result));
@@ -95,11 +93,6 @@ namespace SignalR
             PopulateResponseState(response);
 
             _trace.Source.TraceInformation("Connection: Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
-            Debug.WriteLine("Connection: Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
-            Debug.WriteLine("Connection: Messages");
-            Debug.WriteLine(_serializer.Stringify(result.Messages));
-            Debug.WriteLine("Connection: Response");
-            Debug.WriteLine(_serializer.Stringify(response));
 
             return response;
         }

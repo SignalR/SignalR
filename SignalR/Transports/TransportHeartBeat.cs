@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using SignalR.Infrastructure;
@@ -17,6 +16,7 @@ namespace SignalR.Transports
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
         private readonly IServerCommandHandler _serverCommandHandler;
+        private readonly ITraceManager _trace;
         private readonly string _serverId;
 
         private int _running;
@@ -30,6 +30,7 @@ namespace SignalR.Transports
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
+            _trace = resolver.Resolve<ITraceManager>();
 
             _serverCommandHandler.Command = ProcessServerCommand;
 
@@ -62,6 +63,8 @@ namespace SignalR.Transports
         /// <param name="connection">The connection to be added.</param>
         public bool AddConnection(ITrackingConnection connection)
         {
+            _trace.Source.TraceInformation("TransportHeartBeat: Adding connection {0}", connection.ConnectionId);
+
             var newMetadata = new ConnectionMetadata(connection);
             ConnectionMetadata oldMetadata = null;
             bool isNewConnection = true;
@@ -74,12 +77,18 @@ namespace SignalR.Transports
 
             if (oldMetadata != null)
             {
+                _trace.Source.TraceInformation("TransportHeartBeat: Connection {0} already exists and alive={1}. Closing previous connection id.", oldMetadata.Connection.ConnectionId, oldMetadata.Connection.IsAlive);
+
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
                 oldMetadata.Connection.End();
 
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
+            }
+            else
+            {
+                _trace.Source.TraceInformation("TransportHeartBeat: Connection {0} is new.", connection.ConnectionId);
             }
 
             // Set the initial connection time
@@ -93,6 +102,8 @@ namespace SignalR.Transports
 
         private void RemoveConnection(string connectionId)
         {
+            _trace.Source.TraceInformation("TransportHeartBeat: Removing connection {0}", connectionId);
+
             // Remove the connection
             ConnectionMetadata metadata;
             _connections.TryRemove(connectionId, out metadata);
@@ -130,7 +141,7 @@ namespace SignalR.Transports
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
             {
-                Trace.TraceInformation("SIGNALR: TransportHeatBeat timer handler took longer than current interval");
+                _trace.Source.TraceInformation("TransportHeartBeat: timer handler took longer than current interval");
                 return;
             }
 
@@ -151,7 +162,7 @@ namespace SignalR.Transports
             }
             catch (Exception ex)
             {
-                Trace.TraceError("SignalR error during transport heart beat on background thread: {0}", ex);
+                _trace.Source.TraceInformation("TransportHeartBeat: SignalR error during transport heart beat on background thread: {0}", ex);
             }
             finally
             {
@@ -196,9 +207,10 @@ namespace SignalR.Transports
                     metadata.Connection.Disconnect();
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Swallow exceptions that might happen during disconnect
+                _trace.Source.TraceInformation("TransportHeartBeat: Raising Disconnect failed: {0}", ex);
             }
         }
 
