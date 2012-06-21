@@ -223,7 +223,6 @@
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\DefaultHttpHandler.cs" />
     <Compile Include="Http\HttpResponseMessageWrapper.cs" />
-    <Compile Include="Infrastructure\TypeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
