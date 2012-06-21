@@ -726,7 +726,6 @@
                         $connection.trigger(events.onError, [e]);
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            connection.log("EventSource reconnecting");
                             if (isDisconnecting(connection) === false) {
                                 that.reconnect(connection);
                             }
@@ -742,6 +741,10 @@
                         connection.log("EventSource timed out trying to connect");
                         connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
+                        if (!reconnecting) {
+                            that.stop(connection);
+                        }
+
                         if (onFailed) {
                             onFailed();
                         }
@@ -752,12 +755,8 @@
                             if (connection.eventSource.readyState !== window.EventSource.CONNECTING &&
                                 connection.eventSource.readyState !== window.EventSource.OPEN) {
                                 // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                                connection.log("EventSource reconnecting");
                                 that.reconnect(connection);
                             }
-                        } else {
-                            connection.log("EventSource stopping the connection.");
-                            that.stop(connection);
                         }
                     }
                 },
@@ -815,7 +814,6 @@
                         if (isDisconnecting(connection) === false) {
                             that.reconnect(connection);
                         }
-
                     } else {
                         // connection error
                         connection.log("EventSource error");
@@ -827,6 +825,7 @@
             reconnect: function (connection) {
                 var that = this;
                 window.setTimeout(function () {
+                    connection.log("EventSource reconnecting");
                     that.stop(connection);
                     that.start(connection);
                 }, connection.reconnectDelay);
@@ -838,6 +837,7 @@
 
             stop: function (connection) {
                 if (connection && connection.eventSource) {
+                    connection.log("EventSource calling close()");
                     connection.eventSource.close();
                     connection.eventSource = null;
                     delete connection.eventSource;
