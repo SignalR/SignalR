@@ -5,6 +5,7 @@ using System.Dynamic;
 #endif
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Client.Hubs
 {
@@ -68,11 +69,17 @@ namespace SignalR.Client.Hubs
                 throw new ArgumentNullException("method");
             }
 
+            var tokenifiedArguments = new JToken[args.Length];
+            for (int i = 0; i < tokenifiedArguments.Length; i++)
+            {
+                tokenifiedArguments[i] = JToken.FromObject(args[i]);
+            }
+
             var hubData = new HubInvocation
             {
                 Hub = _hubName,
                 Method = method,
-                Args = args,
+                Args = tokenifiedArguments,
                 State = _state
             };
 
@@ -121,7 +128,7 @@ namespace SignalR.Client.Hubs
         }
 #endif
 
-        public void InvokeEvent(string eventName, object[] args)
+        public void InvokeEvent(string eventName, JToken[] args)
         {
             Subscription eventObj;
             if (_subscriptions.TryGetValue(eventName, out eventObj))

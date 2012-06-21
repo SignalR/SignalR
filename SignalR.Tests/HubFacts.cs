@@ -95,7 +95,7 @@ namespace SignalR.Tests
 
             Assert.Equal("Exception of type 'System.Exception' was thrown.", ex.GetBaseException().Message);
             connection.Stop();
-        } 
+        }
 
         [Fact]
         public void Overloads()
@@ -148,12 +148,78 @@ namespace SignalR.Tests
                 Assert.NotNull(id);
                 wh.Set();
             });
-            
+
             connection.Start(host).Wait();
 
             hub.Invoke("DynamicTask").Wait();
 
             Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+            connection.Stop();
+        }
+
+        [Fact]
+        public void GuidTest()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://site/");
+
+            var hub = connection.CreateProxy("demo");
+
+            var wh = new ManualResetEvent(false);
+
+            hub.On<Guid>("TestGuid", id =>
+            {
+                Assert.NotNull(id);
+                wh.Set();
+            });
+
+            connection.Start(host).Wait();
+
+            hub.Invoke("TestGuid").Wait();
+
+            Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+            connection.Stop();
+        }
+
+        [Fact]
+        public void ComplexPersonState()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://site/");
+
+            var hub = connection.CreateProxy("demo");
+
+            var wh = new ManualResetEvent(false);
+
+            connection.Start(host).Wait();
+
+            var person = new SignalR.Samples.Hubs.DemoHub.DemoHub.Person
+            {
+                Address = new SignalR.Samples.Hubs.DemoHub.DemoHub.Address
+                {
+                    Street = "Redmond",
+                    Zip = "98052"
+                },
+                Age = 25,
+                Name = "David"
+            };
+
+            var person1 = hub.Invoke<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("ComplexType", person).Result;
+            var person2 = hub.GetValue<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("person");
+
+            Assert.NotNull(person1);
+            Assert.NotNull(person2);
+            Assert.Equal("David", person1.Name);
+            Assert.Equal("David", person2.Name);
+            Assert.Equal(25, person1.Age);
+            Assert.Equal(25, person2.Age);
+            Assert.Equal("Redmond", person1.Address.Street);
+            Assert.Equal("Redmond", person2.Address.Street);
+            Assert.Equal("98052", person1.Address.Zip);
+            Assert.Equal("98052", person2.Address.Zip);
+
             connection.Stop();
         }
     }

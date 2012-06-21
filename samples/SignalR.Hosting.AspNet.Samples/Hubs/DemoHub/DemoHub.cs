@@ -131,6 +131,11 @@ namespace SignalR.Samples.Hubs.DemoHub
 
         }
 
+        public void TestGuid()
+        {            
+            Caller.TestGuid(new Guid());
+        }
+
         public class Person
         {
             public string Name { get; set; }

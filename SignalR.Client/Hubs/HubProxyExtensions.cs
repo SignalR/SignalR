@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Hubs
@@ -33,7 +33,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData();
             };
@@ -54,7 +54,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T>(args[0]));
             };
@@ -75,7 +75,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]));
@@ -97,7 +97,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -120,7 +120,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -157,7 +157,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -182,7 +182,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -208,7 +208,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -235,19 +235,26 @@ namespace SignalR.Client.Hubs
             return new Hubservable(proxy, eventName);
         }
 #endif
-        private static T Convert<T>(object obj)
+        private static T Convert<T>(object value)
+        {
+            if (value == null)
+            {
+                return default(T);
+            }
+
+            var obj = value as JToken ?? JToken.FromObject(value);
+
+            return Convert<T>(obj);
+        }
+
+        private static T Convert<T>(JToken obj)
         {
             if (obj == null)
             {
                 return default(T);
             }
 
-            if (typeof(T).IsAssignableFrom(obj.GetType()))
-            {
-                return (T)obj;
-            }
-
-            return JsonConvert.DeserializeObject<T>(obj.ToString());
+            return obj.ToObject<T>();
         }
     }
 }
