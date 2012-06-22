@@ -41,8 +41,11 @@ namespace SignalR.Client.Transports
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
-                // Now attempt a reconnect
-                OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+                if (connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                {
+                    // Now attempt a reconnect
+                    OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+                }
             });
         }
 
@@ -86,7 +89,7 @@ namespace SignalR.Client.Transports
                         }
                     }
 
-                    if (reconnecting && connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                    if (reconnecting)
                     {
                         // Retry
                         Reconnect(connection, data);
@@ -143,7 +146,7 @@ namespace SignalR.Client.Transports
                     {
                         response.Close();
 
-                        if (retry && connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                        if (retry)
                         {
                             Reconnect(connection, data);
                         }

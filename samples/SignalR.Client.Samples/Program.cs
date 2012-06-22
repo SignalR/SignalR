@@ -16,9 +16,9 @@ namespace SignalR.Client.Samples
             // RunInMemoryHost();
 #endif
 
-            //var hubConnection = new HubConnection("http://localhost:40476/");
+            // var hubConnection = new HubConnection("http://localhost:40476/");
 
-            //RunDemoHub(hubConnection);
+            // RunDemoHub(hubConnection);
 
             RunStreamingSample();
 
@@ -36,6 +36,11 @@ namespace SignalR.Client.Samples
             connection.Received += data =>
             {
                 Console.WriteLine(data);
+            };
+
+            connection.StateChanged += change =>
+            {
+                Console.WriteLine(change.OldState + " => " + change.NewState);
             };
 
             connection.Start(host).Wait();
@@ -62,6 +67,11 @@ namespace SignalR.Client.Samples
         private static void RunDemoHub(HubConnection hubConnection)
         {
             var demo = hubConnection.CreateProxy("demo");
+
+            hubConnection.StateChanged += change =>
+            {
+                Console.WriteLine(change.OldState + " => " + change.NewState);
+            };
 
             demo.On<int>("invoke", i =>
             {
@@ -104,6 +114,12 @@ namespace SignalR.Client.Samples
             };
 
             connection.Start().Wait();
+
+            string line = null;
+            while ((line = Console.ReadLine()) != null)
+            {
+                connection.Send(new { type = 1, value = line });
+            }
         }
 
 #if !NET35
