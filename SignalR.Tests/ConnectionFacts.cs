@@ -53,7 +53,7 @@ namespace SignalR.Client.Tests
                              ConnectionId = "Something"
                          }));
 
-                transport.Setup(m => m.Start(connection, It.IsAny<CancellationToken>(), null))
+                transport.Setup(m => m.Start(connection, null))
                          .Returns(TaskAsyncHelper.FromError(new InvalidOperationException("Something failed.")));
 
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());

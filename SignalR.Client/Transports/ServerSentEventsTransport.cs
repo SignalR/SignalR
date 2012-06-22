@@ -12,6 +12,7 @@ namespace SignalR.Client.Transports
     {
         private int _initializedCalled;
 
+        private const string EventSourceKey = "eventSourceStream";
         private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
@@ -37,11 +38,6 @@ namespace SignalR.Client.Transports
 
         private void Reconnect(IConnection connection, string data)
         {
-            if (CancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
@@ -90,10 +86,8 @@ namespace SignalR.Client.Transports
                         }
                     }
 
-                    if (reconnecting && !CancellationToken.IsCancellationRequested)
+                    if (reconnecting && connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
                     {
-                        connection.State = ConnectionState.Reconnecting;
-
                         // Retry
                         Reconnect(connection, data);
                         return;
@@ -106,9 +100,8 @@ namespace SignalR.Client.Transports
 
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
-
-                    // When this fires close the event source
-                    CancellationToken.Register(() => eventSource.Close());
+                    
+                    connection.Items[EventSourceKey] = eventSource;
 
                     eventSource.Opened = () =>
                     {
@@ -117,11 +110,8 @@ namespace SignalR.Client.Transports
                             initializeCallback();
                         }
 
-                        if (reconnecting)
+                        if (reconnecting && connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
                         {
-                            // Change the status to connected
-                            connection.State = ConnectionState.Connected;
-
                             // Raise the reconnect event if the connection comes back up
                             connection.OnReconnected();
                         }
@@ -153,11 +143,8 @@ namespace SignalR.Client.Transports
                     {
                         response.Close();
 
-                        if (retry && !CancellationToken.IsCancellationRequested)
+                        if (retry && connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
                         {
-                            // If we're retrying then just go again
-                            connection.State = ConnectionState.Reconnecting;
-
                             Reconnect(connection, data);
                         }
                         else
@@ -166,10 +153,7 @@ namespace SignalR.Client.Transports
                         }
                     };
 
-                    if (!CancellationToken.IsCancellationRequested)
-                    {
-                        eventSource.Start();
-                    }
+                    eventSource.Start();
                 }
             });
 
@@ -187,6 +171,17 @@ namespace SignalR.Client.Transports
                     }
                 });
             }
+        }
+
+        protected override void OnBeforeAbort(IConnection connection)
+        {
+            var eventSourceStream = connection.GetValue<EventSourceStreamReader>(EventSourceKey);
+            if (eventSourceStream != null)
+            {
+                eventSourceStream.Close();
+            }
+
+            base.OnBeforeAbort(connection);
         }
     }
 }

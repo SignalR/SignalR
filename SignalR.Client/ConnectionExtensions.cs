@@ -16,18 +16,6 @@ namespace SignalR.Client
             return default(T);
         }
 
-        public static bool IsDisconnecting(this IConnection connection)
-        {
-            return connection.State == ConnectionState.Disconnecting ||
-                   connection.State == ConnectionState.Disconnected;
-        }
-
-        public static bool IsActive(this IConnection connection)
-        {
-            return connection.State == ConnectionState.Connected ||
-                   connection.State == ConnectionState.Connecting;
-        }
-
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
         public static IObservable<string> AsObservable(this Connection connection)
         {

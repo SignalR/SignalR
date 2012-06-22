@@ -32,8 +32,6 @@ namespace SignalR.Client.Transports
         private void PollingLoop(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
         {
             string url = connection.Url;
-            var reconnectTokenSource = new CancellationTokenSource();
-            int reconnectFired = 0;
 
             // This is only necessary for the initial request where initializeCallback and errorCallback are non-null
             int callbackFired = 0;
@@ -46,7 +44,10 @@ namespace SignalR.Client.Transports
             {
                 url += "reconnect";
 
-                connection.State = ConnectionState.Reconnecting;
+                if (!connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                {
+                    return;
+                }
             }
 
             url += GetReceiveQueryString(connection, data);
@@ -73,7 +74,7 @@ namespace SignalR.Client.Transports
                         {
                             // If the timeout for the reconnect hasn't fired as yet just fire the 
                             // event here before any incoming messages are processed
-                            FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                            FireReconnected(connection);
                         }
 
                         // Get the response
@@ -100,9 +101,6 @@ namespace SignalR.Client.Transports
 
                         if (task.IsFaulted)
                         {
-                            // Cancel the previous reconnect event
-                            reconnectTokenSource.Cancel();
-
                             // Raise the reconnect event if we successfully reconnect after failing
                             shouldRaiseReconnect = true;
 
@@ -110,7 +108,7 @@ namespace SignalR.Client.Transports
                             Exception exception = task.Exception.Unwrap();
 
                             // If the error callback isn't null then raise it and don't continue polling
-                            if (errorCallback != null && 
+                            if (errorCallback != null &&
                                 Interlocked.Exchange(ref callbackFired, 1) == 0)
                             {
                                 // Call the callback
@@ -132,7 +130,7 @@ namespace SignalR.Client.Transports
                                     // before polling again so we aren't hammering the server 
                                     TaskAsyncHelper.Delay(_errorDelay).Then(() =>
                                     {
-                                        if (!CancellationToken.IsCancellationRequested)
+                                        if (connection.State != ConnectionState.Disconnected)
                                         {
                                             PollingLoop(connection,
                                                 data,
@@ -146,7 +144,7 @@ namespace SignalR.Client.Transports
                         }
                         else
                         {
-                            if (!CancellationToken.IsCancellationRequested)
+                            if (connection.State != ConnectionState.Disconnected)
                             {
                                 // Continue polling if there was no error
                                 PollingLoop(connection,
@@ -173,7 +171,7 @@ namespace SignalR.Client.Transports
                 TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
                 {
                     // Fire the reconnect event after the delay. This gives the 
-                    FireReconnected(connection, reconnectTokenSource, ref reconnectFired);
+                    FireReconnected(connection);
                 });
             }
         }
@@ -181,17 +179,12 @@ namespace SignalR.Client.Transports
         /// <summary>
         /// 
         /// </summary>
-        private static void FireReconnected(IConnection connection, CancellationTokenSource reconnectTokenSource, ref int reconnectedFired)
+        private static void FireReconnected(IConnection connection)
         {
-            if (!reconnectTokenSource.IsCancellationRequested)
+            // Mark the connection as connected
+            if (connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
             {
-                if (Interlocked.Exchange(ref reconnectedFired, 1) == 0)
-                {
-                    // Mark the connection as connected
-                    connection.State = ConnectionState.Connected;
-
-                    connection.OnReconnected();
-                }
+                connection.OnReconnected();
             }
         }
     }

@@ -16,7 +16,9 @@ namespace SignalR.Client
         string ConnectionId { get; }
         string Url { get; }
         string QueryString { get; }
-        ConnectionState State { get; set; }
+        ConnectionState State { get; }
+
+        bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }

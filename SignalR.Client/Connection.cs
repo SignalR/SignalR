@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
@@ -21,8 +20,12 @@ namespace SignalR.Client
         private static Version _assemblyVersion;
 
         private IClientTransport _transport;
-        private ConnectionState _state;
-        private CancellationTokenSource _cancel;
+
+        // The default connection state is disconnected
+        private ConnectionState _state = ConnectionState.Disconnected;
+
+        // Used to synchornize state changes
+        private readonly object _stateLock = new object();
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -135,14 +138,6 @@ namespace SignalR.Client
         /// </summary>
         public string QueryString { get; private set; }
 
-        public CancellationToken CancellationToken
-        {
-            get
-            {
-                return _cancel.Token;
-            }
-        }
-
         /// <summary>
         /// Gets the current <see cref="ConnectionState"/> of the connection.
         /// </summary>
@@ -150,7 +145,10 @@ namespace SignalR.Client
         {
             get
             {
-                return _state;
+                lock (_stateLock)
+                {
+                    return _state;
+                }
             }
             private set
             {
@@ -163,18 +161,6 @@ namespace SignalR.Client
 
                     _state = value;
                 }
-            }
-        }
-
-        ConnectionState IConnection.State
-        {
-            get
-            {
-                return State;
-            }
-            set
-            {
-                State = value;
             }
         }
 
@@ -209,14 +195,10 @@ namespace SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public virtual Task Start(IClientTransport transport)
         {
-            if (State == ConnectionState.Connected ||
-                State == ConnectionState.Connecting)
+            if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
                 return TaskAsyncHelper.Empty;
             }
-
-            State = ConnectionState.Connecting;
-            _cancel = new CancellationTokenSource();
 
             _transport = transport;
 
@@ -271,8 +253,29 @@ namespace SignalR.Client
 
         private Task StartTransport(string data)
         {
-            return _transport.Start(this, _cancel.Token, data)
-                             .Then(() => State = ConnectionState.Connected);
+            return _transport.Start(this, data)
+                             .Then(() =>
+                             {
+                                 ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
+                             });
+        }
+
+        private bool ChangeState(ConnectionState oldState, ConnectionState newState)
+        {
+            return ((IConnection)this).ChangeState(oldState, newState);
+        }
+
+        bool IConnection.ChangeState(ConnectionState oldState, ConnectionState newState)
+        {
+            lock (_stateLock)
+            {
+                if (_state == oldState)
+                {
+                    State = newState;
+                    return true;
+                }
+                return false;
+            }
         }
 
         private static void VerifyProtocolVersion(string versionString)
@@ -294,14 +297,11 @@ namespace SignalR.Client
             try
             {
                 // Do nothing if the connection is offline
-                if (this.IsDisconnecting())
+                if (State == ConnectionState.Disconnected)
                 {
                     return;
                 }
 
-                State = ConnectionState.Disconnecting;
-
-                _cancel.Cancel(throwOnFirstException: false);
                 _transport.Stop(this);
 
                 if (Closed != null)
@@ -327,7 +327,7 @@ namespace SignalR.Client
 
         Task<T> IConnection.Send<T>(string data)
         {
-            if (this.IsDisconnecting())
+            if (State == ConnectionState.Disconnected)
             {
                 // TODO: Update this error message
                 throw new InvalidOperationException("Start must be called before data can be sent");
