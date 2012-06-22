@@ -82,7 +82,7 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; BuildDocs; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests; BuildDocs;">
   </Target>
 
   <Target Name="RunTests">
