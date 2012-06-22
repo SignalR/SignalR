@@ -122,7 +122,7 @@ namespace SignalR.Client
         /// <summary>
         /// Gets or sets the last message id for the connection.
         /// </summary>
-        public long? MessageId { get; set; }
+        public string MessageId { get; set; }
 
         /// <summary>
         /// Gets or sets the connection id for the connection.

@@ -9,7 +9,7 @@ namespace SignalR.Client
 {
     public interface IConnection
     {
-        long? MessageId { get; set; }
+        string MessageId { get; set; }
         Func<string> Sending { get; set; }
         IEnumerable<string> Groups { get; set; }
         IDictionary<string, object> Items { get; }
