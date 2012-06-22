@@ -88,7 +88,8 @@ namespace SignalR.Client.Transports
 
         public void Stop(IConnection connection)
         {
-            _transport.Stop(connection);
+            if(_transport != null)
+                _transport.Stop(connection);
         }
     }
 }
