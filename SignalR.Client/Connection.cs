@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 using SignalR.Client.Transports;
@@ -323,6 +324,16 @@ namespace SignalR.Client
         public Task Send(string data)
         {
             return ((IConnection)this).Send<object>(data);
+        }
+
+        /// <summary>
+        /// Sends an object that will be JSON serialized asynchronously over the connection.
+        /// </summary>
+        /// <param name="value">The value to serialize.</param>
+        /// <returns>A task that represents when the data has been sent.</returns>
+        public Task Send(object value)
+        {
+            return Send(JsonConvert.SerializeObject(value));
         }
 
         Task<T> IConnection.Send<T>(string data)
