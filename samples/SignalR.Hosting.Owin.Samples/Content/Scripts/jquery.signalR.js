@@ -473,6 +473,7 @@
             }
             url += "?" + qs;
             url = this.addQs(url, connection);
+            url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
         },
 
@@ -745,10 +746,6 @@
                             that.stop(connection);
                         }
 
-                        if (onFailed) {
-                            onFailed();
-                        }
-
                         if (reconnecting) {
                             // If we're reconnecting and the event source is attempting to connect,
                             // don't keep retrying. This causes duplicate connections to spawn.
@@ -757,6 +754,8 @@
                                 // If we were reconnecting, rather than doing initial connect, then try reconnect again
                                 that.reconnect(connection);
                             }
+                        } else if (onFailed) {
+                            onFailed();
                         }
                     }
                 },

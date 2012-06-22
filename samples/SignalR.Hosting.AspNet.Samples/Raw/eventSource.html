@@ -27,7 +27,7 @@
     <script src="../Scripts/jquery.signalR.js"></script>
     <script>
         $(function () {
-            var connection = $.connection("Raw/Raw"),
+            var connection = $.connection("Raw/Raw", null, true),
                 $log = $("#log");
 
             function log(cat, msg) {
@@ -50,10 +50,10 @@
 
             function onStart() {
                 // http://localhost:40476/Raw/Raw/Raw/connect?transport=serverSentEvents&connectionId=8bdaa3a5-975a-4826-bd06-26ea7d51c026
-                var url = connection.url + "?transport=serverSentEvents&connectionId=" + connection.id,
+                var url = connection.url + "?transport=serverSentEvents&connectionId=" + connection.id + "&bogus=true",
                     es;
 
-                window.setTimeout(function() { connection.stop(); }, 100);
+                //window.setTimeout(function() { connection.stop(); }, 100);
 
                 log("EventSource url: " + url);
 
