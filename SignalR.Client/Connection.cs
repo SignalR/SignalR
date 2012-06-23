@@ -112,8 +112,6 @@ namespace SignalR.Client
         /// </summary>
         public IEnumerable<string> Groups { get; set; }
 
-        public Func<string> Sending { get; set; }
-
         /// <summary>
         /// Gets the url for the connection.
         /// </summary>
@@ -206,6 +204,11 @@ namespace SignalR.Client
             return Negotiate(transport);
         }
 
+        protected virtual string OnSending()
+        {
+            return null;
+        }
+
         private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
@@ -216,15 +219,8 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                if (Sending != null)
-                {
-                    var data = Sending();
-                    StartTransport(data).ContinueWith(negotiateTcs);
-                }
-                else
-                {
-                    StartTransport(null).ContinueWith(negotiateTcs);
-                }
+                var data = OnSending();
+                StartTransport(data).ContinueWith(negotiateTcs);
             })
             .ContinueWithNotComplete(negotiateTcs);
 

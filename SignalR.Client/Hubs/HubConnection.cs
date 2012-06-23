@@ -54,18 +54,6 @@ namespace SignalR.Client.Hubs
         {
         }
 
-        public override Task Start(IClientTransport transport)
-        {
-            Sending += OnConnectionSending;
-            return base.Start(transport);
-        }
-
-        public override void Stop()
-        {
-            Sending -= OnConnectionSending;
-            base.Stop();
-        }
-
         protected override void OnReceived(JToken message)
         {
             var invocation = message.ToObject<HubInvocation>();
@@ -86,6 +74,16 @@ namespace SignalR.Client.Hubs
             base.OnReceived(message);
         }
 
+        protected override string OnSending()
+        {
+            var data = _hubs.Select(p => new HubRegistrationData
+            {
+                Name = p.Key
+            });
+
+            return JsonConvert.SerializeObject(data);
+        }
+
         /// <summary>
         /// Creates an <see cref="IHubProxy"/> for the hub with the specified name.
         /// </summary>
@@ -101,17 +99,7 @@ namespace SignalR.Client.Hubs
             }
             return hubProxy;
         }
-
-        private string OnConnectionSending()
-        {
-            var data = _hubs.Select(p => new HubRegistrationData
-            {
-                Name = p.Key
-            });
-
-            return JsonConvert.SerializeObject(data);
-        }
-
+        
         private static string GetUrl(string url, bool useDefaultUrl)
         {
             if (!url.EndsWith("/"))
