@@ -231,20 +231,27 @@ namespace SignalR.Client
             var tcs = new TaskCompletionSource<object>();
             negotiateTcs.Task.ContinueWith(task =>
             {
-                // If there's any errors starting then Stop the connection                
-                if (task.IsFaulted)
+                try
                 {
-                    Stop();
-                    tcs.SetException(task.Exception);
+                    // If there's any errors starting then Stop the connection                
+                    if (task.IsFaulted)
+                    {
+                        Stop();
+                        tcs.SetException(task.Exception);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        Stop();
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        tcs.SetResult(null);
+                    }
                 }
-                else if (task.IsCanceled)
+                catch(Exception ex)
                 {
-                    Stop();
-                    tcs.SetCanceled();
-                }
-                else
-                {
-                    tcs.SetResult(null);
+                    tcs.SetException(ex);
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
