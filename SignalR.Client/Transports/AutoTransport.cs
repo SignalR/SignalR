@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Http;
 
@@ -88,8 +87,10 @@ namespace SignalR.Client.Transports
 
         public void Stop(IConnection connection)
         {
-            if(_transport != null)
+            if (_transport != null)
+            {
                 _transport.Stop(connection);
+            }
         }
     }
 }

@@ -249,7 +249,7 @@ namespace SignalR.Client
                         tcs.SetResult(null);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     tcs.SetException(ex);
                 }
@@ -347,8 +347,12 @@ namespace SignalR.Client
         {
             if (State == ConnectionState.Disconnected)
             {
-                // TODO: Update this error message
-                throw new InvalidOperationException("Start must be called before data can be sent");
+                throw new InvalidOperationException("Start must be called before data can be sent.");
+            }
+
+            if (State == ConnectionState.Connecting)
+            {
+                throw new InvalidOperationException("The connection has not been established.");
             }
 
             return _transport.Send<T>(this, data);
