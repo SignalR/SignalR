@@ -5,6 +5,7 @@ using SignalR.Client.Hubs;
 #if !NET35
 using SignalR.Hosting.Memory;
 #endif
+using System.Diagnostics;
 
 namespace SignalR.Client.Samples
 {
@@ -109,18 +110,68 @@ namespace SignalR.Client.Samples
                 Console.WriteLine("[{0}]: Connection restablished", DateTime.Now);
             };
 
-            connection.Error += e =>
+            connection.StateChanged += change =>
             {
-                Console.WriteLine(e);
+                Console.WriteLine(change.OldState + " => " + change.NewState);
             };
 
-            connection.Start().Wait();
-
-            string line = null;
-            while ((line = Console.ReadLine()) != null)
+            connection.Error += e =>
             {
-                connection.Send(new { type = 1, value = line });
+                Console.Error.WriteLine("========ERROR==========");
+                Console.Error.WriteLine(e.GetBaseException());
+                Console.Error.WriteLine("=======================");
+            };
+
+
+            Console.WriteLine("Choose transport:");
+            Console.WriteLine("1. AutoTransport");
+            Console.WriteLine("2. ServerSentEventsTransport");
+            Console.WriteLine("3. LongPollingTransport");
+            Console.Write("Option: ");
+
+            Task startTask = null;
+
+            var key = Console.ReadKey(false);
+            Console.WriteLine();
+
+            if (key.Key == ConsoleKey.D1)
+            {
+                startTask = connection.Start();
             }
+            else if (key.Key == ConsoleKey.D2)
+            {
+                startTask = connection.Start(new Client.Transports.ServerSentEventsTransport());
+            }
+            else if (key.Key == ConsoleKey.D3)
+            {
+                startTask = connection.Start(new Client.Transports.LongPollingTransport());
+            }
+
+            var wh = new ManualResetEvent(false);
+            startTask.ContinueWith(task =>
+            {
+                try
+                {
+                    task.Wait();
+                }
+                catch(Exception ex)
+                {
+                    Console.Error.WriteLine("========ERROR==========");
+                    Console.Error.WriteLine(ex.GetBaseException());
+                    Console.Error.WriteLine("=======================");
+                    return;
+                }
+
+                string line = null;
+                while ((line = Console.ReadLine()) != null)
+                {
+                    connection.Send(new { type = 1, value = line });
+                }
+
+                wh.Set();
+            });
+
+            wh.WaitOne();
         }
 
 #if !NET35
