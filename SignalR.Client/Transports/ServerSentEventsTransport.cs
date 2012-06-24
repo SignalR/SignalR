@@ -41,7 +41,8 @@ namespace SignalR.Client.Transports
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
-                if (connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                if (connection.State == ConnectionState.Reconnecting ||
+                    connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
                 {
                     // Now attempt a reconnect
                     OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
@@ -74,7 +75,7 @@ namespace SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-                    var exception = task.Exception.Unwrap();
+                    Exception exception = task.Exception.Unwrap();
                     if (!ExceptionHelper.IsRequestAborted(exception))
                     {
                         if (errorCallback != null &&
@@ -86,14 +87,9 @@ namespace SignalR.Client.Transports
                         {
                             // Only raise the error event if we failed to reconnect
                             connection.OnError(exception);
-                        }
-                    }
 
-                    if (reconnecting)
-                    {
-                        // Retry
-                        Reconnect(connection, data);
-                        return;
+                            Reconnect(connection, data);
+                        }
                     }
                 }
                 else
@@ -103,7 +99,7 @@ namespace SignalR.Client.Transports
 
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
-                    
+
                     connection.Items[EventSourceKey] = eventSource;
 
                     eventSource.Opened = () =>
@@ -144,6 +140,7 @@ namespace SignalR.Client.Transports
 
                     eventSource.Closed = () =>
                     {
+                        stream.Close();
                         response.Close();
 
                         if (retry)
@@ -176,6 +173,10 @@ namespace SignalR.Client.Transports
             }
         }
 
+        /// <summary>
+        /// Stops even event source as well and the base connection.
+        /// </summary>
+        /// <param name="connection">The <see cref="IConnection"/> being aborted.</param>
         protected override void OnBeforeAbort(IConnection connection)
         {
             var eventSourceStream = connection.GetValue<EventSourceStreamReader>(EventSourceKey);

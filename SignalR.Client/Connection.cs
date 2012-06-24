@@ -273,11 +273,14 @@ namespace SignalR.Client
         {
             lock (_stateLock)
             {
+                // If we're in the expected old state then change state and return true
                 if (_state == oldState)
                 {
                     State = newState;
                     return true;
                 }
+
+                // Invalid transition
                 return false;
             }
         }
