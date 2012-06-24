@@ -18,8 +18,7 @@ namespace SignalR.Client.Hubs
         /// <returns>The value of the state variable.</returns>
         public static T GetValue<T>(this IHubProxy proxy, string name)
         {
-            object value = proxy[name];
-            return Convert<T>(value);
+            return Convert<T>(proxy[name]);
         }
 
         /// <summary>
@@ -235,18 +234,6 @@ namespace SignalR.Client.Hubs
             return new Hubservable(proxy, eventName);
         }
 #endif
-        private static T Convert<T>(object value)
-        {
-            if (value == null)
-            {
-                return default(T);
-            }
-
-            var obj = value as JToken ?? JToken.FromObject(value);
-
-            return Convert<T>(obj);
-        }
-
         private static T Convert<T>(JToken obj)
         {
             if (obj == null)
