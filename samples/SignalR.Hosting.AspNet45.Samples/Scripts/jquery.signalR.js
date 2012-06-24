@@ -70,7 +70,7 @@
         changeState = function (connection, state) {
             if (state !== connection.state) {
                 // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state}]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state }]);
                 connection.state = state;
             }
         },
@@ -158,11 +158,18 @@
             // Resolve the full url
             parser.href = connection.url;
             if (!parser.protocol || parser.protocol === ":") {
-                connection.baseUrl = window.document.location.protocol + "//" + window.document.location.host;
+                connection.protocol = window.document.location.protocol;
+                connection.host = window.document.location.host;
+                connection.baseUrl = connection.protocol + "//" + connection.host;
             }
             else {
+                connection.protocol = parser.protocol;
+                connection.host = parser.host;
                 connection.baseUrl = parser.protocol + "//" + parser.host;
             }
+
+            // Set the websocket protocol
+            connection.wsProtocol = connection.protocol === "https:" ? "wss://" : "ws://";
 
             if (isCrossDomain(connection.url)) {
                 connection.log("Auto detected cross domain url.");
@@ -278,7 +285,7 @@
                             });
                         } else if ($.type(config.transport) === "object" ||
                                        $.inArray(config.transport, supportedTransports) >= 0) {
-                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                                // specific transport provided, as object or a named transport, e.g. "longPolling"
                             transports.push(config.transport);
                         } else { // default "auto"
                             transports = supportedTransports;
@@ -601,18 +608,7 @@
                         url = connection.webSocketServerUrl;
                     }
                     else {
-                        // Determine the protocol
-                        var info = document.location;
-                        if (info.protocol !== "http:" && info.protocol !== "https:") {
-                            // If the url isn't isn't http or https, use the specified url instead of 
-                            // the document url.
-                            var info = window.document.createElement('a');
-                            info.href = connection.url;
-                        }
-
-                        protocol = info.protocol === "https:" ? "wss://" : "ws://";
-
-                        url = protocol + info.host;
+                        url = connection.wsProtocol + connection.host;
                     }
 
                     // Build the url
@@ -641,8 +637,8 @@
                             return;
                         }
                         else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
-                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                                // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                                // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).trigger(events.onError, [event.reason]);
                             connection.log("Unclean disconnect from websocket." + event.reason);
                         }
@@ -954,7 +950,7 @@
                     } else {
                         cw = connection.frame.contentWindow || connection.frame.contentDocument;
                         if (cw.document && cw.document.execCommand) {
-                           cw.document.execCommand("Stop");
+                            cw.document.execCommand("Stop");
                         }
                     }
                     $(connection.frame).remove();
@@ -1114,7 +1110,7 @@
                             that.reconnectDelay);
                         }
 
-                    } (connection));
+                    }(connection));
 
                     // Now connected
                     // There's no good way know when the long poll has actually started so
@@ -1164,4 +1160,4 @@
 
     $.connection = $.signalR = signalR;
 
-} (window.jQuery, window));
+}(window.jQuery, window));
