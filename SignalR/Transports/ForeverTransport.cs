@@ -104,7 +104,7 @@ namespace SignalR.Transports
                             }
                             return TaskAsyncHelper.Empty;
                         }
-                        , connection);
+                        , connection, Completed);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -113,7 +113,7 @@ namespace SignalR.Transports
                 if (Reconnected != null)
                 {
                     // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
+                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection, Completed);
                 }
 
                 return ProcessReceiveRequest(connection);
@@ -128,16 +128,16 @@ namespace SignalR.Transports
         public virtual Task Send(PersistentResponse response)
         {
             var data = _jsonSerializer.Stringify(response);
-            
+
             OnSending(data);
-            
+
             return Context.Response.WriteAsync(data);
         }
 
         public virtual Task Send(object value)
         {
             var data = _jsonSerializer.Stringify(value);
-            
+
             OnSending(data);
 
             return Context.Response.EndAsync(data);
@@ -212,6 +212,9 @@ namespace SignalR.Transports
                 receiveAsyncTask.Then(response =>
                 {
                     LastMessageId = response.MessageId;
+
+                    response.TimedOut = IsTimedOut;
+
                     // If the response has the Disconnect flag, just send the response and exit the loop,
                     // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
                     Task sendTask = Send(response);
@@ -248,6 +251,7 @@ namespace SignalR.Transports
             }
 
             taskCompletetionSource.SetResult(null);
+            CompleteRequest();
             return;
         }
     }

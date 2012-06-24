@@ -72,8 +72,6 @@ namespace SignalR.Transports
         /// <param name="connection">The connection to be added.</param>
         public bool AddConnection(ITrackingConnection connection)
         {
-            Trace.TraceInformation("Adding connection {0}, url={1}", connection.ConnectionId, connection.Url);
-
             var newMetadata = new ConnectionMetadata(connection);
             ConnectionMetadata oldMetadata = null;
             bool isNewConnection = true;
@@ -86,7 +84,7 @@ namespace SignalR.Transports
 
             if (oldMetadata != null)
             {
-                Trace.TraceInformation("Connection {0} already exists and alive={1}. Closing previous connection. url={2}", oldMetadata.Connection.ConnectionId, oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url);
+                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
@@ -97,7 +95,7 @@ namespace SignalR.Transports
             }
             else
             {
-                Trace.TraceInformation("Connection {0} is new url={1}.", connection.ConnectionId, connection.Url);
+                Trace.TraceInformation("Connection is New=({0}).", connection.Url);
             }
 
             // Set the initial connection time
@@ -111,11 +109,12 @@ namespace SignalR.Transports
 
         private void RemoveConnection(string connectionId)
         {
-            Trace.TraceInformation("Removing connection {0}", connectionId);
-
             // Remove the connection
             ConnectionMetadata metadata;
-            _connections.TryRemove(connectionId, out metadata);
+            if (_connections.TryRemove(connectionId, out metadata))
+            {
+                Trace.TraceInformation("Removing connection {0}", connectionId);
+            }
         }
 
         /// <summary>

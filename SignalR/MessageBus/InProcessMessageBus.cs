@@ -95,13 +95,13 @@ namespace SignalR
             }
         }
 
-        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id, CancellationToken timeoutToken)
+        public Task<MessageResult> GetMessages(IEnumerable<string> eventKeys, string id, CancellationToken cancel)
         {
             if (String.IsNullOrEmpty(id))
             {
                 // Wait for new messages
                 Trace.TraceInformation("New connection waiting for messages");
-                return WaitForMessages(eventKeys, timeoutToken, default(T));
+                return WaitForMessages(eventKeys, cancel, default(T));
             }
 
             try
@@ -121,7 +121,7 @@ namespace SignalR
                 {
                     // Connection already has the latest message, so start wating
                     Trace.TraceInformation("Connection waiting for new messages from id {0}", uuid);
-                    return WaitForMessages(eventKeys, timeoutToken, uuid);
+                    return WaitForMessages(eventKeys, cancel, uuid);
                 }
 
                 var messages = eventKeys.SelectMany(key => GetMessagesSince(key, uuid));
@@ -135,7 +135,7 @@ namespace SignalR
 
                 // Wait for new messages
                 Trace.TraceInformation("Connection waiting for new messages from id {0}", uuid);
-                return WaitForMessages(eventKeys, timeoutToken, uuid);
+                return WaitForMessages(eventKeys, cancel, uuid);
             }
             finally
             {
@@ -242,21 +242,21 @@ namespace SignalR
             return snapshot.GetRange(startIndex, snapshot.Count - startIndex);
         }
 
-        private Task<MessageResult> WaitForMessages(IEnumerable<string> eventKeys, CancellationToken timeoutToken, T lastId)
+        private Task<MessageResult> WaitForMessages(IEnumerable<string> eventKeys, CancellationToken cancel, T lastId)
         {
             var tcs = new TaskCompletionSource<MessageResult>();
             int callbackCalled = 0;
             Action<IList<InMemoryMessage<T>>> callback = null;
             CancellationTokenRegistration registration = default(CancellationTokenRegistration);
 
-            registration = timeoutToken.Register(() =>
+            registration = cancel.Register(() =>
             {
                 try
                 {
                     if (Interlocked.Exchange(ref callbackCalled, 1) == 0)
                     {
                         string id = _idGenerator.ConvertToString(_lastMessageId);
-                        tcs.TrySetResult(new MessageResult(id, timedOut: true));
+                        tcs.TrySetResult(new MessageResult(id));
                     }
 
                     // Remove callback for all keys

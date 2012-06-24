@@ -132,7 +132,7 @@ namespace SignalR.Transports
                     if (IsReconnectRequest && Reconnected != null)
                     {
                         // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
+                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection, Completed);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -200,7 +200,7 @@ namespace SignalR.Transports
                     }
                     return TaskAsyncHelper.Empty;
                 },
-                connection);
+                connection, Completed);
             }
 
             return ProcessReceiveRequest(connection);
@@ -231,6 +231,8 @@ namespace SignalR.Transports
 
             return receiveTask.Then(response =>
             {
+                response.TimedOut = IsTimedOut;
+
                 if (response.Aborted)
                 {
                     // If this was a clean disconnect then raise the event

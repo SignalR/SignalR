@@ -94,8 +94,7 @@ namespace SignalR
                 MessageId = result.LastMessageId,
                 Messages = messageValues,
                 Disconnect = _disconnected,
-                Aborted = _aborted,
-                TimedOut = result.TimedOut
+                Aborted = _aborted
             };
 
             PopulateResponseState(response);

@@ -28,6 +28,7 @@ namespace SignalR.Transports
             _timeoutTokenSource = new CancellationTokenSource();
             _endTokenSource = new CancellationTokenSource();
             _hostShutdownToken = context.HostShutdownToken();
+            Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
             _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _hostShutdownToken);
@@ -39,6 +40,12 @@ namespace SignalR.Transports
             {
                 return _context.Request.QueryString["connectionId"];
             }
+        }
+
+        protected TaskCompletionSource<object> Completed
+        {
+            get;
+            private set;
         }
 
         public IEnumerable<string> Groups
@@ -156,6 +163,11 @@ namespace SignalR.Transports
         public void End()
         {
             _endTokenSource.Cancel();
+        }
+
+        public void CompleteRequest()
+        {
+            Completed.TrySetResult(null);
         }
 
         protected ITransportConnection Connection { get; set; }
