@@ -1,5 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Client.Hubs
 {
@@ -13,7 +13,7 @@ namespace SignalR.Client.Hubs
         /// </summary>
         /// <param name="name">The name of the field.</param>
         /// <returns>The value of the field</returns>
-        object this[string name] { get; set; }
+        JToken this[string name] { get; set; }
 
         /// <summary>
         /// Executes a method on the server side <see cref="IHub"/> asynchronously.

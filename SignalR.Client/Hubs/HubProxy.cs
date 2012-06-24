@@ -17,7 +17,7 @@ namespace SignalR.Client.Hubs
     {
         private readonly string _hubName;
         private readonly IConnection _connection;
-        private readonly Dictionary<string, object> _state = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, JToken> _state = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>(StringComparer.OrdinalIgnoreCase);
 
         public HubProxy(IConnection connection, string hubName)
@@ -26,11 +26,11 @@ namespace SignalR.Client.Hubs
             _hubName = hubName;
         }
 
-        public object this[string name]
+        public JToken this[string name]
         {
             get
             {
-                object value;
+                JToken value;
                 _state.TryGetValue(name, out value);
                 return value;
             }
@@ -111,13 +111,13 @@ namespace SignalR.Client.Hubs
 #if !WINDOWS_PHONE && !NET35
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            _state[binder.Name] = value;
+            this[binder.Name] = value as JToken ?? JToken.FromObject(value);
             return true;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            _state.TryGetValue(binder.Name, out result);
+            result = this[binder.Name];
             return true;
         }
 

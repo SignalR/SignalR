@@ -8,6 +8,6 @@ namespace SignalR.Client.Hubs
         public string Hub { get; set; }
         public string Method { get; set; }
         public JToken[] Args { get; set; }
-        public Dictionary<string, object> State { get; set; }
+        public Dictionary<string, JToken> State { get; set; }
     }
 }

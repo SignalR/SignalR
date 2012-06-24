@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 using SignalR.Client.Hubs;
 using SignalR.Hosting.Memory;
 using Xunit;
@@ -208,17 +209,24 @@ namespace SignalR.Tests
 
             var person1 = hub.Invoke<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("ComplexType", person).Result;
             var person2 = hub.GetValue<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("person");
+            JObject obj = ((dynamic)hub).person;
+            var person3 = obj.ToObject<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>();
 
             Assert.NotNull(person1);
             Assert.NotNull(person2);
+            Assert.NotNull(person3);
             Assert.Equal("David", person1.Name);
             Assert.Equal("David", person2.Name);
+            Assert.Equal("David", person3.Name);
             Assert.Equal(25, person1.Age);
             Assert.Equal(25, person2.Age);
+            Assert.Equal(25, person3.Age);
             Assert.Equal("Redmond", person1.Address.Street);
             Assert.Equal("Redmond", person2.Address.Street);
+            Assert.Equal("Redmond", person3.Address.Street);
             Assert.Equal("98052", person1.Address.Zip);
             Assert.Equal("98052", person2.Address.Zip);
+            Assert.Equal("98052", person3.Address.Zip);
 
             connection.Stop();
         }

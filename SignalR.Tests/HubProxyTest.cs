@@ -36,9 +36,9 @@ namespace SignalR.Tests
         {
             var result = new HubResult<object>
             {
-                State = new Dictionary<string, object>
+                State = new Dictionary<string, JToken>
                 {
-                    { "state", 1 }
+                    { "state", JToken.FromObject(1) }
                 }
             };
 

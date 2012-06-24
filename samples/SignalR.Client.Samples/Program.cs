@@ -75,7 +75,8 @@ namespace SignalR.Client.Samples
 
             demo.On<int>("invoke", i =>
             {
-                Console.WriteLine("{0} client state index -> {1}", i, demo["index"]);
+                int n = demo.GetValue<int>("index");
+                Console.WriteLine("{0} client state index -> {1}", i, n);
             });
 
             hubConnection.Start().Wait();
