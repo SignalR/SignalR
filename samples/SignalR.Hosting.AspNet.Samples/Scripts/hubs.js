@@ -1,5 +1,5 @@
 /*!
-* SignalR JavaScript Library v0.5.1.1
+* SignalR JavaScript Library v0.5.2
 * http://signalr.net/
 *
 * Copyright David Fowler and Damian Edwards 2012
@@ -171,7 +171,7 @@
         demo: {
             _: {
                 hubName: 'demo',
-                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
+                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'testGuid', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
                 connection: function () { return signalR.hub; }
             },
 
@@ -241,6 +241,10 @@
 
             unsupportedOverload: function (x, callback) {
                 return serverCall(this, "UnsupportedOverload", $.makeArray(arguments));
+            },
+
+            testGuid: function (callback) {
+                return serverCall(this, "TestGuid", $.makeArray(arguments));
             }
         },
         drawingPad: {
