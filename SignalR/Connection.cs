@@ -45,6 +45,14 @@ namespace SignalR
             }
         }
 
+        private TraceSource Trace
+        {
+            get
+            {
+                return _trace["SignalR.Connection"];
+            }
+        }
+
         public virtual Task Broadcast(object value)
         {
             return Send(_baseSignal, value);
@@ -57,7 +65,7 @@ namespace SignalR
 
         public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
         {
-            _trace.Source.TraceInformation("Connection: Waiting for new messages");
+            Trace.TraceInformation("Waiting for new messages");
 
             return _messageBus.GetMessages(Signals, null, timeoutToken)
                               .Then(result => GetResponse(result));
@@ -65,7 +73,7 @@ namespace SignalR
 
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
         {
-            _trace.Source.TraceInformation("Connection: Waiting for messages from {0}.", messageId);
+            Trace.TraceInformation("Waiting for messages from {0}.", messageId);
 
             return _messageBus.GetMessages(Signals, messageId, timeoutToken)
                               .Then(result => GetResponse(result));
@@ -92,7 +100,7 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            _trace.Source.TraceInformation("Connection: Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
+            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
 
             return response;
         }

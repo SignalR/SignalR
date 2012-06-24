@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 using SignalR.Transports;
@@ -38,6 +39,14 @@ namespace SignalR
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
 
             _initialized = true;
+        }
+
+        protected virtual TraceSource Trace
+        {
+            get
+            {
+                return _trace["SignalR.PersistentConnection"];
+            }
         }
 
         /// <summary>

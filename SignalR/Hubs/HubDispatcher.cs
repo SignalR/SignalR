@@ -32,6 +32,14 @@ namespace SignalR.Hubs
             _url = url;
         }
 
+        protected override TraceSource Trace
+        {
+            get
+            {
+                return _trace["SignalR.HubDispatcher"];
+            }
+        }
+        
         public override void Initialize(IDependencyResolver resolver)
         {
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
@@ -202,7 +210,7 @@ namespace SignalR.Hubs
             }
             catch (Exception ex)
             {
-                _trace.Source.TraceInformation("Error creating hub {0}. " + ex.Message, descriptor.Name);
+                Trace.TraceInformation("Error creating hub {0}. " + ex.Message, descriptor.Name);
 
                 if (throwIfFailedToCreate)
                 {
