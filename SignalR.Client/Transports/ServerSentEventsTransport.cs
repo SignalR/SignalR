@@ -140,7 +140,11 @@ namespace SignalR.Client.Transports
 
                     eventSource.Closed = () =>
                     {
+#if NETFX_CORE
+                        stream.Dispose();
+#else
                         stream.Close();
+#endif
                         response.Close();
 
                         if (retry)
