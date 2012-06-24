@@ -33,8 +33,8 @@ namespace SignalR.Client.Transports
         {
             string url = connection.Url;
 
-            // This is only necessary for the initial request where initializeCallback and errorCallback are non-null
-            int callbackFired = 0;
+            var reconnectInvoker = new ThreadSafeInvoker();
+            var callbackInvoker = new ThreadSafeInvoker();
 
             if (connection.MessageId == null)
             {
@@ -44,7 +44,8 @@ namespace SignalR.Client.Transports
             {
                 url += "reconnect";
 
-                if (!connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                if (connection.State != ConnectionState.Reconnecting &&
+                    !connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
                 {
                     return;
                 }
@@ -74,7 +75,7 @@ namespace SignalR.Client.Transports
                         {
                             // If the timeout for the reconnect hasn't fired as yet just fire the 
                             // event here before any incoming messages are processed
-                            FireReconnected(connection);
+                            reconnectInvoker.Invoke((conn) => FireReconnected(conn), connection);
                         }
 
                         // Get the response
@@ -101,18 +102,18 @@ namespace SignalR.Client.Transports
 
                         if (task.IsFaulted)
                         {
+                            reconnectInvoker.Invoke();
+
                             // Raise the reconnect event if we successfully reconnect after failing
                             shouldRaiseReconnect = true;
-
+                            
                             // Get the underlying exception
                             Exception exception = task.Exception.Unwrap();
 
                             // If the error callback isn't null then raise it and don't continue polling
-                            if (errorCallback != null &&
-                                Interlocked.Exchange(ref callbackFired, 1) == 0)
+                            if (errorCallback != null)
                             {
-                                // Call the callback
-                                errorCallback(exception);
+                                callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
                             }
                             else
                             {
@@ -160,10 +161,7 @@ namespace SignalR.Client.Transports
 
             if (initializeCallback != null)
             {
-                if (Interlocked.Exchange(ref callbackFired, 1) == 0)
-                {
-                    initializeCallback();
-                }
+                callbackInvoker.Invoke(initializeCallback);
             }
 
             if (raiseReconnect)
@@ -171,7 +169,7 @@ namespace SignalR.Client.Transports
                 TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
                 {
                     // Fire the reconnect event after the delay. This gives the 
-                    FireReconnected(connection);
+                    reconnectInvoker.Invoke((conn) => FireReconnected(conn), connection);
                 });
             }
         }

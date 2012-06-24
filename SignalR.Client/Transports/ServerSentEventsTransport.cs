@@ -54,6 +54,7 @@ namespace SignalR.Client.Transports
         {
             // If we're reconnecting add /connect to the url
             bool reconnecting = initializeCallback == null;
+            var callbackInvoker = new ThreadSafeInvoker();
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
@@ -78,10 +79,9 @@ namespace SignalR.Client.Transports
                     Exception exception = task.Exception.Unwrap();
                     if (!ExceptionHelper.IsRequestAborted(exception))
                     {
-                        if (errorCallback != null &&
-                            Interlocked.Exchange(ref _initializedCalled, 1) == 0)
+                        if (errorCallback != null)
                         {
-                            errorCallback(exception);
+                            callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
                         }
                         else if (reconnecting)
                         {
@@ -104,9 +104,9 @@ namespace SignalR.Client.Transports
 
                     eventSource.Opened = () =>
                     {
-                        if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
+                        if (initializeCallback != null)
                         {
-                            initializeCallback();
+                            callbackInvoker.Invoke(initializeCallback);
                         }
 
                         if (reconnecting && connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
@@ -157,18 +157,20 @@ namespace SignalR.Client.Transports
                 }
             });
 
-            if (initializeCallback != null)
+            if (errorCallback != null)
             {
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
                 {
-                    if (Interlocked.CompareExchange(ref _initializedCalled, 1, 0) == 0)
+                    callbackInvoker.Invoke((conn, cb) =>
                     {
                         // Stop the connection
-                        Stop(connection);
+                        Stop(conn);
 
                         // Connection timeout occured
-                        errorCallback(new TimeoutException());
-                    }
+                        cb(new TimeoutException());
+                    },
+                    connection,
+                    errorCallback);
                 });
             }
         }
