@@ -27,17 +27,12 @@ namespace SignalR.Client.Transports.ServerSentEvents
         /// <summary>
         /// Invoked when the connection is closed.
         /// </summary>
-        public Action Closed { get; set; }
+        public Action<Exception> Closed { get; set; }
 
         /// <summary>
         /// Invoked when there's a message if received in the stream.
         /// </summary>
         public Action<SseEvent> Message { get; set; }
-
-        /// <summary>
-        /// Invoked when there's an error.
-        /// </summary>
-        public Action<Exception> Error { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventSourceStreamReader"/> class.
@@ -80,14 +75,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
         /// </summary>
         public void Close()
         {
-            if (Interlocked.Exchange(ref _reading, 0) == 1)
-            {
-                Debug.WriteLine("EventSourceReader: Connection Closed");
-                if (Closed != null)
-                {
-                    Closed();
-                }
-            }
+            Close(exception: null);
         }
 
         private void Process()
@@ -105,17 +93,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
 
                 if (task.IsFaulted)
                 {
-                    Exception exception = task.Exception.Unwrap();
-
-                    if (!ExceptionHelper.IsRequestAborted(exception))
-                    {
-                        if (!(exception is IOException))
-                        {
-                            OnError(exception);
-                        }
-                    }
-
-                    Close();
+                    Close(task.Exception.Unwrap());
                     return;
                 }
 
@@ -167,11 +145,15 @@ namespace SignalR.Client.Transports.ServerSentEvents
             }
         }
 
-        private void OnError(Exception exception)
+        private void Close(Exception exception)
         {
-            if (Error != null)
+            if (Interlocked.Exchange(ref _reading, 0) == 1)
             {
-                Error(exception);
+                Debug.WriteLine("EventSourceReader: Connection Closed");
+                if (Closed != null)
+                {
+                    Closed(exception);
+                }
             }
         }
 

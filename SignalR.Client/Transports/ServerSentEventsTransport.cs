@@ -116,8 +116,6 @@ namespace SignalR.Client.Transports
                         }
                     };
 
-                    eventSource.Error = connection.OnError;
-
                     eventSource.Message = sseEvent =>
                     {
                         if (sseEvent.Type == EventType.Data)
@@ -138,13 +136,15 @@ namespace SignalR.Client.Transports
                         }
                     };
 
-                    eventSource.Closed = () =>
+                    eventSource.Closed = exception =>
                     {
-#if NETFX_CORE
-                        stream.Dispose();
-#else
-                        stream.Close();
-#endif
+                        if (exception != null && !ExceptionHelper.IsRequestAborted(exception))
+                        {
+                            // Don't raise exceptions if the request was aborted (connection was stopped).
+                            connection.OnError(exception);
+                        }
+
+                        // See http://msdn.microsoft.com/en-us/library/system.net.httpwebresponse.close.aspx
                         response.Close();
 
                         if (retry)
