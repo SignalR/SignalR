@@ -70,7 +70,7 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: newState}]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: newState }]);
                 connection.state = newState;
                 return true;
             }
@@ -642,6 +642,9 @@
                             if (onFailed) {
                                 onFailed();
                             }
+                            else if(reconnecting) {
+                                that.reconnect(connection);
+                            }
                             return;
                         }
                         else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
@@ -654,16 +657,7 @@
                             connection.log("Websocket closed");
                         }
 
-                        that.stop(connection);
-
-                        if (connection.state === signalR.connectionState.reconnecting ||
-                            changeState(connection,
-                                        signalR.connectionState.connected,
-                                        signalR.connectionState.reconnecting) === true) {
-
-                            connection.log("Websocket reconnecting");
-                            that.start(connection);
-                        }
+                        that.reconnect(connection);
                     };
 
                     connection.socket.onmessage = function (event) {
@@ -679,6 +673,19 @@
                             }
                         }
                     };
+                }
+            },
+
+            reconnect: function (connection) {
+                this.stop(connection);
+
+                if (connection.state === signalR.connectionState.reconnecting ||
+                    changeState(connection,
+                                signalR.connectionState.connected,
+                                signalR.connectionState.reconnecting) === true) {
+
+                    connection.log("Websocket reconnecting");
+                    this.start(connection);
                 }
             },
 
@@ -932,8 +939,8 @@
 
                     if (connection.state === signalR.connectionState.reconnecting ||
                         changeState(connection,
-                                    signalR.connectionState.reconnecting,
-                                    signalR.connectionState.connected) === true) {
+                                    signalR.connectionState.connected,
+                                    signalR.connectionState.reconnecting) === true) {
 
                         var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;

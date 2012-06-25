@@ -171,7 +171,7 @@
         demo: {
             _: {
                 hubName: 'demo',
-                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'testGuid', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
+                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
                 connection: function () { return signalR.hub; }
             },
 
@@ -241,10 +241,6 @@
 
             unsupportedOverload: function (x, callback) {
                 return serverCall(this, "UnsupportedOverload", $.makeArray(arguments));
-            },
-
-            testGuid: function (callback) {
-                return serverCall(this, "TestGuid", $.makeArray(arguments));
             }
         },
         drawingPad: {
