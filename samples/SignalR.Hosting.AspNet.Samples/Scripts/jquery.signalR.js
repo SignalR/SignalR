@@ -932,8 +932,8 @@
 
                     if (connection.state === signalR.connectionState.reconnecting ||
                         changeState(connection,
-                                    signalR.connectionState.reconnecting,
-                                    signalR.connectionState.connected) === true) {
+                                    signalR.connectionState.connected,
+                                    signalR.connectionState.reconnecting) === true) {
 
                         var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
