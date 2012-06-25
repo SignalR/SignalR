@@ -121,7 +121,7 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.css" />
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
-    <Content Include="Raw\test.htm" />
+    <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
     <Content Include="Raw\index.htm" />

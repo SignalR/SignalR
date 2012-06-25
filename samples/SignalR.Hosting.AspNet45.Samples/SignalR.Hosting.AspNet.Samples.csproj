@@ -133,7 +133,7 @@
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\index.htm" />
-    <Content Include="Raw\test.htm" />
+    <Content Include="Raw\test\basic.htm" />
     <Content Include="Scripts\jcanvas.js" />
     <Content Include="Hubs\DrawingPad\drawingpad.js" />
     <Content Include="Scripts\signalr.samples.js" />

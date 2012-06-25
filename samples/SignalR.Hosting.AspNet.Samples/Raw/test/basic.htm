@@ -17,11 +17,11 @@
         }
     </style>
     <link rel="Stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" />
-    <script src="../Scripts/signalr.samples.js" type="text/javascript"></script>
-    <script src="../Scripts/jquery-1.6.2.min.js"></script>
-    <script src="../Scripts/jquery.cookie.js" type="text/javascript"></script>
-    <script src="../Scripts/json2.min.js" type="text/javascript"></script>
-    <script src="../Scripts/jquery.signalR.js"></script>
+    <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.6.2.min.js"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.signalR.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/qunit/qunit-git.js"></script>
     <script>
         $(function () {
@@ -32,7 +32,7 @@
             asyncTest('start', function () {
                 expect(4);
 
-                var connection = $.connection('../test-connection');
+                var connection = $.connection('../../test-connection');
 
                 connection.stateChanged(function (change) {
                     if (change.oldState === $.signalR.connectionState.disconnected) {
@@ -61,7 +61,7 @@
             asyncTest('failed start', function () {
                 expect(2);
 
-                var connection = $.connection('../FakeUrl');
+                var connection = $.connection('../../FakeUrl');
 
                 connection.error(function (err) {
                     ok(err !== null, 'Error event: Failed to connect to ' + connection.url);
@@ -78,7 +78,7 @@
             });
 
             test('send without start', function () {
-                var connection = $.connection('../test-connection');
+                var connection = $.connection('../../test-connection');
 
                 raises(function () {
                     connection.send('hello world');
@@ -89,7 +89,7 @@
             });
 
             asyncTest('received event', function () {
-                var connection = $.connection('../test-connection', null, true);
+                var connection = $.connection('../../test-connection', null, true);
 
                 connection.reconnected(function () {
                     ok(false, 'Reconnect should not be fired. Connection id ' + connection.id);
