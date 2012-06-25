@@ -407,8 +407,7 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (connection.state === signalR.connectionState.disconnecting ||
-                connection.state === signalR.connectionState.disconnected) {
+            if (connection.state === signalR.connectionState.disconnected) {
                 return;
             }
 

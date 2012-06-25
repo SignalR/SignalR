@@ -407,8 +407,7 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (connection.state === signalR.connectionState.disconnecting ||
-                connection.state === signalR.connectionState.disconnected) {
+            if (connection.state === signalR.connectionState.disconnected) {
                 return;
             }
 
@@ -830,7 +829,7 @@
 
             reconnect: function (connection) {
                 var that = this;
-                window.setTimeout(function () {                    
+                window.setTimeout(function () {
                     that.stop(connection);
 
                     if (connection.state === signalR.connectionState.reconnecting ||
