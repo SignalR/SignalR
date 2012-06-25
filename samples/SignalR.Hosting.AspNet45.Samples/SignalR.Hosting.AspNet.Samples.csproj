@@ -133,6 +133,7 @@
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\index.htm" />
+    <Content Include="Raw\test.htm" />
     <Content Include="Scripts\jcanvas.js" />
     <Content Include="Hubs\DrawingPad\drawingpad.js" />
     <Content Include="Scripts\signalr.samples.js" />
@@ -188,6 +189,9 @@
     </Compile>
     <Compile Include="..\SignalR.Hosting.AspNet.Samples\Raw\Raw.cs">
       <Link>Raw\Raw.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Hosting.AspNet.Samples\Raw\TestConnection.cs">
+      <Link>Raw\TestConnection.cs</Link>
     </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>

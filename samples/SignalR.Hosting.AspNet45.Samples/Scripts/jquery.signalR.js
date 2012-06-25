@@ -67,17 +67,19 @@
             return link.protocol + link.host !== window.location.protocol + window.location.host;
         },
 
-        changeState = function (connection, state) {
-            if (state !== connection.state) {
+        changeState = function (connection, expectedState, newState) {
+            if (expectedState === connection.state) {
                 // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: state }]);
-                connection.state = state;
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: newState}]);
+                connection.state = newState;
+                return true;
             }
+
+            return false;
         },
 
         isDisconnecting = function (connection) {
-            return connection.state === signalR.connectionState.disconnecting ||
-                   connection.state === signalR.connectionState.disconnected;
+            return connection.state === signalR.connectionState.disconnected;
         };
 
     signalR = function (url, qs, logging) {
@@ -101,7 +103,6 @@
         connecting: 0,
         connected: 1,
         reconnecting: 2,
-        disconnecting: 3,
         disconnected: 4
     };
 
@@ -135,15 +136,13 @@
                 deferred = $.Deferred(),
                 parser = window.document.createElement("a");
 
-            if (connection.state === signalR.connectionState.connecting ||
-                connection.state === signalR.connectionState.connected) {
+            if (changeState(connection,
+                            signalR.connectionState.disconnected,
+                            signalR.connectionState.connecting) === false) {
                 // Already started, just return
                 deferred.resolve(connection);
                 return deferred.promise();
             }
-
-            // Set the state to connecting
-            changeState(connection, signalR.connectionState.connecting);
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -222,7 +221,9 @@
                 transport.start(connection, function () { // success
                     connection.transport = transport;
 
-                    changeState(connection, signalR.connectionState.connected);
+                    changeState(connection,
+                                signalR.connectionState.connecting,
+                                signalR.connectionState.connected);
 
                     $(connection).trigger(events.onStart);
 
@@ -247,7 +248,7 @@
                     dataType: connection.ajaxDataType,
                     error: function (error) {
                         $(connection).trigger(events.onError, [error.responseText]);
-                        deferred.reject("SignalR: Error during negotiation request: " + error);
+                        deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
                         // Stop the connection if negotiate failed
                         connection.stop();
                     },
@@ -285,7 +286,7 @@
                             });
                         } else if ($.type(config.transport) === "object" ||
                                        $.inArray(config.transport, supportedTransports) >= 0) {
-                                // specific transport provided, as object or a named transport, e.g. "longPolling"
+                            // specific transport provided, as object or a named transport, e.g. "longPolling"
                             transports.push(config.transport);
                         } else { // default "auto"
                             transports = supportedTransports;
@@ -320,9 +321,14 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (!connection.transport) {
+            if (connection.state === signalR.connectionState.disconnected) {
                 // Connection hasn't been started yet
                 throw "SignalR: Connection must be started before data can be sent. Call .start() before .send()";
+            }
+
+            if (connection.state === signalR.connectionState.connecting) {
+                // Connection hasn't been started yet
+                throw "SignalR: Connection has not been fully initialized. Use .start().done() or .start().fail() to run logic after the connection has started.";
             }
 
             connection.transport.send(connection, data);
@@ -401,14 +407,11 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            if (connection.state === signalR.connectionState.disconnecting ||
-                connection.state === signalR.connectionState.disconnected) {
+            if (connection.state === signalR.connectionState.disconnected) {
                 return;
             }
 
             try {
-                changeState(connection, signalR.connectionState.disconnecting);
-
                 if (connection.transport) {
                     connection.transport.abort(connection, async);
                     connection.transport.stop(connection);
@@ -422,7 +425,7 @@
                 delete connection.groups;
             }
             finally {
-                changeState(connection, signalR.connectionState.disconnected);
+                changeState(connection, connection.state, signalR.connectionState.disconnected);
             }
 
             return connection;
@@ -592,7 +595,8 @@
                     opened = false,
                     that = this,
                     reconnecting = !onSuccess,
-                    protocol;
+                    protocol,
+                    $connection = $(connection);
 
                 if (window.MozWebSocket) {
                     window.WebSocket = window.MozWebSocket;
@@ -625,7 +629,11 @@
                             onSuccess();
                         }
                         else {
-                            changeState(connection, signalR.connectionState.connected);
+                            if (changeState(connection,
+                                            signalR.connectionState.reconnecting,
+                                            signalR.connectionState.connected) === true) {
+                                $connection.trigger(events.onReconnect);
+                            }
                         }
                     };
 
@@ -637,8 +645,8 @@
                             return;
                         }
                         else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
-                                // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                                // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).trigger(events.onError, [event.reason]);
                             connection.log("Unclean disconnect from websocket." + event.reason);
                         }
@@ -646,10 +654,16 @@
                             connection.log("Websocket closed");
                         }
 
-                        changeState(connection, signalR.connectionState.reconnecting);
-
                         that.stop(connection);
-                        that.start(connection);
+
+                        if (connection.state === signalR.connectionState.reconnecting ||
+                            changeState(connection,
+                                        signalR.connectionState.connected,
+                                        signalR.connectionState.reconnecting) === true) {
+
+                            connection.log("Websocket reconnecting");
+                            that.start(connection);
+                        }
                     };
 
                     connection.socket.onmessage = function (event) {
@@ -670,6 +684,7 @@
 
             stop: function (connection) {
                 if (connection.socket !== null) {
+                    connection.log("Closing the Websocket");
                     connection.socket.close();
                     connection.socket = null;
                 }
@@ -723,9 +738,7 @@
                         $connection.trigger(events.onError, [e]);
                         if (reconnecting) {
                             // If we were reconnecting, rather than doing initial connect, then try reconnect again
-                            if (isDisconnecting(connection) === false) {
-                                that.reconnect(connection);
-                            }
+                            that.reconnect(connection);
                         }
                     }
                     return;
@@ -772,9 +785,11 @@
                         }
 
                         if (reconnecting) {
-                            $connection.trigger(events.onReconnect);
-
-                            changeState(connection, signalR.connectionState.connected);
+                            if (changeState(connection,
+                                            signalR.connectionState.reconnecting,
+                                            signalR.connectionState.connected) === true) {
+                                $connection.trigger(events.onReconnect);
+                            }
                         }
                     }
                 }, false);
@@ -803,12 +818,7 @@
                         // to change the URL to not include the /connect suffix, and pass
                         // the last message id we received.
                         connection.log("EventSource reconnecting due to the server connection ending");
-
-                        changeState(connection, signalR.connectionState.reconnecting);
-
-                        if (isDisconnecting(connection) === false) {
-                            that.reconnect(connection);
-                        }
+                        that.reconnect(connection);
                     } else {
                         // connection error
                         connection.log("EventSource error");
@@ -820,9 +830,16 @@
             reconnect: function (connection) {
                 var that = this;
                 window.setTimeout(function () {
-                    connection.log("EventSource reconnecting");
                     that.stop(connection);
-                    that.start(connection);
+
+                    if (connection.state === signalR.connectionState.reconnecting ||
+                        changeState(connection,
+                                    signalR.connectionState.connected,
+                                    signalR.connectionState.reconnecting) === true) {
+                        connection.log("EventSource reconnecting");
+                        that.start(connection);
+                    }
+
                 }, connection.reconnectDelay);
             },
 
@@ -878,11 +895,7 @@
                     if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
                         connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
 
-                        if (isDisconnecting(connection) === false) {
-                            changeState(connection, signalR.connectionState.reconnecting);
-
-                            that.reconnect(connection);
-                        }
+                        that.reconnect(connection);
                     }
                 });
 
@@ -917,10 +930,17 @@
                         return;
                     }
 
-                    var frame = connection.frame,
+                    if (connection.state === signalR.connectionState.reconnecting ||
+                        changeState(connection,
+                                    signalR.connectionState.reconnecting,
+                                    signalR.connectionState.connected) === true) {
+
+                        var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
-                    connection.log("Upating iframe src to '" + src + "'.");
-                    frame.src = src;
+                        connection.log("Upating iframe src to '" + src + "'.");
+                        frame.src = src;
+                    }
+
                 }, connection.reconnectDelay);
             },
 
@@ -978,10 +998,12 @@
                     delete connection.onSuccess;
                 }
                 else {
-                    // If there's no onSuccess handler we assume this is a reconnect
-                    $(connection).trigger(events.onReconnect);
-
-                    changeState(connection, signalR.connectionState.connected);
+                    if (changeState(connection,
+                                    signalR.connectionState.reconnecting,
+                                    signalR.connectionState.connected) === true) {
+                        // If there's no onSuccess handler we assume this is a reconnect
+                        $(connection).trigger(events.onReconnect);
+                    }
                 }
             }
         },
@@ -1016,7 +1038,12 @@
                             reconnectFired = false;
 
                         if (reconnecting === true && raiseReconnect === true) {
-                            changeState(connection, signalR.connectionState.reconnecting);
+                            if (connection.state !== signalR.connectionState.reconnecting &&
+                                changeState(connection,
+                                            signalR.connectionState.connected,
+                                            signalR.connectionState.reconnecting) === false) {
+                                return;
+                            }
                         }
 
                         connection.log("Attempting to connect to '" + url + "' using longPolling.");
@@ -1039,10 +1066,13 @@
                                     if (reconnectFired === false) {
                                         connection.log("Raising the reconnect event");
 
-                                        changeState(connection, signalR.connectionState.connected);
+                                        if (changeState(connection,
+                                                        signalR.connectionState.reconnecting,
+                                                        signalR.connectionState.connected) === true) {
 
-                                        $(instance).trigger(events.onReconnect);
-                                        reconnectFired = true;
+                                            $(instance).trigger(events.onReconnect);
+                                            reconnectFired = true;
+                                        }
                                     }
                                 }
 
@@ -1101,16 +1131,19 @@
                         if (raiseReconnect === true) {
                             reconnectTimeOut = window.setTimeout(function () {
                                 if (reconnectFired === false) {
-                                    changeState(connection, signalR.connectionState.connected);
+                                    if (changeState(connection,
+                                                    signalR.connectionState.reconnecting,
+                                                    signalR.connectionState.connected) === true) {
 
-                                    $(instance).trigger(events.onReconnect);
-                                    reconnectFired = true;
+                                        $(instance).trigger(events.onReconnect);
+                                        reconnectFired = true;
+                                    }
                                 }
                             },
                             that.reconnectDelay);
                         }
 
-                    }(connection));
+                    } (connection));
 
                     // Now connected
                     // There's no good way know when the long poll has actually started so
@@ -1160,4 +1193,4 @@
 
     $.connection = $.signalR = signalR;
 
-}(window.jQuery, window));
+} (window.jQuery, window));
