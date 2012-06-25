@@ -61,7 +61,7 @@
             asyncTest('failed start', function () {
                 expect(2);
 
-                var connection = $.connection('../FakeUrl', null, true);
+                var connection = $.connection('../FakeUrl');
 
                 connection.error(function (err) {
                     ok(err !== null, 'Error event: Failed to connect to ' + connection.url);
@@ -84,22 +84,6 @@
                     connection.send('hello world');
                 },
                 'SignalR: Connection must be started before data can be sent. Call .start() before .send()',
-                'Exception thrown when sending without starting');
-
-            });
-
-            test('send when connecting', function () {
-                var connection = $.connection('../test-connection', null, true);
-
-                connection.reconnected(function () {
-                    ok(false, 'Reconnect should not be fired');
-                });
-
-                connection.start({ transport: activeTransport });
-                raises(function () {
-                    connection.send('hello world');
-                },
-                'SignalR: Connection has not been fully initialized. Use .start().done() or .start().fail() to run logic after the connection has started.',
                 'Exception thrown when sending without starting');
 
             });
