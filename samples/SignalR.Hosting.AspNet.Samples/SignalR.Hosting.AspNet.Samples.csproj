@@ -125,6 +125,8 @@
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
     <Content Include="Raw\index.htm" />
+    <Content Include="Raw\test\connect-reconnect.htm" />
+    <Content Include="Raw\test\sending.htm" />
     <Content Include="Scripts\hubs.js" />
     <Content Include="Scripts\jcanvas.js" />
     <Content Include="Hubs\DrawingPad\drawingpad.js" />
@@ -182,6 +184,7 @@
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Raw\Raw.cs" />
+    <Compile Include="Raw\SendingConnection.cs" />
     <Compile Include="Raw\TestConnection.cs" />
     <Compile Include="SignalR.Master.cs">
       <DependentUpon>SignalR.Master</DependentUpon>

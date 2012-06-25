@@ -6,7 +6,7 @@ namespace SignalR.Hosting.AspNet.Samples
     {
         protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
-            return Connection.Broadcast(data);
+            return Connection.Send(connectionId, data);
         }
     }
 }

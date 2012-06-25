@@ -33,6 +33,7 @@ namespace SignalR.Hosting.AspNet.Samples
             });
 
 
+            RouteTable.Routes.MapConnection<SendingConnection>("sending-connection", "sending-connection/{*operation}");
             RouteTable.Routes.MapConnection<TestConnection>("test-connection", "test-connection/{*operation}");
             RouteTable.Routes.MapConnection<Raw>("raw", "raw/{*operation}");
             RouteTable.Routes.MapConnection<Streaming>("streaming", "streaming/{*operation}");
