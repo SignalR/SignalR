@@ -19,9 +19,10 @@ namespace SignalR.ProxyGenerator
             string path = null;
             string outputPath = null;
             string url = null;
+            string signalrAmdAlias = "signalr";
             bool amd = true;
 
-            ParseArguments(args, out url, out minify, out absolute, out path, out outputPath, out amd);
+            ParseArguments(args, out url, out minify, out absolute, out path, out outputPath, out amd, out signalrAmdAlias);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -37,15 +38,15 @@ namespace SignalR.ProxyGenerator
 
             if (!String.IsNullOrEmpty(url) && String.IsNullOrEmpty(path))
             {
-                OutputHubsFromUrl(url, outputPath, minify, absolute, amd);
+                OutputHubsFromUrl(url, outputPath, minify, absolute, amd, signalrAmdAlias);
             }
             else
             {
-                OutputHubs(path, url, outputPath, minify, amd);
+                OutputHubs(path, url, outputPath, minify, amd, signalrAmdAlias);
             }
         }
 
-        private static void OutputHubs(string path, string url, string outputPath, bool minify, bool amd)
+        private static void OutputHubs(string path, string url, string outputPath, bool minify, bool amd, string signalrAmdAlias)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -77,7 +78,7 @@ namespace SignalR.ProxyGenerator
                                                                                 typeof(JavascriptGenerator).FullName);
             var js = generator.GenerateProxy(path, url);
 
-            Generate(outputPath, minify, minifier, js, amd);
+            Generate(outputPath, minify, minifier, js, amd, signalrAmdAlias);
         }
 
         private static void Copy(string sourcePath, string destinationPath)
@@ -88,7 +89,7 @@ namespace SignalR.ProxyGenerator
             Console.WriteLine("Copied file {0} to {1}", Path.GetFullPath(sourcePath), destinationPath);
         }
 
-        private static void OutputHubsFromUrl(string url, string outputPath, bool minify, bool absolute, bool amd)
+        private static void OutputHubsFromUrl(string url, string outputPath, bool minify, bool absolute, bool amd, string signalrAmdAlias)
         {
             string baseUrl = null;
             if (!url.EndsWith("/"))
@@ -120,16 +121,16 @@ namespace SignalR.ProxyGenerator
                 });
             }
 
-            Generate(outputPath, minify, minifier, js, amd);
+            Generate(outputPath, minify, minifier, js, amd, signalrAmdAlias);
         }
 
-        private static void Generate(string outputPath, bool minify, Minifier minifier, string js, bool amd)
+        private static void Generate(string outputPath, bool minify, Minifier minifier, string js, bool amd, string signalrAmdAlias)
         {
             var jsText = js;
 
             if (amd)
             {
-                jsText = WrapWithAmdDefinition(js);
+                jsText = WrapWithAmdDefinition(js, signalrAmdAlias);
             }
 
             if (minify)
@@ -144,26 +145,27 @@ namespace SignalR.ProxyGenerator
 
         /// <summary>
         /// Adds AMD compliant define wrapper at top and bottom of output hubs file 
-        /// for inclusion in RequreJS-ified client scripts
+        /// for inclusion in RequreJS-ified client scripts.
         /// 
-        /// Note: Dependency for require.config path to jquery.signalr.js to be named 'signalr'
-        /// Todo: Refactor to pass in jquery.signalr.js dependency name as a command line parameter
+        /// Usage for default AMD alias of'signalr' -> hubify.exe /o:[path_to_output_file]\hubs.js /amd 
+        /// Usage for custom AMD alias -> hubify.exe /o:[path_to_output_file]\hubs.js /amd:[aliasName] 
         /// </summary>
-        private static string WrapWithAmdDefinition(string js)
+        private static string WrapWithAmdDefinition(string js, string signalrAmdAlias)
         {
             var amdWrappedJs = new StringBuilder();
 
-            amdWrappedJs.AppendLine("define(['jquery', 'signalr'], function () {");
+            amdWrappedJs.AppendLine(string.Format("define(['jquery', '{0}'], function () {{", signalrAmdAlias));
             amdWrappedJs.Append(js);
             amdWrappedJs.AppendLine("});");
 
             return amdWrappedJs.ToString();
         }
 
-        private static void ParseArguments(string[] args, out string url, out bool minify, out bool absolute, out string path, out string outputPath, out bool amd)
+        private static void ParseArguments(string[] args, out string url, out bool minify, out bool absolute, out string path, out string outputPath, out bool amd, out string signalrAmdAlias)
         {
             minify = false;
             amd = false;
+            signalrAmdAlias = "signalr";
             absolute = false;
             path = null;
             url = null;
@@ -184,6 +186,7 @@ namespace SignalR.ProxyGenerator
                         break;
                     case "amd":
                         amd = true;
+                        if (!string.IsNullOrWhiteSpace(arg.Value)) signalrAmdAlias = arg.Value;
                         break;
                     case "absolute":
                         absolute = true;
