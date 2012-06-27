@@ -244,9 +244,12 @@ namespace SignalR.ProxyGenerator
         {
             var amdString = new List<string>();
 
-            amdString.Add("if (typeof define !== 'undefined' && define.amd) { define(function () { return hubs; }); }");
-            amdString.Add("else if (typeof require !== 'undefined') { module.exports = hubs; }");
-            amdString.Add("else { window.hubs = hubs; }");
+            amdString.Add("if (typeof define !== 'undefined' && define.amd) {");
+            amdString.Add("define(['signalr'], function () { return hubs; });");
+            amdString.Add("}");
+            amdString.Add("else { ");
+            amdString.Add("window.hubs = hubs;");
+            amdString.Add("}");
             amdString.Add("");
             amdString.Add("} (window.jQuery, window));");
 
