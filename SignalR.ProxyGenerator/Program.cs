@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Ajax.Utilities;
 
@@ -18,8 +19,9 @@ namespace SignalR.ProxyGenerator
             string path = null;
             string outputPath = null;
             string url = null;
+            bool amd = true;
 
-            ParseArguments(args, out url, out minify, out absolute, out path, out outputPath);
+            ParseArguments(args, out url, out minify, out absolute, out path, out outputPath, out amd);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -35,15 +37,15 @@ namespace SignalR.ProxyGenerator
 
             if (!String.IsNullOrEmpty(url) && String.IsNullOrEmpty(path))
             {
-                OutputHubsFromUrl(url, outputPath, minify, absolute);
+                OutputHubsFromUrl(url, outputPath, minify, absolute, amd);
             }
             else
             {
-                OutputHubs(path, url, outputPath, minify);
+                OutputHubs(path, url, outputPath, minify, amd);
             }
         }
 
-        private static void OutputHubs(string path, string url, string outputPath, bool minify)
+        private static void OutputHubs(string path, string url, string outputPath, bool minify, bool amd)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -75,7 +77,7 @@ namespace SignalR.ProxyGenerator
                                                                                 typeof(JavascriptGenerator).FullName);
             var js = generator.GenerateProxy(path, url);
 
-            Generate(outputPath, minify, minifier, js);
+            Generate(outputPath, minify, minifier, js, amd);
         }
 
         private static void Copy(string sourcePath, string destinationPath)
@@ -86,7 +88,7 @@ namespace SignalR.ProxyGenerator
             Console.WriteLine("Copied file {0} to {1}", Path.GetFullPath(sourcePath), destinationPath);
         }
 
-        private static void OutputHubsFromUrl(string url, string outputPath, bool minify, bool absolute)
+        private static void OutputHubsFromUrl(string url, string outputPath, bool minify, bool absolute, bool amd)
         {
             string baseUrl = null;
             if (!url.EndsWith("/"))
@@ -118,24 +120,32 @@ namespace SignalR.ProxyGenerator
                 });
             }
 
-            Generate(outputPath, minify, minifier, js);
+            Generate(outputPath, minify, minifier, js, amd);
         }
 
-        private static void Generate(string outputPath, bool minify, Minifier minifier, string js)
+        private static void Generate(string outputPath, bool minify, Minifier minifier, string js, bool amd)
         {
+            var jsText = js;
+
+            if (amd)
+            {
+                jsText = AddAmdToEndOfFile(js);
+            }
+
             if (minify)
             {
-                File.WriteAllText(outputPath, minifier.MinifyJavaScript(js));
+                File.WriteAllText(outputPath, minifier.MinifyJavaScript(jsText));
             }
             else
             {
-                File.WriteAllText(outputPath, js);
+                File.WriteAllText(outputPath, jsText);
             }
         }
 
-        private static void ParseArguments(string[] args, out string url, out bool minify, out bool absolute, out string path, out string outputPath)
+        private static void ParseArguments(string[] args, out string url, out bool minify, out bool absolute, out string path, out string outputPath, out bool amd)
         {
             minify = false;
+            amd = false;
             absolute = false;
             path = null;
             url = null;
@@ -153,6 +163,9 @@ namespace SignalR.ProxyGenerator
                 {
                     case "minify":
                         minify = true;
+                        break;
+                    case "amd":
+                        amd = true;
                         break;
                     case "absolute":
                         absolute = true;
@@ -184,6 +197,60 @@ namespace SignalR.ProxyGenerator
             }
 
             return new KeyValuePair<string, string>(arg.Trim(), null);
+        }
+
+        private static string AddAmdToEndOfFile(string js)
+        {
+            var textAsLines = new List<string>();
+
+            using (StringReader reader = new StringReader(js))
+            {
+                while (reader.Peek() != -1)
+                {
+                    textAsLines.Add(reader.ReadLine());
+                }
+            }
+
+            // probably not necessary:
+            for (int lineNumber = textAsLines.Count - 1; lineNumber > 0; lineNumber--)
+            {
+                var lastLine = textAsLines[lineNumber];
+                if (lastLine.Trim() == string.Empty)
+                {
+                    // remove empty lines at end of file if there are any
+                    textAsLines.RemoveAt(lineNumber);
+                }
+                else
+                {
+                    // remove the last text line which is the jQuery mixin file ending
+                    textAsLines.RemoveAt(lineNumber);
+                    break;
+                }
+            }
+
+            textAsLines.AddRange(EndOfFileWithAmdDeclaration());
+
+            var textWithAmdEnding = new StringBuilder();
+
+            foreach (var textLine in textAsLines)
+            {
+                textWithAmdEnding.AppendLine(textLine);
+            }
+
+            return textWithAmdEnding.ToString();
+        }
+
+        private static IEnumerable<string> EndOfFileWithAmdDeclaration()
+        {
+            var amdString = new List<string>();
+
+            amdString.Add("if (typeof define !== 'undefined' && define.amd) { define(function () { return hubs; }); }");
+            amdString.Add("else if (typeof require !== 'undefined') { module.exports = hubs; }");
+            amdString.Add("else { window.hubs = hubs; }");
+            amdString.Add("");
+            amdString.Add("} (window.jQuery, window));");
+
+            return amdString;
         }
 
         public class JavascriptGenerator : MarshalByRefObject
