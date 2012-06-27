@@ -129,7 +129,7 @@ namespace SignalR.ProxyGenerator
 
             if (amd)
             {
-                jsText = AddAmdToEndOfFile(js);
+                jsText = WrapWithAmdDefinition(js);
             }
 
             if (minify)
@@ -140,6 +140,24 @@ namespace SignalR.ProxyGenerator
             {
                 File.WriteAllText(outputPath, jsText);
             }
+        }
+
+        /// <summary>
+        /// Adds AMD compliant define wrapper at top and bottom of output hubs file 
+        /// for inclusion in RequreJS-ified client scripts
+        /// 
+        /// Note: Dependency for require.config path to jquery.signalr.js to be named 'signalr'
+        /// Todo: Refactor to pass in jquery.signalr.js dependency name as a command line parameter
+        /// </summary>
+        private static string WrapWithAmdDefinition(string js)
+        {
+            var amdWrappedJs = new StringBuilder();
+
+            amdWrappedJs.AppendLine("define(['jquery', 'signalr'], function () {");
+            amdWrappedJs.Append(js);
+            amdWrappedJs.AppendLine("});");
+
+            return amdWrappedJs.ToString();
         }
 
         private static void ParseArguments(string[] args, out string url, out bool minify, out bool absolute, out string path, out string outputPath, out bool amd)
@@ -197,63 +215,6 @@ namespace SignalR.ProxyGenerator
             }
 
             return new KeyValuePair<string, string>(arg.Trim(), null);
-        }
-
-        private static string AddAmdToEndOfFile(string js)
-        {
-            var textAsLines = new List<string>();
-
-            using (StringReader reader = new StringReader(js))
-            {
-                while (reader.Peek() != -1)
-                {
-                    textAsLines.Add(reader.ReadLine());
-                }
-            }
-
-            // probably not necessary:
-            for (int lineNumber = textAsLines.Count - 1; lineNumber > 0; lineNumber--)
-            {
-                var lastLine = textAsLines[lineNumber];
-                if (lastLine.Trim() == string.Empty)
-                {
-                    // remove empty lines at end of file if there are any
-                    textAsLines.RemoveAt(lineNumber);
-                }
-                else
-                {
-                    // remove the last text line which is the jQuery mixin file ending
-                    textAsLines.RemoveAt(lineNumber);
-                    break;
-                }
-            }
-
-            textAsLines.AddRange(EndOfFileWithAmdDeclaration());
-
-            var textWithAmdEnding = new StringBuilder();
-
-            foreach (var textLine in textAsLines)
-            {
-                textWithAmdEnding.AppendLine(textLine);
-            }
-
-            return textWithAmdEnding.ToString();
-        }
-
-        private static IEnumerable<string> EndOfFileWithAmdDeclaration()
-        {
-            var amdString = new List<string>();
-
-            amdString.Add("if (typeof define !== 'undefined' && define.amd) {");
-            amdString.Add("define(['signalr'], function () { return hubs; });");
-            amdString.Add("}");
-            amdString.Add("else { ");
-            amdString.Add("window.hubs = hubs;");
-            amdString.Add("}");
-            amdString.Add("");
-            amdString.Add("} (window.jQuery, window));");
-
-            return amdString;
         }
 
         public class JavascriptGenerator : MarshalByRefObject
