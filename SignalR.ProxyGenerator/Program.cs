@@ -82,8 +82,6 @@ namespace SignalR.ProxyGenerator
         {
             string target = Path.Combine(destinationPath, Path.GetFileName(sourcePath));
             File.Copy(sourcePath, target, overwrite: true);
-
-            Console.WriteLine("Copied file {0} to {1}", Path.GetFullPath(sourcePath), destinationPath);
         }
 
         private static void OutputHubsFromUrl(string url, string outputPath, bool minify, bool absolute)

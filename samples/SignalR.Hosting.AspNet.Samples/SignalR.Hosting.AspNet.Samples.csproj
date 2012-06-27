@@ -276,6 +276,6 @@
     <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Target Name="AfterBuild">
-    <Exec Command="..\..\SignalR.ProxyGenerator\bin\$(Configuration)\hubify.exe /o:Scripts\hubs.js" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="..\..\..\SignalR.ProxyGenerator\bin\$(Configuration)\hubify.exe /o:..\Scripts\hubs.js" Condition=" '$(OS)' == 'Windows_NT'" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>
