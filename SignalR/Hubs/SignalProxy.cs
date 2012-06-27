@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
-    public class SignalAgent : DynamicObject
+    public class SignalProxy : DynamicObject, IClientProxy
     {
         protected readonly IConnection _connection;
         protected readonly string _signal;
         protected readonly string _hubName;
 
-        public SignalAgent(IConnection connection, string signal, string hubName)
+        public SignalProxy(IConnection connection, string signal, string hubName)
         {
             _connection = connection;
             _signal = signal;

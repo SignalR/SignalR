@@ -61,11 +61,12 @@
     <Compile Include="Hubs\HubRequest.cs" />
     <Compile Include="Hubs\HubRequestParser.cs" />
     <Compile Include="Hubs\HubResponse.cs" />
+    <Compile Include="Hubs\IClientProxy.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\JTokenValue.cs" />
-    <Compile Include="Hubs\StatefulSignalAgent.cs" />
+    <Compile Include="Hubs\StatefulSignalProxy.cs" />
     <Compile Include="Infrastructure\ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubManagerExtensions.cs" />
@@ -116,11 +117,11 @@
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\Lookup\ReflectedHubDescriptorProvider.cs" />
     <Compile Include="Hubs\Hub.cs" />
-    <Compile Include="Hubs\ClientAgent.cs" />
+    <Compile Include="Hubs\ClientProxy.cs" />
     <Compile Include="Hubs\HubCallerContext.cs" />
     <Compile Include="Hubs\HubDispatcher.cs" />
     <Compile Include="Hubs\Lookup\IHubDescriptorProvider.cs" />
-    <Compile Include="Hubs\SignalAgent.cs" />
+    <Compile Include="Hubs\SignalProxy.cs" />
     <Compile Include="Hubs\NullJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\IDependencyResolver.cs" />
     <Compile Include="Hubs\IJavaScriptMinifier.cs" />

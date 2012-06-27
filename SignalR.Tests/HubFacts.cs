@@ -230,5 +230,27 @@ namespace SignalR.Tests
 
             connection.Stop();
         }
+
+        [Fact]
+        public void DynamicInvokeTest()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://site/");
+            string callback = "!!!CallMeBack!!!";
+
+            var hub = connection.CreateProxy("demo");
+
+            var wh = new ManualResetEvent(false);
+
+            hub.On(callback, () => wh.Set());
+
+            connection.Start(host).Wait();
+
+            hub.Invoke("DynamicInvoke", callback).Wait();
+
+            Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+            connection.Stop();
+        }
     }
 }

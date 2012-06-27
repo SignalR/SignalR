@@ -65,7 +65,7 @@ namespace SignalR
             var hubManager = _resolver.Resolve<IHubManager>();
             HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName);
 
-            return new HubContext(new ClientAgent(connection, hubDescriptor.Name), 
+            return new HubContext(new ClientProxy(connection, hubDescriptor.Name), 
                                   new GroupManager(connection, hubName));
         }
 

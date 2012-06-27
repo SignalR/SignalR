@@ -2,11 +2,11 @@
 
 namespace SignalR.Hubs
 {
-    public class StatefulSignalAgent : SignalAgent
+    public class StatefulSignalProxy : SignalProxy
     {
         private readonly TrackingDictionary _state;
 
-        public StatefulSignalAgent(IConnection connection, string signal, string hubName, TrackingDictionary state)
+        public StatefulSignalProxy(IConnection connection, string signal, string hubName, TrackingDictionary state)
             : base(connection, signal, hubName)
         {
             _state = state;

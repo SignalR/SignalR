@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
-    public class ClientAgent : DynamicObject
+    public class ClientProxy : DynamicObject, IClientProxy
     {
         private readonly IConnection _connection;
         private readonly string _hubName;
 
-        public ClientAgent(IConnection connection, string hubName)
+        public ClientProxy(IConnection connection, string hubName)
         {
             _connection = connection;
             _hubName = hubName;
@@ -18,7 +18,7 @@ namespace SignalR.Hubs
         {
             get
             {
-                return new SignalAgent(_connection, key, _hubName);
+                return new SignalProxy(_connection, key, _hubName);
             }
         }
 
