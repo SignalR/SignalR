@@ -123,13 +123,16 @@ namespace SignalR
                                 MessageStore<InMemoryMessage> messages;
                                 if (_cache.TryGetValue(cursor.Key, out messages))
                                 {
+                                    var storeResult = messages.GetMessages(cursor.MessageId);
                                     var result = new ResultSet
                                     {
                                          Cursor = cursor,
-                                         StoreResult = messages.GetMessages(cursor.MessageId)
+                                         StoreResult = storeResult
                                     };
 
-                                    if (result.StoreResult.Messages.Length > 0)
+                                    cursor.MessageId = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+
+                                    if (storeResult.Messages.Length > 0)
                                     {
                                         results.Add(result);
                                     }
@@ -159,11 +162,6 @@ namespace SignalR
 
         private string CalculateToken(List<ResultSet> results)
         {
-            foreach (var r in results)
-            {
-                r.Cursor.MessageId = r.StoreResult.FirstMessageId + (ulong)r.StoreResult.Messages.Length;
-            }
-
             return JsonConvert.SerializeObject(results.Select(k => k.Cursor));
         }
 
