@@ -212,22 +212,23 @@ namespace SignalR.Transports
 
         private void ProcessMessages(ITransportConnection connection, Action postReceive, Action<Exception> endRequest)
         {
-            IDisposable receiveLoop = null;
+            IDisposable subscription = null;
 
             Action<Exception> end = (exception) =>
             {
-                if (receiveLoop != null)
+                if (subscription != null)
                 {
-                    receiveLoop.Dispose();
+                    subscription.Dispose();
                 }
 
                 // End the request after any pending sends
                 _queue.Peek().Then((cb, ex) => cb(ex), endRequest, exception);
             };
 
+            // End the request if the connection end token is triggered
             ConnectionEndToken.Register(() => end(null));
 
-            receiveLoop = connection.Receive(LastMessageId, (ex, response) =>
+            subscription = connection.Receive(LastMessageId, (ex, response) =>
             {
                 if (ex != null)
                 {
