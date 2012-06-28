@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SignalR
 {
@@ -7,12 +8,12 @@ namespace SignalR
     /// </summary>
     public struct MessageResult
     {
-        private static readonly List<Message> _emptyList = new List<Message>();
+        private static readonly Message[] _emptyList = new Message[0];
 
         /// <summary>
         /// Gets an <see cref="IList{Message}"/> associated with the result.
         /// </summary>
-        public IList<Message> Messages { get; private set; }
+        public Message[] Messages { get; private set; }
 
         /// <summary>
         /// Gets a cursor representing the caller state.
@@ -34,6 +35,13 @@ namespace SignalR
         /// <param name="messages">The list of messages associated with this <see cref="MessageResult"/>.</param>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
         public MessageResult(IList<Message> messages, string lastMessageId)
+            : this()
+        {
+            Messages = messages.ToArray();
+            LastMessageId = lastMessageId;
+        }
+
+        public MessageResult(Message[] messages, string lastMessageId)
             : this()
         {
             Messages = messages;

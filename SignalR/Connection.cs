@@ -102,7 +102,7 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
+            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Length, result.LastMessageId);
 
             return response;
         }

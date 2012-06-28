@@ -95,6 +95,9 @@
     <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
+    <Compile Include="MessageBus\MessageStore.cs" />
+    <Compile Include="MessageBus\MessageStoreResult.cs" />
+    <Compile Include="MessageBus\Volatile.cs" />
     <Compile Include="MessageBus\WrappedValue.cs" />
     <Compile Include="PersistentConnectionContext.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />

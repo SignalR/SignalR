@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json;
 using SignalR.Infrastructure;
 
 namespace SignalR
@@ -12,75 +12,27 @@ namespace SignalR
     /// <summary>
     /// 
     /// </summary>
-    public class MessageBus : MessageBus<ulong>
+    public class MessageBus : INewMessageBus
     {
-        public MessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>(),
-                   garbageCollectMessages: true)
-        {
-        }
+        private readonly LockedList<Subscription> _subscriptions = new LockedList<Subscription>();
 
-        public MessageBus(ITraceManager trace, bool garbageCollectMessages)
-            : base(trace,
-                   garbageCollectMessages,
-                   new DefaultIdGenerator())
-        {
-        }
+        private readonly ConcurrentDictionary<string, MessageStore<InMemoryMessage>> _cache =
+            new ConcurrentDictionary<string, MessageStore<InMemoryMessage>>();
 
-        private class DefaultIdGenerator : IIdGenerator<ulong>
-        {
-            private ulong _id;
-            public ulong GetNext()
-            {
-                return ++_id;
-            }
-
-            public ulong ConvertFromString(string value)
-            {
-                return UInt64.Parse(value, CultureInfo.InvariantCulture);
-            }
-
-            public string ConvertToString(ulong value)
-            {
-                return value.ToString(CultureInfo.InvariantCulture);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class MessageBus<T> : INewMessageBus where T : IComparable<T>
-    {
-        private readonly LockedList<Subscription<T>> _subscriptions = new LockedList<Subscription<T>>();
-
-        private readonly ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>> _cache =
-            new ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>>();
-
-        private static List<InMemoryMessage<T>> _emptyMessageList = new List<InMemoryMessage<T>>();
+        private static List<InMemoryMessage<ulong>> _emptyMessageList = new List<InMemoryMessage<ulong>>();
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
-        private readonly IIdGenerator<T> _idGenerator;
 
         private int _workerRunning;
 
-        private readonly TimeSpan _cleanupInterval = TimeSpan.FromSeconds(10);
-        private long _gcRunning = 0;
-        private readonly Timer _timer;
         private readonly ITraceManager _trace;
-        private T _lastMessageId;
-        private bool _isMessageIdSet;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="resolver"></param>
-        /// <param name="idGenerator"></param>
-        public MessageBus(IDependencyResolver resolver, IIdGenerator<T> idGenerator)
-            : this(resolver.Resolve<ITraceManager>(),
-                   garbageCollectMessages: true,
-                   idGenerator: idGenerator)
+        public MessageBus(IDependencyResolver resolver)
+            : this(resolver.Resolve<ITraceManager>())
         {
 
         }
@@ -89,24 +41,16 @@ namespace SignalR
         /// 
         /// </summary>
         /// <param name="traceManager"></param>
-        /// <param name="garbageCollectMessages"></param>
-        /// <param name="idGenerator"></param>
-        public MessageBus(ITraceManager traceManager, bool garbageCollectMessages, IIdGenerator<T> idGenerator)
+        public MessageBus(ITraceManager traceManager)
         {
             _trace = traceManager;
-            _idGenerator = idGenerator;
-
-            if (garbageCollectMessages)
-            {
-                _timer = new Timer(RemoveExpiredEntries, null, _cleanupInterval, _cleanupInterval);
-            }
         }
 
         private TraceSource Trace
         {
             get
             {
-                return _trace["SignalR.InProcessMessageBus"];
+                return _trace["SignalR.MessageBus"];
             }
         }
 
@@ -118,24 +62,11 @@ namespace SignalR
         /// <param name="value">The value to send.</param>
         public void Publish(string source, string eventKey, object value)
         {
-            var list = _cache.GetOrAdd(eventKey, _ => new LockedList<InMemoryMessage<T>>());
+            var list = _cache.GetOrAdd(eventKey, _ => new MessageStore<InMemoryMessage>(100));
 
-            try
-            {
-                // Take a write lock here so we ensure messages go into the list in order
-                _cacheLock.EnterWriteLock();
+            list.Add(new InMemoryMessage(eventKey, value));
 
-                T id = _idGenerator.GetNext();
-                _lastMessageId = id;
-
-                // Only 1 save allowed at a time, to ensure messages are added to the list in order
-                list.AddWithLock(new InMemoryMessage<T>(eventKey, value, id));
-                DoWork();
-            }
-            finally
-            {
-                _cacheLock.ExitWriteLock();
-            }
+            DoWork();
         }
 
         /// <summary>
@@ -147,15 +78,24 @@ namespace SignalR
         /// <returns></returns>
         public IDisposable Subscribe(IEnumerable<string> keys, string messageId, Action<Exception, MessageResult> callback)
         {
-            var subscription = new Subscription<T>
+            var subscription = new Subscription
             {
-                MessageId = messageId == null ? _lastMessageId : _idGenerator.ConvertFromString(messageId),
-                Keys = keys.ToArray(),
+                Cursors = GetCursors(messageId, keys),
                 Callback = callback
             };
 
             _subscriptions.AddWithLock(subscription);
             return new DisposableAction(() => _subscriptions.RemoveWithLock(subscription));
+        }
+
+        private Cursor[] GetCursors(string messageId, IEnumerable<string> keys)
+        {
+            if (messageId == null)
+            {
+                return keys.Select(key => new Cursor { Key = key }).ToArray();
+            }
+
+            return JsonConvert.DeserializeObject<Cursor[]>(messageId);
         }
 
         private void DoWork()
@@ -172,20 +112,34 @@ namespace SignalR
             {
                 try
                 {
-                    while (_cache.Any())
+                    while (_cache.Values.Any())
                     {
                         for (int i = 0; i < _subscriptions.CountWithLock; i++)
                         {
-                            var subscription = _subscriptions[i];
-                            foreach (var key in subscription.Keys)
+                            Subscription subscription = _subscriptions[i];
+                            var results = new List<ResultSet>();
+                            foreach (var cursor in subscription.Cursors)
                             {
-                                var messages = GetMessagesSince(key, subscription.MessageId);
-                                if (messages.Count > 0)
+                                MessageStore<InMemoryMessage> messages;
+                                if (_cache.TryGetValue(cursor.Key, out messages))
                                 {
-                                    var result = GetMessageResult(messages);
-                                    subscription.MessageId = messages[messages.Count - 1].Id;
-                                    subscription.Callback.Invoke(null, result);
+                                    var result = new ResultSet
+                                    {
+                                         Cursor = cursor,
+                                         StoreResult = messages.GetMessages(cursor.MessageId)
+                                    };
+
+                                    if (result.StoreResult.Messages.Length > 0)
+                                    {
+                                        results.Add(result);
+                                    }
                                 }
+                            }
+
+                            if (results.Count > 0)
+                            {
+                                MessageResult messageResult = GetMessageResult(results);
+                                subscription.Callback.Invoke(null, messageResult);
                             }
                         }
                     }
@@ -197,83 +151,41 @@ namespace SignalR
             });
         }
 
-        private MessageResult GetMessageResult(IList<InMemoryMessage<T>> messages)
+        private MessageResult GetMessageResult(List<ResultSet> results)
         {
-            var id = messages[messages.Count - 1].Id;
-
-            return new MessageResult(messages.ToList<Message>(), _idGenerator.ConvertToString(id));
+            var messages = results.SelectMany(r => r.StoreResult.Messages).ToArray();
+            return new MessageResult(messages, CalculateToken(results));
         }
 
-        private IList<InMemoryMessage<T>> GetMessagesSince(string eventKey, T id)
+        private string CalculateToken(List<ResultSet> results)
         {
-            LockedList<InMemoryMessage<T>> list = null;
-            _cache.TryGetValue(eventKey, out list);
-
-            if (list == null || list.CountWithLock == 0)
+            foreach (var r in results)
             {
-                return _emptyMessageList;
+                r.Cursor.MessageId = r.StoreResult.FirstMessageId + (ulong)r.StoreResult.Messages.Length;
             }
 
-            // Create a snapshot so that we ensure the list isn't modified within this scope
-            var snapshot = list.CopyWithLock();
-
-            if (snapshot.Count > 0 && snapshot[0].Id.CompareTo(id) > 0)
-            {
-                // All messages in the list are greater than the last message
-                return snapshot;
-            }
-
-            var index = snapshot.FindLastIndex(msg => msg.Id.CompareTo(id) <= 0);
-
-            if (index < 0)
-            {
-                return _emptyMessageList;
-            }
-
-            var startIndex = index + 1;
-
-            if (startIndex >= snapshot.Count)
-            {
-                return _emptyMessageList;
-            }
-
-            return snapshot.GetRange(startIndex, snapshot.Count - startIndex);
+            return JsonConvert.SerializeObject(results.Select(k => k.Cursor));
         }
 
-        private void RemoveExpiredEntries(object state)
+        internal class Subscription
         {
-            if (Interlocked.Exchange(ref _gcRunning, 1) == 1 || Debugger.IsAttached)
-            {
-                return;
-            }
-
-            try
-            {
-                // Take a snapshot of the entries
-                var entries = _cache.ToList();
-
-                // Remove all the expired ones
-                foreach (var entry in entries)
-                {
-                    entry.Value.RemoveWithLock(item => item.Expired);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Exception on bg thread, bad! Log and swallow to stop the process exploding
-                Trace.TraceInformation("Error during InProcessMessageStore clean up on background thread: {0}", ex);
-            }
-            finally
-            {
-                Interlocked.Exchange(ref _gcRunning, 0);
-            }
-        }
-        
-        internal class Subscription<TValue>
-        {
-            public string[] Keys;
-            public TValue MessageId;
+            public Cursor[] Cursors;
             public Action<Exception, MessageResult> Callback;
+        }
+
+        internal class Cursor
+        {
+            [JsonProperty(PropertyName = "k")]
+            public string Key { get; set; }
+
+            [JsonProperty(PropertyName = "m")]
+            public ulong MessageId { get; set; }
+        }
+
+        internal class ResultSet
+        {            
+            public Cursor Cursor { get; set; }
+            public MessageStoreResult<InMemoryMessage> StoreResult { get; set; }
         }
     }
 }
