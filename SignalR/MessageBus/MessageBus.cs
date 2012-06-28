@@ -19,10 +19,6 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, MessageStore<InMemoryMessage>> _cache =
             new ConcurrentDictionary<string, MessageStore<InMemoryMessage>>();
 
-        private static List<InMemoryMessage<ulong>> _emptyMessageList = new List<InMemoryMessage<ulong>>();
-        private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
-
-
         private int _workerRunning;
 
         private readonly ITraceManager _trace;
@@ -123,6 +119,7 @@ namespace SignalR
             {
                 try
                 {
+                    // REVIEW: This condition is wrong
                     while (_cache.Values.Any())
                     {
                         for (int i = 0; i < _subscriptions.CountWithLock; i++)
