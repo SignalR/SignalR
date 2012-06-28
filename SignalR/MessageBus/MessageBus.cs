@@ -92,10 +92,21 @@ namespace SignalR
         {
             if (messageId == null)
             {
-                return keys.Select(key => new Cursor { Key = key }).ToArray();
+                return keys.Select(key => new Cursor { Key = key, MessageId = GetMessageId(key) }).ToArray();
             }
 
             return JsonConvert.DeserializeObject<Cursor[]>(messageId);
+        }
+
+        private ulong GetMessageId(string key)
+        {
+            MessageStore<InMemoryMessage> store;
+            if (_cache.TryGetValue(key, out store))
+            {
+                return store.Id + 1;
+            }
+
+            return 0;
         }
 
         private void DoWork()
@@ -126,8 +137,8 @@ namespace SignalR
                                     var storeResult = messages.GetMessages(cursor.MessageId);
                                     var result = new ResultSet
                                     {
-                                         Cursor = cursor,
-                                         StoreResult = storeResult
+                                        Cursor = cursor,
+                                        StoreResult = storeResult
                                     };
 
                                     cursor.MessageId = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
@@ -181,7 +192,7 @@ namespace SignalR
         }
 
         internal class ResultSet
-        {            
+        {
             public Cursor Cursor { get; set; }
             public MessageStoreResult<InMemoryMessage> StoreResult { get; set; }
         }

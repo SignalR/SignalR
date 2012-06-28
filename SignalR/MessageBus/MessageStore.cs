@@ -37,6 +37,12 @@ namespace SignalR
             }
         }
 
+        public ulong Id
+        {
+            get;
+            private set;
+        }
+
         // only for testing purposes
         public ulong GetMessageCount()
         {
@@ -58,7 +64,7 @@ namespace SignalR
             // actual number may be higher, but this field will eventually catch up as threads
             // flush data.)
             Interlocked.Increment(ref _nextFreeMessageId);
-            return newMessageId;
+            return Id = newMessageId;
         }
 
         private void GetFragmentOffsets(ulong messageId, out ulong fragmentNum, out int idxIntoFragmentsArray, out int idxIntoFragment)
