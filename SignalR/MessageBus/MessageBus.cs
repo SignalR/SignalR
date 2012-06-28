@@ -268,25 +268,11 @@ namespace SignalR
                 Interlocked.Exchange(ref _gcRunning, 0);
             }
         }
-
-        internal class DisposableAction : IDisposable
-        {
-            private readonly Action _action;
-            public DisposableAction(Action action)
-            {
-                _action = action;
-            }
-
-            public void Dispose()
-            {
-                _action();
-            }
-        }
-
-        internal class Subscription<T>
+        
+        internal class Subscription<TValue>
         {
             public string[] Keys;
-            public T MessageId;
+            public TValue MessageId;
             public Action<Exception, MessageResult> Callback;
         }
     }
