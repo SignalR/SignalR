@@ -16,8 +16,8 @@ namespace SignalR
     {
         private readonly LockedList<Subscription> _subscriptions = new LockedList<Subscription>();
 
-        private readonly ConcurrentDictionary<string, MessageStore<InMemoryMessage>> _cache =
-            new ConcurrentDictionary<string, MessageStore<InMemoryMessage>>();
+        private readonly ConcurrentDictionary<string, MessageStore<Message>> _cache =
+            new ConcurrentDictionary<string, MessageStore<Message>>();
 
         private int _workerRunning;
 
@@ -58,9 +58,9 @@ namespace SignalR
         /// <param name="value">The value to send.</param>
         public void Publish(string source, string eventKey, object value)
         {
-            var list = _cache.GetOrAdd(eventKey, _ => new MessageStore<InMemoryMessage>(100));
+            var list = _cache.GetOrAdd(eventKey, _ => new MessageStore<Message>(100));
 
-            list.Add(new InMemoryMessage(eventKey, value));
+            list.Add(new Message(eventKey, value));
 
             DoWork();
         }
@@ -96,7 +96,7 @@ namespace SignalR
 
         private ulong GetMessageId(string key)
         {
-            MessageStore<InMemoryMessage> store;
+            MessageStore<Message> store;
             if (_cache.TryGetValue(key, out store))
             {
                 return store.Id + 1;
@@ -128,20 +128,22 @@ namespace SignalR
                             var results = new List<ResultSet>();
                             foreach (var cursor in subscription.Cursors)
                             {
-                                MessageStore<InMemoryMessage> messages;
+                                MessageStore<Message> messages;
                                 if (_cache.TryGetValue(cursor.Key, out messages))
                                 {
-                                    var storeResult = messages.GetMessages(cursor.MessageId);
                                     var result = new ResultSet
                                     {
                                         Cursor = cursor,
-                                        StoreResult = storeResult
+                                        Messages = new List<Message>()
                                     };
 
-                                    cursor.MessageId = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                                    MessageStoreResult<Message> storeResult = messages.GetMessages(cursor.MessageId);
+                                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                                    cursor.MessageId = next;
 
                                     if (storeResult.Messages.Length > 0)
                                     {
+                                        result.Messages.AddRange(storeResult.Messages);
                                         results.Add(result);
                                     }
                                 }
@@ -164,7 +166,7 @@ namespace SignalR
 
         private MessageResult GetMessageResult(List<ResultSet> results)
         {
-            var messages = results.SelectMany(r => r.StoreResult.Messages).ToArray();
+            var messages = results.SelectMany(r => r.Messages).ToArray();
             return new MessageResult(messages, CalculateToken(results));
         }
 
@@ -173,13 +175,13 @@ namespace SignalR
             return JsonConvert.SerializeObject(results.Select(k => k.Cursor));
         }
 
-        internal class Subscription
+        private class Subscription
         {
             public Cursor[] Cursors;
             public Action<Exception, MessageResult> Callback;
         }
 
-        internal class Cursor
+        private class Cursor
         {
             [JsonProperty(PropertyName = "k")]
             public string Key { get; set; }
@@ -188,10 +190,10 @@ namespace SignalR
             public ulong MessageId { get; set; }
         }
 
-        internal class ResultSet
+        private struct ResultSet
         {
-            public Cursor Cursor { get; set; }
-            public MessageStoreResult<InMemoryMessage> StoreResult { get; set; }
+            public Cursor Cursor;
+            public List<Message> Messages;
         }
     }
 }
