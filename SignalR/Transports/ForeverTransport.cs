@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -8,12 +9,14 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
+        private readonly TaskQueue _queue = new TaskQueue();
 
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>())
         {
+
         }
 
         public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
@@ -190,13 +193,75 @@ namespace SignalR.Transports
         private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
-            ProcessMessagesImpl(tcs, connection, postReceive);
+            // ProcessMessagesImpl(tcs, connection, postReceive);
+            ProcessMessages(connection, postReceive, ex =>
+            {
+                if (ex != null)
+                {
+                    tcs.TrySetException(ex);
+                }
+                else
+                {
+                    tcs.TrySetResult(null);
+                }
+
+                CompleteRequest();
+            });
             return tcs.Task;
+        }
+
+        private void ProcessMessages(ITransportConnection connection, Action postReceive, Action<Exception> endRequest)
+        {
+            IDisposable receiveLoop = null;
+
+            Action<Exception> end = (exception) =>
+            {
+                if (receiveLoop != null)
+                {
+                    receiveLoop.Dispose();
+                }
+
+                // End the request after any pending sends
+                _queue.Peek().Then((cb, ex) => cb(ex), endRequest, exception);
+            };
+
+            ConnectionEndToken.Register(() => end(null));
+
+            receiveLoop = connection.Receive(LastMessageId, (ex, response) =>
+            {
+                if (ex != null)
+                {
+                    end(ex);
+                    return;
+                }
+
+                response.TimedOut = IsTimedOut;
+
+                if (response.Disconnect || response.TimedOut || response.Aborted)
+                {
+                    if (response.Aborted)
+                    {
+                        // If this was a clean disconnect raise the event.
+                        OnDisconnect();
+                    }
+
+                    end(null);
+                }
+                else
+                {
+                    _queue.Enqueue(() => Send(response));
+                }
+            });
+
+            if (postReceive != null)
+            {
+                postReceive();
+            }
         }
 
         private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, ITransportConnection connection, Action postReceive = null)
         {
-            if (!IsTimedOut && !IsDisconnected && IsAlive && !ConnectionEndToken.IsCancellationRequested)
+            if (!IsTimedOut && !IsDisconnected && !ConnectionEndToken.IsCancellationRequested)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending

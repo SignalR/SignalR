@@ -39,7 +39,7 @@ namespace SignalR.Hubs
                 return _trace["SignalR.HubDispatcher"];
             }
         }
-        
+
         public override void Initialize(IDependencyResolver resolver)
         {
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
@@ -273,7 +273,14 @@ namespace SignalR.Hubs
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId))
                                                           .Concat(GetDefaultSignals(connectionId));
 
-            return new Connection(_messageBus, _jsonSerializer, null, connectionId, hubSignals, groups, _trace);
+            return new Connection(_messageBus, 
+                                  _newMessageBus, 
+                                  _jsonSerializer, 
+                                  null, 
+                                  connectionId, 
+                                  hubSignals, 
+                                  groups, 
+                                  _trace);
         }
 
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)

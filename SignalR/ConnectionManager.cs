@@ -76,6 +76,7 @@ namespace SignalR
             // Give this a unique id
             var connectionId = Guid.NewGuid().ToString();
             return new Connection(_resolver.Resolve<IMessageBus>(),
+                                  _resolver.Resolve<INewMessageBus>(),
                                   _resolver.Resolve<IJsonSerializer>(),
                                   connectionName,
                                   connectionId,

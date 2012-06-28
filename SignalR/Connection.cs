@@ -11,6 +11,7 @@ namespace SignalR
     public class Connection : IConnection, ITransportConnection
     {
         private readonly IMessageBus _messageBus;
+        private readonly INewMessageBus _newMessageBus;
         private readonly IJsonSerializer _serializer;
         private readonly string _baseSignal;
         private readonly string _connectionId;
@@ -21,6 +22,7 @@ namespace SignalR
         private bool _aborted;
 
         public Connection(IMessageBus messageBus,
+                          INewMessageBus newMessageBus,
                           IJsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
@@ -29,6 +31,7 @@ namespace SignalR
                           ITraceManager traceManager)
         {
             _messageBus = messageBus;
+            _newMessageBus = newMessageBus;
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
@@ -144,7 +147,9 @@ namespace SignalR
         private Task SendMessage(string key, object value)
         {
             var wrappedValue = new WrappedValue(value, _serializer);
-            return _messageBus.Send(_connectionId, key, wrappedValue).Catch();
+            // return _messageBus.Send(_connectionId, key, wrappedValue).Catch();
+            _newMessageBus.Publish(_connectionId, key, wrappedValue);
+            return TaskAsyncHelper.Empty;
         }
 
         private void PopulateResponseState(PersistentResponse response)
@@ -154,6 +159,11 @@ namespace SignalR
             {
                 response.TransportData["Groups"] = _groups;
             }
+        }
+
+        public IDisposable Receive(string messageId, Action<Exception, PersistentResponse> callback)
+        {
+            return _newMessageBus.Subscribe(Signals, messageId, (ex, result) => callback(ex, GetResponse(result)));
         }
     }
 }

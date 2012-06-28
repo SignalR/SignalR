@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -213,6 +214,60 @@ namespace SignalR.Transports
         }
 
         private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        {
+            if (TransportConnected != null)
+            {
+                TransportConnected().Catch();
+            }
+
+            IDisposable subscription = null;
+            var tcs = new TaskCompletionSource<object>();
+
+            Action<Exception> end = (exception) =>
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+
+                if (exception != null)
+                {
+                    tcs.TrySetException(exception);
+                }
+                else
+                {
+                    tcs.TrySetResult(null);
+                }
+            };
+
+            subscription = connection.Receive(MessageId, (ex, response) =>
+            {
+                if (ex != null)
+                {
+                    end(ex);
+                    return;
+                }
+
+                response.TimedOut = IsTimedOut;
+
+                if (response.Aborted)
+                {
+                    // If this was a clean disconnect then raise the event
+                    OnDisconnect();
+                }
+
+                Send(response).Then(cb => cb(null), end);
+            });
+
+            if (postReceive != null)
+            {
+                postReceive();
+            }
+
+            return tcs.Task;
+        }
+
+        private Task ProcessReceiveRequestWithoutTrackingOld(ITransportConnection connection, Action postReceive = null)
         {
             if (TransportConnected != null)
             {

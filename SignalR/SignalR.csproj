@@ -64,6 +64,7 @@
     <Compile Include="Hubs\IClientProxy.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
+    <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
@@ -88,6 +89,8 @@
     <Compile Include="Infrastructure\ServerIdManager.cs" />
     <Compile Include="IPersistentConnectionContext.cs" />
     <Compile Include="Infrastructure\IServerCommandHandler.cs" />
+    <Compile Include="MessageBus\INewMessageBus.cs" />
+    <Compile Include="MessageBus\MessageBus.cs" />
     <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />

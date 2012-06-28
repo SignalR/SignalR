@@ -33,6 +33,9 @@ namespace SignalR
             var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
             Register(typeof(IMessageBus), () => messageBus.Value);
 
+            var newMessageBus = new Lazy<INewMessageBus>(() => new MessageBus(this));
+            Register(typeof(INewMessageBus), () => newMessageBus.Value);
+
             var serializer = new Lazy<JsonNetSerializer>();
             Register(typeof(IJsonSerializer), () => serializer.Value);
 

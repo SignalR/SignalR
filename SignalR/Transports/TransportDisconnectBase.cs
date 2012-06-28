@@ -19,6 +19,7 @@ namespace SignalR.Transports
         private readonly CancellationTokenSource _endTokenSource;
         private readonly CancellationToken _hostShutdownToken;
         private readonly CancellationTokenSource _connectionEndToken;
+        private readonly CancellationTokenSource _disconnectedToken;
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
@@ -27,11 +28,12 @@ namespace SignalR.Transports
             _heartBeat = heartBeat;
             _timeoutTokenSource = new CancellationTokenSource();
             _endTokenSource = new CancellationTokenSource();
+            _disconnectedToken = new CancellationTokenSource();
             _hostShutdownToken = context.HostShutdownToken();
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _hostShutdownToken);
+            _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _disconnectedToken.Token, _hostShutdownToken);
         }
 
         public string ConnectionId
@@ -139,6 +141,8 @@ namespace SignalR.Transports
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             HeartBeat.RemoveConnection(this);
+            _disconnectedToken.Cancel();
+
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
                 var disconnected = Disconnected; // copy before invoking event to avoid race
