@@ -138,25 +138,49 @@ namespace SignalR
             public bool Queued { get; set; }
             public bool Working { get; private set; }
 
-            public void Work(ConcurrentDictionary<string, Topic> topics, Action<Exception> end)
+            public Task Work(ConcurrentDictionary<string, Topic> topics)
             {
                 if (Working)
                 {
-                    return;
+                    return TaskAsyncHelper.Empty;
                 }
 
+                var tcs = new TaskCompletionSource<object>();
+
                 Working = true;
-                WorkImpl(0, topics, ex =>
+                WorkImpl(topics, tcs);
+
+                // Fast Path
+                if (tcs.Task.Status == TaskStatus.RanToCompletion)
                 {
                     Working = false;
-                    end(ex);
-                });
+                    return tcs.Task;
+                }
+
+                return FinishAsync(tcs);
             }
 
-            private void WorkImpl(int n, ConcurrentDictionary<string, Topic> topics, Action<Exception> end)
+            private Task FinishAsync(TaskCompletionSource<object> tcs)
+            {
+                return tcs.Task.ContinueWith(task =>
+                {
+                    Working = false;
+
+                    if (task.IsFaulted)
+                    {
+                        return TaskAsyncHelper.FromError(task.Exception);
+                    }
+
+                    return TaskAsyncHelper.Empty;
+                },
+                TaskContinuationOptions.OnlyOnRanToCompletion).FastUnwrap();
+            }
+
+            private void WorkImpl(ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
             {
                 try
                 {
+                Process:
                     var results = new List<ResultSet>();
                     foreach (var cursor in Cursors)
                     {
@@ -184,28 +208,28 @@ namespace SignalR
                     if (results.Count > 0)
                     {
                         MessageResult messageResult = GetMessageResult(results);
-                        Callback.Invoke(null, messageResult)
-                                .Then(() =>
-                                {
-                                    if (n % DefaultMaxStackDepth == 0)
-                                    {
-                                        ThreadPool.QueueUserWorkItem(_ => WorkImpl(n + 1, topics, end));
-                                    }
-                                    else
-                                    {
-                                        WorkImpl(n + 1, topics, end);
-                                    }
-                                })
-                                .Catch(ex => end(ex));
+                        Task task = Callback.Invoke(null, messageResult);
+
+                        if (task.Status == TaskStatus.RanToCompletion)
+                        {
+                            // Sync path
+                            goto Process;
+                        }
+                        else
+                        {
+                            // Async path
+                            task.Then((top, tcs) => WorkImpl(top, tcs), topics, taskCompletionSource)
+                                .Catch(ex => taskCompletionSource.TrySetException(ex));
+                        }
                     }
                     else
                     {
-                        end(null);
+                        taskCompletionSource.TrySetResult(null);
                     }
                 }
                 catch (Exception ex)
                 {
-                    end(ex);
+                    taskCompletionSource.TrySetException(ex);
                 }
             }
 
@@ -294,41 +318,81 @@ namespace SignalR
                 {
                     _allocatedWorkers++;
                     Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
-                    ThreadPool.QueueUserWorkItem(_ => Pump(0, (ex) => _allocatedWorkers--));
+                    ThreadPool.QueueUserWorkItem(ProcessWork);
                 }
             }
 
-            public void Pump(int n, Action<Exception> end)
+            private void ProcessWork(object state)
             {
+                Pump().ContinueWith(task =>
+                {
+                    _allocatedWorkers--;
+
+                    if (task.IsFaulted)
+                    {
+                        Trace.TraceInformation("Failed to process work - " + task.Exception.GetBaseException());
+                    }
+                },
+                TaskContinuationOptions.OnlyOnRanToCompletion);
+            }
+
+            public Task Pump()
+            {
+                var tcs = new TaskCompletionSource<object>();
+                PumpImpl(tcs);
+                return tcs.Task;
+            }
+
+            public void PumpImpl(TaskCompletionSource<object> taskCompletionSource)
+            {
+
+            Process:
                 // If we're withing the acceptable limit of idleness, just keep running
                 int idleWorkers = _allocatedWorkers - _busyWorkers;
                 if (idleWorkers <= IdleLimit)
                 {
                     Subscription subscription = _queue.Take();
-                    _busyWorkers++;
-                    subscription.Work(_topics, ex =>
-                    {
-                        _busyWorkers--;
-                        subscription.Queued = false;
 
-                        if (ex != null)
+                    _busyWorkers++;
+                    try
+                    {
+                        Task task = subscription.Work(_topics);
+
+                        if (task.Status == TaskStatus.RanToCompletion)
                         {
-                            end(ex);
-                        }
-                        else if (n % DefaultMaxStackDepth == 0)
-                        {
-                            ThreadPool.QueueUserWorkItem(_ => Pump(n + 1, end));
+                            // Sync path
+                            _busyWorkers--;
+                            subscription.Queued = false;
+
+                            goto Process;
                         }
                         else
                         {
-                            Pump(n + 1, end);
+                            // Async path
+                            task.Then((tcs, sub) =>
+                            {
+                                _busyWorkers--;
+                                sub.Queued = false;
+
+                                PumpImpl(tcs);
+                            },
+                            taskCompletionSource,
+                            subscription)
+                            .Catch(ex =>
+                            {
+                                taskCompletionSource.TrySetException(ex);
+                            });
                         }
-                    });
+                    }
+                    catch (Exception ex)
+                    {
+                        taskCompletionSource.TrySetException(ex);
+                    }
                 }
                 else
                 {
                     Trace.TraceInformation("Idle workers are {0}", idleWorkers);
-                    end(null);
+                    taskCompletionSource.TrySetResult(null);
                 }
             }
         }
