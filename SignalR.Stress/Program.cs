@@ -34,7 +34,7 @@ namespace SignalR.Stress
         private static int _runs = 0;
         private static int _step = 1;
         private static int _stepInterval = 50;
-        private static int _clients = 1000;
+        private static int _clients = 10000;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
         private static Exception _exception;
@@ -54,13 +54,17 @@ namespace SignalR.Stress
             string payload = GetPayload();
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+            
+            ThreadPool.SetMinThreads(32, 32);
+
+            MeasureStats();
 
             for (int i = 0; i < _clients; i++)
             {
                 var subscriber = new Subscriber(new[] { "a", "b", "c" });
-                Task.Factory.StartNew(() => StartClientLoop(bus, subscriber), TaskCreationOptions.LongRunning);
-                //ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, eventKeys));
-                //(new Thread(_ => StartClientLoop(bus, eventKeys))).Start();
+                // Task.Factory.StartNew(() => StartClientLoop(bus, subscriber), TaskCreationOptions.LongRunning);
+                ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, subscriber));
+                // (new Thread(_ => StartClientLoop(bus, subscriber))).Start();
             }
 
             for (var i = 1; i <= _senders; i++)
@@ -68,8 +72,6 @@ namespace SignalR.Stress
                 //ThreadPool.QueueUserWorkItem(_ => StartSendLoop(bus, payload));
                 Task.Factory.StartNew(() => StartSendLoop(i, bus, payload), TaskCreationOptions.LongRunning);
             }
-
-            MeasureStats();
 
             Console.ReadLine();
         }
