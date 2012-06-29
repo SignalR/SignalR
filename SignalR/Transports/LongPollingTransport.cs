@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -219,17 +216,11 @@ namespace SignalR.Transports
             {
                 TransportConnected().Catch();
             }
-
-            IDisposable subscription = null;
+            
             var tcs = new TaskCompletionSource<object>();
 
-            Action<Exception> end = (exception) =>
-            {
-                if (subscription != null)
-                {
-                    subscription.Dispose();
-                }
-
+            Action<Exception> endRequest = (exception) =>
+            {                
                 if (exception != null)
                 {
                     tcs.TrySetException(exception);
@@ -240,11 +231,20 @@ namespace SignalR.Transports
                 }
             };
 
+            IDisposable subscription = null;
+            ConnectionEndToken.Register(() =>
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+            });
+            
             subscription = connection.Receive(MessageId, (ex, response) =>
             {
                 if (ex != null)
                 {
-                    end(ex);
+                    endRequest(ex);
                     return TaskAsyncHelper.Empty;
                 }
 
@@ -256,7 +256,7 @@ namespace SignalR.Transports
                     OnDisconnect();
                 }
 
-                return Send(response).Then(cb => cb(null), end);
+                return Send(response).Then(cb => cb(null), endRequest);
             });
 
             if (postReceive != null)

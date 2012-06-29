@@ -3,9 +3,6 @@ using System.Linq;
 
 namespace SignalR
 {
-    /// <summary>
-    /// Represents a result of 
-    /// </summary>
     public struct MessageResult
     {
         private static readonly Message[] _emptyList = new Message[0];

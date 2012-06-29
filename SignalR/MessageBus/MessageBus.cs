@@ -73,14 +73,14 @@ namespace SignalR
         /// 
         /// </summary>
         /// <param name="keys"></param>
-        /// <param name="messageId"></param>
+        /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(IEnumerable<string> keys, string messageId, Func<Exception, MessageResult, Task> callback)
+        public IDisposable Subscribe(IEnumerable<string> keys, string cursor, Func<Exception, MessageResult, Task> callback)
         {
             var subscription = new Subscription
             {
-                Cursors = GetCursors(messageId, keys),
+                Cursors = GetCursors(cursor, keys),
                 Callback = callback
             };
 
@@ -100,6 +100,9 @@ namespace SignalR
                         topic.Subscriptions.RemoveWithLock(subscription);
                     }
                 }
+
+                string currentCursor = Subscription.MakeCursor(subscription.Cursors);
+                subscription.Callback.Invoke(null, new MessageResult(currentCursor));
             });
         }
 
@@ -122,27 +125,6 @@ namespace SignalR
             }
 
             return 0;
-        }
-
-        private void DoWork()
-        {
-
-        }
-
-        private void StartWorker()
-        {
-
-        }
-
-        private static MessageResult GetMessageResult(List<ResultSet> results)
-        {
-            var messages = results.SelectMany(r => r.Messages).ToArray();
-            return new MessageResult(messages, MakeCursor(results));
-        }
-
-        private static string MakeCursor(List<ResultSet> results)
-        {
-            return JsonConvert.SerializeObject(results.Select(k => k.Cursor));
         }
 
         private class Subscription
@@ -222,6 +204,22 @@ namespace SignalR
                 {
                     end(ex);
                 }
+            }
+
+            private static MessageResult GetMessageResult(List<ResultSet> results)
+            {
+                var messages = results.SelectMany(r => r.Messages).ToArray();
+                return new MessageResult(messages, MakeCursor(results));
+            }
+
+            private static string MakeCursor(List<ResultSet> results)
+            {
+                return MakeCursor(results.Select(r => r.Cursor));
+            }
+
+            public static string MakeCursor(IEnumerable<Cursor> cursors)
+            {
+                return JsonConvert.SerializeObject(cursors);
             }
         }
 

@@ -9,7 +9,7 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
-        
+
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
@@ -213,31 +213,26 @@ namespace SignalR.Transports
         {
             IDisposable subscription = null;
 
-            Action<Exception> end = (exception) =>
+            // End the request if the connection end token is triggered
+            ConnectionEndToken.Register(() =>
             {
                 if (subscription != null)
                 {
                     subscription.Dispose();
                 }
-
-                // End the request after any pending sends
-                endRequest(exception);
-            };
-
-            // End the request if the connection end token is triggered
-            ConnectionEndToken.Register(() => end(null));
+            });
 
             subscription = connection.Receive(LastMessageId, (ex, response) =>
             {
                 if (ex != null)
                 {
-                    end(ex);
+                    endRequest(ex);
                     return TaskAsyncHelper.Empty;
                 }
 
                 response.TimedOut = IsTimedOut;
 
-                if (response.Disconnect || response.TimedOut || response.Aborted)
+                if (response.Disconnect || response.TimedOut || response.Aborted || ConnectionEndToken.IsCancellationRequested)
                 {
                     if (response.Aborted)
                     {
@@ -245,7 +240,7 @@ namespace SignalR.Transports
                         OnDisconnect();
                     }
 
-                    end(null);
+                    endRequest(null);
                     return TaskAsyncHelper.Empty;
                 }
                 else
