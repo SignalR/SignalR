@@ -18,7 +18,6 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
         private readonly Engine _engine;
 
-        private const int DefaultMaxStackDepth = 1000;
         private const int DefaultMessageStoreSize = 1000;
 
         private readonly ITraceManager _trace;
@@ -62,7 +61,7 @@ namespace SignalR
         /// <param name="value">The value to send.</param>
         public void Publish(string source, string eventKey, object value)
         {
-            var topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+            Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
 
             topic.Store.Add(new Message(eventKey, value));
 
