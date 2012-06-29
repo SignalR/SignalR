@@ -75,19 +75,19 @@ namespace SignalR
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="keys"></param>
+        /// <param name="eventKeys"></param>
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(IEnumerable<string> keys, string cursor, Func<Exception, MessageResult, Task> callback)
+        public IDisposable Subscribe(IEnumerable<string> eventKeys, string cursor, Func<Exception, MessageResult, Task> callback)
         {
             var subscription = new Subscription
             {
-                Cursors = GetCursors(cursor, keys),
+                Cursors = GetCursors(cursor, eventKeys),
                 Callback = callback
             };
 
-            foreach (var key in keys)
+            foreach (var key in eventKeys)
             {
                 var topic = _topics.GetOrAdd(key, _ => new Topic());
                 topic.Subscriptions.Add(subscription);
@@ -95,7 +95,7 @@ namespace SignalR
 
             return new DisposableAction(() =>
             {
-                foreach (var key in keys)
+                foreach (var key in eventKeys)
                 {
                     Topic topic;
                     if (_topics.TryGetValue(key, out topic))
@@ -134,37 +134,55 @@ namespace SignalR
         {
             public Cursor[] Cursors;
             public Func<Exception, MessageResult, Task> Callback;
+            private int _queued;
+            private int _working;
 
-            public bool Queued { get; set; }
-            public bool Working { get; private set; }
+            public bool SetQueued()
+            {
+                return Interlocked.Exchange(ref _queued, 1) == 0;
+            }
+
+            public void UnsetQueued()
+            {
+                Interlocked.Exchange(ref _queued, 0);
+            }
 
             public Task Work(ConcurrentDictionary<string, Topic> topics)
             {
-                if (Working)
+                if (SetWorking())
                 {
-                    return TaskAsyncHelper.Empty;
+                    var tcs = new TaskCompletionSource<object>();
+
+                    WorkImpl(topics, tcs);
+
+                    // Fast Path
+                    if (tcs.Task.Status == TaskStatus.RanToCompletion)
+                    {
+                        UnsetWorking();
+                        return tcs.Task;
+                    }
+
+                    return FinishAsync(tcs);
                 }
 
-                var tcs = new TaskCompletionSource<object>();
+                return TaskAsyncHelper.Empty;
+            }
 
-                Working = true;
-                WorkImpl(topics, tcs);
+            private bool SetWorking()
+            {
+                return Interlocked.Exchange(ref _working, 1) == 0;
+            }
 
-                // Fast Path
-                if (tcs.Task.Status == TaskStatus.RanToCompletion)
-                {
-                    Working = false;
-                    return tcs.Task;
-                }
-
-                return FinishAsync(tcs);
+            private void UnsetWorking()
+            {
+                Interlocked.Exchange(ref _working, 0);
             }
 
             private Task FinishAsync(TaskCompletionSource<object> tcs)
             {
                 return tcs.Task.ContinueWith(task =>
                 {
-                    Working = false;
+                    UnsetWorking();
 
                     if (task.IsFaulted)
                     {
@@ -208,9 +226,9 @@ namespace SignalR
                     if (results.Count > 0)
                     {
                         MessageResult messageResult = GetMessageResult(results);
-                        Task task = Callback.Invoke(null, messageResult);
+                        Task callbackTask = Callback.Invoke(null, messageResult);
 
-                        if (task.Status == TaskStatus.RanToCompletion)
+                        if (callbackTask.Status == TaskStatus.RanToCompletion)
                         {
                             // Sync path
                             goto Process;
@@ -218,8 +236,18 @@ namespace SignalR
                         else
                         {
                             // Async path
-                            task.Then((top, tcs) => WorkImpl(top, tcs), topics, taskCompletionSource)
-                                .Catch(ex => taskCompletionSource.TrySetException(ex));
+                            callbackTask.ContinueWith(task =>
+                            {
+                                if (task.IsFaulted)
+                                {
+                                    taskCompletionSource.TrySetException(task.Exception);
+                                }
+                                else
+                                {
+                                    WorkImpl(topics, taskCompletionSource);
+                                }
+                            }, 
+                            TaskContinuationOptions.OnlyOnRanToCompletion);
                         }
                     }
                     else
@@ -248,6 +276,12 @@ namespace SignalR
             {
                 return JsonConvert.SerializeObject(cursors);
             }
+
+            private struct ResultSet
+            {
+                public Cursor Cursor;
+                public List<Message> Messages;
+            }
         }
 
         private class Cursor
@@ -257,12 +291,6 @@ namespace SignalR
 
             [JsonProperty(PropertyName = "m")]
             public ulong MessageId { get; set; }
-        }
-
-        private struct ResultSet
-        {
-            public Cursor Cursor;
-            public List<Message> Messages;
         }
 
         private class Topic
@@ -301,14 +329,11 @@ namespace SignalR
 
             public void Schedule(Subscription subscription)
             {
-                if (subscription.Queued)
+                if (subscription.SetQueued())
                 {
-                    return;
+                    _queue.TryAdd(subscription);
+                    AddWorker();
                 }
-
-                subscription.Queued = true;
-                _queue.TryAdd(subscription);
-                AddWorker();
             }
 
             public void AddWorker()
@@ -352,36 +377,37 @@ namespace SignalR
                 if (idleWorkers <= IdleLimit)
                 {
                     Subscription subscription = _queue.Take();
-
-                    _busyWorkers++;
                     try
                     {
-                        Task task = subscription.Work(_topics);
+                        _busyWorkers++;
+                        Task workTask = subscription.Work(_topics);
 
-                        if (task.Status == TaskStatus.RanToCompletion)
+                        if (workTask.Status == TaskStatus.RanToCompletion)
                         {
                             // Sync path
                             _busyWorkers--;
-                            subscription.Queued = false;
+                            subscription.UnsetQueued();
 
                             goto Process;
                         }
                         else
                         {
                             // Async path
-                            task.Then((tcs, sub) =>
+                            workTask.ContinueWith(task =>
                             {
                                 _busyWorkers--;
-                                sub.Queued = false;
+                                subscription.UnsetQueued();
 
-                                PumpImpl(tcs);
+                                if (task.IsFaulted)
+                                {
+                                    taskCompletionSource.TrySetException(task.Exception);
+                                }
+                                else
+                                {
+                                    PumpImpl(taskCompletionSource);
+                                }
                             },
-                            taskCompletionSource,
-                            subscription)
-                            .Catch(ex =>
-                            {
-                                taskCompletionSource.TrySetException(ex);
-                            });
+                            TaskContinuationOptions.OnlyOnRanToCompletion);
                         }
                     }
                     catch (Exception ex)

@@ -17,10 +17,10 @@ namespace SignalR
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="keys"></param>
+        /// <param name="eventKeys"></param>
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        IDisposable Subscribe(IEnumerable<string> keys, string cursor, Func<Exception, MessageResult, Task> callback);
+        IDisposable Subscribe(IEnumerable<string> eventKeys, string cursor, Func<Exception, MessageResult, Task> callback);
     }
 }

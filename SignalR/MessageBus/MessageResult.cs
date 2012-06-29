@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace SignalR
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public struct MessageResult
     {
         private static readonly Message[] _emptyList = new Message[0];
@@ -27,7 +30,7 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MessageResult"/> struc.
+        /// Initializes a new instance of the <see cref="MessageResult"/> struct.
         /// </summary>
         /// <param name="messages">The list of messages associated with this <see cref="MessageResult"/>.</param>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
@@ -38,6 +41,11 @@ namespace SignalR
             LastMessageId = lastMessageId;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MessageResult"/> struct.
+        /// </summary>
+        /// <param name="messages">The array of messages associated with this <see cref="MessageResult"/>.</param>
+        /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
         public MessageResult(Message[] messages, string lastMessageId)
             : this()
         {
