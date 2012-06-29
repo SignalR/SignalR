@@ -203,6 +203,7 @@ namespace SignalR.Transports
                 {
                     tcs.TrySetResult(null);
                 }
+
                 CompleteRequest();
             });
 
@@ -232,7 +233,10 @@ namespace SignalR.Transports
 
                 response.TimedOut = IsTimedOut;
 
-                if (response.Disconnect || response.TimedOut || response.Aborted || ConnectionEndToken.IsCancellationRequested)
+                if (response.Disconnect || 
+                    response.TimedOut || 
+                    response.Aborted || 
+                    ConnectionEndToken.IsCancellationRequested)
                 {
                     if (response.Aborted)
                     {

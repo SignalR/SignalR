@@ -134,6 +134,7 @@ namespace SignalR
         {
             public Cursor[] Cursors;
             public Func<Exception, MessageResult, Task> Callback;
+
             private int _queued;
             private int _working;
 
@@ -147,7 +148,7 @@ namespace SignalR
                 Interlocked.Exchange(ref _queued, 0);
             }
 
-            public Task Work(ConcurrentDictionary<string, Topic> topics)
+            public Task WorkAsync(ConcurrentDictionary<string, Topic> topics)
             {
                 if (SetWorking())
                 {
@@ -310,10 +311,16 @@ namespace SignalR
             private readonly BlockingCollection<Subscription> _queue = new BlockingCollection<Subscription>();
             private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
 
-            private const int MaxLimit = 10;
-            private const int IdleLimit = 5;
+            // The maximum number of workers (threads) allowed to process all incoming messages
+            private const int MaxWorkers = 10;
 
+            // The maximum number of workers that can be left to idle (not busy but allocated)
+            private const int MaxIdleWorkers = 5;
+
+            // The number of allocated workers (currently running)
             private int _allocatedWorkers;
+
+            // The number of workers that are *actually* doing work
             private int _busyWorkers;
 
             public Engine(ConcurrentDictionary<string, Topic> topics)
@@ -339,7 +346,7 @@ namespace SignalR
             public void AddWorker()
             {
                 // Only create a new worker if everyone is busy (up to the max)
-                if (_allocatedWorkers < MaxLimit && _allocatedWorkers == _busyWorkers)
+                if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
                 {
                     _allocatedWorkers++;
                     Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
@@ -349,8 +356,9 @@ namespace SignalR
 
             private void ProcessWork(object state)
             {
-                Pump().ContinueWith(task =>
+                PumpAsync().ContinueWith(task =>
                 {
+                    // After the pump runs decrement the number of workers in flight
                     _allocatedWorkers--;
 
                     if (task.IsFaulted)
@@ -361,7 +369,7 @@ namespace SignalR
                 TaskContinuationOptions.OnlyOnRanToCompletion);
             }
 
-            public Task Pump()
+            public Task PumpAsync()
             {
                 var tcs = new TaskCompletionSource<object>();
                 PumpImpl(tcs);
@@ -374,13 +382,13 @@ namespace SignalR
             Process:
                 // If we're withing the acceptable limit of idleness, just keep running
                 int idleWorkers = _allocatedWorkers - _busyWorkers;
-                if (idleWorkers <= IdleLimit)
+                if (idleWorkers <= MaxIdleWorkers)
                 {
                     Subscription subscription = _queue.Take();
                     try
                     {
                         _busyWorkers++;
-                        Task workTask = subscription.Work(_topics);
+                        Task workTask = subscription.WorkAsync(_topics);
 
                         if (workTask.Status == TaskStatus.RanToCompletion)
                         {
