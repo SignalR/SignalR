@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Infrastructure;
 
 namespace SignalR.Stress
 {
@@ -14,7 +13,7 @@ namespace SignalR.Stress
         private static Timer _rateTimer;
         private static bool _measuringRate;
         private static Stopwatch _sw = Stopwatch.StartNew();
-        
+
         private static double _receivesPerSecond;
         private static double _peakReceivesPerSecond;
         private static double _avgReceivesPerSecond;
@@ -35,7 +34,7 @@ namespace SignalR.Stress
         private static int _runs = 0;
         private static int _step = 1;
         private static int _stepInterval = 50;
-        private static int _clients = 10000;
+        private static int _clients = 1000;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
         private static Exception _exception;
@@ -51,15 +50,15 @@ namespace SignalR.Stress
         static void Main(string[] args)
         {
             var resolver = new DefaultDependencyResolver();
-            var bus = new InProcessMessageBus(resolver);
-            var eventKeys = new[] { "a", "b", "c" };
+            var bus = new MessageBus(resolver);            
             string payload = GetPayload();
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
             for (int i = 0; i < _clients; i++)
             {
-                Task.Factory.StartNew(() => StartClientLoop(bus, eventKeys), TaskCreationOptions.LongRunning);
+                var subscriber = new Subscriber(new[] { "a", "b", "c" });
+                Task.Factory.StartNew(() => StartClientLoop(bus, subscriber), TaskCreationOptions.LongRunning);
                 //ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, eventKeys));
                 //(new Thread(_ => StartClientLoop(bus, eventKeys))).Start();
             }
@@ -75,7 +74,7 @@ namespace SignalR.Stress
             Console.ReadLine();
         }
 
-        private static void StartSendLoop(int clientId, InProcessMessageBus bus, string payload)
+        private static void StartSendLoop(int clientId, MessageBus bus, string payload)
         {
             while (_exception == null)
             {
@@ -87,11 +86,7 @@ namespace SignalR.Stress
                     try
                     {
                         var sw = Stopwatch.StartNew();
-                        bus.Send(clientId.ToString(), "a", payload).ContinueWith(task =>
-                        {
-                            Interlocked.Exchange(ref _exception, task.Exception);
-                        },
-                        TaskContinuationOptions.OnlyOnFaulted);
+                        bus.Publish(clientId.ToString(), "a", payload);
                         sw.Stop();
                         Interlocked.Exchange(ref _lastSendTimeTicks, sw.ElapsedTicks);
 
@@ -119,30 +114,29 @@ namespace SignalR.Stress
             e.SetObserved();
         }
 
-        private static void StartClientLoop(InProcessMessageBus bus, string[] eventKeys)
+        private static void StartClientLoop(MessageBus bus, ISubscriber subscriber)
         {
             Interlocked.Increment(ref _clientsRunning);
-            ReceiveLoop(bus, eventKeys, null);
+            ReceiveLoop(bus, subscriber);
         }
 
-        private static void ReceiveLoop(InProcessMessageBus bus, string[] eventKeys, string id)
+        private static void ReceiveLoop(MessageBus bus, ISubscriber subscriber)
         {
             try
             {
-                bus.GetMessages(eventKeys, id, CancellationToken.None).ContinueWith(task =>
+                bus.Subscribe(subscriber, null, (ex, result) =>
                 {
-                    if (task.IsFaulted)
+                    if (ex != null)
                     {
-                        Interlocked.Exchange(ref _exception, task.Exception);
+                        Interlocked.Exchange(ref _exception, ex);
                     }
                     else
                     {
-                        var result = task.Result;
                         Interlocked.Increment(ref _received);
                         Interlocked.Increment(ref _avgLastReceivedCount);
-
-                        ReceiveLoop(bus, eventKeys, result.LastMessageId);
                     }
+
+                    return TaskAsyncHelper.Empty;
                 });
             }
             catch (Exception ex)
