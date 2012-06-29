@@ -9,8 +9,7 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
-        private readonly TaskQueue _queue = new TaskQueue();
-
+        
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
@@ -194,19 +193,19 @@ namespace SignalR.Transports
         {
             var tcs = new TaskCompletionSource<object>();
             // ProcessMessagesImpl(tcs, connection, postReceive);
-            ProcessMessages(connection, postReceive, ex =>
+            ProcessMessages(connection, postReceive, (exception) =>
             {
-                if (ex != null)
+                if (exception != null)
                 {
-                    tcs.TrySetException(ex);
+                    tcs.TrySetException(exception);
                 }
                 else
                 {
                     tcs.TrySetResult(null);
                 }
-
                 CompleteRequest();
             });
+
             return tcs.Task;
         }
 
@@ -222,7 +221,7 @@ namespace SignalR.Transports
                 }
 
                 // End the request after any pending sends
-                _queue.Peek().Then((cb, ex) => cb(ex), endRequest, exception);
+                endRequest(exception);
             };
 
             // End the request if the connection end token is triggered
@@ -233,7 +232,7 @@ namespace SignalR.Transports
                 if (ex != null)
                 {
                     end(ex);
-                    return;
+                    return TaskAsyncHelper.Empty;
                 }
 
                 response.TimedOut = IsTimedOut;
@@ -247,10 +246,11 @@ namespace SignalR.Transports
                     }
 
                     end(null);
+                    return TaskAsyncHelper.Empty;
                 }
                 else
                 {
-                    _queue.Enqueue(() => Send(response));
+                    return Send(response);
                 }
             });
 

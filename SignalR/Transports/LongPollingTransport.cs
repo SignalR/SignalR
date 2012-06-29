@@ -245,7 +245,7 @@ namespace SignalR.Transports
                 if (ex != null)
                 {
                     end(ex);
-                    return;
+                    return TaskAsyncHelper.Empty;
                 }
 
                 response.TimedOut = IsTimedOut;
@@ -256,7 +256,7 @@ namespace SignalR.Transports
                     OnDisconnect();
                 }
 
-                Send(response).Then(cb => cb(null), end);
+                return Send(response).Then(cb => cb(null), end);
             });
 
             if (postReceive != null)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SignalR
 {
@@ -17,9 +18,9 @@ namespace SignalR
         /// 
         /// </summary>
         /// <param name="keys"></param>
-        /// <param name="messageId"></param>
+        /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        IDisposable Subscribe(IEnumerable<string> keys, string messageId, Action<Exception, MessageResult> callback);
+        IDisposable Subscribe(IEnumerable<string> keys, string cursor, Func<Exception, MessageResult, Task> callback);
     }
 }

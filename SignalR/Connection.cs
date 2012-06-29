@@ -161,7 +161,7 @@ namespace SignalR
             }
         }
 
-        public IDisposable Receive(string messageId, Action<Exception, PersistentResponse> callback)
+        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task> callback)
         {
             return _newMessageBus.Subscribe(Signals, messageId, (ex, result) => callback(ex, GetResponse(result)));
         }

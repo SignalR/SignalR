@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SignalR.Infrastructure;
 
@@ -14,12 +15,11 @@ namespace SignalR
     /// </summary>
     public class MessageBus : INewMessageBus
     {
-        private readonly LockedList<Subscription> _subscriptions = new LockedList<Subscription>();
+        private readonly ConcurrentDictionary<string, Topic> _cache = new ConcurrentDictionary<string, Topic>();
+        private readonly Engine _engine;
 
-        private readonly ConcurrentDictionary<string, MessageStore<Message>> _cache =
-            new ConcurrentDictionary<string, MessageStore<Message>>();
-
-        private int _workerRunning;
+        private const int DefaultMaxStackDepth = 1000;
+        private const int DefaultMessageStoreSize = 1000;
 
         private readonly ITraceManager _trace;
 
@@ -40,6 +40,7 @@ namespace SignalR
         public MessageBus(ITraceManager traceManager)
         {
             _trace = traceManager;
+            _engine = new Engine(_cache);
         }
 
         private TraceSource Trace
@@ -58,11 +59,14 @@ namespace SignalR
         /// <param name="value">The value to send.</param>
         public void Publish(string source, string eventKey, object value)
         {
-            var list = _cache.GetOrAdd(eventKey, _ => new MessageStore<Message>(100));
+            var topic = _cache.GetOrAdd(eventKey, _ => new Topic());
 
-            list.Add(new Message(eventKey, value));
+            topic.Store.Add(new Message(eventKey, value));
 
-            DoWork();
+            foreach (var subscription in topic.Subscriptions)
+            {
+                _engine.Schedule(subscription);
+            }
         }
 
         /// <summary>
@@ -72,7 +76,7 @@ namespace SignalR
         /// <param name="messageId"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(IEnumerable<string> keys, string messageId, Action<Exception, MessageResult> callback)
+        public IDisposable Subscribe(IEnumerable<string> keys, string messageId, Func<Exception, MessageResult, Task> callback)
         {
             var subscription = new Subscription
             {
@@ -80,8 +84,23 @@ namespace SignalR
                 Callback = callback
             };
 
-            _subscriptions.AddWithLock(subscription);
-            return new DisposableAction(() => _subscriptions.RemoveWithLock(subscription));
+            foreach (var key in keys)
+            {
+                var topic = _cache.GetOrAdd(key, _ => new Topic());
+                topic.Subscriptions.AddWithLock(subscription);
+            }
+
+            return new DisposableAction(() =>
+            {
+                foreach (var key in keys)
+                {
+                    Topic topic;
+                    if (_cache.TryGetValue(key, out topic))
+                    {
+                        topic.Subscriptions.RemoveWithLock(subscription);
+                    }
+                }
+            });
         }
 
         private Cursor[] GetCursors(string messageId, IEnumerable<string> keys)
@@ -96,10 +115,10 @@ namespace SignalR
 
         private ulong GetMessageId(string key)
         {
-            MessageStore<Message> store;
-            if (_cache.TryGetValue(key, out store))
+            Topic topic;
+            if (_cache.TryGetValue(key, out topic))
             {
-                return store.Id + 1;
+                return topic.Store.Id + 1;
             }
 
             return 0;
@@ -107,70 +126,21 @@ namespace SignalR
 
         private void DoWork()
         {
-            if (Interlocked.Exchange(ref _workerRunning, 1) == 0)
-            {
-                StartWorker();
-            }
+
         }
 
         private void StartWorker()
         {
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                try
-                {
-                    // REVIEW: This condition is wrong
-                    while (_cache.Values.Any())
-                    {
-                        for (int i = 0; i < _subscriptions.CountWithLock; i++)
-                        {
-                            Subscription subscription = _subscriptions[i];
-                            var results = new List<ResultSet>();
-                            foreach (var cursor in subscription.Cursors)
-                            {
-                                MessageStore<Message> messages;
-                                if (_cache.TryGetValue(cursor.Key, out messages))
-                                {
-                                    var result = new ResultSet
-                                    {
-                                        Cursor = cursor,
-                                        Messages = new List<Message>()
-                                    };
 
-                                    MessageStoreResult<Message> storeResult = messages.GetMessages(cursor.MessageId);
-                                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
-                                    cursor.MessageId = next;
-
-                                    if (storeResult.Messages.Length > 0)
-                                    {
-                                        result.Messages.AddRange(storeResult.Messages);
-                                        results.Add(result);
-                                    }
-                                }
-                            }
-
-                            if (results.Count > 0)
-                            {
-                                MessageResult messageResult = GetMessageResult(results);
-                                subscription.Callback.Invoke(null, messageResult);
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    Interlocked.Exchange(ref _workerRunning, 1);
-                }
-            });
         }
 
-        private MessageResult GetMessageResult(List<ResultSet> results)
+        private static MessageResult GetMessageResult(List<ResultSet> results)
         {
             var messages = results.SelectMany(r => r.Messages).ToArray();
-            return new MessageResult(messages, CalculateToken(results));
+            return new MessageResult(messages, MakeCursor(results));
         }
 
-        private string CalculateToken(List<ResultSet> results)
+        private static string MakeCursor(List<ResultSet> results)
         {
             return JsonConvert.SerializeObject(results.Select(k => k.Cursor));
         }
@@ -178,7 +148,81 @@ namespace SignalR
         private class Subscription
         {
             public Cursor[] Cursors;
-            public Action<Exception, MessageResult> Callback;
+            public Func<Exception, MessageResult, Task> Callback;
+
+            public bool Queued { get; set; }
+            public bool Working { get; private set; }
+
+            public void Work(ConcurrentDictionary<string, Topic> cache, Action<Exception> end)
+            {
+                if (Working)
+                {
+                    return;
+                }
+
+                Working = true;
+                WorkImpl(0, cache, ex =>
+                {
+                    Working = false;
+                    end(ex);
+                });
+            }
+
+            private void WorkImpl(int n, ConcurrentDictionary<string, Topic> cache, Action<Exception> end)
+            {
+                try
+                {
+                    var results = new List<ResultSet>();
+                    foreach (var cursor in Cursors)
+                    {
+                        Topic topic;
+                        if (cache.TryGetValue(cursor.Key, out topic))
+                        {
+                            var result = new ResultSet
+                            {
+                                Cursor = cursor,
+                                Messages = new List<Message>()
+                            };
+
+                            MessageStoreResult<Message> storeResult = topic.Store.GetMessages(cursor.MessageId);
+                            ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                            cursor.MessageId = next;
+
+                            if (storeResult.Messages.Length > 0)
+                            {
+                                result.Messages.AddRange(storeResult.Messages);
+                                results.Add(result);
+                            }
+                        }
+                    }
+
+                    if (results.Count > 0)
+                    {
+                        MessageResult messageResult = GetMessageResult(results);
+                        Callback.Invoke(null, messageResult)
+                                .Then(() =>
+                                {
+                                    if (n % DefaultMaxStackDepth == 0)
+                                    {
+                                        Task.Factory.StartNew(() => WorkImpl(n + 1, cache, end));
+                                    }
+                                    else
+                                    {
+                                        WorkImpl(n + 1, cache, end);
+                                    }
+                                })
+                                .Catch(ex => end(ex));
+                    }
+                    else
+                    {
+                        end(null);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    end(ex);
+                }
+            }
         }
 
         private class Cursor
@@ -194,6 +238,93 @@ namespace SignalR
         {
             public Cursor Cursor;
             public List<Message> Messages;
+        }
+
+        private class Topic
+        {
+            public LockedList<Subscription> Subscriptions { get; set; }
+            public MessageStore<Message> Store { get; set; }
+
+            public Topic()
+            {
+                Subscriptions = new LockedList<Subscription>();
+                Store = new MessageStore<Message>(DefaultMessageStoreSize);
+            }
+        }
+
+        private class Engine
+        {
+            private readonly BlockingCollection<Subscription> _queue = new BlockingCollection<Subscription>();
+            private readonly ConcurrentDictionary<string, Topic> _cache = new ConcurrentDictionary<string, Topic>();
+
+            private const int MaxLimit = 10;
+            private const int IdleLimit = 5;
+
+            private int _allocatedWorkers;
+            private int _busyWorkers;
+
+            public Engine(ConcurrentDictionary<string, Topic> cache)
+            {
+                _cache = cache;
+            }
+
+            public void Schedule(Subscription subscription)
+            {
+                if (subscription.Queued)
+                {
+                    return;
+                }
+
+                subscription.Queued = true;
+                _queue.TryAdd(subscription);
+                AddWorker();
+            }
+
+            public void AddWorker()
+            {
+                // Only create a new worker if everyone is busy (up to the max)
+                if (_allocatedWorkers < MaxLimit && _allocatedWorkers == _busyWorkers)
+                {
+                    _allocatedWorkers++;
+                    ThreadPool.QueueUserWorkItem(_ => Pump(0, (ex) =>
+                    {
+                        _allocatedWorkers--;
+                    }));
+                }
+            }
+
+            public void Pump(int n, Action<Exception> end)
+            {
+                // If we're withing the acceptable limit of idleness, just keep running
+                int idleWorkers = _allocatedWorkers - _busyWorkers;
+                if (idleWorkers <= IdleLimit)
+                {
+                    Subscription subscription = _queue.Take();
+                    _busyWorkers++;
+                    subscription.Work(_cache, ex =>
+                    {
+                        _busyWorkers--;
+                        subscription.Queued = false;
+
+                        if (ex != null)
+                        {
+                            end(ex);
+                        }
+                        else if (n % DefaultMaxStackDepth == 0)
+                        {
+                            Pump(n + 1, end);
+                        }
+                        else
+                        {
+                            Task.Factory.StartNew(() => Pump(n + 1, end));
+                        }
+                    });
+                }
+                else
+                {
+                    end(null);
+                }
+            }
         }
     }
 }
