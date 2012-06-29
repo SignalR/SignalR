@@ -80,9 +80,26 @@ namespace SignalR
         /// <returns></returns>
         public IDisposable Subscribe(IEnumerable<string> eventKeys, string cursor, Func<Exception, MessageResult, Task> callback)
         {
+            Cursor[] cursors = null;
+            if (cursor == null)
+            {
+                cursors = (from eventKey in eventKeys
+                           select new Cursor
+                           {
+                               Key = eventKey,
+                               MessageId = GetMessageId(eventKey)
+                           })
+                           .ToArray();
+            }
+            else
+            {
+                cursors = Subscription.GetCursors(cursor);
+            }
+
+
             var subscription = new Subscription
             {
-                Cursors = GetCursors(cursor, eventKeys),
+                Cursors = cursors,
                 Callback = callback
             };
 
@@ -90,6 +107,19 @@ namespace SignalR
             {
                 var topic = _topics.GetOrAdd(key, _ => new Topic());
                 topic.Subscriptions.Add(subscription);
+            }
+
+            if (!String.IsNullOrEmpty(cursor))
+            {
+                // Update all of the cursors so we're within the range
+                foreach (var c in subscription.Cursors)
+                {
+                    Topic topic;
+                    if (_topics.TryGetValue(c.Key, out topic) && c.MessageId > topic.Store.Id)
+                    {
+                        c.MessageId = 0;
+                    }
+                }
             }
 
             return new DisposableAction(() =>
@@ -106,16 +136,6 @@ namespace SignalR
                 string currentCursor = Subscription.MakeCursor(subscription.Cursors);
                 subscription.Callback.Invoke(null, new MessageResult(currentCursor));
             });
-        }
-
-        private Cursor[] GetCursors(string messageId, IEnumerable<string> keys)
-        {
-            if (messageId == null)
-            {
-                return keys.Select(key => new Cursor { Key = key, MessageId = GetMessageId(key) }).ToArray();
-            }
-
-            return JsonConvert.DeserializeObject<Cursor[]>(messageId);
         }
 
         private ulong GetMessageId(string key)
@@ -246,7 +266,7 @@ namespace SignalR
                                 {
                                     WorkImpl(topics, taskCompletionSource);
                                 }
-                            }, 
+                            },
                             TaskContinuationOptions.OnlyOnRanToCompletion);
                         }
                     }
@@ -275,6 +295,11 @@ namespace SignalR
             public static string MakeCursor(IEnumerable<Cursor> cursors)
             {
                 return JsonConvert.SerializeObject(cursors);
+            }
+
+            public static Cursor[] GetCursors(string messageId)
+            {
+                return JsonConvert.DeserializeObject<Cursor[]>(messageId);
             }
 
             private struct ResultSet
