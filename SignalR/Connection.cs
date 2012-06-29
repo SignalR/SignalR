@@ -8,7 +8,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class Connection : IConnection, ITransportConnection
+    public class Connection : IConnection, ITransportConnection, ISubscriber
     {
         private readonly IMessageBus _messageBus;
         private readonly INewMessageBus _newMessageBus;
@@ -39,6 +39,18 @@ namespace SignalR
             _groups = new HashSet<string>(groups);
             _trace = traceManager;
         }
+
+        IEnumerable<string> ISubscriber.EventKeys
+        {
+            get
+            {
+                return Signals;
+            }
+        }
+
+        public event Action<string> EventAdded;
+
+        public event Action<string> EventRemoved;
 
         private IEnumerable<string> Signals
         {
@@ -127,13 +139,28 @@ namespace SignalR
 
         private void ProcessCommand(SignalCommand command)
         {
+            string group = null;
+
             switch (command.Type)
             {
                 case CommandType.AddToGroup:
-                    _groups.Add((string)command.Value);
+                    group = (string)command.Value;
+                    _groups.Add(group);
+
+                    if (EventAdded != null)
+                    {
+                        EventAdded(group);
+                    }
                     break;
                 case CommandType.RemoveFromGroup:
-                    _groups.Remove((string)command.Value);
+                    group = (string)command.Value;
+                    _groups.Remove(group);
+
+                    if (EventRemoved != null)
+                    {
+                        EventRemoved(group);
+                    }
+
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;
@@ -163,7 +190,7 @@ namespace SignalR
 
         public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task> callback)
         {
-            return _newMessageBus.Subscribe(Signals, messageId, (ex, result) => callback(ex, GetResponse(result)));
+            return _newMessageBus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)));
         }
     }
 }

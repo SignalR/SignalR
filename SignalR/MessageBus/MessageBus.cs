@@ -74,28 +74,21 @@ namespace SignalR
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="eventKeys"></param>
+        /// <param name="subscriber"></param>
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(IEnumerable<string> eventKeys, string cursor, Func<Exception, MessageResult, Task> callback)
+        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task> callback)
         {
-            Cursor[] cursors = null;
+            ConcurrentDictionary<string, ulong> cursors = null;
             if (cursor == null)
             {
-                cursors = (from eventKey in eventKeys
-                           select new Cursor
-                           {
-                               Key = eventKey,
-                               MessageId = GetMessageId(eventKey)
-                           })
-                           .ToArray();
+                cursors = new ConcurrentDictionary<string, ulong>(subscriber.EventKeys.ToDictionary(key => key, key => GetMessageId(key)));
             }
             else
             {
-                cursors = Subscription.GetCursors(cursor);
+                cursors = new ConcurrentDictionary<string, ulong>(Subscription.GetCursors(cursor));
             }
-
 
             var subscription = new Subscription
             {
@@ -103,7 +96,7 @@ namespace SignalR
                 Callback = callback
             };
 
-            foreach (var key in eventKeys)
+            foreach (var key in subscriber.EventKeys)
             {
                 var topic = _topics.GetOrAdd(key, _ => new Topic());
                 topic.Subscriptions.Add(subscription);
@@ -112,30 +105,52 @@ namespace SignalR
             if (!String.IsNullOrEmpty(cursor))
             {
                 // Update all of the cursors so we're within the range
-                foreach (var c in subscription.Cursors)
+                foreach (var pair in subscription.Cursors)
                 {
                     Topic topic;
-                    if (_topics.TryGetValue(c.Key, out topic) && c.MessageId > topic.Store.Id)
+                    if (_topics.TryGetValue(pair.Key, out topic) && pair.Value > topic.Store.Id)
                     {
-                        c.MessageId = 0;
+                        subscription.Cursors[pair.Key] = 0;
                     }
                 }
             }
 
+            Action<string> eventAdded = eventKey =>
+            {
+                Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+                subscription.Cursors[eventKey] = GetMessageId(eventKey);
+                topic.Subscriptions.Add(subscription);
+            };
+
+            Action<string> eventRemoved = eventKey => RemoveEvent(subscription, eventKey);
+
+            subscriber.EventAdded += eventAdded;
+            subscriber.EventRemoved += eventRemoved;
+
             return new DisposableAction(() =>
             {
-                foreach (var key in eventKeys)
+                subscriber.EventAdded -= eventAdded;
+                subscriber.EventRemoved -= eventRemoved;
+
+                foreach (var eventKey in subscriber.EventKeys)
                 {
-                    Topic topic;
-                    if (_topics.TryGetValue(key, out topic))
-                    {
-                        topic.Subscriptions.Remove(subscription);
-                    }
+                    RemoveEvent(subscription, eventKey);
                 }
 
                 string currentCursor = Subscription.MakeCursor(subscription.Cursors);
                 subscription.Callback.Invoke(null, new MessageResult(currentCursor));
             });
+        }
+
+        private void RemoveEvent(Subscription subscription, string eventKey)
+        {
+            Topic topic;
+            if (_topics.TryGetValue(eventKey, out topic))
+            {
+                topic.Subscriptions.Remove(subscription);
+                ulong value;
+                subscription.Cursors.TryRemove(eventKey, out value);
+            }
         }
 
         private ulong GetMessageId(string key)
@@ -151,7 +166,7 @@ namespace SignalR
 
         private class Subscription
         {
-            public Cursor[] Cursors;
+            public ConcurrentDictionary<string, ulong> Cursors;
             public Func<Exception, MessageResult, Task> Callback;
 
             private int _queued;
@@ -220,20 +235,20 @@ namespace SignalR
                 {
                 Process:
                     var results = new List<ResultSet>();
-                    foreach (var cursor in Cursors)
+                    foreach (var pair in Cursors)
                     {
                         Topic topic;
-                        if (topics.TryGetValue(cursor.Key, out topic))
+                        if (topics.TryGetValue(pair.Key, out topic))
                         {
                             var result = new ResultSet
                             {
-                                Cursor = cursor,
+                                Cursor = pair,
                                 Messages = new List<Message>()
                             };
 
-                            MessageStoreResult<Message> storeResult = topic.Store.GetMessages(cursor.MessageId);
+                            MessageStoreResult<Message> storeResult = topic.Store.GetMessages(pair.Value);
                             ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
-                            cursor.MessageId = next;
+                            Cursors[pair.Key] = next;
 
                             if (storeResult.Messages.Length > 0)
                             {
@@ -292,30 +307,21 @@ namespace SignalR
                 return MakeCursor(results.Select(r => r.Cursor));
             }
 
-            public static string MakeCursor(IEnumerable<Cursor> cursors)
+            public static string MakeCursor(IEnumerable<KeyValuePair<string, ulong>> cursors)
             {
                 return JsonConvert.SerializeObject(cursors);
             }
 
-            public static Cursor[] GetCursors(string messageId)
+            public static IDictionary<string, ulong> GetCursors(string messageId)
             {
-                return JsonConvert.DeserializeObject<Cursor[]>(messageId);
+                return JsonConvert.DeserializeObject<IDictionary<string, ulong>>(messageId);
             }
 
             private struct ResultSet
             {
-                public Cursor Cursor;
+                public KeyValuePair<string, ulong> Cursor;
                 public List<Message> Messages;
             }
-        }
-
-        private class Cursor
-        {
-            [JsonProperty(PropertyName = "k")]
-            public string Key { get; set; }
-
-            [JsonProperty(PropertyName = "m")]
-            public ulong MessageId { get; set; }
         }
 
         private class Topic

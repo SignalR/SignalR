@@ -21,6 +21,6 @@ namespace SignalR
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        IDisposable Subscribe(IEnumerable<string> eventKeys, string cursor, Func<Exception, MessageResult, Task> callback);
+        IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task> callback);
     }
 }

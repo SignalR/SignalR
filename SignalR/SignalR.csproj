@@ -91,6 +91,7 @@
     <Compile Include="IPersistentConnectionContext.cs" />
     <Compile Include="Infrastructure\IServerCommandHandler.cs" />
     <Compile Include="MessageBus\INewMessageBus.cs" />
+    <Compile Include="MessageBus\ISubscriber.cs" />
     <Compile Include="MessageBus\MessageBus.cs" />
     <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\InMemoryMessage.cs" />
