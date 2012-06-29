@@ -40,7 +40,10 @@ namespace SignalR
         public MessageBus(ITraceManager traceManager)
         {
             _trace = traceManager;
-            _engine = new Engine(_topics);
+            _engine = new Engine(_topics)
+            {
+                Trace = Trace
+            };
         }
 
         private TraceSource Trace
@@ -186,7 +189,7 @@ namespace SignalR
                                 {
                                     if (n % DefaultMaxStackDepth == 0)
                                     {
-                                        Task.Factory.StartNew(() => WorkImpl(n + 1, topics, end));
+                                        ThreadPool.QueueUserWorkItem(_ => WorkImpl(n + 1, topics, end));
                                     }
                                     else
                                     {
@@ -266,6 +269,12 @@ namespace SignalR
                 _cache = cache;
             }
 
+            public TraceSource Trace
+            {
+                get;
+                set;
+            }
+
             public void Schedule(Subscription subscription)
             {
                 if (subscription.Queued)
@@ -284,10 +293,8 @@ namespace SignalR
                 if (_allocatedWorkers < MaxLimit && _allocatedWorkers == _busyWorkers)
                 {
                     _allocatedWorkers++;
-                    ThreadPool.QueueUserWorkItem(_ => Pump(0, (ex) =>
-                    {
-                        _allocatedWorkers--;
-                    }));
+                    Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                    ThreadPool.QueueUserWorkItem(_ => Pump(0, (ex) => _allocatedWorkers--));
                 }
             }
 
@@ -310,7 +317,7 @@ namespace SignalR
                         }
                         else if (n % DefaultMaxStackDepth == 0)
                         {
-                            Task.Factory.StartNew(() => Pump(n + 1, end));
+                            ThreadPool.QueueUserWorkItem(_ => Pump(n + 1, end));
                         }
                         else
                         {
@@ -320,6 +327,7 @@ namespace SignalR
                 }
                 else
                 {
+                    Trace.TraceInformation("Idle workers are {0}", idleWorkers);
                     end(null);
                 }
             }
