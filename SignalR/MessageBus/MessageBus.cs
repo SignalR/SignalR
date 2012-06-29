@@ -122,7 +122,7 @@ namespace SignalR
             Action<string> eventAdded = eventKey =>
             {
                 Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
-                subscription.UpdateCursor(eventKey, GetMessageId(eventKey));
+                subscription.AddOrUpdateCursor(eventKey, GetMessageId(eventKey));
                 topic.Subscriptions.Add(subscription);
             };
 
@@ -326,7 +326,7 @@ namespace SignalR
                 public List<Message> Messages;
             }
 
-            public void UpdateCursor(string key, ulong id)
+            public void AddOrUpdateCursor(string key, ulong id)
             {
                 // O(n), but small n and it's not common
                 var index = Cursors.FindIndex(c => c.Key == key);
@@ -334,6 +334,27 @@ namespace SignalR
                 {
                     Cursors[index].Id = id;
                 }
+                else
+                {
+                    Cursors.Add(new Cursor
+                    {
+                        Key = key,
+                        Id = id
+                    });
+                }
+            }
+
+            public bool UpdateCursor(string key, ulong id)
+            {
+                // O(n), but small n and it's not common
+                var index = Cursors.FindIndex(c => c.Key == key);
+                if (index != -1)
+                {
+                    Cursors[index].Id = id;
+                    return true;
+                }
+
+                return false;
             }
         }
 
