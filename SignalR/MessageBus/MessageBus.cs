@@ -87,7 +87,7 @@ namespace SignalR
             }
             else
             {
-                cursors = new ConcurrentDictionary<string, ulong>(Subscription.GetCursors(cursor));
+                cursors = new ConcurrentDictionary<string, ulong>(Subscription.GetCursors(cursor).ToDictionary(c => c.Key, c => c.Value));
             }
 
             var subscription = new Subscription
@@ -242,7 +242,7 @@ namespace SignalR
                         {
                             var result = new ResultSet
                             {
-                                Cursor = pair,
+                                Cursor = new Cursor(pair),
                                 Messages = new List<Message>()
                             };
 
@@ -307,21 +307,38 @@ namespace SignalR
                 return MakeCursor(results.Select(r => r.Cursor));
             }
 
-            public static string MakeCursor(IEnumerable<KeyValuePair<string, ulong>> cursors)
+            public static string MakeCursor(IEnumerable<KeyValuePair<string, ulong>> pairs)
+            {
+                return MakeCursor(pairs.Select(pair => new Cursor(pair)));
+            }
+
+            public static string MakeCursor(IEnumerable<Cursor> cursors)
             {
                 return JsonConvert.SerializeObject(cursors);
             }
 
-            public static IDictionary<string, ulong> GetCursors(string messageId)
+            public static Cursor[] GetCursors(string messageId)
             {
-                return JsonConvert.DeserializeObject<IDictionary<string, ulong>>(messageId);
+                return JsonConvert.DeserializeObject<Cursor[]>(messageId);
             }
 
             private struct ResultSet
             {
-                public KeyValuePair<string, ulong> Cursor;
+                public Cursor Cursor;
                 public List<Message> Messages;
             }
+        }
+
+        internal class Cursor
+        {
+            public Cursor(KeyValuePair<string, ulong> pair)
+            {
+                Key = pair.Key;
+                Value = pair.Value;
+            }
+
+            public string Key { get; set; }
+            public ulong Value { get; set; }
         }
 
         private class Topic
