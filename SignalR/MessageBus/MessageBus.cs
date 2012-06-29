@@ -66,7 +66,7 @@ namespace SignalR
 
             topic.Store.Add(new Message(eventKey, value));
 
-            foreach (var subscription in topic.Subscriptions)
+            foreach (var subscription in topic.Subscriptions.GetSnapshot())
             {
                 _engine.Schedule(subscription);
             }
@@ -90,7 +90,7 @@ namespace SignalR
             foreach (var key in keys)
             {
                 var topic = _topics.GetOrAdd(key, _ => new Topic());
-                topic.Subscriptions.AddWithLock(subscription);
+                topic.Subscriptions.Add(subscription);
             }
 
             return new DisposableAction(() =>
@@ -100,7 +100,7 @@ namespace SignalR
                     Topic topic;
                     if (_topics.TryGetValue(key, out topic))
                     {
-                        topic.Subscriptions.RemoveWithLock(subscription);
+                        topic.Subscriptions.Remove(subscription);
                     }
                 }
 
@@ -243,12 +243,12 @@ namespace SignalR
 
         private class Topic
         {
-            public LockedList<Subscription> Subscriptions { get; set; }
+            public SafeSet<Subscription> Subscriptions { get; set; }
             public MessageStore<Message> Store { get; set; }
 
             public Topic()
             {
-                Subscriptions = new LockedList<Subscription>();
+                Subscriptions = new SafeSet<Subscription>();
                 Store = new MessageStore<Message>(DefaultMessageStoreSize);
             }
         }
