@@ -256,7 +256,7 @@ namespace SignalR
         private class Engine
         {
             private readonly BlockingCollection<Subscription> _queue = new BlockingCollection<Subscription>();
-            private readonly ConcurrentDictionary<string, Topic> _cache = new ConcurrentDictionary<string, Topic>();
+            private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
 
             private const int MaxLimit = 10;
             private const int IdleLimit = 5;
@@ -264,9 +264,9 @@ namespace SignalR
             private int _allocatedWorkers;
             private int _busyWorkers;
 
-            public Engine(ConcurrentDictionary<string, Topic> cache)
+            public Engine(ConcurrentDictionary<string, Topic> topics)
             {
-                _cache = cache;
+                _topics = topics;
             }
 
             public TraceSource Trace
@@ -306,7 +306,7 @@ namespace SignalR
                 {
                     Subscription subscription = _queue.Take();
                     _busyWorkers++;
-                    subscription.Work(_cache, ex =>
+                    subscription.Work(_topics, ex =>
                     {
                         _busyWorkers--;
                         subscription.Queued = false;
