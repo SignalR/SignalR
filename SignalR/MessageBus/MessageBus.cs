@@ -15,7 +15,7 @@ namespace SignalR
     /// </summary>
     public class MessageBus : INewMessageBus
     {
-        private readonly ConcurrentDictionary<string, Topic> _cache = new ConcurrentDictionary<string, Topic>();
+        private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
         private readonly Engine _engine;
 
         private const int DefaultMaxStackDepth = 1000;
@@ -40,7 +40,7 @@ namespace SignalR
         public MessageBus(ITraceManager traceManager)
         {
             _trace = traceManager;
-            _engine = new Engine(_cache);
+            _engine = new Engine(_topics);
         }
 
         private TraceSource Trace
@@ -59,7 +59,7 @@ namespace SignalR
         /// <param name="value">The value to send.</param>
         public void Publish(string source, string eventKey, object value)
         {
-            var topic = _cache.GetOrAdd(eventKey, _ => new Topic());
+            var topic = _topics.GetOrAdd(eventKey, _ => new Topic());
 
             topic.Store.Add(new Message(eventKey, value));
 
@@ -86,7 +86,7 @@ namespace SignalR
 
             foreach (var key in keys)
             {
-                var topic = _cache.GetOrAdd(key, _ => new Topic());
+                var topic = _topics.GetOrAdd(key, _ => new Topic());
                 topic.Subscriptions.AddWithLock(subscription);
             }
 
@@ -95,7 +95,7 @@ namespace SignalR
                 foreach (var key in keys)
                 {
                     Topic topic;
-                    if (_cache.TryGetValue(key, out topic))
+                    if (_topics.TryGetValue(key, out topic))
                     {
                         topic.Subscriptions.RemoveWithLock(subscription);
                     }
@@ -119,7 +119,7 @@ namespace SignalR
         private ulong GetMessageId(string key)
         {
             Topic topic;
-            if (_cache.TryGetValue(key, out topic))
+            if (_topics.TryGetValue(key, out topic))
             {
                 return topic.Store.Id + 1;
             }
@@ -135,7 +135,7 @@ namespace SignalR
             public bool Queued { get; set; }
             public bool Working { get; private set; }
 
-            public void Work(ConcurrentDictionary<string, Topic> cache, Action<Exception> end)
+            public void Work(ConcurrentDictionary<string, Topic> topics, Action<Exception> end)
             {
                 if (Working)
                 {
@@ -143,14 +143,14 @@ namespace SignalR
                 }
 
                 Working = true;
-                WorkImpl(0, cache, ex =>
+                WorkImpl(0, topics, ex =>
                 {
                     Working = false;
                     end(ex);
                 });
             }
 
-            private void WorkImpl(int n, ConcurrentDictionary<string, Topic> cache, Action<Exception> end)
+            private void WorkImpl(int n, ConcurrentDictionary<string, Topic> topics, Action<Exception> end)
             {
                 try
                 {
@@ -158,7 +158,7 @@ namespace SignalR
                     foreach (var cursor in Cursors)
                     {
                         Topic topic;
-                        if (cache.TryGetValue(cursor.Key, out topic))
+                        if (topics.TryGetValue(cursor.Key, out topic))
                         {
                             var result = new ResultSet
                             {
@@ -186,11 +186,11 @@ namespace SignalR
                                 {
                                     if (n % DefaultMaxStackDepth == 0)
                                     {
-                                        Task.Factory.StartNew(() => WorkImpl(n + 1, cache, end));
+                                        Task.Factory.StartNew(() => WorkImpl(n + 1, topics, end));
                                     }
                                     else
                                     {
-                                        WorkImpl(n + 1, cache, end);
+                                        WorkImpl(n + 1, topics, end);
                                     }
                                 })
                                 .Catch(ex => end(ex));
@@ -310,11 +310,11 @@ namespace SignalR
                         }
                         else if (n % DefaultMaxStackDepth == 0)
                         {
-                            Pump(n + 1, end);
+                            Task.Factory.StartNew(() => Pump(n + 1, end));
                         }
                         else
                         {
-                            Task.Factory.StartNew(() => Pump(n + 1, end));
+                            Pump(n + 1, end);
                         }
                     });
                 }
