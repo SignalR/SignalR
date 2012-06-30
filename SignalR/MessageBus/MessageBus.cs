@@ -83,11 +83,12 @@ namespace SignalR
             IEnumerable<Cursor> cursors = null;
             if (cursor == null)
             {
-                cursors = subscriber.EventKeys.Select(key => new Cursor
-                {
-                    Key = key,
-                    Id = GetMessageId(key)
-                }).ToArray();
+                cursors = from key in subscriber.EventKeys
+                          select new Cursor
+                          {
+                              Key = key,
+                              Id = GetMessageId(key)
+                          };
             }
             else
             {
