@@ -120,10 +120,11 @@ namespace SignalR
                 }
             }
 
-            Action<string> eventAdded = eventKey =>
+            Action<string, string> eventAdded = (eventKey, eventCursor) =>
             {
                 Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
-                subscription.AddOrUpdateCursor(eventKey, GetMessageId(eventKey));
+                ulong id = eventCursor == null ? 0 : UInt64.Parse(eventCursor);
+                subscription.AddOrUpdateCursor(eventKey, id);
                 topic.Subscriptions.Add(subscription);
             };
 
@@ -155,6 +156,16 @@ namespace SignalR
                 topic.Subscriptions.Remove(subscription);
                 subscription.Cursors.RemoveAll(c => c.Key == eventKey);
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventKey"></param>
+        /// <returns></returns>
+        public string GetCursor(string eventKey)
+        {
+            return GetMessageId(eventKey).ToString();
         }
 
         private ulong GetMessageId(string key)

@@ -18,7 +18,7 @@ namespace SignalR.Stress
             set;
         }
 
-        public event Action<string> EventAdded;
+        public event Action<string, string> EventAdded;
 
         public event Action<string> EventRemoved;
     }

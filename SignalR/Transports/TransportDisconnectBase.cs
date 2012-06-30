@@ -132,7 +132,7 @@ namespace SignalR.Transports
 
         public Task Disconnect()
         {
-            return OnDisconnect().Then(() => Connection.Close());
+            return OnDisconnect().Then(() => Connection.Close(ConnectionId));
         }
 
         public Task OnDisconnect()

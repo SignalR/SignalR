@@ -48,7 +48,7 @@ namespace SignalR
             }
         }
 
-        public event Action<string> EventAdded;
+        public event Action<string, string> EventAdded;
 
         public event Action<string> EventRemoved;
 
@@ -78,6 +78,45 @@ namespace SignalR
             return SendMessage(signal, value);
         }
 
+        private Task SendMessage(string key, object value)
+        {
+            var wrappedValue = new WrappedValue(PreprocessValue(value), _serializer);
+            _newMessageBus.Publish(_connectionId, key, wrappedValue);
+            return TaskAsyncHelper.Empty;
+        }
+
+        private object PreprocessValue(object value)
+        {
+            // If this isn't a command then ignore it
+            var command = value as SignalCommand;
+            if (command == null)
+            {
+                return value;
+            }
+
+            if (command.Type == CommandType.AddToGroup)
+            {
+                var group = new GroupData
+                {
+                    Name = command.Value,
+                    Cursor = _newMessageBus.GetCursor(command.Value)
+                };
+
+                command.Value = _serializer.Stringify(group);
+            }
+            else if (command.Type == CommandType.RemoveFromGroup)
+            {
+                var group = new GroupData
+                {
+                    Name = command.Value
+                };
+
+                command.Value = _serializer.Stringify(group);
+            }
+
+            return command;
+        }
+
         public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
         {
             Trace.TraceInformation("Waiting for new messages");
@@ -92,11 +131,6 @@ namespace SignalR
 
             return _messageBus.GetMessages(Signals, messageId, timeoutToken)
                               .Then(result => GetResponse(result));
-        }
-
-        public Task SendCommand(SignalCommand command)
-        {
-            return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
         }
 
         private PersistentResponse GetResponse(MessageResult result)
@@ -119,9 +153,10 @@ namespace SignalR
             return response;
         }
 
-        private List<object> ProcessResults(IList<Message> source)
+        private List<object> ProcessResults(Message[] source)
         {
             var messageValues = new List<object>();
+
             foreach (var message in source)
             {
                 if (SignalCommand.IsCommand(message))
@@ -134,33 +169,33 @@ namespace SignalR
                     messageValues.Add(WrappedValue.Unwrap(message.Value, _serializer));
                 }
             }
+
             return messageValues;
         }
 
         private void ProcessCommand(SignalCommand command)
         {
-            string group = null;
-
             switch (command.Type)
             {
                 case CommandType.AddToGroup:
-                    group = (string)command.Value;
-                    _groups.Add(group);
-
-                    if (EventAdded != null)
                     {
-                        EventAdded(group);
+                        var groupData = _serializer.Parse<GroupData>(command.Value);
+
+                        if (EventAdded != null)
+                        {
+                            EventAdded(groupData.Name, groupData.Cursor);
+                        }
                     }
                     break;
                 case CommandType.RemoveFromGroup:
-                    group = (string)command.Value;
-                    _groups.Remove(group);
-
-                    if (EventRemoved != null)
                     {
-                        EventRemoved(group);
-                    }
+                        var groupData = _serializer.Parse<GroupData>(command.Value);
 
+                        if (EventRemoved != null)
+                        {
+                            EventRemoved(groupData.Name);
+                        }
+                    }
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;
@@ -171,26 +206,30 @@ namespace SignalR
             }
         }
 
-        private Task SendMessage(string key, object value)
-        {
-            var wrappedValue = new WrappedValue(value, _serializer);
-            // return _messageBus.Send(_connectionId, key, wrappedValue).Catch();
-            _newMessageBus.Publish(_connectionId, key, wrappedValue);
-            return TaskAsyncHelper.Empty;
-        }
-
         private void PopulateResponseState(PersistentResponse response)
         {
             // Set the groups on the outgoing transport data
-            if (_groups.Any())
+            if (_groups.Count > 0)
             {
                 response.TransportData["Groups"] = _groups;
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
         public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task> callback)
         {
             return _newMessageBus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)));
+        }
+
+        private class GroupData
+        {
+            public string Name { get; set; }
+            public string Cursor { get; set; }
         }
     }
 }

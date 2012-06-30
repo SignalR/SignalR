@@ -17,6 +17,6 @@ namespace SignalR
         }
 
         public CommandType Type { get; set; }
-        public object Value { get; set; }
+        public string Value { get; set; }
     }
 }

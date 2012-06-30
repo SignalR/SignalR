@@ -88,7 +88,7 @@ namespace SignalR.Transports
             }
             else if (IsAbortRequest)
             {
-                return Connection.Abort();
+                return Connection.Abort(ConnectionId);
             }
             else
             {

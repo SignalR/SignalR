@@ -7,7 +7,7 @@ namespace SignalR
     {
         IEnumerable<string> EventKeys { get; }
 
-        event Action<string> EventAdded;
+        event Action<string, string> EventAdded;
 
         event Action<string> EventRemoved;
     }

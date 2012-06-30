@@ -11,6 +11,6 @@ namespace SignalR
         Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken);
         Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken);
 
-        Task SendCommand(SignalCommand command);
+        Task Send(string signal, object value);
     }
 }
