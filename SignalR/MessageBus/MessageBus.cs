@@ -112,7 +112,7 @@ namespace SignalR
                 foreach (var pair in subscription.Cursors)
                 {
                     Topic topic;
-                    if (_topics.TryGetValue(pair.Key, out topic) && pair.Id > topic.Store.Id)
+                    if (_topics.TryGetValue(pair.Key, out topic) && pair.Id > topic.Store.GetMessageCount())
                     {
                         subscription.UpdateCursor(pair.Key, 0);
                     }
@@ -161,7 +161,7 @@ namespace SignalR
             Topic topic;
             if (_topics.TryGetValue(key, out topic))
             {
-                return topic.Store.Id + 1;
+                return topic.Store.GetMessageCount();
             }
 
             return 0;
