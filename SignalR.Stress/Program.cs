@@ -33,7 +33,7 @@ namespace SignalR.Stress
         private static long _rate = 1;
         private static int _runs = 0;
         private static int _step = 1;
-        private static int _stepInterval = 50;
+        private static int _stepInterval = 15;
         private static int _clients = 10000;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
@@ -62,15 +62,12 @@ namespace SignalR.Stress
             for (int i = 0; i < _clients; i++)
             {
                 var subscriber = new Subscriber(new[] { "a", "b", "c" });
-                // Task.Factory.StartNew(() => StartClientLoop(bus, subscriber), TaskCreationOptions.LongRunning);
                 ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, subscriber));
-                // (new Thread(_ => StartClientLoop(bus, subscriber))).Start();
             }
 
             for (var i = 1; i <= _senders; i++)
             {
-                //ThreadPool.QueueUserWorkItem(_ => StartSendLoop(bus, payload));
-                Task.Factory.StartNew(() => StartSendLoop(i, bus, payload), TaskCreationOptions.LongRunning);
+                ThreadPool.QueueUserWorkItem(_ => StartSendLoop(i, bus, payload));
             }
 
             Console.ReadLine();
@@ -82,7 +79,6 @@ namespace SignalR.Stress
             {
                 long old = _rate;
                 var interval = TimeSpan.FromMilliseconds((1000.0 / _rate) * _senders);
-                //var interval = TimeSpan.FromMilliseconds(1000.0 / _rate);
                 while (Interlocked.Read(ref _rate) == old && _exception == null)
                 {
                     try
@@ -184,8 +180,7 @@ namespace SignalR.Stress
                     }
 
                     Console.Clear();
-                    Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);
-                    //Console.WriteLine("Last time to send: {0}ms", TimeSpan.FromTicks(Interlocked.Read(ref _lastSendTimeTicks)).TotalMilliseconds);
+                    Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);                    
 
                     Console.WriteLine("Total Rate: {0} (mps) = {1} (mps) * {2} (clients)", TotalRate, _rate, _clients);
                     Console.WriteLine();
@@ -231,6 +226,8 @@ namespace SignalR.Stress
                     Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _peakReceivesPerSecond), d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
                     Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _avgReceivesPerSecond), d3, d3 * 100.0 / TotalRate);
+                    var d4 = Math.Max(0, _sendsPerSecond - _receivesPerSecond);
+                    Console.WriteLine("Actual RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _receivesPerSecond), d4, d4 * 100.0 / _sendsPerSecond);
 
                     Console.WriteLine();
                     Console.WriteLine("----- MESSAGE BUS -----");
