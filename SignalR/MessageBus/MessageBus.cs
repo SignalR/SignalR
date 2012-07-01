@@ -108,7 +108,7 @@ namespace SignalR
             }
             else
             {
-                cursors = Subscription.GetCursors(cursor);
+                cursors = Cursor.GetCursors(cursor);
             }
 
             var subscription = new Subscription
@@ -159,7 +159,7 @@ namespace SignalR
                     RemoveEvent(subscription, eventKey);
                 }
 
-                string currentCursor = Subscription.MakeCursor(subscription.Cursors);
+                string currentCursor = Cursor.MakeCursor(subscription.Cursors);
                 subscription.Callback.Invoke(null, new MessageResult(currentCursor));
             });
         }
@@ -334,23 +334,10 @@ namespace SignalR
 
             private static MessageResult GetMessageResult(List<ResultSet> results)
             {
-                var messages = results.SelectMany(r => r.Messages).ToArray();
-                return new MessageResult(messages, MakeCursor(results));
-            }
+                Message[] messages = results.SelectMany(r => r.Messages).ToArray();
+                string cursor = Cursor.MakeCursor(results.Select(r => r.Cursor));
 
-            private static string MakeCursor(List<ResultSet> results)
-            {
-                return MakeCursor(results.Select(r => r.Cursor));
-            }
-
-            public static string MakeCursor(IEnumerable<Cursor> cursors)
-            {
-                return JsonConvert.SerializeObject(cursors);
-            }
-
-            public static Cursor[] GetCursors(string cursor)
-            {
-                return JsonConvert.DeserializeObject<Cursor[]>(cursor);
+                return new MessageResult(messages, cursor);
             }
 
             private struct ResultSet
@@ -398,6 +385,16 @@ namespace SignalR
 
             [JsonProperty("m")]
             public ulong Id { get; set; }
+
+            public static string MakeCursor(IEnumerable<Cursor> cursors)
+            {
+                return JsonConvert.SerializeObject(cursors);
+            }
+
+            public static Cursor[] GetCursors(string cursor)
+            {
+                return JsonConvert.DeserializeObject<Cursor[]>(cursor);
+            }
         }
 
         private class Topic
