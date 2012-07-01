@@ -70,7 +70,7 @@ namespace SignalR.Tests
         public void FarmDisconnectOnlyRaisesEventOnce()
         {
             // Each node shares the same bus but are indepenent servers
-            var bus = new InProcessMessageBus(new TraceManager(), garbageCollectMessages: false);
+            var bus = new MessageBus(new TraceManager());
             var nodeCount = 3;
             var nodes = new List<ServerNode>();
             for (int i = 0; i < nodeCount; i++)
@@ -113,14 +113,14 @@ namespace SignalR.Tests
 
             private IConnection _connection;
 
-            public ServerNode(IMessageBus bus)
+            public ServerNode(INewMessageBus bus)
             {
                 // Give each server it's own dependency resolver
                 Server = new MemoryHost(new DefaultDependencyResolver());
                 Connection = new FarmConnection();
 
                 Server.DependencyResolver.Register(typeof(FarmConnection), () => Connection);
-                Server.DependencyResolver.Register(typeof(IMessageBus), () => bus);
+                Server.DependencyResolver.Register(typeof(INewMessageBus), () => bus);
 
                 var context = Server.ConnectionManager.GetConnectionContext<FarmConnection>();
                 _connection = context.Connection;

@@ -8,9 +8,9 @@ namespace SignalR.Infrastructure
     /// <summary>
     /// Default <see cref="IServerCommandHandler"/> implementation.
     /// </summary>
-    public class ServerCommandHandler : IServerCommandHandler
+    public class ServerCommandHandler : IServerCommandHandler, ISubscriber
     {
-        private readonly IMessageBus _messageBus;
+        private readonly INewMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;
         private readonly IJsonSerializer _serializer;
 
@@ -18,17 +18,15 @@ namespace SignalR.Infrastructure
         private const string ServerSignal = "__SIGNALR__SERVER__";
         private static readonly string[] ServerSignals = new[] { ServerSignal };
 
-        private string _messageId;
-        
         public ServerCommandHandler(IDependencyResolver resolver) :
-            this(resolver.Resolve<IMessageBus>(),
+            this(resolver.Resolve<INewMessageBus>(),
                  resolver.Resolve<IServerIdManager>(),
                  resolver.Resolve<IJsonSerializer>())
         {
 
         }
 
-        public ServerCommandHandler(IMessageBus messageBus, IServerIdManager serverIdManager, IJsonSerializer serializer)
+        public ServerCommandHandler(INewMessageBus messageBus, IServerIdManager serverIdManager, IJsonSerializer serializer)
         {
             _messageBus = messageBus;
             _serverIdManager = serverIdManager;
@@ -43,6 +41,19 @@ namespace SignalR.Infrastructure
             set;
         }
 
+
+        public IEnumerable<string> EventKeys
+        {
+            get
+            {
+                return ServerSignals;
+            }
+        }
+
+        public event Action<string, string> EventAdded;
+
+        public event Action<string> EventRemoved;
+
         public Task SendCommand(ServerCommand command)
         {
             // Store where the message originated from
@@ -52,29 +63,18 @@ namespace SignalR.Infrastructure
             var wrappedValue = new WrappedValue(command, _serializer);
 
             // Send the command to the all servers
-            return _messageBus.Send(_serverIdManager.ServerId, ServerSignal, wrappedValue);
+            return _messageBus.Publish(_serverIdManager.ServerId, ServerSignal, wrappedValue);
         }
 
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _messageBus.GetMessages(ServerSignals, _messageId, CancellationToken.None)
-                       .Then(result =>
-                       {
-                           // Handle the server commands
-                           HandleServerCommands(result.Messages);
-
-                           // Store the last message id
-                           _messageId = result.LastMessageId;
-
-                           // Check for more messages
-                           ProcessMessages();
-                       });
+            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands);
         }
 
-        private void HandleServerCommands(IList<Message> messages)
+        private Task HandleServerCommands(Exception ex, MessageResult result)
         {
-            foreach (var message in messages)
+            foreach (var message in result.Messages)
             {
                 // Only handle server commands
                 if (ServerSignal.Equals(message.SignalKey))
@@ -84,6 +84,8 @@ namespace SignalR.Infrastructure
                     OnCommand(command);
                 }
             }
+
+            return TaskAsyncHelper.Empty;
         }
 
         private void OnCommand(ServerCommand command)

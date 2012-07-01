@@ -75,7 +75,7 @@ namespace SignalR
         /// <param name="source">A value representing the source of the data sent.</param>
         /// <param name="eventKey">The specific event key to send data to.</param>
         /// <param name="value">The value to send.</param>
-        public void Publish(string source, string eventKey, object value)
+        public Task Publish(string source, string eventKey, object value)
         {
             Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
 
@@ -85,6 +85,8 @@ namespace SignalR
             {
                 _engine.Schedule(subscription);
             }
+
+            return TaskAsyncHelper.Empty;
         }
 
         /// <summary>

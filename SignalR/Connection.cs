@@ -81,8 +81,7 @@ namespace SignalR
         private Task SendMessage(string key, object value)
         {
             var wrappedValue = new WrappedValue(PreprocessValue(value), _serializer);
-            _newMessageBus.Publish(_connectionId, key, wrappedValue);
-            return TaskAsyncHelper.Empty;
+            return _newMessageBus.Publish(_connectionId, key, wrappedValue);
         }
 
         private object PreprocessValue(object value)
