@@ -348,9 +348,9 @@ namespace SignalR
                 return JsonConvert.SerializeObject(cursors);
             }
 
-            public static Cursor[] GetCursors(string messageId)
+            public static Cursor[] GetCursors(string cursor)
             {
-                return JsonConvert.DeserializeObject<Cursor[]>(messageId);
+                return JsonConvert.DeserializeObject<Cursor[]>(cursor);
             }
 
             private struct ResultSet
