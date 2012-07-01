@@ -548,12 +548,9 @@ namespace SignalR
 
             public void Schedule(Subscription subscription)
             {
-                if (subscription.SetQueued())
+                if (subscription.SetQueued() && _queue.TryAdd(subscription))
                 {
-                    if (_queue.TryAdd(subscription))
-                    {
-                        AddWorker();
-                    }
+                    AddWorker();
                 }
             }
 
