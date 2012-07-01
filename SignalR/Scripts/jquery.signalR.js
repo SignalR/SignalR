@@ -1057,6 +1057,7 @@
                         instance.pollXhr = $.ajax({
                             url: url,
                             global: false,
+                            cache: false,
                             type: "GET",
                             dataType: connection.ajaxDataType,
                             success: function (data) {
