@@ -507,7 +507,7 @@ namespace SignalR
 
             Process:
 
-                Debug.Assert(_allocatedWorkers < MaxWorkers, "How did we pass the max?");
+                Debug.Assert(_allocatedWorkers <= MaxWorkers, "How did we pass the max?");
 
                 // If we're withing the acceptable limit of idleness, just keep running
                 int idleWorkers = _allocatedWorkers - _busyWorkers;
