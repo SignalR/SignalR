@@ -155,7 +155,7 @@ namespace SignalR
             {
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
-                
+
                 string currentCursor = Cursor.MakeCursor(subscription.Cursors);
                 subscription.Callback.Invoke(null, new MessageResult(currentCursor));
 
@@ -214,7 +214,7 @@ namespace SignalR
                     WorkImpl(topics, tcs);
 
                     // Fast Path
-                    if (tcs.Task.Status == TaskStatus.RanToCompletion)
+                    if (tcs.Task.IsCompleted)
                     {
                         UnsetWorking();
                         return tcs.Task;
@@ -258,60 +258,66 @@ namespace SignalR
                     }
 
                     return TaskAsyncHelper.Empty;
-                },
-                TaskContinuationOptions.OnlyOnRanToCompletion).FastUnwrap();
+                }).FastUnwrap();
             }
 
             private void WorkImpl(ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
             {
-                try
+
+            Process:
+
+                var results = new List<ResultSet>();
+                foreach (var cursor in Cursors)
                 {
-                Process:
-                    var results = new List<ResultSet>();
-                    foreach (var cursor in Cursors)
+                    Topic topic;
+                    if (topics.TryGetValue(cursor.Key, out topic))
                     {
-                        Topic topic;
-                        if (topics.TryGetValue(cursor.Key, out topic))
+                        var result = new ResultSet
                         {
-                            var result = new ResultSet
-                            {
-                                Cursor = cursor,
-                                Messages = new List<Message>()
-                            };
+                            Cursor = cursor,
+                            Messages = new List<Message>()
+                        };
 
-                            MessageStoreResult<Message> storeResult = topic.Store.GetMessages(cursor.Id);
-                            ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
-                            cursor.Id = next;
+                        MessageStoreResult<Message> storeResult = topic.Store.GetMessages(cursor.Id);
+                        ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                        cursor.Id = next;
 
-                            if (storeResult.Messages.Length > 0)
-                            {
-                                result.Messages.AddRange(storeResult.Messages);
-                                results.Add(result);
-                            }
+                        if (storeResult.Messages.Length > 0)
+                        {
+                            result.Messages.AddRange(storeResult.Messages);
+                            results.Add(result);
                         }
                     }
+                }
 
-                    if (results.Count > 0)
+                if (results.Count > 0)
+                {
+                    MessageResult messageResult = GetMessageResult(results);
+                    Task callbackTask = Callback.Invoke(null, messageResult);
+
+                    if (callbackTask.IsCompleted)
                     {
-                        MessageResult messageResult = GetMessageResult(results);
-                        Task callbackTask = Callback.Invoke(null, messageResult);
-
-                        if (callbackTask.Status == TaskStatus.RanToCompletion)
+                        try
                         {
+                            // Make sure exceptions propagate
+                            callbackTask.Wait();
+
                             // Sync path
                             goto Process;
                         }
-
-                        WorkImplAsync(callbackTask, topics, taskCompletionSource);
+                        catch (Exception ex)
+                        {
+                            taskCompletionSource.TrySetException(ex);
+                        }
                     }
                     else
                     {
-                        taskCompletionSource.TrySetResult(null);
+                        WorkImplAsync(callbackTask, topics, taskCompletionSource);
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    taskCompletionSource.TrySetException(ex);
+                    taskCompletionSource.TrySetResult(null);
                 }
             }
 
@@ -328,8 +334,7 @@ namespace SignalR
                     {
                         WorkImpl(topics, taskCompletionSource);
                     }
-                },
-                TaskContinuationOptions.OnlyOnRanToCompletion);
+                });
             }
 
             private static MessageResult GetMessageResult(List<ResultSet> results)
@@ -462,7 +467,7 @@ namespace SignalR
                         }
                         else if (ch == '|')
                         {
-                            current.Id = UInt64.Parse(sb.ToString());                            
+                            current.Id = UInt64.Parse(sb.ToString());
                             yield return current;
                             current = new Cursor();
                             sb.Clear();
@@ -569,7 +574,39 @@ namespace SignalR
 
             private void ProcessWork(object state)
             {
-                PumpAsync().ContinueWith(task =>
+                Task pumpTask = PumpAsync();
+
+                if (pumpTask.IsCompleted)
+                {
+                    ProcessWorkSync(pumpTask);
+                }
+                else
+                {
+                    ProcessWorkAsync(pumpTask);
+                }
+
+            }
+
+            private void ProcessWorkSync(Task pumpTask)
+            {
+                try
+                {
+                    pumpTask.Wait();
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceInformation("Failed to process work - " + ex.GetBaseException());
+                }
+                finally
+                {
+                    // After the pump runs decrement the number of workers in flight
+                    Interlocked.Decrement(ref _allocatedWorkers);
+                }
+            }
+
+            private void ProcessWorkAsync(Task pumpTask)
+            {
+                pumpTask.ContinueWith(task =>
                 {
                     // After the pump runs decrement the number of workers in flight
                     Interlocked.Decrement(ref _allocatedWorkers);
@@ -578,8 +615,7 @@ namespace SignalR
                     {
                         Trace.TraceInformation("Failed to process work - " + task.Exception.GetBaseException());
                     }
-                },
-                TaskContinuationOptions.OnlyOnRanToCompletion);
+                });
             }
 
             public Task PumpAsync()
@@ -600,28 +636,34 @@ namespace SignalR
                 int idleWorkers = _allocatedWorkers - _busyWorkers;
                 if (idleWorkers <= MaxIdleWorkers)
                 {
-                    try
+                    Subscription subscription = _queue.Take();
+
+                    Interlocked.Increment(ref _busyWorkers);
+                    Task workTask = subscription.WorkAsync(_topics);
+
+                    if (workTask.IsCompleted)
                     {
-                        Subscription subscription = _queue.Take();
+                        try
+                        {
+                            workTask.Wait();
 
-                        Interlocked.Increment(ref _busyWorkers);
-                        Task workTask = subscription.WorkAsync(_topics);
-
-                        if (workTask.Status == TaskStatus.RanToCompletion)
+                            goto Process;
+                        }
+                        catch (Exception ex)
+                        {
+                            taskCompletionSource.TrySetException(ex);
+                        }
+                        finally
                         {
                             subscription.UnsetQueued();
                             Interlocked.Decrement(ref _busyWorkers);
 
                             Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
-
-                            goto Process;
                         }
-
-                        PumpImplAsync(workTask, subscription, taskCompletionSource);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        taskCompletionSource.TrySetException(ex);
+                        PumpImplAsync(workTask, subscription, taskCompletionSource);
                     }
                 }
                 else
@@ -648,8 +690,7 @@ namespace SignalR
                     {
                         PumpImpl(taskCompletionSource);
                     }
-                },
-                TaskContinuationOptions.OnlyOnRanToCompletion);
+                });
             }
         }
     }
