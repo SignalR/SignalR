@@ -50,14 +50,14 @@ namespace SignalR.Stress
         static void Main(string[] args)
         {
             var resolver = new DefaultDependencyResolver();
-            var bus = new MessageBus(resolver);            
+            var bus = new MessageBus(resolver);
             string payload = GetPayload();
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-            
+
             ThreadPool.SetMinThreads(32, 32);
 
-            MeasureStats();
+            MeasureStats(bus);
 
             for (int i = 0; i < _clients; i++)
             {
@@ -147,7 +147,7 @@ namespace SignalR.Stress
             }
         }
 
-        public static void MeasureStats()
+        public static void MeasureStats(MessageBus bus)
         {
             _sw.Start();
             _avgCalcStart = DateTime.UtcNow;
@@ -231,6 +231,11 @@ namespace SignalR.Stress
                     Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _peakReceivesPerSecond), d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
                     Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _avgReceivesPerSecond), d3, d3 * 100.0 / TotalRate);
+
+                    Console.WriteLine();
+                    Console.WriteLine("----- MESSAGE BUS -----");
+                    Console.WriteLine("Allocated Workers: {0}", bus.AllocatedWorkers);
+                    Console.WriteLine("BusyWorkers Workers: {0}", bus.BusyWorkers);
 
                     if (recvPerSec < long.MaxValue && recvPerSec > _peakReceivesPerSecond)
                     {
