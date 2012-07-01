@@ -165,7 +165,7 @@ namespace SignalR.Hosting.Self
                     var hostContext = new HostContext(request, response);
 
 #if NET45
-                    hostContext.Items[HostConstants.SupportsWebSockets] = true;
+                    hostContext.Items[HostConstants.SupportsWebSockets] = Environment.OSVersion.Version.Major >= 6 && Environment.OSVersion.Version.Minor >= 2;
 #endif
 
                     if (OnProcessRequest != null)
