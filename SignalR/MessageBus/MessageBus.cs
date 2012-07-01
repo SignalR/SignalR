@@ -301,10 +301,8 @@ namespace SignalR
                             // Sync path
                             goto Process;
                         }
-                        else
-                        {
-                            WorkImplAsync(callbackTask, topics, taskCompletionSource);
-                        }
+
+                        WorkImplAsync(callbackTask, topics, taskCompletionSource);
                     }
                     else
                     {
@@ -496,6 +494,11 @@ namespace SignalR
             }
         }
 
+        /// <summary>
+        /// This class is the main coordinator. It schedules work to be done for a particular subscription 
+        /// and has an algorithm for choosing a number of workers (thread pool threads), to handle
+        /// the scheduled work.
+        /// </summary>
         private class Engine
         {
             private readonly BlockingCollection<Subscription> _queue = new BlockingCollection<Subscription>();
@@ -613,10 +616,8 @@ namespace SignalR
 
                             goto Process;
                         }
-                        else
-                        {
-                            PumpImplAsync(workTask, subscription, taskCompletionSource);
-                        }
+
+                        PumpImplAsync(workTask, subscription, taskCompletionSource);
                     }
                     catch (Exception ex)
                     {
