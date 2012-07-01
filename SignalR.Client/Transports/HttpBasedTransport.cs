@@ -95,7 +95,7 @@ namespace SignalR.Client.Transports
 
             if (connection.MessageId != null)
             {
-                qsBuilder.Append("&messageId=" + connection.MessageId);
+                qsBuilder.Append("&messageId=" + Uri.EscapeDataString(connection.MessageId));
             }
 
             if (connection.Groups != null && connection.Groups.Any())

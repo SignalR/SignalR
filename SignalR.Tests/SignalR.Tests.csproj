@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="ConnectionFacts.cs" />
+    <Compile Include="CursorFacts.cs" />
     <Compile Include="DefaultHubResolverTest.cs" />
     <Compile Include="DisconnectFacts.cs" />
     <Compile Include="EventSourceStreamReaderFacts.cs" />

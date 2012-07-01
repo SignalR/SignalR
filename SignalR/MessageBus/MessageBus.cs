@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using SignalR.Infrastructure;
 
 namespace SignalR
@@ -153,14 +153,14 @@ namespace SignalR
             {
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
+                
+                string currentCursor = Cursor.MakeCursor(subscription.Cursors);
+                subscription.Callback.Invoke(null, new MessageResult(currentCursor));
 
                 foreach (var eventKey in subscriber.EventKeys)
                 {
                     RemoveEvent(subscription, eventKey);
                 }
-
-                string currentCursor = Cursor.MakeCursor(subscription.Cursors);
-                subscription.Callback.Invoke(null, new MessageResult(currentCursor));
             });
         }
 
@@ -380,20 +380,105 @@ namespace SignalR
 
         internal class Cursor
         {
-            [JsonProperty("k")]
             public string Key { get; set; }
 
-            [JsonProperty("m")]
             public ulong Id { get; set; }
 
             public static string MakeCursor(IEnumerable<Cursor> cursors)
             {
-                return JsonConvert.SerializeObject(cursors);
+                var sb = new StringBuilder();
+                bool first = true;
+                foreach (var c in cursors)
+                {
+                    if (!first)
+                    {
+                        sb.Append('|');
+                    }
+                    sb.Append(Escape(c.Key));
+                    sb.Append(',');
+                    sb.Append(c.Id);
+                    first = false;
+                }
+
+                return sb.ToString();
+            }
+
+            private static string Escape(string value)
+            {
+                var sb = new StringBuilder();
+                // \\ = \
+                // \| = |
+                // \, = ,
+                foreach (var ch in value)
+                {
+                    switch (ch)
+                    {
+                        case '\\':
+                            sb.Append('\\').Append(ch);
+                            break;
+                        case '|':
+                            sb.Append('\\').Append(ch);
+                            break;
+                        case ',':
+                            sb.Append('\\').Append(ch);
+                            break;
+                        default:
+                            sb.Append(ch);
+                            break;
+                    }
+                }
+
+                return sb.ToString();
             }
 
             public static Cursor[] GetCursors(string cursor)
             {
-                return JsonConvert.DeserializeObject<Cursor[]>(cursor);
+                return ParseAll(cursor).ToArray();
+            }
+
+            private static IEnumerable<Cursor> ParseAll(string cursor)
+            {
+                var current = new Cursor();
+                bool escape = false;
+                var sb = new StringBuilder();
+
+                foreach (var ch in cursor)
+                {
+                    if (escape)
+                    {
+                        sb.Append(ch);
+                        escape = false;
+                    }
+                    else
+                    {
+                        if (ch == '\\')
+                        {
+                            escape = true;
+                        }
+                        else if (ch == ',')
+                        {
+                            current.Key = sb.ToString();
+                            sb.Clear();
+                        }
+                        else if (ch == '|')
+                        {
+                            current.Id = UInt64.Parse(sb.ToString());                            
+                            yield return current;
+                            current = new Cursor();
+                            sb.Clear();
+                        }
+                        else
+                        {
+                            sb.Append(ch);
+                        }
+                    }
+                }
+
+                if (sb.Length > 0)
+                {
+                    current.Id = UInt64.Parse(sb.ToString());
+                    yield return current;
+                }
             }
         }
 
