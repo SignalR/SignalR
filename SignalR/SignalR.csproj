@@ -65,7 +65,6 @@
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
-    <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
