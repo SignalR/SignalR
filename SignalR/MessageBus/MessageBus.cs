@@ -53,6 +53,22 @@ namespace SignalR
             }
         }
 
+        public int AllocatedWorkers
+        {
+            get
+            {
+                return _engine.AllocatedWorkers;
+            }
+        }
+
+        public int BusyWorkers
+        {
+            get
+            {
+                return _engine.BusyWorkers;
+            }
+        }
+
         /// <summary>
         /// Publishes a new message to the specified event on the bus.
         /// </summary>
@@ -187,16 +203,6 @@ namespace SignalR
             private int _queued;
             private int _working;
 
-            public bool SetQueued()
-            {
-                return Interlocked.Exchange(ref _queued, 1) == 0;
-            }
-
-            public void UnsetQueued()
-            {
-                Interlocked.Exchange(ref _queued, 0);
-            }
-
             public Task WorkAsync(ConcurrentDictionary<string, Topic> topics)
             {
                 if (SetWorking())
@@ -218,14 +224,24 @@ namespace SignalR
                 return TaskAsyncHelper.Empty;
             }
 
+            public bool SetQueued()
+            {
+                return Interlocked.Exchange(ref _queued, 1) == 0;
+            }
+
+            public bool UnsetQueued()
+            {
+                return Interlocked.Exchange(ref _queued, 0) == 1;
+            }
+
             private bool SetWorking()
             {
                 return Interlocked.Exchange(ref _working, 1) == 0;
             }
 
-            private void UnsetWorking()
+            private bool UnsetWorking()
             {
-                Interlocked.Exchange(ref _working, 0);
+                return Interlocked.Exchange(ref _working, 0) == 1;
             }
 
             private Task FinishAsync(TaskCompletionSource<object> tcs)
@@ -285,19 +301,7 @@ namespace SignalR
                         }
                         else
                         {
-                            // Async path
-                            callbackTask.ContinueWith(task =>
-                            {
-                                if (task.IsFaulted)
-                                {
-                                    taskCompletionSource.TrySetException(task.Exception);
-                                }
-                                else
-                                {
-                                    WorkImpl(topics, taskCompletionSource);
-                                }
-                            },
-                            TaskContinuationOptions.OnlyOnRanToCompletion);
+                            WorkImplAsync(callbackTask, topics, taskCompletionSource);
                         }
                     }
                     else
@@ -309,6 +313,23 @@ namespace SignalR
                 {
                     taskCompletionSource.TrySetException(ex);
                 }
+            }
+
+            private void WorkImplAsync(Task callbackTask, ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
+            {
+                // Async path
+                callbackTask.ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        taskCompletionSource.TrySetException(task.Exception);
+                    }
+                    else
+                    {
+                        WorkImpl(topics, taskCompletionSource);
+                    }
+                },
+                TaskContinuationOptions.OnlyOnRanToCompletion);
             }
 
             private static MessageResult GetMessageResult(List<ResultSet> results)
@@ -419,12 +440,30 @@ namespace SignalR
                 set;
             }
 
+            public int AllocatedWorkers
+            {
+                get
+                {
+                    return _allocatedWorkers;
+                }
+            }
+
+            public int BusyWorkers
+            {
+                get
+                {
+                    return _busyWorkers;
+                }
+            }
+
             public void Schedule(Subscription subscription)
             {
                 if (subscription.SetQueued())
                 {
-                    _queue.TryAdd(subscription);
-                    AddWorker();
+                    if (_queue.TryAdd(subscription))
+                    {
+                        AddWorker();
+                    }
                 }
             }
 
@@ -433,8 +472,10 @@ namespace SignalR
                 // Only create a new worker if everyone is busy (up to the max)
                 if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
                 {
-                    _allocatedWorkers++;
+                    Interlocked.Increment(ref _allocatedWorkers);
+
                     Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+
                     ThreadPool.QueueUserWorkItem(ProcessWork);
                 }
             }
@@ -444,7 +485,7 @@ namespace SignalR
                 PumpAsync().ContinueWith(task =>
                 {
                     // After the pump runs decrement the number of workers in flight
-                    _allocatedWorkers--;
+                    Interlocked.Decrement(ref _allocatedWorkers);
 
                     if (task.IsFaulted)
                     {
@@ -465,42 +506,32 @@ namespace SignalR
             {
 
             Process:
+
+                Debug.Assert(_allocatedWorkers < MaxWorkers, "How did we pass the max?");
+
                 // If we're withing the acceptable limit of idleness, just keep running
                 int idleWorkers = _allocatedWorkers - _busyWorkers;
                 if (idleWorkers <= MaxIdleWorkers)
                 {
-                    Subscription subscription = _queue.Take();
                     try
                     {
-                        _busyWorkers++;
+                        Subscription subscription = _queue.Take();
+
+                        Interlocked.Increment(ref _busyWorkers);
                         Task workTask = subscription.WorkAsync(_topics);
 
                         if (workTask.Status == TaskStatus.RanToCompletion)
                         {
-                            // Sync path
-                            _busyWorkers--;
                             subscription.UnsetQueued();
+                            Interlocked.Decrement(ref _busyWorkers);
+
+                            Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
 
                             goto Process;
                         }
                         else
                         {
-                            // Async path
-                            workTask.ContinueWith(task =>
-                            {
-                                _busyWorkers--;
-                                subscription.UnsetQueued();
-
-                                if (task.IsFaulted)
-                                {
-                                    taskCompletionSource.TrySetException(task.Exception);
-                                }
-                                else
-                                {
-                                    PumpImpl(taskCompletionSource);
-                                }
-                            },
-                            TaskContinuationOptions.OnlyOnRanToCompletion);
+                            PumpImplAsync(workTask, subscription, taskCompletionSource);
                         }
                     }
                     catch (Exception ex)
@@ -510,9 +541,30 @@ namespace SignalR
                 }
                 else
                 {
-                    Trace.TraceInformation("Idle workers are {0}", idleWorkers);
                     taskCompletionSource.TrySetResult(null);
                 }
+            }
+
+            private void PumpImplAsync(Task workTask, Subscription subscription, TaskCompletionSource<object> taskCompletionSource)
+            {
+                // Async path
+                workTask.ContinueWith(task =>
+                {
+                    subscription.UnsetQueued();
+                    Interlocked.Decrement(ref _busyWorkers);
+
+                    Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
+
+                    if (task.IsFaulted)
+                    {
+                        taskCompletionSource.TrySetException(task.Exception);
+                    }
+                    else
+                    {
+                        PumpImpl(taskCompletionSource);
+                    }
+                },
+                TaskContinuationOptions.OnlyOnRanToCompletion);
             }
         }
     }
