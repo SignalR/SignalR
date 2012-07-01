@@ -438,11 +438,7 @@ namespace SignalR
 
             public static Cursor[] GetCursors(string cursor)
             {
-                return ParseAll(cursor).ToArray();
-            }
-
-            private static IEnumerable<Cursor> ParseAll(string cursor)
-            {
+                var cursors = new List<Cursor>();
                 var current = new Cursor();
                 bool escape = false;
                 var sb = new StringBuilder();
@@ -468,7 +464,7 @@ namespace SignalR
                         else if (ch == '|')
                         {
                             current.Id = UInt64.Parse(sb.ToString());
-                            yield return current;
+                            cursors.Add(current);
                             current = new Cursor();
                             sb.Clear();
                         }
@@ -482,8 +478,10 @@ namespace SignalR
                 if (sb.Length > 0)
                 {
                     current.Id = UInt64.Parse(sb.ToString());
-                    yield return current;
+                    cursors.Add(current);
                 }
+
+                return cursors.ToArray();
             }
         }
 
