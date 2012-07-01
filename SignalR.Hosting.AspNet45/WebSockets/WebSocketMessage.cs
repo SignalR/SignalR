@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.WebSockets;
 
-namespace SignalR.Hosting.AspNet.WebSockets
+namespace SignalR.WebSockets
 {
     internal sealed class WebSocketMessage
     {

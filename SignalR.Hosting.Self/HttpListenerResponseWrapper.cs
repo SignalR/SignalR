@@ -45,8 +45,17 @@ namespace SignalR.Hosting.Self
         {
             Interlocked.Exchange(ref _onInitialWrite, () => { }).Invoke();
 
-            return DoWrite(data).Then(response => response.OutputStream.Flush(), _httpListenerResponse)
-                                .Catch(ex => _ended = true);
+            return DoWrite(data).Then(response =>
+            {
+#if NET45
+                return response.OutputStream.FlushAsync();
+#else
+                response.OutputStream.Flush();                
+                return TaskAsyncHelper.Empty;
+#endif
+
+            }, _httpListenerResponse)
+            .Catch(ex => _ended = true);
         }
 
         public Task EndAsync(ArraySegment<byte> data)

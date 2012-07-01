@@ -97,9 +97,9 @@ namespace SignalR.Hosting.Owin
             return new Uri(url);
         }
 
-        public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-
+            throw new NotSupportedException();
         }
     }
 }

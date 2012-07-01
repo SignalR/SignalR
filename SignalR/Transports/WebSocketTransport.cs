@@ -34,7 +34,7 @@ namespace SignalR.Transports
 
         public override Task ProcessRequest(ITransportConnection connection)
         {
-            _context.Request.AcceptWebSocketRequest(socket =>
+            return _context.Request.AcceptWebSocketRequest(socket =>
             {
                 _socket = socket;
 
@@ -65,8 +65,6 @@ namespace SignalR.Transports
 
                 return ProcessRequestCore(connection);
             });
-
-            return TaskAsyncHelper.Empty;
         }
 
         public override Task Send(object value)

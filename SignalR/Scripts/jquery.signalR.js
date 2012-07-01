@@ -677,16 +677,20 @@
             },
 
             reconnect: function (connection) {
-                this.stop(connection);
+                var that = this;
+                window.setTimeout(function () {
+                    that.stop(connection);
 
-                if (connection.state === signalR.connectionState.reconnecting ||
-                    changeState(connection,
-                                signalR.connectionState.connected,
-                                signalR.connectionState.reconnecting) === true) {
+                    if (connection.state === signalR.connectionState.reconnecting ||
+                        changeState(connection,
+                                    signalR.connectionState.connected,
+                                    signalR.connectionState.reconnecting) === true) {
 
-                    connection.log("Websocket reconnecting");
-                    this.start(connection);
-                }
+                        connection.log("Websocket reconnecting");
+                        that.start(connection);
+                    }
+                },
+                connection.reconnectDelay);
             },
 
             stop: function (connection) {

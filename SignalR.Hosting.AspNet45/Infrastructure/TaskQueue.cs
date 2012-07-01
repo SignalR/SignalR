@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SignalR.Hosting.AspNet.Infrastructure
+namespace SignalR.Infrastructure
 {
     // Allows serial queuing of Task instances
     // The tasks are not called on the current synchronization context

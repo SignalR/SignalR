@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using SignalR.Hosting.AspNet.WebSockets;
 
-namespace SignalR.Hosting.AspNet
+namespace SignalR.WebSockets
 {
-    internal class AspNetWebSocketHandler : WebSocketHandler, IWebSocket
+    internal class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
     {
         private bool _raiseEvent = true;
 

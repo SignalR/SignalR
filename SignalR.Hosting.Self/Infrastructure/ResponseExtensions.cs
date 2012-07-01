@@ -27,6 +27,9 @@ namespace SignalR.Hosting.Self.Infrastructure
 
         public static Task WriteAsync(this HttpListenerResponse response, ArraySegment<byte> buffer)
         {
+#if NET45
+            return response.OutputStream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count);
+#else
             try
             {
                 return Task.Factory.FromAsync((cb, state) => response.OutputStream.BeginWrite(buffer.Array, buffer.Offset, buffer.Count, cb, state),
@@ -37,6 +40,7 @@ namespace SignalR.Hosting.Self.Infrastructure
             {
                 return TaskAsyncHelper.FromError(ex);
             }
+#endif
         }
 
         public static void CloseSafe(this HttpListenerResponse response)
