@@ -109,8 +109,10 @@ namespace SignalR.Hosting.Memory
             }
         }
 
-        public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
+            // TODO: Add support
+            throw new NotSupportedException();
         }
     }
 }

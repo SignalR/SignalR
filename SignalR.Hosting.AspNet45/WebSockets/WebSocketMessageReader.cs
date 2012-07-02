@@ -3,9 +3,9 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hosting.AspNet.Infrastructure;
+using SignalR.Infrastructure;
 
-namespace SignalR.Hosting.AspNet.WebSockets
+namespace SignalR.WebSockets
 {
     internal static class WebSocketMessageReader
     {

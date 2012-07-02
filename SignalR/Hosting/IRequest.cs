@@ -49,6 +49,6 @@ namespace SignalR
         /// Accepts an websocket request using the specified user function.
         /// </summary>
         /// <param name="callback">The callback that fires when the websocket is ready.</param>
-        void AcceptWebSocketRequest(Func<IWebSocket, Task> callback);
+        Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback);
     }
 }

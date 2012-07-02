@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SignalR.Hosting.AspNet.Infrastructure
+namespace SignalR.Infrastructure
 {    
     // Similar to MemoryStream, but tries to allocate as few objects as possible on the LOH
 

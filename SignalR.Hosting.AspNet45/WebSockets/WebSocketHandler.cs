@@ -1,14 +1,12 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.WebSockets;
-using SignalR.Hosting.AspNet.Infrastructure;
+using SignalR.Infrastructure;
 
-namespace SignalR.Hosting.AspNet.WebSockets
+namespace SignalR.WebSockets
 {
     internal class WebSocketHandler
     {
@@ -108,14 +106,14 @@ namespace SignalR.Hosting.AspNet.WebSockets
          * MISC PROPERTIES
          */
 
-        public AspNetWebSocketContext WebSocketContext { get; set; }
+        public WebSocketContext WebSocketContext { get; set; }
         public Exception Error { get; set; }
 
         /*
          * IMPLEMENTATION
          */
 
-        public Task ProcessWebSocketRequestAsync(AspNetWebSocketContext webSocketContext)
+        public Task ProcessWebSocketRequestAsync(WebSocketContext webSocketContext)
         {
             if (webSocketContext == null)
             {
@@ -127,7 +125,7 @@ namespace SignalR.Hosting.AspNet.WebSockets
             return ProcessWebSocketRequestAsync(webSocketContext, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize));
         }
 
-        internal async Task ProcessWebSocketRequestAsync(AspNetWebSocketContext webSocketContext, Func<Task<WebSocketMessage>> messageRetriever)
+        internal async Task ProcessWebSocketRequestAsync(WebSocketContext webSocketContext, Func<Task<WebSocketMessage>> messageRetriever)
         {
             try
             {

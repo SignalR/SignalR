@@ -10,20 +10,20 @@ namespace SignalR.Hosting.Self
 {
     public class HttpListenerRequestWrapper : IRequest
     {
-        private readonly HttpListenerRequest _httpListenerRequest;
+        private readonly HttpListenerContext _httpListenerContext;
         private NameValueCollection _form;
 
-        public HttpListenerRequestWrapper(HttpListenerRequest httpListenerRequest, IPrincipal user)
+        public HttpListenerRequestWrapper(HttpListenerContext httpListenerContext)
         {
-            _httpListenerRequest = httpListenerRequest;
-            QueryString = new NameValueCollection(httpListenerRequest.QueryString);
-            Headers = new NameValueCollection(httpListenerRequest.Headers);
-            Cookies = new CookieCollectionWrapper(_httpListenerRequest.Cookies);
+            _httpListenerContext = httpListenerContext;
+            QueryString = new NameValueCollection(httpListenerContext.Request.QueryString);
+            Headers = new NameValueCollection(httpListenerContext.Request.Headers);
+            Cookies = new CookieCollectionWrapper(httpListenerContext.Request.Cookies);
             ServerVariables = new NameValueCollection();
-            User = user;
+            User = httpListenerContext.User;
 
             // Set the client IP
-            ServerVariables["REMOTE_ADDR"] = _httpListenerRequest.RemoteEndPoint.Address.ToString();
+            ServerVariables["REMOTE_ADDR"] = httpListenerContext.Request.RemoteEndPoint.Address.ToString();
         }
 
         public IRequestCookieCollection Cookies
@@ -57,7 +57,7 @@ namespace SignalR.Hosting.Self
         {
             get
             {
-                return _httpListenerRequest.Url;
+                return _httpListenerContext.Request.Url;
             }
         }
 
@@ -78,13 +78,13 @@ namespace SignalR.Hosting.Self
             if (_form == null)
             {
                 // Do nothing if there's no body
-                if (!_httpListenerRequest.HasEntityBody)
+                if (!_httpListenerContext.Request.HasEntityBody)
                 {
                     _form = new NameValueCollection();
                     return;
                 }
 
-                using (var sw = new StreamReader(_httpListenerRequest.InputStream))
+                using (var sw = new StreamReader(_httpListenerContext.Request.InputStream))
                 {
                     var body = sw.ReadToEnd();
                     _form = HttpUtility.ParseDelimited(body);
@@ -92,9 +92,19 @@ namespace SignalR.Hosting.Self
             }
         }
 
-        public void AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-            
+#if NET45
+            return _httpListenerContext.AcceptWebSocketAsync(subProtocol: null).Then(ws =>
+            {
+                var handler = new SignalR.WebSockets.DefaultWebSocketHandler();
+                var task = handler.ProcessWebSocketRequestAsync(ws);
+                callback(handler).Then(h => h.CleanClose(), handler);
+                return task;
+            });
+#else
+            throw new NotSupportedException();
+#endif
         }
     }
 }

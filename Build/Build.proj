@@ -115,7 +115,7 @@
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
              Properties="Configuration=$(Configuration)" />
              
-    <MSBuild Projects="$(ProjectRoot)\SignalR.Hosting.AspNet45.sln"
+    <MSBuild Projects="$(ProjectRoot)\SignalR45.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
              Properties="Configuration=$(Configuration)" />

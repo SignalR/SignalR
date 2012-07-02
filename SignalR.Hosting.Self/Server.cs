@@ -160,9 +160,13 @@ namespace SignalR.Hosting.Self
                         context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
                     }
 
-                    var request = new HttpListenerRequestWrapper(context.Request, context.User);
+                    var request = new HttpListenerRequestWrapper(context);
                     var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
                     var hostContext = new HostContext(request, response);
+
+#if NET45
+                    hostContext.Items[HostConstants.SupportsWebSockets] = Environment.OSVersion.Version.Major >= 6 && Environment.OSVersion.Version.Minor >= 2;
+#endif
 
                     if (OnProcessRequest != null)
                     {
