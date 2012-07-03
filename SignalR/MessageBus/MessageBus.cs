@@ -113,11 +113,7 @@ namespace SignalR
                 cursors = Cursor.GetCursors(cursor);
             }
 
-            var subscription = new Subscription
-            {
-                Cursors = new List<Cursor>(cursors),
-                Callback = callback
-            };
+            var subscription = new Subscription(cursors, callback);
 
             foreach (var key in subscriber.EventKeys)
             {
@@ -157,7 +153,7 @@ namespace SignalR
                 subscriber.EventRemoved -= eventRemoved;
 
                 string currentCursor = Cursor.MakeCursor(subscription.Cursors);
-                subscription.Callback.Invoke(null, new MessageResult(currentCursor));
+                subscription.Invoke(new MessageResult(currentCursor));
 
                 foreach (var eventKey in subscriber.EventKeys)
                 {
@@ -172,7 +168,7 @@ namespace SignalR
             if (_topics.TryGetValue(eventKey, out topic))
             {
                 topic.Subscriptions.Remove(subscription);
-                subscription.Cursors.RemoveAll(c => c.Key == eventKey);
+                subscription.RemoveCursor(eventKey);
             }
         }
 
@@ -199,11 +195,56 @@ namespace SignalR
 
         private class Subscription
         {
-            public List<Cursor> Cursors;
-            public Func<Exception, MessageResult, Task> Callback;
+            private readonly List<Cursor> _cursors;
+            private readonly Func<Exception, MessageResult, Task> _callback;
+
+            private readonly ReaderWriterLockSlim _cursorLock = new ReaderWriterLockSlim();
 
             private int _queued;
             private int _working;
+
+            public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task> callback)
+            {
+                _cursors = new List<Cursor>(cursors);
+                _callback = callback;
+            }
+
+            public int CursorCount
+            {
+                get
+                {
+                    try
+                    {
+                        _cursorLock.EnterReadLock();
+                        return _cursors.Count;
+                    }
+                    finally
+                    {
+                        _cursorLock.ExitReadLock();
+                    }
+                }
+            }
+
+            public IEnumerable<Cursor> Cursors
+            {
+                get
+                {
+                    try
+                    {
+                        _cursorLock.EnterReadLock();
+                        return _cursors;
+                    }
+                    finally
+                    {
+                        _cursorLock.ExitReadLock();
+                    }
+                }
+            }
+
+            public Task Invoke(MessageResult result)
+            {
+                return _callback.Invoke(null, result);
+            }
 
             public Task WorkAsync(ConcurrentDictionary<string, Topic> topics)
             {
@@ -265,35 +306,54 @@ namespace SignalR
             {
 
             Process:
+                // Reserve 25 messages per cursor
+                int cursorCount = CursorCount;
+                var messages = new Message[cursorCount * 25];
+                var cursors = new List<Cursor>(cursorCount);
 
-                var results = new List<ResultSet>();
+                int count = 0;
                 foreach (var cursor in Cursors)
                 {
                     Topic topic;
                     if (topics.TryGetValue(cursor.Key, out topic))
                     {
-                        var result = new ResultSet
-                        {
-                            Cursor = cursor,
-                            Messages = new List<Message>()
-                        };
-
                         MessageStoreResult<Message> storeResult = topic.Store.GetMessages(cursor.Id);
                         ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
                         cursor.Id = next;
 
                         if (storeResult.Messages.Length > 0)
                         {
-                            result.Messages.AddRange(storeResult.Messages);
-                            results.Add(result);
+                            // We ran out of space
+                            int need = count + storeResult.Messages.Length;
+                            if (need >= messages.Length)
+                            {
+                                // Double the length
+                                Array.Resize(ref messages, messages.Length * 2);
+                            }
+
+                            // Copy the paylod
+                            Array.Copy(storeResult.Messages, 0, messages, count, storeResult.Messages.Length);
+                            count += storeResult.Messages.Length;
+                        }
+
+                        if (cursor.Id > 0)
+                        {
+                            // Add this cursor to the list
+                            cursors.Add(cursor);
                         }
                     }
                 }
 
-                if (results.Count > 0)
+                if (count > 0)
                 {
-                    MessageResult messageResult = GetMessageResult(results);
-                    Task callbackTask = Callback.Invoke(null, messageResult);
+                    // REVIEW: Should we change this to not resize and have the callers detect null?
+                    if (count < messages.Length)
+                    {
+                        Array.Resize(ref messages, count);
+                    }
+
+                    var messageResult = new MessageResult(messages, Cursor.MakeCursor(cursors));
+                    Task callbackTask = Invoke(messageResult);
 
                     if (callbackTask.IsCompleted)
                     {
@@ -337,49 +397,66 @@ namespace SignalR
                 });
             }
 
-            private static MessageResult GetMessageResult(List<ResultSet> results)
-            {
-                Message[] messages = results.SelectMany(r => r.Messages).ToArray();
-                string cursor = Cursor.MakeCursor(results.Select(r => r.Cursor));
-
-                return new MessageResult(messages, cursor);
-            }
-
-            private struct ResultSet
-            {
-                public Cursor Cursor;
-                public List<Message> Messages;
-            }
-
             public void AddOrUpdateCursor(string key, ulong id)
             {
-                // O(n), but small n and it's not common
-                var index = Cursors.FindIndex(c => c.Key == key);
-                if (index != -1)
+                try
                 {
-                    Cursors[index].Id = id;
-                }
-                else
-                {
-                    Cursors.Add(new Cursor
+                    _cursorLock.EnterWriteLock();
+
+                    // O(n), but small n and it's not common
+                    var index = _cursors.FindIndex(c => c.Key == key);
+                    if (index != -1)
                     {
-                        Key = key,
-                        Id = id
-                    });
+                        _cursors[index].Id = id;
+                    }
+                    else
+                    {
+                        _cursors.Add(new Cursor
+                        {
+                            Key = key,
+                            Id = id
+                        });
+                    }
+                }
+                finally
+                {
+                    _cursorLock.ExitWriteLock();
                 }
             }
 
             public bool UpdateCursor(string key, ulong id)
             {
-                // O(n), but small n and it's not common
-                var index = Cursors.FindIndex(c => c.Key == key);
-                if (index != -1)
+                try
                 {
-                    Cursors[index].Id = id;
-                    return true;
-                }
+                    _cursorLock.EnterWriteLock();
 
-                return false;
+                    // O(n), but small n and it's not common
+                    var index = _cursors.FindIndex(c => c.Key == key);
+                    if (index != -1)
+                    {
+                        _cursors[index].Id = id;
+                        return true;
+                    }
+
+                    return false;
+                }
+                finally
+                {
+                    _cursorLock.ExitWriteLock();
+                }
+            }
+
+            public void RemoveCursor(string eventKey)
+            {
+                try
+                {
+                    _cursorLock.EnterWriteLock();
+                    _cursors.RemoveAll(c => c.Key == eventKey);
+                }
+                finally
+                {
+                    _cursorLock.ExitWriteLock();
+                }
             }
         }
 
