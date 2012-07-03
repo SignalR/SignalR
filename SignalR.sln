@@ -39,6 +39,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.AspNet.Samp
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Owin.Samples", "samples\SignalR.Hosting.Owin.Samples\SignalR.Hosting.Owin.Samples.csproj", "{8BF43A5B-4C96-4490-A9AF-5A057AC37C24}"
+	ProjectSection(ProjectDependencies) = postProject
+		{69771AF9-1BEE-48E6-98BC-78864231E239} = {69771AF9-1BEE-48E6-98BC-78864231E239}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Self.Samples", "samples\SignalR.Hosting.Self.Samples\SignalR.Hosting.Self.Samples.csproj", "{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9}"
 EndProject

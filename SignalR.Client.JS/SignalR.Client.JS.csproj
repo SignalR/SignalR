@@ -67,6 +67,7 @@
     <Content Include="packages.config" />
     <Content Include="jquery.signalR.transports.longPolling.js" />
     <Content Include="build.ps1" />
+    <Content Include="Properties\SignalR.Js.nuspec" />
     <None Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.2.js" />
     <Content Include="Scripts\jquery-1.6.2.min.js">

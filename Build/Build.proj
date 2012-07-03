@@ -61,7 +61,7 @@
             <Find>\d+\.\d+\.\d+\.\d+</Find>
             <ReplaceWith>$(Version)</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js">
+        <RegexTransform Include="$(ProjectRoot)\SignalR.Client.JS\jquery.signalR.core.js">
             <Find>SignalR JavaScript Library v\d+\.\d+</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
@@ -136,7 +136,7 @@
   
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
-      <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
+      <JsPackage Include="$(ProjectRoot)\SignalR.Client.JS\Properties\SignalR.Js.nuspec" />
       <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
       <Projects Include="$(ProjectRoot)\SignalR\SignalR.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj" />
@@ -174,8 +174,8 @@
     <RemoveDir Directories="$(ScriptTempPath)" />
     <MakeDir Directories="$(ScriptTempPath)" />
     
-    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
-    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />
