@@ -306,10 +306,8 @@ namespace SignalR
             Process:
                 var allCursors = Cursors;
 
-                // Reserve 25 messages per cursor
-                int cursorCount = allCursors.Length;
-                var messages = new Message[cursorCount * 25];
-                var cursors = new List<Cursor>(cursorCount);
+                var messages = new Message[25];
+                var cursors = new List<Cursor>(allCursors.Length);
 
                 int count = 0;
                 foreach (var cursor in allCursors)
@@ -342,13 +340,7 @@ namespace SignalR
 
                 if (count > 0)
                 {
-                    // REVIEW: Should we change this to not resize and have the callers detect null?
-                    if (count < messages.Length)
-                    {
-                        Array.Resize(ref messages, count);
-                    }
-
-                    var messageResult = new MessageResult(messages, Cursor.MakeCursor(cursors));
+                    var messageResult = new MessageResult(messages, Cursor.MakeCursor(cursors), count);
                     Task callbackTask = Invoke(messageResult);
 
                     if (callbackTask.IsCompleted)

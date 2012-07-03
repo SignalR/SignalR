@@ -21,7 +21,12 @@ namespace SignalR
         public string LastMessageId { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MessageResult"/> struc.
+        /// The amount of messages in the Messages array
+        /// </summary>
+        public int Count { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MessageResult"/> struct.
         /// </summary>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
         public MessageResult(string lastMessageId)
@@ -39,6 +44,7 @@ namespace SignalR
         {
             Messages = messages.ToArray();
             LastMessageId = lastMessageId;
+            Count = Messages.Length;
         }
 
         /// <summary>
@@ -46,11 +52,13 @@ namespace SignalR
         /// </summary>
         /// <param name="messages">The array of messages associated with this <see cref="MessageResult"/>.</param>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
-        public MessageResult(Message[] messages, string lastMessageId)
+        /// <param name="count">The amount of messages populated in the messages array.</param>
+        public MessageResult(Message[] messages, string lastMessageId, int count)
             : this()
         {
             Messages = messages;
             LastMessageId = lastMessageId;
+            Count = count;
         }
     }
 }

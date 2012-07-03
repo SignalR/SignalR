@@ -74,8 +74,10 @@ namespace SignalR.Infrastructure
 
         private Task HandleServerCommands(Exception ex, MessageResult result)
         {
-            foreach (var message in result.Messages)
+            for (int i = 0; i < result.Count; i++)
             {
+                Message message = result.Messages[i];
+
                 // Only handle server commands
                 if (ServerSignal.Equals(message.SignalKey))
                 {
@@ -84,7 +86,6 @@ namespace SignalR.Infrastructure
                     OnCommand(command);
                 }
             }
-
             return TaskAsyncHelper.Empty;
         }
 

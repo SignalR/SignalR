@@ -135,7 +135,7 @@ namespace SignalR
         private PersistentResponse GetResponse(MessageResult result)
         {
             // Do a single sweep through the results to process commands and extract values
-            var messageValues = ProcessResults(result.Messages);
+            var messageValues = ProcessResults(result);
 
             var response = new PersistentResponse
             {
@@ -152,12 +152,13 @@ namespace SignalR
             return response;
         }
 
-        private List<object> ProcessResults(Message[] source)
+        private List<object> ProcessResults(MessageResult result)
         {
             var messageValues = new List<object>();
 
-            foreach (var message in source)
+            for (int i = 0; i < result.Count; i++)
             {
+                Message message = result.Messages[i];
                 if (SignalCommand.IsCommand(message))
                 {
                     var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
