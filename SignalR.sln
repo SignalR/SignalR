@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Net35", "Sig
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.Net35.Samples", "samples\SignalR.Client.Net35.Samples\SignalR.Client.Net35.Samples.csproj", "{9A64F050-8F95-46B2-906C-0BFCA7A27E94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.JS", "SignalR.Client.JS\SignalR.Client.JS.csproj", "{69771AF9-1BEE-48E6-98BC-78864231E239}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,16 @@ Global
 		{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}.Release|x86.ActiveCfg = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.ActiveCfg = Release|Any CPU
 		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Mixed Platforms.Build.0 = Debug|x86
