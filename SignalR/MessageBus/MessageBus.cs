@@ -475,23 +475,21 @@ namespace SignalR
 
             public Topic Topic { get; set; }
 
-            public static string MakeCursor(IEnumerable<Cursor> cursors)
+            public static string MakeCursor(IList<Cursor> cursors)
             {
-                var sb = new StringBuilder();
-                bool first = true;
-                foreach (var c in cursors)
+                var result = "";
+                for (int i = 0; i < cursors.Count; i++)
                 {
-                    if (!first)
+                    if (i > 0)
                     {
-                        sb.Append('|');
+                        result += '|';
                     }
-                    sb.Append(Escape(c.Key));
-                    sb.Append(',');
-                    sb.Append(c.Id);
-                    first = false;
+                    result += Escape(cursors[i].Key);
+                    result += ',';
+                    result += cursors[i].Id;
                 }
 
-                return sb.ToString();
+                return result;
             }
 
             private static string Escape(string value)
