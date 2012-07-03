@@ -1,9 +1,13 @@
-﻿/// <reference path="jquery.signalR.core.js" />
+﻿/*global window:false */
+/// <reference path="jquery.signalR.core.js" />
 
 (function ($, window) {
     "use strict";
 
-    var signalR = $.signalR;
+    var signalR = $.signalR,
+        events = $.signalR.events;
+
+    signalR.transports = {};
 
     signalR.transports._logic = {
         addQs: function (url, connection) {

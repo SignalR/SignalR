@@ -66,6 +66,7 @@
     <Content Include="jquery.signalR.transports.foreverFrame.js" />
     <Content Include="packages.config" />
     <Content Include="jquery.signalR.transports.longPolling.js" />
+    <Content Include="build.ps1" />
     <None Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.2.js" />
     <Content Include="Scripts\jquery-1.6.2.min.js">
@@ -106,7 +107,12 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
   -->
+  <Target Name="AfterBuild">
+    <!--<Exec Command="&quot;$(SolutionDir)tools\AjaxMin\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\jquery.signalR.js&quot; -out &quot;$(ProjectDir)Scripts\jquery.signalR.min.js&quot; -clobber" LogStandardErrorAsError="true" Condition=" '$(OS)' == 'Windows_NT' " />-->
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>cd $(ProjectDir)
+powershell $(ProjectDir)build.ps1</PostBuildEvent>
+  </PropertyGroup>
 </Project>

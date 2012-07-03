@@ -1,4 +1,5 @@
-﻿/*!
+﻿/*global window:false */
+/*!
  * SignalR JavaScript Library v0.5.2
  * http://signalr.net/
  *
@@ -96,6 +97,12 @@
 
         return new signalR.fn.init(url, qs, logging);
     };
+    
+    signalR.events = events;
+
+    signalR.changeState = changeState;
+
+    signalR.isDisconnecting = isDisconnecting;
 
     signalR.connectionState = {
         connecting: 0,
@@ -222,6 +229,12 @@
 
                 var transportName = transports[index],
                     transport = $.type(transportName) === "object" ? transportName : signalR.transports[transportName];
+
+                if (transportName.indexOf("_") === 0) {
+                    // Private member
+                    initialize(transports, index + 1);
+                    return;
+                }
 
                 transport.start(connection, function () { // success
                     connection.transport = transport;

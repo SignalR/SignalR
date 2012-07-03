@@ -1,9 +1,13 @@
-﻿/// <reference path="jquery.signalR.transports.common.js" />
+﻿/*global window:false */
+/// <reference path="jquery.signalR.transports.common.js" />
 
 (function ($, window) {
     "use strict";
 
     var signalR = $.signalR,
+        events = $.signalR.events,
+        changeState = $.signalR.changeState,
+        isDisconnecting = $.signalR.isDisconnecting,
         transportLogic = signalR.transports._logic;
 
     signalR.transports.longPolling = {
@@ -16,14 +20,14 @@
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
                 initialConnectFired = false;
-
+            
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
                 connection.stop();
             }
-
+            
             connection.messageId = null;
-
+            
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
                     $(instance).trigger(events.onSending);
@@ -55,7 +59,7 @@
                             var delay = 0,
                                 timedOutReceived = false;
 
-                            if (initialConnectFired == false) {
+                            if (initialConnectFired === false) {
                                 onSuccess();
                                 initialConnectFired = true;
                             }
@@ -114,7 +118,7 @@
                             if (reconnectTimeOut) {
                                 // If the request failed then we clear the timeout so that the
                                 // reconnect event doesn't get fired
-                                clearTimeout(reconnectTimeOut);
+                                window.clearTimeout(reconnectTimeOut);
                             }
 
                             $(instance).trigger(events.onError, [data.responseText]);

@@ -1,9 +1,12 @@
-﻿/// <reference path="jquery.signalR.transports.common.js" />
+﻿/*global window:false */
+/// <reference path="jquery.signalR.transports.common.js" />
 
 (function ($, window) {
     "use strict";
 
     var signalR = $.signalR,
+        events = $.signalR.events,
+        changeState = $.signalR.changeState,
         transportLogic = signalR.transports._logic;
 
     signalR.transports.foreverFrame = {
