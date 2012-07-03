@@ -115,9 +115,14 @@ namespace SignalR
 
             var subscription = new Subscription(cursors, callback);
 
-            foreach (var key in subscriber.EventKeys)
+            foreach (var eventKey in subscriber.EventKeys)
             {
-                var topic = _topics.GetOrAdd(key, _ => new Topic());
+                var topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+
+                // Set the subscription for this topic
+                subscription.SetCursorTopic(eventKey, topic);
+
+                // Add this subscription to the list of subs
                 topic.Subscriptions.Add(subscription);
             }
 
@@ -137,8 +142,17 @@ namespace SignalR
             Action<string, string> eventAdded = (eventKey, eventCursor) =>
             {
                 Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+
+                // Get the cursor for this event key
                 ulong id = eventCursor == null ? 0 : UInt64.Parse(eventCursor);
+
+                // Add or update the cursor (in case it already exists)
                 subscription.AddOrUpdateCursor(eventKey, id);
+
+                // Set the topic
+                subscription.SetCursorTopic(eventKey, topic);
+
+                // Add it to the list of subs
                 topic.Subscriptions.Add(subscription);
             };
 
@@ -193,7 +207,7 @@ namespace SignalR
             return 0;
         }
 
-        private class Subscription
+        internal class Subscription
         {
             private readonly List<Cursor> _cursors;
             private readonly Func<Exception, MessageResult, Task> _callback;
@@ -209,30 +223,14 @@ namespace SignalR
                 _callback = callback;
             }
 
-            public int CursorCount
+            public Cursor[] Cursors
             {
                 get
                 {
                     try
                     {
                         _cursorLock.EnterReadLock();
-                        return _cursors.Count;
-                    }
-                    finally
-                    {
-                        _cursorLock.ExitReadLock();
-                    }
-                }
-            }
-
-            public IEnumerable<Cursor> Cursors
-            {
-                get
-                {
-                    try
-                    {
-                        _cursorLock.EnterReadLock();
-                        return _cursors;
+                        return _cursors.ToArray();
                     }
                     finally
                     {
@@ -306,41 +304,39 @@ namespace SignalR
             {
 
             Process:
+                var allCursors = Cursors;
+
                 // Reserve 25 messages per cursor
-                int cursorCount = CursorCount;
+                int cursorCount = allCursors.Length;
                 var messages = new Message[cursorCount * 25];
                 var cursors = new List<Cursor>(cursorCount);
 
                 int count = 0;
-                foreach (var cursor in Cursors)
+                foreach (var cursor in allCursors)
                 {
-                    Topic topic;
-                    if (topics.TryGetValue(cursor.Key, out topic))
+                    MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id);
+                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                    cursor.Id = next;
+
+                    if (storeResult.Messages.Length > 0)
                     {
-                        MessageStoreResult<Message> storeResult = topic.Store.GetMessages(cursor.Id);
-                        ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
-                        cursor.Id = next;
-
-                        if (storeResult.Messages.Length > 0)
+                        // We ran out of space
+                        int need = count + storeResult.Messages.Length;
+                        if (need >= messages.Length)
                         {
-                            // We ran out of space
-                            int need = count + storeResult.Messages.Length;
-                            if (need >= messages.Length)
-                            {
-                                // Double the length
-                                Array.Resize(ref messages, messages.Length * 2);
-                            }
-
-                            // Copy the paylod
-                            Array.Copy(storeResult.Messages, 0, messages, count, storeResult.Messages.Length);
-                            count += storeResult.Messages.Length;
+                            // Double the length
+                            Array.Resize(ref messages, messages.Length * 2);
                         }
 
-                        if (cursor.Id > 0)
-                        {
-                            // Add this cursor to the list
-                            cursors.Add(cursor);
-                        }
+                        // Copy the paylod
+                        Array.Copy(storeResult.Messages, 0, messages, count, storeResult.Messages.Length);
+                        count += storeResult.Messages.Length;
+                    }
+
+                    if (cursor.Id > 0)
+                    {
+                        // Add this cursor to the list
+                        cursors.Add(cursor);
                     }
                 }
 
@@ -458,6 +454,25 @@ namespace SignalR
                     _cursorLock.ExitWriteLock();
                 }
             }
+
+            public void SetCursorTopic(string key, Topic topic)
+            {
+                try
+                {
+                    _cursorLock.EnterWriteLock();
+
+                    // O(n), but small n and it's not common
+                    var index = _cursors.FindIndex(c => c.Key == key);
+                    if (index != -1)
+                    {
+                        _cursors[index].Topic = topic;
+                    }
+                }
+                finally
+                {
+                    _cursorLock.ExitWriteLock();
+                }
+            }
         }
 
         internal class Cursor
@@ -465,6 +480,8 @@ namespace SignalR
             public string Key { get; set; }
 
             public ulong Id { get; set; }
+
+            public Topic Topic { get; set; }
 
             public static string MakeCursor(IEnumerable<Cursor> cursors)
             {
@@ -562,7 +579,7 @@ namespace SignalR
             }
         }
 
-        private class Topic
+        internal class Topic
         {
             public SafeSet<Subscription> Subscriptions { get; set; }
             public MessageStore<Message> Store { get; set; }
