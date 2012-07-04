@@ -303,8 +303,9 @@
                                     transports.push($.type(transport) === "string" ? "" + transport : transport);
                                 }
                             });
-                        } else if ($.type(config.transport) === "object" || $.inArray(config.transport, supportedTransports) >= 0) {
-                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                        } else if ($.type(config.transport) === "object" ||
+                                       $.inArray(config.transport, supportedTransports) >= 0) {
+                                // specific transport provided, as object or a named transport, e.g. "longPolling"
                             transports.push(config.transport);
                         } else { // default "auto"
                             transports = supportedTransports;
