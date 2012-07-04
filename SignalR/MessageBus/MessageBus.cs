@@ -324,7 +324,7 @@ namespace SignalR
                         {
                             // We ran out of space
                             int need = count + storeResult.Messages.Length;
-                            if (need >= _buffer.Length)
+                            while (need >= _buffer.Length)
                             {
                                 // Double the length
                                 Array.Resize(ref _buffer, _buffer.Length * 2);
