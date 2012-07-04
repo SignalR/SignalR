@@ -23,7 +23,7 @@ namespace SignalR.Tests
                 bus.Send("testclient", "foo", "4").Wait();
 
                 var result = bus.GetMessages(new[] { "foo" }, "1", CancellationToken.None).Result;
-                Assert.Equal(2, result.Messages.Length);
+                Assert.Equal(2, result.Messages.Count);
             }
 
             [Fact]
@@ -43,7 +43,7 @@ namespace SignalR.Tests
                 bus.Send("testclient", "foo", "6").Wait();
 
                 var result = bus.GetMessages(new[] { "foo" }, "3", CancellationToken.None).Result;
-                Assert.Equal(2, result.Messages.Length);
+                Assert.Equal(2, result.Messages.Count);
             }
 
             [Fact]
@@ -58,10 +58,10 @@ namespace SignalR.Tests
                 }
 
                 var result = bus.GetMessages(new[] { "a" }, "100", CancellationToken.None).Result;
-                Assert.Equal(10, result.Messages.Length);
+                Assert.Equal(10, result.Messages.Count);
                 for (int i = 0; i < 10; i++)
                 {
-                    Assert.Equal(i, result.Messages[i].Value);
+                    Assert.Equal(i, result.Messages.Array[i].Value);
                 }
             }
         }

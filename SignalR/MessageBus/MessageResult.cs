@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SignalR
@@ -13,17 +14,12 @@ namespace SignalR
         /// <summary>
         /// Gets an <see cref="IList{Message}"/> associated with the result.
         /// </summary>
-        public Message[] Messages { get; private set; }
+        public ArraySegment<Message> Messages { get; private set; }
 
         /// <summary>
         /// Gets a cursor representing the caller state.
         /// </summary>
         public string LastMessageId { get; private set; }
-
-        /// <summary>
-        /// The amount of messages in the Messages array
-        /// </summary>
-        public int Count { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageResult"/> struct.
@@ -42,9 +38,8 @@ namespace SignalR
         public MessageResult(IList<Message> messages, string lastMessageId)
             : this()
         {
-            Messages = messages.ToArray();
+            Messages = new ArraySegment<Message>(messages.ToArray());
             LastMessageId = lastMessageId;
-            Count = Messages.Length;
         }
 
         /// <summary>
@@ -56,9 +51,8 @@ namespace SignalR
         public MessageResult(Message[] messages, string lastMessageId, int count)
             : this()
         {
-            Messages = messages;
+            Messages = new ArraySegment<Message>(messages, 0, count);
             LastMessageId = lastMessageId;
-            Count = count;
         }
     }
 }

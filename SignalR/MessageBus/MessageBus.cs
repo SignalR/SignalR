@@ -212,31 +212,26 @@ namespace SignalR
             private readonly List<Cursor> _cursors;
             private readonly Func<Exception, MessageResult, Task> _callback;
 
-            private readonly ReaderWriterLockSlim _cursorLock = new ReaderWriterLockSlim();
+            private readonly object _lockObj = new object();
 
             private int _queued;
             private int _working;
+
+            // Pre-allocated buffer to use when working starts
+            private Message[] _buffer;
+
+            public IList<Cursor> Cursors
+            {
+                get
+                {
+                    return _cursors;
+                }
+            }
 
             public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task> callback)
             {
                 _cursors = new List<Cursor>(cursors);
                 _callback = callback;
-            }
-
-            public Cursor[] Cursors
-            {
-                get
-                {
-                    try
-                    {
-                        _cursorLock.EnterReadLock();
-                        return _cursors.ToArray();
-                    }
-                    finally
-                    {
-                        _cursorLock.ExitReadLock();
-                    }
-                }
             }
 
             public Task Invoke(MessageResult result)
@@ -250,11 +245,17 @@ namespace SignalR
                 {
                     var tcs = new TaskCompletionSource<object>();
 
+                    // Allocate the buffer when the work starts
+                    _buffer = new Message[25];
+
                     WorkImpl(topics, tcs);
 
                     // Fast Path
                     if (tcs.Task.IsCompleted)
                     {
+                        // Kill the buffer
+                        _buffer = null;
+
                         UnsetWorking();
                         return tcs.Task;
                     }
@@ -289,6 +290,8 @@ namespace SignalR
             {
                 return tcs.Task.ContinueWith(task =>
                 {
+                    _buffer = null;
+
                     UnsetWorking();
 
                     if (task.IsFaulted)
@@ -304,43 +307,41 @@ namespace SignalR
             {
 
             Process:
-                var allCursors = Cursors;
+                int count;
+                string nextCursor = null;
 
-                var messages = new Message[25];
-                var cursors = new List<Cursor>(allCursors.Length);
-
-                int count = 0;
-                foreach (var cursor in allCursors)
+                lock (_lockObj)
                 {
-                    MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id);
-                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
-                    cursor.Id = next;
-
-                    if (storeResult.Messages.Length > 0)
+                    count = 0;
+                    for (int i = 0; i < Cursors.Count; i++)
                     {
-                        // We ran out of space
-                        int need = count + storeResult.Messages.Length;
-                        if (need >= messages.Length)
+                        Cursor cursor = Cursors[i];
+                        MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id);
+                        ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                        cursor.Id = next;
+
+                        if (storeResult.Messages.Length > 0)
                         {
-                            // Double the length
-                            Array.Resize(ref messages, messages.Length * 2);
+                            // We ran out of space
+                            int need = count + storeResult.Messages.Length;
+                            if (need >= _buffer.Length)
+                            {
+                                // Double the length
+                                Array.Resize(ref _buffer, _buffer.Length * 2);
+                            }
+
+                            // Copy the paylod
+                            Array.Copy(storeResult.Messages, 0, _buffer, count, storeResult.Messages.Length);
+                            count += storeResult.Messages.Length;
                         }
-
-                        // Copy the paylod
-                        Array.Copy(storeResult.Messages, 0, messages, count, storeResult.Messages.Length);
-                        count += storeResult.Messages.Length;
                     }
 
-                    if (cursor.Id > 0)
-                    {
-                        // Add this cursor to the list
-                        cursors.Add(cursor);
-                    }
+                    nextCursor = Cursor.MakeUpdatedCursor(Cursors);
                 }
 
                 if (count > 0)
                 {
-                    var messageResult = new MessageResult(messages, Cursor.MakeCursor(cursors), count);
+                    var messageResult = new MessageResult(_buffer, nextCursor, count);
                     Task callbackTask = Invoke(messageResult);
 
                     if (callbackTask.IsCompleted)
@@ -387,10 +388,8 @@ namespace SignalR
 
             public void AddOrUpdateCursor(string key, ulong id)
             {
-                try
+                lock (_lockObj)
                 {
-                    _cursorLock.EnterWriteLock();
-
                     // O(n), but small n and it's not common
                     var index = _cursors.FindIndex(c => c.Key == key);
                     if (index != -1)
@@ -406,18 +405,12 @@ namespace SignalR
                         });
                     }
                 }
-                finally
-                {
-                    _cursorLock.ExitWriteLock();
-                }
             }
 
             public bool UpdateCursor(string key, ulong id)
             {
-                try
+                lock (_lockObj)
                 {
-                    _cursorLock.EnterWriteLock();
-
                     // O(n), but small n and it's not common
                     var index = _cursors.FindIndex(c => c.Key == key);
                     if (index != -1)
@@ -428,31 +421,20 @@ namespace SignalR
 
                     return false;
                 }
-                finally
-                {
-                    _cursorLock.ExitWriteLock();
-                }
             }
 
             public void RemoveCursor(string eventKey)
             {
-                try
+                lock (_lockObj)
                 {
-                    _cursorLock.EnterWriteLock();
                     _cursors.RemoveAll(c => c.Key == eventKey);
-                }
-                finally
-                {
-                    _cursorLock.ExitWriteLock();
                 }
             }
 
             public void SetCursorTopic(string key, Topic topic)
             {
-                try
+                lock (_lockObj)
                 {
-                    _cursorLock.EnterWriteLock();
-
                     // O(n), but small n and it's not common
                     var index = _cursors.FindIndex(c => c.Key == key);
                     if (index != -1)
@@ -460,40 +442,82 @@ namespace SignalR
                         _cursors[index].Topic = topic;
                     }
                 }
-                finally
-                {
-                    _cursorLock.ExitWriteLock();
-                }
             }
         }
 
         internal class Cursor
         {
-            public string Key { get; set; }
+            private static char[] _escapeChars = new[] { '\\', '|', ',' };
+
+            private string _key;
+            public string Key
+            {
+                get
+                {
+                    return _key;
+                }
+                set
+                {
+                    _key = value;
+                    EscapedKey = Escape(value);
+                }
+            }
+
+            public string EscapedKey { get; private set; }
 
             public ulong Id { get; set; }
 
             public Topic Topic { get; set; }
 
+            public static string MakeUpdatedCursor(IList<Cursor> cursors)
+            {
+                var sb = new StringBuilder();
+                bool first = true;
+                for (int i = 0; i < cursors.Count; i++)
+                {
+                    if (cursors[i].Id == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!first)
+                    {
+                        sb.Append('|');
+                    }
+                    sb.Append(cursors[i].EscapedKey);
+                    sb.Append(',');
+                    sb.Append(cursors[i].Id);
+                    first = false;
+                }
+
+                return sb.ToString();
+            }
+
             public static string MakeCursor(IList<Cursor> cursors)
             {
-                var result = "";
+                var sb = new StringBuilder();
                 for (int i = 0; i < cursors.Count; i++)
                 {
                     if (i > 0)
                     {
-                        result += '|';
+                        sb.Append('|');
                     }
-                    result += Escape(cursors[i].Key);
-                    result += ',';
-                    result += cursors[i].Id;
+                    sb.Append(cursors[i].EscapedKey);
+                    sb.Append(',');
+                    sb.Append(cursors[i].Id);
                 }
 
-                return result;
+                return sb.ToString();
             }
 
             private static string Escape(string value)
             {
+                // Nothing to do, so bail
+                if (value.IndexOfAny(_escapeChars) == -1)
+                {
+                    return value;
+                }
+
                 var sb = new StringBuilder();
                 // \\ = \
                 // \| = |

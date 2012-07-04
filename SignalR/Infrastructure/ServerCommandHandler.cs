@@ -74,9 +74,9 @@ namespace SignalR.Infrastructure
 
         private Task HandleServerCommands(Exception ex, MessageResult result)
         {
-            for (int i = 0; i < result.Count; i++)
+            for (int i = result.Messages.Offset; i < result.Messages.Offset + result.Messages.Count; i++)
             {
-                Message message = result.Messages[i];
+                Message message = result.Messages.Array[i];
 
                 // Only handle server commands
                 if (ServerSignal.Equals(message.SignalKey))

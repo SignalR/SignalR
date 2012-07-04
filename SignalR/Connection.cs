@@ -147,7 +147,7 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Length, result.LastMessageId);
+            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
 
             return response;
         }
@@ -156,9 +156,9 @@ namespace SignalR
         {
             var messageValues = new List<object>();
 
-            for (int i = 0; i < result.Count; i++)
+            for (int i = result.Messages.Offset; i < result.Messages.Offset + result.Messages.Count; i++)
             {
-                Message message = result.Messages[i];
+                Message message = result.Messages.Array[i];
                 if (SignalCommand.IsCommand(message))
                 {
                     var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
