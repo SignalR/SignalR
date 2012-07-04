@@ -3,9 +3,9 @@
 
 $(function () {
     var hubConnection = $.hubConnection(),
-        hub = hubConnection.createProxy('MouseTracking');
+        hub = hubConnection.createProxy('mouseTracking');
     
-    hub.on('moveMouse', function (id, x, y) {
+    hub.on('MoveMouse', function (id, x, y) {
         if (id == this.state.id) {
             return;
         }
@@ -27,7 +27,7 @@ $(function () {
 
     hubConnection.start({ transport: activeTransport })
         .done(function () {
-            return hub.invoke('Join');
+            return hub.invoke('join');
         })
         .done(function () {
             $(document).mousemove(function (e) {
