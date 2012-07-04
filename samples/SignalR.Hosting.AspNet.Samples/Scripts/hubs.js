@@ -144,7 +144,7 @@
         callbacks[callbackId.toString()] = { scope: hub, callback: cb };
         callbackId += 1;
         hub._.connection().send(window.JSON.stringify(data));
-        return d.promise();
+        return d;
     }
 
     // Create hub signalR instance
