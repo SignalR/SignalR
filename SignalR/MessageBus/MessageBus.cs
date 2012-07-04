@@ -612,7 +612,7 @@ namespace SignalR
         /// </summary>
         private class Engine
         {
-            private readonly BlockingCollection<Subscription> _queue = new BlockingCollection<Subscription>();
+            private readonly Queue<Subscription> _queue = new Queue<Subscription>();
             private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
 
             // The maximum number of workers (threads) allowed to process all incoming messages
@@ -656,9 +656,14 @@ namespace SignalR
 
             public void Schedule(Subscription subscription)
             {
-                if (subscription.SetQueued() && _queue.TryAdd(subscription))
+                if (subscription.SetQueued())
                 {
-                    AddWorker();
+                    lock (_queue)
+                    {
+                        _queue.Enqueue(subscription);
+                        Monitor.Pulse(_queue);
+                        AddWorker();
+                    }
                 }
             }
 
@@ -739,7 +744,17 @@ namespace SignalR
                 int idleWorkers = _allocatedWorkers - _busyWorkers;
                 if (idleWorkers <= MaxIdleWorkers)
                 {
-                    Subscription subscription = _queue.Take();
+                    Subscription subscription;
+
+                    lock (_queue)
+                    {
+                        while (_queue.Count == 0)
+                        {
+                            Monitor.Wait(_queue);
+                        }
+
+                        subscription = _queue.Dequeue();
+                    }
 
                     Interlocked.Increment(ref _busyWorkers);
                     Task workTask = subscription.WorkAsync(_topics);
