@@ -115,6 +115,6 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>cd $(ProjectDir)
-powershell $(ProjectDir)build.ps1</PostBuildEvent>
+powershell -ExecutionPolicy Bypass $(ProjectDir)build.ps1</PostBuildEvent>
   </PropertyGroup>
 </Project>
