@@ -59,6 +59,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="jquery.signalR.hubs.js" />
     <Content Include="jquery.signalR.transports.common.js" />
     <Content Include="jquery.signalR.transports.webSockets.js" />
     <Content Include="jquery.signalR.transports.serverSentEvents.js" />

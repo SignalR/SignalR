@@ -5,7 +5,8 @@ $files =
     "jquery.signalR.transports.webSockets.js",
     "jquery.signalR.transports.serverSentEvents.js",
     "jquery.signalR.transports.foreverFrame.js",
-    "jquery.signalR.transports.longPolling.js"
+    "jquery.signalR.transports.longPolling.js",
+	"jquery.signalR.hubs.js"
 
 # Run JSHint against files
 Write-Host "Running JSHint..." -ForegroundColor Yellow
