@@ -2,10 +2,9 @@
 /// <reference path="../../Scripts/jquery.signalR.js" />
 
 $(function () {
-    // Pure client side hub
     var hubConnection = $.hubConnection(),
         hub = hubConnection.createProxy('MouseTracking');
-
+    
     hub.on('moveMouse', function (id, x, y) {
         if (id == this.state.id) {
             return;
@@ -23,8 +22,7 @@ $(function () {
         else {
             e = $(e);
         }
-        e.css('left', x);
-        e.css('top', y);
+        e.css({ left: x, top: y });
     }
 
     hubConnection.start({ transport: activeTransport })
