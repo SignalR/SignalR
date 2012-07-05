@@ -1329,6 +1329,7 @@
             this.state = {};
             this.connection = connection;
             this.hubName = hubName;
+            this.subscribed = false;
         },
 
         on: function (eventName, callback) {
@@ -1343,6 +1344,7 @@
             $(self).bind(eventName, function (e, data) {
                 callback.apply(self, data);
             });
+            self.subscribed = true;
             return self;
         },
 
@@ -1358,6 +1360,7 @@
                 data = { hub: self.hubName, method: methodName, args: argValues, state: self.state, id: callbackId },
                 d = $.Deferred(),
                 callback = function (result) {
+                    // Update the hub state
                     $.extend(this.state, result.State);
 
                     if (result.Error) {
@@ -1401,6 +1404,7 @@
     hubConnection.fn.init = function (url, qs, logging) {
         var connection = this;
 
+        // Call the base constructor
         $.signalR.fn.init.call(connection, url, qs, logging);
 
         // Object to store hub proxies for this connection
@@ -1408,13 +1412,17 @@
 
         // Wire up the sending handler
         connection.sending(function () {
-            var clientHubs = [];
+            // Set the connection's data object with all the hub proxies with active subscriptions.
+            // These proxies will receive notifications from the server.
+            var subscribedHubs = [];
 
             $.each(this.proxies, function (key) {
-                clientHubs.push({ name: key });
+                if (this.subscribed) {
+                    subscribedHubs.push({ name: key });
+                }
             });
 
-            this.data = window.JSON.stringify(clientHubs);
+            this.data = window.JSON.stringify(subscribedHubs);
         });
 
         // Wire up the received handler
@@ -1444,6 +1452,7 @@
                 // We received a client invocation request, i.e. broadcast from server hub
                 // Trigger the local invocation event
                 proxy = this.proxies[hubName];
+                // Update the hub state
                 $.extend(proxy.state, data.State);
                 $(proxy).trigger(eventName, [data.Args]);
             }

@@ -75,6 +75,7 @@ namespace SignalR.Hubs
             var methods = GetMethods(descriptor);
 
             var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
+            // REVIEW: Do we need these three extra members to exclude anymore?
             members.Add("namespace");
             members.Add("ignoreMembers");
             members.Add("callbacks");
@@ -131,7 +132,7 @@ namespace SignalR.Hubs
             parameterNames.Add("callback");
             sb.AppendLine();
             sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
-            sb.AppendFormat("                return serverCall(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
+            sb.AppendFormat("                return invoke(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
             sb.Append("            }");
         }
 
