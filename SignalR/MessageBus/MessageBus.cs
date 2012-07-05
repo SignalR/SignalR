@@ -317,13 +317,13 @@ namespace SignalR
                     {
                         Cursor cursor = Cursors[i];
                         MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id);
-                        ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Length;
+                        ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
                         cursor.Id = next;
 
-                        if (storeResult.Messages.Length > 0)
+                        if (storeResult.Messages.Count > 0)
                         {
                             // We ran out of space
-                            int need = count + storeResult.Messages.Length;
+                            int need = count + storeResult.Messages.Count;
                             while (need >= _buffer.Length)
                             {
                                 // Double the length
@@ -331,8 +331,8 @@ namespace SignalR
                             }
 
                             // Copy the paylod
-                            Array.Copy(storeResult.Messages, 0, _buffer, count, storeResult.Messages.Length);
-                            count += storeResult.Messages.Length;
+                            Array.Copy(storeResult.Messages.Array, storeResult.Messages.Offset, _buffer, count, storeResult.Messages.Count);
+                            count += storeResult.Messages.Count;
                         }
                     }
 
