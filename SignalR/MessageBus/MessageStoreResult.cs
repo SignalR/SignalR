@@ -13,9 +13,9 @@ namespace SignalR
         public readonly bool HasMoreData;
 
         // The actual result set. May be empty.
-        public readonly T[] Messages;
+        public readonly ArraySegment<T> Messages;
 
-        public MessageStoreResult(ulong firstMessageId, T[] messages, bool hasMoreData)
+        public MessageStoreResult(ulong firstMessageId, ArraySegment<T> messages, bool hasMoreData)
         {
             FirstMessageId = firstMessageId;
             Messages = messages;
