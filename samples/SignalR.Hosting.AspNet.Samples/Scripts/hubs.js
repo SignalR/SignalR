@@ -1,12 +1,12 @@
 /*!
-* SignalR JavaScript Library v0.5.2
-* http://signalr.net/
-*
-* Copyright David Fowler and Damian Edwards 2012
-* Licensed under the MIT.
-* https://github.com/SignalR/SignalR/blob/master/LICENSE.md
-*
-*/
+ * SignalR JavaScript Library v0.5.2
+ * http://signalr.net/
+ *
+ * Copyright David Fowler and Damian Edwards 2012
+ * Licensed under the MIT.
+ * https://github.com/SignalR/SignalR/blob/master/LICENSE.md
+ *
+ */
 
 /// <reference path="jquery-1.6.2.js" />
 (function ($, window) {
@@ -14,141 +14,89 @@
     "use strict";
 
     if (typeof ($.signalR) !== "function") {
-        throw "SignalR: SignalR is not loaded. Please ensure jquery.signalR.js is referenced before ~/signalr/hubs.";
+        throw "SignalR: SignalR is not loaded. Please ensure jquery.signalR-x.js is referenced before ~/signalr/hubs.";
     }
 
-    var hubs = {},
-        signalR = $.signalR,
-        callbackId = 0,
-        callbacks = {};
+    var signalR = $.signalR;
 
-    // Array.prototype.map
-    if (!Array.prototype.hasOwnProperty("map")) {
-        Array.prototype.map = function (fun, thisp) {
-            var arr = this,
-                i,
-                length = arr.length,
-                result = [];
-            for (i = 0; i < length; i += 1) {
-                if (arr.hasOwnProperty(i)) {
-                    result[i] = fun.call(thisp, arr[i], i, arr);
-                }
-            }
-            return result;
+    function makeProxyCallback(hub, callback) {
+        return function () {
+            // Update the hub state
+            $.extend(hub, this.state);
+
+            // Call the client hub method
+            callback.apply(hub, $.makeArray(arguments));
         };
     }
 
-    function executeCallback(hubName, fn, args, state) {
-        var hub = hubs[hubName],
-            hubMethod;
-
-        if (hub) {
-            signalR.hub.processState(hubName, hub.obj, state);
-
-            hubMethod = hub.obj[fn];
-            if (hubMethod) {
-                hubMethod.apply(hub.obj, args);
-            }
-        }
-    }
-
-    function updateClientMembers(instance) {
-        var newHubs = {},
-            obj,
-            memberValue,
-            key,
-            memberKey,
-            hasSubscription = false;
+    function createHubProxies(instance, hubConnection) {
+        var key, hub, memberKey, memberValue, proxy;
 
         for (key in instance) {
             if (instance.hasOwnProperty(key)) {
-                // This is a client hub
-                obj = instance[key];
+                hub = instance[key];
 
-                if ($.type(obj) !== "object" ||
-                        $.inArray(key, ["prototype", "constructor", "fn", "hub", "transports"]) >= 0) {
+                if (!(hub._ && hub._.hubName)) {
+                    // Not a client hub
                     continue;
                 }
 
-                hasSubscription = false;
+                // Create and store the hub proxy
+                hub._.proxy = hubConnection.createProxy(hub._.hubName);
 
-                for (memberKey in obj) {
-                    if (obj.hasOwnProperty(memberKey)) {
-                        memberValue = obj[memberKey];
+                // Loop through all members on the hub and find client hub functions to subscribe to
+                for (memberKey in hub) {
+                    if (hub.hasOwnProperty(memberKey)) {
+                        memberValue = hub[memberKey];
 
-                        if (memberKey === "_" ||
-                                $.type(memberValue) !== "function" ||
-                                $.inArray(memberKey, obj._.ignoreMembers) >= 0) {
+                        if (memberKey === "_" || $.type(memberValue) !== "function"
+                            || $.inArray(memberKey, hub._.ignoreMembers) >= 0) {
+                            // Not a client hub function
                             continue;
                         }
-
-                        hasSubscription = true;
-                        break;
+                        
+                        // Subscribe to the hub event for this method
+                        hub._.proxy.on(memberKey, makeProxyCallback(hub, memberValue));
                     }
-                }
-
-                if (hasSubscription === true) {
-                    newHubs[obj._.hubName] = { obj: obj };
                 }
             }
         }
-
-        hubs = {};
-        $.extend(hubs, newHubs);
-    }
-
-    function getArgValue(a) {
-        return $.isFunction(a)
-            ? null
-            : ($.type(a) === "undefined"
-                ? null
-                : a);
     }
 
     function copy(obj, exclude) {
         var newObj = {};
         $.each(obj, function (key, value) {
             if ($.inArray(key, exclude) === -1) {
-                // We don't use "this" because browser suck!
+                // We don't use "this" because browsers suck!
                 newObj[key] = value;
             }
         });
-
         return newObj;
     }
 
-    function serverCall(hub, methodName, args) {
-        var callback = args[args.length - 1], // last argument
-            methodArgs = $.type(callback) === "function"
-                ? args.slice(0, -1) // all but last
-                : args,
-            argValues = methodArgs.map(getArgValue),
-            data = { hub: hub._.hubName, method: methodName, args: argValues, state: copy(hub, ["_"]), id: callbackId },
-            d = $.Deferred(),
-            cb = function (result) {
-                signalR.hub.processState(hub._.hubName, hub, result.State);
-
-                if (result.Error) {
-                    if (result.StackTrace) {
-                        signalR.hub.log(result.Error + "\n" + result.StackTrace);
-                    }
-                    d.rejectWith(hub, [result.Error]);
-                } else {
-                    if ($.type(callback) === "function") {
-                        callback.call(hub, result.Result);
-                    }
-                    d.resolveWith(hub, [result.Result]);
-                }
-            };
-
-        callbacks[callbackId.toString()] = { scope: hub, callback: cb };
-        callbackId += 1;
-        hub._.connection().send(window.JSON.stringify(data));
-        return d;
+    function invoke(hub, methodName, args) {
+        // Update proxy state from hub state
+        $.extend(hub._.proxy.state, copy(hub, ["_"]));
+        return hub._.proxy.invoke.apply(hub._.proxy, $.merge([methodName], args));
     }
 
     // Create hub signalR instance
     $.extend(signalR, {
+        /*
+        myDemoHub: {
+            _: {
+                hubName: "MyDemoHub",
+                ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
+                connection: function () { return signalR.hub; }
+            },
+            serverMethod1: function(p1, p2) {
+                return invoke(this, "ServerMethod1", $.makeArray(arguments));
+            },
+            serverMethod2: function(p1) {
+                return invoke(this, "ServerMethod2", $.makeArray(arguments));;
+            }
+        }
+        */
         chat: {
             _: {
                 hubName: 'Chat',
@@ -157,15 +105,15 @@
             },
 
             join: function (callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
+                return invoke(this, "Join", $.makeArray(arguments));
             },
 
             send: function (content, callback) {
-                return serverCall(this, "Send", $.makeArray(arguments));
+                return invoke(this, "Send", $.makeArray(arguments));
             },
 
             getUsers: function (callback) {
-                return serverCall(this, "GetUsers", $.makeArray(arguments));
+                return invoke(this, "GetUsers", $.makeArray(arguments));
             }
         },
         demo: {
@@ -176,79 +124,79 @@
             },
 
             getValue: function (callback) {
-                return serverCall(this, "GetValue", $.makeArray(arguments));
+                return invoke(this, "GetValue", $.makeArray(arguments));
             },
 
             addToGroups: function (callback) {
-                return serverCall(this, "AddToGroups", $.makeArray(arguments));
+                return invoke(this, "AddToGroups", $.makeArray(arguments));
             },
 
             doSomethingAndCallError: function (callback) {
-                return serverCall(this, "DoSomethingAndCallError", $.makeArray(arguments));
+                return invoke(this, "DoSomethingAndCallError", $.makeArray(arguments));
             },
 
             dynamicTask: function (callback) {
-                return serverCall(this, "DynamicTask", $.makeArray(arguments));
+                return invoke(this, "DynamicTask", $.makeArray(arguments));
             },
 
             plainTask: function (callback) {
-                return serverCall(this, "PlainTask", $.makeArray(arguments));
+                return invoke(this, "PlainTask", $.makeArray(arguments));
             },
 
             genericTaskTypedAsPlain: function (callback) {
-                return serverCall(this, "GenericTaskTypedAsPlain", $.makeArray(arguments));
+                return invoke(this, "GenericTaskTypedAsPlain", $.makeArray(arguments));
             },
 
             taskWithException: function (callback) {
-                return serverCall(this, "TaskWithException", $.makeArray(arguments));
+                return invoke(this, "TaskWithException", $.makeArray(arguments));
             },
 
             genericTaskWithException: function (callback) {
-                return serverCall(this, "GenericTaskWithException", $.makeArray(arguments));
+                return invoke(this, "GenericTaskWithException", $.makeArray(arguments));
             },
 
             simpleArray: function (nums, callback) {
-                return serverCall(this, "SimpleArray", $.makeArray(arguments));
+                return invoke(this, "SimpleArray", $.makeArray(arguments));
             },
 
             readStateValue: function (callback) {
-                return serverCall(this, "ReadStateValue", $.makeArray(arguments));
+                return invoke(this, "ReadStateValue", $.makeArray(arguments));
             },
 
             setStateValue: function (value, callback) {
-                return serverCall(this, "SetStateValue", $.makeArray(arguments));
+                return invoke(this, "SetStateValue", $.makeArray(arguments));
             },
 
             complexArray: function (people, callback) {
-                return serverCall(this, "ComplexArray", $.makeArray(arguments));
+                return invoke(this, "ComplexArray", $.makeArray(arguments));
             },
 
             complexType: function (p, callback) {
-                return serverCall(this, "ComplexType", $.makeArray(arguments));
+                return invoke(this, "ComplexType", $.makeArray(arguments));
             },
 
             passingDynamicComplex: function (p, callback) {
-                return serverCall(this, "PassingDynamicComplex", $.makeArray(arguments));
+                return invoke(this, "PassingDynamicComplex", $.makeArray(arguments));
             },
 
             multipleCalls: function (callback) {
-                return serverCall(this, "MultipleCalls", $.makeArray(arguments));
+                return invoke(this, "MultipleCalls", $.makeArray(arguments));
             },
 
             overload: function (callback) {
-                return serverCall(this, "Overload", $.makeArray(arguments));
+                return invoke(this, "Overload", $.makeArray(arguments));
             },
 
             unsupportedOverload: function (x, callback) {
-                return serverCall(this, "UnsupportedOverload", $.makeArray(arguments));
+                return invoke(this, "UnsupportedOverload", $.makeArray(arguments));
             },
 
             testGuid: function (callback) {
-                return serverCall(this, "TestGuid", $.makeArray(arguments));
+                return invoke(this, "TestGuid", $.makeArray(arguments));
             },
 
             dynamicInvoke: function (method, callback) {
-                return serverCall(this, "DynamicInvoke", $.makeArray(arguments));
+                return invoke(this, "DynamicInvoke", $.makeArray(arguments));
             }
         },
         drawingPad: {
@@ -259,11 +207,11 @@
             },
 
             join: function (callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
+                return invoke(this, "Join", $.makeArray(arguments));
             },
 
             drawLine: function (data, callback) {
-                return serverCall(this, "DrawLine", $.makeArray(arguments));
+                return invoke(this, "DrawLine", $.makeArray(arguments));
             }
         },
         hubBench: {
@@ -274,11 +222,11 @@
             },
 
             hitMe: function (clientCalls, connectionId, start, callback) {
-                return serverCall(this, "HitMe", $.makeArray(arguments));
+                return invoke(this, "HitMe", $.makeArray(arguments));
             },
 
             hitUs: function (clientCalls, start, callback) {
-                return serverCall(this, "HitUs", $.makeArray(arguments));
+                return invoke(this, "HitUs", $.makeArray(arguments));
             }
         },
         mouseTracking: {
@@ -289,11 +237,11 @@
             },
 
             join: function (callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
+                return invoke(this, "Join", $.makeArray(arguments));
             },
 
             move: function (x, y, callback) {
-                return serverCall(this, "Move", $.makeArray(arguments));
+                return invoke(this, "Move", $.makeArray(arguments));
             }
         },
         shapeShare: {
@@ -304,31 +252,31 @@
             },
 
             getShapes: function (callback) {
-                return serverCall(this, "GetShapes", $.makeArray(arguments));
+                return invoke(this, "GetShapes", $.makeArray(arguments));
             },
 
             join: function (userName, callback) {
-                return serverCall(this, "Join", $.makeArray(arguments));
+                return invoke(this, "Join", $.makeArray(arguments));
             },
 
             changeUserName: function (currentUserName, newUserName, callback) {
-                return serverCall(this, "ChangeUserName", $.makeArray(arguments));
+                return invoke(this, "ChangeUserName", $.makeArray(arguments));
             },
 
             createShape: function (type, callback) {
-                return serverCall(this, "CreateShape", $.makeArray(arguments));
+                return invoke(this, "CreateShape", $.makeArray(arguments));
             },
 
             changeShape: function (h, id, w, x, y, callback) {
-                return serverCall(this, "ChangeShape", $.makeArray(arguments));
+                return invoke(this, "ChangeShape", $.makeArray(arguments));
             },
 
             deleteShape: function (id, callback) {
-                return serverCall(this, "DeleteShape", $.makeArray(arguments));
+                return invoke(this, "DeleteShape", $.makeArray(arguments));
             },
 
             deleteAllShapes: function (callback) {
-                return serverCall(this, "DeleteAllShapes", $.makeArray(arguments));
+                return invoke(this, "DeleteAllShapes", $.makeArray(arguments));
             }
         },
         status: {
@@ -341,38 +289,9 @@
         }
     });
 
-    signalR.hub = signalR("/signalr")
+    signalR.hub = $.hubConnection("/signalr")
         .starting(function () {
-            updateClientMembers(signalR);
-        })
-        .sending(function () {
-            var localHubs = [];
-
-            $.each(hubs, function (key) {
-                localHubs.push({ name: key });
-            });
-
-            this.data = window.JSON.stringify(localHubs);
-        })
-        .received(function (result) {
-            var callbackId, cb;
-            if (result) {
-                if (!result.Id) {
-                    executeCallback(result.Hub, result.Method, result.Args, result.State);
-                } else {
-                    callbackId = result.Id.toString();
-                    cb = callbacks[callbackId];
-                    if (cb) {
-                        callbacks[callbackId] = null;
-                        delete callbacks[callbackId];
-                        cb.callback.call(cb.scope, result);
-                    }
-                }
-            }
+            createHubProxies(signalR, this);
         });
 
-    signalR.hub.processState = function (hubName, left, right) {
-        $.extend(left, right);
-    };
-
-} (window.jQuery, window));
+}(window.jQuery, window));
