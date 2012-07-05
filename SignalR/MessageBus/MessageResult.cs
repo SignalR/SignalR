@@ -14,7 +14,9 @@ namespace SignalR
         /// <summary>
         /// Gets an <see cref="IList{Message}"/> associated with the result.
         /// </summary>
-        public ArraySegment<Message> Messages { get; private set; }
+        public IList<ArraySegment<Message>> Messages { get; private set; }
+
+        public int TotalCount { get; private set; }
 
         /// <summary>
         /// Gets a cursor representing the caller state.
@@ -38,8 +40,9 @@ namespace SignalR
         public MessageResult(IList<Message> messages, string lastMessageId)
             : this()
         {
-            Messages = new ArraySegment<Message>(messages.ToArray());
+            Messages = new[] { new ArraySegment<Message>(messages.ToArray()) };
             LastMessageId = lastMessageId;
+            TotalCount = messages.Count;
         }
 
         /// <summary>
@@ -48,11 +51,12 @@ namespace SignalR
         /// <param name="messages">The array of messages associated with this <see cref="MessageResult"/>.</param>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
         /// <param name="count">The amount of messages populated in the messages array.</param>
-        public MessageResult(Message[] messages, string lastMessageId, int count)
+        public MessageResult(IList<ArraySegment<Message>> messages, string lastMessageId, int totalCount)
             : this()
         {
-            Messages = new ArraySegment<Message>(messages, 0, count);
+            Messages = messages;
             LastMessageId = lastMessageId;
+            TotalCount = totalCount;
         }
     }
 }

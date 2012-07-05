@@ -156,17 +156,20 @@ namespace SignalR
         {
             var messageValues = new List<object>();
 
-            for (int i = result.Messages.Offset; i < result.Messages.Offset + result.Messages.Count; i++)
+            for (int i = 0; i < result.Messages.Count; i++)
             {
-                Message message = result.Messages.Array[i];
-                if (SignalCommand.IsCommand(message))
+                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
                 {
-                    var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
-                    ProcessCommand(command);
-                }
-                else
-                {
-                    messageValues.Add(WrappedValue.Unwrap(message.Value, _serializer));
+                    Message message = result.Messages[i].Array[j];
+                    if (SignalCommand.IsCommand(message))
+                    {
+                        var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
+                        ProcessCommand(command);
+                    }
+                    else
+                    {
+                        messageValues.Add(WrappedValue.Unwrap(message.Value, _serializer));
+                    }
                 }
             }
 

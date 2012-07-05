@@ -74,18 +74,22 @@ namespace SignalR.Infrastructure
 
         private Task HandleServerCommands(Exception ex, MessageResult result)
         {
-            for (int i = result.Messages.Offset; i < result.Messages.Offset + result.Messages.Count; i++)
+            for (int i = 0; i < result.Messages.Count; i++)
             {
-                Message message = result.Messages.Array[i];
-
-                // Only handle server commands
-                if (ServerSignal.Equals(message.SignalKey))
+                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
                 {
-                    // Uwrap the command and raise the event
-                    var command = WrappedValue.Unwrap<ServerCommand>(message.Value, _serializer);
-                    OnCommand(command);
+                    Message message = result.Messages[i].Array[j];
+
+                    // Only handle server commands
+                    if (ServerSignal.Equals(message.SignalKey))
+                    {
+                        // Uwrap the command and raise the event
+                        var command = WrappedValue.Unwrap<ServerCommand>(message.Value, _serializer);
+                        OnCommand(command);
+                    }
                 }
             }
+
             return TaskAsyncHelper.Empty;
         }
 

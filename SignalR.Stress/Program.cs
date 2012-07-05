@@ -130,8 +130,8 @@ namespace SignalR.Stress
                     }
                     else
                     {
-                        Interlocked.Increment(ref _received);
-                        Interlocked.Increment(ref _avgLastReceivedCount);
+                        Interlocked.Add(ref _received, result.TotalCount);
+                        Interlocked.Add(ref _avgLastReceivedCount, result.TotalCount);
                     }
 
                     return TaskAsyncHelper.Empty;

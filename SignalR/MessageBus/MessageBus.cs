@@ -217,8 +217,6 @@ namespace SignalR
             private int _queued;
             private int _working;
 
-            // Pre-allocated buffer to use when working starts
-            private Message[] _buffer;
 
             public IList<Cursor> Cursors
             {
@@ -245,17 +243,11 @@ namespace SignalR
                 {
                     var tcs = new TaskCompletionSource<object>();
 
-                    // Allocate the buffer when the work starts
-                    _buffer = new Message[25];
-
                     WorkImpl(topics, tcs);
 
                     // Fast Path
                     if (tcs.Task.IsCompleted)
                     {
-                        // Kill the buffer
-                        _buffer = null;
-
                         UnsetWorking();
                         return tcs.Task;
                     }
@@ -290,8 +282,6 @@ namespace SignalR
             {
                 return tcs.Task.ContinueWith(task =>
                 {
-                    _buffer = null;
-
                     UnsetWorking();
 
                     if (task.IsFaulted)
@@ -307,12 +297,13 @@ namespace SignalR
             {
 
             Process:
-                int count;
+                int totalCount = 0;
                 string nextCursor = null;
+                List<ArraySegment<Message>> items = null;
 
                 lock (_lockObj)
                 {
-                    count = 0;
+                    items = new List<ArraySegment<Message>>(Cursors.Count);
                     for (int i = 0; i < Cursors.Count; i++)
                     {
                         Cursor cursor = Cursors[i];
@@ -322,26 +313,17 @@ namespace SignalR
 
                         if (storeResult.Messages.Count > 0)
                         {
-                            // We ran out of space
-                            int need = count + storeResult.Messages.Count;
-                            while (need >= _buffer.Length)
-                            {
-                                // Double the length
-                                Array.Resize(ref _buffer, _buffer.Length * 2);
-                            }
-
-                            // Copy the paylod
-                            Array.Copy(storeResult.Messages.Array, storeResult.Messages.Offset, _buffer, count, storeResult.Messages.Count);
-                            count += storeResult.Messages.Count;
+                            items.Add(storeResult.Messages);
+                            totalCount += storeResult.Messages.Count;
                         }
                     }
 
                     nextCursor = Cursor.MakeUpdatedCursor(Cursors);
                 }
 
-                if (count > 0)
+                if (items.Count > 0)
                 {
-                    var messageResult = new MessageResult(_buffer, nextCursor, count);
+                    var messageResult = new MessageResult(items, nextCursor, totalCount);
                     Task callbackTask = Invoke(messageResult);
 
                     if (callbackTask.IsCompleted)
