@@ -8,7 +8,7 @@ namespace SignalR
     {
         private static readonly uint _minFragmentCount = 4;
         private static readonly uint _maxFragmentSize = (IntPtr.Size == 4) ? (uint)16384 : (uint)8192; // guarantees that fragments never end up in the LOH
-        private static readonly T[] _emptyArr = new T[0];
+        private static readonly ArraySegment<T> _emptyArraySegment = new ArraySegment<T>(new T[0]);
 
         private Fragment[] _fragments;
         private readonly uint _fragmentSize;
@@ -91,7 +91,7 @@ namespace SignalR
             // The client is already up-to-date with the message store, so we return no data.
             if (nextFreeMessageId <= firstMessageIdRequestedByClient)
             {
-                return new MessageStoreResult<T>(firstMessageIdRequestedByClient, _emptyArr, hasMoreData: false);
+                return new MessageStoreResult<T>(firstMessageIdRequestedByClient, _emptyArraySegment, hasMoreData: false);
             }
 
             // look for the fragment containing the start of the data requested by the client
@@ -106,9 +106,9 @@ namespace SignalR
             // This fragment contains the first part of the data the client requested.
             if (firstMessageIdInThisFragment <= firstMessageIdRequestedByClient && firstMessageIdRequestedByClient < firstMessageIdInNextFragment)
             {
-                T[] copiedMessages = new T[Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient];
-                Array.Copy(thisFragment.Data, idxIntoFragment, copiedMessages, 0, copiedMessages.Length);
-                return new MessageStoreResult<T>(firstMessageIdRequestedByClient, copiedMessages, hasMoreData: (nextFreeMessageId > firstMessageIdInNextFragment));
+                ArraySegment<T> retMessages = new ArraySegment<T>(thisFragment.Data, idxIntoFragment,
+                    count: (int)(Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient));
+                return new MessageStoreResult<T>(firstMessageIdRequestedByClient, retMessages, hasMoreData: (nextFreeMessageId > firstMessageIdInNextFragment));
             }
 
             // Case 3:
@@ -120,7 +120,7 @@ namespace SignalR
                 if (tailFragment.FragmentNum < fragmentNum)
                 {
                     firstMessageIdInThisFragment = GetMessageId(tailFragment.FragmentNum, offset: 0);
-                    return new MessageStoreResult<T>(firstMessageIdInThisFragment, (T[])tailFragment.Data.Clone(), hasMoreData: true);
+                    return new MessageStoreResult<T>(firstMessageIdInThisFragment, new ArraySegment<T>(tailFragment.Data), hasMoreData: true);
                 }
                 nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
             }
