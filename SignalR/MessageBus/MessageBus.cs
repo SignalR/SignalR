@@ -18,7 +18,7 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
         private readonly Engine _engine;
 
-        private const int DefaultMessageStoreSize = 1000;
+        private const int DefaultMessageStoreSize = 5000;
 
         private readonly ITraceManager _trace;
 
