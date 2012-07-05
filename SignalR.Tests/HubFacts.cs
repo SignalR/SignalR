@@ -77,7 +77,8 @@ namespace SignalR.Tests
 
             var ex = Assert.Throws<AggregateException>(() => hub.Invoke("TaskWithException").Wait());
 
-            Assert.Equal("Exception of type 'System.Exception' was thrown.", ex.GetBaseException().Message);
+            Assert.IsType<InvalidOperationException>(ex.GetBaseException());
+            Assert.Contains("System.Exception", ex.GetBaseException().Message);
             connection.Stop();
         }
 
@@ -94,7 +95,8 @@ namespace SignalR.Tests
 
             var ex = Assert.Throws<AggregateException>(() => hub.Invoke("GenericTaskWithException").Wait());
 
-            Assert.Equal("Exception of type 'System.Exception' was thrown.", ex.GetBaseException().Message);
+            Assert.IsType<InvalidOperationException>(ex.GetBaseException());
+            Assert.Contains("System.Exception", ex.GetBaseException().Message);
             connection.Stop();
         }
 
