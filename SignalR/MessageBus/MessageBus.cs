@@ -453,43 +453,42 @@ namespace SignalR
 
             public static string MakeUpdatedCursor(IList<Cursor> cursors)
             {
-                var sb = new StringBuilder();
-                bool first = true;
+                var valid = new bool[cursors.Count];
+                int validCount = 0;
+
                 for (int i = 0; i < cursors.Count; i++)
                 {
-                    if (cursors[i].Id == 0)
+                    // Only use cursors that have data
+                    valid[i] = cursors[i].Id > 0;
+                    if (valid[i])
                     {
-                        continue;
+                        validCount++;
                     }
-
-                    if (!first)
-                    {
-                        sb.Append('|');
-                    }
-                    sb.Append(cursors[i].EscapedKey);
-                    sb.Append(',');
-                    sb.Append(cursors[i].Id);
-                    first = false;
                 }
 
-                return sb.ToString();
+                var serialized = new string[validCount];
+                int index = 0;
+
+                for (int i = 0; i < cursors.Count; i++)
+                {
+                    if (valid[i])
+                    {
+                        serialized[index++] = cursors[i].EscapedKey + ',' + cursors[i].Id;
+                    }
+                }
+
+                return String.Join("|", serialized);
             }
 
             public static string MakeCursor(IList<Cursor> cursors)
             {
-                var sb = new StringBuilder();
+                var serialized = new string[cursors.Count];
                 for (int i = 0; i < cursors.Count; i++)
                 {
-                    if (i > 0)
-                    {
-                        sb.Append('|');
-                    }
-                    sb.Append(cursors[i].EscapedKey);
-                    sb.Append(',');
-                    sb.Append(cursors[i].Id);
+                    serialized[i] = cursors[i].EscapedKey + ',' + cursors[i].Id;
                 }
 
-                return sb.ToString();
+                return String.Join("|", serialized);
             }
 
             private static string Escape(string value)
