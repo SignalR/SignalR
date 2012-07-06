@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Hosting.Memory;
+using SignalR.Transports;
 
 namespace SignalR.Stress
 {
@@ -49,13 +51,51 @@ namespace SignalR.Stress
 
         static void Main(string[] args)
         {
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+            ThreadPool.SetMinThreads(32, 32);
+
+            RunBusTest();
+
+            Console.ReadLine();
+        }
+
+        private static void RunMemoryHost()
+        {
+            var host = new MemoryHost();
+            string payload = GetPayload();
+
+            MeasureStats((MessageBus)host.DependencyResolver.Resolve<INewMessageBus>());
+
+            ForeverTransport.Sending += (data) =>
+            {
+                Interlocked.Increment(ref _received);
+                Interlocked.Increment(ref _avgLastReceivedCount);
+            };
+
+            for (int i = 0; i < _clients; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    var connection = new Client.Connection("http://foo");
+                    connection.Start(host).Wait();
+                }, null);
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    var context = host.ConnectionManager.GetConnectionContext<StressConnection>();
+                    StartSendLoop(i, (source, key, value) => context.Connection.Broadcast(value), payload);
+                });
+            }
+        }
+
+        private static void RunBusTest()
+        {
             var resolver = new DefaultDependencyResolver();
             var bus = new MessageBus(resolver);
             string payload = GetPayload();
-
-            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-
-            ThreadPool.SetMinThreads(32, 32);
 
             MeasureStats(bus);
 
@@ -67,13 +107,11 @@ namespace SignalR.Stress
 
             for (var i = 1; i <= _senders; i++)
             {
-                ThreadPool.QueueUserWorkItem(_ => StartSendLoop(i, bus, payload));
+                ThreadPool.QueueUserWorkItem(_ => StartSendLoop(i, bus.Publish, payload));
             }
-
-            Console.ReadLine();
         }
 
-        private static void StartSendLoop(int clientId, MessageBus bus, string payload)
+        private static void StartSendLoop(int clientId, Func<string, string, object, Task> publish, string payload)
         {
             while (_exception == null)
             {
@@ -84,7 +122,7 @@ namespace SignalR.Stress
                     try
                     {
                         var sw = Stopwatch.StartNew();
-                        bus.Publish(clientId.ToString(), "a", payload);
+                        publish(clientId.ToString(), "a", payload).Wait();
                         sw.Stop();
                         Interlocked.Exchange(ref _lastSendTimeTicks, sw.ElapsedTicks);
 
@@ -180,7 +218,7 @@ namespace SignalR.Stress
                     }
 
                     Console.Clear();
-                    Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);                    
+                    Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);
 
                     Console.WriteLine("Total Rate: {0} (mps) = {1} (mps) * {2} (clients)", TotalRate, _rate, _clients);
                     Console.WriteLine();
@@ -221,18 +259,21 @@ namespace SignalR.Stress
                     Console.WriteLine("----- RECEIVES -----");
 
                     var d1 = Math.Max(0, TotalRate - _receivesPerSecond);
-                    Console.WriteLine("RPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", Math.Min(TotalRate, _receivesPerSecond), d1, d1 * 100.0 / TotalRate);
+                    Console.WriteLine("RPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _receivesPerSecond, d1, d1 * 100.0 / TotalRate);
                     var d2 = Math.Max(0, TotalRate - _peakReceivesPerSecond);
-                    Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _peakReceivesPerSecond), d2, d2 * 100.0 / TotalRate);
+                    Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakReceivesPerSecond, d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
-                    Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _avgReceivesPerSecond), d3, d3 * 100.0 / TotalRate);
+                    Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgReceivesPerSecond, d3, d3 * 100.0 / TotalRate);
                     var d4 = Math.Max(0, _sendsPerSecond - _receivesPerSecond);
-                    Console.WriteLine("Actual RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _receivesPerSecond), d4, d4 * 100.0 / _sendsPerSecond);
+                    Console.WriteLine("Actual RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _receivesPerSecond, d4, d4 * 100.0 / _sendsPerSecond);
 
-                    Console.WriteLine();
-                    Console.WriteLine("----- MESSAGE BUS -----");
-                    Console.WriteLine("Allocated Workers: {0}", bus.AllocatedWorkers);
-                    Console.WriteLine("BusyWorkers Workers: {0}", bus.BusyWorkers);
+                    if (bus != null)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("----- MESSAGE BUS -----");
+                        Console.WriteLine("Allocated Workers: {0}", bus.AllocatedWorkers);
+                        Console.WriteLine("BusyWorkers Workers: {0}", bus.BusyWorkers);
+                    }
 
                     if (recvPerSec < long.MaxValue && recvPerSec > _peakReceivesPerSecond)
                     {
@@ -261,6 +302,11 @@ namespace SignalR.Stress
                     _measuringRate = false;
                 }
             }, null, 1000, 1000);
+        }
+
+        public class StressConnection : PersistentConnection
+        {
+
         }
     }
 }
