@@ -20,6 +20,7 @@ namespace SignalR.Transports
         private readonly CancellationToken _hostShutdownToken;
         private readonly CancellationTokenSource _connectionEndToken;
         private readonly CancellationTokenSource _disconnectedToken;
+        private string _connectionId;
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
@@ -40,7 +41,12 @@ namespace SignalR.Transports
         {
             get
             {
-                return _context.Request.QueryString["connectionId"];
+                if (_connectionId == null)
+                {
+                    _connectionId = _context.Request.QueryString["connectionId"];
+                }
+
+                return _connectionId;
             }
         }
 
