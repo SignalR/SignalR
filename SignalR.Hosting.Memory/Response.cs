@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -79,6 +80,7 @@ namespace SignalR.Hosting.Memory
         private class FollowStream : Stream
         {
             private readonly BlockingCollection<ArraySegment<byte>> _queue;
+            private readonly Stack<ArraySegment<byte>> _backlog;
             private readonly CancellationTokenSource _cts;
             private event Action _onWrite;
             private event Action _onClosed;
@@ -88,6 +90,7 @@ namespace SignalR.Hosting.Memory
             public FollowStream(Action start)
             {
                 _queue = new BlockingCollection<ArraySegment<byte>>();
+                _backlog = new Stack<ArraySegment<byte>>();
                 _cts = new CancellationTokenSource();
                 _start = start;
             }
@@ -149,12 +152,31 @@ namespace SignalR.Hosting.Memory
             {
                 try
                 {
-                    // TODO: Respect the count property passed in
-                    ArraySegment<byte> queuedBuffer = _queue.Take(_cts.Token);
+                    ArraySegment<byte> queuedBuffer;
 
-                    Array.Copy(queuedBuffer.Array, queuedBuffer.Offset, buffer, offset, queuedBuffer.Count);
+                    // First check to see if there's a backlog
+                    if (_backlog.Count > 0)
+                    {
+                        queuedBuffer = _backlog.Pop();
+                    }
+                    else
+                    {
+                        // Read the next chunk from the buffer
+                        queuedBuffer = _queue.Take(_cts.Token);
+                    }
 
-                    return queuedBuffer.Count;
+                    int read = Math.Min(count, queuedBuffer.Count);
+                    int remainder = queuedBuffer.Count - read;
+
+                    if (remainder > 0)
+                    {
+                        // Push the remainder back onto the backlog
+                        _backlog.Push(new ArraySegment<byte>(queuedBuffer.Array, queuedBuffer.Offset + read, remainder));
+                    }
+
+                    Array.Copy(queuedBuffer.Array, queuedBuffer.Offset, buffer, offset, read);
+
+                    return read;
                 }
                 catch (OperationCanceledException)
                 {
