@@ -24,6 +24,7 @@ namespace SignalR.Transports
 
         // Static events intended for use when measuring performance
         public static event Action<string> Sending;
+        public static event Action<PersistentResponse> SendingResponse;
         public static event Action<string> Receiving;
 
         /// <summary>
@@ -143,6 +144,11 @@ namespace SignalR.Transports
         public virtual Task Send(PersistentResponse response)
         {
             HeartBeat.MarkConnection(this);
+
+            if (SendingResponse != null)
+            {
+                SendingResponse(response);
+            }
 
             AddTransportData(response);
             return Send((object)response);
