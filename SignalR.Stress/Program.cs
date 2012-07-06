@@ -54,7 +54,7 @@ namespace SignalR.Stress
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
 
-            RunBusTest();
+            RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -62,6 +62,8 @@ namespace SignalR.Stress
         private static void RunMemoryHost()
         {
             var host = new MemoryHost();
+            host.MapConnection<StressConnection>("/echo");
+
             string payload = GetPayload();
 
             MeasureStats((MessageBus)host.DependencyResolver.Resolve<INewMessageBus>());
@@ -74,11 +76,11 @@ namespace SignalR.Stress
 
             for (int i = 0; i < _clients; i++)
             {
-                ThreadPool.QueueUserWorkItem(_ =>
+                ThreadPool.QueueUserWorkItem(state =>
                 {
-                    var connection = new Client.Connection("http://foo");
-                    connection.Start(host).Wait();
-                }, null);
+                    Interlocked.Increment(ref _clientsRunning);
+                    host.ProcessRequest("http://foo/echo/connect?transport=serverSentEvents&connectionId=" + state, request => { }, null);
+                }, i);
             }
 
             for (var i = 1; i <= _senders; i++)
