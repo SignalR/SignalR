@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -77,17 +78,17 @@ namespace SignalR.Hosting.Memory
         /// </summary>
         private class FollowStream : Stream
         {
-            private readonly MemoryStream _ms;
-            private int _readPosition;
+            private readonly BlockingCollection<ArraySegment<byte>> _queue;
+            private readonly CancellationTokenSource _cts;
             private event Action _onWrite;
             private event Action _onClosed;
-            private readonly Action _start;
-            private int _streaming;
+            private Action _start;
             private readonly object _lockObj = new object();
 
             public FollowStream(Action start)
             {
-                _ms = new MemoryStream();
+                _queue = new BlockingCollection<ArraySegment<byte>>();
+                _cts = new CancellationTokenSource();
                 _start = start;
             }
 
@@ -119,10 +120,7 @@ namespace SignalR.Hosting.Memory
 
             private void EnsureStarted()
             {
-                if (Interlocked.Exchange(ref _streaming, 1) == 0)
-                {
-                    _start();
-                }
+                Interlocked.Exchange(ref _start, () => { }).Invoke();
             }
 
             public override void Flush()
@@ -151,19 +149,16 @@ namespace SignalR.Hosting.Memory
             {
                 try
                 {
-                    // Read count bytes from the underlying buffer
-                    byte[] followingBuffer = _ms.GetBuffer();
+                    // TODO: Respect the count property passed in
+                    ArraySegment<byte> queuedBuffer = _queue.Take(_cts.Token);
 
-                    // Get the max len
-                    int read = Math.Min(count, (int)_ms.Length - _readPosition);
+                    Array.Copy(queuedBuffer.Array, queuedBuffer.Offset, buffer, offset, queuedBuffer.Count);
 
-                    // Copy it to the output buffer
-                    Array.Copy(followingBuffer, _readPosition, buffer, offset, read);
-
-                    // Move our cursor into the data further
-                    _readPosition += read;
-
-                    return read;
+                    return queuedBuffer.Count;
+                }
+                catch (OperationCanceledException)
+                {
+                    return 0;
                 }
                 catch (ObjectDisposedException)
                 {
@@ -241,7 +236,7 @@ namespace SignalR.Hosting.Memory
             public override void Close()
             {
                 Ended = true;
-                _ms.Close();
+                _cts.Cancel();
 
                 if (_onClosed != null)
                 {
@@ -269,7 +264,7 @@ namespace SignalR.Hosting.Memory
 
             public override void Write(byte[] buffer, int offset, int count)
             {
-                _ms.Write(buffer, offset, count);
+                _queue.Add(new ArraySegment<byte>(buffer, offset, count));
 
                 if (_onWrite != null)
                 {
