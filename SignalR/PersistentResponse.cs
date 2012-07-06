@@ -18,7 +18,7 @@ namespace SignalR
         /// <summary>
         /// The list of messages to be sent to the receiving connection.
         /// </summary>
-        public IEnumerable<object> Messages { get; set; }
+        public IList<object> Messages { get; set; }
 
         /// <summary>
         /// True if the connection receives a disconnect command.

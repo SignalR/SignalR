@@ -56,6 +56,14 @@ namespace SignalR.Transports
             }
         }
 
+        protected virtual void OnSendingResponse(PersistentResponse response)
+        {
+            if (SendingResponse != null)
+            {
+                SendingResponse(response);
+            }
+        }
+
         protected static void OnReceiving(string data)
         {
             if (Receiving != null)
@@ -66,6 +74,9 @@ namespace SignalR.Transports
 
         // Static events intended for use when measuring performance
         public static event Action<string> Sending;
+
+        public static event Action<PersistentResponse> SendingResponse;
+
         public static event Action<string> Receiving;
 
         public Func<string, Task> Received { get; set; }
@@ -133,7 +144,7 @@ namespace SignalR.Transports
 
             OnSending(data);
 
-            return Context.Response.WriteAsync(data);
+            return WriteAsync(data);
         }
 
         public virtual Task Send(object value)
@@ -233,9 +244,9 @@ namespace SignalR.Transports
 
                 response.TimedOut = IsTimedOut;
 
-                if (response.Disconnect || 
-                    response.TimedOut || 
-                    response.Aborted || 
+                if (response.Disconnect ||
+                    response.TimedOut ||
+                    response.Aborted ||
                     ConnectionEndToken.IsCancellationRequested)
                 {
                     if (response.Aborted)

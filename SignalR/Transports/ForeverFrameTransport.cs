@@ -32,7 +32,7 @@ namespace SignalR.Transports
         public override void KeepAlive()
         {
             var script = "<script>r(c, {});</script>\r\n";
-            Context.Response.WriteAsync(script).Catch();
+            WriteAsync(script).Catch();
         }
 
         public override Task Send(PersistentResponse response)
@@ -40,6 +40,8 @@ namespace SignalR.Transports
             var data = JsonSerializer.Stringify(response);
 
             OnSending(data);
+
+            OnSendingResponse(response);
 
             data = EscapeAnyInlineScriptTags(data);
 
@@ -49,7 +51,7 @@ namespace SignalR.Transports
                 script += "<div>" + data + "</div>\r\n";
             }
 
-            return Context.Response.WriteAsync(script);
+            return WriteAsync(script);
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)
@@ -58,7 +60,7 @@ namespace SignalR.Transports
                 .Then(initScript =>
                 {
                     Context.Response.ContentType = "text/html";
-                    Context.Response.WriteAsync(initScript);
+                    WriteAsync(initScript);
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }

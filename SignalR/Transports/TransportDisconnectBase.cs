@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
@@ -21,6 +21,9 @@ namespace SignalR.Transports
         private readonly CancellationTokenSource _connectionEndToken;
         private readonly CancellationTokenSource _disconnectedToken;
         private string _connectionId;
+
+        // Allocate some buffer space to write to the connection with
+        private byte[] _buffer = new byte[1024];
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
@@ -178,6 +181,21 @@ namespace SignalR.Transports
         public void CompleteRequest()
         {
             Completed.TrySetResult(null);
+        }
+
+        protected Task WriteAsync(string data)
+        {
+            int count = Encoding.UTF8.GetByteCount(data);
+
+            // Make sure the buffer is big enough
+            while (count >= _buffer.Length)
+            {
+                Array.Resize(ref _buffer, _buffer.Length + 1024);
+            }
+
+            Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer, 0);
+
+            return Context.Response.WriteAsync(new ArraySegment<byte>(_buffer, 0, count));
         }
 
         protected ITransportConnection Connection { get; set; }
