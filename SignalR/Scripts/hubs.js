@@ -75,8 +75,24 @@
     }
 
     function invoke(hub, methodName, args) {
+        // Extract user callback from args
+        var userCallback = args[args.length - 1], // last argument
+            callback = function (result) {
+                // Update hub state from proxy state
+                $.extend(hub, hub._.proxy.state);
+                if ($.isFunction(userCallback)) {
+                    userCallback.call(hub, result);
+                }
+            };
+
+        if ($.isFunction(userCallback)) {
+            // Replace user's callback with our own
+            args = $.merge(args.splice(0, args.length - 1), [callback]);
+        }
+
         // Update proxy state from hub state
         $.extend(hub._.proxy.state, copy(hub, ["_"]));
+
         return hub._.proxy.invoke.apply(hub._.proxy, $.merge([methodName], args));
     }
 

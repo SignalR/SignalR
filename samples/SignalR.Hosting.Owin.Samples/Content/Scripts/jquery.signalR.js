@@ -1356,7 +1356,7 @@
             var self = this,
                 args = $.makeArray(arguments).slice(1),
                 userCallback = args[args.length - 1], // last argument
-                methodArgs = $.type(userCallback) === "function" ? args.slice(0, -1) /* all but last */ : args,
+                methodArgs = $.type(userCallback) === "function" ? args.slice(0, args.length - 1) /* all but last */ : args,
                 argValues = methodArgs.map(getArgValue),
                 data = { hub: self.hubName, method: methodName, args: argValues, state: self.state, id: callbackId },
                 d = $.Deferred(),

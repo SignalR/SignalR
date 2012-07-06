@@ -41,7 +41,7 @@
         };
 
         demo.complexType(p, function () {
-            $('#value').html('Complex Type ->' + window.JSON.stringify(this.person));
+            $('#complexType').html('Complex Type ->' + window.JSON.stringify(this.person));
         });
 
         demo.multipleCalls();
