@@ -66,7 +66,7 @@
     function copy(obj, exclude) {
         var newObj = {};
         $.each(obj, function (key, value) {
-            if ($.inArray(key, exclude) === -1) {
+            if (!$.isFunction(value) && $.inArray(key, exclude) === -1) {
                 // We don't use "this" because browsers suck!
                 newObj[key] = value;
             }
