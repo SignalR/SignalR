@@ -23,7 +23,7 @@ namespace SignalR.Transports
         private string _connectionId;
 
         // Allocate some buffer space to write to the connection with
-        private byte[] _buffer = new byte[1024];
+        private byte[] _buffer = new byte[4096];
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
         {
@@ -185,13 +185,15 @@ namespace SignalR.Transports
 
         protected Task WriteAsync(string data)
         {
-            int count = Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer, 0);
+            int count = Encoding.UTF8.GetByteCount(data);
 
             // Make sure the buffer is big enough
             while (count >= _buffer.Length)
             {
-                Array.Resize(ref _buffer, _buffer.Length + 1024);
+                Array.Resize(ref _buffer, count + 1);
             }
+
+            Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer, 0);
 
             return Context.Response.WriteAsync(new ArraySegment<byte>(_buffer, 0, count));
         }
