@@ -185,15 +185,13 @@ namespace SignalR.Transports
 
         protected Task WriteAsync(string data)
         {
-            int count = Encoding.UTF8.GetByteCount(data);
+            int count = Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer, 0);
 
             // Make sure the buffer is big enough
             while (count >= _buffer.Length)
             {
                 Array.Resize(ref _buffer, _buffer.Length + 1024);
             }
-
-            Encoding.UTF8.GetBytes(data, 0, data.Length, _buffer, 0);
 
             return Context.Response.WriteAsync(new ArraySegment<byte>(_buffer, 0, count));
         }
