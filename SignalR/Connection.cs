@@ -17,9 +17,9 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
-        private readonly ITraceManager _trace;
         private bool _disconnected;
         private bool _aborted;
+        private readonly Lazy<TraceSource> _traceSource;
 
         public Connection(IMessageBus messageBus,
                           INewMessageBus newMessageBus,
@@ -37,7 +37,7 @@ namespace SignalR
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
             _groups = new HashSet<string>(groups);
-            _trace = traceManager;
+            _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
         }
 
         IEnumerable<string> ISubscriber.EventKeys
@@ -64,7 +64,7 @@ namespace SignalR
         {
             get
             {
-                return _trace["SignalR.Connection"];
+                return _traceSource.Value;
             }
         }
 
@@ -147,14 +147,12 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
-
             return response;
         }
 
         private List<object> ProcessResults(MessageResult result)
         {
-            var messageValues = new List<object>();
+            var messageValues = new List<object>(result.TotalCount);
 
             for (int i = 0; i < result.Messages.Count; i++)
             {

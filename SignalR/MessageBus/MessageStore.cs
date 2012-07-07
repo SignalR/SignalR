@@ -78,12 +78,12 @@ namespace SignalR
         // Gets the next batch of messages, beginning with the specified ID.
         // This function may return an empty array or an array of length greater than the capacity
         // specified in the ctor. The client may also miss messages. See MessageStoreResult.
-        public MessageStoreResult<T> GetMessages(ulong firstMessageId)
+        public MessageStoreResult<T> GetMessages(ulong firstMessageId, int maxMessages)
         {
-            return GetMessagesImpl(firstMessageId);
+            return GetMessagesImpl(firstMessageId, maxMessages);
         }
 
-        private MessageStoreResult<T> GetMessagesImpl(ulong firstMessageIdRequestedByClient)
+        private MessageStoreResult<T> GetMessagesImpl(ulong firstMessageIdRequestedByClient, int maxMessages)
         {
             ulong nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
 
@@ -106,8 +106,13 @@ namespace SignalR
             // This fragment contains the first part of the data the client requested.
             if (firstMessageIdInThisFragment <= firstMessageIdRequestedByClient && firstMessageIdRequestedByClient < firstMessageIdInNextFragment)
             {
-                ArraySegment<T> retMessages = new ArraySegment<T>(thisFragment.Data, idxIntoFragment,
-                    count: (int)(Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient));
+                int count = (int)(Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient);
+
+                // Limit the number of messages the caller sees
+                count = Math.Min(count, maxMessages);
+
+                ArraySegment<T> retMessages = new ArraySegment<T>(thisFragment.Data, idxIntoFragment, count);
+
                 return new MessageStoreResult<T>(firstMessageIdRequestedByClient, retMessages, hasMoreData: (nextFreeMessageId > firstMessageIdInNextFragment));
             }
 
@@ -120,7 +125,8 @@ namespace SignalR
                 if (tailFragment.FragmentNum < fragmentNum)
                 {
                     firstMessageIdInThisFragment = GetMessageId(tailFragment.FragmentNum, offset: 0);
-                    return new MessageStoreResult<T>(firstMessageIdInThisFragment, new ArraySegment<T>(tailFragment.Data), hasMoreData: true);
+                    int count = Math.Min(maxMessages, tailFragment.Data.Length);
+                    return new MessageStoreResult<T>(firstMessageIdInThisFragment, new ArraySegment<T>(tailFragment.Data, 0, count), hasMoreData: true);
                 }
                 nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
             }

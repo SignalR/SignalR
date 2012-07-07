@@ -151,6 +151,7 @@ namespace SignalR.Transports
             }
 
             AddTransportData(response);
+
             return Send((object)response);
         }
 
@@ -304,14 +305,9 @@ namespace SignalR.Transports
             });
         }
 
-        private PersistentResponse AddTransportData(PersistentResponse response)
+        private void AddTransportData(PersistentResponse response)
         {
-            if (response != null)
-            {
-                response.TransportData["LongPollDelay"] = LongPollDelay;
-            }
-
-            return response;
+            response.TransportData["LongPollDelay"] = LongPollDelay;
         }
     }
 }

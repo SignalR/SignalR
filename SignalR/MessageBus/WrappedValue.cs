@@ -5,7 +5,7 @@
     /// If a store needs to save values in a serializable way then it just needs to call
     /// ToString() and we'll unwrap it when it comes back (if needed).
     /// </summary>
-    internal class WrappedValue
+    internal struct WrappedValue
     {
         private readonly IJsonSerializer _serializer;
         private readonly object _value;
@@ -26,23 +26,21 @@
 
         public static T Unwrap<T>(object value, IJsonSerializer serializer)
         {
-            var wrappedValue = value as WrappedValue;
-            if (wrappedValue != null)
+            if (value is WrappedValue)
             {
-                return (T)wrappedValue.Value;
+                return (T)((WrappedValue)value).Value;
             }
-
+            
             return serializer.Parse<T>((string)value);
         }
 
         public static object Unwrap(object value, IJsonSerializer serializer)
         {
-            var wrappedValue = value as WrappedValue;
-            if (wrappedValue != null)
+            if (value is WrappedValue)
             {
-                return wrappedValue.Value;
+                return ((WrappedValue)value).Value;
             }
-
+            
             return serializer.Parse((string)value);
         }
 

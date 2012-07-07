@@ -19,6 +19,7 @@ namespace SignalR
         private readonly Engine _engine;
 
         private const int DefaultMessageStoreSize = 5000;
+        private const int MaxMessages = 10;
 
         private readonly ITraceManager _trace;
 
@@ -307,7 +308,7 @@ namespace SignalR
                     for (int i = 0; i < Cursors.Count; i++)
                     {
                         Cursor cursor = Cursors[i];
-                        MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id);
+                        MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, MaxMessages);
                         ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
                         cursor.Id = next;
 
