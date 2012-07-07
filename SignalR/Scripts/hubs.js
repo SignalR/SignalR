@@ -9,6 +9,7 @@
  */
 
 /// <reference path="jquery-1.6.2.js" />
+/// <reference path="jquery.signalR.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
     "use strict";
@@ -97,24 +98,23 @@
     }
 
     // Create hub signalR instance
-    $.extend(signalR, {
-        /*
-        myDemoHub: {
-            _: {
-                hubName: "MyDemoHub",
-                ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-            serverMethod1: function(p1, p2) {
-                return invoke(this, "ServerMethod1", $.makeArray(arguments));
-            },
-            serverMethod2: function(p1) {
-                return invoke(this, "ServerMethod2", $.makeArray(arguments));;
-            }
+    /*
+    signalR.myDemoHub = {
+        _: {
+            hubName: "MyDemoHub",
+            ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
+            connection: function () { return signalR.hub; }
+        },
+        serverMethod1: function(p1, p2) {
+            return invoke(this, "ServerMethod1", $.makeArray(arguments));
+        },
+        serverMethod2: function(p1) {
+            return invoke(this, "ServerMethod2", $.makeArray(arguments));;
         }
-        */
-        /*hubs*/
-    });
+    };
+    */
+
+    /*hubs*/
 
     signalR.hub = $.hubConnection("{serviceUrl}")
         .starting(function () {

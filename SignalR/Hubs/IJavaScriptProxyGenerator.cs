@@ -2,6 +2,6 @@
 {
     public interface IJavaScriptProxyGenerator
     {
-        string GenerateProxy(string serviceUrl);
+        string GenerateProxy(string serviceUrl, bool includeDocComments = false);
     }
 }
