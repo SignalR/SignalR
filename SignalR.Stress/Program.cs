@@ -90,7 +90,7 @@ namespace SignalR.Stress
             {
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    StartSendLoop(i, (source, key, value) => context.Connection.Broadcast(value), payload);
+                    StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
                 });
             }
         }
@@ -124,7 +124,7 @@ namespace SignalR.Stress
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
                     var context = host.ConnectionManager.GetConnectionContext<StressConnection>();
-                    StartSendLoop(i, (source, key, value) => context.Connection.Broadcast(value), payload);
+                    StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
                 });
             }
         }
@@ -145,11 +145,11 @@ namespace SignalR.Stress
 
             for (var i = 1; i <= _senders; i++)
             {
-                ThreadPool.QueueUserWorkItem(_ => StartSendLoop(i, bus.Publish, payload));
+                ThreadPool.QueueUserWorkItem(_ => StartSendLoop(i.ToString(), bus.Publish, payload));
             }
         }
 
-        private static void StartSendLoop(int clientId, Func<string, string, object, Task> publish, string payload)
+        private static void StartSendLoop(string clientId, Func<string, string, object, Task> publish, string payload)
         {
             while (_exception == null)
             {
@@ -160,7 +160,7 @@ namespace SignalR.Stress
                     try
                     {
                         var sw = Stopwatch.StartNew();
-                        publish(clientId.ToString(), "a", payload).Wait();
+                        publish(clientId, "a", payload).Wait();
                         sw.Stop();
                         Interlocked.Exchange(ref _lastSendTimeTicks, sw.ElapsedTicks);
 
