@@ -31,7 +31,6 @@ namespace SignalR.Stress
         private static long _lastSendsCount;
 
         private static DateTime _avgCalcStart;
-        private static long _lastSendTimeTicks;
         private static long _rate = 1;
         private static int _runs = 0;
         private static int _step = 1;
@@ -159,11 +158,7 @@ namespace SignalR.Stress
                 {
                     try
                     {
-                        var sw = Stopwatch.StartNew();
                         publish(clientId, "a", payload).Wait();
-                        sw.Stop();
-                        Interlocked.Exchange(ref _lastSendTimeTicks, sw.ElapsedTicks);
-
                         Interlocked.Increment(ref _sent);
                         Interlocked.Increment(ref _avgLastSendsCount);
 
