@@ -72,7 +72,7 @@ namespace SignalR.Infrastructure
             _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands);
         }
 
-        private Task HandleServerCommands(Exception ex, MessageResult result)
+        private Task<bool> HandleServerCommands(Exception ex, MessageResult result)
         {
             for (int i = 0; i < result.Messages.Count; i++)
             {
@@ -90,7 +90,7 @@ namespace SignalR.Infrastructure
                 }
             }
 
-            return TaskAsyncHelper.Empty;
+            return TaskAsyncHelper.True;
         }
 
         private void OnCommand(ServerCommand command)

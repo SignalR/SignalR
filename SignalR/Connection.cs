@@ -222,7 +222,7 @@ namespace SignalR
         /// <param name="messageId"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task> callback)
+        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback)
         {
             return _newMessageBus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)));
         }

@@ -97,7 +97,7 @@ namespace SignalR
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task> callback)
+        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task<bool>> callback)
         {
             IEnumerable<Cursor> cursors = null;
             if (cursor == null)
@@ -211,7 +211,7 @@ namespace SignalR
         internal class Subscription
         {
             private readonly List<Cursor> _cursors;
-            private readonly Func<Exception, MessageResult, Task> _callback;
+            private readonly Func<Exception, MessageResult, Task<bool>> _callback;
 
             private readonly object _lockObj = new object();
 
@@ -227,13 +227,13 @@ namespace SignalR
                 }
             }
 
-            public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task> callback)
+            public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task<bool>> callback)
             {
                 _cursors = new List<Cursor>(cursors);
                 _callback = callback;
             }
 
-            public Task Invoke(MessageResult result)
+            public Task<bool> Invoke(MessageResult result)
             {
                 return _callback.Invoke(null, result);
             }
@@ -319,13 +319,13 @@ namespace SignalR
                         }
                     }
 
-                    nextCursor = Cursor.MakeUpdatedCursor(Cursors);
+                    nextCursor = Cursor.MakeCursor(Cursors);
                 }
 
                 if (items.Count > 0)
                 {
                     var messageResult = new MessageResult(items, nextCursor, totalCount);
-                    Task callbackTask = Invoke(messageResult);
+                    Task<bool> callbackTask = Invoke(messageResult);
 
                     if (callbackTask.IsCompleted)
                     {
@@ -334,8 +334,16 @@ namespace SignalR
                             // Make sure exceptions propagate
                             callbackTask.Wait();
 
-                            // Sync path
-                            goto Process;
+                            if (callbackTask.Result)
+                            {
+                                // Sync path
+                                goto Process;
+                            }
+                            else
+                            {
+                                // If the callback said it's done then stop
+                                taskCompletionSource.TrySetResult(null);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -353,7 +361,7 @@ namespace SignalR
                 }
             }
 
-            private void WorkImplAsync(Task callbackTask, ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
+            private void WorkImplAsync(Task<bool> callbackTask, ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
             {
                 // Async path
                 callbackTask.ContinueWith(task =>
@@ -362,9 +370,14 @@ namespace SignalR
                     {
                         taskCompletionSource.TrySetException(task.Exception);
                     }
-                    else
+                    else if (task.Result)
                     {
                         WorkImpl(topics, taskCompletionSource);
+                    }
+                    else
+                    {
+                        // If the callback said it's done then stop
+                        taskCompletionSource.TrySetResult(null);
                     }
                 });
             }
@@ -451,35 +464,6 @@ namespace SignalR
             public ulong Id { get; set; }
 
             public Topic Topic { get; set; }
-
-            public static string MakeUpdatedCursor(IList<Cursor> cursors)
-            {
-                var valid = new bool[cursors.Count];
-                int validCount = 0;
-
-                for (int i = 0; i < cursors.Count; i++)
-                {
-                    // Only use cursors that have data
-                    valid[i] = cursors[i].Id > 0;
-                    if (valid[i])
-                    {
-                        validCount++;
-                    }
-                }
-
-                var serialized = new string[validCount];
-                int index = 0;
-
-                for (int i = 0; i < cursors.Count; i++)
-                {
-                    if (valid[i])
-                    {
-                        serialized[index++] = cursors[i].EscapedKey + ',' + cursors[i].Id;
-                    }
-                }
-
-                return String.Join("|", serialized);
-            }
 
             public static string MakeCursor(IList<Cursor> cursors)
             {

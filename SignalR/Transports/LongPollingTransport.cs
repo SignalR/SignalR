@@ -223,11 +223,12 @@ namespace SignalR.Transports
             {
                 TransportConnected().Catch();
             }
-            
+
             var tcs = new TaskCompletionSource<object>();
+            IDisposable subscription = null;
 
             Action<Exception> endRequest = (exception) =>
-            {                
+            {
                 if (exception != null)
                 {
                     tcs.TrySetException(exception);
@@ -236,9 +237,13 @@ namespace SignalR.Transports
                 {
                     tcs.TrySetResult(null);
                 }
+
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
             };
 
-            IDisposable subscription = null;
             ConnectionEndToken.Register(() =>
             {
                 if (subscription != null)
@@ -246,13 +251,18 @@ namespace SignalR.Transports
                     subscription.Dispose();
                 }
             });
-            
+
             subscription = connection.Receive(MessageId, (ex, response) =>
             {
                 if (ex != null)
                 {
                     endRequest(ex);
-                    return TaskAsyncHelper.Empty;
+                    return TaskAsyncHelper.False;
+                }
+
+                if (tcs.Task.IsCompleted)
+                {
+                    return TaskAsyncHelper.False;
                 }
 
                 response.TimedOut = IsTimedOut;
@@ -263,7 +273,8 @@ namespace SignalR.Transports
                     OnDisconnect();
                 }
 
-                return Send(response).Then(cb => cb(null), endRequest);
+                return Send(response).Then(cb => cb(null), endRequest)
+                                     .Then(() => TaskAsyncHelper.False);
             });
 
             if (postReceive != null)
@@ -307,7 +318,10 @@ namespace SignalR.Transports
 
         private void AddTransportData(PersistentResponse response)
         {
-            response.TransportData["LongPollDelay"] = LongPollDelay;
+            if (LongPollDelay > 0)
+            {
+                response.TransportData["LongPollDelay"] = LongPollDelay;
+            }
         }
     }
 }

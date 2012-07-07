@@ -239,7 +239,7 @@ namespace SignalR.Transports
                 if (ex != null)
                 {
                     endRequest(ex);
-                    return TaskAsyncHelper.Empty;
+                    return TaskAsyncHelper.False;
                 }
 
                 response.TimedOut = IsTimedOut;
@@ -256,11 +256,11 @@ namespace SignalR.Transports
                     }
 
                     endRequest(null);
-                    return TaskAsyncHelper.Empty;
+                    return TaskAsyncHelper.False;
                 }
                 else
                 {
-                    return Send(response);
+                    return Send(response).Then(() => TaskAsyncHelper.True);
                 }
             });
 

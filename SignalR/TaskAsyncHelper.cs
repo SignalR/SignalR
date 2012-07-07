@@ -9,11 +9,13 @@ namespace SignalR
 {
     internal static class TaskAsyncHelper
     {
-        private static readonly Task _emptyTask = MakeEmpty();
+        private static readonly Task _emptyTask = MakeTask<object>(null);
+        private static readonly Task<bool> _trueTask = MakeTask<bool>(true);
+        private static readonly Task<bool> _falseTask = MakeTask<bool>(false);
 
-        private static Task MakeEmpty()
+        private static Task<T> MakeTask<T>(T value)
         {
-            return FromResult<object>(null);
+            return FromResult<T>(value);
         }
 
         public static Task Empty
@@ -21,6 +23,22 @@ namespace SignalR
             get
             {
                 return _emptyTask;
+            }
+        }
+
+        public static Task<bool> True
+        {
+            get
+            {
+                return _trueTask;
+            }
+        }
+
+        public static Task<bool> False
+        {
+            get
+            {
+                return _falseTask;
             }
         }
 

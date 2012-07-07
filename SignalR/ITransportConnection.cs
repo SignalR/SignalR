@@ -6,7 +6,7 @@ namespace SignalR
 {
     public interface ITransportConnection
     {
-        IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task> callback);
+        IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback);
 
         Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken);
         Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken);

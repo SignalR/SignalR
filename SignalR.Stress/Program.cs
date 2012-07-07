@@ -36,7 +36,7 @@ namespace SignalR.Stress
         private static int _runs = 0;
         private static int _step = 1;
         private static int _stepInterval = 15;
-        private static int _clients = 10000;
+        private static int _clients = 1;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
         private static Exception _exception;
@@ -55,8 +55,8 @@ namespace SignalR.Stress
             ThreadPool.SetMinThreads(32, 32);
 
             // RunBusTest();
-            // RunConnectionTest();
-            RunMemoryHost();
+            RunConnectionTest();
+            // RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -80,7 +80,7 @@ namespace SignalR.Stress
                     {
                         Interlocked.Add(ref _received, r.Messages.Count);
                         Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
-                        return TaskAsyncHelper.Empty;
+                        return TaskAsyncHelper.True;
                     });
 
                 }, i);
@@ -167,7 +167,7 @@ namespace SignalR.Stress
                         Interlocked.Increment(ref _sent);
                         Interlocked.Increment(ref _avgLastSendsCount);
 
-                        Thread.Sleep(interval);
+                        // Thread.Sleep(interval);
                     }
                     catch (Exception ex)
                     {
@@ -203,6 +203,7 @@ namespace SignalR.Stress
                     if (ex != null)
                     {
                         Interlocked.Exchange(ref _exception, ex);
+                        return TaskAsyncHelper.False;
                     }
                     else
                     {
@@ -210,7 +211,7 @@ namespace SignalR.Stress
                         Interlocked.Add(ref _avgLastReceivedCount, result.TotalCount);
                     }
 
-                    return TaskAsyncHelper.Empty;
+                    return TaskAsyncHelper.True;
                 });
             }
             catch (Exception ex)

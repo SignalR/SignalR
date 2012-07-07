@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
 
 namespace SignalR.Client.Infrastructure
 {
     internal class DisposableAction : IDisposable
     {
-        private readonly Action _action;
+        private Action _action;
+
         public DisposableAction(Action action)
         {
             _action = action;
@@ -12,7 +14,7 @@ namespace SignalR.Client.Infrastructure
 
         public void Dispose()
         {
-            _action();
+            Interlocked.Exchange(ref _action, () => { }).Invoke();
         }
     }
 }
