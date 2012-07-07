@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,9 @@ namespace SignalR.Hubs
     {
         private static readonly Lazy<string> _template = new Lazy<string>(GetTemplate);
         private static readonly ConcurrentDictionary<string, string> _scriptCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly Type[] _numberTypes = new[] { typeof(byte), typeof(short), typeof(int), typeof(long), typeof(float), typeof(decimal), typeof(double) };
+        private static readonly Type[] _dateTypes = new[] { typeof(DateTime), typeof(DateTimeOffset) };
 
         private const string ScriptResource = "SignalR.Scripts.hubs.js";
 
@@ -32,7 +36,7 @@ namespace SignalR.Hubs
 
         public bool IsDebuggingEnabled { get; set; }
 
-        public string GenerateProxy(string serviceUrl)
+        public string GenerateProxy(string serviceUrl, bool includeDocComments = false)
         {
             string script;
             if (_scriptCache.TryGetValue(serviceUrl, out script))
@@ -50,13 +54,18 @@ namespace SignalR.Hubs
             {
                 if (!first)
                 {
-                    hubs.AppendLine(",");
-                    hubs.Append("        ");
+                    hubs.AppendLine(";");
+                    hubs.AppendLine();
+                    hubs.Append("    ");
                 }
-                GenerateType(hubs, descriptor);
+                GenerateType(hubs, descriptor, includeDocComments);
                 first = false;
             }
 
+            if (hubs.Length > 0)
+            {
+                hubs.Append(";");
+            } 
             script = script.Replace("/*hubs*/", hubs.ToString());
 
             if (!IsDebuggingEnabled)
@@ -69,31 +78,23 @@ namespace SignalR.Hubs
             return script;
         }
 
-        private void GenerateType(StringBuilder sb, HubDescriptor descriptor)
+        private void GenerateType(StringBuilder sb, HubDescriptor descriptor, bool includeDocComments)
         {
             // Get only actions with minimum number of parameters.
             var methods = GetMethods(descriptor);
 
             var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
-            // REVIEW: Do we need these three extra members to exclude anymore?
-            members.Add("namespace");
-            members.Add("ignoreMembers");
-            members.Add("callbacks");
 
-            sb.AppendFormat("{0}: {{", GetHubName(descriptor)).AppendLine();
-            sb.AppendFormat("            _: {{").AppendLine();
-            sb.AppendFormat("                hubName: '{0}',", descriptor.Name ?? "null").AppendLine();
-            sb.AppendFormat("                ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
-            sb.AppendLine("                connection: function () { return signalR.hub; }");
-            sb.AppendFormat("            }}");
+            sb.AppendFormat("signalR.{0} = {{", GetHubName(descriptor)).AppendLine();
+            sb.AppendFormat("        _: {{").AppendLine();
+            sb.AppendFormat("            hubName: '{0}',", descriptor.Name ?? "null").AppendLine();
+            sb.AppendFormat("            ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
+            sb.AppendLine("            connection: function () { return signalR.hub; }");
+            sb.AppendFormat("        }}");
 
             if (methods.Any())
             {
                 sb.Append(",").AppendLine();
-            }
-            else
-            {
-                sb.AppendLine();
             }
 
             bool first = true;
@@ -104,11 +105,11 @@ namespace SignalR.Hubs
                 {
                     sb.Append(",").AppendLine();
                 }
-                this.GenerateMethod(sb, method);
+                this.GenerateMethod(sb, method, includeDocComments);
                 first = false;
             }
             sb.AppendLine();
-            sb.Append("        }");
+            sb.Append("    }");
         }
 
         protected virtual string GetHubName(HubDescriptor descriptor)
@@ -126,14 +127,47 @@ namespace SignalR.Hubs
                    select oload;
         }
 
-        private void GenerateMethod(StringBuilder sb, MethodDescriptor method)
+        private void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments)
         {
-            var parameterNames = method.Parameters.Select(p => p.Name).OrderBy(name => name).ToList();
-            parameterNames.Add("callback");
+            var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
-            sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
-            sb.AppendFormat("                return invoke(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
-            sb.Append("            }");
+            sb.AppendFormat("        {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
+            if (includeDocComments)
+            {
+                sb.AppendFormat("            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
+                var parameterDoc = method.Parameters.Select(p => String.Format("            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
+                if (parameterDoc.Any())
+                {
+                    sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));
+                }
+            }
+            sb.AppendFormat("            return invoke(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
+            sb.Append("        }");
+        }
+
+        private string MapToJavaScriptType(Type type)
+        {
+            if (!type.IsPrimitive && !(type == typeof(string)))
+            {
+                return "Object";
+            }
+            if (type == typeof(string))
+            {
+                return "String";
+            }
+            if (_numberTypes.Contains(type))
+            {
+                return "Number";
+            }
+            if (typeof(IEnumerable).IsAssignableFrom(type))
+            {
+                return "Array";
+            }
+            if (_dateTypes.Contains(type))
+            {
+                return "Date";
+            }
+            return String.Empty;
         }
 
         private static string GetMethodName(MethodDescriptor method)

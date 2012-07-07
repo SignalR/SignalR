@@ -1290,10 +1290,11 @@
 
 (function ($, window) {
     "use strict";
-    
+
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
     var callbackId = 0,
-        callbacks = {};
+        callbacks = {},
+        eventNamespace = "proxy.";
 
     // Array.prototype.map
     if (!Array.prototype.hasOwnProperty("map")) {
@@ -1329,6 +1330,7 @@
             this.state = {};
             this.connection = connection;
             this.hubName = hubName;
+            this.subscribed = false;
         },
 
         on: function (eventName, callback) {
@@ -1336,24 +1338,30 @@
             /// <param name="eventName" type="String">The name of the hub event to register the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
             var self = this;
-            $(self).bind(eventName, function (e, data) {
+
+            // Normalize the event name to lowercase
+            eventName = eventName.toLowerCase();
+
+            $(self).bind(eventNamespace + eventName, function (e, data) {
                 callback.apply(self, data);
             });
+            self.subscribed = true;
             return self;
         },
 
         invoke: function (methodName) {
             /// <summary>Invokes a server hub method with the given arguments.</summary>
             /// <param name="methodName" type="String">The name of the server hub method.</param>
-            
+
             var self = this,
                 args = $.makeArray(arguments).slice(1),
                 userCallback = args[args.length - 1], // last argument
-                methodArgs = $.type(userCallback) === "function" ? args.slice(0, -1) /* all but last */ : args,
+                methodArgs = $.type(userCallback) === "function" ? args.slice(0, args.length - 1) /* all but last */ : args,
                 argValues = methodArgs.map(getArgValue),
                 data = { hub: self.hubName, method: methodName, args: argValues, state: self.state, id: callbackId },
                 d = $.Deferred(),
                 callback = function (result) {
+                    // Update the hub state
                     $.extend(this.state, result.State);
 
                     if (result.Error) {
@@ -1397,6 +1405,7 @@
     hubConnection.fn.init = function (url, qs, logging) {
         var connection = this;
 
+        // Call the base constructor
         $.signalR.fn.init.call(connection, url, qs, logging);
 
         // Object to store hub proxies for this connection
@@ -1404,23 +1413,27 @@
 
         // Wire up the sending handler
         connection.sending(function () {
-            var clientHubs = [];
+            // Set the connection's data object with all the hub proxies with active subscriptions.
+            // These proxies will receive notifications from the server.
+            var subscribedHubs = [];
 
             $.each(this.proxies, function (key) {
-                clientHubs.push({ name: key });
+                if (this.subscribed) {
+                    subscribedHubs.push({ name: key });
+                }
             });
 
-            this.data = window.JSON.stringify(clientHubs);
+            this.data = window.JSON.stringify(subscribedHubs);
         });
 
         // Wire up the received handler
         connection.received(function (data) {
-            var proxy, dataCallbackId, callback;
+            var proxy, dataCallbackId, callback, hubName, eventName;
             if (!data) {
                 return;
             }
 
-            if (typeof(data.Id) !== "undefined") {
+            if (typeof (data.Id) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = data.Id.toString();
                 callback = callbacks[dataCallbackId];
@@ -1433,11 +1446,16 @@
                     callback.method.call(callback.scope, data);
                 }
             } else {
+                // Normalize the names to lowercase
+                hubName = data.Hub.toLowerCase();
+                eventName = data.Method.toLowerCase();
+
                 // We received a client invocation request, i.e. broadcast from server hub
                 // Trigger the local invocation event
-                proxy = this.proxies[data.Hub];
+                proxy = this.proxies[hubName];
+                // Update the hub state
                 $.extend(proxy.state, data.State);
-                $(proxy).trigger(data.Method, [data.Args]);
+                $(proxy).trigger(eventNamespace + eventName, [data.Args]);
             }
         });
     };
@@ -1450,6 +1468,10 @@
         /// <paramater name="hubName" type="String">
         ///     The name of the hub on the server to create the proxy for.
         /// </parameter>
+
+        // Normalize the name to lowercase
+        hubName = hubName.toLowerCase();
+
         var proxy = this.proxies[hubName];
         if (!proxy) {
             proxy = hubProxy(this, hubName);
@@ -1457,9 +1479,9 @@
         }
         return proxy;
     };
-    
+
     hubConnection.fn.init.prototype = hubConnection.fn;
 
     $.hubConnection = hubConnection;
 
-}(window.jQuery, window));
+} (window.jQuery, window));

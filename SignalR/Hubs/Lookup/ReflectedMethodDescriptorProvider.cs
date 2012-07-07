@@ -58,6 +58,7 @@ namespace SignalR.Hubs
                                       ReturnType = oload.ReturnType,
                                       Name = group.Key,
                                       Invoker = oload.Invoke,
+                                      Hub = hub,
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
                                               {

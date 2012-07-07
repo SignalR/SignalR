@@ -9,6 +9,7 @@
  */
 
 /// <reference path="jquery-1.6.2.js" />
+/// <reference path="jquery.signalR.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
     "use strict";
@@ -66,7 +67,7 @@
     function copy(obj, exclude) {
         var newObj = {};
         $.each(obj, function (key, value) {
-            if ($.inArray(key, exclude) === -1) {
+            if (!$.isFunction(value) && $.inArray(key, exclude) === -1) {
                 // We don't use "this" because browsers suck!
                 newObj[key] = value;
             }
@@ -75,219 +76,300 @@
     }
 
     function invoke(hub, methodName, args) {
+        // Extract user callback from args
+        var userCallback = args[args.length - 1], // last argument
+            callback = function (result) {
+                // Update hub state from proxy state
+                $.extend(hub, hub._.proxy.state);
+                if ($.isFunction(userCallback)) {
+                    userCallback.call(hub, result);
+                }
+            };
+
+        if ($.isFunction(userCallback)) {
+            // Replace user's callback with our own
+            args = $.merge(args.splice(0, args.length - 1), [callback]);
+        }
+
         // Update proxy state from hub state
         $.extend(hub._.proxy.state, copy(hub, ["_"]));
+
         return hub._.proxy.invoke.apply(hub._.proxy, $.merge([methodName], args));
     }
 
     // Create hub signalR instance
-    $.extend(signalR, {
-        /*
-        myDemoHub: {
-            _: {
-                hubName: "MyDemoHub",
-                ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-            serverMethod1: function(p1, p2) {
-                return invoke(this, "ServerMethod1", $.makeArray(arguments));
-            },
-            serverMethod2: function(p1) {
-                return invoke(this, "ServerMethod2", $.makeArray(arguments));;
-            }
+    /*
+    signalR.myDemoHub = {
+        _: {
+            hubName: "MyDemoHub",
+            ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
+            connection: function () { return signalR.hub; }
+        },
+        serverMethod1: function(p1, p2) {
+            return invoke(this, "ServerMethod1", $.makeArray(arguments));
+        },
+        serverMethod2: function(p1) {
+            return invoke(this, "ServerMethod2", $.makeArray(arguments));;
         }
-        */
-        chat: {
-            _: {
-                hubName: 'Chat',
-                ignoreMembers: ['getUsers', 'join', 'send', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
+    };
+    */
 
-            join: function (callback) {
-                return invoke(this, "Join", $.makeArray(arguments));
-            },
-
-            send: function (content, callback) {
-                return invoke(this, "Send", $.makeArray(arguments));
-            },
-
-            getUsers: function (callback) {
-                return invoke(this, "GetUsers", $.makeArray(arguments));
-            }
+    signalR.chat = {
+        _: {
+            hubName: 'Chat',
+            ignoreMembers: ['getUsers', 'join', 'send'],
+            connection: function () { return signalR.hub; }
         },
-        demo: {
-            _: {
-                hubName: 'demo',
-                ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicInvoke', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'testGuid', 'unsupportedOverload', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
 
-            getValue: function (callback) {
-                return invoke(this, "GetValue", $.makeArray(arguments));
-            },
-
-            addToGroups: function (callback) {
-                return invoke(this, "AddToGroups", $.makeArray(arguments));
-            },
-
-            doSomethingAndCallError: function (callback) {
-                return invoke(this, "DoSomethingAndCallError", $.makeArray(arguments));
-            },
-
-            dynamicTask: function (callback) {
-                return invoke(this, "DynamicTask", $.makeArray(arguments));
-            },
-
-            plainTask: function (callback) {
-                return invoke(this, "PlainTask", $.makeArray(arguments));
-            },
-
-            genericTaskTypedAsPlain: function (callback) {
-                return invoke(this, "GenericTaskTypedAsPlain", $.makeArray(arguments));
-            },
-
-            taskWithException: function (callback) {
-                return invoke(this, "TaskWithException", $.makeArray(arguments));
-            },
-
-            genericTaskWithException: function (callback) {
-                return invoke(this, "GenericTaskWithException", $.makeArray(arguments));
-            },
-
-            simpleArray: function (nums, callback) {
-                return invoke(this, "SimpleArray", $.makeArray(arguments));
-            },
-
-            readStateValue: function (callback) {
-                return invoke(this, "ReadStateValue", $.makeArray(arguments));
-            },
-
-            setStateValue: function (value, callback) {
-                return invoke(this, "SetStateValue", $.makeArray(arguments));
-            },
-
-            complexArray: function (people, callback) {
-                return invoke(this, "ComplexArray", $.makeArray(arguments));
-            },
-
-            complexType: function (p, callback) {
-                return invoke(this, "ComplexType", $.makeArray(arguments));
-            },
-
-            passingDynamicComplex: function (p, callback) {
-                return invoke(this, "PassingDynamicComplex", $.makeArray(arguments));
-            },
-
-            multipleCalls: function (callback) {
-                return invoke(this, "MultipleCalls", $.makeArray(arguments));
-            },
-
-            overload: function (callback) {
-                return invoke(this, "Overload", $.makeArray(arguments));
-            },
-
-            unsupportedOverload: function (x, callback) {
-                return invoke(this, "UnsupportedOverload", $.makeArray(arguments));
-            },
-
-            testGuid: function (callback) {
-                return invoke(this, "TestGuid", $.makeArray(arguments));
-            },
-
-            dynamicInvoke: function (method, callback) {
-                return invoke(this, "DynamicInvoke", $.makeArray(arguments));
-            }
+        join: function () {
+            /// <summary>Calls the Join method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "Join", $.makeArray(arguments));
         },
-        drawingPad: {
-            _: {
-                hubName: 'DrawingPad',
-                ignoreMembers: ['drawLine', 'join', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
 
-            join: function (callback) {
-                return invoke(this, "Join", $.makeArray(arguments));
-            },
-
-            drawLine: function (data, callback) {
-                return invoke(this, "DrawLine", $.makeArray(arguments));
-            }
+        send: function (content) {
+            /// <summary>Calls the Send method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="content" type="String">Server side type is System.String</param>
+            return invoke(this, "Send", $.makeArray(arguments));
         },
-        hubBench: {
-            _: {
-                hubName: 'HubBench',
-                ignoreMembers: ['hitMe', 'hitUs', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
 
-            hitMe: function (clientCalls, connectionId, start, callback) {
-                return invoke(this, "HitMe", $.makeArray(arguments));
-            },
-
-            hitUs: function (clientCalls, start, callback) {
-                return invoke(this, "HitUs", $.makeArray(arguments));
-            }
-        },
-        mouseTracking: {
-            _: {
-                hubName: 'MouseTracking',
-                ignoreMembers: ['join', 'move', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-
-            join: function (callback) {
-                return invoke(this, "Join", $.makeArray(arguments));
-            },
-
-            move: function (x, y, callback) {
-                return invoke(this, "Move", $.makeArray(arguments));
-            }
-        },
-        shapeShare: {
-            _: {
-                hubName: 'ShapeShare',
-                ignoreMembers: ['changeShape', 'changeUserName', 'createShape', 'deleteAllShapes', 'deleteShape', 'getShapes', 'join', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-
-            getShapes: function (callback) {
-                return invoke(this, "GetShapes", $.makeArray(arguments));
-            },
-
-            join: function (userName, callback) {
-                return invoke(this, "Join", $.makeArray(arguments));
-            },
-
-            changeUserName: function (currentUserName, newUserName, callback) {
-                return invoke(this, "ChangeUserName", $.makeArray(arguments));
-            },
-
-            createShape: function (type, callback) {
-                return invoke(this, "CreateShape", $.makeArray(arguments));
-            },
-
-            changeShape: function (h, id, w, x, y, callback) {
-                return invoke(this, "ChangeShape", $.makeArray(arguments));
-            },
-
-            deleteShape: function (id, callback) {
-                return invoke(this, "DeleteShape", $.makeArray(arguments));
-            },
-
-            deleteAllShapes: function (callback) {
-                return invoke(this, "DeleteAllShapes", $.makeArray(arguments));
-            }
-        },
-        status: {
-            _: {
-                hubName: 'Status',
-                ignoreMembers: ['namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            }
-
+        getUsers: function () {
+            /// <summary>Calls the GetUsers method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "GetUsers", $.makeArray(arguments));
         }
-    });
+    };
+
+    signalR.demo = {
+        _: {
+            hubName: 'demo',
+            ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicInvoke', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'testGuid', 'unsupportedOverload'],
+            connection: function () { return signalR.hub; }
+        },
+
+        getValue: function () {
+            /// <summary>Calls the GetValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "GetValue", $.makeArray(arguments));
+        },
+
+        addToGroups: function () {
+            /// <summary>Calls the AddToGroups method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "AddToGroups", $.makeArray(arguments));
+        },
+
+        doSomethingAndCallError: function () {
+            /// <summary>Calls the DoSomethingAndCallError method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "DoSomethingAndCallError", $.makeArray(arguments));
+        },
+
+        dynamicTask: function () {
+            /// <summary>Calls the DynamicTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "DynamicTask", $.makeArray(arguments));
+        },
+
+        plainTask: function () {
+            /// <summary>Calls the PlainTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "PlainTask", $.makeArray(arguments));
+        },
+
+        genericTaskTypedAsPlain: function () {
+            /// <summary>Calls the GenericTaskTypedAsPlain method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "GenericTaskTypedAsPlain", $.makeArray(arguments));
+        },
+
+        taskWithException: function () {
+            /// <summary>Calls the TaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "TaskWithException", $.makeArray(arguments));
+        },
+
+        genericTaskWithException: function () {
+            /// <summary>Calls the GenericTaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "GenericTaskWithException", $.makeArray(arguments));
+        },
+
+        simpleArray: function (nums) {
+            /// <summary>Calls the SimpleArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="nums" type="Object">Server side type is System.Int32[]</param>
+            return invoke(this, "SimpleArray", $.makeArray(arguments));
+        },
+
+        readStateValue: function () {
+            /// <summary>Calls the ReadStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "ReadStateValue", $.makeArray(arguments));
+        },
+
+        setStateValue: function (value) {
+            /// <summary>Calls the SetStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="value" type="String">Server side type is System.String</param>
+            return invoke(this, "SetStateValue", $.makeArray(arguments));
+        },
+
+        complexArray: function (people) {
+            /// <summary>Calls the ComplexArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="people" type="Object">Server side type is SignalR.Samples.Hubs.DemoHub.DemoHub+Person[]</param>
+            return invoke(this, "ComplexArray", $.makeArray(arguments));
+        },
+
+        complexType: function (p) {
+            /// <summary>Calls the ComplexType method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="p" type="Object">Server side type is SignalR.Samples.Hubs.DemoHub.DemoHub+Person</param>
+            return invoke(this, "ComplexType", $.makeArray(arguments));
+        },
+
+        passingDynamicComplex: function (p) {
+            /// <summary>Calls the PassingDynamicComplex method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="p" type="Object">Server side type is System.Object</param>
+            return invoke(this, "PassingDynamicComplex", $.makeArray(arguments));
+        },
+
+        multipleCalls: function () {
+            /// <summary>Calls the MultipleCalls method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "MultipleCalls", $.makeArray(arguments));
+        },
+
+        overload: function () {
+            /// <summary>Calls the Overload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "Overload", $.makeArray(arguments));
+        },
+
+        unsupportedOverload: function (x) {
+            /// <summary>Calls the UnsupportedOverload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="x" type="String">Server side type is System.String</param>
+            return invoke(this, "UnsupportedOverload", $.makeArray(arguments));
+        },
+
+        testGuid: function () {
+            /// <summary>Calls the TestGuid method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "TestGuid", $.makeArray(arguments));
+        },
+
+        dynamicInvoke: function (method) {
+            /// <summary>Calls the DynamicInvoke method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="method" type="String">Server side type is System.String</param>
+            return invoke(this, "DynamicInvoke", $.makeArray(arguments));
+        }
+    };
+
+    signalR.drawingPad = {
+        _: {
+            hubName: 'DrawingPad',
+            ignoreMembers: ['drawLine', 'join'],
+            connection: function () { return signalR.hub; }
+        },
+
+        join: function () {
+            /// <summary>Calls the Join method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "Join", $.makeArray(arguments));
+        },
+
+        drawLine: function (data) {
+            /// <summary>Calls the DrawLine method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="data" type="Object">Server side type is SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad.DrawingPad+Line</param>
+            return invoke(this, "DrawLine", $.makeArray(arguments));
+        }
+    };
+
+    signalR.hubBench = {
+        _: {
+            hubName: 'HubBench',
+            ignoreMembers: ['hitMe', 'hitUs'],
+            connection: function () { return signalR.hub; }
+        },
+
+        hitMe: function (start, clientCalls, connectionId) {
+            /// <summary>Calls the HitMe method on the server-side HubBench hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="start" type="Number">Server side type is System.Int64</param>
+            /// <param name="clientCalls" type="Number">Server side type is System.Int32</param>
+            /// <param name="connectionId" type="String">Server side type is System.String</param>
+            return invoke(this, "HitMe", $.makeArray(arguments));
+        },
+
+        hitUs: function (start, clientCalls) {
+            /// <summary>Calls the HitUs method on the server-side HubBench hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="start" type="Number">Server side type is System.Int64</param>
+            /// <param name="clientCalls" type="Number">Server side type is System.Int32</param>
+            return invoke(this, "HitUs", $.makeArray(arguments));
+        }
+    };
+
+    signalR.mouseTracking = {
+        _: {
+            hubName: 'MouseTracking',
+            ignoreMembers: ['join', 'move'],
+            connection: function () { return signalR.hub; }
+        },
+
+        join: function () {
+            /// <summary>Calls the Join method on the server-side MouseTracking hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "Join", $.makeArray(arguments));
+        },
+
+        move: function (x, y) {
+            /// <summary>Calls the Move method on the server-side MouseTracking hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="x" type="Number">Server side type is System.Int32</param>
+            /// <param name="y" type="Number">Server side type is System.Int32</param>
+            return invoke(this, "Move", $.makeArray(arguments));
+        }
+    };
+
+    signalR.shapeShare = {
+        _: {
+            hubName: 'ShapeShare',
+            ignoreMembers: ['changeShape', 'changeUserName', 'createShape', 'deleteAllShapes', 'deleteShape', 'getShapes', 'join'],
+            connection: function () { return signalR.hub; }
+        },
+
+        getShapes: function () {
+            /// <summary>Calls the GetShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "GetShapes", $.makeArray(arguments));
+        },
+
+        join: function (userName) {
+            /// <summary>Calls the Join method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="userName" type="String">Server side type is System.String</param>
+            return invoke(this, "Join", $.makeArray(arguments));
+        },
+
+        changeUserName: function (currentUserName, newUserName) {
+            /// <summary>Calls the ChangeUserName method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="currentUserName" type="String">Server side type is System.String</param>
+            /// <param name="newUserName" type="String">Server side type is System.String</param>
+            return invoke(this, "ChangeUserName", $.makeArray(arguments));
+        },
+
+        createShape: function (type) {
+            /// <summary>Calls the CreateShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="type" type="String">Server side type is System.String</param>
+            return invoke(this, "CreateShape", $.makeArray(arguments));
+        },
+
+        changeShape: function (id, x, y, w, h) {
+            /// <summary>Calls the ChangeShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="id" type="String">Server side type is System.String</param>
+            /// <param name="x" type="Number">Server side type is System.Int32</param>
+            /// <param name="y" type="Number">Server side type is System.Int32</param>
+            /// <param name="w" type="Number">Server side type is System.Int32</param>
+            /// <param name="h" type="Number">Server side type is System.Int32</param>
+            return invoke(this, "ChangeShape", $.makeArray(arguments));
+        },
+
+        deleteShape: function (id) {
+            /// <summary>Calls the DeleteShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="id" type="String">Server side type is System.String</param>
+            return invoke(this, "DeleteShape", $.makeArray(arguments));
+        },
+
+        deleteAllShapes: function () {
+            /// <summary>Calls the DeleteAllShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "DeleteAllShapes", $.makeArray(arguments));
+        }
+    };
+
+    signalR.status = {
+        _: {
+            hubName: 'Status',
+            ignoreMembers: [],
+            connection: function () { return signalR.hub; }
+        }
+    };
 
     signalR.hub = $.hubConnection("/signalr")
         .starting(function () {

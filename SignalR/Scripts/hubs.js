@@ -9,6 +9,7 @@
  */
 
 /// <reference path="jquery-1.6.2.js" />
+/// <reference path="jquery.signalR.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
     "use strict";
@@ -66,7 +67,7 @@
     function copy(obj, exclude) {
         var newObj = {};
         $.each(obj, function (key, value) {
-            if ($.inArray(key, exclude) === -1) {
+            if (!$.isFunction(value) && $.inArray(key, exclude) === -1) {
                 // We don't use "this" because browsers suck!
                 newObj[key] = value;
             }
@@ -75,30 +76,45 @@
     }
 
     function invoke(hub, methodName, args) {
+        // Extract user callback from args
+        var userCallback = args[args.length - 1], // last argument
+            callback = function (result) {
+                // Update hub state from proxy state
+                $.extend(hub, hub._.proxy.state);
+                if ($.isFunction(userCallback)) {
+                    userCallback.call(hub, result);
+                }
+            };
+
+        if ($.isFunction(userCallback)) {
+            // Replace user's callback with our own
+            args = $.merge(args.splice(0, args.length - 1), [callback]);
+        }
+
         // Update proxy state from hub state
         $.extend(hub._.proxy.state, copy(hub, ["_"]));
+
         return hub._.proxy.invoke.apply(hub._.proxy, $.merge([methodName], args));
     }
 
     // Create hub signalR instance
-    $.extend(signalR, {
-        /*
-        myDemoHub: {
-            _: {
-                hubName: "MyDemoHub",
-                ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
-                connection: function () { return signalR.hub; }
-            },
-            serverMethod1: function(p1, p2) {
-                return invoke(this, "ServerMethod1", $.makeArray(arguments));
-            },
-            serverMethod2: function(p1) {
-                return invoke(this, "ServerMethod2", $.makeArray(arguments));;
-            }
+    /*
+    signalR.myDemoHub = {
+        _: {
+            hubName: "MyDemoHub",
+            ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
+            connection: function () { return signalR.hub; }
+        },
+        serverMethod1: function(p1, p2) {
+            return invoke(this, "ServerMethod1", $.makeArray(arguments));
+        },
+        serverMethod2: function(p1) {
+            return invoke(this, "ServerMethod2", $.makeArray(arguments));;
         }
-        */
-        /*hubs*/
-    });
+    };
+    */
+
+    /*hubs*/
 
     signalR.hub = $.hubConnection("{serviceUrl}")
         .starting(function () {

@@ -6,7 +6,8 @@
 
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
     var callbackId = 0,
-        callbacks = {};
+        callbacks = {},
+        eventNamespace = "proxy.";
 
     // Array.prototype.map
     if (!Array.prototype.hasOwnProperty("map")) {
@@ -54,7 +55,7 @@
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
 
-            $(self).bind(eventName, function (e, data) {
+            $(self).bind(eventNamespace + eventName, function (e, data) {
                 callback.apply(self, data);
             });
             self.subscribed = true;
@@ -68,7 +69,7 @@
             var self = this,
                 args = $.makeArray(arguments).slice(1),
                 userCallback = args[args.length - 1], // last argument
-                methodArgs = $.type(userCallback) === "function" ? args.slice(0, -1) /* all but last */ : args,
+                methodArgs = $.type(userCallback) === "function" ? args.slice(0, args.length - 1) /* all but last */ : args,
                 argValues = methodArgs.map(getArgValue),
                 data = { hub: self.hubName, method: methodName, args: argValues, state: self.state, id: callbackId },
                 d = $.Deferred(),
@@ -167,7 +168,7 @@
                 proxy = this.proxies[hubName];
                 // Update the hub state
                 $.extend(proxy.state, data.State);
-                $(proxy).trigger(eventName, [data.Args]);
+                $(proxy).trigger(eventNamespace + eventName, [data.Args]);
             }
         });
     };

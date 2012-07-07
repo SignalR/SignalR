@@ -217,7 +217,7 @@ namespace SignalR.ProxyGenerator
                 object resolver = Activator.CreateInstance(resolverType);
                 dynamic proxyGenerator = Activator.CreateInstance(proxyGeneratorType, resolver);
 
-                return proxyGenerator.GenerateProxy(url);
+                return proxyGenerator.GenerateProxy(url, true);
             }
         }
     }
