@@ -82,9 +82,14 @@ namespace SignalR
 
             topic.Store.Add(new Message(eventKey, value));
 
-            foreach (var subscription in topic.Subscriptions.GetSnapshot())
+            // TODO: Consider a ReaderWriterLockSlim (or use our LockedList<T>)
+            lock (topic.Subscriptions)
             {
-                _engine.Schedule(subscription);
+                for (int i = 0; i < topic.Subscriptions.Count; i++)
+                {
+                    Subscription subscription = topic.Subscriptions[i];
+                    _engine.Schedule(subscription);
+                }
             }
 
             return TaskAsyncHelper.Empty;
@@ -123,8 +128,11 @@ namespace SignalR
                 // Set the subscription for this topic
                 subscription.SetCursorTopic(eventKey, topic);
 
-                // Add this subscription to the list of subs
-                topic.Subscriptions.Add(subscription);
+                lock (topic.Subscriptions)
+                {
+                    // Add this subscription to the list of subs
+                    topic.Subscriptions.Add(subscription);
+                }
             }
 
             if (!String.IsNullOrEmpty(cursor))
@@ -153,8 +161,11 @@ namespace SignalR
                 // Set the topic
                 subscription.SetCursorTopic(eventKey, topic);
 
-                // Add it to the list of subs
-                topic.Subscriptions.Add(subscription);
+                lock (topic.Subscriptions)
+                {
+                    // Add it to the list of subs
+                    topic.Subscriptions.Add(subscription);
+                }
             };
 
             Action<string> eventRemoved = eventKey => RemoveEvent(subscription, eventKey);
@@ -182,7 +193,10 @@ namespace SignalR
             Topic topic;
             if (_topics.TryGetValue(eventKey, out topic))
             {
-                topic.Subscriptions.Remove(subscription);
+                lock (topic.Subscriptions)
+                {
+                    topic.Subscriptions.Remove(subscription);
+                }
                 subscription.RemoveCursor(eventKey);
             }
         }
@@ -561,12 +575,12 @@ namespace SignalR
 
         internal class Topic
         {
-            public SafeSet<Subscription> Subscriptions { get; set; }
-            public MessageStore<Message> Store { get; set; }
+            public IList<Subscription> Subscriptions { get; private set; }
+            public MessageStore<Message> Store { get; private set; }
 
             public Topic()
             {
-                Subscriptions = new SafeSet<Subscription>();
+                Subscriptions = new List<Subscription>();
                 Store = new MessageStore<Message>(DefaultMessageStoreSize);
             }
         }
