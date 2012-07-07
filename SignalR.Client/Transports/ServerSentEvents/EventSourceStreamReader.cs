@@ -16,6 +16,8 @@ namespace SignalR.Client.Transports.ServerSentEvents
         private readonly Stream _stream;
         private readonly ChunkBuffer _buffer;
         private readonly object _lockObj = new object();
+        private byte[] _readBuffer;
+
 
         private int _reading;
         private Action _setOpened;
@@ -66,6 +68,11 @@ namespace SignalR.Client.Transports.ServerSentEvents
                     OnOpened();
                 };
 
+                if (_readBuffer == null)
+                {
+                    _readBuffer = new byte[4096];
+                }
+
                 // Start the process loop
                 Process();
             }
@@ -88,9 +95,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
                 return;
             }
 
-            var buffer = new byte[4096];
-
-            Task<int> readTask = _stream.ReadAsync(buffer);
+            Task<int> readTask = _stream.ReadAsync(_readBuffer);
 
             if (readTask.IsCompleted)
             {
@@ -101,7 +106,7 @@ namespace SignalR.Client.Transports.ServerSentEvents
 
                     int read = readTask.Result;
 
-                    if (TryProcessRead(buffer, read))
+                    if (TryProcessRead(read))
                     {
                         goto Read;
                     }
@@ -113,16 +118,16 @@ namespace SignalR.Client.Transports.ServerSentEvents
             }
             else
             {
-                ReadAsync(readTask, buffer);
+                ReadAsync(readTask);
             }
         }
 
-        private void ReadAsync(Task<int> readTask, byte[] buffer)
+        private void ReadAsync(Task<int> readTask)
         {
             readTask.Catch(ex => Close(ex))
                     .Then(read =>
                     {
-                        if (TryProcessRead(buffer, read))
+                        if (TryProcessRead(read))
                         {
                             Process();
                         }
@@ -130,14 +135,14 @@ namespace SignalR.Client.Transports.ServerSentEvents
                     .Catch();
         }
 
-        private bool TryProcessRead(byte[] buffer, int read)
+        private bool TryProcessRead(int read)
         {
             Interlocked.Exchange(ref _setOpened, () => { }).Invoke();
 
             if (read > 0)
             {
                 // Put chunks in the buffer
-                ProcessBuffer(buffer, read);
+                ProcessBuffer(read);
 
                 return true;
             }
@@ -149,11 +154,11 @@ namespace SignalR.Client.Transports.ServerSentEvents
             return false;
         }
 
-        private void ProcessBuffer(byte[] buffer, int read)
+        private void ProcessBuffer(int read)
         {
             lock (_lockObj)
             {
-                _buffer.Add(buffer, read);
+                _buffer.Add(_readBuffer, read);
 
                 while (_buffer.HasChunks)
                 {
@@ -192,6 +197,9 @@ namespace SignalR.Client.Transports.ServerSentEvents
 
                     Closed(exception);
                 }
+
+                // Release the buffer
+                _readBuffer = null;
             }
         }
 
