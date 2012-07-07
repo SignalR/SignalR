@@ -54,9 +54,45 @@ namespace SignalR.Stress
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
 
+            // RunBusTest();
+            // RunConnectionTest();
             RunMemoryHost();
 
             Console.ReadLine();
+        }
+
+        private static void RunConnectionTest()
+        {            
+            string payload = GetPayload();
+
+            var dr = new DefaultDependencyResolver();
+            MeasureStats((MessageBus)dr.Resolve<INewMessageBus>());
+            var connectionManager = new ConnectionManager(dr);
+            var context = connectionManager.GetConnectionContext<StressConnection>();
+
+            for (int i = 0; i < _clients; i++)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    Interlocked.Increment(ref _clientsRunning);
+                    var transportConnection = (ITransportConnection)context.Connection;
+                    transportConnection.Receive(null, (ex, r) =>
+                    {
+                        Interlocked.Add(ref _received, r.Messages.Count);
+                        Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+                        return TaskAsyncHelper.Empty;
+                    });
+
+                }, i);
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    StartSendLoop(i, (source, key, value) => context.Connection.Broadcast(value), payload);
+                });
+            }
         }
 
         private static void RunMemoryHost()
@@ -68,10 +104,10 @@ namespace SignalR.Stress
 
             MeasureStats((MessageBus)host.DependencyResolver.Resolve<INewMessageBus>());
 
-            ForeverTransport.Sending += (data) =>
+            ForeverTransport.SendingResponse += (r) =>
             {
-                Interlocked.Increment(ref _received);
-                Interlocked.Increment(ref _avgLastReceivedCount);
+                Interlocked.Add(ref _received, r.Messages.Count);
+                Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
             };
 
             for (int i = 0; i < _clients; i++)
@@ -188,7 +224,7 @@ namespace SignalR.Stress
             _sw.Start();
             _avgCalcStart = DateTime.UtcNow;
             var resultsPath = Guid.NewGuid().ToString() + ".csv";
-            File.WriteAllText(resultsPath, "Target Rate, RPS, Peak RPS, Avg RPS\n");
+            // File.WriteAllText(resultsPath, "Target Rate, RPS, Peak RPS, Avg RPS\n");
 
             _rateTimer = new Timer(_ =>
             {
@@ -284,7 +320,7 @@ namespace SignalR.Stress
 
                     _avgReceivesPerSecond = _avgLastReceivedCount / (now - _avgCalcStart).TotalSeconds;
 
-                    File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
+                    // File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
 
                     if (_runs > 0 && _runs % _stepInterval == 0)
                     {
