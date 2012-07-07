@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Transports.ServerSentEvents
@@ -80,40 +81,72 @@ namespace SignalR.Client.Transports.ServerSentEvents
 
         private void Process()
         {
+        Read:
+
             if (!Processing)
             {
                 return;
             }
 
             var buffer = new byte[4096];
-            _stream.ReadAsync(buffer).ContinueWith(task =>
+
+            Task<int> readTask = _stream.ReadAsync(buffer);
+
+            if (readTask.IsCompleted)
             {
-                // When the first get data from the server the trigger the event.
-                Interlocked.Exchange(ref _setOpened, () => { }).Invoke();
-
-                if (task.IsFaulted)
+                try
                 {
-                    Close(task.Exception.Unwrap());
-                    return;
+                    // Observe all exceptions
+                    readTask.Wait();
+
+                    int read = readTask.Result;
+
+                    if (TryProcessRead(buffer, read))
+                    {
+                        goto Read;
+                    }
                 }
-
-                int read = task.Result;
-
-                if (read > 0)
+                catch (Exception ex)
                 {
-                    // Put chunks in the buffer
-                    ProcessBuffer(buffer, read);
+                    Close(ex);
                 }
+            }
+            else
+            {
+                ReadAsync(readTask, buffer);
+            }
+        }
 
-                if (read == 0)
-                {
-                    Close();
-                    return;
-                }
+        private void ReadAsync(Task<int> readTask, byte[] buffer)
+        {
+            readTask.Catch(ex => Close(ex))
+                    .Then(read =>
+                    {
+                        if (TryProcessRead(buffer, read))
+                        {
+                            Process();
+                        }
+                    })
+                    .Catch();
+        }
 
-                // Keep reading the next set of data
-                Process();
-            });
+        private bool TryProcessRead(byte[] buffer, int read)
+        {
+            Interlocked.Exchange(ref _setOpened, () => { }).Invoke();
+
+            if (read > 0)
+            {
+                // Put chunks in the buffer
+                ProcessBuffer(buffer, read);
+
+                return true;
+            }
+            else if (read == 0)
+            {
+                Close();
+            }
+
+            return false;
         }
 
         private void ProcessBuffer(byte[] buffer, int read)
@@ -152,6 +185,11 @@ namespace SignalR.Client.Transports.ServerSentEvents
                 Debug.WriteLine("EventSourceReader: Connection Closed");
                 if (Closed != null)
                 {
+                    if (exception != null)
+                    {
+                        exception = exception.Unwrap();
+                    }
+
                     Closed(exception);
                 }
             }

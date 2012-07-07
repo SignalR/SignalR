@@ -27,6 +27,26 @@ namespace SignalR.Tests
             Assert.Equal("somedata", tcs.Task.Result);
         }
 
+        [Fact]
+        public void CloseThrowsSouldntTakeProcessDown()
+        {
+            var memoryStream = MemoryStream("");
+            var eventSource = new EventSourceStreamReader(memoryStream);
+
+            eventSource.Closed = (ex) =>
+            {
+                throw new Exception("Throw on closed");
+            };
+
+            eventSource.Start();
+            
+            // Force any finalizers to run so we can see unhandled task errors
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        }
+
         private MemoryStream MemoryStream(string data)
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(data));
