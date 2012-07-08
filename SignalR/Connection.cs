@@ -10,7 +10,7 @@ namespace SignalR
 {
     public class Connection : IConnection, ITransportConnection, ISubscriber
     {
-        private readonly INewMessageBus _newMessageBus;
+        private readonly INewMessageBus _bus;
         private readonly IJsonSerializer _serializer;
         private readonly string _baseSignal;
         private readonly string _connectionId;
@@ -28,7 +28,7 @@ namespace SignalR
                           IEnumerable<string> groups,
                           ITraceManager traceManager)
         {
-            _newMessageBus = newMessageBus;
+            _bus = newMessageBus;
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
@@ -78,7 +78,7 @@ namespace SignalR
         private Task SendMessage(string key, object value)
         {
             var wrappedValue = new WrappedValue(PreprocessValue(value), _serializer);
-            return _newMessageBus.Publish(_connectionId, key, wrappedValue);
+            return _bus.Publish(_connectionId, key, wrappedValue);
         }
 
         private object PreprocessValue(object value)
@@ -95,7 +95,7 @@ namespace SignalR
                 var group = new GroupData
                 {
                     Name = command.Value,
-                    Cursor = _newMessageBus.GetCursor(command.Value)
+                    Cursor = _bus.GetCursor(command.Value)
                 };
 
                 command.Value = _serializer.Stringify(group);
@@ -126,7 +126,7 @@ namespace SignalR
                 }
             });
 
-            subscription = _newMessageBus.Subscribe(this, messageId, (ex, result) =>
+            subscription = _bus.Subscribe(this, messageId, (ex, result) =>
             {
                 if (ex != null)
                 {
@@ -134,7 +134,8 @@ namespace SignalR
                 }
                 else
                 {
-                    tcs.TrySetResult(GetResponse(result));
+                    PersistentResponse response = GetResponse(result);
+                    tcs.TrySetResult(response);
                 }
 
                 registration.Dispose();
@@ -148,6 +149,11 @@ namespace SignalR
             });
 
             return tcs.Task;
+        }
+
+        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback)
+        {
+            return _bus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)));
         }
 
         private PersistentResponse GetResponse(MessageResult result)
@@ -233,18 +239,7 @@ namespace SignalR
                 response.TransportData["Groups"] = _groups;
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback)
-        {
-            return _newMessageBus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)));
-        }
-
+        
         private class GroupData
         {
             public string Name { get; set; }

@@ -180,18 +180,25 @@ namespace SignalR
             subscriber.EventAdded += eventAdded;
             subscriber.EventRemoved += eventRemoved;
 
+            // If there's a cursor then schedule work for this subscription
+            if (!String.IsNullOrEmpty(cursor))
+            {
+                _engine.Schedule(subscription);
+            }
+
             return new DisposableAction(() =>
             {                
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
 
                 string currentCursor = Cursor.MakeCursor(subscription.Cursors);
-                subscription.Invoke(new MessageResult(currentCursor));
 
                 foreach (var eventKey in subscriber.EventKeys)
                 {
                     RemoveEvent(subscription, eventKey);
                 }
+
+                subscription.Invoke(new MessageResult(currentCursor));
             });
         }
 
