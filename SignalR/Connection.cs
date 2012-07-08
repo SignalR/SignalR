@@ -113,18 +113,41 @@ namespace SignalR
             return command;
         }
 
-        public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
+        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel)
         {
-            Trace.TraceInformation("Waiting for new messages");
+            var tcs = new TaskCompletionSource<PersistentResponse>();
+            IDisposable subscription = null;
 
-            return TaskAsyncHelper.FromResult(new PersistentResponse());
-        }
+            CancellationTokenRegistration registration = cancel.Register(() =>
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+            });
 
-        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
-        {
-            Trace.TraceInformation("Waiting for messages from {0}.", messageId);
+            subscription = _newMessageBus.Subscribe(this, messageId, (ex, result) =>
+            {
+                if (ex != null)
+                {
+                    tcs.TrySetException(ex);
+                }
+                else
+                {
+                    tcs.TrySetResult(GetResponse(result));
+                }
 
-            return TaskAsyncHelper.FromResult(new PersistentResponse());
+                registration.Dispose();
+
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+                
+                return TaskAsyncHelper.False;
+            });
+
+            return tcs.Task;
         }
 
         private PersistentResponse GetResponse(MessageResult result)

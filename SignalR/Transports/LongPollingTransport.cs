@@ -224,77 +224,9 @@ namespace SignalR.Transports
                 TransportConnected().Catch();
             }
 
-            var tcs = new TaskCompletionSource<object>();
-            IDisposable subscription = null;
-
-            Action<Exception> endRequest = (exception) =>
-            {
-                if (exception != null)
-                {
-                    tcs.TrySetException(exception);
-                }
-                else
-                {
-                    tcs.TrySetResult(null);
-                }
-
-                if (subscription != null)
-                {
-                    subscription.Dispose();
-                }
-            };
-
-            ConnectionEndToken.Register(() =>
-            {
-                if (subscription != null)
-                {
-                    subscription.Dispose();
-                }
-            });
-
-            subscription = connection.Receive(MessageId, (ex, response) =>
-            {
-                if (ex != null)
-                {
-                    endRequest(ex);
-                    return TaskAsyncHelper.False;
-                }
-
-                if (tcs.Task.IsCompleted)
-                {
-                    return TaskAsyncHelper.False;
-                }
-
-                response.TimedOut = IsTimedOut;
-
-                if (response.Aborted)
-                {
-                    // If this was a clean disconnect then raise the event
-                    OnDisconnect();
-                }
-
-                return Send(response).Then(cb => cb(null), endRequest)
-                                     .Then(() => TaskAsyncHelper.False);
-            });
-
-            if (postReceive != null)
-            {
-                postReceive();
-            }
-
-            return tcs.Task;
-        }
-
-        private Task ProcessReceiveRequestWithoutTrackingOld(ITransportConnection connection, Action postReceive = null)
-        {
-            if (TransportConnected != null)
-            {
-                TransportConnected().Catch();
-            }
-
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
-                              connection.ReceiveAsync(ConnectionEndToken) :
+                              connection.ReceiveAsync(null, ConnectionEndToken) :
                               connection.ReceiveAsync(MessageId, ConnectionEndToken);
 
             if (postReceive != null)

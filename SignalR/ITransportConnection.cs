@@ -8,8 +8,7 @@ namespace SignalR
     {
         IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback);
 
-        Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken);
-        Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken);
+        Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel);
 
         Task Send(string signal, object value);
     }
