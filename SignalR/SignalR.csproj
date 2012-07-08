@@ -45,6 +45,9 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
+      <Link>Infrastructure\StreamExtensions.cs</Link>
+    </Compile>
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="Hosting\HostConstants.cs" />

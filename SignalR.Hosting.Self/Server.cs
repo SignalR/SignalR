@@ -160,8 +160,10 @@ namespace SignalR.Hosting.Self
                         context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
                     }
 
+                    RegisterForDisconnect(context, cts.Cancel);
+
                     var request = new HttpListenerRequestWrapper(context);
-                    var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
+                    var response = new HttpListenerResponseWrapper(context.Response, cts.Token);
                     var hostContext = new HostContext(request, response);
 
 #if NET45

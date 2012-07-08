@@ -1,6 +1,6 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR
 {
@@ -18,7 +18,8 @@ namespace SignalR
         public static Task EndAsync(this IResponse response, string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);
-            return response.EndAsync(new ArraySegment<byte>(bytes));
+            return response.OutputStream.WriteAsync(bytes)
+                                        .Then(r => r.OutputStream.Close(), response);
         }
     }
 }

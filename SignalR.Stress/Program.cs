@@ -55,8 +55,8 @@ namespace SignalR.Stress
 
             // RunBusTest();
             // RunConnectionTest();
-            RunConnectionReceiveLoopTest();
-            // RunMemoryHost();
+            // RunConnectionReceiveLoopTest();
+            RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -186,7 +186,7 @@ namespace SignalR.Stress
 
         private static void ReceiveLoop(ITransportConnection connection, string messageId)
         {
-            connection.ReceiveAsync(messageId, CancellationToken.None, messageBufferSize: 20).Then(r =>
+            connection.ReceiveAsync(messageId, CancellationToken.None, messageBufferSize: 10).Then(r =>
             {
                 Interlocked.Add(ref _received, r.Messages.Count);
                 Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);

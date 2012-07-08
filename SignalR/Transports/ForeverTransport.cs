@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Threading;
+using System.IO;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
-    public class ForeverTransport : TransportDisconnectBase, ITransport
+    public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
+        private TextWriter _outputWriter;
 
         private const int MessageBufferSize = 10;
 
@@ -17,7 +18,6 @@ namespace SignalR.Transports
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>())
         {
-
         }
 
         public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
@@ -60,6 +60,8 @@ namespace SignalR.Transports
 
         protected virtual void OnSendingResponse(PersistentResponse response)
         {
+            HeartBeat.MarkConnection(this);
+
             if (SendingResponse != null)
             {
                 SendingResponse(response);
@@ -71,6 +73,19 @@ namespace SignalR.Transports
             if (Receiving != null)
             {
                 Receiving(data);
+            }
+        }
+
+        public TextWriter OutputWriter
+        {
+            get
+            {
+                if (_outputWriter == null)
+                {
+                    _outputWriter = CreateWriter();
+                }
+
+                return _outputWriter;
             }
         }
 
@@ -90,6 +105,11 @@ namespace SignalR.Transports
         public Func<Task> Reconnected { get; set; }
 
         public Func<Exception, Task> Error { get; set; }
+
+        protected virtual TextWriter CreateWriter()
+        {
+            return new StreamWriter(Context.Response.OutputStream);
+        }
 
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
@@ -140,22 +160,15 @@ namespace SignalR.Transports
             return ProcessRequestCore(connection);
         }
 
-        public virtual Task Send(PersistentResponse response)
-        {
-            var data = _jsonSerializer.Stringify(response);
-
-            OnSending(data);
-
-            return WriteAsync(data);
-        }
+        public abstract Task Send(PersistentResponse response);
 
         public virtual Task Send(object value)
-        {
-            var data = _jsonSerializer.Stringify(value);
+        { 
+            JsonSerializer.Stringify(value, OutputWriter);
 
-            OnSending(data);
+            OutputWriter.Flush();
 
-            return Context.Response.EndAsync(data);
+            return TaskAsyncHelper.Empty;
         }
 
         protected virtual Task InitializeResponse(ITransportConnection connection)
@@ -205,7 +218,6 @@ namespace SignalR.Transports
         private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
-            // ProcessMessagesImpl(tcs, connection, postReceive);
             ProcessMessages(connection, postReceive, (exception) =>
             {
                 if (exception != null)
@@ -243,7 +255,7 @@ namespace SignalR.Transports
                     endRequest(ex);
                     return TaskAsyncHelper.False;
                 }
-
+                
                 response.TimedOut = IsTimedOut;
 
                 if (response.Disconnect ||

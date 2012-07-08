@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace SignalR
@@ -70,6 +71,12 @@ namespace SignalR
         public T Parse<T>(string json)
         {
             return JsonConvert.DeserializeObject<T>(json, _settings);
+        }
+
+        public void Stringify(object value, TextWriter writer)
+        {
+            var serializer = JsonSerializer.Create(_settings);
+            serializer.Serialize(writer, value);
         }
     }
 }

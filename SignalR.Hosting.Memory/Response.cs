@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 using IClientResponse = SignalR.Client.Http.IResponse;
 
@@ -14,40 +13,35 @@ namespace SignalR.Hosting.Memory
     {
         private ArraySegment<byte> _nonStreamingData;
         private readonly CancellationToken _clientToken;
-        private readonly FollowStream _responseStream;
+        private readonly FollowStream _followStream;
         private bool _ended;
 
         public Response(CancellationToken clientToken, Action startSending)
         {
             _clientToken = clientToken;
-            _responseStream = new FollowStream(startSending);
+            _followStream = new FollowStream(startSending);
         }
 
         public string ReadAsString()
         {
-            if (_nonStreamingData.Array == null)
-            {
-                return null;
-            }
-
-            return Encoding.UTF8.GetString(_nonStreamingData.Array, _nonStreamingData.Offset, _nonStreamingData.Count);
+            return new StreamReader(_followStream).ReadToEnd();
         }
 
         public Stream GetResponseStream()
         {
-            return _responseStream;
+            return _followStream;
         }
 
         public void Close()
         {
-            _responseStream.Close();
+            _followStream.Close();
         }
 
         public bool IsClientConnected
         {
             get
             {
-                return !_responseStream.Ended && !_clientToken.IsCancellationRequested && !_ended;
+                return !_followStream.Ended && !_clientToken.IsCancellationRequested && !_ended;
             }
         }
 
@@ -57,21 +51,9 @@ namespace SignalR.Hosting.Memory
             set;
         }
 
-        public Task WriteAsync(ArraySegment<byte> data)
+        public Stream OutputStream
         {
-            if (IsClientConnected)
-            {
-                _responseStream.Write(data.Array, data.Offset, data.Count);
-            }
-
-            return TaskAsyncHelper.Empty;
-        }
-
-        public Task EndAsync(ArraySegment<byte> data)
-        {
-            _nonStreamingData = data;
-            _ended = true;
-            return TaskAsyncHelper.Empty;
+            get { return _followStream; }
         }
 
         /// <summary>
@@ -128,7 +110,6 @@ namespace SignalR.Hosting.Memory
 
             public override void Flush()
             {
-                throw new NotImplementedException();
             }
 
             public override long Length
@@ -296,5 +277,6 @@ namespace SignalR.Hosting.Memory
                 EnsureStarted();
             }
         }
+
     }
 }

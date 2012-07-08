@@ -9,7 +9,7 @@ namespace SignalR
     /// </summary>
     public struct MessageResult
     {
-        private static readonly Message[] _emptyList = new Message[0];
+        private static readonly List<ArraySegment<Message>> _emptyList = new List<ArraySegment<Message>>();
 
         /// <summary>
         /// Gets an <see cref="IList{Message}"/> associated with the result.
@@ -27,22 +27,9 @@ namespace SignalR
         /// Initializes a new instance of the <see cref="MessageResult"/> struct.
         /// </summary>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
-        public MessageResult(string lastMessageId)
-            : this(_emptyList, lastMessageId)
+        public MessageResult(string lastMessageId) :
+            this(_emptyList, lastMessageId, totalCount: 0)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MessageResult"/> struct.
-        /// </summary>
-        /// <param name="messages">The list of messages associated with this <see cref="MessageResult"/>.</param>
-        /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
-        public MessageResult(IList<Message> messages, string lastMessageId)
-            : this()
-        {
-            Messages = new[] { new ArraySegment<Message>(messages.ToArray()) };
-            LastMessageId = lastMessageId;
-            TotalCount = messages.Count;
         }
 
         /// <summary>

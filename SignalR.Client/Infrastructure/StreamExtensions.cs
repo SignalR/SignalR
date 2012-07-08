@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SignalR.Client.Infrastructure
+namespace SignalR.Infrastructure
 {
     internal static class StreamExtensions
     {
