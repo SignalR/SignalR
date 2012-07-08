@@ -9,7 +9,6 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
-        private TextWriter _outputWriter;
 
         private const int MessageBufferSize = 10;
 
@@ -76,19 +75,6 @@ namespace SignalR.Transports
             }
         }
 
-        public TextWriter OutputWriter
-        {
-            get
-            {
-                if (_outputWriter == null)
-                {
-                    _outputWriter = CreateWriter();
-                }
-
-                return _outputWriter;
-            }
-        }
-
         // Static events intended for use when measuring performance
         public static event Action<string> Sending;
 
@@ -105,11 +91,6 @@ namespace SignalR.Transports
         public Func<Task> Reconnected { get; set; }
 
         public Func<Exception, Task> Error { get; set; }
-
-        protected virtual TextWriter CreateWriter()
-        {
-            return new StreamWriter(Context.Response.OutputStream);
-        }
 
         protected Task ProcessRequestCore(ITransportConnection connection)
         {

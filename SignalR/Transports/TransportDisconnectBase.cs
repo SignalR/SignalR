@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -13,6 +14,7 @@ namespace SignalR.Transports
         private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
         private readonly IJsonSerializer _jsonSerializer;
+        private TextWriter _outputWriter;
 
         protected int _isDisconnected;
         private readonly CancellationTokenSource _timeoutTokenSource;
@@ -47,6 +49,19 @@ namespace SignalR.Transports
                 }
 
                 return _connectionId;
+            }
+        }
+
+        public TextWriter OutputWriter
+        {
+            get
+            {
+                if (_outputWriter == null)
+                {
+                    _outputWriter = new StreamWriter(Context.Response.OutputStream, Encoding.UTF8, 4096);
+                }
+
+                return _outputWriter;
             }
         }
 

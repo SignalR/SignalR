@@ -241,7 +241,7 @@ namespace SignalR.Stress
 
         private static string GetPayload(int n = 32)
         {
-            return Encoding.UTF8.GetString(Enumerable.Range(0, n).Select(i => (byte)i).ToArray());
+            return new string('a', n);
         }
 
         static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)

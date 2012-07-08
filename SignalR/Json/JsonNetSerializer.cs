@@ -9,7 +9,7 @@ namespace SignalR
     /// </summary>
     public class JsonNetSerializer : IJsonSerializer
     {
-        private readonly JsonSerializerSettings _settings;
+        private readonly JsonSerializer _serializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonNetSerializer"/> class.
@@ -29,16 +29,21 @@ namespace SignalR
             {
                 throw new ArgumentNullException("settings");
             }
-            _settings = settings;
+
+            _serializer = JsonSerializer.Create(settings);
         }
         /// <summary>
         /// Serializes the specified object to a JSON string.
         /// </summary>
         /// <param name="value">The object to serailize.</param>
         /// <returns>A JSON string representation of the object.</returns>
-        public string Stringify(object obj)
+        public string Stringify(object value)
         {
-            return JsonConvert.SerializeObject(obj, _settings);
+            using (var writer = new StringWriter())
+            {
+                _serializer.Serialize(writer, value);
+                return writer.ToString();
+            }
         }
 
         /// <summary>
@@ -48,7 +53,11 @@ namespace SignalR
         /// <returns>The deserialized object from the JSON string.</returns>
         public object Parse(string json)
         {
-            return JsonConvert.DeserializeObject(json, _settings);
+            using (var stringReader = new StringReader(json))
+            using (var reader = new JsonTextReader(stringReader))
+            {
+                return _serializer.Deserialize(reader);
+            }
         }
 
         /// <summary>
@@ -59,7 +68,10 @@ namespace SignalR
         /// <returns>The deserialized object from the JSON string.</returns>
         public object Parse(string json, Type targetType)
         {
-            return JsonConvert.DeserializeObject(json, targetType, _settings);
+            using (var reader = new StringReader(json))
+            {
+                return _serializer.Deserialize(reader, targetType);
+            }
         }
 
         /// <summary>
@@ -70,13 +82,12 @@ namespace SignalR
         /// <returns>The deserialized object from the JSON string.</returns>
         public T Parse<T>(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, _settings);
+            return (T)Parse(json, typeof(T));
         }
 
         public void Stringify(object value, TextWriter writer)
         {
-            var serializer = JsonSerializer.Create(_settings);
-            serializer.Serialize(writer, value);
+            _serializer.Serialize(writer, value);
         }
     }
 }
