@@ -19,7 +19,6 @@ namespace SignalR
         private readonly Engine _engine;
 
         private const int DefaultMessageStoreSize = 5000;
-        private const int MaxMessages = 10;
 
         private readonly ITraceManager _trace;
 
@@ -102,7 +101,7 @@ namespace SignalR
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task<bool>> callback)
+        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task<bool>> callback, int messageBufferSize)
         {
             IEnumerable<Cursor> cursors = null;
             if (cursor == null)
@@ -119,7 +118,7 @@ namespace SignalR
                 cursors = Cursor.GetCursors(cursor);
             }
 
-            var subscription = new Subscription(cursors, callback);
+            var subscription = new Subscription(cursors, callback, messageBufferSize);
             var topics = new List<Topic>();
 
             foreach (var eventKey in subscriber.EventKeys)
@@ -187,7 +186,7 @@ namespace SignalR
             }
 
             return new DisposableAction(() =>
-            {                
+            {
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
 
@@ -241,12 +240,12 @@ namespace SignalR
         {
             private readonly List<Cursor> _cursors;
             private readonly Func<Exception, MessageResult, Task<bool>> _callback;
+            private readonly int _messageBufferSize;
 
             private readonly object _lockObj = new object();
 
             private int _queued;
             private int _working;
-
 
             public IList<Cursor> Cursors
             {
@@ -255,11 +254,12 @@ namespace SignalR
                     return _cursors;
                 }
             }
-
-            public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task<bool>> callback)
+            
+            public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task<bool>> callback, int messageBufferSize)
             {
                 _cursors = new List<Cursor>(cursors);
                 _callback = callback;
+                _messageBufferSize = messageBufferSize;
             }
 
             public Task<bool> Invoke(MessageResult result)
@@ -337,7 +337,7 @@ namespace SignalR
                     for (int i = 0; i < Cursors.Count; i++)
                     {
                         Cursor cursor = Cursors[i];
-                        MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, MaxMessages);
+                        MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, _messageBufferSize);
                         ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
                         cursor.Id = next;
 

@@ -10,6 +10,8 @@ namespace SignalR.Transports
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
 
+        private const int MessageBufferSize = 10;
+
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
@@ -262,7 +264,8 @@ namespace SignalR.Transports
                 {
                     return Send(response).Then(() => TaskAsyncHelper.True);
                 }
-            });
+            }, 
+            MessageBufferSize);
 
             if (postReceive != null)
             {

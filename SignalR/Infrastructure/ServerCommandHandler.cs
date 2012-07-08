@@ -13,6 +13,7 @@ namespace SignalR.Infrastructure
         private readonly INewMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;
         private readonly IJsonSerializer _serializer;
+        private const int MessageBufferSize = 10;
 
         // The signal for all signalr servers
         private const string ServerSignal = "__SIGNALR__SERVER__";
@@ -69,7 +70,7 @@ namespace SignalR.Infrastructure
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands);
+            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, messageBufferSize: MessageBufferSize);
         }
 
         private Task<bool> HandleServerCommands(Exception ex, MessageResult result)

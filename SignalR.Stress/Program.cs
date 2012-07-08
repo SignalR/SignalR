@@ -62,7 +62,7 @@ namespace SignalR.Stress
         }
 
         private static void RunConnectionTest()
-        {            
+        {
             string payload = GetPayload();
 
             var dr = new DefaultDependencyResolver();
@@ -81,7 +81,8 @@ namespace SignalR.Stress
                         Interlocked.Add(ref _received, r.Messages.Count);
                         Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
                         return TaskAsyncHelper.True;
-                    });
+                    }, 
+                    messageBufferSize: 10);
 
                 }, i);
             }
@@ -136,8 +137,8 @@ namespace SignalR.Stress
         }
 
         private static void LongPollingLoop(MemoryHost host, string connectionId)
-        {            
-            LongPoll:
+        {
+        LongPoll:
             var task = ProcessRequest(host, "longPolling", connectionId);
 
             if (task.IsCompleted)
@@ -185,7 +186,7 @@ namespace SignalR.Stress
 
         private static void ReceiveLoop(ITransportConnection connection, string messageId)
         {
-            connection.ReceiveAsync(messageId, CancellationToken.None).Then(r =>
+            connection.ReceiveAsync(messageId, CancellationToken.None, messageBufferSize: 20).Then(r =>
             {
                 Interlocked.Add(ref _received, r.Messages.Count);
                 Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
@@ -268,7 +269,8 @@ namespace SignalR.Stress
                     }
 
                     return TaskAsyncHelper.True;
-                });
+                },
+                messageBufferSize: 10);
             }
             catch (Exception ex)
             {

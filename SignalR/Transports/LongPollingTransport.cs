@@ -7,6 +7,7 @@ namespace SignalR.Transports
     public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
         private IJsonSerializer _jsonSerializer;
+        private const int MessageBufferSize = 30;
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
@@ -226,8 +227,8 @@ namespace SignalR.Transports
 
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
-                              connection.ReceiveAsync(null, ConnectionEndToken) :
-                              connection.ReceiveAsync(MessageId, ConnectionEndToken);
+                              connection.ReceiveAsync(null, ConnectionEndToken, MessageBufferSize) :
+                              connection.ReceiveAsync(MessageId, ConnectionEndToken, MessageBufferSize);
 
             if (postReceive != null)
             {

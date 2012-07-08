@@ -113,7 +113,7 @@ namespace SignalR
             return command;
         }
 
-        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel)
+        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int messageBufferSize)
         {
             var tcs = new TaskCompletionSource<PersistentResponse>();
             IDisposable subscription = null;
@@ -144,16 +144,17 @@ namespace SignalR
                 {
                     subscription.Dispose();
                 }
-                
+
                 return TaskAsyncHelper.False;
-            });
+            }, 
+            messageBufferSize);
 
             return tcs.Task;
         }
 
-        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback)
+        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback, int messageBufferSize)
         {
-            return _bus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)));
+            return _bus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)), messageBufferSize);
         }
 
         private PersistentResponse GetResponse(MessageResult result)
@@ -239,7 +240,7 @@ namespace SignalR
                 response.TransportData["Groups"] = _groups;
             }
         }
-        
+
         private class GroupData
         {
             public string Name { get; set; }
