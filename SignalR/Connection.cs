@@ -10,7 +10,6 @@ namespace SignalR
 {
     public class Connection : IConnection, ITransportConnection, ISubscriber
     {
-        private readonly IMessageBus _messageBus;
         private readonly INewMessageBus _newMessageBus;
         private readonly IJsonSerializer _serializer;
         private readonly string _baseSignal;
@@ -21,8 +20,7 @@ namespace SignalR
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
 
-        public Connection(IMessageBus messageBus,
-                          INewMessageBus newMessageBus,
+        public Connection(INewMessageBus newMessageBus,
                           IJsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
@@ -30,7 +28,6 @@ namespace SignalR
                           IEnumerable<string> groups,
                           ITraceManager traceManager)
         {
-            _messageBus = messageBus;
             _newMessageBus = newMessageBus;
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
@@ -120,16 +117,14 @@ namespace SignalR
         {
             Trace.TraceInformation("Waiting for new messages");
 
-            return _messageBus.GetMessages(Signals, null, timeoutToken)
-                              .Then(result => GetResponse(result));
+            return TaskAsyncHelper.FromResult(new PersistentResponse());
         }
 
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
         {
             Trace.TraceInformation("Waiting for messages from {0}.", messageId);
 
-            return _messageBus.GetMessages(Signals, messageId, timeoutToken)
-                              .Then(result => GetResponse(result));
+            return TaskAsyncHelper.FromResult(new PersistentResponse());
         }
 
         private PersistentResponse GetResponse(MessageResult result)

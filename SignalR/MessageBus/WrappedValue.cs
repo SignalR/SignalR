@@ -5,7 +5,7 @@
     /// If a store needs to save values in a serializable way then it just needs to call
     /// ToString() and we'll unwrap it when it comes back (if needed).
     /// </summary>
-    internal struct WrappedValue
+    internal class WrappedValue
     {
         private readonly IJsonSerializer _serializer;
         private readonly object _value;

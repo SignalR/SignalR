@@ -14,7 +14,6 @@ namespace SignalR
     {
         private const string WebSocketsTransportName = "webSockets";
 
-        protected IMessageBus _messageBus;
         protected INewMessageBus _newMessageBus;
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdGenerator _connectionIdGenerator;
@@ -32,7 +31,6 @@ namespace SignalR
                 return;
             }
 
-            _messageBus = resolver.Resolve<IMessageBus>();
             _newMessageBus = resolver.Resolve<INewMessageBus>();
             _connectionIdGenerator = resolver.Resolve<IConnectionIdGenerator>();
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
@@ -174,8 +172,7 @@ namespace SignalR
 
         protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
         {
-            return new Connection(_messageBus,
-                                  _newMessageBus,
+            return new Connection(_newMessageBus,
                                   _jsonSerializer,
                                   DefaultSignal,
                                   connectionId,

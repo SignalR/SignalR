@@ -81,7 +81,7 @@ namespace SignalR.Infrastructure
                     Message message = result.Messages[i].Array[j];
 
                     // Only handle server commands
-                    if (ServerSignal.Equals(message.SignalKey))
+                    if (ServerSignal.Equals(message.Key))
                     {
                         // Uwrap the command and raise the event
                         var command = WrappedValue.Unwrap<ServerCommand>(message.Value, _serializer);

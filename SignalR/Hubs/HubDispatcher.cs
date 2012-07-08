@@ -273,8 +273,7 @@ namespace SignalR.Hubs
             IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId))
                                                           .Concat(GetDefaultSignals(connectionId));
 
-            return new Connection(_messageBus, 
-                                  _newMessageBus, 
+            return new Connection(_newMessageBus, 
                                   _jsonSerializer, 
                                   null, 
                                   connectionId, 

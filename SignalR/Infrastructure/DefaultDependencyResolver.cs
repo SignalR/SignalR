@@ -30,9 +30,6 @@ namespace SignalR
             var serverMessageHandler = new Lazy<IServerCommandHandler>(() => new ServerCommandHandler(this));
             Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
 
-            var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
-            Register(typeof(IMessageBus), () => messageBus.Value);
-
             var newMessageBus = new Lazy<INewMessageBus>(() => new MessageBus(this));
             Register(typeof(INewMessageBus), () => newMessageBus.Value);
 

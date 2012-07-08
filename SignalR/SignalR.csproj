@@ -110,7 +110,6 @@
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="IConnectionIdGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
-    <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
@@ -118,7 +117,6 @@
     <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
-    <Compile Include="MessageBus\InProcessMessageBus.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
