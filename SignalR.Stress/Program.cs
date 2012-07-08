@@ -55,7 +55,8 @@ namespace SignalR.Stress
 
             // RunBusTest();
             // RunConnectionTest();
-            RunMemoryHost();
+            RunConnectionReceiveLoopTest();
+            // RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -154,6 +155,45 @@ namespace SignalR.Stress
             return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionId=" + connectionId, request => { }, null);
         }
 
+        private static void RunConnectionReceiveLoopTest()
+        {
+            string payload = GetPayload();
+
+            var dr = new DefaultDependencyResolver();
+            MeasureStats((MessageBus)dr.Resolve<INewMessageBus>());
+            var connectionManager = new ConnectionManager(dr);
+            var context = connectionManager.GetConnectionContext<StressConnection>();
+
+            for (int i = 0; i < _clients; i++)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    Interlocked.Increment(ref _clientsRunning);
+                    var transportConnection = (ITransportConnection)context.Connection;
+                    ReceiveLoop(transportConnection, null);
+                }, i);
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
+                });
+            }
+        }
+
+        private static void ReceiveLoop(ITransportConnection connection, string messageId)
+        {
+            connection.ReceiveAsync(messageId, CancellationToken.None).Then(r =>
+            {
+                Interlocked.Add(ref _received, r.Messages.Count);
+                Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+
+                ReceiveLoop(connection, r.MessageId);
+            });
+        }
+
         private static void RunBusTest()
         {
             var resolver = new DefaultDependencyResolver();
@@ -212,11 +252,6 @@ namespace SignalR.Stress
         private static void StartClientLoop(MessageBus bus, ISubscriber subscriber)
         {
             Interlocked.Increment(ref _clientsRunning);
-            ReceiveLoop(bus, subscriber);
-        }
-
-        private static void ReceiveLoop(MessageBus bus, ISubscriber subscriber)
-        {
             try
             {
                 bus.Subscribe(subscriber, null, (ex, result) =>
