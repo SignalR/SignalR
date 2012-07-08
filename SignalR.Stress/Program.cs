@@ -34,7 +34,7 @@ namespace SignalR.Stress
         private static long _rate = 1;
         private static int _runs = 0;
         private static int _step = 1;
-        private static int _stepInterval = 15;
+        private static int _stepInterval = 1000000;
         private static int _clients = 1;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
@@ -54,8 +54,8 @@ namespace SignalR.Stress
             ThreadPool.SetMinThreads(32, 32);
 
             // RunBusTest();
-            RunConnectionTest();
-            // RunMemoryHost();
+            // RunConnectionTest();
+            RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -103,18 +103,24 @@ namespace SignalR.Stress
 
             MeasureStats((MessageBus)host.DependencyResolver.Resolve<INewMessageBus>());
 
-            ForeverTransport.SendingResponse += (r) =>
+            Action<PersistentResponse> handler = (r) =>
             {
                 Interlocked.Add(ref _received, r.Messages.Count);
                 Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
             };
+
+            LongPollingTransport.SendingResponse += handler;
+            ForeverFrameTransport.SendingResponse += handler;
 
             for (int i = 0; i < _clients; i++)
             {
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     Interlocked.Increment(ref _clientsRunning);
-                    host.ProcessRequest("http://foo/echo/connect?transport=serverSentEvents&connectionId=" + state, request => { }, null);
+                    string connectionId = state.ToString();
+
+                    // LongPollingLoop(host, connectionId);
+                    ProcessRequest(host, "serverSentEvents", connectionId);
                 }, i);
             }
 
@@ -126,6 +132,26 @@ namespace SignalR.Stress
                     StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
                 });
             }
+        }
+
+        private static void LongPollingLoop(MemoryHost host, string connectionId)
+        {            
+            LongPoll:
+            var task = ProcessRequest(host, "longPolling", connectionId);
+
+            if (task.IsCompleted)
+            {
+                task.Wait();
+
+                goto LongPoll;
+            }
+
+            task.ContinueWith(t => LongPollingLoop(host, connectionId));
+        }
+
+        private static Task ProcessRequest(MemoryHost host, string transport, string connectionId)
+        {
+            return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionId=" + connectionId, request => { }, null);
         }
 
         private static void RunBusTest()

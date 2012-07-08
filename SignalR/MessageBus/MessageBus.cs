@@ -120,14 +120,21 @@ namespace SignalR
             }
 
             var subscription = new Subscription(cursors, callback);
+            var topics = new List<Topic>();
 
             foreach (var eventKey in subscriber.EventKeys)
             {
-                var topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+                Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
 
                 // Set the subscription for this topic
                 subscription.SetCursorTopic(eventKey, topic);
 
+                // Add it to the list of topics
+                topics.Add(topic);
+            }
+
+            foreach (var topic in topics)
+            {
                 lock (topic.Subscriptions)
                 {
                     // Add this subscription to the list of subs
@@ -174,7 +181,7 @@ namespace SignalR
             subscriber.EventRemoved += eventRemoved;
 
             return new DisposableAction(() =>
-            {
+            {                
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
 
@@ -197,6 +204,7 @@ namespace SignalR
                 {
                     topic.Subscriptions.Remove(subscription);
                 }
+
                 subscription.RemoveCursor(eventKey);
             }
         }
