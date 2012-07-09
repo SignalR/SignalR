@@ -58,7 +58,7 @@ namespace SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.OutputStream, Encoding.UTF8, 4096);
+                    _outputWriter = new StreamWriter(Context.Response.OutputStream, Encoding.UTF8);
                 }
 
                 return _outputWriter;
