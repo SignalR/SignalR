@@ -7,7 +7,10 @@ namespace SignalR.Transports
     public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
         private IJsonSerializer _jsonSerializer;
-        private const int MessageBufferSize = 30;
+
+        // This should be ok to do since long polling request never hang around too long
+        // so we won't bloat memory
+        private const int MessageBufferSize = 5000;
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
