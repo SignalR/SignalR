@@ -34,8 +34,8 @@ namespace SignalR.Stress
         private static long _rate = 1;
         private static int _runs = 0;
         private static int _step = 1;
-        private static int _stepInterval = 1000000;
-        private static int _clients = 1;
+        private static int _stepInterval = 10;
+        private static int _clients = 5000;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
         private static Exception _exception;
@@ -53,10 +53,10 @@ namespace SignalR.Stress
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
 
-            // RunBusTest();
+            RunBusTest();
             // RunConnectionTest();
             // RunConnectionReceiveLoopTest();
-            RunMemoryHost();
+            // RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -81,7 +81,7 @@ namespace SignalR.Stress
                         Interlocked.Add(ref _received, r.Messages.Count);
                         Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
                         return TaskAsyncHelper.True;
-                    }, 
+                    },
                     messageBufferSize: 10);
 
                 }, i);
@@ -220,7 +220,7 @@ namespace SignalR.Stress
             while (_exception == null)
             {
                 long old = _rate;
-                var interval = TimeSpan.FromMilliseconds((1000.0 / _rate) * _senders);
+                var interval = TimeSpan.FromTicks((TimeSpan.TicksPerSecond / _rate) * _senders);
                 while (Interlocked.Read(ref _rate) == old && _exception == null)
                 {
                     try

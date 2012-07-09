@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 
 using IClientResponse = SignalR.Client.Http.IResponse;
@@ -11,37 +10,36 @@ namespace SignalR.Hosting.Memory
 {
     public class Response : IClientResponse, IResponse
     {
-        private ArraySegment<byte> _nonStreamingData;
         private readonly CancellationToken _clientToken;
-        private readonly FollowStream _followStream;
-        private bool _ended;
+        private readonly ResponseStream _stream;
 
-        public Response(CancellationToken clientToken, Action startSending)
+        public Response(CancellationToken clientToken, Action flush)
         {
             _clientToken = clientToken;
-            _followStream = new FollowStream(startSending);
+            _stream = new ResponseStream(flush);
         }
 
         public string ReadAsString()
         {
-            return new StreamReader(_followStream).ReadToEnd();
+            return new StreamReader(_stream).ReadToEnd();
         }
 
         public Stream GetResponseStream()
         {
-            return _followStream;
+            return _stream;
         }
 
         public void Close()
         {
-            _followStream.Close();
+            _stream.Close();
         }
 
         public bool IsClientConnected
         {
             get
             {
-                return !_followStream.Ended && !_clientToken.IsCancellationRequested && !_ended;
+                return !_stream.CancellationToken.IsCancellationRequested && 
+                       !_clientToken.IsCancellationRequested;
             }
         }
 
@@ -53,28 +51,28 @@ namespace SignalR.Hosting.Memory
 
         public Stream OutputStream
         {
-            get { return _followStream; }
+            get { return _stream; }
         }
 
         /// <summary>
         /// Mimics a network stream between client and server.
         /// </summary>
-        private class FollowStream : Stream
+        private class ResponseStream : Stream
         {
             private readonly BlockingCollection<ArraySegment<byte>> _queue;
             private readonly Stack<ArraySegment<byte>> _backlog;
-            private readonly CancellationTokenSource _cts;
+            private readonly CancellationTokenSource _cancellationTokenSource;
             private event Action _onWrite;
             private event Action _onClosed;
-            private Action _start;
+            private Action _flush;
             private readonly object _lockObj = new object();
 
-            public FollowStream(Action start)
+            public ResponseStream(Action flush)
             {
+                _flush = flush;
                 _queue = new BlockingCollection<ArraySegment<byte>>();
                 _backlog = new Stack<ArraySegment<byte>>();
-                _cts = new CancellationTokenSource();
-                _start = start;
+                _cancellationTokenSource = new CancellationTokenSource();
             }
 
             public override bool CanRead
@@ -101,15 +99,17 @@ namespace SignalR.Hosting.Memory
                 }
             }
 
-            public bool Ended { get; private set; }
-
-            private void EnsureStarted()
+            public CancellationToken CancellationToken
             {
-                Interlocked.Exchange(ref _start, () => { }).Invoke();
+                get
+                {
+                    return _cancellationTokenSource.Token;
+                }
             }
 
             public override void Flush()
             {
+                Interlocked.Exchange(ref _flush, () => { }).Invoke();
             }
 
             public override long Length
@@ -143,7 +143,10 @@ namespace SignalR.Hosting.Memory
                     else
                     {
                         // Read the next chunk from the buffer
-                        queuedBuffer = _queue.Take(_cts.Token);
+                        if (!_queue.TryTake(out queuedBuffer))
+                        {
+                            queuedBuffer = _queue.Take(CancellationToken);
+                        }
                     }
 
                     int read = Math.Min(count, queuedBuffer.Count);
@@ -190,7 +193,7 @@ namespace SignalR.Hosting.Memory
 
                 _onClosed += closedHandler;
 
-                if (Ended)
+                if (CancellationToken.IsCancellationRequested)
                 {
                     ar.SetAsCompleted(0, true);
                     return ar;
@@ -198,7 +201,7 @@ namespace SignalR.Hosting.Memory
 
                 int read = Read(buffer, offset, count);
 
-                if (read != 0 || Ended)
+                if (read != 0 || CancellationToken.IsCancellationRequested)
                 {
                     lock (_lockObj)
                     {
@@ -238,8 +241,9 @@ namespace SignalR.Hosting.Memory
 
             public override void Close()
             {
-                Ended = true;
-                _cts.Cancel();
+                Flush();
+
+                _cancellationTokenSource.Cancel(throwOnFirstException: false);
 
                 if (_onClosed != null)
                 {
@@ -259,12 +263,6 @@ namespace SignalR.Hosting.Memory
                 throw new NotImplementedException();
             }
 
-            public void Write(string data)
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(data);
-                Write(bytes, 0, bytes.Length);
-            }
-
             public override void Write(byte[] buffer, int offset, int count)
             {
                 _queue.Add(new ArraySegment<byte>(buffer, offset, count));
@@ -273,8 +271,6 @@ namespace SignalR.Hosting.Memory
                 {
                     _onWrite();
                 }
-
-                EnsureStarted();
             }
         }
 
