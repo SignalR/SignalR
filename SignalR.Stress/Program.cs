@@ -53,10 +53,10 @@ namespace SignalR.Stress
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
 
-            RunBusTest();
-            // RunConnectionTest();
-            // RunConnectionReceiveLoopTest();
-            // RunMemoryHost();
+            //RunBusTest();
+            //RunConnectionTest();
+            //RunConnectionReceiveLoopTest();
+            RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -331,11 +331,11 @@ namespace SignalR.Stress
                     Console.WriteLine("----- SENDS -----");
 
                     var s1 = Math.Max(0, _rate - _sendsPerSecond);
-                    Console.WriteLine("SPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
+                    Console.WriteLine("SPS: {0:N3} (diff: {1:N3}, {2:N2}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
                     var s2 = Math.Max(0, _rate - _peakSendsPerSecond);
-                    Console.WriteLine("Peak SPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
+                    Console.WriteLine("Peak SPS: {0:N3} (diff: {1:N2} {2:N2}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
                     var s3 = Math.Max(0, _rate - _avgSendsPerSecond);
-                    Console.WriteLine("Avg SPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
+                    Console.WriteLine("Avg SPS: {0:N3} (diff: {1:N3} {2:N2}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
                     Console.WriteLine();
 
                     if (sendsPerSec < long.MaxValue && sendsPerSec > _peakSendsPerSecond)
@@ -356,13 +356,13 @@ namespace SignalR.Stress
                     Console.WriteLine("----- RECEIVES -----");
 
                     var d1 = Math.Max(0, TotalRate - _receivesPerSecond);
-                    Console.WriteLine("RPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _receivesPerSecond, d1, d1 * 100.0 / TotalRate);
+                    Console.WriteLine("RPS: {0:N3} (diff: {1:N3}, {2:N2}%)", _receivesPerSecond, d1, d1 * 100.0 / TotalRate);
                     var d2 = Math.Max(0, TotalRate - _peakReceivesPerSecond);
-                    Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakReceivesPerSecond, d2, d2 * 100.0 / TotalRate);
+                    Console.WriteLine("Peak RPS: {0:N3} (diff: {1:N3} {2:N2}%)", _peakReceivesPerSecond, d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
-                    Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgReceivesPerSecond, d3, d3 * 100.0 / TotalRate);
+                    Console.WriteLine("Avg RPS: {0:N3} (diff: {1:N3} {2:N2}%)", _avgReceivesPerSecond, d3, d3 * 100.0 / TotalRate);
                     var d4 = Math.Max(0, _sendsPerSecond - _receivesPerSecond);
-                    Console.WriteLine("Actual RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _receivesPerSecond, d4, d4 * 100.0 / _sendsPerSecond);
+                    Console.WriteLine("Actual RPS: {0:N3} (diff: {1:N3} {2:N2}%)", _receivesPerSecond, d4, d4 * 100.0 / _sendsPerSecond);
 
                     if (bus != null)
                     {
