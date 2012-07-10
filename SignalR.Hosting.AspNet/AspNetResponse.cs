@@ -161,7 +161,17 @@ namespace SignalR.Hosting.AspNet
 
             public override void Flush()
             {
-                _response.Flush();
+                try
+                {
+                    if (_response.IsClientConnected)
+                    {
+                        _response.Flush();
+                    }
+                }
+                catch
+                {
+
+                }
             }
 
             public override long Length
@@ -198,7 +208,16 @@ namespace SignalR.Hosting.AspNet
 
             public override void Write(byte[] buffer, int offset, int count)
             {
-                _response.OutputStream.Write(buffer, offset, count);
+                try
+                {
+                    if (_response.IsClientConnected)
+                    {
+                        _response.OutputStream.Write(buffer, offset, count);
+                    }
+                }
+                catch
+                {
+                }
             }
         }
     }
