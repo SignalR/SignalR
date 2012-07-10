@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -254,7 +256,7 @@ namespace SignalR
                     return _cursors;
                 }
             }
-            
+
             public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task<bool>> callback, int messageBufferSize)
             {
                 _cursors = new List<Cursor>(cursors);
@@ -470,8 +472,17 @@ namespace SignalR
             }
         }
 
-        internal class Cursor
+        internal unsafe class Cursor
         {
+            private delegate void memcpy(char* pSrc, int srcIndex, char* pDest, int destIndex, int len);
+            private static readonly memcpy _memcpyThunk = GetMemcpyThunk();
+
+            private static memcpy GetMemcpyThunk()
+            {
+                MethodInfo memcpyMethod = typeof(Buffer).GetMethod("memcpy", BindingFlags.NonPublic | BindingFlags.Static, null, new Type[] { typeof(char*), typeof(int), typeof(char*), typeof(int), typeof(int) }, null);
+                return (memcpy)Delegate.CreateDelegate(typeof(memcpy), memcpyMethod);
+            }
+
             private static char[] _escapeChars = new[] { '\\', '|', ',' };
 
             private string _key;
@@ -496,6 +507,11 @@ namespace SignalR
 
             public static string MakeCursor(IList<Cursor> cursors)
             {
+                return MakeCursorFast(cursors) ?? MakeCursorSlow(cursors);
+            }
+
+            private static string MakeCursorSlow(IList<Cursor> cursors)
+            {
                 var serialized = new string[cursors.Count];
                 for (int i = 0; i < cursors.Count; i++)
                 {
@@ -503,6 +519,60 @@ namespace SignalR
                 }
 
                 return String.Join("|", serialized);
+            }
+
+            private static string MakeCursorFast(IList<Cursor> cursors)
+            {
+                const int MAX_CHARS = 8 * 1024;
+                char* pChars = stackalloc char[MAX_CHARS];
+                char* pNextChar = pChars;
+                int numCharsInBuffer = 0;
+
+                // Start shoving data into the buffer
+                for (int i = 0; i < cursors.Count; i++)
+                {
+                    Cursor cursor = cursors[i];
+                    string escapedKey = cursor.EscapedKey;
+
+                    checked
+                    {
+                        numCharsInBuffer += escapedKey.Length + 18; // comma + 16-char hex Id + pipe
+                    }
+
+                    if (numCharsInBuffer > MAX_CHARS)
+                    {
+                        return null; // we will overrun the buffer
+                    }
+
+                    fixed (char* pEscapedKey = escapedKey)
+                    {
+                        _memcpyThunk(pEscapedKey, 0, pNextChar, 0, escapedKey.Length);
+                    }
+
+                    pNextChar += escapedKey.Length;
+                    *pNextChar = ',';
+                    pNextChar++;
+                    WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
+                    pNextChar += 16;
+                    *pNextChar = '|';
+                    pNextChar++;
+                }
+
+                return (numCharsInBuffer == 0) ? String.Empty : new String(pChars, 0, numCharsInBuffer - 1); // -1 for final pipe
+            }
+
+            private static void WriteUlongAsHexToBuffer(ulong value, char* pBuffer)
+            {
+                for (int i = 15; i >= 0; i--)
+                {
+                    pBuffer[i] = Int32ToHex((int)value & 0xf); // don't care about overflows here
+                    value >>= 4;
+                }
+            }
+
+            private static char Int32ToHex(int value)
+            {
+                return (value < 10) ? (char)(value + '0') : (char)(value - 10 + 'A');
             }
 
             private static string Escape(string value)
@@ -566,7 +636,7 @@ namespace SignalR
                         }
                         else if (ch == '|')
                         {
-                            current.Id = UInt64.Parse(sb.ToString());
+                            current.Id = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
                             cursors.Add(current);
                             current = new Cursor();
                             sb.Clear();
@@ -580,7 +650,7 @@ namespace SignalR
 
                 if (sb.Length > 0)
                 {
-                    current.Id = UInt64.Parse(sb.ToString());
+                    current.Id = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
                     cursors.Add(current);
                 }
 
