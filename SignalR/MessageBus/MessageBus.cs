@@ -479,7 +479,7 @@ namespace SignalR
 
             private static memcpy GetMemcpyThunk()
             {
-                MethodInfo memcpyMethod = typeof(Buffer).GetMethod("memcpy", BindingFlags.NonPublic | BindingFlags.Static, null, new Type[] { typeof(char*), typeof(int), typeof(char*), typeof(int), typeof(int) }, null);
+                MethodInfo memcpyMethod = typeof(Buffer).GetMethod("memcpy", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.IgnoreCase, null, new Type[] { typeof(char*), typeof(int), typeof(char*), typeof(int), typeof(int) }, null);
                 return (memcpy)Delegate.CreateDelegate(typeof(memcpy), memcpyMethod);
             }
 
