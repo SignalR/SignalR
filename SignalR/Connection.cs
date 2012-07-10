@@ -237,7 +237,7 @@ namespace SignalR
             // Set the groups on the outgoing transport data
             if (_groups.Count > 0)
             {
-                if (response.TransportData != null)
+                if (response.TransportData == null)
                 {
                     response.TransportData = new Dictionary<string, object>();
                 }

@@ -257,7 +257,7 @@ namespace SignalR.Transports
         {
             if (LongPollDelay > 0)
             {
-                if (response.TransportData != null)
+                if (response.TransportData == null)
                 {
                     response.TransportData = new Dictionary<string, object>();
                 }
