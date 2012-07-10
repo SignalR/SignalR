@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -256,6 +257,10 @@ namespace SignalR.Transports
         {
             if (LongPollDelay > 0)
             {
+                if (response.TransportData != null)
+                {
+                    response.TransportData = new Dictionary<string, object>();
+                }
                 response.TransportData["LongPollDelay"] = LongPollDelay;
             }
         }

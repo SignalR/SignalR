@@ -6,10 +6,8 @@ namespace SignalR
     /// <summary>
     /// Represents a response to a connection.
     /// </summary>
-    public struct PersistentResponse
+    public class PersistentResponse
     {
-        private IDictionary<string, object> _transportData;
-
         /// <summary>
         /// The id of the last message in the connection received.
         /// </summary>
@@ -39,16 +37,6 @@ namespace SignalR
         /// <summary>
         /// Transport specific configurtion information.
         /// </summary>
-        public IDictionary<string, object> TransportData
-        {
-            get
-            {
-                if (_transportData == null)
-                {
-                    _transportData = new Dictionary<string, object>();
-                }
-                return _transportData;
-            }
-        }
+        public IDictionary<string, object> TransportData { get; set; }
     }
 }
