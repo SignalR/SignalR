@@ -474,15 +474,6 @@ namespace SignalR
 
         internal unsafe class Cursor
         {
-            private delegate void memcpy(char* pSrc, int srcIndex, char* pDest, int destIndex, int len);
-            private static readonly memcpy _memcpyThunk = GetMemcpyThunk();
-
-            private static memcpy GetMemcpyThunk()
-            {
-                MethodInfo memcpyMethod = typeof(Buffer).GetMethod("memcpy", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.IgnoreCase, null, new Type[] { typeof(char*), typeof(int), typeof(char*), typeof(int), typeof(int) }, null);
-                return (memcpy)Delegate.CreateDelegate(typeof(memcpy), memcpyMethod);
-            }
-
             private static char[] _escapeChars = new[] { '\\', '|', ',' };
 
             private string _key;
@@ -544,12 +535,11 @@ namespace SignalR
                         return null; // we will overrun the buffer
                     }
 
-                    fixed (char* pEscapedKey = escapedKey)
+                    for (int j = 0; j < escapedKey.Length; j++)
                     {
-                        _memcpyThunk(pEscapedKey, 0, pNextChar, 0, escapedKey.Length);
+                        *pNextChar++ = escapedKey[j];
                     }
 
-                    pNextChar += escapedKey.Length;
                     *pNextChar = ',';
                     pNextChar++;
                     WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
