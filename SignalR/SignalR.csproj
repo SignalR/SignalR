@@ -71,6 +71,9 @@
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
+    <Compile Include="Infrastructure\IPerformanceCounterWriter.cs" />
+    <Compile Include="Infrastructure\IPerformanceCounterWriter1.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterWriter.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
     <Compile Include="Json\JTokenValue.cs" />
