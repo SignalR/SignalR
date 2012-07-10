@@ -10,10 +10,10 @@ namespace SignalR.Infrastructure
     public class PerformanceCounterWriter : IPerformanceCounterWriter
     {
         private const string InstanceNameKey = "SignalR_AppInstanceName";
-        private const string Category = "SignalR";
         private readonly string _instanceName;
+        private bool _countersInstalled = false;
 
-        private readonly ConcurrentDictionary<string, PerformanceCounter> _counters = new ConcurrentDictionary<string, PerformanceCounter>();
+        private readonly Dictionary<string, PerformanceCounter> _counters = new Dictionary<string, PerformanceCounter>();
 
         public PerformanceCounterWriter()
             : this((AppDomain.CurrentDomain.GetData(InstanceNameKey) ?? Guid.NewGuid()).ToString())
@@ -23,7 +23,28 @@ namespace SignalR.Infrastructure
 
         public PerformanceCounterWriter(string instanceName)
         {    
-            _instanceName = instanceName;   
+            _instanceName = instanceName;
+            LoadCounters();
+        }
+
+        private void LoadCounters()
+        {
+            foreach (var counterData in PerformanceCounters.Counters)
+            {
+                var counter = GetCounter(PerformanceCounters.CategoryName, counterData.CounterName, _instanceName);
+                if (counter == null)
+                {
+                    // A counter is missing, go into no-op mode
+                    // REVIEW: Should we trace a message here?
+                    return;
+                }
+                _counters.Add(counter.CounterName, counter);
+                
+                // Initialize the sample
+                counter.NextSample();
+            }
+
+            _countersInstalled = true;
         }
 
         public void Increment(string counterName)
@@ -33,8 +54,16 @@ namespace SignalR.Infrastructure
                 throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
             }
 
-            var counter = GetOrAddCounter(counterName);
-            counter.Increment();
+            if (!_countersInstalled)
+            {
+                return;
+            }
+
+            PerformanceCounter counter;
+            if (_counters.TryGetValue(counterName, out counter))
+            {
+                counter.Increment();
+            }
         }
 
         public void IncrementBy(string counterName, long value)
@@ -44,8 +73,16 @@ namespace SignalR.Infrastructure
                 throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
             }
 
-            var counter = GetOrAddCounter(counterName);
-            counter.IncrementBy(value);
+            if (!_countersInstalled)
+            {
+                return;
+            }
+
+            PerformanceCounter counter;
+            if (_counters.TryGetValue(counterName, out counter))
+            {
+                counter.IncrementBy(value);
+            }
         }
 
         public void Decrement(string counterName)
@@ -55,25 +92,30 @@ namespace SignalR.Infrastructure
                 throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
             }
 
-            var counter = GetOrAddCounter(counterName);
-            counter.Decrement();
+            if (!_countersInstalled)
+            {
+                return;
+            }
+
+            PerformanceCounter counter;
+            if (_counters.TryGetValue(counterName, out counter))
+            {
+                counter.Decrement();
+            }
         }
 
-        private PerformanceCounter GetOrAddCounter(string counterName)
+        private static PerformanceCounter GetCounter(string categoryName, string counterName, string instanceName)
         {
-            return _counters.GetOrAdd(counterName, cn =>
+            try
             {
-                try
+                if (PerformanceCounterCategory.CounterExists(counterName, PerformanceCounters.CategoryName))
                 {
-                    if (PerformanceCounterCategory.CounterExists(counterName, Category))
-                    {
-                        return new PerformanceCounter(Category, cn, _instanceName, readOnly: false);
-                    }
-                    return null;
+                    return new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false);
                 }
-                catch (InvalidOperationException) { return null; }
-                catch (UnauthorizedAccessException) { return null; }
-            });
+                return null;
+            }
+            catch (InvalidOperationException) { return null; }
+            catch (UnauthorizedAccessException) { return null; }
         }
     }
 }
