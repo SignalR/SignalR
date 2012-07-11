@@ -60,11 +60,8 @@ namespace SignalR.Infrastructure
             // Store where the message originated from
             command.ServerId = _serverIdManager.ServerId;
 
-            // Wrap the value so buses that need to serialize can call ToString()
-            var wrappedValue = new WrappedValue(command, _serializer);
-
             // Send the command to the all servers
-            return _messageBus.Publish(_serverIdManager.ServerId, ServerSignal, wrappedValue);
+            return _messageBus.Publish(_serverIdManager.ServerId, ServerSignal, _serializer.Stringify(command));
         }
 
         private void ProcessMessages()
@@ -85,7 +82,7 @@ namespace SignalR.Infrastructure
                     if (ServerSignal.Equals(message.Key))
                     {
                         // Uwrap the command and raise the event
-                        var command = WrappedValue.Unwrap<ServerCommand>(message.Value, _serializer);
+                        var command = _serializer.Parse<ServerCommand>(message.Value);
                         OnCommand(command);
                     }
                 }

@@ -16,7 +16,7 @@ namespace SignalR
         /// <summary>
         /// The list of messages to be sent to the receiving connection.
         /// </summary>
-        public IList<object> Messages { get; set; }
+        public IList<string> Messages { get; set; }
 
         /// <summary>
         /// True if the connection receives a disconnect command.
@@ -26,7 +26,6 @@ namespace SignalR
         /// <summary>
         /// True if the connection was forcibly closed. 
         /// </summary>
-        [JsonIgnore]
         public bool Aborted { get; set; }
 
         /// <summary>

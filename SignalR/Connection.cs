@@ -77,8 +77,8 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
-            var wrappedValue = new WrappedValue(PreprocessValue(value), _serializer);
-            return _bus.Publish(_connectionId, key, wrappedValue);
+            var serializedValue = _serializer.Stringify(PreprocessValue(value));
+            return _bus.Publish(_connectionId, key, serializedValue);
         }
 
         private object PreprocessValue(object value)
@@ -175,9 +175,9 @@ namespace SignalR
             return response;
         }
 
-        private List<object> ProcessResults(MessageResult result)
+        private List<string> ProcessResults(MessageResult result)
         {
-            var messageValues = new List<object>(result.TotalCount);
+            var messageValues = new List<string>(result.TotalCount);
 
             for (int i = 0; i < result.Messages.Count; i++)
             {
@@ -186,12 +186,12 @@ namespace SignalR
                     Message message = result.Messages[i].Array[j];
                     if (SignalCommand.IsCommand(message))
                     {
-                        var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
+                        var command = _serializer.Parse<SignalCommand>(message.Value);
                         ProcessCommand(command);
                     }
                     else
                     {
-                        messageValues.Add(WrappedValue.Unwrap(message.Value, _serializer));
+                        messageValues.Add(message.Value);
                     }
                 }
             }

@@ -87,7 +87,45 @@ namespace SignalR
 
         public void Stringify(object value, TextWriter writer)
         {
-            _serializer.Serialize(writer, value);
+            // REVIEW: This is a hack to improve performance, we need to abstract this
+            // json writer so we can do it generically (but that might not be worth it).
+            var response = value as PersistentResponse;
+            if (response != null)
+            {
+                SerializePesistentResponse(response, writer);
+            }
+            else
+            {
+                _serializer.Serialize(writer, value);
+            }
+        }
+
+        private void SerializePesistentResponse(PersistentResponse response, TextWriter writer)
+        {
+            var jsonWriter = new JsonTextWriter(writer);
+            jsonWriter.WriteStartObject();
+
+            jsonWriter.WritePropertyName("MessageId");
+            jsonWriter.WriteValue(response.MessageId);
+
+            jsonWriter.WritePropertyName("Disconnect");
+            jsonWriter.WriteValue(response.Disconnect);
+
+            if (response.TransportData != null)
+            {
+                jsonWriter.WritePropertyName("TransportData");
+                jsonWriter.WriteValue(response.TransportData);
+            }
+            
+            jsonWriter.WritePropertyName("Messages");
+            jsonWriter.WriteStartArray();
+            for (var i = 0; i < response.Messages.Count; i++)
+            {
+                jsonWriter.WriteRawValue(response.Messages[i]);
+            }
+            jsonWriter.WriteEndArray();
+
+            jsonWriter.WriteEndObject();
         }
     }
 }
