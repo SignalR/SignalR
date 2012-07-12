@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,7 +102,7 @@ namespace SignalR
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task<bool>> callback, int messageBufferSize)
+        public IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
             IEnumerable<Cursor> cursors = null;
             if (cursor == null)
@@ -244,7 +243,7 @@ namespace SignalR
         internal class Subscription : IDisposable
         {
             private readonly List<Cursor> _cursors;
-            private readonly Func<Exception, MessageResult, Task<bool>> _callback;
+            private readonly Func<MessageResult, Task<bool>> _callback;
             private readonly int _messageBufferSize;
 
             private readonly object _lockObj = new object();
@@ -269,7 +268,7 @@ namespace SignalR
                 }
             }
 
-            public Subscription(IEnumerable<Cursor> cursors, Func<Exception, MessageResult, Task<bool>> callback, int messageBufferSize)
+            public Subscription(IEnumerable<Cursor> cursors, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
             {
                 _cursors = new List<Cursor>(cursors);
                 _callback = callback;
@@ -278,7 +277,7 @@ namespace SignalR
 
             public Task<bool> Invoke(MessageResult result)
             {
-                return _callback.Invoke(null, result);
+                return _callback.Invoke(result);
             }
 
             public Task WorkAsync(ConcurrentDictionary<string, Topic> topics)

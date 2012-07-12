@@ -126,17 +126,10 @@ namespace SignalR
                 }
             });
 
-            subscription = _bus.Subscribe(this, messageId, (ex, result) =>
+            subscription = _bus.Subscribe(this, messageId, result =>
             {
-                if (ex != null)
-                {
-                    tcs.TrySetException(ex);
-                }
-                else
-                {
-                    PersistentResponse response = GetResponse(result);
-                    tcs.TrySetResult(response);
-                }
+                PersistentResponse response = GetResponse(result);
+                tcs.TrySetResult(response);
 
                 registration.Dispose();
 
@@ -146,15 +139,15 @@ namespace SignalR
                 }
 
                 return TaskAsyncHelper.False;
-            }, 
+            },
             messageBufferSize);
 
             return tcs.Task;
         }
 
-        public IDisposable Receive(string messageId, Func<Exception, PersistentResponse, Task<bool>> callback, int messageBufferSize)
+        public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int messageBufferSize)
         {
-            return _bus.Subscribe(this, messageId, (ex, result) => callback(ex, GetResponse(result)), messageBufferSize);
+            return _bus.Subscribe(this, messageId, result => callback(GetResponse(result)), messageBufferSize);
         }
 
         private PersistentResponse GetResponse(MessageResult result)

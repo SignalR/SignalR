@@ -53,10 +53,10 @@ namespace SignalR.Stress
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
 
-            //RunBusTest();
+            RunBusTest();
             //RunConnectionTest();
             // RunConnectionReceiveLoopTest();
-            RunMemoryHost();
+            // RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -76,7 +76,7 @@ namespace SignalR.Stress
                 {
                     Interlocked.Increment(ref _clientsRunning);
                     var transportConnection = (ITransportConnection)context.Connection;
-                    transportConnection.Receive(null, (ex, r) =>
+                    transportConnection.Receive(null, r =>
                     {
                         Interlocked.Add(ref _received, r.Messages.Count);
                         Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
@@ -215,7 +215,7 @@ namespace SignalR.Stress
             }
         }
 
-        private static void StartSendLoop(string clientId, Func<string, string, object, Task> publish, string payload)
+        private static void StartSendLoop(string clientId, Func<string, string, string, Task> publish, string payload)
         {
             while (_exception == null)
             {
@@ -255,18 +255,10 @@ namespace SignalR.Stress
             Interlocked.Increment(ref _clientsRunning);
             try
             {
-                bus.Subscribe(subscriber, null, (ex, result) =>
+                bus.Subscribe(subscriber, null, result =>
                 {
-                    if (ex != null)
-                    {
-                        Interlocked.Exchange(ref _exception, ex);
-                        return TaskAsyncHelper.False;
-                    }
-                    else
-                    {
-                        Interlocked.Add(ref _received, result.TotalCount);
-                        Interlocked.Add(ref _avgLastReceivedCount, result.TotalCount);
-                    }
+                    Interlocked.Add(ref _received, result.TotalCount);
+                    Interlocked.Add(ref _avgLastReceivedCount, result.TotalCount);
 
                     return TaskAsyncHelper.True;
                 },

@@ -70,7 +70,7 @@ namespace SignalR.Infrastructure
             _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, messageBufferSize: MessageBufferSize);
         }
 
-        private Task<bool> HandleServerCommands(Exception ex, MessageResult result)
+        private Task<bool> HandleServerCommands(MessageResult result)
         {
             for (int i = 0; i < result.Messages.Count; i++)
             {

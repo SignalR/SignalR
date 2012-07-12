@@ -17,16 +17,16 @@ namespace SignalR
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="eventKeys"></param>
+        /// <param name="subscriber"></param>
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<Exception, MessageResult, Task<bool>> callback, int messageBufferSize);
+        IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="groupName"></param>
+        /// <param name="eventKey"></param>
         /// <returns></returns>
         string GetCursor(string eventKey);
     }

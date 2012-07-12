@@ -143,7 +143,7 @@ namespace SignalR.Transports
         public abstract Task Send(PersistentResponse response);
 
         public virtual Task Send(object value)
-        { 
+        {
             JsonSerializer.Stringify(value, OutputWriter);
 
             OutputWriter.Flush();
@@ -198,24 +198,19 @@ namespace SignalR.Transports
         private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
-            ProcessMessages(connection, postReceive, (exception) =>
-            {
-                if (exception != null)
-                {
-                    tcs.TrySetException(exception);
-                }
-                else
-                {
-                    tcs.TrySetResult(null);
-                }
 
+            Action endRequest = () =>
+            {
+                tcs.TrySetResult(null);
                 CompleteRequest();
-            });
+            };
+
+            ProcessMessages(connection, postReceive, endRequest);
 
             return tcs.Task;
         }
 
-        private void ProcessMessages(ITransportConnection connection, Action postReceive, Action<Exception> endRequest)
+        private void ProcessMessages(ITransportConnection connection, Action postReceive, Action endRequest)
         {
             IDisposable subscription = null;
 
@@ -228,14 +223,8 @@ namespace SignalR.Transports
                 }
             });
 
-            subscription = connection.Receive(LastMessageId, (ex, response) =>
+            subscription = connection.Receive(LastMessageId, response =>
             {
-                if (ex != null)
-                {
-                    endRequest(ex);
-                    return TaskAsyncHelper.False;
-                }
-                
                 response.TimedOut = IsTimedOut;
 
                 if (response.Disconnect ||
@@ -249,14 +238,14 @@ namespace SignalR.Transports
                         OnDisconnect();
                     }
 
-                    endRequest(null);
+                    endRequest();
                     return TaskAsyncHelper.False;
                 }
                 else
                 {
                     return Send(response).Then(() => TaskAsyncHelper.True);
                 }
-            }, 
+            },
             MessageBufferSize);
 
             if (postReceive != null)
