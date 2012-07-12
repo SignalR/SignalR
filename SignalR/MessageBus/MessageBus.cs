@@ -189,6 +189,9 @@ namespace SignalR
 
             return new DisposableAction(() =>
             {
+                // This will stop work from continuting to happen
+                subscription.Dispose();
+
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
 
@@ -238,16 +241,25 @@ namespace SignalR
             return 0;
         }
 
-        internal class Subscription
+        internal class Subscription : IDisposable
         {
             private readonly List<Cursor> _cursors;
             private readonly Func<Exception, MessageResult, Task<bool>> _callback;
             private readonly int _messageBufferSize;
 
             private readonly object _lockObj = new object();
+            private int _disposed;
 
             private int _queued;
             private int _working;
+
+            private bool Alive
+            {
+                get
+                {
+                    return _disposed == 0;
+                }
+            }
 
             public IList<Cursor> Cursors
             {
@@ -353,7 +365,7 @@ namespace SignalR
                     nextCursor = Cursor.MakeCursor(Cursors);
                 }
 
-                if (items.Count > 0)
+                if (Alive && items.Count > 0)
                 {
                     var messageResult = new MessageResult(items, nextCursor, totalCount);
                     Task<bool> callbackTask = Invoke(messageResult);
@@ -469,6 +481,12 @@ namespace SignalR
                         _cursors[index].Topic = topic;
                     }
                 }
+            }
+
+            public void Dispose()
+            {
+                // REVIEW: Should we make this block if there's pending work
+                Interlocked.Exchange(ref _disposed, 1);
             }
         }
 
