@@ -688,10 +688,10 @@ namespace SignalR
             private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
 
             // The maximum number of workers (threads) allowed to process all incoming messages
-            private const int MaxWorkers = 10;
+            private static readonly int MaxWorkers = 5 * Environment.ProcessorCount;
 
             // The maximum number of workers that can be left to idle (not busy but allocated)
-            private const int MaxIdleWorkers = 5;
+            private static readonly int MaxIdleWorkers = MaxWorkers / 2;
 
             // The number of allocated workers (currently running)
             private int _allocatedWorkers;
