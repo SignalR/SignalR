@@ -36,7 +36,12 @@ namespace SignalR.Client.Transports
 
         internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
         {
-            string negotiateUrl = connection.Url + "negotiate";
+#if SILVERLIGHT || WINDOWS_PHONE
+            string negotiateUrl = connection.Url + "negotiate?" + GetNoCacheUrlParam();
+#else
+                   string negotiateUrl = connection.Url + "negotiate";
+#endif
+
 
             return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
@@ -116,7 +121,15 @@ namespace SignalR.Client.Transports
                          .Append(customQuery);
             }
 
+#if SILVERLIGHT || WINDOWS_PHONE
+            qsBuilder.Append("&").Append(GetNoCacheUrlParam());
+#endif
             return qsBuilder.ToString();
+        }
+
+        private static string GetNoCacheUrlParam()
+        {
+            return "noCache=" + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
 
         protected virtual Action<IRequest> PrepareRequest(IConnection connection)
