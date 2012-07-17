@@ -129,7 +129,8 @@ namespace SignalR.Client.Transports
 
         private static string GetNoCacheUrlParam()
         {
-            return "noCache=" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            //Updated to Ticks according to Samual Jack's comment
+            return "noCache=" + DateTime.Now.Ticks.ToString();
         }
 
         protected virtual Action<IRequest> PrepareRequest(IConnection connection)
