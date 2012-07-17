@@ -27,7 +27,7 @@
         o.doIt();
     };
 
-    $.connection.hub.start(options, function () {
+    $.connection.hub.start(function () {
         demo.doSomethingAndCallError();
 
         demo.getValue(function (value) {
@@ -41,7 +41,7 @@
         };
 
         demo.complexType(p, function () {
-            $('#value').html('Complex Type ->' + window.JSON.stringify(this.person));
+            $('#complexType').html('Complex Type ->' + window.JSON.stringify(this.person));
         });
 
         demo.multipleCalls();

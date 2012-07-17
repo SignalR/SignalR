@@ -76,7 +76,14 @@ namespace SignalR.Samples.Hubs.DemoHub
         public string ReadStateValue()
         {
             return Caller.name;
-        } 
+        }
+
+        public string SetStateValue(string value)
+        {
+            Caller.Company = value;
+
+            return Caller.Company;
+        }
 
         public void ComplexArray(Person[] people)
         {
@@ -122,6 +129,17 @@ namespace SignalR.Samples.Hubs.DemoHub
         public void UnsupportedOverload(int x)
         {
 
+        }
+
+        public void TestGuid()
+        {            
+            Caller.TestGuid(new Guid());
+        }
+
+        public void DynamicInvoke(string method)
+        {
+            IClientProxy proxy = Caller;
+            proxy.Invoke(method);
         }
 
         public class Person

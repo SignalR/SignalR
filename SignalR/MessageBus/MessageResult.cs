@@ -20,19 +20,12 @@ namespace SignalR
         public string LastMessageId { get; private set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this result represents a timeout or not.
-        /// </summary>
-        public bool TimedOut { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="MessageResult"/> struc.
         /// </summary>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
-        /// <param name="timedOut">A value indicating whether this result represents a timeout or not.</param>
-        public MessageResult(string lastMessageId, bool timedOut)
+        public MessageResult(string lastMessageId)
             : this(_emptyList, lastMessageId)
         {
-            TimedOut = timedOut;
         }
 
         /// <summary>

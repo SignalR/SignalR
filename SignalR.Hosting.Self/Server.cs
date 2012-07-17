@@ -80,7 +80,7 @@ namespace SignalR.Hosting.Self
                 {
                     return;
                 }
-                
+
                 ReceiveLoop();
 
                 // Process the request async
@@ -152,9 +152,21 @@ namespace SignalR.Hosting.Self
                 {
                     var cts = new CancellationTokenSource();
 
-                    var request = new HttpListenerRequestWrapper(context.Request, context.User);
+                    // https://developer.mozilla.org/En/HTTP_Access_Control
+                    string origin = context.Request.Headers["Origin"];
+                    if (!String.IsNullOrEmpty(origin))
+                    {
+                        context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+                        context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+                    }
+
+                    var request = new HttpListenerRequestWrapper(context);
                     var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
                     var hostContext = new HostContext(request, response);
+
+#if NET45
+                    hostContext.Items[HostConstants.SupportsWebSockets] = Environment.OSVersion.Version.Major >= 6 && Environment.OSVersion.Version.Minor >= 2;
+#endif
 
                     if (OnProcessRequest != null)
                     {

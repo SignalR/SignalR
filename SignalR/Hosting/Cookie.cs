@@ -1,5 +1,4 @@
-﻿
-namespace SignalR.Hosting
+﻿namespace SignalR
 {
     public class Cookie
     {

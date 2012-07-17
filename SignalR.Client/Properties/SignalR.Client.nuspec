@@ -9,4 +9,8 @@
     <projectUrl>https://github.com/SignalR/SignalR</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
   </metadata>
+  <files>
+    <file src="..\bin\$configuration$\winrt*\SignalR.Client.d*" target="lib\winrt45" />
+    <file src="..\bin\$configuration$\winrt*\SignalR.Client.x*" target="lib\winrt45" />
+  </files>
 </package>

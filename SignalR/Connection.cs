@@ -18,6 +18,7 @@ namespace SignalR
         private readonly HashSet<string> _groups;
         private readonly ITraceManager _trace;
         private bool _disconnected;
+        private bool _aborted;
 
         public Connection(IMessageBus messageBus,
                           IJsonSerializer jsonSerializer,
@@ -44,6 +45,14 @@ namespace SignalR
             }
         }
 
+        private TraceSource Trace
+        {
+            get
+            {
+                return _trace["SignalR.Connection"];
+            }
+        }
+
         public virtual Task Broadcast(object value)
         {
             return Send(_baseSignal, value);
@@ -56,8 +65,7 @@ namespace SignalR
 
         public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
         {
-            _trace.Source.TraceInformation("Connection: Waiting for new messages");
-            Debug.WriteLine("Connection: Waiting for new messages.");
+            Trace.TraceInformation("Waiting for new messages");
 
             return _messageBus.GetMessages(Signals, null, timeoutToken)
                               .Then(result => GetResponse(result));
@@ -65,8 +73,7 @@ namespace SignalR
 
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
         {
-            _trace.Source.TraceInformation("Connection: Waiting for messages from {0}.", messageId);
-            Debug.WriteLine("Connection: Waiting for messages from {0}.", (object)messageId);
+            Trace.TraceInformation("Waiting for messages from {0}.", messageId);
 
             return _messageBus.GetMessages(Signals, messageId, timeoutToken)
                               .Then(result => GetResponse(result));
@@ -87,17 +94,12 @@ namespace SignalR
                 MessageId = result.LastMessageId,
                 Messages = messageValues,
                 Disconnect = _disconnected,
-                TimedOut = result.TimedOut
+                Aborted = _aborted
             };
 
             PopulateResponseState(response);
 
-            _trace.Source.TraceInformation("Connection: Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
-            Debug.WriteLine("Connection: Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
-            Debug.WriteLine("Connection: Messages");
-            Debug.WriteLine(_serializer.Stringify(result.Messages));
-            Debug.WriteLine("Connection: Response");
-            Debug.WriteLine(_serializer.Stringify(response));
+            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
 
             return response;
         }
@@ -132,6 +134,9 @@ namespace SignalR
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;
+                    break;
+                case CommandType.Abort:
+                    _aborted = true;
                     break;
             }
         }

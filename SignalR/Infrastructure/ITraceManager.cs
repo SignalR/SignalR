@@ -5,6 +5,6 @@ namespace SignalR.Infrastructure
     public interface ITraceManager
     {
         SourceSwitch Switch { get; }
-        TraceSource Source { get; }
+        TraceSource this[string name] { get; }
     }
 }

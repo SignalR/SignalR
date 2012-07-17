@@ -4,8 +4,8 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using SignalR.Hosting.Common;
-
 using IClientRequest = SignalR.Client.Http.IRequest;
 
 namespace SignalR.Hosting.Memory
@@ -20,6 +20,7 @@ namespace SignalR.Hosting.Memory
             _clientTokenSource = clientTokenSource;
             Form = new NameValueCollection();
             Headers = new NameValueCollection();
+            ServerVariables = new NameValueCollection();
             QueryString = HttpUtility.ParseDelimited(Url.Query.TrimStart('?'));
 
             if (postData != null)
@@ -81,6 +82,12 @@ namespace SignalR.Hosting.Memory
             get;
             private set;
         }
+        
+        public NameValueCollection ServerVariables
+        {
+            get;
+            private set;
+        }
 
         public NameValueCollection Form
         {
@@ -100,6 +107,12 @@ namespace SignalR.Hosting.Memory
             {
                 return Thread.CurrentPrincipal;
             }
+        }
+
+        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        {
+            // TODO: Add support
+            throw new NotSupportedException();
         }
     }
 }

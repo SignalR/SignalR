@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json.Linq;
 using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Hubs
@@ -6,7 +7,7 @@ namespace SignalR.Client.Hubs
     /// <summary>
     /// <see cref="T:System.IObservable{object[]}"/> implementation of a hub event.
     /// </summary>
-    public class Hubservable : IObservable<object[]>
+    public class Hubservable : IObservable<JToken[]>
     {
         private readonly string _eventName;
         private readonly IHubProxy _proxy;
@@ -17,7 +18,7 @@ namespace SignalR.Client.Hubs
             _eventName = eventName;
         }
 
-        public IDisposable Subscribe(IObserver<object[]> observer)
+        public IDisposable Subscribe(IObserver<JToken[]> observer)
         {
             var subscription = _proxy.Subscribe(_eventName);
             subscription.Data += observer.OnNext;

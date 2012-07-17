@@ -20,10 +20,18 @@ namespace SignalR.Samples.Raw
                 _users[userNameCookie.Value] = connectionId;
             }
 
+            string clientIp = request.ServerVariables["REMOTE_ADDR"];
             string user = GetUser(connectionId);
 
             return Groups.Add(connectionId, "foo").ContinueWith(_ =>
-                   Connection.Broadcast(DateTime.Now + ": " + user + " joined")).Unwrap();
+                   Connection.Broadcast(DateTime.Now + ": " + user + " joined from " + clientIp)).Unwrap();
+        }
+
+        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            string user = GetUser(connectionId);
+
+            return Connection.Broadcast(DateTime.Now + ": " + user + " reconnected");
         }
 
         protected override Task OnDisconnectAsync(string connectionId)

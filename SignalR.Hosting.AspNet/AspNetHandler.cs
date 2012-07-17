@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -14,11 +13,7 @@ namespace SignalR.Hosting.AspNet
         private readonly PersistentConnection _connection;
         private readonly IDependencyResolver _resolver;
 
-        private static readonly Lazy<bool> _hasAcceptWebSocketRequest =
-            new Lazy<bool>(() =>
-            {
-                return typeof(HttpContextBase).GetMethods().Any(m => m.Name.Equals("AcceptWebSocketRequest", StringComparison.OrdinalIgnoreCase));
-            });
+        private const string WebSocketVersionServerVariable = "WEBSOCKET_VERSION";
 
         public AspNetHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -26,15 +21,35 @@ namespace SignalR.Hosting.AspNet
             _connection = connection;
         }
 
-        public override Task ProcessRequestAsync(HttpContextBase context)
+#if NET45
+        public override Task ProcessRequestAsync(HttpContext context)
         {
-            var request = new AspNetRequest(context.Request, context.User);
+            return ProcessRequestAsync(new HttpContextWrapper(context));
+        }
+
+        public Task ProcessRequestAsync(HttpContextBase context)
+#else
+        public override Task ProcessRequestAsync(HttpContextBase context)
+#endif
+        {
+            // https://developer.mozilla.org/En/HTTP_Access_Control
+            string origin = context.Request.Headers["Origin"];
+            if (!String.IsNullOrEmpty(origin))
+            {
+                context.Response.AddHeader("Access-Control-Allow-Origin", origin);
+                context.Response.AddHeader("Access-Control-Allow-Credentials", "true");
+            }
+
+            var request = new AspNetRequest(context);
             var response = new AspNetResponse(context);
             var hostContext = new HostContext(request, response);
 
             // Determine if the client should bother to try a websocket request
-            hostContext.Items[HostConstants.SupportsWebSockets] = _hasAcceptWebSocketRequest.Value;
-
+#if NET45
+            hostContext.Items[HostConstants.SupportsWebSockets] = HttpRuntime.IISVersion != null && HttpRuntime.IISVersion.Major >= 8 && !String.IsNullOrEmpty(context.Request.ServerVariables[WebSocketVersionServerVariable]);
+#else
+            hostContext.Items[HostConstants.SupportsWebSockets] = false;
+#endif
             // Set the debugging flag
             hostContext.Items[HostConstants.DebugMode] = context.IsDebuggingEnabled;
 
@@ -48,7 +63,15 @@ namespace SignalR.Hosting.AspNet
             // Initialize the connection
             _connection.Initialize(_resolver);
 
-            return _connection.ProcessRequestAsync(hostContext);
+            try
+            {
+                return _connection.ProcessRequestAsync(hostContext);
+            }
+            catch (NotSupportedException) // WebSockets not supported
+            {
+                context.Response.StatusCode = 501; // HTTP 501 Not Implemented
+                return TaskAsyncHelper.Empty;
+            }
         }
     }
 }

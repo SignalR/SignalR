@@ -1,13 +1,17 @@
-﻿$(function () {
-    // Pure client side hub
-    var signalR = $.connection;
-    signalR.mouseTracking.moveMouse = function (id, x, y) {
-        if (id == this.id) {
+﻿/// <reference path="../../Scripts/jquery-1.6.2.js" />
+/// <reference path="../../Scripts/jquery.signalR.js" />
+
+$(function () {
+    var hubConnection = $.hubConnection(),
+        hub = hubConnection.createProxy('mouseTracking');
+    
+    hub.on('MoveMouse', function (id, x, y) {
+        if (id == this.state.id) {
             return;
         }
 
         updateCursor(id, x, y);
-    };
+    });
 
     function updateCursor(id, x, y) {
         var e = document.getElementById(id);
@@ -18,18 +22,17 @@
         else {
             e = $(e);
         }
-        e.css('left', x);
-        e.css('top', y);
+        e.css({ left: x, top: y });
     }
 
-
-    signalR.hub.start({ transport: activeTransport }, function () {
-        signalR.mouseTracking.join(function () {
-
+    hubConnection.start({ transport: activeTransport })
+        .done(function () {
+            return hub.invoke('join');
+        })
+        .done(function () {
             $(document).mousemove(function (e) {
-                signalR.mouseTracking.move(e.pageX, e.pageY);
-                updateCursor(signalR.mouseTracking.id, e.pageX, e.pageY);
+                hub.invoke('Move', e.pageX, e.pageY);
+                updateCursor(hub.state.id, e.pageX, e.pageY);
             });
         });
-    });
 });

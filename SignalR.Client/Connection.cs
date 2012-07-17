@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
 using SignalR.Client.Transports;
@@ -20,7 +21,12 @@ namespace SignalR.Client
         private static Version _assemblyVersion;
 
         private IClientTransport _transport;
-        private bool _initialized;
+
+        // The default connection state is disconnected
+        private ConnectionState _state = ConnectionState.Disconnected;
+
+        // Used to synchornize state changes
+        private readonly object _stateLock = new object();
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -41,6 +47,11 @@ namespace SignalR.Client
         /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
         /// </summary>
         public event Action Reconnected;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> state changes.
+        /// </summary>
+        public event Action<StateChange> StateChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Connection"/> class.
@@ -83,6 +94,7 @@ namespace SignalR.Client
             QueryString = queryString;
             Groups = Enumerable.Empty<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            State = ConnectionState.Disconnected;
         }
 
         /// <summary>
@@ -100,22 +112,15 @@ namespace SignalR.Client
         /// </summary>
         public IEnumerable<string> Groups { get; set; }
 
-        public Func<string> Sending { get; set; }
-
         /// <summary>
         /// Gets the url for the connection.
         /// </summary>
         public string Url { get; private set; }
 
         /// <summary>
-        /// Gets a value that indicates whether the connection is active or not.
-        /// </summary>
-        public bool IsActive { get; private set; }
-
-        /// <summary>
         /// Gets or sets the last message id for the connection.
         /// </summary>
-        public long? MessageId { get; set; }
+        public string MessageId { get; set; }
 
         /// <summary>
         /// Gets or sets the connection id for the connection.
@@ -133,6 +138,32 @@ namespace SignalR.Client
         public string QueryString { get; private set; }
 
         /// <summary>
+        /// Gets the current <see cref="ConnectionState"/> of the connection.
+        /// </summary>
+        public ConnectionState State
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _state;
+                }
+            }
+            private set
+            {
+                if (_state != value)
+                {
+                    if (StateChanged != null)
+                    {
+                        StateChanged(new StateChange(_state, value));
+                    }
+
+                    _state = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Starts the <see cref="Connection"/>.
         /// </summary>
         /// <returns>A task that represents when the connection has started.</returns>
@@ -148,8 +179,8 @@ namespace SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IHttpClient httpClient)
         {
-#if WINDOWS_PHONE || SILVERLIGHT
-            return Start(new LongPollingTransport());
+#if WINDOWS_PHONE || SILVERLIGHT || NETFX_CORE
+            return Start(new LongPollingTransport(httpClient));
 #else
             // Pick the best transport supported by the client
             return Start(new AutoTransport(httpClient));
@@ -163,16 +194,19 @@ namespace SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public virtual Task Start(IClientTransport transport)
         {
-            if (IsActive)
+            if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            IsActive = true;
-
             _transport = transport;
 
             return Negotiate(transport);
+        }
+
+        protected virtual string OnSending()
+        {
+            return null;
         }
 
         private Task Negotiate(IClientTransport transport)
@@ -185,35 +219,35 @@ namespace SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
 
-                if (Sending != null)
-                {
-                    var data = Sending();
-                    StartTransport(data).ContinueWith(negotiateTcs);
-                }
-                else
-                {
-                    StartTransport(null).ContinueWith(negotiateTcs);
-                }
+                var data = OnSending();
+                StartTransport(data).ContinueWith(negotiateTcs);
             })
             .ContinueWithNotComplete(negotiateTcs);
 
             var tcs = new TaskCompletionSource<object>();
             negotiateTcs.Task.ContinueWith(task =>
             {
-                // If there's any errors starting then Stop the connection                
-                if (task.IsFaulted)
+                try
                 {
-                    Stop();
-                    tcs.SetException(task.Exception);
+                    // If there's any errors starting then Stop the connection                
+                    if (task.IsFaulted)
+                    {
+                        Stop();
+                        tcs.SetException(task.Exception);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        Stop();
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        tcs.SetResult(null);
+                    }
                 }
-                else if (task.IsCanceled)
+                catch (Exception ex)
                 {
-                    Stop();
-                    tcs.SetCanceled();
-                }
-                else
-                {
-                    tcs.SetResult(null);
+                    tcs.SetException(ex);
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
@@ -224,7 +258,31 @@ namespace SignalR.Client
         private Task StartTransport(string data)
         {
             return _transport.Start(this, data)
-                             .Then(() => _initialized = true);
+                             .Then(() =>
+                             {
+                                 ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
+                             });
+        }
+
+        private bool ChangeState(ConnectionState oldState, ConnectionState newState)
+        {
+            return ((IConnection)this).ChangeState(oldState, newState);
+        }
+
+        bool IConnection.ChangeState(ConnectionState oldState, ConnectionState newState)
+        {
+            lock (_stateLock)
+            {
+                // If we're in the expected old state then change state and return true
+                if (_state == oldState)
+                {
+                    State = newState;
+                    return true;
+                }
+
+                // Invalid transition
+                return false;
+            }
         }
 
         private static void VerifyProtocolVersion(string versionString)
@@ -245,8 +303,8 @@ namespace SignalR.Client
         {
             try
             {
-                // Do nothing if the connection was never started
-                if (!_initialized)
+                // Do nothing if the connection is offline
+                if (State == ConnectionState.Disconnected)
                 {
                     return;
                 }
@@ -260,8 +318,7 @@ namespace SignalR.Client
             }
             finally
             {
-                IsActive = false;
-                _initialized = false;
+                State = ConnectionState.Disconnected;
             }
         }
 
@@ -275,11 +332,26 @@ namespace SignalR.Client
             return ((IConnection)this).Send<object>(data);
         }
 
+        /// <summary>
+        /// Sends an object that will be JSON serialized asynchronously over the connection.
+        /// </summary>
+        /// <param name="value">The value to serialize.</param>
+        /// <returns>A task that represents when the data has been sent.</returns>
+        public Task Send(object value)
+        {
+            return Send(JsonConvert.SerializeObject(value));
+        }
+
         Task<T> IConnection.Send<T>(string data)
         {
-            if (!_initialized)
+            if (State == ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException("Start must be called before data can be sent");
+                throw new InvalidOperationException("Start must be called before data can be sent.");
+            }
+
+            if (State == ConnectionState.Connecting)
+            {
+                throw new InvalidOperationException("The connection has not been established.");
             }
 
             return _transport.Send<T>(this, data);
@@ -357,7 +429,7 @@ namespace SignalR.Client
 
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if WINDOWS_PHONE
+#if WINDOWS_PHONE || NET35
             try
             {
                 version = new Version(versionString);

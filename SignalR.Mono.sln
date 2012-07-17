@@ -119,7 +119,7 @@ Global
 		{FBA09237-84CC-4383-BD12-CDF58E4020E8} = {65DBC231-0173-4367-B830-8502F4A31711}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = SignalR\SignalR.csproj
+		StartupItem = samples\SignalR.Hosting.AspNet.Samples\SignalR.Hosting.AspNet.Samples.csproj
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
@@ -141,10 +141,6 @@ Global
 		$3.WhileBraceForcement = AddBraces
 		$3.UsingBraceForcement = AddBraces
 		$3.FixedBraceForcement = AddBraces
-		$3.PlaceElseOnNewLine = True
-		$3.PlaceCatchOnNewLine = True
-		$3.PlaceFinallyOnNewLine = True
-		$3.PlaceWhileOnNewLine = True
 		$3.BeforeMethodDeclarationParentheses = False
 		$3.BeforeMethodCallParentheses = False
 		$3.BeforeConstructorDeclarationParentheses = False
@@ -157,7 +153,6 @@ Global
 		$3.scope = text/x-csharp
 		$0.TextStylePolicy = $4
 		$4.FileWidth = 120
-		$4.RemoveTrailingWhitespace = True
 		$4.EolMarker = Windows
 		$4.inheritsSet = VisualStudio
 		$4.inheritsScope = text/plain

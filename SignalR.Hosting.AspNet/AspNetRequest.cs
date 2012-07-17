@@ -2,24 +2,25 @@
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace SignalR.Hosting.AspNet
 {
     public class AspNetRequest : IRequest
     {
-        private readonly HttpRequestBase _request;
+        private readonly HttpContextBase _context;
         private NameValueCollection _form;
         private NameValueCollection _queryString;
 
         private delegate void GetUnvalidatedCollections(HttpContext context, out Func<NameValueCollection> formGetter, out Func<NameValueCollection> queryStringGetter);
         private static Lazy<GetUnvalidatedCollections> _extractCollectionsMethod = new Lazy<GetUnvalidatedCollections>(ResolveCollectionsMethod);
 
-        public AspNetRequest(HttpRequestBase request, IPrincipal user)
+        public AspNetRequest(HttpContextBase context)
         {
-            _request = request;
-            Cookies = new HttpCookieCollectionWrapper(request.Cookies);
-            User = user;
+            _context = context;
+            Cookies = new HttpCookieCollectionWrapper(context.Request.Cookies);
+            User = context.User;
             ResolveFormAndQueryString();
         }
 
@@ -27,7 +28,7 @@ namespace SignalR.Hosting.AspNet
         {
             get
             {
-                return _request.Url;
+                return _context.Request.Url;
             }
         }
 
@@ -43,7 +44,15 @@ namespace SignalR.Hosting.AspNet
         {
             get
             {
-                return _request.Headers;
+                return _context.Request.Headers;
+            }
+        }
+
+        public NameValueCollection ServerVariables
+        {
+            get
+            {
+                return _context.Request.ServerVariables;
             }
         }
 
@@ -73,8 +82,8 @@ namespace SignalR.Hosting.AspNet
             // need to check if we're out of HttpContext to preserve testability.
             if (!ResolveUnvalidatedCollections())
             {
-                _form = _request.Form;
-                _queryString = _request.QueryString;
+                _form = _context.Request.Form;
+                _queryString = _context.Request.QueryString;
             }
         }
 
@@ -135,6 +144,23 @@ namespace SignalR.Hosting.AspNet
             }
 
             return (GetUnvalidatedCollections)Delegate.CreateDelegate(typeof(GetUnvalidatedCollections), firstArgument: null, method: getUnvalidatedCollectionsMethod);
+        }
+
+        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        {
+#if NET45
+            _context.AcceptWebSocketRequest(ws =>
+            {
+                var handler = new SignalR.WebSockets.DefaultWebSocketHandler();
+                var task = handler.ProcessWebSocketRequestAsync(ws);
+                callback(handler).Then(h => h.CleanClose(), handler);
+                return task;
+            });
+
+            return TaskAsyncHelper.Empty;
+#else
+            throw new NotSupportedException();
+#endif
         }
     }
 }

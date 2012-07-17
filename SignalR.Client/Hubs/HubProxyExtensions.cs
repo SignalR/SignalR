@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SignalR.Client.Infrastructure;
 
 namespace SignalR.Client.Hubs
@@ -18,8 +18,7 @@ namespace SignalR.Client.Hubs
         /// <returns>The value of the state variable.</returns>
         public static T GetValue<T>(this IHubProxy proxy, string name)
         {
-            object value = proxy[name];
-            return Convert<T>(value);
+            return Convert<T>(proxy[name]);
         }
 
         /// <summary>
@@ -33,7 +32,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData();
             };
@@ -54,7 +53,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T>(args[0]));
             };
@@ -75,7 +74,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]));
@@ -97,7 +96,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -120,7 +119,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -133,7 +132,7 @@ namespace SignalR.Client.Hubs
             return new DisposableAction(() => subscription.Data -= handler);
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
         /// <summary>
         /// Registers for an event with the specified name and callback
         /// </summary>
@@ -157,7 +156,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -182,7 +181,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -208,7 +207,7 @@ namespace SignalR.Client.Hubs
         {
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<object[]> handler = args =>
+            Action<JToken[]> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -230,26 +229,19 @@ namespace SignalR.Client.Hubs
         /// <param name="proxy">The <see cref="IHubProxy"/></param>
         /// <param name="eventName">The name of the event.</param>
         /// <returns>An <see cref="T:System.IObservable{object[]}"/>.</returns>
-        public static IObservable<object[]> Observe(this IHubProxy proxy, string eventName)
+        public static IObservable<JToken[]> Observe(this IHubProxy proxy, string eventName)
         {
             return new Hubservable(proxy, eventName);
         }
 #endif
-        private static T Convert<T>(object obj)
+        private static T Convert<T>(JToken obj)
         {
             if (obj == null)
             {
                 return default(T);
             }
 
-#if !NETFX_CORE
-            if (typeof(T).IsAssignableFrom(obj.GetType()))
-            {
-                return (T)obj;
-            }
-#endif
-
-            return JsonConvert.DeserializeObject<T>(obj.ToString());
+            return obj.ToObject<T>();
         }
     }
 }

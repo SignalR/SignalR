@@ -48,11 +48,11 @@
       <HintPath>..\..\packages\AntiXSS.4.0.1\lib\net35\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Web" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bg.jpg" />
@@ -121,8 +121,13 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.css" />
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
+    <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
+    <Content Include="Raw\eventSource.html" />
     <Content Include="Raw\index.htm" />
+    <Content Include="Raw\test\connect-reconnect.htm" />
+    <Content Include="Raw\test\sending.htm" />
+    <Content Include="Scripts\hubs.js" />
     <Content Include="Scripts\jcanvas.js" />
     <Content Include="Hubs\DrawingPad\drawingpad.js" />
     <Content Include="Scripts\signalr.samples.js" />
@@ -179,6 +184,8 @@
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Raw\Raw.cs" />
+    <Compile Include="Raw\SendingConnection.cs" />
+    <Compile Include="Raw\TestConnection.cs" />
     <Compile Include="SignalR.Master.cs">
       <DependentUpon>SignalR.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -223,7 +230,7 @@
   <ItemGroup>
     <Content Include="SignalR.Master" />
   </ItemGroup>
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
@@ -231,7 +238,7 @@
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition=" '$(OS)' != 'Windows_NT'" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349C5851-65DF-11DA-9384-00065B846F21}">
@@ -265,7 +272,10 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Copy SourceFiles="..\..\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="..\..\SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="..\..\SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+  </Target>
+  <Target Name="AfterBuild">
+    <Exec Command="..\..\..\SignalR.ProxyGenerator\bin\$(Configuration)\hubify.exe /o:..\Scripts\hubs.js" Condition=" '$(OS)' == 'Windows_NT'" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>

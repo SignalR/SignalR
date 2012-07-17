@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Principal;
 
-namespace SignalR.Hosting
+namespace SignalR
 {
     public class HostContext
     {

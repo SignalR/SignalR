@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Client.Hubs
 {
@@ -21,6 +22,6 @@ namespace SignalR.Client.Hubs
         /// <summary>
         /// The caller state from this hub.
         /// </summary>
-        public IDictionary<string, object> State { get; set; }
+        public IDictionary<string, JToken> State { get; set; }
     }
 }

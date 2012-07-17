@@ -15,18 +15,19 @@ namespace SignalR.Client
 
             return default(T);
         }
-#if !WINDOWS_PHONE && !SILVERLIGHT
-        public static IObservable<string> AsObservable(this IConnection connection)
+
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
+        public static IObservable<string> AsObservable(this Connection connection)
         {
             return connection.AsObservable(value => value);
         }
 
-        public static IObservable<T> AsObservable<T>(this IConnection connection)
+        public static IObservable<T> AsObservable<T>(this Connection connection)
         {
             return connection.AsObservable(value => JsonConvert.DeserializeObject<T>(value));
         }
 
-        public static IObservable<T> AsObservable<T>(this IConnection connection, Func<string, T> selector)
+        public static IObservable<T> AsObservable<T>(this Connection connection, Func<string, T> selector)
         {
             return new ObservableConnection<T>(connection, selector);
         }

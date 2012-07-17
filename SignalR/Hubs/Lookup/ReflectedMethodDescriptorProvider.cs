@@ -58,6 +58,7 @@ namespace SignalR.Hubs
                                       ReturnType = oload.ReturnType,
                                       Name = group.Key,
                                       Invoker = oload.Invoke,
+                                      Hub = hub,
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
                                               {
@@ -81,7 +82,7 @@ namespace SignalR.Hubs
         /// <param name="descriptor">If successful, the <see cref="MethodDescriptor"/> that was resolved.</param>
         /// <param name="parameters">The set of parameters that will be used to help locate a specific overload of the specified <paramref name="method"/>.</param>
         /// <returns>True if the method matching the name/parameter set is found on the hub, otherwise false.</returns>
-        public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params JToken[] parameters)
+        public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params IJsonValue[] parameters)
         {
             string hubMethodKey = BuildHubExecutableMethodCacheKey(hub, method, parameters);
 
@@ -111,7 +112,7 @@ namespace SignalR.Hubs
             return descriptor != null;
         }
 
-        private static string BuildHubExecutableMethodCacheKey(HubDescriptor hub, string method, JToken[] parameters)
+        private static string BuildHubExecutableMethodCacheKey(HubDescriptor hub, string method, IJsonValue[] parameters)
         {
             string normalizedParameterCountKeyPart;
 

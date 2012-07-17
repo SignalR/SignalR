@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SignalR.Hosting
+namespace SignalR
 {
     internal static class RequestExtensions
     {

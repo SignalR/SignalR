@@ -49,6 +49,7 @@
     <Compile Include="AspNetResponse.cs" />
     <Compile Include="AspNetShutDownDetector.cs" />
     <Compile Include="HttpCookieCollectionWrapper.cs" />
+    <Compile Include="HttpResponseExtensions.cs" />
     <Compile Include="HttpTaskAsyncHandler.cs" />
     <Compile Include="Infrastructure\AspNetAssemblyLocator.cs" />
     <Compile Include="Infrastructure\TaskWrapperAsyncResult.cs" />

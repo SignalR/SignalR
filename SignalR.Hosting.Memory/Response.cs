@@ -10,7 +10,7 @@ namespace SignalR.Hosting.Memory
 {
     public class Response : IClientResponse, IResponse
     {
-        private string _nonStreamingData;
+        private ArraySegment<byte> _nonStreamingData;
         private readonly CancellationToken _clientToken;
         private readonly FollowStream _responseStream;
         private bool _ended;
@@ -23,7 +23,12 @@ namespace SignalR.Hosting.Memory
 
         public string ReadAsString()
         {
-            return _nonStreamingData;
+            if (_nonStreamingData.Array == null)
+            {
+                return null;
+            }
+
+            return Encoding.UTF8.GetString(_nonStreamingData.Array, _nonStreamingData.Offset, _nonStreamingData.Count);
         }
 
         public Stream GetResponseStream()
@@ -50,17 +55,17 @@ namespace SignalR.Hosting.Memory
             set;
         }
 
-        public Task WriteAsync(string data)
+        public Task WriteAsync(ArraySegment<byte> data)
         {
             if (IsClientConnected)
             {
-                _responseStream.Write(data);
+                _responseStream.Write(data.Array, data.Offset, data.Count);
             }
 
             return TaskAsyncHelper.Empty;
         }
 
-        public Task EndAsync(string data)
+        public Task EndAsync(ArraySegment<byte> data)
         {
             _nonStreamingData = data;
             _ended = true;

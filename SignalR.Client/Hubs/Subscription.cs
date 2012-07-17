@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Client.Hubs
 {
@@ -7,9 +8,9 @@ namespace SignalR.Client.Hubs
     /// </summary>
     public class Subscription
     {
-        public event Action<object[]> Data;
+        public event Action<JToken[]> Data;
 
-        internal void OnData(object[] data)
+        internal void OnData(JToken[] data)
         {
             if (Data != null)
             {

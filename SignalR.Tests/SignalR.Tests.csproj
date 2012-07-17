@@ -35,9 +35,6 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -49,6 +46,9 @@
     <Reference Include="xunit">
       <HintPath>..\packages\xunit.1.8.0.1549\lib\xunit.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
@@ -58,6 +58,7 @@
     <Compile Include="ConnectionFacts.cs" />
     <Compile Include="DefaultHubResolverTest.cs" />
     <Compile Include="DisconnectFacts.cs" />
+    <Compile Include="EventSourceStreamReaderFacts.cs" />
     <Compile Include="HubProxyTest.cs" />
     <Compile Include="HubFacts.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />

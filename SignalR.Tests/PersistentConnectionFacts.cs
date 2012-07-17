@@ -28,6 +28,8 @@ namespace SignalR.Tests
                 connection.Start(host).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                connection.Stop();
             }
 
             [Fact]
@@ -47,6 +49,8 @@ namespace SignalR.Tests
                 connection.Start(transport).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
+
+                connection.Stop();
             }
 
             [Fact]
@@ -67,6 +71,8 @@ namespace SignalR.Tests
 
                 Thread.Sleep(TimeSpan.FromSeconds(10));
 
+                connection.Stop();
+
                 Debug.WriteLine(String.Join(", ", results));
 
                 Assert.Equal(4, results.Count);
@@ -79,29 +85,55 @@ namespace SignalR.Tests
 
         public class OnReconnectedAsync
         {
-            public void ReconnectFiresAfterTimeOutSSE()
+            [Fact]
+            public void ReconnectFiresAfterHostShutDown()
             {
                 var host = new MemoryHost();
                 var conn = new MyReconnect();
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");
 
                 var connection = new Client.Connection("http://foo/endpoint");
                 connection.Start(host).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                host.Dispose();
 
-                Assert.Equal(2, conn.Reconnects);
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
+
+                connection.Stop();
             }
 
+            [Fact]
+            public void ReconnectFiresAfterTimeOutSSE()
+            {
+                var host = new MemoryHost();
+                var conn = new MyReconnect();
+                host.Configuration.KeepAlive = null;
+                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                host.MapConnection<MyReconnect>("/endpoint");
+
+                var connection = new Client.Connection("http://foo/endpoint");
+                connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+
+                connection.Stop();
+
+                Assert.InRange(conn.Reconnects, 1, 4);
+            }
+
+            [Fact]
             public void ReconnectFiresAfterTimeOutLongPolling()
             {
                 var host = new MemoryHost();
                 var conn = new MyReconnect();
+                host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
                 host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                 host.MapConnection<MyReconnect>("/endpoint");
 
@@ -110,7 +142,9 @@ namespace SignalR.Tests
 
                 Thread.Sleep(TimeSpan.FromSeconds(15));
 
-                Assert.Equal(2, conn.Reconnects);
+                connection.Stop();
+
+                Assert.InRange(conn.Reconnects, 1, 4);
             }
         }
     }
@@ -119,7 +153,7 @@ namespace SignalR.Tests
     {
         public int Reconnects { get; set; }
 
-        protected override Task OnReconnectedAsync(Hosting.IRequest request, IEnumerable<string> groups, string connectionId)
+        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
             Reconnects++;
             return base.OnReconnectedAsync(request, groups, connectionId);
@@ -128,7 +162,7 @@ namespace SignalR.Tests
 
     public class MySendingConnection : PersistentConnection
     {
-        protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
             Connection.Send(connectionId, "OnConnectedAsync1");
             Connection.Send(connectionId, "OnConnectedAsync2");
@@ -136,7 +170,7 @@ namespace SignalR.Tests
             return base.OnConnectedAsync(request, connectionId);
         }
 
-        protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             Connection.Send(connectionId, "OnReceivedAsync1");
             Connection.Send(connectionId, "OnReceivedAsync2");
@@ -147,7 +181,7 @@ namespace SignalR.Tests
 
     public class MyConnection : PersistentConnection
     {
-        protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
             return Groups.Send("test", "hey");
         }

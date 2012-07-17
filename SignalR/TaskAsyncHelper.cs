@@ -79,15 +79,34 @@ namespace SignalR
             {
                 if (t.IsFaulted)
                 {
-                    tcs.SetException(t.Exception);
+                    tcs.TrySetException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {
-                    tcs.SetCanceled();
+                    tcs.TrySetCanceled();
                 }
                 else
                 {
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
+                }
+            });
+        }
+
+        public static void ContinueWith<T>(this Task<T> task, TaskCompletionSource<T> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.TrySetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else
+                {
+                    tcs.TrySetResult(t.Result);
                 }
             });
         }
@@ -96,9 +115,8 @@ namespace SignalR
         /// Passes a task returning function into another task returning function so that
         /// it can decide when it starts and returns a task that completes when all are finished
         /// </summary>
-        public static Task Interleave<T>(Func<T, Action, Task> before, Func<Task> after, T arg)
+        public static Task Interleave<T>(Func<T, Action, Task> before, Func<Task> after, T arg, TaskCompletionSource<object> tcs)
         {
-            var tcs = new TaskCompletionSource<object>();
             var tasks = new[] {
                             tcs.Task,
                             before(arg, () => after().ContinueWith(tcs))
@@ -746,6 +764,11 @@ namespace SignalR
             internal static Task<Task> ThenWithArgs(Task task, Func<T1, Task> successor, T1 arg1)
             {
                 return TaskRunners<object, Task>.RunTask(task, () => successor(arg1));
+            }
+
+            internal static Task<Task> ThenWithArgs(Task task, Func<T1, T2, Task> successor, T1 arg1, T2 arg2)
+            {
+                return TaskRunners<object, Task>.RunTask(task, () => successor(arg1, arg2));
             }
 
             internal static Task<Task<TResult>> ThenWithArgs(Task<T> task, Func<T, T1, Task<TResult>> successor, T1 arg1)

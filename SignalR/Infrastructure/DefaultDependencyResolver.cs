@@ -13,11 +13,15 @@ namespace SignalR
 
         public DefaultDependencyResolver()
         {
+            RegisterDefaultServices();
+
+            // Hubs
+            RegisterHubExtensions();
+        }
+
+        private void RegisterDefaultServices()
+        {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
-
-            var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
-            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
-
             Register(typeof(ITraceManager), () => traceManager.Value);
 
             var serverIdManager = new ServerIdManager();
@@ -27,14 +31,29 @@ namespace SignalR
             Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
 
             var messageBus = new Lazy<InProcessMessageBus>(() => new InProcessMessageBus(this));
-
             Register(typeof(IMessageBus), () => messageBus.Value);
 
-            var serializer = new JsonConvertAdapter();
+            var serializer = new Lazy<JsonNetSerializer>();
+            Register(typeof(IJsonSerializer), () => serializer.Value);
 
-            Register(typeof(IJsonSerializer), () => serializer);
+            var connectionIdGenerator = new GuidConnectionIdGenerator();
+            Register(typeof(IConnectionIdGenerator), () => connectionIdGenerator);
 
-            // Hubs
+            var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
+            Register(typeof(ITransportManager), () => transportManager.Value);
+
+            var configurationManager = new DefaultConfigurationManager();
+            Register(typeof(IConfigurationManager), () => configurationManager);
+
+            var transportHeartbeat = new Lazy<TransportHeartBeat>(() => new TransportHeartBeat(this));
+            Register(typeof(ITransportHeartBeat), () => transportHeartbeat.Value);
+
+            var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
+            Register(typeof(IConnectionManager), () => connectionManager.Value);
+        }
+
+        private void RegisterHubExtensions()
+        {
             var methodDescriptorProvider = new Lazy<ReflectedMethodDescriptorProvider>();
             Register(typeof(IMethodDescriptorProvider), () => methodDescriptorProvider.Value);
 
@@ -53,20 +72,11 @@ namespace SignalR
             var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
             Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);
 
-            var connectionIdGenerator = new GuidConnectionIdGenerator();
-            Register(typeof(IConnectionIdGenerator), () => connectionIdGenerator);
+            var requestParser = new Lazy<HubRequestParser>();
+            Register(typeof(IHubRequestParser), () => requestParser.Value);
 
-            var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
-            Register(typeof(ITransportManager), () => transportManager.Value);
-
-            var configurationManager = new DefaultConfigurationManager();
-            Register(typeof(IConfigurationManager), () => configurationManager);
-
-            var transportHeartbeat = new Lazy<TransportHeartBeat>(() => new TransportHeartBeat(this));
-            Register(typeof(ITransportHeartBeat), () => transportHeartbeat.Value);
-
-            var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
-            Register(typeof(IConnectionManager), () => connectionManager.Value);
+            var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
+            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
         }
 
         public virtual object GetService(Type serviceType)

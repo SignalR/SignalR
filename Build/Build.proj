@@ -21,7 +21,7 @@
     <PropertyGroup>
         <MajorVersion>0</MajorVersion>
         <MinorVersion>5</MinorVersion>
-        <PackageBuild>1</PackageBuild>
+        <PackageBuild>2</PackageBuild>
     </PropertyGroup>
   
     <PropertyGroup Condition="$(BUILD_NUMBER) != ''">
@@ -61,7 +61,7 @@
             <Find>\d+\.\d+\.\d+\.\d+</Find>
             <ReplaceWith>$(Version)</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js">
+        <RegexTransform Include="$(ProjectRoot)\SignalR.Client.JS\jquery.signalR.core.js">
             <Find>SignalR JavaScript Library v\d+\.\d+</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
@@ -82,7 +82,7 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; BuildDocs; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests; BuildDocs;">
   </Target>
 
   <Target Name="RunTests">
@@ -109,6 +109,16 @@
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
              Properties="Configuration=$(Configuration)" />
+             
+    <MSBuild Projects="$(ProjectRoot)\SignalR.WinRT.sln"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
+             Properties="Configuration=$(Configuration)" />
+             
+    <MSBuild Projects="$(ProjectRoot)\SignalR45.sln"
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
+             Properties="Configuration=$(Configuration)" />
   </Target>
 
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
@@ -126,7 +136,7 @@
   
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
-      <JsPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.Js.nuspec" />
+      <JsPackage Include="$(ProjectRoot)\SignalR.Client.JS\Properties\SignalR.Js.nuspec" />
       <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
       <Projects Include="$(ProjectRoot)\SignalR\SignalR.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj" />
@@ -134,7 +144,12 @@
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Self\SignalR.Hosting.Self.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Owin\SignalR.Hosting.Owin.csproj" />
       <Projects Include="$(ProjectRoot)\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj" />
+      <WinRTClient Include="$(ProjectRoot)\SignalR.Client.WinRT\bin\$(Configuration)\SignalR.Client.*"></WinRTClient>
     </ItemGroup>
+    
+    <!-- To workaround a bug in nuget -->
+    <MakeDir Directories="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\winrt" />
+    <Copy SourceFiles="%(WinRTClient.Identity)" DestinationFolder="$(ProjectRoot)\SignalR.Client\bin\$(Configuration)\winrt" />
     
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Build"
@@ -159,8 +174,8 @@
     <RemoveDir Directories="$(ScriptTempPath)" />
     <MakeDir Directories="$(ScriptTempPath)" />
     
-    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
-    <Copy SourceFiles="$(ProjectRoot)\SignalR\Scripts\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />

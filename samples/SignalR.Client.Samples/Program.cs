@@ -2,7 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Hubs;
+#if !NET35
 using SignalR.Hosting.Memory;
+#endif
+using System.Diagnostics;
 
 namespace SignalR.Client.Samples
 {
@@ -10,17 +13,20 @@ namespace SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
-            RunInMemoryHost();
+#if !NET35
+            // RunInMemoryHost();
+#endif
 
             // var hubConnection = new HubConnection("http://localhost:40476/");
 
-            //RunDemoHub(hubConnection);
+            // RunDemoHub(hubConnection);
 
-            //RunStreamingSample();
+            RunStreamingSample();
 
             Console.ReadKey();
         }
 
+#if !NET35
         private static void RunInMemoryHost()
         {
             var host = new MemoryHost();
@@ -31,6 +37,11 @@ namespace SignalR.Client.Samples
             connection.Received += data =>
             {
                 Console.WriteLine(data);
+            };
+
+            connection.StateChanged += change =>
+            {
+                Console.WriteLine(change.OldState + " => " + change.NewState);
             };
 
             connection.Start(host).Wait();
@@ -52,13 +63,21 @@ namespace SignalR.Client.Samples
                 }
             });
         }
+#endif
+
         private static void RunDemoHub(HubConnection hubConnection)
         {
             var demo = hubConnection.CreateProxy("demo");
 
-            demo.On("invoke", i =>
+            hubConnection.StateChanged += change =>
             {
-                Console.WriteLine("{0} client state index -> {1}", i, demo["index"]);
+                Console.WriteLine(change.OldState + " => " + change.NewState);
+            };
+
+            demo.On<int>("invoke", i =>
+            {
+                int n = demo.GetValue<int>("index");
+                Console.WriteLine("{0} client state index -> {1}", i, n);
             });
 
             hubConnection.Start().Wait();
@@ -91,32 +110,90 @@ namespace SignalR.Client.Samples
                 Console.WriteLine("[{0}]: Connection restablished", DateTime.Now);
             };
 
-            connection.Error += e =>
+            connection.StateChanged += change =>
             {
-                Console.WriteLine(e);
+                Console.WriteLine(change.OldState + " => " + change.NewState);
             };
 
-            connection.Start().Wait();
+            connection.Error += e =>
+            {
+                Console.Error.WriteLine("========ERROR==========");
+                Console.Error.WriteLine(e.GetBaseException());
+                Console.Error.WriteLine("=======================");
+            };
+
+
+            Console.WriteLine("Choose transport:");
+            Console.WriteLine("1. AutoTransport");
+            Console.WriteLine("2. ServerSentEventsTransport");
+            Console.WriteLine("3. LongPollingTransport");
+            Console.Write("Option: ");
+
+            Task startTask = null;
+
+            var key = Console.ReadKey(false);
+            Console.WriteLine();
+
+            if (key.Key == ConsoleKey.D1)
+            {
+                startTask = connection.Start();
+            }
+            else if (key.Key == ConsoleKey.D2)
+            {
+                startTask = connection.Start(new Client.Transports.ServerSentEventsTransport());
+            }
+            else if (key.Key == ConsoleKey.D3)
+            {
+                startTask = connection.Start(new Client.Transports.LongPollingTransport());
+            }
+
+            var wh = new ManualResetEvent(false);
+            startTask.ContinueWith(task =>
+            {
+                try
+                {
+                    task.Wait();
+                }
+                catch(Exception ex)
+                {
+                    Console.Error.WriteLine("========ERROR==========");
+                    Console.Error.WriteLine(ex.GetBaseException());
+                    Console.Error.WriteLine("=======================");
+                    return;
+                }
+
+                string line = null;
+                while ((line = Console.ReadLine()) != null)
+                {
+                    connection.Send(new { type = 1, value = line });
+                }
+
+                wh.Set();
+            });
+
+            wh.WaitOne();
         }
 
+#if !NET35
         public class MyConnection : PersistentConnection
         {
-            protected override Task OnConnectedAsync(Hosting.IRequest request, string connectionId)
+            protected override Task OnConnectedAsync(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} Connected", connectionId);
                 return base.OnConnectedAsync(request, connectionId);
             }
 
-            protected override Task OnReconnectedAsync(Hosting.IRequest request, System.Collections.Generic.IEnumerable<string> groups, string connectionId)
+            protected override Task OnReconnectedAsync(IRequest request, System.Collections.Generic.IEnumerable<string> groups, string connectionId)
             {
                 Console.WriteLine("{0} Reconnected", connectionId);
                 return base.OnReconnectedAsync(request, groups, connectionId);
             }
 
-            protected override Task OnReceivedAsync(Hosting.IRequest request, string connectionId, string data)
+            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }
         }
+#endif
     }
 }

@@ -9,11 +9,10 @@ namespace SignalR.Hosting.Self
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
-        private readonly Action _onInitialWrite;
+        private Action _onInitialWrite;
         private readonly CancellationToken _cancellationToken;
 
         private bool _ended;
-        private int _writeInitialized;
 
         public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, Action onInitialWrite, CancellationToken cancellationToken)
         {
@@ -42,18 +41,24 @@ namespace SignalR.Hosting.Self
             }
         }
 
-        public Task WriteAsync(string data)
+        public Task WriteAsync(ArraySegment<byte> data)
         {
-            if (Interlocked.Exchange(ref _writeInitialized, 1) == 0)
-            {
-                _onInitialWrite();
-            }
+            Interlocked.Exchange(ref _onInitialWrite, () => { }).Invoke();
 
-            return DoWrite(data).Then(response => response.OutputStream.Flush(), _httpListenerResponse)
-                                .Catch(ex => _ended = true);
+            return DoWrite(data).Then(response =>
+            {
+#if NET45
+                return response.OutputStream.FlushAsync();
+#else
+                response.OutputStream.Flush();                
+                return TaskAsyncHelper.Empty;
+#endif
+
+            }, _httpListenerResponse)
+            .Catch(ex => _ended = true);
         }
 
-        public Task EndAsync(string data)
+        public Task EndAsync(ArraySegment<byte> data)
         {
             return DoWrite(data).Then(response =>
             {
@@ -65,7 +70,7 @@ namespace SignalR.Hosting.Self
             _httpListenerResponse);
         }
 
-        private Task DoWrite(string data)
+        private Task DoWrite(ArraySegment<byte> data)
         {
             if (!IsClientConnected)
             {

@@ -14,11 +14,13 @@ namespace SignalR.Hosting.Owin
         private Action<Exception> _responseError;
         private Action _responseCompete;
         private readonly CookieManager _cookies;
+        private readonly string _origin;
 
-        public OwinResponse(ResultDelegate responseCallback)
+        public OwinResponse(ResultDelegate responseCallback, string origin)
         {
             _responseCallback = responseCallback;
             _cookies = new CookieManager();
+            _origin = origin;
 
             IsClientConnected = true;
         }
@@ -35,12 +37,12 @@ namespace SignalR.Hosting.Owin
             private set;
         }
 
-        public Task WriteAsync(string data)
+        public Task WriteAsync(ArraySegment<byte> data)
         {
             return WriteAsync(data, end: false);
         }
 
-        public Task EndAsync(string data)
+        public Task EndAsync(ArraySegment<byte> data)
         {
             return WriteAsync(data, end: true);
         }
@@ -50,7 +52,7 @@ namespace SignalR.Hosting.Owin
             return EnsureResponseStarted().Then(cb => cb(), _responseCompete);
         }
 
-        private Task WriteAsync(string data, bool end)
+        private Task WriteAsync(ArraySegment<byte> data, bool end)
         {
             return EnsureResponseStarted()
                 .Then((d, e) => DoWrite(d, e), data, end);
@@ -67,12 +69,21 @@ namespace SignalR.Hosting.Owin
             var tcs = new TaskCompletionSource<object>();
             try
             {
+                var headers = new Dictionary<string, IEnumerable<string>>
+                {
+                    { "Content-Type", new[] { ContentType ?? "text/plain" } },
+                };
+
+                // https://developer.mozilla.org/En/HTTP_Access_Control
+                if (!String.IsNullOrEmpty(_origin))
+                {
+                    headers.Add("Access-Control-Allow-Origin", new[] { _origin });
+                    headers.Add("Access-Control-Allow-Credentials", new[] { "true" });
+                }
+
                 responseCallback(
                     "200 OK",
-                    new Dictionary<string, IEnumerable<string>>
-                        {
-                            { "Content-Type", new[] { ContentType ?? "text/plain" } },
-                        },
+                    headers,
                     (write, flush, end, cancel) =>
                     {
                         _responseNext = (data, continuation) => write(data) && flush(continuation);
@@ -95,7 +106,7 @@ namespace SignalR.Hosting.Owin
             IsClientConnected = false;
         }
 
-        private Task DoWrite(string data, bool end)
+        private Task DoWrite(ArraySegment<byte> data, bool end)
         {
             if (!IsClientConnected)
             {
@@ -106,18 +117,17 @@ namespace SignalR.Hosting.Owin
 
             try
             {
-                var value = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data));
                 if (end)
                 {
                     // Write and send the response immediately
-                    _responseNext(value, null);
+                    _responseNext(data, null);
                     _responseCompete();
 
                     tcs.SetResult(null);
                 }
                 else
                 {
-                    if (!_responseNext(value, () => tcs.SetResult(null)))
+                    if (!_responseNext(data, () => tcs.SetResult(null)))
                     {
                         tcs.SetResult(null);
                     }

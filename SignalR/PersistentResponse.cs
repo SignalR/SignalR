@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace SignalR
 {
@@ -23,6 +24,12 @@ namespace SignalR
         /// True if the connection receives a disconnect command.
         /// </summary>
         public bool Disconnect { get; set; }
+
+        /// <summary>
+        /// True if the connection was forcibly closed. 
+        /// </summary>
+        [JsonIgnore]
+        public bool Aborted { get; set; }
 
         /// <summary>
         /// True if the connection timed out.

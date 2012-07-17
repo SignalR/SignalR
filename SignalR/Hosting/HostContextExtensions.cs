@@ -1,5 +1,6 @@
 ﻿using System.Threading;
-namespace SignalR.Hosting
+
+namespace SignalR
 {
     public static class HostContextExtensions
     {

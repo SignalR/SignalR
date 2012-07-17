@@ -1,0 +1,65 @@
+﻿@import "../../Content/themes/base/jquery.ui.all.css";
+
+body {
+    font-family: "Segoe UI";
+}
+
+#toolbar, #toolbar menu {
+    list-style-type: none;
+    margin: 0; padding: 0;
+    overflow: hidden;
+}
+
+    #toolbar li {
+        float: left;
+    }
+    
+        #toolbar li a {
+            display: block;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            margin: 0 6px 6px 0;
+            text-decoration: none;
+            text-align: center;
+            color: #000;
+            background: silver;
+        }
+
+#shapes {
+    list-style-type: none;
+    margin: 0; padding: 0;
+    width: 100%;
+    height: 500px;
+    border: 1px solid #555;
+    position: relative;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    cursor: move;
+}
+
+    .shape:hover {
+        outline: 2px solid #bbb;
+    }
+
+    .shape.square {
+        background: #99ccff;
+    }
+    
+    .shape.rectangle {
+        background: #ccff99;
+    }
+
+    .shape img {
+        width: 100%;
+        height: 100%;
+    }
+    
+.user-info {
+    color: #555;
+    font-size: 11px;
+    padding: 3px 5px;
+}

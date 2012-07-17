@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using SignalR.Hosting;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -16,11 +14,10 @@ namespace SignalR.Transports
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>())
         {
-
         }
 
         public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
-            : base(context, heartBeat)
+            : base(context, jsonSerializer, heartBeat)
         {
             _jsonSerializer = jsonSerializer;
         }
@@ -33,6 +30,7 @@ namespace SignalR.Transports
                 {
                     _lastMessageId = Context.Request.QueryString["messageId"];
                 }
+
                 return _lastMessageId;
             }
             private set
@@ -46,32 +44,21 @@ namespace SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        public IEnumerable<string> Groups
-        {
-            get
-            {
-                if (IsConnectRequest)
-                {
-                    return Enumerable.Empty<string>();
-                }
-
-                string groupValue = Context.Request.QueryString["groups"];
-
-                if (String.IsNullOrEmpty(groupValue))
-                {
-                    return Enumerable.Empty<string>();
-                }
-
-                return _jsonSerializer.Parse<string[]>(groupValue);
-            }
-        }
-
         protected virtual void OnSending(string payload)
         {
             HeartBeat.MarkConnection(this);
+
             if (Sending != null)
             {
                 Sending(payload);
+            }
+        }
+
+        protected static void OnReceiving(string data)
+        {
+            if (Receiving != null)
+            {
+                Receiving(data);
             }
         }
 
@@ -87,17 +74,19 @@ namespace SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
-        public override Func<Task> Disconnected { get; set; }
-
         public Func<Exception, Task> Error { get; set; }
 
-        public Task ProcessRequest(ITransportConnection connection)
+        protected Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;
 
             if (Context.Request.Url.LocalPath.EndsWith("/send"))
             {
                 return ProcessSendRequest();
+            }
+            else if (IsAbortRequest)
+            {
+                return Connection.Abort();
             }
             else
             {
@@ -106,7 +95,16 @@ namespace SignalR.Transports
                     if (Connected != null)
                     {
                         // Return a task that completes when the connected event task & the receive loop task are both finished
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Connected, connection);
+                        bool newConnection = HeartBeat.AddConnection(this);
+                        return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
+                        {
+                            if (newConnection)
+                            {
+                                return Connected();
+                            }
+                            return TaskAsyncHelper.Empty;
+                        }
+                        , connection, Completed);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -115,31 +113,34 @@ namespace SignalR.Transports
                 if (Reconnected != null)
                 {
                     // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection);
+                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection, Completed);
                 }
 
                 return ProcessReceiveRequest(connection);
             }
         }
 
+        public virtual Task ProcessRequest(ITransportConnection connection)
+        {
+            return ProcessRequestCore(connection);
+        }
+
         public virtual Task Send(PersistentResponse response)
         {
-            HeartBeat.MarkConnection(this);
             var data = _jsonSerializer.Stringify(response);
+
             OnSending(data);
+
             return Context.Response.WriteAsync(data);
         }
 
         public virtual Task Send(object value)
         {
             var data = _jsonSerializer.Stringify(value);
-            OnSending(data);
-            return Context.Response.EndAsync(data);
-        }
 
-        protected virtual bool IsConnectRequest
-        {
-            get { return true; }
+            OnSending(data);
+
+            return Context.Response.EndAsync(data);
         }
 
         protected virtual Task InitializeResponse(ITransportConnection connection)
@@ -151,10 +152,7 @@ namespace SignalR.Transports
         {
             string data = Context.Request.Form["data"];
 
-            if (Receiving != null)
-            {
-                Receiving(data);
-            }
+            OnReceiving(data);
 
             if (Received != null)
             {
@@ -167,8 +165,11 @@ namespace SignalR.Transports
         private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
             HeartBeat.AddConnection(this);
-            HeartBeat.MarkConnection(this);
+            return ProcessReceiveRequestWithoutTracking(connection, postReceive);
+        }
 
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        {
             Action afterReceive = () =>
             {
                 if (TransportConnected != null)
@@ -195,13 +196,13 @@ namespace SignalR.Transports
 
         private void ProcessMessagesImpl(TaskCompletionSource<object> taskCompletetionSource, ITransportConnection connection, Action postReceive = null)
         {
-            if (!IsTimedOut && !IsDisconnected && Context.Response.IsClientConnected)
+            if (!IsTimedOut && !IsDisconnected && IsAlive && !ConnectionEndToken.IsCancellationRequested)
             {
                 // ResponseTask will either subscribe and wait for a signal then return new messages,
                 // or return immediately with messages that were pending
                 var receiveAsyncTask = LastMessageId == null
-                    ? connection.ReceiveAsync(TimeoutToken)
-                    : connection.ReceiveAsync(LastMessageId, TimeoutToken);
+                    ? connection.ReceiveAsync(ConnectionEndToken)
+                    : connection.ReceiveAsync(LastMessageId, ConnectionEndToken);
 
                 if (postReceive != null)
                 {
@@ -211,11 +212,20 @@ namespace SignalR.Transports
                 receiveAsyncTask.Then(response =>
                 {
                     LastMessageId = response.MessageId;
+
+                    response.TimedOut = IsTimedOut;
+
                     // If the response has the Disconnect flag, just send the response and exit the loop,
                     // the server thinks connection is gone. Otherwse, send the response then re-enter the loop
                     Task sendTask = Send(response);
-                    if (response.Disconnect || response.TimedOut)
+                    if (response.Disconnect || response.TimedOut || response.Aborted)
                     {
+                        if (response.Aborted)
+                        {
+                            // If this was a clean disconnect raise the event.
+                            OnDisconnect();
+                        }
+
                         // Signal the tcs when the task is done
                         return sendTask.Then(tcs => tcs.SetResult(null), taskCompletetionSource);
                     }
@@ -241,6 +251,7 @@ namespace SignalR.Transports
             }
 
             taskCompletetionSource.SetResult(null);
+            CompleteRequest();
             return;
         }
     }
