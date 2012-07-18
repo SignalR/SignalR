@@ -190,6 +190,23 @@ namespace SignalR.Hosting.Self
                     return connection.ProcessRequestAsync(hostContext);
                 }
 
+                if (path.Equals("/clientaccesspolicy.xml", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return context.Response.WriteAsync(@"<?xml version=""1.0"" encoding=""utf-8""?>
+ <access-policy>
+     <cross-domain-access>
+         <policy>
+             <allow-from http-request-headers=""*"">
+                 <domain uri=""*""/>
+             </allow-from>
+             <grant-to>
+                 <resource path=""/"" include-subpaths=""true""/>
+             </grant-to>
+         </policy>
+     </cross-domain-access>
+ </access-policy>");
+                }
+
                 return context.Response.NotFound();
             }
             catch (Exception ex)
