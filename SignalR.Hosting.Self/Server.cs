@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Common;
 using SignalR.Hosting.Self.Infrastructure;
+using SignalR.Hosting.Self.Properties;
 
 namespace SignalR.Hosting.Self
 {
@@ -184,7 +185,12 @@ namespace SignalR.Hosting.Self
                     return connection.ProcessRequestAsync(hostContext);
                 }
 
-                return context.Response.NotFound();
+				if (path.Equals("/clientaccesspolicy.xml", StringComparison.InvariantCultureIgnoreCase))
+				{
+					return context.Response.WriteAsync(Resources.ClientAccessPolicyXml);
+				}
+
+	            return context.Response.NotFound();
             }
             catch (Exception ex)
             {
