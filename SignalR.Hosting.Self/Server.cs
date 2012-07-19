@@ -185,10 +185,10 @@ namespace SignalR.Hosting.Self
                     return connection.ProcessRequestAsync(hostContext);
                 }
 
-				if (path.Equals("/clientaccesspolicy.xml", StringComparison.InvariantCultureIgnoreCase))
-				{
-					return context.Response.WriteAsync(Resources.ClientAccessPolicyXml);
-				}
+                if (path.Equals("/clientaccesspolicy.xml", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return context.Response.WriteAsync(Resources.ClientAccessPolicyXml);
+                }
 
 	            return context.Response.NotFound();
             }
