@@ -20,7 +20,6 @@ namespace SignalR.Tests
         [Fact]
         public void ResolveAttributesWhenGlobalAttributeIsAssigned()
         {
-
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo;
             resolver.TryGetMethod(new HubDescriptor { Type = typeof(GlobalAttributeTestHub), Name = "GlobalAttributeTestHub" }, "Foo", out actionInfo);
@@ -37,32 +36,25 @@ namespace SignalR.Tests
             Assert.NotNull(actionInfo);
             Assert.Equal(2, actionInfo.InvocationFilters.Count);            
         }
-
-     
+        
         private class AttributeTestHub : Hub
         {
-         
-
-
             [DummyFilterBeforeOnly]
             [DummyFilterAfterOnly]
             public void FooWithMultipleAttributes()
             {
 
             }
-          
         }
 
         [DummyFilter]
         private class GlobalAttributeTestHub : Hub
         {
-
             public string Foo()
             {
                 return "Hello";
             }
-
-
+            
             public string Bar()
             {
                 return "Hello";
@@ -73,7 +65,6 @@ namespace SignalR.Tests
             {
                 return "World";
             }
-
         }
 
         private class DummyFilterAttribute : MethodInvocationFilterAttribute
@@ -103,8 +94,6 @@ namespace SignalR.Tests
             {
                 throw new NotImplementedException();
             }
-
         }
-        
     }
 }
