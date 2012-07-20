@@ -50,6 +50,8 @@ namespace SignalR.Hubs
         /// <returns>Dictionary of available methods</returns>
         private IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
         {
+            var hubMethodInvocationFilters = GetMethodInvocationAttributes(hub.Type);
+                
             return ReflectionHelper.GetExportedHubMethods(hub.Type)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
@@ -60,7 +62,7 @@ namespace SignalR.Hubs
                                       Name = group.Key,
                                       Invoker = oload.Invoke,
                                       Hub = hub,
-                                      InvocationFilters = oload.GetCustomAttributes(typeof(MethodInvocationFilterAttribute), true).Cast<MethodInvocationFilterAttribute>().ToList(),
+                                      InvocationFilters = JoinMethodInvocationFilterAttributes(hubMethodInvocationFilters, oload.GetCustomAttributes(typeof(MethodInvocationFilterAttribute), true).Cast<MethodInvocationFilterAttribute>()).ToList(),
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
                                               {
@@ -70,6 +72,25 @@ namespace SignalR.Hubs
                                           .ToList()
                                   }),
                               StringComparer.OrdinalIgnoreCase);
+        }
+
+        private IEnumerable<MethodInvocationFilterAttribute> JoinMethodInvocationFilterAttributes(IEnumerable<MethodInvocationFilterAttribute> globalFilters, IEnumerable<MethodInvocationFilterAttribute> localFilters)
+        {
+            var localFilterList = localFilters.ToList();
+            var globalFilterList = globalFilters.ToList();
+
+            // return all global filters if they dont exist in local filters
+            foreach (var filter in globalFilterList.Where(c => !localFilterList.Contains(c)))
+                yield return filter;
+
+            // return the local filters
+            foreach (var filter in localFilterList)
+                yield return filter;
+        }
+
+        private IEnumerable<MethodInvocationFilterAttribute> GetMethodInvocationAttributes(Type type)
+        {
+            return type.GetCustomAttributes(typeof(MethodInvocationFilterAttribute), true).Cast<MethodInvocationFilterAttribute>();
         }
 
         /// <summary>
