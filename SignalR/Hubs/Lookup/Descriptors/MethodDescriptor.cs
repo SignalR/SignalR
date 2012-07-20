@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SignalR.Hubs.Attributes;
 
 namespace SignalR.Hubs
 {
@@ -27,6 +28,12 @@ namespace SignalR.Hubs
         /// Available method parameters.
         /// </summary>
         public virtual IList<ParameterDescriptor> Parameters { get; set; }
+
+        /// <summary>
+        /// MethodInvocationFilterAttributes valid for this method
+        /// </summary>
+        public virtual IList<MethodInvocationFilterAttribute> InvocationFilters { get; set; } 
+
 
         /// <summary>
         /// Method invocation delegate.

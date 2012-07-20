@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
+using SignalR.Hubs.Attributes;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
@@ -59,6 +60,7 @@ namespace SignalR.Hubs
                                       Name = group.Key,
                                       Invoker = oload.Invoke,
                                       Hub = hub,
+                                      InvocationFilters = oload.GetCustomAttributes(typeof(MethodInvocationFilterAttribute), true).Cast<MethodInvocationFilterAttribute>().ToList(),
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
                                               {
