@@ -51,7 +51,6 @@ namespace SignalR.Hubs
         private IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
         {
             var hubMethodInvocationFilters = GetMethodInvocationAttributes(hub.Type);
-
             return ReflectionHelper.GetExportedHubMethods(hub.Type)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
