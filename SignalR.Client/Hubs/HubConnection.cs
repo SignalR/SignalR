@@ -91,6 +91,11 @@ namespace SignalR.Client.Hubs
         /// <returns>A <see cref="IHubProxy"/></returns>
         public IHubProxy CreateProxy(string hubName)
         {
+            if (State != ConnectionState.Disconnected)
+            {
+                throw new InvalidOperationException("Proxies cannot be added after the connection has been started.");
+            }
+
             HubProxy hubProxy;
             if (!_hubs.TryGetValue(hubName, out hubProxy))
             {

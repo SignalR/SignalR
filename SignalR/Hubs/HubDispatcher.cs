@@ -123,9 +123,8 @@ namespace SignalR.Hubs
                 resultTask = ProcessResponse(state, null, hubRequest, e);
             }
 
-            return resultTask
-                .ContinueWith(_ => base.OnReceivedAsync(request, connectionId, data))
-                .FastUnwrap();
+            return resultTask.Then(() => base.OnReceivedAsync(request, connectionId, data))
+                             .Catch();
         }
 
         public override Task ProcessRequestAsync(HostContext context)

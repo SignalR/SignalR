@@ -254,5 +254,23 @@ namespace SignalR.Tests
             Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
             connection.Stop();
         }
+
+        [Fact]
+        public void CreateProxyAfterConnectionStartsThrows()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://site/");
+
+            try
+            {
+                connection.Start(host).Wait();
+                Assert.Throws<InvalidOperationException>(() => connection.CreateProxy("demo"));
+            }
+            finally
+            {
+                connection.Stop();
+            }
+        }
     }
 }

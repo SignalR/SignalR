@@ -42,6 +42,12 @@ namespace SignalR.Hosting.Self
             _listener.Prefixes.Add(url);
         }
 
+        public AuthenticationSchemes AuthenticationSchemes
+        {
+            get { return _listener.AuthenticationSchemes; }
+            set { _listener.AuthenticationSchemes = value; }
+        }
+
         /// <summary>
         /// Starts the server connection.
         /// </summary>
