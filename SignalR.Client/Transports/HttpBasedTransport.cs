@@ -39,7 +39,7 @@ namespace SignalR.Client.Transports
 #if SILVERLIGHT || WINDOWS_PHONE
             string negotiateUrl = connection.Url + "negotiate?" + GetNoCacheUrlParam();
 #else
-                   string negotiateUrl = connection.Url + "negotiate";
+            string negotiateUrl = connection.Url + "negotiate";
 #endif
 
 
@@ -129,8 +129,7 @@ namespace SignalR.Client.Transports
 
         private static string GetNoCacheUrlParam()
         {
-            //Updated to Ticks according to Samual Jack's comment
-            return "noCache=" + DateTime.Now.Ticks.ToString();
+            return "noCache=" + Guid.NewGuid().ToString();
         }
 
         protected virtual Action<IRequest> PrepareRequest(IConnection connection)
