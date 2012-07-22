@@ -181,10 +181,11 @@ namespace SignalR.Transports
                 {
                     postReceive();
                 }
+
+                InitializeResponse(connection).Catch();
             };
 
-            return InitializeResponse(connection)
-                    .Then((c, pr) => ProcessMessages(c, pr), connection, afterReceive);
+            return ProcessMessages(connection, afterReceive);
         }
 
         private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)
