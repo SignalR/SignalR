@@ -143,6 +143,8 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
+            TraceSend(key, value);
+
             var wrappedValue = new WrappedValue(value, _serializer);
             return _messageBus.Send(_connectionId, key, wrappedValue).Catch();
         }
@@ -153,6 +155,34 @@ namespace SignalR
             if (_groups.Any())
             {
                 response.TransportData["Groups"] = _groups;
+            }
+        }
+
+        private void TraceSend(string key, object value)
+        {
+            var command = value as SignalCommand;
+            if (command != null)
+            {
+                if (command.Type == CommandType.AddToGroup)
+                {
+                    Trace.TraceInformation("Sending Add to group '{0}'.", command.Value);
+                }
+                else if (command.Type == CommandType.RemoveFromGroup)
+                {
+                    Trace.TraceInformation("Sending Remove from group '{0}'.", command.Value);
+                }
+                else if (command.Type == CommandType.Abort)
+                {
+                    Trace.TraceInformation("Sending Aborted command '{0}'", _connectionId);
+                }
+                else
+                {
+                    Trace.TraceInformation("Sending message to '{0}'", key);
+                }
+            }
+            else
+            {
+                Trace.TraceInformation("Sending message to '{0}'", key);
             }
         }
     }
