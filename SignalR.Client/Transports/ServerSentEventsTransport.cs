@@ -13,7 +13,6 @@ namespace SignalR.Client.Transports
         private int _initializedCalled;
 
         private const string EventSourceKey = "eventSourceStream";
-        private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(2);
 
         public ServerSentEventsTransport()
             : this(new DefaultHttpClient())
@@ -23,13 +22,19 @@ namespace SignalR.Client.Transports
         public ServerSentEventsTransport(IHttpClient httpClient)
             : base(httpClient, "serverSentEvents")
         {
+            ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectionTimeout = TimeSpan.FromSeconds(2);
         }
 
         /// <summary>
-        /// Time allowed before failing the connect request
+        /// Time allowed before failing the connect request.
         /// </summary>
         public TimeSpan ConnectionTimeout { get; set; }
+
+        /// <summary>
+        /// The time to wait after a connection drops to try reconnecting.
+        /// </summary>
+        public TimeSpan ReconnectDelay { get; set; }
 
         protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {

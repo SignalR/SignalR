@@ -17,8 +17,13 @@ namespace SignalR.Client.Http
         /// <returns>A <see cref="Task{IResponse}"/>.</returns>
         public Task<IResponse> GetAsync(string url, Action<IRequest> prepareRequest)
         {
-            return HttpHelper.GetAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)))
-                             .Then(response => (IResponse)new HttpWebResponseWrapper(response));
+            IRequest req = null;
+            return HttpHelper.GetAsync(url, request =>
+            {
+                req = new HttpWebRequestWrapper(request);
+                prepareRequest(req);
+            }
+            ).Then(response => (IResponse)new HttpWebResponseWrapper(req, response));
         }
 
         /// <summary>
@@ -30,8 +35,13 @@ namespace SignalR.Client.Http
         /// <returns>A <see cref="Task{IResponse}"/>.</returns>
         public Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData)
         {
-            return HttpHelper.PostAsync(url, request => prepareRequest(new HttpWebRequestWrapper(request)), postData)
-                             .Then(response => (IResponse)new HttpWebResponseWrapper(response));
+            IRequest req = null;
+            return HttpHelper.PostAsync(url, request =>
+            {
+                req = new HttpWebRequestWrapper(request);
+                prepareRequest(req);
+            },
+            postData).Then(response => (IResponse)new HttpWebResponseWrapper(req, response));
         }
     }
 }

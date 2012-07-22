@@ -30,13 +30,19 @@ namespace SignalR.Client.Hubs
         {
             get
             {
-                JToken value;
-                _state.TryGetValue(name, out value);
-                return value;
+                lock (_state)
+                {
+                    JToken value;
+                    _state.TryGetValue(name, out value);
+                    return value;
+                }
             }
             set
             {
-                _state[name] = value;
+                lock (_state)
+                {
+                    _state[name] = value;
+                }
             }
         }
 
