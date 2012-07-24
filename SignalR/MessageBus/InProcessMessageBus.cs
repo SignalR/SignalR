@@ -124,8 +124,8 @@ namespace SignalR
                     return WaitForMessages(eventKeys, cancel, uuid);
                 }
 
-                var messages = eventKeys.SelectMany(key => GetMessagesSince(key, uuid));
-
+                var messages = GetMessagesSince(eventKeys, uuid).OrderBy(p => p.Id);
+                
                 if (messages.Any())
                 {
                     // Messages already in store greater than last received id so return them
@@ -206,6 +206,24 @@ namespace SignalR
             }
         }
 
+        private IList<InMemoryMessage<T>> GetMessagesSince(IEnumerable<string> eventKeys, T id)
+        {
+            var eventKeyList = eventKeys.ToList();
+
+            var result = eventKeyList.SelectMany(key => GetMessagesSince(key, id)).ToList();
+
+            // do an additional pass for event keys not yet in the eventKeys enumerable, which will end up there via AddToGroup later
+            // if we don't do this, we lose messages
+            var additionalEventKeys =
+                result.Select(p => p.Value).OfType<WrappedValue>()
+                    .Select(p => p.Value).OfType<SignalCommand>()
+                    .Where(p => p.Type == CommandType.AddToGroup).Select(p => p.Value.ToString()).Except(eventKeyList).ToList();
+
+
+            result.AddRange(additionalEventKeys.SelectMany(key => GetMessagesSince(key, id)));
+            return result;
+        }
+
         private IList<InMemoryMessage<T>> GetMessagesSince(string eventKey, T id)
         {
             LockedList<InMemoryMessage<T>> list = null;
@@ -259,13 +277,16 @@ namespace SignalR
                         tcs.TrySetResult(new MessageResult(id));
                     }
 
-                    // Remove callback for all keys
-                    foreach (var eventKey in eventKeys)
+                    lock (eventKeys)
                     {
-                        LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
-                        if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                        // Remove callback for all keys
+                        foreach (var eventKey in eventKeys)
                         {
-                            callbacks.RemoveWithLock(callback);
+                            LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
+                            if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                            {
+                                callbacks.RemoveWithLock(callback);
+                            }
                         }
                     }
                 }
@@ -294,13 +315,16 @@ namespace SignalR
                         tcs.TrySetResult(GetMessageResult(messages));
                     }
 
-                    // Remove callback for all keys
-                    foreach (var eventKey in eventKeys)
+                    lock (eventKeys)
                     {
-                        LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
-                        if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                        // Remove callback for all keys
+                        foreach (var eventKey in eventKeys)
                         {
-                            callbacks.RemoveWithLock(callback);
+                            LockedList<Action<IList<InMemoryMessage<T>>>> callbacks;
+                            if (_waitingTasks.TryGetValue(eventKey, out callbacks))
+                            {
+                                callbacks.RemoveWithLock(callback);
+                            }
                         }
                     }
                 }
@@ -310,11 +334,14 @@ namespace SignalR
                 }
             };
 
-            // Add callback for all keys
-            foreach (var eventKey in eventKeys)
+            lock (eventKeys)
             {
-                var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IList<InMemoryMessage<T>>>>());
-                callbacks.AddWithLock(callback);
+                // Add callback for all keys
+                foreach (var eventKey in eventKeys)
+                {
+                    var callbacks = _waitingTasks.GetOrAdd(eventKey, _ => new LockedList<Action<IList<InMemoryMessage<T>>>>());
+                    callbacks.AddWithLock(callback);
+                }
             }
 
             return tcs.Task;

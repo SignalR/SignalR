@@ -16,6 +16,8 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly HashSet<string> _groups;
+
+        private readonly IEnumerable<string> _signalsAndGroups;
         private readonly ITraceManager _trace;
         private bool _disconnected;
         private bool _aborted;
@@ -35,13 +37,14 @@ namespace SignalR
             _signals = new HashSet<string>(signals);
             _groups = new HashSet<string>(groups);
             _trace = traceManager;
+            _signalsAndGroups = _signals.Concat(_groups);
         }
 
         private IEnumerable<string> Signals
         {
             get
             {
-                return _signals.Concat(_groups);
+                return _signalsAndGroups;
             }
         }
 
@@ -122,22 +125,25 @@ namespace SignalR
             return messageValues;
         }
 
-        private void ProcessCommand(SignalCommand command)
+        public void ProcessCommand(SignalCommand command)
         {
-            switch (command.Type)
+            lock (Signals)
             {
-                case CommandType.AddToGroup:
-                    _groups.Add((string)command.Value);
-                    break;
-                case CommandType.RemoveFromGroup:
-                    _groups.Remove((string)command.Value);
-                    break;
-                case CommandType.Disconnect:
-                    _disconnected = true;
-                    break;
-                case CommandType.Abort:
-                    _aborted = true;
-                    break;
+                switch (command.Type)
+                {
+                    case CommandType.AddToGroup:
+                        _groups.Add((string)command.Value);
+                        break;
+                    case CommandType.RemoveFromGroup:
+                        _groups.Remove((string)command.Value);
+                        break;
+                    case CommandType.Disconnect:
+                        _disconnected = true;
+                        break;
+                    case CommandType.Abort:
+                        _aborted = true;
+                        break;
+                }
             }
         }
 
