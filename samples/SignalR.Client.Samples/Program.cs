@@ -13,15 +13,39 @@ namespace SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Choose transport:");
+            Console.WriteLine("1. Run DemoHub Sample");
+            Console.WriteLine("2. Run Streaming Sample");
+            Console.WriteLine("3. Run InMemoryHost Sample");
+            Console.Write("Option: ");
+            var key = Console.ReadKey(false);
+
+            if (key.Key == ConsoleKey.D1)
+            {
+                var hubConnection = new HubConnection("http://localhost:40476/");
+                RunDemoHub(hubConnection);
+            }
+            else if (key.Key == ConsoleKey.D2)
+            {
+                RunStreamingSample();
+            }
 #if !NET35
-            // RunInMemoryHost();
+            else if (key.Key == ConsoleKey.D3)
+            {
+                RunInMemoryHost();
+            }
 #endif
+            else
+            {
+                Console.WriteLine("No valid option selected, goodbye.");
+                return;
+            }
 
-            // var hubConnection = new HubConnection("http://localhost:40476/");
 
-            // RunDemoHub(hubConnection);
 
-            RunStreamingSample();
+
+
+
 
             Console.ReadKey();
         }
@@ -124,7 +148,7 @@ namespace SignalR.Client.Samples
 
 
             Console.WriteLine("Choose transport:");
-            Console.WriteLine("1. AutoTransport");
+            Console.WriteLine("1. AutoTransport (default)");
             Console.WriteLine("2. ServerSentEventsTransport");
             Console.WriteLine("3. LongPollingTransport");
             Console.Write("Option: ");
@@ -145,6 +169,10 @@ namespace SignalR.Client.Samples
             else if (key.Key == ConsoleKey.D3)
             {
                 startTask = connection.Start(new Client.Transports.LongPollingTransport());
+            }
+            else
+            {
+                startTask = connection.Start();
             }
 
             var wh = new ManualResetEvent(false);
