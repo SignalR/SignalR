@@ -15,7 +15,7 @@ namespace SignalR
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
-        private readonly HashSet<string> _groups;
+        private readonly SafeSet<string> _groups;
         private readonly ITraceManager _trace;
         private bool _disconnected;
         private bool _aborted;
@@ -33,7 +33,7 @@ namespace SignalR
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
-            _groups = new HashSet<string>(groups);
+            _groups = new SafeSet<string>(groups);
             _trace = traceManager;
         }
 
@@ -41,7 +41,7 @@ namespace SignalR
         {
             get
             {
-                return _signals.Concat(_groups);
+                return _signals.Concat(_groups.GetSnapshot());
             }
         }
 
@@ -152,9 +152,9 @@ namespace SignalR
         private void PopulateResponseState(PersistentResponse response)
         {
             // Set the groups on the outgoing transport data
-            if (_groups.Any())
+            if (_groups.Count > 0)
             {
-                response.TransportData["Groups"] = _groups;
+                response.TransportData["Groups"] = _groups.GetSnapshot();
             }
         }
 
