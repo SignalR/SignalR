@@ -50,10 +50,10 @@ namespace SignalR
         private static List<InMemoryMessage<T>> _emptyMessageList = new List<InMemoryMessage<T>>();
 
         private readonly ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>> _waitingTasks =
-            new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>>();
+            new ConcurrentDictionary<string, LockedList<Action<IList<InMemoryMessage<T>>>>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>> _cache =
-            new ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>>();
+            new ConcurrentDictionary<string, LockedList<InMemoryMessage<T>>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
