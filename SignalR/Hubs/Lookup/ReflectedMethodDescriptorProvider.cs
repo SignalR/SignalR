@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
+using SignalR.Hubs.Attributes;
 using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
@@ -49,6 +50,7 @@ namespace SignalR.Hubs
         /// <returns>Dictionary of available methods</returns>
         private IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
         {
+            var hubMethodInvocationFilters = GetMethodInvocationAttributes(hub.Type);
             return ReflectionHelper.GetExportedHubMethods(hub.Type)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
@@ -59,6 +61,7 @@ namespace SignalR.Hubs
                                       Name = group.Key,
                                       Invoker = oload.Invoke,
                                       Hub = hub,
+                                      InvocationFilters = JoinMethodInvocationFilterAttributes(hubMethodInvocationFilters, oload.GetCustomAttributes(typeof(MethodInvocationFilterAttribute), true).Cast<MethodInvocationFilterAttribute>()).ToList(),
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
                                               {
@@ -68,6 +71,29 @@ namespace SignalR.Hubs
                                           .ToList()
                                   }),
                               StringComparer.OrdinalIgnoreCase);
+        }
+
+        private IEnumerable<MethodInvocationFilterAttribute> JoinMethodInvocationFilterAttributes(IEnumerable<MethodInvocationFilterAttribute> globalFilters, IEnumerable<MethodInvocationFilterAttribute> localFilters)
+        {
+            var localFilterList = localFilters.ToList();
+            var globalFilterList = globalFilters.ToList();
+
+            // return all global filters if they dont exist in local filters
+            foreach (var filter in globalFilterList.Where(c => !localFilterList.Contains(c)))
+            {
+                yield return filter;
+            }
+
+            // return the local filters
+            foreach (var filter in localFilterList)
+            {
+                yield return filter;
+            }
+        }
+
+        private IEnumerable<MethodInvocationFilterAttribute> GetMethodInvocationAttributes(Type type)
+        {
+            return type.GetCustomAttributes(typeof(MethodInvocationFilterAttribute), true).Cast<MethodInvocationFilterAttribute>();
         }
 
         /// <summary>
@@ -86,16 +112,16 @@ namespace SignalR.Hubs
         {
             string hubMethodKey = BuildHubExecutableMethodCacheKey(hub, method, parameters);
 
-            if(!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
+            if (!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
             {
                 IEnumerable<MethodDescriptor> overloads;
 
-                if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
+                if (FetchMethodsFor(hub).TryGetValue(method, out overloads))
                 {
                     var matches = overloads.Where(o => o.Matches(parameters)).ToList();
 
                     // If only one match is found, that is the "executable" version, otherwise none of the methods can be returned because we don't know which one was actually being targeted
-                    descriptor =  matches.Count == 1 ? matches[0] : null;
+                    descriptor = matches.Count == 1 ? matches[0] : null;
                 }
                 else
                 {
@@ -103,7 +129,7 @@ namespace SignalR.Hubs
                 }
 
                 // If an executable method was found, cache it for future lookups (NOTE: we don't cache null instances because it could be a surface area for DoS attack by supplying random method names to flood the cache)
-                if(descriptor != null)
+                if (descriptor != null)
                 {
                     _executableMethods.TryAdd(hubMethodKey, descriptor);
                 }
@@ -116,7 +142,7 @@ namespace SignalR.Hubs
         {
             string normalizedParameterCountKeyPart;
 
-            if(parameters != null)
+            if (parameters != null)
             {
                 normalizedParameterCountKeyPart = parameters.Length.ToString(CultureInfo.InvariantCulture);
             }
@@ -128,9 +154,9 @@ namespace SignalR.Hubs
 
             // NOTE: we always normalize to all uppercase since method names are case insensitive and could theoretically come in diff. variations per call
             string normalizedMethodName = method.ToUpperInvariant();
-            
+
             string methodKey = hub.Name + "::" + normalizedMethodName + "(" + normalizedParameterCountKeyPart + ")";
-            
+
             return methodKey;
         }
 

@@ -64,6 +64,7 @@
     <Compile Include="HubFacts.cs" />
     <Compile Include="InProcessMessageBusFacts.cs" />
     <Compile Include="DefaultActionResolverTest.cs" />
+    <Compile Include="MethodInvocationFilterAttributeTest.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

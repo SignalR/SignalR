@@ -78,7 +78,16 @@ namespace SignalR.Hubs
             try
             {
                 // Invoke the method
+
+                var methodInvocationAttributes = methodDescriptor.InvocationFilters.OrderBy(c => c.Order).ToList();
+                // Execute all OnMethodInvoking methods from attributes
+                methodInvocationAttributes.ForEach(c => c.OnMethodInvoking(hub));
+
                 object result = methodDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(methodDescriptor, parameterValues));
+
+                // Execute all OnMethodInvoked methods from attributes
+                methodInvocationAttributes.ForEach(c => c.OnMethodInvoked(hub, ref result));
+
                 Type returnType = result != null ? result.GetType() : methodDescriptor.ReturnType;
 
                 if (typeof(Task).IsAssignableFrom(returnType))
