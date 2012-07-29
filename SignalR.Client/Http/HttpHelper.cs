@@ -156,11 +156,17 @@ namespace SignalR.Client.Http
 
         private static HttpWebRequest CreateWebRequest(string url)
         {
-#if !SILVERLIGHT || WINDOWS_PHONE
-            return (HttpWebRequest)WebRequest.Create(url);
+            HttpWebRequest request = null;
+#if WINDOWS_PHONE
+            request = (HttpWebRequest)WebRequest.Create(url);
+            request.AllowReadStreamBuffering = false;
+#elif SILVERLIGHT
+            request = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
+            request.AllowReadStreamBuffering = false;
 #else
-            return (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
+            request = (HttpWebRequest)WebRequest.Create(url);
 #endif
+            return request;
         }
     }
 }
