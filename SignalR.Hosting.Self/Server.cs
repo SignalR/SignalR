@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using SignalR.Hosting.Common;
 using SignalR.Hosting.Self.Infrastructure;
 
+
 namespace SignalR.Hosting.Self
 {
     public unsafe class Server : RoutingHost
@@ -16,6 +17,7 @@ namespace SignalR.Hosting.Self
         private readonly string _url;
         private readonly HttpListener _listener;
         private CriticalHandle _requestQueueHandle;
+        private CancellationTokenResolver _cancellationTokenResolver;
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
@@ -26,7 +28,7 @@ namespace SignalR.Hosting.Self
         public Server(string url)
             : this(url, GlobalHost.DependencyResolver)
         {
-
+            _cancellationTokenResolver = new CancellationTokenResolver();
         }
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace SignalR.Hosting.Self
             _url = url.Replace("*", @".*?");
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
+            _cancellationTokenResolver = new CancellationTokenResolver();
         }
 
         public AuthenticationSchemes AuthenticationSchemes
@@ -106,41 +109,50 @@ namespace SignalR.Hosting.Self
             }, null);
         }
 
-        private void RegisterForDisconnect(HttpListenerContext context, Action disconnectCallback)
+        private CancellationToken RegisterForDisconnect(HttpListenerContext context)
         {
             // Get the connection id value
             FieldInfo connectionIdField = typeof(HttpListenerRequest).GetField("m_ConnectionId", BindingFlags.Instance | BindingFlags.NonPublic);
+
             if (_requestQueueHandle != null && connectionIdField != null)
             {
-                Debug.WriteLine("Server: Registering for disconnect");
-
                 ulong connectionId = (ulong)connectionIdField.GetValue(context.Request);
-                // Create a nativeOverlapped callback so we can register for disconnect callback
-                var overlapped = new Overlapped();
-                var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOVERLAP) =>
+                bool alreadyRegistered = _cancellationTokenResolver.IsRegisteredForCancellation(connectionId);
+                CancellationToken ct = _cancellationTokenResolver.GetOrAddCancellationToken(connectionId);
+
+                if (!alreadyRegistered)
                 {
-                    Debug.WriteLine("Server: http.sys disconnect callback fired.");
+                    Debug.WriteLine("Server: Registering for disconnect");
+                    // Create a nativeOverlapped callback so we can register for disconnect callback
+                    var overlapped = new Overlapped();
 
-                    // Free the overlapped
-                    Overlapped.Free(pOVERLAP);
+                    var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOVERLAP) =>
+                    {
+                        Debug.WriteLine("Server: http.sys disconnect callback fired.");
 
-                    // Mark the client as disconnected
-                    disconnectCallback();
-                },
-                null);
+                        // Free the overlapped
+                        Overlapped.Free(pOVERLAP);
 
-                uint hr = NativeMethods.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
+                        _cancellationTokenResolver.CancelToken(connectionId);
+                    },
+                    null);
 
-                if (hr != NativeMethods.HttpErrors.ERROR_IO_PENDING &&
-                    hr != NativeMethods.HttpErrors.NO_ERROR)
-                {
-                    // We got an unknown result so throw
-                    throw new InvalidOperationException("Unable to register disconnect callback");
+                    uint hr = NativeMethods.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
+
+                    if (hr != NativeMethods.HttpErrors.ERROR_IO_PENDING &&
+                        hr != NativeMethods.HttpErrors.NO_ERROR)
+                    {
+                        // We got an unknown result so throw
+                        throw new InvalidOperationException("Unable to register disconnect callback");
+                    }
                 }
+
+                return ct;
             }
             else
             {
                 Debug.WriteLine("Server: Unable to resolve requestQueue handle. Disconnect notifications will be ignored");
+                return CancellationToken.None;
             }
         }
 
@@ -156,8 +168,6 @@ namespace SignalR.Hosting.Self
 
                 if (TryGetConnection(path, out connection))
                 {
-                    var cts = new CancellationTokenSource();
-
                     // https://developer.mozilla.org/En/HTTP_Access_Control
                     string origin = context.Request.Headers["Origin"];
                     if (!String.IsNullOrEmpty(origin))
@@ -167,7 +177,7 @@ namespace SignalR.Hosting.Self
                     }
 
                     var request = new HttpListenerRequestWrapper(context);
-                    var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
+                    var response = new HttpListenerResponseWrapper(context.Response, RegisterForDisconnect(context));
                     var hostContext = new HostContext(request, response);
 
 #if NET45
@@ -195,7 +205,7 @@ namespace SignalR.Hosting.Self
                     return context.Response.WriteAsync(Resources.ClientAccessPolicyXml);
                 }
 
-	            return context.Response.NotFound();
+                return context.Response.NotFound();
             }
             catch (Exception ex)
             {
@@ -221,5 +231,7 @@ namespace SignalR.Hosting.Self
 
             return path;
         }
+
+
     }
 }

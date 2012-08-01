@@ -18,7 +18,14 @@ namespace SignalR.Hosting.Self
         {
             _httpListenerResponse = httpListenerResponse;
             _onInitialWrite = onInitialWrite;
+            _cancellationToken = cancellationToken;            
+        }
+
+        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, CancellationToken cancellationToken)
+        {
+            _httpListenerResponse = httpListenerResponse;
             _cancellationToken = cancellationToken;
+            _onInitialWrite = () => { };
         }
 
         public string ContentType
@@ -43,8 +50,6 @@ namespace SignalR.Hosting.Self
 
         public Task WriteAsync(ArraySegment<byte> data)
         {
-            Interlocked.Exchange(ref _onInitialWrite, () => { }).Invoke();
-
             return DoWrite(data).Then(response =>
             {
 #if NET45
@@ -72,6 +77,8 @@ namespace SignalR.Hosting.Self
 
         private Task DoWrite(ArraySegment<byte> data)
         {
+            Interlocked.Exchange(ref _onInitialWrite, () => { }).Invoke();
+
             if (!IsClientConnected)
             {
                 return TaskAsyncHelper.Empty;

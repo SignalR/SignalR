@@ -100,7 +100,7 @@ namespace SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        public virtual Task ProcessRequestAsync(HostContext context)
+        public virtual Task ProcessRequestAsync(HostContext context)     
         {
             if (!_initialized)
             {
