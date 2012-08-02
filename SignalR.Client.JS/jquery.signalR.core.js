@@ -222,7 +222,10 @@
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
+                        $(connection).trigger(events.onError, "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                        // Stop the connection if it has connected and move it into the disconnected state
+                        connection.stop();
                     }
                     return;
                 }
