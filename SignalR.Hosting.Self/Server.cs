@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting.Common;
 using SignalR.Hosting.Self.Infrastructure;
-using SignalR.Hosting.Self.Properties;
 
 namespace SignalR.Hosting.Self
 {
