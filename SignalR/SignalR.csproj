@@ -64,7 +64,7 @@
     <Compile Include="Hubs\IClientProxy.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
-    <Compile Include="Infrastructure\CancellationTokenResolver.cs" />
+    <Compile Include="Infrastructure\DisconnectHandler.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />

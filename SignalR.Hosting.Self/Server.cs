@@ -17,7 +17,7 @@ namespace SignalR.Hosting.Self
         private readonly string _url;
         private readonly HttpListener _listener;
         private CriticalHandle _requestQueueHandle;
-        private CancellationTokenResolver _cancellationTokenResolver;
+        private DisconnectHandler _disconnectHandler;
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
@@ -27,8 +27,7 @@ namespace SignalR.Hosting.Self
         /// <param name="url">The url to host the server on.</param>
         public Server(string url)
             : this(url, GlobalHost.DependencyResolver)
-        {
-            _cancellationTokenResolver = new CancellationTokenResolver();
+        { 
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace SignalR.Hosting.Self
             _url = url.Replace("*", @".*?");
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
-            _cancellationTokenResolver = new CancellationTokenResolver();
+            _disconnectHandler = new DisconnectHandler();
         }
 
         public AuthenticationSchemes AuthenticationSchemes
@@ -117,8 +116,8 @@ namespace SignalR.Hosting.Self
             if (_requestQueueHandle != null && connectionIdField != null)
             {
                 ulong connectionId = (ulong)connectionIdField.GetValue(context.Request);
-                bool alreadyRegistered = _cancellationTokenResolver.IsRegisteredForCancellation(connectionId);
-                CancellationToken ct = _cancellationTokenResolver.GetOrAddCancellationToken(connectionId);
+                bool alreadyRegistered = _disconnectHandler.IsRegisteredForDisconnect(connectionId);
+                CancellationToken ct = _disconnectHandler.GetOrAddDisconnectToken(connectionId);
 
                 if (!alreadyRegistered)
                 {
@@ -133,7 +132,7 @@ namespace SignalR.Hosting.Self
                         // Free the overlapped
                         Overlapped.Free(pOVERLAP);
 
-                        _cancellationTokenResolver.CancelToken(connectionId);
+                        _disconnectHandler.CancelDisconnectToken(connectionId);
                     },
                     null);
 
