@@ -43,7 +43,7 @@ namespace SignalR.Client.Http
 
         public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer)
         {
-            var request = (HttpWebRequest)HttpWebRequest.Create(url);
+            HttpWebRequest request = CreateWebRequest(url);
             if (requestPreparer != null)
             {
                 requestPreparer(request);
@@ -100,7 +100,7 @@ namespace SignalR.Client.Http
 
         private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
-            var request = (HttpWebRequest)HttpWebRequest.Create(url);
+            HttpWebRequest request = CreateWebRequest(url);
 
             if (requestPreparer != null)
             {
@@ -152,6 +152,21 @@ namespace SignalR.Client.Http
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());
+        }
+
+        private static HttpWebRequest CreateWebRequest(string url)
+        {
+            HttpWebRequest request = null;
+#if WINDOWS_PHONE
+            request = (HttpWebRequest)WebRequest.Create(url);
+            request.AllowReadStreamBuffering = false;
+#elif SILVERLIGHT
+            request = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
+            request.AllowReadStreamBuffering = false;
+#else
+            request = (HttpWebRequest)WebRequest.Create(url);
+#endif
+            return request;
         }
     }
 }

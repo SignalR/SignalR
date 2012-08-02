@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Hubs;
 using SignalR.Hosting.Memory;
+using SignalR.Hubs;
 using Xunit;
 
 namespace SignalR.Tests
@@ -271,6 +274,64 @@ namespace SignalR.Tests
             {
                 connection.Stop();
             }
+        }
+
+        [Fact]
+        public void AddingToMultipleGroups()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            int max = 100;
+
+            var countDown = new CountDown(max);
+            var list = Enumerable.Range(0, max).ToList();
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateProxy("MultGroupHub");
+
+            proxy.On<User>("onRoomJoin", user =>
+            {
+                lock (list)
+                {
+                    list.Remove(user.Index);
+                }
+
+                countDown.Dec();
+            });
+
+            connection.Start(host).Wait();
+
+            for (int i = 0; i < max; i++)
+            {
+                proxy.Invoke("login", new User { Index = i, Name = "tester", Room = "test" + i }).Wait();
+            }
+
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(10)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", list.Select(i => i.ToString())));
+
+            connection.Stop();
+        }
+
+        public class MultGroupHub : Hub
+        {
+            public Task Login(User user)
+            {
+                return Task.Factory.StartNew(
+                    () =>
+                    {
+                        Groups.Remove(Context.ConnectionId, "foo").Wait();
+                        Groups.Add(Context.ConnectionId, "foo").Wait();
+
+                        Groups.Remove(Context.ConnectionId, user.Name).Wait();
+                        Groups.Add(Context.ConnectionId, user.Name).Wait();
+                        Clients[user.Name].onRoomJoin(user).Wait();
+                    });
+            }
+        }
+
+        public class User
+        {
+            public int Index { get; set; }
+            public string Name { get; set; }
+            public string Room { get; set; }
         }
     }
 }
