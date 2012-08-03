@@ -1,8 +1,8 @@
 ﻿using System;
+using SignalR.Hosting.Self.Infrastructure;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hosting.Self.Infrastructure;
 
 namespace SignalR.Hosting.Self
 {

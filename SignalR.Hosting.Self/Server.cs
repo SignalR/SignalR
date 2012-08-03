@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SignalR.Hosting.Common;
+using SignalR.Hosting.Self.Infrastructure;
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -6,9 +8,6 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hosting.Common;
-using SignalR.Hosting.Self.Infrastructure;
-
 
 namespace SignalR.Hosting.Self
 {
@@ -124,7 +123,7 @@ namespace SignalR.Hosting.Self
                     }
 
                     var request = new HttpListenerRequestWrapper(context);
-                    var response = new HttpListenerResponseWrapper(context.Response, _disconnectHandler.GetOrAddDisconnectToken(context));
+                    var response = new HttpListenerResponseWrapper(context.Response, _disconnectHandler.GetDisconnectToken(context));
                     var hostContext = new HostContext(request, response);
 
 #if NET45
