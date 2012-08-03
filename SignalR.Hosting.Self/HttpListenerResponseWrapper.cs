@@ -1,23 +1,21 @@
 ﻿using System;
+using SignalR.Hosting.Self.Infrastructure;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hosting.Self.Infrastructure;
 
 namespace SignalR.Hosting.Self
 {
     public class HttpListenerResponseWrapper : IResponse
     {
         private readonly HttpListenerResponse _httpListenerResponse;
-        private Action _onInitialWrite;
         private readonly CancellationToken _cancellationToken;
 
         private bool _ended;
 
-        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, Action onInitialWrite, CancellationToken cancellationToken)
+        public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, CancellationToken cancellationToken)
         {
             _httpListenerResponse = httpListenerResponse;
-            _onInitialWrite = onInitialWrite;
             _cancellationToken = cancellationToken;
         }
 
@@ -43,8 +41,6 @@ namespace SignalR.Hosting.Self
 
         public Task WriteAsync(ArraySegment<byte> data)
         {
-            Interlocked.Exchange(ref _onInitialWrite, () => { }).Invoke();
-
             return DoWrite(data).Then(response =>
             {
 #if NET45
