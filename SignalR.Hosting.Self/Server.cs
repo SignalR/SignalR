@@ -27,7 +27,7 @@ namespace SignalR.Hosting.Self
         /// <param name="url">The url to host the server on.</param>
         public Server(string url)
             : this(url, GlobalHost.DependencyResolver)
-        { 
+        {
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace SignalR.Hosting.Self
             _url = url.Replace("*", @".*?");
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
-            _disconnectHandler = new DisconnectHandler();
+            _disconnectHandler = new DisconnectHandler(_listener);
         }
 
         public AuthenticationSchemes AuthenticationSchemes
@@ -57,12 +57,7 @@ namespace SignalR.Hosting.Self
         {
             _listener.Start();
 
-            // HACK: Get the request queue handle so we can register for disconnect
-            var requestQueueHandleField = typeof(HttpListener).GetField("m_RequestQueueHandle", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (requestQueueHandleField != null)
-            {
-                _requestQueueHandle = (CriticalHandle)requestQueueHandleField.GetValue(_listener);
-            }
+            _disconnectHandler.Initialize();
 
             ReceiveLoop();
         }
@@ -106,54 +101,7 @@ namespace SignalR.Hosting.Self
                 });
 
             }, null);
-        }
-
-        private CancellationToken RegisterForDisconnect(HttpListenerContext context)
-        {
-            // Get the connection id value
-            FieldInfo connectionIdField = typeof(HttpListenerRequest).GetField("m_ConnectionId", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            if (_requestQueueHandle != null && connectionIdField != null)
-            {
-                ulong connectionId = (ulong)connectionIdField.GetValue(context.Request);
-                bool alreadyRegistered = _disconnectHandler.IsRegisteredForDisconnect(connectionId);
-                CancellationToken ct = _disconnectHandler.GetOrAddDisconnectToken(connectionId);
-
-                if (!alreadyRegistered)
-                {
-                    Debug.WriteLine("Server: Registering for disconnect");
-                    // Create a nativeOverlapped callback so we can register for disconnect callback
-                    var overlapped = new Overlapped();
-
-                    var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOVERLAP) =>
-                    {
-                        Debug.WriteLine("Server: http.sys disconnect callback fired.");
-
-                        // Free the overlapped
-                        Overlapped.Free(pOVERLAP);
-
-                        _disconnectHandler.CancelDisconnectToken(connectionId);
-                    },
-                    null);
-
-                    uint hr = NativeMethods.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
-
-                    if (hr != NativeMethods.HttpErrors.ERROR_IO_PENDING &&
-                        hr != NativeMethods.HttpErrors.NO_ERROR)
-                    {
-                        // We got an unknown result so throw
-                        throw new InvalidOperationException("Unable to register disconnect callback");
-                    }
-                }
-
-                return ct;
-            }
-            else
-            {
-                Debug.WriteLine("Server: Unable to resolve requestQueue handle. Disconnect notifications will be ignored");
-                return CancellationToken.None;
-            }
-        }
+        }       
 
         private Task ProcessRequestAsync(HttpListenerContext context)
         {
@@ -176,7 +124,7 @@ namespace SignalR.Hosting.Self
                     }
 
                     var request = new HttpListenerRequestWrapper(context);
-                    var response = new HttpListenerResponseWrapper(context.Response, RegisterForDisconnect(context));
+                    var response = new HttpListenerResponseWrapper(context.Response, _disconnectHandler.GetOrAddDisconnectToken(context));
                     var hostContext = new HostContext(request, response);
 
 #if NET45
