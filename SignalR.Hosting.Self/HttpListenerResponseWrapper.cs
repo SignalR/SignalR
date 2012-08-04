@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using SignalR.Hosting.Self.Infrastructure;
 using System.Net;
 using System.Threading;
 

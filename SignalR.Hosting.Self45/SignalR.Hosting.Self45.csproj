@@ -75,12 +75,16 @@
     <Compile Include="..\SignalR.Hosting.Self\Infrastructure\ResponseExtensions.cs">
       <Link>Infrastructure\ResponseExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Hosting.Self\Resources.Designer.cs">
+      <Link>Resources.Designer.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Hosting.Self\Server.cs">
       <Link>Server.cs</Link>
     </Compile>
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="Infrastructure\DisconnectHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

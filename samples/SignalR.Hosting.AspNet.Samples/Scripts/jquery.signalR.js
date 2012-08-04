@@ -25,6 +25,8 @@
     
     var signalR,
         _connection,
+        _pageLoaded = false,
+        _pageWindow = $(window),
 
         events = {
             onStart: "onStart",
@@ -119,6 +121,8 @@
         }
     };
 
+    _pageWindow.load(function () { _pageLoaded = true; });
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
@@ -142,20 +146,13 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
+                    waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false
                 },
                 initialize,
-                deferred = $.Deferred(),
-                parser = window.document.createElement("a");
-
-            if (changeState(connection,
-                            signalR.connectionState.disconnected,
-                            signalR.connectionState.connecting) === false) {
-                // Already started, just return
-                deferred.resolve(connection);
-                return deferred.promise();
-            }
+                deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                parser = window.document.createElement("a");            
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -165,6 +162,24 @@
                 if ($.type(config.callback) === "function") {
                     callback = config.callback;
                 }
+            }
+
+            // Check to see if start is being called prior to page load
+            // If waitForPageLoad is true we then want to re-direct function call to the window load event
+            if (!_pageLoaded && config.waitForPageLoad === true) {
+                _pageWindow.load(function () {
+                    connection.deferral = deferred;
+                    connection.start(options, callback);
+                });
+                return deferred.promise();
+            }
+
+            if (changeState(connection,
+                            signalR.connectionState.disconnected,
+                            signalR.connectionState.connecting) === false) {
+                // Already started, just return
+                deferred.resolve(connection);
+                return deferred.promise();
             }
 
             // Resolve the full url
@@ -223,7 +238,10 @@
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
+                        $(connection).trigger(events.onError, "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                        // Stop the connection if it has connected and move it into the disconnected state
+                        connection.stop();
                     }
                     return;
                 }
@@ -246,7 +264,7 @@
 
                     $(connection).trigger(events.onStart);
 
-                    $(window).unload(function () { // failure
+                    _pageWindow.unload(function () { // failure
                         connection.stop(false /* async */);
                     });
 
@@ -255,65 +273,63 @@
                 });
             };
 
-            window.setTimeout(function () {
-                var url = connection.url + "/negotiate";
-                connection.log("Negotiating with '" + url + "'.");
-                $.ajax({
-                    url: url,
-                    global: false,
-                    cache: false,
-                    type: "GET",
-                    data: {},
-                    dataType: connection.ajaxDataType,
-                    error: function (error) {
-                        $(connection).trigger(events.onError, [error.responseText]);
-                        deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                        // Stop the connection if negotiate failed
-                        connection.stop();
-                    },
-                    success: function (res) {
-                        connection.appRelativeUrl = res.Url;
-                        connection.id = res.ConnectionId;
-                        connection.webSocketServerUrl = res.WebSocketServerUrl;
+            var url = connection.url + "/negotiate";
+            connection.log("Negotiating with '" + url + "'.");
+            $.ajax({
+                url: url,
+                global: false,
+                cache: false,
+                type: "GET",
+                data: {},
+                dataType: connection.ajaxDataType,
+                error: function (error) {
+                    $(connection).trigger(events.onError, [error.responseText]);
+                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                    // Stop the connection if negotiate failed
+                    connection.stop();
+                },
+                success: function (res) {
+                    connection.appRelativeUrl = res.Url;
+                    connection.id = res.ConnectionId;
+                    connection.webSocketServerUrl = res.WebSocketServerUrl;
 
-                        if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
-                            $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
-                            deferred.reject("SignalR: Incompatible protocol version.");
-                            return;
-                        }
-
-                        $(connection).trigger(events.onStarting);
-
-                        var transports = [],
-                            supportedTransports = [];
-
-                        $.each(signalR.transports, function (key) {
-                            if (key === "webSockets" && !res.TryWebSockets) {
-                                // Server said don't even try WebSockets, but keep processing the loop
-                                return true;
-                            }
-                            supportedTransports.push(key);
-                        });
-
-                        if ($.isArray(config.transport)) {
-                            // ordered list provided
-                            $.each(config.transport, function () {
-                                var transport = this;
-                                if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
-                                    transports.push($.type(transport) === "string" ? "" + transport : transport);
-                                }
-                            });
-                        } else if ($.type(config.transport) === "object" ||
-                                       $.inArray(config.transport, supportedTransports) >= 0) {
-                                // specific transport provided, as object or a named transport, e.g. "longPolling"
-                            transports.push(config.transport);
-                        } else { // default "auto"
-                            transports = supportedTransports;
-                        }
-                        initialize(transports);
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
+                        $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
+                        deferred.reject("SignalR: Incompatible protocol version.");
+                        return;
                     }
-                });
-            }, 0);
+
+                    $(connection).trigger(events.onStarting);
+
+                    var transports = [],
+                        supportedTransports = [];
+
+                    $.each(signalR.transports, function (key) {
+                        if (key === "webSockets" && !res.TryWebSockets) {
+                            // Server said don't even try WebSockets, but keep processing the loop
+                            return true;
+                        }
+                        supportedTransports.push(key);
+                    });
+
+                    if ($.isArray(config.transport)) {
+                        // ordered list provided
+                        $.each(config.transport, function () {
+                            var transport = this;
+                            if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
+                                transports.push($.type(transport) === "string" ? "" + transport : transport);
+                            }
+                        });
+                    } else if ($.type(config.transport) === "object" ||
+                                    $.inArray(config.transport, supportedTransports) >= 0) {
+                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                        transports.push(config.transport);
+                    } else { // default "auto"
+                        transports = supportedTransports;
+                    }
+                    initialize(transports);
+                }
+            });
 
             return deferred.promise();
         },
@@ -961,7 +977,7 @@
                 frameId = (transportLogic.foreverFrame.count += 1),
                 url,
                 connectTimeOut,
-                frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;'></iframe>");
+                frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
 
             if (window.EventSource) {
                 // If the browser supports SSE, don't use Forever Frame
