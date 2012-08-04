@@ -25,6 +25,7 @@
     var signalR,
         _connection,
         _pageLoaded = false,
+        _pageWindow = $(window),
 
         events = {
             onStart: "onStart",
@@ -119,7 +120,7 @@
         }
     };
 
-    $(window).load(function () { _pageLoaded = true; });
+    _pageWindow.load(function () { _pageLoaded = true; });
 
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
@@ -165,7 +166,7 @@
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
-                $(window).load(function () {
+                _pageWindow.load(function () {
                     connection.deferral = deferred;
                     connection.start(options, callback);
                 });
@@ -262,7 +263,7 @@
 
                     $(connection).trigger(events.onStart);
 
-                    $(window).unload(function () { // failure
+                    _pageWindow.unload(function () { // failure
                         connection.stop(false /* async */);
                     });
 
