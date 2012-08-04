@@ -145,7 +145,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
-                    startAfterPageLoad: true,
+                    waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false
                 },
@@ -163,9 +163,9 @@
                 }
             }
 
-            //Check to see if start is being called prior to page load
-            //If startAfterPageLoad is true we then want to re-direct function call to the window load event
-            if (!_pageLoaded && config.startAfterPageLoad === true) {
+            // Check to see if start is being called prior to page load
+            // If waitForPageLoad is true we then want to re-direct function call to the window load event
+            if (!_pageLoaded && config.waitForPageLoad === true) {
                 $(window).load(function () {
                     connection.deferral = deferred;
                     connection.start(options, callback);

@@ -25,6 +25,7 @@
     
     var signalR,
         _connection,
+        _pageLoaded = false,
 
         events = {
             onStart: "onStart",
@@ -119,6 +120,8 @@
         }
     };
 
+    $(window).load(function () { _pageLoaded = true; });
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
@@ -142,20 +145,13 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
+                    waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false
                 },
                 initialize,
-                deferred = $.Deferred(),
-                parser = window.document.createElement("a");
-
-            if (changeState(connection,
-                            signalR.connectionState.disconnected,
-                            signalR.connectionState.connecting) === false) {
-                // Already started, just return
-                deferred.resolve(connection);
-                return deferred.promise();
-            }
+                deferred = ($(this).attr("deferral")) ? this.deferral : $.Deferred(),//Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                parser = window.document.createElement("a");            
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -165,6 +161,24 @@
                 if ($.type(config.callback) === "function") {
                     callback = config.callback;
                 }
+            }
+
+            // Check to see if start is being called prior to page load
+            // If waitForPageLoad is true we then want to re-direct function call to the window load event
+            if (!_pageLoaded && config.waitForPageLoad === true) {
+                $(window).load(function () {
+                    connection.deferral = deferred;
+                    connection.start(options, callback);
+                });
+                return deferred.promise();
+            }
+
+            if (changeState(connection,
+                            signalR.connectionState.disconnected,
+                            signalR.connectionState.connecting) === false) {
+                // Already started, just return
+                deferred.resolve(connection);
+                return deferred.promise();
             }
 
             // Resolve the full url
