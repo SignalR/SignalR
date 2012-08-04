@@ -150,7 +150,7 @@
                     jsonp: false
                 },
                 initialize,
-                deferred = ($(this).attr("deferral")) ? this.deferral : $.Deferred(),//Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
                 parser = window.document.createElement("a");            
 
             if ($.type(options) === "function") {
@@ -272,65 +272,63 @@
                 });
             };
 
-            window.setTimeout(function () {
-                var url = connection.url + "/negotiate";
-                connection.log("Negotiating with '" + url + "'.");
-                $.ajax({
-                    url: url,
-                    global: false,
-                    cache: false,
-                    type: "GET",
-                    data: {},
-                    dataType: connection.ajaxDataType,
-                    error: function (error) {
-                        $(connection).trigger(events.onError, [error.responseText]);
-                        deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                        // Stop the connection if negotiate failed
-                        connection.stop();
-                    },
-                    success: function (res) {
-                        connection.appRelativeUrl = res.Url;
-                        connection.id = res.ConnectionId;
-                        connection.webSocketServerUrl = res.WebSocketServerUrl;
+            var url = connection.url + "/negotiate";
+            connection.log("Negotiating with '" + url + "'.");
+            $.ajax({
+                url: url,
+                global: false,
+                cache: false,
+                type: "GET",
+                data: {},
+                dataType: connection.ajaxDataType,
+                error: function (error) {
+                    $(connection).trigger(events.onError, [error.responseText]);
+                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                    // Stop the connection if negotiate failed
+                    connection.stop();
+                },
+                success: function (res) {
+                    connection.appRelativeUrl = res.Url;
+                    connection.id = res.ConnectionId;
+                    connection.webSocketServerUrl = res.WebSocketServerUrl;
 
-                        if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
-                            $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
-                            deferred.reject("SignalR: Incompatible protocol version.");
-                            return;
-                        }
-
-                        $(connection).trigger(events.onStarting);
-
-                        var transports = [],
-                            supportedTransports = [];
-
-                        $.each(signalR.transports, function (key) {
-                            if (key === "webSockets" && !res.TryWebSockets) {
-                                // Server said don't even try WebSockets, but keep processing the loop
-                                return true;
-                            }
-                            supportedTransports.push(key);
-                        });
-
-                        if ($.isArray(config.transport)) {
-                            // ordered list provided
-                            $.each(config.transport, function () {
-                                var transport = this;
-                                if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
-                                    transports.push($.type(transport) === "string" ? "" + transport : transport);
-                                }
-                            });
-                        } else if ($.type(config.transport) === "object" ||
-                                       $.inArray(config.transport, supportedTransports) >= 0) {
-                                // specific transport provided, as object or a named transport, e.g. "longPolling"
-                            transports.push(config.transport);
-                        } else { // default "auto"
-                            transports = supportedTransports;
-                        }
-                        initialize(transports);
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
+                        $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
+                        deferred.reject("SignalR: Incompatible protocol version.");
+                        return;
                     }
-                });
-            }, 0);
+
+                    $(connection).trigger(events.onStarting);
+
+                    var transports = [],
+                        supportedTransports = [];
+
+                    $.each(signalR.transports, function (key) {
+                        if (key === "webSockets" && !res.TryWebSockets) {
+                            // Server said don't even try WebSockets, but keep processing the loop
+                            return true;
+                        }
+                        supportedTransports.push(key);
+                    });
+
+                    if ($.isArray(config.transport)) {
+                        // ordered list provided
+                        $.each(config.transport, function () {
+                            var transport = this;
+                            if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
+                                transports.push($.type(transport) === "string" ? "" + transport : transport);
+                            }
+                        });
+                    } else if ($.type(config.transport) === "object" ||
+                                    $.inArray(config.transport, supportedTransports) >= 0) {
+                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                        transports.push(config.transport);
+                    } else { // default "auto"
+                        transports = supportedTransports;
+                    }
+                    initialize(transports);
+                }
+            });
 
             return deferred.promise();
         },
