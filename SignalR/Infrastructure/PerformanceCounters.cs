@@ -28,7 +28,7 @@ namespace SignalR.Infrastructure
         public const string MessageBusSubscribersTotal = "Message Bus Subscribers Total";
         public const string MessageBusSubscribersPerSec = "Message Bus Subscribers/Sec";
 
-        internal static IEnumerable<CounterCreationData> Counters
+        internal static CounterCreationData[] Counters
         {
             get;
             private set;
@@ -36,23 +36,23 @@ namespace SignalR.Infrastructure
 
         static PerformanceCounters()
         {
-            var counters = new List<CounterCreationData>();
-            counters.Add(new CounterCreationData(ConnectionsCurrent, "The number of connections currently connected.", PerformanceCounterType.NumberOfItems32));
-            counters.Add(new CounterCreationData(ConnectionsConnected, "The total number of connection Connect events since the application was started.", PerformanceCounterType.NumberOfItems32));
-            counters.Add(new CounterCreationData(ConnectionsDisconnected, "The total number of connection Disconnect events since the application was started.", PerformanceCounterType.NumberOfItems32));
-
-            counters.Add(new CounterCreationData(ConnectionMessagesReceived, "", PerformanceCounterType.NumberOfItems64));
-            counters.Add(new CounterCreationData(ConnectionMessagesSent, "", PerformanceCounterType.NumberOfItems64));
-            counters.Add(new CounterCreationData(ConnectionMessagesReceivedPerSec, "", PerformanceCounterType.RateOfCountsPerSecond32));
-            counters.Add(new CounterCreationData(ConnectionMessagesSentPerSecond, "", PerformanceCounterType.RateOfCountsPerSecond32));
-
-            counters.Add(new CounterCreationData(MessageBusMessagesPublishedTotal, "", PerformanceCounterType.NumberOfItems64));
-            counters.Add(new CounterCreationData(MessageBusMessagesPublishedPerSec, "", PerformanceCounterType.RateOfCountsPerSecond32));
-            counters.Add(new CounterCreationData(MessageBusSubscribersCurrent, "", PerformanceCounterType.NumberOfItems32));
-            counters.Add(new CounterCreationData(MessageBusSubscribersTotal, "", PerformanceCounterType.NumberOfItems64));
-            counters.Add(new CounterCreationData(MessageBusSubscribersPerSec, "", PerformanceCounterType.RateOfCountsPerSecond32));
-
-            Counters = counters.ToArray();
+            Counters = new []
+            {
+                new CounterCreationData(ConnectionsCurrent, "The number of connections currently connected.", PerformanceCounterType.NumberOfItems32),
+                new CounterCreationData(ConnectionsConnected, "The total number of connection Connect events since the application was started.", PerformanceCounterType.NumberOfItems32),
+                new CounterCreationData(ConnectionsDisconnected, "The total number of connection Disconnect events since the application was started.", PerformanceCounterType.NumberOfItems32),
+                
+                new CounterCreationData(ConnectionMessagesReceived, "", PerformanceCounterType.NumberOfItems64),
+                new CounterCreationData(ConnectionMessagesSent, "", PerformanceCounterType.NumberOfItems64),
+                new CounterCreationData(ConnectionMessagesReceivedPerSec, "", PerformanceCounterType.RateOfCountsPerSecond32),
+                new CounterCreationData(ConnectionMessagesSentPerSecond, "", PerformanceCounterType.RateOfCountsPerSecond32),
+                
+                new CounterCreationData(MessageBusMessagesPublishedTotal, "", PerformanceCounterType.NumberOfItems64),
+                new CounterCreationData(MessageBusMessagesPublishedPerSec, "", PerformanceCounterType.RateOfCountsPerSecond32),
+                new CounterCreationData(MessageBusSubscribersCurrent, "", PerformanceCounterType.NumberOfItems32),
+                new CounterCreationData(MessageBusSubscribersTotal, "", PerformanceCounterType.NumberOfItems64),
+                new CounterCreationData(MessageBusSubscribersPerSec, "", PerformanceCounterType.RateOfCountsPerSecond32)
+            };
         }
     }
 }

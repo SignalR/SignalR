@@ -21,6 +21,7 @@ namespace SignalR
         private bool _initialized;
 
         protected ITraceManager _trace;
+        protected IPerformanceCounterWriter _counters;
         protected ITransport _transport;
         private IServerCommandHandler _serverMessageHandler;
 
@@ -37,6 +38,7 @@ namespace SignalR
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
+            _counters = resolver.Resolve<IPerformanceCounterWriter>();
 
             _initialized = true;
         }
@@ -91,6 +93,8 @@ namespace SignalR
             {
                 throw new InvalidOperationException("Connection not initialized.");
             }
+
+            _counters.Initialize(context);
 
             if (IsNegotiationRequest(context.Request))
             {
@@ -161,7 +165,8 @@ namespace SignalR
                                   connectionId,
                                   GetDefaultSignals(connectionId),
                                   groups,
-                                  _trace);
+                                  _trace,
+                                  _counters);
         }
 
         /// <summary>

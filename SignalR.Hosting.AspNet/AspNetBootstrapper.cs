@@ -1,6 +1,9 @@
 ﻿using System.Web;
 using System.Web.Routing;
 using SignalR.Hosting.AspNet;
+using System;
+using SignalR.Infrastructure;
+using System.Web.Hosting;
 #if NET45
 using SignalR.Hosting.AspNet.WebSockets;
 #endif

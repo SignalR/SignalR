@@ -33,5 +33,10 @@ namespace SignalR
         {
             return context.GetValue<CancellationToken>(HostConstants.ShutdownToken);
         }
+
+        public static string InstanceName(this HostContext context)
+        {
+            return context.GetValue<string>(HostConstants.InstanceName);
+        }
     }
 }

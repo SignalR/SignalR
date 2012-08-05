@@ -16,6 +16,7 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly SafeSet<string> _groups;
+        private readonly IPerformanceCounterWriter _counters;
         private bool _disconnected;
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
@@ -26,7 +27,8 @@ namespace SignalR
                           string connectionId,
                           IEnumerable<string> signals,
                           IEnumerable<string> groups,
-                          ITraceManager traceManager)
+                          ITraceManager traceManager,
+                          IPerformanceCounterWriter performanceCounterWriter)
         {
             _bus = newMessageBus;
             _serializer = jsonSerializer;
@@ -35,6 +37,7 @@ namespace SignalR
             _signals = new HashSet<string>(signals);
             _groups = new SafeSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
+            _counters = performanceCounterWriter;
         }
 
         IEnumerable<string> ISubscriber.EventKeys
@@ -217,6 +220,9 @@ namespace SignalR
             };
 
             PopulateResponseState(response);
+
+            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceived, result.Messages.Count);
+            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceivedPerSec, result.Messages.Count);
 
             return response;
         }

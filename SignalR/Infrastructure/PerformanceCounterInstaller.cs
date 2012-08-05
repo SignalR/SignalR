@@ -1,27 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace SignalR.Infrastructure
 {
+    /// <summary>
+    /// Manages installation of performance counters for SignalR applications.
+    /// </summary>
     public class PerformanceCounterInstaller
     {
-        public void InstallCounters()
+        /// <summary>
+        /// Installs SignalR performance counters.
+        /// </summary>
+        public IList<string> InstallCounters()
         {
-            if (PerformanceCounterCategory.Exists(PerformanceCounters.CategoryName))
-            {
-                // Delete any existing counters
-                PerformanceCounterCategory.Delete(PerformanceCounters.CategoryName);
-            }
+            // Delete any existing counters
+            UninstallCounters();
 
-            var createDataCollection = new CounterCreationDataCollection(PerformanceCounters.Counters.ToArray());
-
+            var createDataCollection = new CounterCreationDataCollection(PerformanceCounters.Counters);
+            
             PerformanceCounterCategory.Create(PerformanceCounters.CategoryName,
                 "SignalR application performance counters",
                 PerformanceCounterCategoryType.MultiInstance,
                 createDataCollection);
+
+            return PerformanceCounters.Counters.Select(c => c.CounterName).ToList();
+        }
+
+        /// <summary>
+        /// Uninstalls SignalR performance counters.
+        /// </summary>
+        public void UninstallCounters()
+        {
+            if (PerformanceCounterCategory.Exists(PerformanceCounters.CategoryName))
+            {
+                PerformanceCounterCategory.Delete(PerformanceCounters.CategoryName);
+            }
         }
     }
 }

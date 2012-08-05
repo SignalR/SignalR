@@ -18,5 +18,7 @@
         public static readonly string WebSocketServerUrl = "webSocketServerUrl";
 
         public static readonly string ShutdownToken = "shutdownToken";
+
+        public static readonly string InstanceName = "instanceName";
     }
 }

@@ -1,30 +1,39 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.Threading;
 
 namespace SignalR.Infrastructure
 {
     public class PerformanceCounterWriter : IPerformanceCounterWriter
     {
-        private const string InstanceNameKey = "SignalR_AppInstanceName";
-        private readonly string _instanceName;
+        private object _initLocker = new object();
+        private string _instanceName;
         private bool _countersInstalled = false;
+        private CancellationToken _hostShutdownToken;
 
         private readonly Dictionary<string, PerformanceCounter> _counters = new Dictionary<string, PerformanceCounter>();
 
-        public PerformanceCounterWriter()
-            : this((AppDomain.CurrentDomain.GetData(InstanceNameKey) ?? Guid.NewGuid()).ToString())
+        public void Initialize(HostContext hostContext)
         {
+            if (_countersInstalled)
+            {
+                return;
+            }
 
-        }
-
-        public PerformanceCounterWriter(string instanceName)
-        {    
-            _instanceName = instanceName;
-            LoadCounters();
+            lock (_initLocker)
+            {
+                if (!_countersInstalled)
+                {
+                    _instanceName = hostContext.InstanceName() ?? Guid.NewGuid().ToString();
+                    _hostShutdownToken = hostContext.HostShutdownToken();
+                    if (_hostShutdownToken != null)
+                    {
+                        LoadCounters();
+                        _hostShutdownToken.Register(() => UnloadCounters());
+                    }
+                }
+            }
         }
 
         private void LoadCounters()
@@ -43,8 +52,21 @@ namespace SignalR.Infrastructure
                 // Initialize the sample
                 counter.NextSample();
             }
-
+            
             _countersInstalled = true;
+        }
+
+        private void UnloadCounters()
+        {
+            if (!_countersInstalled)
+            {
+                return;
+            }
+
+            foreach (var counter in _counters.Values)
+            {
+                counter.RemoveInstance();
+            }
         }
 
         public void Increment(string counterName)

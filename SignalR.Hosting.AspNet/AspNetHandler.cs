@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Hosting;
 
 namespace SignalR.Hosting.AspNet
 {
@@ -55,6 +56,9 @@ namespace SignalR.Hosting.AspNet
 
             // Set the host shutdown token
             hostContext.Items[HostConstants.ShutdownToken] = AppDomainTokenSource.Token;
+
+            var instanceName = HostingEnvironment.SiteName + ": " + HostingEnvironment.ApplicationID;
+            hostContext.Items[HostConstants.InstanceName] = instanceName;
 
             // Stick the context in here so transports or other asp.net specific logic can
             // grab at it.

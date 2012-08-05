@@ -72,7 +72,6 @@
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\IPerformanceCounterWriter.cs" />
-    <Compile Include="Infrastructure\IPerformanceCounterWriter1.cs" />
     <Compile Include="Infrastructure\PerformanceCounterInstaller.cs" />
     <Compile Include="Infrastructure\PerformanceCounters.cs" />
     <Compile Include="Infrastructure\PerformanceCounterWriter.cs" />
