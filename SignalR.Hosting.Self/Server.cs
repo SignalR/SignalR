@@ -1,6 +1,4 @@
-﻿using SignalR.Hosting.Common;
-using SignalR.Hosting.Self.Infrastructure;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -8,6 +6,9 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Hosting.Common;
+using SignalR.Hosting.Self.Infrastructure;
+using SignalR.Hosting.Self.Properties;
 
 namespace SignalR.Hosting.Self
 {
@@ -16,7 +17,6 @@ namespace SignalR.Hosting.Self
         private readonly string _url;
         private readonly HttpListener _listener;
         private CriticalHandle _requestQueueHandle;
-        private DisconnectHandler _disconnectHandler;
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
@@ -27,6 +27,7 @@ namespace SignalR.Hosting.Self
         public Server(string url)
             : this(url, GlobalHost.DependencyResolver)
         {
+
         }
 
         /// <summary>
@@ -40,7 +41,6 @@ namespace SignalR.Hosting.Self
             _url = url.Replace("*", @".*?");
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
-            _disconnectHandler = new DisconnectHandler(_listener);
         }
 
         public AuthenticationSchemes AuthenticationSchemes
@@ -56,7 +56,12 @@ namespace SignalR.Hosting.Self
         {
             _listener.Start();
 
-            _disconnectHandler.Initialize();
+            // HACK: Get the request queue handle so we can register for disconnect
+            var requestQueueHandleField = typeof(HttpListener).GetField("m_RequestQueueHandle", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (requestQueueHandleField != null)
+            {
+                _requestQueueHandle = (CriticalHandle)requestQueueHandleField.GetValue(_listener);
+            }
 
             ReceiveLoop();
         }
@@ -100,7 +105,45 @@ namespace SignalR.Hosting.Self
                 });
 
             }, null);
-        }       
+        }
+
+        private void RegisterForDisconnect(HttpListenerContext context, Action disconnectCallback)
+        {
+            // Get the connection id value
+            FieldInfo connectionIdField = typeof(HttpListenerRequest).GetField("m_ConnectionId", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (_requestQueueHandle != null && connectionIdField != null)
+            {
+                Debug.WriteLine("Server: Registering for disconnect");
+
+                ulong connectionId = (ulong)connectionIdField.GetValue(context.Request);
+                // Create a nativeOverlapped callback so we can register for disconnect callback
+                var overlapped = new Overlapped();
+                var nativeOverlapped = overlapped.UnsafePack((errorCode, numBytes, pOVERLAP) =>
+                {
+                    Debug.WriteLine("Server: http.sys disconnect callback fired.");
+
+                    // Free the overlapped
+                    Overlapped.Free(pOVERLAP);
+
+                    // Mark the client as disconnected
+                    disconnectCallback();
+                },
+                null);
+
+                uint hr = NativeMethods.HttpWaitForDisconnect(_requestQueueHandle, connectionId, nativeOverlapped);
+
+                if (hr != NativeMethods.HttpErrors.ERROR_IO_PENDING &&
+                    hr != NativeMethods.HttpErrors.NO_ERROR)
+                {
+                    // We got an unknown result so throw
+                    throw new InvalidOperationException("Unable to register disconnect callback");
+                }
+            }
+            else
+            {
+                Debug.WriteLine("Server: Unable to resolve requestQueue handle. Disconnect notifications will be ignored");
+            }
+        }
 
         private Task ProcessRequestAsync(HttpListenerContext context)
         {
@@ -114,6 +157,8 @@ namespace SignalR.Hosting.Self
 
                 if (TryGetConnection(path, out connection))
                 {
+                    var cts = new CancellationTokenSource();
+
                     // https://developer.mozilla.org/En/HTTP_Access_Control
                     string origin = context.Request.Headers["Origin"];
                     if (!String.IsNullOrEmpty(origin))
@@ -123,7 +168,7 @@ namespace SignalR.Hosting.Self
                     }
 
                     var request = new HttpListenerRequestWrapper(context);
-                    var response = new HttpListenerResponseWrapper(context.Response, _disconnectHandler.GetDisconnectToken(context));
+                    var response = new HttpListenerResponseWrapper(context.Response, () => RegisterForDisconnect(context, cts.Cancel), cts.Token);
                     var hostContext = new HostContext(request, response);
 
 #if NET45
@@ -151,7 +196,7 @@ namespace SignalR.Hosting.Self
                     return context.Response.WriteAsync(Resources.ClientAccessPolicyXml);
                 }
 
-                return context.Response.NotFound();
+	            return context.Response.NotFound();
             }
             catch (Exception ex)
             {
@@ -177,7 +222,5 @@ namespace SignalR.Hosting.Self
 
             return path;
         }
-
-
     }
 }
