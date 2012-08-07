@@ -288,7 +288,7 @@
                     connection.stop();
                 },
                 success: function (res) {
-                    connection.appRelativeUrl = res.Url;
+                    connection.appRelativeUrl = connection.url.indexOf("/") === 0 ? connection.url : res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
