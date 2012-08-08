@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using SignalR.Client.Hubs;
 #if !NET35
 using SignalR.Hosting.Memory;
 #endif
-using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SignalR.Client.Samples
 {
@@ -85,7 +84,7 @@ namespace SignalR.Client.Samples
 
             demo.Invoke("multipleCalls").ContinueWith(task =>
             {
-                Console.WriteLine(task.Exception);
+                Console.WriteLine(task.Exception.GetError());
 
             }, TaskContinuationOptions.OnlyOnFaulted);
 
@@ -118,7 +117,7 @@ namespace SignalR.Client.Samples
             connection.Error += e =>
             {
                 Console.Error.WriteLine("========ERROR==========");
-                Console.Error.WriteLine(e.GetBaseException());
+                Console.Error.WriteLine(e.GetError());
                 Console.Error.WriteLine("=======================");
             };
 
@@ -157,7 +156,7 @@ namespace SignalR.Client.Samples
                 catch(Exception ex)
                 {
                     Console.Error.WriteLine("========ERROR==========");
-                    Console.Error.WriteLine(ex.GetBaseException());
+                    Console.Error.WriteLine(ex.GetError());
                     Console.Error.WriteLine("=======================");
                     return;
                 }
