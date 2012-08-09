@@ -37,6 +37,9 @@ namespace SignalR.Client
                         {                            
                             error.ResponseBody = sr.ReadToEnd();
                         }
+
+                        //Free up the resources for the cloned stream
+                        stream.Dispose();
                     }
                 }
             }
