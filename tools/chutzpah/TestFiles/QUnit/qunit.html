@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="qunit.css" type="text/css" />
+    @@ReferencedCSSFiles@@
+    <script type="text/javascript" src="qunit.js"></script>
+    @@ReferencedJSFiles@@
+    <script type="text/javascript">
+        if (window.require && typeof (window.require.config) === 'function') {
+            require.config({
+                baseUrl: '@@TestJSFileDir@@'
+            });
+        }
+    </script>
+    @@TestJSFile@@
+</head>
+
+<body>
+    <h1 id="qunit-header">Unit Tests</h1>
+    <h2 id="qunit-banner"></h2>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture"></div>
+</body>
+</html>
