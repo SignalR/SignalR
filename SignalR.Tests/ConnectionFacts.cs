@@ -77,10 +77,12 @@ namespace SignalR.Client.Tests
 
                 connection.Stop();
 
-                SignalRError ser = aggEx.GetError();// Unwrap the exception
-                Assert.Equal(ser.StatusCode, HttpStatusCode.NotFound);
-                Assert.NotNull(ser.ResponseBody);
-                Assert.NotNull(ser.Exception);
+                using (var ser = aggEx.GetError())
+                {
+                    Assert.Equal(ser.StatusCode, HttpStatusCode.NotFound);
+                    Assert.NotNull(ser.ResponseBody);
+                    Assert.NotNull(ser.Exception);
+                }
             }
 
             public class MyBadConnection : PersistentConnection
