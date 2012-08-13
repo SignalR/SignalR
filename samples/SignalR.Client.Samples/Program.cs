@@ -84,7 +84,10 @@ namespace SignalR.Client.Samples
 
             demo.Invoke("multipleCalls").ContinueWith(task =>
             {
-                Console.WriteLine(task.Exception.GetError());
+                using (var error = task.Exception.GetError())
+                {
+                    Console.WriteLine(error);
+                }
 
             }, TaskContinuationOptions.OnlyOnFaulted);
 
@@ -117,7 +120,10 @@ namespace SignalR.Client.Samples
             connection.Error += e =>
             {
                 Console.Error.WriteLine("========ERROR==========");
-                Console.Error.WriteLine(e.GetError());
+                using (var error = e.GetError())
+                {
+                    Console.Error.WriteLine(error);
+                }
                 Console.Error.WriteLine("=======================");
             };
 
@@ -153,10 +159,13 @@ namespace SignalR.Client.Samples
                 {
                     task.Wait();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.Error.WriteLine("========ERROR==========");
-                    Console.Error.WriteLine(ex.GetError());
+                    using (var error = ex.GetError())
+                    {
+                        Console.Error.WriteLine(error);
+                    }
                     Console.Error.WriteLine("=======================");
                     return;
                 }

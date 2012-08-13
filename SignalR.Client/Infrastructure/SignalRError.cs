@@ -6,11 +6,26 @@ namespace SignalR.Client
     /// <summary>
     /// Represents errors that are thrown by the SignalR client
     /// </summary>
-    public class SignalRError
+    public class SignalRError : IDisposable
     {
+        private HttpWebResponse _response;
+
+        /// <summary>
+        /// Create custom SignalR based error.
+        /// </summary>
+        /// <param name="exception">The exception to unwrap</param>
         public SignalRError(Exception exception)
         {
             Exception = exception;
+        }
+
+        /// <summary>
+        /// Capture the response so we can dispose of it later
+        /// </summary>
+        /// <param name="response">The HttpWebResponse associated with the Exception, assuming its a WebException</param>
+        public void SetResponse(HttpWebResponse response)
+        {
+            _response = response;
         }
 
         /// <summary>
@@ -26,11 +41,26 @@ namespace SignalR.Client
         /// <summary>
         /// The unwrapped underlying exception
         /// </summary>
-        public Exception Exception { get; private set; }        
+        public Exception Exception { get; private set; }
 
+        /// <summary>
+        /// Allow a SignalRError to be directly written to an output stream
+        /// </summary>
+        /// <returns>Exception error</returns>
         public override string ToString()
         {
             return Exception.ToString();
+        }
+
+        /// <summary>
+        /// Dispose of the response
+        /// </summary>
+        public void Dispose()
+        {
+            if (_response != null)
+            {
+                _response.Close();
+            }
         }
     }
 }
