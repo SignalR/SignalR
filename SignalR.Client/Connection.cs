@@ -229,7 +229,7 @@ namespace SignalR.Client
                     if (task.IsFaulted)
                     {
                         Stop();
-                        tcs.SetException(task.Exception);
+                        tcs.SetException(task.Exception.Unwrap());
                     }
                     else if (task.IsCanceled)
                     {

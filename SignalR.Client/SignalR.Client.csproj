@@ -66,6 +66,8 @@
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
+    <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
