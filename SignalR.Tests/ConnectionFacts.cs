@@ -73,7 +73,8 @@ namespace SignalR.Client.Tests
 
                 var connection = new Client.Connection("http://test/ErrorsAreFun");
 
-                var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host).Wait());// Expecting 404
+                // Expecting 404
+                var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
                 connection.Stop();
 
@@ -89,7 +90,8 @@ namespace SignalR.Client.Tests
             {
                 protected override Task OnConnectedAsync(IRequest request, string connectionId)
                 {
-                    using (HttpWebRequest.Create("http://www.microsoft.com/mairyhadalittlelambbut_shelikedhertwinkling_littlestar_better").GetResponse()) { }// Should throw 404
+                    // Should throw 404
+                    using (HttpWebRequest.Create("http://www.microsoft.com/mairyhadalittlelambbut_shelikedhertwinkling_littlestar_better").GetResponse()) { }
 
                     return base.OnConnectedAsync(request, connectionId);
                 }
