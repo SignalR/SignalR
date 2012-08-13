@@ -89,7 +89,7 @@ namespace SignalR.Client.Tests
             {
                 protected override Task OnConnectedAsync(IRequest request, string connectionId)
                 {
-                    using (HttpWebRequest.Create("http://localhost/myincorrecturl/hereisa64bitstring_thathopefullywillnevershowupin_yourlocalhost/").GetResponse()) { }// Should throw 404
+                    using (HttpWebRequest.Create("http://www.microsoft.com/mairyhadalittlelambbut_shelikedhertwinkling_littlestar_better").GetResponse()) { }// Should throw 404
 
                     return base.OnConnectedAsync(request, connectionId);
                 }
