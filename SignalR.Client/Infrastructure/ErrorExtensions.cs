@@ -48,8 +48,12 @@ namespace SignalR.Client
         private static Stream Clone(Stream source)
         {
             var cloned = new MemoryStream();
-            byte[] buffer = new byte[2048];// Copy up to 2048 bytes at a time
-            int copiedBytes;// Maintains how many bytes were read
+#if NET35
+            // Copy up to 2048 bytes at a time
+            byte[] buffer = new byte[2048];
+
+            // Maintains how many bytes were read
+            int copiedBytes;
 
             // Read bytes and copy them into a buffer making sure not to trigger the dispose
             while ((copiedBytes = source.Read(buffer, 0, buffer.Length)) > 0)
@@ -58,6 +62,9 @@ namespace SignalR.Client
                 cloned.Write(buffer, 0, copiedBytes);
             }
 
+#else
+            source.CopyTo(cloned);
+#endif
             // Move the stream pointers back to the original start locations
             if (source.CanSeek)
             {

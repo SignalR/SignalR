@@ -19,11 +19,7 @@ namespace SignalR.Client
             Exception = exception;
         }
 
-        /// <summary>
-        /// Capture the response so we can dispose of it later
-        /// </summary>
-        /// <param name="response">The HttpWebResponse associated with the Exception, assuming its a WebException</param>
-        public void SetResponse(HttpWebResponse response)
+        internal void SetResponse(HttpWebResponse response)
         {
             _response = response;
         }
