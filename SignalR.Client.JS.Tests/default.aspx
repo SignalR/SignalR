@@ -10,7 +10,7 @@
     <body>
         <form runat="server" id="main">
             <div id="qunit"></div>
-            <script src="/QUnit/qunit.js"></script>
+            <script src="QUnit/qunit.js"></script>
 
             <!-- 
                 Javascript is dynamically added to this panel.  First all javascript from SignalR.Client.JS is added,

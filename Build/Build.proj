@@ -12,6 +12,8 @@
         <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
         <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
         <XunitPath>$(ToolsPath)xunit\</XunitPath>
+        <ChutzpahExePath>$(ProjectRoot)\tools\chutzpah\chutzpah.console.exe</ChutzpahExePath>
+        <JSTestsBridgeFile>$(ProjectRoot)\SignalR.Client.JS.Tests\CommandLineBridge.js</JSTestsBridgeFile>
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
@@ -84,9 +86,11 @@
 
   <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
   </Target>
-
+  
   <Target Name="RunTests">
+    <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
     <xunit Assembly="%(TestProjects.FullPath)" Xml="$(TestResultsPath)\SignalR.Tests.XunitResults.xml" Verbose="true" />
+
   </Target>
 
   <Target Name="CreateOutputDir">
@@ -121,7 +125,7 @@
              Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
              Properties="Configuration=$(Configuration)" />
   </Target>
-
+  
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
       <DocProjects Include="$(ProjectRoot)\SignalR\bin\$(Configuration)\SignalR.dll" />
