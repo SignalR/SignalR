@@ -89,8 +89,8 @@
   
   <Target Name="RunTests">
     <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
-    <RemoveDir Directories="$(ProjectRoot)\SignalR.Client.JS.Tests\temp" ContinueOnError="false"></RemoveDir>
-    <Delete Files="$(ProjectRoot)\SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="false"></Delete>
+    <RemoveDir Directories="$(ProjectRoot)\SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
+    <Delete Files="$(ProjectRoot)\SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
     
     <xunit Assembly="%(TestProjects.FullPath)" Xml="$(TestResultsPath)\SignalR.Tests.XunitResults.xml" Verbose="true" />
   </Target>

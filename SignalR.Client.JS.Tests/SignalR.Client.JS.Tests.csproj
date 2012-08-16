@@ -69,33 +69,6 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.core.js">
-      <Link>SignalR.Client.JS\jquery.signalR.core.js</Link>
-    </Content>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.hubs.js">
-      <Link>SignalR.Client.JS\jquery.signalR.hubs.js</Link>
-    </Content>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.transports.common.js">
-      <Link>SignalR.Client.JS\jquery.signalR.transports.common.js</Link>
-    </Content>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.transports.foreverFrame.js">
-      <Link>SignalR.Client.JS\jquery.signalR.transports.foreverFrame.js</Link>
-    </Content>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.transports.longPolling.js">
-      <Link>SignalR.Client.JS\jquery.signalR.transports.longPolling.js</Link>
-    </Content>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.transports.serverSentEvents.js">
-      <Link>SignalR.Client.JS\jquery.signalR.transports.serverSentEvents.js</Link>
-    </Content>
-    <Content Include="..\SignalR.Client.JS\jquery.signalR.transports.webSockets.js">
-      <Link>SignalR.Client.JS\jquery.signalR.transports.webSockets.js</Link>
-    </Content>
-    <None Include="..\SignalR.Client.JS\Scripts\jquery-1.6.2-vsdoc.js">
-      <Link>SignalR.Client.JS\Scripts\jquery-1.6.2-vsdoc.js</Link>
-    </None>
-    <Content Include="..\SignalR.Client.JS\Scripts\jquery-1.6.2.js">
-      <Link>SignalR.Client.JS\Scripts\jquery-1.6.2.js</Link>
-    </Content>
     <Content Include="default.aspx" />
     <Content Include="Tests\ConnectionFacts.js" />
     <Content Include="QUnit\qunit.css" />

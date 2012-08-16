@@ -24,3 +24,5 @@ PublishProfiles/
 *DS_Store
 *.ncrunchsolution
 *.log
+SignalR.Client.JS.Tests/temp/*
+SignalR.Client.JS.Tests/CommandLineBridge.js
