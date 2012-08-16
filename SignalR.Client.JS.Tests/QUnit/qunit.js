@@ -30,7 +30,7 @@
 	        } catch (e) {
 	            return false;
 	        }
-	    } ())
+	    }())
 	};
 
     function Test(settings) {
@@ -559,7 +559,7 @@
         QUnit = new F();
         // Make F QUnit's constructor so that we can add to the prototype later
         QUnit.constructor = F;
-    } ());
+    }());
 
     /**
     * Config object: Maintain internal state
@@ -600,7 +600,7 @@
 		    label: "No try-catch",
 		    tooltip: "Enabling this will run tests outside of a try-catch block. Makes debugging exceptions in IE reasonable. Stored as query-strings."
 		}
-	],
+        ],
 
         // logging callback queues
         begin: [],
@@ -643,7 +643,7 @@
 
         // Figure out if we're running the tests from a server or not
         QUnit.isLocal = location.protocol === "file:";
-    } ());
+    }());
 
     // Export global variables, unless an 'exports' object exists,
     // in that case we assume we're in CommonJS (dealt with on the bottom of the script)
@@ -1096,7 +1096,7 @@
             document.title = [
 			(config.stats.bad ? "\u2716" : "\u2714"),
 			document.title.replace(/^[\u2714\u2716] /i, "")
-		].join(" ");
+            ].join(" ");
         }
 
         // clear own sessionStorage items if all tests passed
@@ -1500,7 +1500,7 @@
 		            return eq && innerEquiv(aProperties.sort(), bProperties.sort());
 		        }
 		    };
-		} ());
+		}());
 
         innerEquiv = function () { // can take multiple arguments
             var args = [].slice.apply(arguments);
@@ -1520,11 +1520,11 @@
                 }
 
                 // apply transition with (1..n) arguments
-            } (args[0], args[1]) && arguments.callee.apply(this, args.splice(1, args.length - 1)));
+            }(args[0], args[1]) && arguments.callee.apply(this, args.splice(1, args.length - 1)));
         };
 
         return innerEquiv;
-    } ());
+    }());
 
     /**
     * jsDump Copyright (c) 2008 Ariel Flesler - aflesler(at)gmail(dot)com |
@@ -1607,9 +1607,9 @@
 		        } else if (obj.nodeType) {
 		            type = "node";
 		        } else if (
-		        // native arrays
+		            // native arrays
 					toString.call(obj) === "[object Array]" ||
-		        // NodeList objects
+		            // NodeList objects
 					(typeof obj.length === "number" && typeof obj.item !== "undefined" && (obj.length ? obj.item(0) === obj[0] : (obj.item(0) === null && typeof obj[0] === "undefined")))
 				) {
 		            type = "array";
@@ -1739,7 +1739,7 @@
 		};
 
         return jsDump;
-    } ());
+    }());
 
     // from Sizzle.js
     function getText(elems) {
@@ -1923,7 +1923,7 @@
 
             return str;
         };
-    } ());
+    }());
 
     // for CommonJS enviroments, export everything
     if (typeof exports !== "undefined") {
@@ -1931,4 +1931,4 @@
     }
 
     // get at whatever the global object is, like window in browsers
-} ((function () { return this; } .call())));
+}((function () { return this; }.call())));

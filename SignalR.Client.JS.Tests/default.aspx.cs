@@ -17,14 +17,14 @@ namespace SignalR.Client.JS.Tests
                 // These values are updated via the .csproj's before build events
                 _jsResourceFolder = ConfigurationManager.AppSettings["JSResourceFolder"];
                 _tempFolder = ConfigurationManager.AppSettings["TempFolder"];
-                _unitTestFolder = ConfigurationManager.AppSettings["QUnitTestsFolder"];                
+                _unitTestFolder = ConfigurationManager.AppSettings["QUnitTestsFolder"];
             }
 
             // Make sure nothing is in our dynamic javascript panel
             dynamicJavascript.Controls.Clear();
             // Load core javascript files to test against
             LoadJavascriptFiles(_tempFolder + "/" + _jsResourceFolder);
-            // Load unit tests.  These unit test the resource javascript files 
+            // Load unit tests.  These test the resource javascript files 
             LoadJavascriptFiles(_unitTestFolder);
         }
 
@@ -56,7 +56,7 @@ namespace SignalR.Client.JS.Tests
         /// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
         /// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
         /// <returns>The relative path from the start directory to the end path.</returns>
-        public static String MakeRelative(String fromPath, String toPath)
+        private static String MakeRelative(String fromPath, String toPath)
         {
             Uri relativeUri = new Uri(fromPath).MakeRelativeUri(new Uri(toPath));
             String relativePath = Uri.UnescapeDataString(relativeUri.ToString());

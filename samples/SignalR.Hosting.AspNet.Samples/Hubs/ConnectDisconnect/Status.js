@@ -21,6 +21,5 @@ $(function () {
         $('#messages').append('<li style="background-color:' + color + ';color:white">' + value + '</li>');
     }
 
-    status.start({ transport: activeTransport });
-
+    $.connection.hub.start({ transport: activeTransport });
 });
