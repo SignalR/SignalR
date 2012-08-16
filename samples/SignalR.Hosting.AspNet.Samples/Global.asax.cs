@@ -5,6 +5,7 @@ using System.Web.Routing;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
 using SignalR.Samples.Streaming;
+using SignalR.Server;
 
 namespace SignalR.Hosting.AspNet.Samples
 {
@@ -32,6 +33,7 @@ namespace SignalR.Hosting.AspNet.Samples
                 }
             });
 
+            RouteTable.Routes.MapHubs();
 
             RouteTable.Routes.MapConnection<SendingConnection>("sending-connection", "sending-connection/{*operation}");
             RouteTable.Routes.MapConnection<TestConnection>("test-connection", "test-connection/{*operation}");
