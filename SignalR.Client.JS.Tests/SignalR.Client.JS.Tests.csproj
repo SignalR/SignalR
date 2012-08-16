@@ -46,7 +46,6 @@
     <JSCoreProject>SignalR.Client.JS</JSCoreProject>
     <TempFolder>temp</TempFolder>
     <QUnitTestsFolder>Tests</QUnitTestsFolder>
-    <CommandLineBridge>CommandLineBridge.js</CommandLineBridge>
     <QUnitLibrary>.\QUnit\qunit.js</QUnitLibrary>
   </PropertyGroup>
   <ItemGroup>
@@ -144,15 +143,15 @@
     <!-- Copy the pulled files -->
     <Copy SourceFiles="@(ResourceFolderOutput)" DestinationFolder="$(TempFolder)/$(JSResourceFolder)" OverwriteReadOnlyFiles="true">
     </Copy>
-    <WriteLinesToFile File="$(CommandLineBridge)" Overwrite="true" Lines="// Auto-generated bridge file used for QUnit command line testing.&#xD;// QUnit library:">
+    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="true" Lines="// Auto-generated bridge file used for QUnit command line testing.&#xD;// QUnit library:">
     </WriteLinesToFile>
-    <WriteLinesToFile File="$(CommandLineBridge)" Overwrite="false" Lines="/// &lt;reference path=&quot;$(QUnitLibrary)&quot; /&gt;&#xD;// Core javascript resource files:">
+    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="/// &lt;reference path=&quot;$(QUnitLibrary)&quot; /&gt;&#xD;// Core javascript resource files:">
     </WriteLinesToFile>
-    <WriteLinesToFile File="$(CommandLineBridge)" Overwrite="false" Lines="@(ResourceFolderOutput->'/// &lt;reference path=&quot;%(Identity)&quot; /&gt;')">
+    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="@(ResourceFolderOutput->'/// &lt;reference path=&quot;%(Identity)&quot; /&gt;')">
     </WriteLinesToFile>
-    <WriteLinesToFile File="$(CommandLineBridge)" Overwrite="false" Lines="// QUnit tests:">
+    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="// QUnit tests:">
     </WriteLinesToFile>
-    <WriteLinesToFile File="$(CommandLineBridge)" Overwrite="false" Lines="@(QUnitTests->'/// &lt;reference path=&quot;%(Identity)&quot; /&gt;')">
+    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="@(QUnitTests->'/// &lt;reference path=&quot;%(Identity)&quot; /&gt;')">
     </WriteLinesToFile>
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
