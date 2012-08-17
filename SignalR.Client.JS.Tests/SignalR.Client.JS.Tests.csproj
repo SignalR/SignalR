@@ -69,10 +69,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.aspx" />
-    <Content Include="Tests\ConnectionFacts.js" />
+    <Content Include="Tests\Connections\ConnectionFacts.js" />
     <Content Include="QUnit\qunit.css" />
     <Content Include="QUnit\qunit.js" />
-    <Content Include="Tests\HubConnectionFacts.js" />
+    <Content Include="Tests\Connections\ConnectionStateFacts.js" />
+    <Content Include="Tests\Connections\HubConnectionFacts.js" />
+    <Content Include="Tests\SignalRFacts.js" />
+    <Content Include="Tests\Transports\ForeverFrameFacts.js" />
+    <Content Include="Tests\Transports\LongPollingFacts.js" />
+    <Content Include="Tests\Transports\ServerSentEventsFacts.js" />
+    <Content Include="Tests\Transports\WebSocketsFacts.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
