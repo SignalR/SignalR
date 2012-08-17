@@ -19,11 +19,6 @@ test("Stopping Connection", function () {
     equal(con.fn.state, con.connectionState.disconnected, "Verifies connection is disconnected after stop has been called.");
 });
 
-test("Cross Domain Checking", function () {
-    var con = $.connection;
-    con.fn.received  
-});
-
 test("Error on send prior to connected state", function () {
     var con = $.connection;
     // Need the con.fn.state to be disconnected to fail on the send
