@@ -54,6 +54,20 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="App_Packages\Gate.Sources.0.15\AppBuilderInlineExtensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\AppBuilderMapExtensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Headers.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Mapping\MapBuilder.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Mapping\UrlMapper.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\OwinConstants.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Request.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Response.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\ResponseStream.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Utils\Net40Extensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Utils\ParamDictionary.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.15\Utils\ReasonPhrases.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
+    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="RouteExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
