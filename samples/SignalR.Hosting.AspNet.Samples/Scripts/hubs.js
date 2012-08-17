@@ -141,7 +141,7 @@
     signalR.demo = {
         _: {
             hubName: 'demo',
-            ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicInvoke', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'testGuid', 'unsupportedOverload'],
+            ignoreMembers: ['addToGroups', 'complexArray', 'complexType', 'doSomethingAndCallError', 'dynamicInvoke', 'dynamicTask', 'genericTaskTypedAsPlain', 'genericTaskWithException', 'getValue', 'mispelledClientMethod', 'multipleCalls', 'overload', 'passingDynamicComplex', 'plainTask', 'readStateValue', 'setStateValue', 'simpleArray', 'taskWithException', 'testGuid', 'unsupportedOverload'],
             connection: function () { return signalR.hub; }
         },
 
@@ -245,6 +245,11 @@
             /// <summary>Calls the DynamicInvoke method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name="method" type="String">Server side type is System.String</param>
             return invoke(this, "DynamicInvoke", $.makeArray(arguments));
+        },
+
+        mispelledClientMethod: function () {
+            /// <summary>Calls the MispelledClientMethod method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return invoke(this, "MispelledClientMethod", $.makeArray(arguments));
         }
     };
 

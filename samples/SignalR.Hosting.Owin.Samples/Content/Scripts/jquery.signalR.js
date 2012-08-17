@@ -1462,13 +1462,16 @@
                     callback.method.call(callback.scope, data);
                 }
             } else {
+                // We received a client invocation request, i.e. broadcast from server hub
+                connection.log("Triggering client hub event '" + data.Method + "' on hub '" + data.Hub + "'.");
+
                 // Normalize the names to lowercase
                 hubName = data.Hub.toLowerCase();
                 eventName = data.Method.toLowerCase();
-
-                // We received a client invocation request, i.e. broadcast from server hub
+                
                 // Trigger the local invocation event
                 proxy = this.proxies[hubName];
+
                 // Update the hub state
                 $.extend(proxy.state, data.State);
                 $(proxy).trigger(eventNamespace + eventName, [data.Args]);
