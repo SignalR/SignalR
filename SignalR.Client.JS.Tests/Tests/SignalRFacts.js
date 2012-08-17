@@ -4,7 +4,7 @@
 module("SignalR Facts");
 
 test("SignalR Availability", function () {
-    ok($.signalR, "Verifies SignalR is available.");    
+    ok($.signalR, "Verifies SignalR is available.");
 });
 
 test("SignalR Connection Availability", function () {

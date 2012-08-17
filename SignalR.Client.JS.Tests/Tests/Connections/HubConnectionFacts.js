@@ -2,7 +2,7 @@
 
 module("Hub Connection Facts");
 
-test("Default Hub Connection Parameters Test", function () {
+test("Default Hub Connection Parameters", function () {
     var hubCon = $.hubConnection;
     equal(hubCon.fn.state, 4, "Verifies hub connection is disconnected.");
     equal(hubCon.fn.ajaxDataType, "json", "Verifies ajax data type is json.");

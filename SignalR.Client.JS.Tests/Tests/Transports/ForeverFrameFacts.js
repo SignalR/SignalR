@@ -4,7 +4,7 @@
 module("Forever Frame Facts");
 
 test("Forever Frame Availability", function () {
-    var con = $.connection;    
+    var con = $.connection;
     ok(con.transports.foreverFrame, "Verifies Forever Frame transport exists.");
 });
 
