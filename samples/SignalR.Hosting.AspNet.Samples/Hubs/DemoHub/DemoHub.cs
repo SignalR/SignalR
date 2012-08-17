@@ -142,6 +142,11 @@ namespace SignalR.Samples.Hubs.DemoHub
             proxy.Invoke(method);
         }
 
+        public void MispelledClientMethod()
+        {
+            Caller.clientMethd();
+        }
+
         public class Person
         {
             public string Name { get; set; }
