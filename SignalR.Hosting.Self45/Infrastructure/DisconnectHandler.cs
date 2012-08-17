@@ -1,14 +1,11 @@
-﻿using SignalR.Hosting.Self.Infrastructure;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using SignalR.Hosting.Self.Infrastructure;
 
 
 namespace SignalR.Hosting.Self

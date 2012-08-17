@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -308,6 +309,52 @@ namespace SignalR.Tests
             Assert.True(countDown.Wait(TimeSpan.FromSeconds(10)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", list.Select(i => i.ToString())));
 
             connection.Stop();
+        }
+
+        [Fact]
+        public void CustomQueryStringRaw()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo/", "a=b");
+
+            var hub = connection.CreateProxy("CustomQueryHub");
+
+            connection.Start(host).Wait();
+
+            var result = hub.Invoke<string>("GetQueryString", "a").Result;
+
+            Assert.Equal("b", result);
+
+            connection.Stop();
+        }
+
+        [Fact]
+        public void CustomQueryString()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var qs = new Dictionary<string, string>();
+            qs["a"] = "b";
+            var connection = new Client.Hubs.HubConnection("http://foo/", qs);
+
+            var hub = connection.CreateProxy("CustomQueryHub");
+
+            connection.Start(host).Wait();
+
+            var result = hub.Invoke<string>("GetQueryString", "a").Result;
+
+            Assert.Equal("b", result);
+
+            connection.Stop();
+        }
+
+        public class CustomQueryHub : Hub
+        {
+            public string GetQueryString(string key)
+            {
+                return Context.QueryString[key];
+            }
         }
 
         public class MultGroupHub : Hub

@@ -14,7 +14,7 @@ namespace SignalR.Client.Http
             var cts = new CancellationTokenSource();
             var handler = new DefaultHttpHandler(prepareRequest, cts.Cancel);
             var client = new HttpClient(handler);
-            HttpResponseMessage responseMessage = await client.GetAsync(url, cts.Token);
+            HttpResponseMessage responseMessage = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
             return new HttpResponseMessageWrapper(responseMessage);
         }
 
@@ -23,18 +23,18 @@ namespace SignalR.Client.Http
             var cts = new CancellationTokenSource();
             var handler = new DefaultHttpHandler(prepareRequest, cts.Cancel);
             var client = new HttpClient(handler);
+            var req = new HttpRequestMessage(HttpMethod.Post, url);
 
-            HttpContent content = null;
             if (postData == null)
             {
-                content = new StringContent(String.Empty);
+                req.Content = new StringContent(String.Empty);
             }
             else
             {
-                content = new FormUrlEncodedContent(postData);
+                req.Content = new FormUrlEncodedContent(postData);
             }
 
-            HttpResponseMessage responseMessage = await client.PostAsync(url, content, cts.Token);
+            HttpResponseMessage responseMessage = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cts.Token);
             return new HttpResponseMessageWrapper(responseMessage);
         }
     }

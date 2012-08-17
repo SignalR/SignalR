@@ -109,6 +109,12 @@
     <Compile Include="..\SignalR.Client\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\ErrorExtensions.cs">
+      <Link>Infrastructure\ErrorExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\SignalRError.cs">
+      <Link>Infrastructure\SignalRError.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Infrastructure\ThreadSafeInvoker.cs">
       <Link>Infrastructure\ThreadSafeInvoker.cs</Link>
     </Compile>
@@ -120,6 +126,9 @@
     </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>
@@ -161,7 +170,6 @@
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\VersionInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

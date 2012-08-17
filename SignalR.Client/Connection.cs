@@ -179,12 +179,8 @@ namespace SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IHttpClient httpClient)
         {
-#if NETFX_CORE
-            return Start(new LongPollingTransport(httpClient));
-#else
             // Pick the best transport supported by the client
             return Start(new AutoTransport(httpClient));
-#endif
         }
 
         /// <summary>
@@ -233,7 +229,7 @@ namespace SignalR.Client
                     if (task.IsFaulted)
                     {
                         Stop();
-                        tcs.SetException(task.Exception);
+                        tcs.SetException(task.Exception.Unwrap());
                     }
                     else if (task.IsCanceled)
                     {
