@@ -9,14 +9,14 @@ namespace Owin
 {
     public static class StartupExtensions
     {
-        public static IAppBuilder MapHubs(this IAppBuilder builder, string url, IDependencyResolver resolver)
+        public static IAppBuilder MapHubs(this IAppBuilder builder, string path, IDependencyResolver resolver)
         {
-            return builder.UseType<HubDispatcherHandler>(url, resolver);
+            return builder.UseType<HubDispatcherHandler>(path, resolver);
         }
 
-        public static IAppBuilder MapHubs(this IAppBuilder builder, string url)
+        public static IAppBuilder MapHubs(this IAppBuilder builder, string path)
         {
-            return builder.UseType<HubDispatcherHandler>(url);
+            return builder.UseType<HubDispatcherHandler>(path);
         }
 
         public static IAppBuilder MapHubs(this IAppBuilder builder, IDependencyResolver resolver)

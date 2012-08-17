@@ -16,6 +16,7 @@ namespace SignalR.Server
         readonly TaskCompletionSource<AsyncVoid> _responseEndSource;
         string _contentType;
         int _bufferingDisabled;
+        bool _isClientConnected = true;
 
         struct AsyncVoid
         {
@@ -25,9 +26,13 @@ namespace SignalR.Server
         {
             _call = call;
 
-            _resultParameters.Properties = new Dictionary<string, object>();
-            _resultParameters.Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            _resultParameters.Body = OnResponseBody;
+            _resultParameters = new ResultParameters
+            {
+                Properties = new Dictionary<string, object>(),
+                Status = 200,
+                Headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase),
+                Body = OnResponseBody
+            };
 
             _resultParametersSource = resultParametersSource;
             _outputStreamSource = new TaskCompletionSource<Stream>();
@@ -36,7 +41,7 @@ namespace SignalR.Server
 
         public void OnCallCompleted()
         {
-            IsClientConnected = false;
+            _isClientConnected = false;
             _resultParametersSource.TrySetCanceled();
             _outputStreamSource.TrySetCanceled();
             _responseEndSource.TrySetResult(default(AsyncVoid));
@@ -48,7 +53,10 @@ namespace SignalR.Server
             return _responseEndSource.Task;
         }
 
-        public bool IsClientConnected { get; set; }
+        public bool IsClientConnected
+        {
+            get { return _isClientConnected; }
+        }
 
         public string ContentType
         {
@@ -90,7 +98,10 @@ namespace SignalR.Server
         Task DoWriteAsync(Stream output, ArraySegment<byte> data)
         {
             output.Write(data.Array, data.Offset, data.Count);
-            //TODO: return output.FlushAsync();
+            #if NET45
+                return output.FlushAsync();
+            #endif
+            output.Flush();
             return TaskHelpers.Completed();
         }
 
