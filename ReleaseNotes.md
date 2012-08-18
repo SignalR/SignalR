@@ -8,7 +8,6 @@
 * Fix bugs related to forever loading indicators on various browsers ([#215](https://github.com/SignalR/SignalR/issues/215)), ([#383](https://github.com/SignalR/SignalR/issues/383)), ([#491](https://github.com/SignalR/SignalR/issues/491))
 * Force shut down a client, server execution flow didn't go into IDisconnect.Disconnect () at all. ([#511](https://github.com/SignalR/SignalR/issues/511))
 * Transport fallback should fail if onFailed called and there's no good fallback. ([#485](https://github.com/SignalR/SignalR/issues/485))
-* Connect/Disconnect events not firing in IE ([501](https://github.com/SignalR/SignalR/issues/501))
 * Turn ReadStreamBuffering off for WP7 and Silverlight to enable SSE support. ([18cb087037](https://github.com/SignalR/SignalR/commit/18cb087037ca25def2e9c7afed1b510577e37beb))
 * Connect/Disconnect events not firing in IE ([#501](https://github.com/SignalR/SignalR/issues/501))
 * Make dictionaries in bus case in sensitive. ([5916a588f9](https://github.com/SignalR/SignalR/commit/5916a588f901160508f757dd386e57dea33410a3))
