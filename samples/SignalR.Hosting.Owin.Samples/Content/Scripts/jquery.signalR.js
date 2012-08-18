@@ -1484,9 +1484,9 @@
         ///     Creates a new proxy object for the given hub connection that can be used to invoke
         ///     methods on server hubs and handle client method invocation requests from the server.
         /// </summary>
-        /// <paramater name="hubName" type="String">
+        /// <param name="hubName" type="String">
         ///     The name of the hub on the server to create the proxy for.
-        /// </parameter>
+        /// </param>
 
         // Normalize the name to lowercase
         hubName = hubName.toLowerCase();
