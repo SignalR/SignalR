@@ -1,5 +1,5 @@
 /*!
- * SignalR JavaScript Library v0.5.2
+ * SignalR JavaScript Library v0.5.3
  * http://signalr.net/
  *
  * Copyright David Fowler and Damian Edwards 2012
@@ -96,23 +96,6 @@
 
         return hub._.proxy.invoke.apply(hub._.proxy, $.merge([methodName], args));
     }
-
-    // Create hub signalR instance
-    /*
-    signalR.myDemoHub = {
-        _: {
-            hubName: "MyDemoHub",
-            ignoreMembers: ['serverMethod1', 'serverMethod2', 'namespace', 'ignoreMembers', 'callbacks'],
-            connection: function () { return signalR.hub; }
-        },
-        serverMethod1: function(p1, p2) {
-            return invoke(this, "ServerMethod1", $.makeArray(arguments));
-        },
-        serverMethod2: function(p1) {
-            return invoke(this, "ServerMethod2", $.makeArray(arguments));;
-        }
-    };
-    */
 
     /*hubs*/
 
