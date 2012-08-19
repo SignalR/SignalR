@@ -84,11 +84,24 @@
                 if ($.isFunction(userCallback)) {
                     userCallback.call(hub, result);
                 }
-            };
+            },
+            connection = hub._.connection();
 
         if ($.isFunction(userCallback)) {
             // Replace user's callback with our own
             args = $.merge(args.splice(0, args.length - 1), [callback]);
+        }
+
+        if (!hub._.proxy) {
+            if (connection.state === signalR.connectionState.disconnected) {
+                // Connection hasn't been started yet
+                throw "SignalR: Connection must be started before data can be sent. Call .start() before .send()";
+            }
+
+            if (connection.state === signalR.connectionState.connecting) {
+                // Connection hasn't been started yet
+                throw "SignalR: Connection has not been fully initialized. Use .start().done() or .start().fail() to run logic after the connection has started.";
+            }
         }
 
         // Update proxy state from hub state
