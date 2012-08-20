@@ -3,28 +3,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Gate;
 using Owin;
+using SignalR.Server.Utils;
 
 namespace SignalR.Server
 {
-    public class ServerResponse : IResponse
+    class ServerResponse : IResponse
     {
+        readonly Task _completed;
         ResultParameters _resultParameters;
-        readonly CallParameters _call;
+
         readonly TaskCompletionSource<ResultParameters> _resultParametersSource;
-        readonly TaskCompletionSource<Stream> _outputStreamSource;
+        readonly TaskCompletionSource<Stream> _responseStreamSource;
         readonly TaskCompletionSource<AsyncVoid> _responseEndSource;
+        readonly ServerResponseStream _outputStream;
         string _contentType;
-        int _bufferingDisabled;
-        bool _isClientConnected = true;
 
         struct AsyncVoid
         {
         }
 
-        public ServerResponse(CallParameters call, TaskCompletionSource<ResultParameters> resultParametersSource)
+        internal ServerResponse(
+            Task completed, 
+            TaskCompletionSource<ResultParameters> resultParametersSource)
         {
-            _call = call;
+            _completed = completed;
 
             _resultParameters = new ResultParameters
             {
@@ -35,27 +39,45 @@ namespace SignalR.Server
             };
 
             _resultParametersSource = resultParametersSource;
-            _outputStreamSource = new TaskCompletionSource<Stream>();
+            _responseStreamSource = new TaskCompletionSource<Stream>();
             _responseEndSource = new TaskCompletionSource<AsyncVoid>();
+            _outputStream = new ServerResponseStream(this);
+
+            _completed.Finally(OnCallCompleted, runSynchronously: true);
         }
 
-        public void OnCallCompleted()
+        void OnCallCompleted()
         {
-            _isClientConnected = false;
             _resultParametersSource.TrySetCanceled();
-            _outputStreamSource.TrySetCanceled();
+            _responseStreamSource.TrySetCanceled();
             _responseEndSource.TrySetResult(default(AsyncVoid));
+        }
+
+        public Task<Stream> StartAsync()
+        {
+            if (!_resultParametersSource.Task.IsCompleted)
+            {
+                _resultParametersSource.TrySetResult(_resultParameters);
+            }
+            return _responseStreamSource.Task;
+        }
+
+        public void End()
+        {
+            StartAsync().Finally(
+                () => _responseEndSource.TrySetResult(default(AsyncVoid)), 
+                runSynchronously: true);
         }
 
         Task OnResponseBody(Stream output)
         {
-            _outputStreamSource.TrySetResult(output);
+            _responseStreamSource.TrySetResult(output);
             return _responseEndSource.Task;
         }
 
         public bool IsClientConnected
         {
-            get { return _isClientConnected; }
+            get { return !_completed.IsCompleted; }
         }
 
         public string ContentType
@@ -71,59 +93,16 @@ namespace SignalR.Server
             }
         }
 
-        public Task WriteAsync(ArraySegment<byte> data)
+        public IDictionary<string,string[]> Headers
         {
-            return DoStartAsync(disableBuffering: true)
-                .Then(output => DoWriteAsync(output, data));
+            get { return _resultParameters.Headers; }
         }
 
-        public Task EndAsync(ArraySegment<byte> data)
+        public Stream OutputStream
         {
-            return DoStartAsync(disableBuffering: false)
-                .Then(output => DoWriteAsync(output, data))
-                .Finally(OnCallCompleted);
+            get { return _outputStream; }
         }
 
-        Task<Stream> DoStartAsync(bool disableBuffering)
-        {
-            if (disableBuffering && Interlocked.Increment(ref _bufferingDisabled) == 1)
-            {
-                DisableBuffering();
-            }
 
-            _resultParametersSource.TrySetResult(_resultParameters);
-            return _outputStreamSource.Task;
-        }
-
-        Task DoWriteAsync(Stream output, ArraySegment<byte> data)
-        {
-            output.Write(data.Array, data.Offset, data.Count);
-            #if NET45
-                return output.FlushAsync();
-            #endif
-            output.Flush();
-            return TaskHelpers.Completed();
-        }
-
-        void DisableBuffering()
-        {
-            object value;
-            if (_call.Environment.TryGetValue("server.DisableRequestBuffering", out value))
-            {
-                var disableRequestBuffering = value as Action;
-                if (disableRequestBuffering != null)
-                {
-                    disableRequestBuffering.Invoke();
-                }
-            }
-            if (_call.Environment.TryGetValue("server.DisableResponseBuffering", out value))
-            {
-                var disableResponseBuffering = value as Action;
-                if (disableResponseBuffering != null)
-                {
-                    disableResponseBuffering.Invoke();
-                }
-            }
-        }
     }
 }

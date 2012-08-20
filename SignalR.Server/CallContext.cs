@@ -1,5 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Gate;
 using Owin;
+using SignalR.Server.Utils;
 
 namespace SignalR.Server
 {
@@ -7,6 +12,8 @@ namespace SignalR.Server
     {
         readonly IDependencyResolver _resolver;
         readonly PersistentConnection _connection;
+
+        static readonly string[] AllowCredentialsTrue = new[] { "true" };
 
         public CallContext(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -16,27 +23,39 @@ namespace SignalR.Server
 
         public Task<ResultParameters> Invoke(CallParameters call)
         {
+            var req = new Request(call);
+
             var tcs = new TaskCompletionSource<ResultParameters>();
 
-            var request = new ServerRequest(call);
-            var response = new ServerResponse(call, tcs);
-            var hostContext = new HostContext(request, response);
+            var serverRequest = new ServerRequest(req);
+            var serverResponse = new ServerResponse(req.Completed, tcs);
+            var hostContext = new HostContext(serverRequest, serverResponse);
 
-            object value;
-            if (call.Environment.TryGetValue("owin.CallCompleted", out value))
+            var origin = req.Headers.GetHeaders("Origin");
+            if (origin != null && origin.Any(sz => !String.IsNullOrEmpty(sz)))
             {
-                var callDisposed = value as Task;
-                if (callDisposed != null)
-                {
-                    callDisposed.Finally(response.OnCallCompleted);
-                }
+                serverResponse.Headers["Access-Control-Allow-Origin"] = origin;
+                serverResponse.Headers["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
+            }
+
+            var disableRequestBuffering = call.Get<Action>("server.DisableRequestBuffering");
+            if (disableRequestBuffering != null)
+            {
+                disableRequestBuffering();
+            }
+
+            var disableResponseBuffering = call.Get<Action>("server.DisableResponseBuffering");
+            if (disableResponseBuffering != null)
+            {
+                disableResponseBuffering();
             }
 
             _connection.Initialize(_resolver);
-
             _connection
                 .ProcessRequestAsync(hostContext)
-                .Finally(response.OnCallCompleted);
+                .Finally(serverResponse.End, runSynchronously: true);
+
+
 
             return tcs.Task;
         }
