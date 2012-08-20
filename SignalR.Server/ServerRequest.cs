@@ -2,31 +2,28 @@
 using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Gate.Utils;
 using Owin;
 using SignalR.Server.Utils;
 
 namespace SignalR.Server
 {
-    public class ServerRequest : IRequest
+    class ServerRequest : IRequest
     {
-        readonly CallParameters _call;
         readonly Gate.Request _req;
 
-        public ServerRequest(CallParameters call)
+        internal ServerRequest(Gate.Request req)
         {
-            _call = call;
-            _req = new Gate.Request(_call);
+            _req = req;
         }
 
         public Uri Url
         {
             get
             {
-                var uriBuilder = new UriBuilder(_call.Scheme(), _call.Host(), _call.Port(), _call.PathBase() + _call.Path());
-                if (!string.IsNullOrEmpty(_call.QueryString()))
+                var uriBuilder = new UriBuilder(_req.Scheme, _req.Host, _req.Call.Port(), _req.PathBase + _req.Path);
+                if (!string.IsNullOrEmpty(_req.QueryString))
                 {
-                    uriBuilder.Query = _call.QueryString();
+                    uriBuilder.Query = _req.QueryString;
                 }
                 return uriBuilder.Uri;
             }
@@ -69,7 +66,7 @@ namespace SignalR.Server
             get
             {
                 var collection = new NameValueCollection();
-                var remoteIp = _call.RemoteIp();
+                var remoteIp = _req.Call.RemoteIp();
                 if (!string.IsNullOrEmpty(remoteIp))
                 {
                     collection["REMOTE_ADDR"] = remoteIp;
@@ -82,12 +79,20 @@ namespace SignalR.Server
         {
             get
             {
-                var readText = _req.ReadText();
                 var collection = new NameValueCollection();
+#if true
+                var form = _req.ReadForm();
+                foreach (var kv in form)
+                {
+                    collection.Add(kv.Key, kv.Value);
+                }
+#else
+                var readText = _req.ReadText();
                 foreach (var kv in ParamDictionary.Parse(readText))
                 {
                     collection.Add(kv.Key, kv.Value);
                 }
+#endif
                 return collection;
             }
         }
@@ -99,7 +104,7 @@ namespace SignalR.Server
 
         public IPrincipal User
         {
-            get { return _call.Get<IPrincipal>("server.User"); }
+            get { return _req.Call.Get<IPrincipal>("server.User"); }
         }
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)

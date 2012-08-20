@@ -72,6 +72,8 @@
     <Compile Include="ServerResponse.cs" />
     <Compile Include="StartupExtensions.cs" />
     <Compile Include="Utils\CallParametersExtensions.cs" />
+    <Compile Include="ServerResponseStream.cs" />
+    <Compile Include="Utils\StreamNotImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SignalR\SignalR.csproj">
