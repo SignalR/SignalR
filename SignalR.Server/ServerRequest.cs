@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Owin;
 using SignalR.Server.Utils;
 
 namespace SignalR.Server
@@ -99,7 +98,7 @@ namespace SignalR.Server
 
         public IRequestCookieCollection Cookies
         {
-            get { return new ServerCookieCollection(_req); }
+            get { return new ServerRequestCookieCollection(_req); }
         }
 
         public IPrincipal User

@@ -4,7 +4,7 @@ using Owin;
 using SignalR.Hubs;
 using SignalR.Server.Utils;
 
-namespace SignalR.Server
+namespace SignalR.Server.Handlers
 {
     public class HubDispatcherHandler
     {
@@ -55,13 +55,15 @@ namespace SignalR.Server
         public Task<ResultParameters> Invoke(CallParameters call)
         {
             var path = call.Path();
-            if (path != null && path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
+            if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
-                var dispatcher = new HubDispatcher(call.PathBase() + _path);
-                var callContext = new CallContext(_resolver.Invoke(), dispatcher);
-                return callContext.Invoke(call);
+                return _app.Invoke(call);
             }
-            return _app.Invoke(call);
+
+            var dispatcher = new HubDispatcher(call.PathBase() + _path);
+
+            var handler = new CallHandler(_resolver.Invoke(), dispatcher);
+            return handler.Invoke(call);
         }
     }
 }
