@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Gate;
 using Owin;
 using SignalR.Server.Utils;
 
-namespace SignalR.Server
+namespace SignalR.Server.Handlers
 {
-    public class CallContext
+    public class CallHandler
     {
         readonly IDependencyResolver _resolver;
         readonly PersistentConnection _connection;
 
         static readonly string[] AllowCredentialsTrue = new[] { "true" };
 
-        public CallContext(IDependencyResolver resolver, PersistentConnection connection)
+        public CallHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
             _resolver = resolver;
             _connection = connection;
@@ -51,11 +50,10 @@ namespace SignalR.Server
             }
 
             _connection.Initialize(_resolver);
+
             _connection
                 .ProcessRequestAsync(hostContext)
                 .Finally(serverResponse.End, runSynchronously: true);
-
-
 
             return tcs.Task;
         }

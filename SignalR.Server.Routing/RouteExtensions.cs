@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
-using Katana.Server.AspNet;
+using Microsoft.AspNet.Owin;
 using Owin;
 using SignalR.Server;
 

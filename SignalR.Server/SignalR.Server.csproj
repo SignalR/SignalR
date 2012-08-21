@@ -13,15 +13,17 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Owin, Version=0.14.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
@@ -62,15 +65,15 @@
     <Compile Include="App_Packages\Gate.Sources.0.15\Utils\ReasonPhrases.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
-    <Compile Include="CallContext.cs" />
+    <Compile Include="Handlers\CallHandler.cs" />
     <Compile Include="GlobalHost.cs" />
-    <Compile Include="PersistentConnectionHandler.cs" />
-    <Compile Include="HubDispatcherHandler.cs" />
-    <Compile Include="ServerCookieCollection.cs" />
+    <Compile Include="Handlers\PersistentConnectionHandler.cs" />
+    <Compile Include="Handlers\HubDispatcherHandler.cs" />
+    <Compile Include="ServerRequestCookieCollection.cs" />
     <Compile Include="ServerRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerResponse.cs" />
-    <Compile Include="StartupExtensions.cs" />
+    <Compile Include="OwinExtensions.cs" />
     <Compile Include="Utils\CallParametersExtensions.cs" />
     <Compile Include="ServerResponseStream.cs" />
     <Compile Include="Utils\StreamNotImpl.cs" />

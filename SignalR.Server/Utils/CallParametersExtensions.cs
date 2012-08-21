@@ -25,34 +25,6 @@ namespace SignalR.Server.Utils
             return call.Get<string>("owin.RequestPath");
         }
 
-        public static string QueryString(this CallParameters call)
-        {
-            return call.Get<string>("owin.RequestQueryString");
-        }
-
-        public static string HostAndPort(this CallParameters call)
-        {
-            var host = call.GetHeader("Host");
-            if (host != null)
-            {
-                return host;
-            }
-            var localIp = call.LocalIp() ?? "127.0.0.1";
-            var localPort = call.LocalPort();
-            return localPort != null ? localIp + ":" + localPort : localIp;
-        }
-
-        public static string Host(this CallParameters call)
-        {
-            var host = call.GetHeader("Host");
-            if (host != null)
-            {
-                var delimiter = host.LastIndexOf(':');
-                return delimiter == -1 ? host : host.Substring(0, delimiter);
-            }
-            return call.LocalIp() ?? "127.0.0.1";
-        }
-
         public static int Port(this CallParameters call)
         {
             int port;
@@ -90,10 +62,6 @@ namespace SignalR.Server.Utils
             return values.Length == 1 ? values[0] : string.Join(",", values);
         }
 
-        public static string LocalIp(this CallParameters call)
-        {
-            return call.Get<string>("server.LocalIp");
-        }
         public static string LocalPort(this CallParameters call)
         {
             return call.Get<string>("server.LocalPort");
