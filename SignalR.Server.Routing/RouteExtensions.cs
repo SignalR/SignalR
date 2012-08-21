@@ -107,6 +107,8 @@ namespace SignalR
 
             var routeUrl = url.TrimStart('~').TrimStart('/');
 
+            // TODO: IgnoreJsRouteConstraint?
+
             return routes.MapOwinRoute("signalr.hubs", routeUrl, map => map.Use(TraceCalls()).MapHubs(resolver));
             //var existing = routes["signalr.hubs"];
             //if (existing != null)
