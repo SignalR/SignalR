@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Gate;
 using Owin;
-using SignalR.Server.Utils;
 
 namespace SignalR.Server
 {
