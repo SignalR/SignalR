@@ -8,7 +8,7 @@
  *
  */
 
-/// <reference path="jquery-1.6.2.js" />
+/// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.2.js" />
 /// <reference path="jquery.signalR.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
@@ -22,12 +22,32 @@
 
     function makeProxyCallback(hub, callback) {
         return function () {
-            // Update the hub state
-            $.extend(hub, this.state);
-
+            updateHubState(hub, this.state);
+            
             // Call the client hub method
             callback.apply(hub, $.makeArray(arguments));
         };
+    }
+
+    function updateHubState(hub, newState) {
+        var oldState = hub._.oldState;
+
+        if (!oldState) {
+            // First time updating client state, just copy it all over
+            $.extend(hub, newState);
+            hub._.oldState = $.extend({}, newState);
+            return;
+        } 
+
+        // Compare the old client state to current client state and preserve any changes
+        for (var key in newState) {
+            if (typeof (oldState[key]) !== "undefined" && oldState[key] === newState[key]) {
+                // Key is different between old state and new state thus it's changed locally
+                continue;
+            }
+            hub[key] = newState[key];
+            hub._.oldState[key] = newState[key];
+        }
     }
 
     function createHubProxies(instance, hubConnection) {
@@ -78,17 +98,18 @@
     function invoke(hub, methodName, args) {
         // Extract user callback from args
         var userCallback = args[args.length - 1], // last argument
+            callback,
+            connection = hub._.connection();
+
+        if ($.isFunction(userCallback)) {
+            // Replace user's callback with our own
             callback = function (result) {
                 // Update hub state from proxy state
                 $.extend(hub, hub._.proxy.state);
                 if ($.isFunction(userCallback)) {
                     userCallback.call(hub, result);
                 }
-            },
-            connection = hub._.connection();
-
-        if ($.isFunction(userCallback)) {
-            // Replace user's callback with our own
+            };
             args = $.merge(args.splice(0, args.length - 1), [callback]);
         }
 
