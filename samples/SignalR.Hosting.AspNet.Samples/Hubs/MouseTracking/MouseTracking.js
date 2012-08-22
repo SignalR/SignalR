@@ -2,7 +2,7 @@
 /// <reference path="../../Scripts/jquery.signalR.js" />
 
 $(function () {
-    var hubConnection = $.hubConnection(),
+    var hubConnection = $.hubConnection('/signalr', { qs : 'test=1', logging: false, useDefaultPath: false }),
         hub = hubConnection.createProxy('mouseTracking');
     
     hub.on('MoveMouse', function (id, x, y) {
