@@ -104,22 +104,38 @@
 
 
     // hubConnection
-    function hubConnection(url) {
+    function hubConnection(url, options) {
         /// <summary>Creates a new hub connection.</summary>
-        /// <param name="url" type="String">[Optional] The hub route url, defaults to "/signalr"</param>
-        if (!url) {
-            url = "/signalr";
+        /// <param name="url" type="String">[Optional] The hub route url, defaults to "/signalr".</param>
+        /// <param name="options" type="Object">[Optional] Settings to use when creating the hubConnection.</param>
+        var settings = {
+            qs: null,
+            logging: false,
+            useDefaultPath : true
+        };
+
+        $.extend(settings, options);
+
+        if (!url || settings.useDefaultPath) {
+            url = (url || "") + "/signalr";
         }
-        return new hubConnection.fn.init(url);
+        return new hubConnection.fn.init(url, settings);
     }
 
     hubConnection.fn = hubConnection.prototype = $.connection();
 
-    hubConnection.fn.init = function (url, qs, logging) {
-        var connection = this;
+    hubConnection.fn.init = function (url, options) {
+        var settings = {
+                qs: null,
+                logging: false,
+                useDefaultPath: true
+            },
+            connection = this;
+
+        $.extend(settings, options);
 
         // Call the base constructor
-        $.signalR.fn.init.call(connection, url, qs, logging);
+        $.signalR.fn.init.call(connection, url, settings.qs, settings.logging);
 
         // Object to store hub proxies for this connection
         connection.proxies = {};
