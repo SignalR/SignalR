@@ -62,7 +62,7 @@
             <ReplaceWith>$(Version)</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR.Client.JS\jquery.signalR.core.js">
-            <Find>SignalR JavaScript Library v\d+\.\d+</Find>
+            <Find>SignalR JavaScript Library v\d+\.\d+\.\d+</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\hubs.js">
@@ -82,7 +82,7 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests; BuildDocs;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
   </Target>
 
   <Target Name="RunTests">
@@ -90,6 +90,7 @@
   </Target>
 
   <Target Name="CreateOutputDir">
+    <RemoveDir Directories="$(ArtifactsDir)" />
     <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
     <MakeDir Directories="$(DocsPath)" Condition="!Exists('$(DocsPath)')" />
@@ -174,8 +175,10 @@
     <RemoveDir Directories="$(ScriptTempPath)" />
     <MakeDir Directories="$(ScriptTempPath)" />
     
-    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
-    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.js"
+          DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
+    <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.min.js"
+          DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />
