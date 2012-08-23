@@ -8,19 +8,19 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    public class Connection : IConnection, ITransportConnection
+    public class Connection : IConnection, ITransportConnection, ISubscriber
     {
-        private readonly IMessageBus _messageBus;
+        private readonly INewMessageBus _bus;
         private readonly IJsonSerializer _serializer;
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
-        private readonly SafeSet<string> _groups;
-        private readonly ITraceManager _trace;
+        private readonly HashSet<string> _groups;
         private bool _disconnected;
         private bool _aborted;
+        private readonly Lazy<TraceSource> _traceSource;
 
-        public Connection(IMessageBus messageBus,
+        public Connection(INewMessageBus newMessageBus,
                           IJsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
@@ -28,20 +28,32 @@ namespace SignalR
                           IEnumerable<string> groups,
                           ITraceManager traceManager)
         {
-            _messageBus = messageBus;
+            _bus = newMessageBus;
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
-            _groups = new SafeSet<string>(groups);
-            _trace = traceManager;
+            _groups = new HashSet<string>(groups);
+            _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
         }
+
+        IEnumerable<string> ISubscriber.EventKeys
+        {
+            get
+            {
+                return Signals;
+            }
+        }
+
+        public event Action<string, string> EventAdded;
+
+        public event Action<string> EventRemoved;
 
         private IEnumerable<string> Signals
         {
             get
             {
-                return _signals.Concat(_groups.GetSnapshot());
+                return _signals.Concat(_groups);
             }
         }
 
@@ -49,7 +61,7 @@ namespace SignalR
         {
             get
             {
-                return _trace["SignalR.Connection"];
+                return _traceSource.Value;
             }
         }
 
@@ -63,31 +75,85 @@ namespace SignalR
             return SendMessage(signal, value);
         }
 
-        public Task<PersistentResponse> ReceiveAsync(CancellationToken timeoutToken)
+        private Task SendMessage(string key, object value)
         {
-            Trace.TraceInformation("Waiting for new messages");
-
-            return _messageBus.GetMessages(Signals, null, timeoutToken)
-                              .Then(result => GetResponse(result));
+            var serializedValue = _serializer.Stringify(PreprocessValue(value));
+            return _bus.Publish(_connectionId, key, serializedValue);
         }
 
-        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken timeoutToken)
+        private object PreprocessValue(object value)
         {
-            Trace.TraceInformation("Waiting for messages from {0}.", messageId);
+            // If this isn't a command then ignore it
+            var command = value as SignalCommand;
+            if (command == null)
+            {
+                return value;
+            }
 
-            return _messageBus.GetMessages(Signals, messageId, timeoutToken)
-                              .Then(result => GetResponse(result));
+            if (command.Type == CommandType.AddToGroup)
+            {
+                var group = new GroupData
+                {
+                    Name = command.Value,
+                    Cursor = _bus.GetCursor(command.Value)
+                };
+
+                command.Value = _serializer.Stringify(group);
+            }
+            else if (command.Type == CommandType.RemoveFromGroup)
+            {
+                var group = new GroupData
+                {
+                    Name = command.Value
+                };
+
+                command.Value = _serializer.Stringify(group);
+            }
+
+            return command;
         }
 
-        public Task SendCommand(SignalCommand command)
+        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int messageBufferSize)
         {
-            return SendMessage(SignalCommand.AddCommandSuffix(_connectionId), command);
+            var tcs = new TaskCompletionSource<PersistentResponse>();
+            IDisposable subscription = null;
+
+            CancellationTokenRegistration registration = cancel.Register(() =>
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+            });
+
+            subscription = _bus.Subscribe(this, messageId, result =>
+            {
+                PersistentResponse response = GetResponse(result);
+                tcs.TrySetResult(response);
+
+                registration.Dispose();
+
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+
+                return TaskAsyncHelper.False;
+            },
+            messageBufferSize);
+
+            return tcs.Task;
+        }
+
+        public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int messageBufferSize)
+        {
+            return _bus.Subscribe(this, messageId, result => callback(GetResponse(result)), messageBufferSize);
         }
 
         private PersistentResponse GetResponse(MessageResult result)
         {
             // Do a single sweep through the results to process commands and extract values
-            var messageValues = ProcessResults(result.Messages);
+            var messageValues = ProcessResults(result);
 
             var response = new PersistentResponse
             {
@@ -99,26 +165,30 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            Trace.TraceInformation("Connection '{0}' received {1} messages, last id {2}", _connectionId, result.Messages.Count, result.LastMessageId);
-
             return response;
         }
 
-        private List<object> ProcessResults(IList<Message> source)
+        private List<string> ProcessResults(MessageResult result)
         {
-            var messageValues = new List<object>();
-            foreach (var message in source)
+            var messageValues = new List<string>(result.TotalCount);
+
+            for (int i = 0; i < result.Messages.Count; i++)
             {
-                if (SignalCommand.IsCommand(message))
+                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
                 {
-                    var command = WrappedValue.Unwrap<SignalCommand>(message.Value, _serializer);
-                    ProcessCommand(command);
-                }
-                else
-                {
-                    messageValues.Add(WrappedValue.Unwrap(message.Value, _serializer));
+                    Message message = result.Messages[i].Array[j];
+                    if (SignalCommand.IsCommand(message))
+                    {
+                        var command = _serializer.Parse<SignalCommand>(message.Value);
+                        ProcessCommand(command);
+                    }
+                    else
+                    {
+                        messageValues.Add(message.Value);
+                    }
                 }
             }
+
             return messageValues;
         }
 
@@ -127,10 +197,24 @@ namespace SignalR
             switch (command.Type)
             {
                 case CommandType.AddToGroup:
-                    _groups.Add((string)command.Value);
+                    {
+                        var groupData = _serializer.Parse<GroupData>(command.Value);
+
+                        if (EventAdded != null)
+                        {
+                            EventAdded(groupData.Name, groupData.Cursor);
+                        }
+                    }
                     break;
                 case CommandType.RemoveFromGroup:
-                    _groups.Remove((string)command.Value);
+                    {
+                        var groupData = _serializer.Parse<GroupData>(command.Value);
+
+                        if (EventRemoved != null)
+                        {
+                            EventRemoved(groupData.Name);
+                        }
+                    }
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;
@@ -141,49 +225,23 @@ namespace SignalR
             }
         }
 
-        private Task SendMessage(string key, object value)
-        {
-            TraceSend(key, value);
-
-            var wrappedValue = new WrappedValue(value, _serializer);
-            return _messageBus.Send(_connectionId, key, wrappedValue).Catch();
-        }
-
         private void PopulateResponseState(PersistentResponse response)
         {
             // Set the groups on the outgoing transport data
             if (_groups.Count > 0)
             {
-                response.TransportData["Groups"] = _groups.GetSnapshot();
+                if (response.TransportData == null)
+                {
+                    response.TransportData = new Dictionary<string, object>();
+                }
+                response.TransportData["Groups"] = _groups;
             }
         }
 
-        private void TraceSend(string key, object value)
+        private class GroupData
         {
-            var command = value as SignalCommand;
-            if (command != null)
-            {
-                if (command.Type == CommandType.AddToGroup)
-                {
-                    Trace.TraceInformation("Sending Add to group '{0}'.", command.Value);
-                }
-                else if (command.Type == CommandType.RemoveFromGroup)
-                {
-                    Trace.TraceInformation("Sending Remove from group '{0}'.", command.Value);
-                }
-                else if (command.Type == CommandType.Abort)
-                {
-                    Trace.TraceInformation("Sending Aborted command '{0}'", _connectionId);
-                }
-                else
-                {
-                    Trace.TraceInformation("Sending message to '{0}'", key);
-                }
-            }
-            else
-            {
-                Trace.TraceInformation("Sending message to '{0}'", key);
-            }
+            public string Name { get; set; }
+            public string Cursor { get; set; }
         }
     }
 }

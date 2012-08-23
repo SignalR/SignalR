@@ -11,6 +11,7 @@
     <RootNamespace>SignalR</RootNamespace>
     <AssemblyName>SignalR</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
@@ -45,6 +46,9 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
+      <Link>Infrastructure\StreamExtensions.cs</Link>
+    </Compile>
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
@@ -64,6 +68,7 @@
     <Compile Include="Hubs\IClientProxy.cs" />
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
+    <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
@@ -88,10 +93,14 @@
     <Compile Include="Infrastructure\ServerIdManager.cs" />
     <Compile Include="IPersistentConnectionContext.cs" />
     <Compile Include="Infrastructure\IServerCommandHandler.cs" />
+    <Compile Include="MessageBus\INewMessageBus.cs" />
+    <Compile Include="MessageBus\ISubscriber.cs" />
+    <Compile Include="MessageBus\MessageBus.cs" />
     <Compile Include="MessageBus\IIdGenerator.cs" />
-    <Compile Include="MessageBus\InMemoryMessage.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
-    <Compile Include="MessageBus\WrappedValue.cs" />
+    <Compile Include="MessageBus\MessageStore.cs" />
+    <Compile Include="MessageBus\MessageStoreResult.cs" />
+    <Compile Include="MessageBus\Volatile.cs" />
     <Compile Include="PersistentConnectionContext.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
     <Compile Include="GuidConnectionIdGenerator.cs" />
@@ -103,7 +112,6 @@
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="IConnectionIdGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
-    <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="Infrastructure\LockedList.cs" />
@@ -111,7 +119,6 @@
     <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
-    <Compile Include="MessageBus\InProcessMessageBus.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />

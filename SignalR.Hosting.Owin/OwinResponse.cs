@@ -147,5 +147,10 @@ namespace SignalR.Hosting.Owin
 
             return tcs.Task;
         }
+
+        public System.IO.Stream OutputStream
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

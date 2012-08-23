@@ -13,10 +13,10 @@ namespace SignalR
 
         public static bool IsCommand(Message message)
         {
-            return message.SignalKey.EndsWith(SignalrCommand, StringComparison.OrdinalIgnoreCase);
+            return message.Key.EndsWith(SignalrCommand, StringComparison.OrdinalIgnoreCase);
         }
 
         public CommandType Type { get; set; }
-        public object Value { get; set; }
+        public string Value { get; set; }
     }
 }

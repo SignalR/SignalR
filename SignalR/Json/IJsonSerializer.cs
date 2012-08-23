@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SignalR
 {
@@ -13,6 +14,13 @@ namespace SignalR
         /// <param name="value">The object to serailize.</param>
         /// <returns>A JSON string representation of the object.</returns>
         string Stringify(object value);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="writer"></param>
+        void Stringify(object value, TextWriter writer);
 
         /// <summary>
         /// Deserializes the JSON to a .NET object.

@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Infrastructure;
+using SignalR.Hosting.Memory;
+using SignalR.Transports;
 
 namespace SignalR.Stress
 {
@@ -14,7 +15,7 @@ namespace SignalR.Stress
         private static Timer _rateTimer;
         private static bool _measuringRate;
         private static Stopwatch _sw = Stopwatch.StartNew();
-        
+
         private static double _receivesPerSecond;
         private static double _peakReceivesPerSecond;
         private static double _avgReceivesPerSecond;
@@ -30,12 +31,11 @@ namespace SignalR.Stress
         private static long _lastSendsCount;
 
         private static DateTime _avgCalcStart;
-        private static long _lastSendTimeTicks;
         private static long _rate = 1;
         private static int _runs = 0;
         private static int _step = 1;
-        private static int _stepInterval = 50;
-        private static int _clients = 10000;
+        private static int _stepInterval = 10;
+        private static int _clients = 5000;
         private static int _clientsRunning = 0;
         private static int _senders = 1;
         private static Exception _exception;
@@ -50,55 +50,186 @@ namespace SignalR.Stress
 
         static void Main(string[] args)
         {
-            var resolver = new DefaultDependencyResolver();
-            var bus = new InProcessMessageBus(resolver);
-            var eventKeys = new[] { "a", "b", "c" };
-            string payload = GetPayload();
-
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+            ThreadPool.SetMinThreads(32, 32);
 
-            for (int i = 0; i < _clients; i++)
-            {
-                Task.Factory.StartNew(() => StartClientLoop(bus, eventKeys), TaskCreationOptions.LongRunning);
-                //ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, eventKeys));
-                //(new Thread(_ => StartClientLoop(bus, eventKeys))).Start();
-            }
-
-            for (var i = 1; i <= _senders; i++)
-            {
-                //ThreadPool.QueueUserWorkItem(_ => StartSendLoop(bus, payload));
-                Task.Factory.StartNew(() => StartSendLoop(i, bus, payload), TaskCreationOptions.LongRunning);
-            }
-
-            MeasureStats();
+            RunBusTest();
+            //RunConnectionTest();
+            // RunConnectionReceiveLoopTest();
+            // RunMemoryHost();
 
             Console.ReadLine();
         }
 
-        private static void StartSendLoop(int clientId, InProcessMessageBus bus, string payload)
+        private static void RunConnectionTest()
+        {
+            string payload = GetPayload();
+
+            var dr = new DefaultDependencyResolver();
+            MeasureStats((MessageBus)dr.Resolve<INewMessageBus>());
+            var connectionManager = new ConnectionManager(dr);
+            var context = connectionManager.GetConnectionContext<StressConnection>();
+
+            for (int i = 0; i < _clients; i++)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    Interlocked.Increment(ref _clientsRunning);
+                    var transportConnection = (ITransportConnection)context.Connection;
+                    transportConnection.Receive(null, r =>
+                    {
+                        Interlocked.Add(ref _received, r.Messages.Count);
+                        Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+                        return TaskAsyncHelper.True;
+                    },
+                    messageBufferSize: 10);
+
+                }, i);
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
+                });
+            }
+        }
+
+        private static void RunMemoryHost()
+        {
+            var host = new MemoryHost();
+            host.MapConnection<StressConnection>("/echo");
+
+            string payload = GetPayload();
+
+            MeasureStats((MessageBus)host.DependencyResolver.Resolve<INewMessageBus>());
+
+            Action<PersistentResponse> handler = (r) =>
+            {
+                Interlocked.Add(ref _received, r.Messages.Count);
+                Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+            };
+
+            LongPollingTransport.SendingResponse += handler;
+            ForeverFrameTransport.SendingResponse += handler;
+
+            for (int i = 0; i < _clients; i++)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    Interlocked.Increment(ref _clientsRunning);
+                    string connectionId = state.ToString();
+
+                    // LongPollingLoop(host, connectionId);
+                    ProcessRequest(host, "serverSentEvents", connectionId);
+                }, i);
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    var context = host.ConnectionManager.GetConnectionContext<StressConnection>();
+                    StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
+                });
+            }
+        }
+
+        private static void LongPollingLoop(MemoryHost host, string connectionId)
+        {
+        LongPoll:
+            var task = ProcessRequest(host, "longPolling", connectionId);
+
+            if (task.IsCompleted)
+            {
+                task.Wait();
+
+                goto LongPoll;
+            }
+
+            task.ContinueWith(t => LongPollingLoop(host, connectionId));
+        }
+
+        private static Task ProcessRequest(MemoryHost host, string transport, string connectionId)
+        {
+            return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionId=" + connectionId, request => { }, null);
+        }
+
+        private static void RunConnectionReceiveLoopTest()
+        {
+            string payload = GetPayload();
+
+            var dr = new DefaultDependencyResolver();
+            MeasureStats((MessageBus)dr.Resolve<INewMessageBus>());
+            var connectionManager = new ConnectionManager(dr);
+            var context = connectionManager.GetConnectionContext<StressConnection>();
+
+            for (int i = 0; i < _clients; i++)
+            {
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    Interlocked.Increment(ref _clientsRunning);
+                    var transportConnection = (ITransportConnection)context.Connection;
+                    ReceiveLoop(transportConnection, null);
+                }, i);
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
+                });
+            }
+        }
+
+        private static void ReceiveLoop(ITransportConnection connection, string messageId)
+        {
+            connection.ReceiveAsync(messageId, CancellationToken.None, messageBufferSize: 5000).Then(r =>
+            {
+                Interlocked.Add(ref _received, r.Messages.Count);
+                Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+
+                ReceiveLoop(connection, r.MessageId);
+            });
+        }
+
+        private static void RunBusTest()
+        {
+            var resolver = new DefaultDependencyResolver();
+            var bus = new MessageBus(resolver);
+            string payload = GetPayload();
+
+            MeasureStats(bus);
+
+            for (int i = 0; i < _clients; i++)
+            {
+                var subscriber = new Subscriber(new[] { "a", "b", "c" });
+                ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, subscriber));
+            }
+
+            for (var i = 1; i <= _senders; i++)
+            {
+                ThreadPool.QueueUserWorkItem(_ => StartSendLoop(i.ToString(), bus.Publish, payload));
+            }
+        }
+
+        private static void StartSendLoop(string clientId, Func<string, string, string, Task> publish, string payload)
         {
             while (_exception == null)
             {
                 long old = _rate;
-                var interval = TimeSpan.FromMilliseconds((1000.0 / _rate) * _senders);
-                //var interval = TimeSpan.FromMilliseconds(1000.0 / _rate);
+                var interval = TimeSpan.FromTicks((TimeSpan.TicksPerSecond / _rate) * _senders);
                 while (Interlocked.Read(ref _rate) == old && _exception == null)
                 {
                     try
                     {
-                        var sw = Stopwatch.StartNew();
-                        bus.Send(clientId.ToString(), "a", payload).ContinueWith(task =>
-                        {
-                            Interlocked.Exchange(ref _exception, task.Exception);
-                        },
-                        TaskContinuationOptions.OnlyOnFaulted);
-                        sw.Stop();
-                        Interlocked.Exchange(ref _lastSendTimeTicks, sw.ElapsedTicks);
-
+                        publish(clientId, "a", payload).Wait();
                         Interlocked.Increment(ref _sent);
                         Interlocked.Increment(ref _avgLastSendsCount);
 
-                        Thread.Sleep(interval);
+                        // Thread.Sleep(interval);
                     }
                     catch (Exception ex)
                     {
@@ -110,7 +241,7 @@ namespace SignalR.Stress
 
         private static string GetPayload(int n = 32)
         {
-            return Encoding.UTF8.GetString(Enumerable.Range(0, n).Select(i => (byte)i).ToArray());
+            return new string('a', n);
         }
 
         static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
@@ -119,31 +250,19 @@ namespace SignalR.Stress
             e.SetObserved();
         }
 
-        private static void StartClientLoop(InProcessMessageBus bus, string[] eventKeys)
+        private static void StartClientLoop(MessageBus bus, ISubscriber subscriber)
         {
             Interlocked.Increment(ref _clientsRunning);
-            ReceiveLoop(bus, eventKeys, null);
-        }
-
-        private static void ReceiveLoop(InProcessMessageBus bus, string[] eventKeys, string id)
-        {
             try
             {
-                bus.GetMessages(eventKeys, id, CancellationToken.None).ContinueWith(task =>
+                bus.Subscribe(subscriber, null, result =>
                 {
-                    if (task.IsFaulted)
-                    {
-                        Interlocked.Exchange(ref _exception, task.Exception);
-                    }
-                    else
-                    {
-                        var result = task.Result;
-                        Interlocked.Increment(ref _received);
-                        Interlocked.Increment(ref _avgLastReceivedCount);
+                    Interlocked.Add(ref _received, result.TotalCount);
+                    Interlocked.Add(ref _avgLastReceivedCount, result.TotalCount);
 
-                        ReceiveLoop(bus, eventKeys, result.LastMessageId);
-                    }
-                });
+                    return TaskAsyncHelper.True;
+                },
+                messageBufferSize: 10);
             }
             catch (Exception ex)
             {
@@ -151,12 +270,12 @@ namespace SignalR.Stress
             }
         }
 
-        public static void MeasureStats()
+        public static void MeasureStats(MessageBus bus)
         {
             _sw.Start();
             _avgCalcStart = DateTime.UtcNow;
             var resultsPath = Guid.NewGuid().ToString() + ".csv";
-            File.WriteAllText(resultsPath, "Target Rate, RPS, Peak RPS, Avg RPS\n");
+            // File.WriteAllText(resultsPath, "Target Rate, RPS, Peak RPS, Avg RPS\n");
 
             _rateTimer = new Timer(_ =>
             {
@@ -189,7 +308,6 @@ namespace SignalR.Stress
 
                     Console.Clear();
                     Console.WriteLine("Started {0} of {1} clients", _clientsRunning, _clients);
-                    //Console.WriteLine("Last time to send: {0}ms", TimeSpan.FromTicks(Interlocked.Read(ref _lastSendTimeTicks)).TotalMilliseconds);
 
                     Console.WriteLine("Total Rate: {0} (mps) = {1} (mps) * {2} (clients)", TotalRate, _rate, _clients);
                     Console.WriteLine();
@@ -205,11 +323,11 @@ namespace SignalR.Stress
                     Console.WriteLine("----- SENDS -----");
 
                     var s1 = Math.Max(0, _rate - _sendsPerSecond);
-                    Console.WriteLine("SPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
+                    Console.WriteLine("SPS: {0:N3} (diff: {1:N3}, {2:N2}%)", _sendsPerSecond, s1, s1 * 100.0 / _rate);
                     var s2 = Math.Max(0, _rate - _peakSendsPerSecond);
-                    Console.WriteLine("Peak SPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
+                    Console.WriteLine("Peak SPS: {0:N3} (diff: {1:N2} {2:N2}%)", _peakSendsPerSecond, s2, s2 * 100.0 / _rate);
                     var s3 = Math.Max(0, _rate - _avgSendsPerSecond);
-                    Console.WriteLine("Avg SPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
+                    Console.WriteLine("Avg SPS: {0:N3} (diff: {1:N3} {2:N2}%)", _avgSendsPerSecond, s3, s3 * 100.0 / _rate);
                     Console.WriteLine();
 
                     if (sendsPerSec < long.MaxValue && sendsPerSec > _peakSendsPerSecond)
@@ -230,11 +348,21 @@ namespace SignalR.Stress
                     Console.WriteLine("----- RECEIVES -----");
 
                     var d1 = Math.Max(0, TotalRate - _receivesPerSecond);
-                    Console.WriteLine("RPS: {0:0.000} (diff: {1:0.000}, {2:0.00}%)", Math.Min(TotalRate, _receivesPerSecond), d1, d1 * 100.0 / TotalRate);
+                    Console.WriteLine("RPS: {0:N3} (diff: {1:N3}, {2:N2}%)", _receivesPerSecond, d1, d1 * 100.0 / TotalRate);
                     var d2 = Math.Max(0, TotalRate - _peakReceivesPerSecond);
-                    Console.WriteLine("Peak RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _peakReceivesPerSecond), d2, d2 * 100.0 / TotalRate);
+                    Console.WriteLine("Peak RPS: {0:N3} (diff: {1:N3} {2:N2}%)", _peakReceivesPerSecond, d2, d2 * 100.0 / TotalRate);
                     var d3 = Math.Max(0, TotalRate - _avgReceivesPerSecond);
-                    Console.WriteLine("Avg RPS: {0:0.000} (diff: {1:0.000} {2:0.00}%)", Math.Min(TotalRate, _avgReceivesPerSecond), d3, d3 * 100.0 / TotalRate);
+                    Console.WriteLine("Avg RPS: {0:N3} (diff: {1:N3} {2:N2}%)", _avgReceivesPerSecond, d3, d3 * 100.0 / TotalRate);
+                    var d4 = Math.Max(0, _sendsPerSecond - _receivesPerSecond);
+                    Console.WriteLine("Actual RPS: {0:N3} (diff: {1:N3} {2:N2}%)", _receivesPerSecond, d4, d4 * 100.0 / _sendsPerSecond);
+
+                    if (bus != null)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("----- MESSAGE BUS -----");
+                        Console.WriteLine("Allocated Workers: {0}", bus.AllocatedWorkers);
+                        Console.WriteLine("BusyWorkers Workers: {0}", bus.BusyWorkers);
+                    }
 
                     if (recvPerSec < long.MaxValue && recvPerSec > _peakReceivesPerSecond)
                     {
@@ -243,7 +371,7 @@ namespace SignalR.Stress
 
                     _avgReceivesPerSecond = _avgLastReceivedCount / (now - _avgCalcStart).TotalSeconds;
 
-                    File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
+                    // File.AppendAllText(resultsPath, String.Format("{0}, {1}, {2}, {3}\n", TotalRate, _receivesPerSecond, _peakReceivesPerSecond, _avgReceivesPerSecond));
 
                     if (_runs > 0 && _runs % _stepInterval == 0)
                     {
@@ -263,6 +391,11 @@ namespace SignalR.Stress
                     _measuringRate = false;
                 }
             }, null, 1000, 1000);
+        }
+
+        public class StressConnection : PersistentConnection
+        {
+
         }
     }
 }

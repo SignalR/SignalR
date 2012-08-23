@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace SignalR.Client.Infrastructure
+namespace SignalR
 {
     internal class DisposableAction : IDisposable
     {
@@ -17,4 +17,5 @@ namespace SignalR.Client.Infrastructure
             Interlocked.Exchange(ref _action, () => { }).Invoke();
         }
     }
+
 }

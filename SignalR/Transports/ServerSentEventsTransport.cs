@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SignalR.Transports
 {
@@ -14,15 +12,26 @@ namespace SignalR.Transports
 
         public override void KeepAlive()
         {
-            Context.Response.WriteAsync("data: {}\n\n").Catch();
+            OutputWriter.Write("data: {}");
+            OutputWriter.WriteLine();
+            OutputWriter.WriteLine();
+            OutputWriter.Flush();
         }
 
         public override Task Send(PersistentResponse response)
         {
-            var data = JsonSerializer.Stringify(response);
-            OnSending(data);
+            OnSendingResponse(response);
 
-            return Context.Response.WriteAsync("id: " + response.MessageId + "\n" + "data: " + data + "\n\n");
+            OutputWriter.Write("id: ");
+            OutputWriter.Write(response.MessageId);
+            OutputWriter.WriteLine();
+            OutputWriter.Write("data: ");
+            JsonSerializer.Stringify(response, OutputWriter);
+            OutputWriter.WriteLine();
+            OutputWriter.WriteLine();
+            OutputWriter.Flush();
+
+            return TaskAsyncHelper.Empty;
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)
@@ -31,7 +40,12 @@ namespace SignalR.Transports
                        .Then(() =>
                        {
                            Context.Response.ContentType = "text/event-stream";
-                           return Context.Response.WriteAsync("data: initialized\n\n");
+
+                           // "data: initialized\n\n"
+                           OutputWriter.WriteLine("data: initialized");
+                           OutputWriter.WriteLine();
+                           OutputWriter.WriteLine();
+                           OutputWriter.Flush();
                        });
         }
     }

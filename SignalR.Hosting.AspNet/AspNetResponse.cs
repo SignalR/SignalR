@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace SignalR.Hosting.AspNet
@@ -19,6 +19,9 @@ namespace SignalR.Hosting.AspNet
         public AspNetResponse(HttpContextBase context)
         {
             _context = context;
+            OutputStream = new AspNetResponseStream(context.Response);
+
+            DisableResponseBuffering();
         }
 
         public bool IsClientConnected
@@ -64,38 +67,7 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
-        public Task WriteAsync(ArraySegment<byte> data)
-        {
-            return WriteAsync(data, disableBuffering: true);
-        }
-
-        private Task WriteAsync(ArraySegment<byte> data, bool disableBuffering)
-        {
-            if (disableBuffering)
-            {
-                DisableResponseBuffering();
-            }
-
-            if (!IsClientConnected)
-            {
-                return TaskAsyncHelper.Empty;
-            }
-
-            try
-            {
-                _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
-                return _context.Response.FlushAsync();
-            }
-            catch(Exception ex)
-            {
-                return TaskAsyncHelper.FromError(ex);
-            }
-        }
-
-        public Task EndAsync(ArraySegment<byte> data)
-        {
-            return WriteAsync(data, disableBuffering: false);
-        }
+        public Stream OutputStream { get; private set; }
 
         private void DisableResponseBuffering()
         {
@@ -156,6 +128,97 @@ namespace SignalR.Hosting.AspNet
             var iis7wrParamExpr = Expression.Convert(wrParamExpr, iis7wrType);
             var callExpr = Expression.Call(iis7wrParamExpr, methodInfo, Expression.Constant(HttpWorkerRequest.HeaderAcceptEncoding), Expression.Constant(null, typeof(string)), Expression.Constant(false));
             return Expression.Lambda<RemoveHeaderDel>(callExpr, wrParamExpr).Compile();
+        }
+
+        private class AspNetResponseStream : Stream
+        {
+            private readonly HttpResponseBase _response;
+            public AspNetResponseStream(HttpResponseBase response)
+            {
+                _response = response;
+            }
+
+            public override bool CanRead
+            {
+                get
+                {
+                    return false;
+                }
+            }
+
+            public override bool CanSeek
+            {
+                get
+                {
+                    return false;
+                }
+            }
+
+            public override bool CanWrite
+            {
+                get { return true; }
+            }
+
+            public override void Flush()
+            {
+                try
+                {
+                    if (_response.IsClientConnected)
+                    {
+                        _response.Flush();
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+
+            public override long Length
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override long Position
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                try
+                {
+                    if (_response.IsClientConnected)
+                    {
+                        _response.OutputStream.Write(buffer, offset, count);
+                    }
+                }
+                catch
+                {
+                }
+            }
         }
     }
 }

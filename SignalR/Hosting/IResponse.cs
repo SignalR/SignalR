@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace SignalR
 {
@@ -19,17 +18,8 @@ namespace SignalR
         string ContentType { get; set; }
 
         /// <summary>
-        /// Writes unbuffered data that is immediately available to the client connection. (e.g. chunked over http).
+        /// The response stream
         /// </summary>
-        /// <param name="data">The data to write to the connection.</param>
-        /// <returns>A task that represents when the write operation is complete.</returns>
-        Task WriteAsync(ArraySegment<byte> data);
-
-        /// <summary>
-        /// Closes the connection to a client with optional data.
-        /// </summary>
-        /// <param name="data">The data to write to the connection.</param>
-        /// <returns>A task that represents when the connection is closed.</returns>
-        Task EndAsync(ArraySegment<byte> data);
+        Stream OutputStream { get; }
     }
 }

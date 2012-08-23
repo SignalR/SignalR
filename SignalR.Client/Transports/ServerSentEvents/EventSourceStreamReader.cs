@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Client.Infrastructure;
+using SignalR.Infrastructure;
 
 namespace SignalR.Client.Transports.ServerSentEvents
 {

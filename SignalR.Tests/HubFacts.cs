@@ -243,7 +243,7 @@ namespace SignalR.Tests
             var host = new MemoryHost();
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://site/");
-            string callback = "!!!CallMeBack!!!";
+            string callback = @"!!!|\CallMeBack,,,!!!";
 
             var hub = connection.CreateProxy("demo");
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using SignalR.Hosting.Memory;
 using Xunit;
 
@@ -146,6 +147,69 @@ namespace SignalR.Tests
 
                 Assert.InRange(conn.Reconnects, 1, 4);
             }
+        }
+
+        public class GroupTest
+        {
+            [Fact]
+            public void GroupsReceiveMessages()
+            {
+                var host = new MemoryHost();
+                host.MapConnection<MyGroupConnection>("/groups");
+
+                var connection = new Client.Connection("http://foo/groups");
+                var list = new List<string>();
+                connection.Received += data =>
+                {
+                    list.Add(data);
+                };
+
+                connection.Start(host).Wait();
+
+                // Join the group
+                connection.Send(new { type = 1, group = "test" }).Wait();
+
+                // Sent a message
+                connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+
+                // Leave the group
+                connection.Send(new { type = 2, group = "test" }).Wait();
+
+                // Send a message
+                connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+
+                connection.Stop();
+
+                Assert.Equal(1, list.Count);
+                Assert.Equal("hello to group test", list[0]);
+            }
+        }
+    }
+
+    public class MyGroupConnection : PersistentConnection
+    {
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        {
+            JObject operation = JObject.Parse(data);
+            int type = operation.Value<int>("type");
+            string group = operation.Value<string>("group");
+
+            if (type == 1)
+            {
+                return Groups.Add(connectionId, group);
+            }
+            else if (type == 2)
+            {
+                return Groups.Remove(connectionId, group);
+            }
+            else if (type == 3)
+            {
+                return Groups.Send(group, operation.Value<string>("message"));
+            }
+
+            return base.OnReceivedAsync(request, connectionId, data);
         }
     }
 
