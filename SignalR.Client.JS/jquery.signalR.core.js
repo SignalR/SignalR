@@ -21,10 +21,10 @@
         // no JSON!
         throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
     }
-    
+
     var signalR,
         _connection,
-        _pageLoaded = false,
+        _pageLoaded = (window.document.readyState === "complete"),
         _pageWindow = $(window),
 
         events = {
