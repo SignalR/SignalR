@@ -16,8 +16,8 @@ namespace Gate.Utils
             var items = (queryString ?? "").Split(delimiters ?? DefaultParamSeparators, StringSplitOptions.RemoveEmptyEntries);
             var rawPairs = items.Select(item => item.Split(ParamKeyValueSeparator, 2, StringSplitOptions.None));
             var pairs = rawPairs.Select(pair => new KeyValuePair<string, string>(
-                Uri.UnescapeDataString(pair[0]).TrimStart(LeadingWhitespaceChars),
-                pair.Length < 2 ? "" : Uri.UnescapeDataString(pair[1])));
+                Uri.UnescapeDataString(pair[0]).Replace('+', ' ').TrimStart(LeadingWhitespaceChars),
+                pair.Length < 2 ? "" : Uri.UnescapeDataString(pair[1]).Replace('+',' ')));
             return pairs;
         }
 

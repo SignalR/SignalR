@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Owin;
-using SignalR.Server.Utils;
 
 namespace SignalR.Server.Handlers
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class PersistentConnectionHandler
     {
-        readonly AppDelegate _app;
+        readonly AppFunc _app;
         readonly string _path;
         readonly Type _connectionType;
         Func<IDependencyResolver> _resolver;
 
-        public PersistentConnectionHandler(AppDelegate app, string path, Type connectionType)
+        public PersistentConnectionHandler(AppFunc app, string path, Type connectionType)
         {
             _app = app;
             _path = path;
@@ -20,7 +22,7 @@ namespace SignalR.Server.Handlers
             _resolver = DeferredGlobalHostResolver;
         }
 
-        public PersistentConnectionHandler(AppDelegate app, string path, Type connectionType, IDependencyResolver resolver)
+        public PersistentConnectionHandler(AppFunc app, string path, Type connectionType, IDependencyResolver resolver)
         {
             _app = app;
             _path = path;
@@ -35,12 +37,12 @@ namespace SignalR.Server.Handlers
             return resolver;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string, object> env)
         {
-            var path = call.Path();
+            var path = env.Get<string>("owin.RequestPath");
             if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
-                return _app.Invoke(call);
+                return _app.Invoke(env);
             }
 
             var resolver = _resolver.Invoke();
@@ -48,7 +50,7 @@ namespace SignalR.Server.Handlers
             var connection = connectionFactory.CreateInstance(_connectionType);
 
             var handler = new CallHandler(resolver, connection);
-            return handler.Invoke(call);
+            return handler.Invoke(env);
         }
     }
 }

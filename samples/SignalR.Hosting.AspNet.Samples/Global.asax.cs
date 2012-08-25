@@ -16,24 +16,25 @@ namespace SignalR.Hosting.AspNet.Samples
         {
             //GlobalHost.DependencyResolver.UseSqlServer(ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
 
-            //ThreadPool.QueueUserWorkItem(_ =>
-            //{
-            //    var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();
-            //    var hubContext = GlobalHost.ConnectionManager.GetHubContext<DemoHub>();
-            //    while (true)
-            //    {
-            //        try
-            //        {
-            //            context.Connection.Broadcast(DateTime.Now.ToString());
-            //            hubContext.Clients.fromArbitraryCode(DateTime.Now.ToString());
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            Trace.TraceError("SignalR error thrown in Streaming broadcast: {0}", ex);
-            //        }
-            //        Thread.Sleep(2000);
-            //    }
-            //});
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();
+                var hubContext = GlobalHost.ConnectionManager.GetHubContext<DemoHub>();
+
+                while (true)
+                {
+                    try
+                    {
+                        context.Connection.Broadcast(DateTime.Now.ToString());
+                        hubContext.Clients.fromArbitraryCode(DateTime.Now.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError("SignalR error thrown in Streaming broadcast: {0}", ex);
+                    }
+                    Thread.Sleep(2000);
+                }
+            });
 
             RouteTable.Routes.MapHubs();
 

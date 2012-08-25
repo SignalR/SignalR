@@ -11,82 +11,45 @@ using System.Threading;
 
 namespace Gate
 {
+    // A helper class for creating, modifying, or consuming response data in the Environment dictionary.
     internal class Response
     {
         private static readonly Encoding defaultEncoding = Encoding.UTF8;
 
-        private ResultParameters result;
-        private TaskCompletionSource<ResultParameters> callCompletionSource;
-        private TaskCompletionSource<Response> sendHeaderAsyncCompletionSource;
-        private TaskCompletionSource<object> bodyTransitionCompletionSource;
-        private TaskCompletionSource<object> bodyCompletionSource;
+        private IDictionary<string, object> environment;
 
         private CancellationToken completeToken;
-        private ResponseStream responseStream;
-        private Func<Stream, Task> defaultBodyDelegate;
 
-        public Response()
-            : this(200)
+        private TaskCompletionSource<object> responseCompletion;
+
+        public Response(IDictionary<string, object> environment, CancellationToken completed = default(CancellationToken))
         {
-        }
-
-        public Response(int statusCode)
-            : this(statusCode, null)
-        {
-        }
-
-        public Response(int statusCode, IDictionary<string, string[]> headers)
-            : this(statusCode, headers, null)
-        {
-        }
-
-        public Response(int statusCode, IDictionary<string, string[]> headers, IDictionary<string, object> properties)
-            : this(
-                new ResultParameters()
-                {
-                    Status = statusCode,
-                    Headers = headers,
-                    Body = null,
-                    Properties = properties
-                })
-        {
-        }
-
-        public Response(ResultParameters result, CancellationToken completed = default(CancellationToken))
-        {
-            this.defaultBodyDelegate = DefaultBodyDelegate;
-
-            this.result.Status = result.Status;
-            this.result.Body = result.Body ?? defaultBodyDelegate;
-            this.result.Headers = result.Headers ?? new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-            this.result.Properties = result.Properties ?? new Dictionary<string, object>();
-
-            this.callCompletionSource = new TaskCompletionSource<ResultParameters>();
-            this.sendHeaderAsyncCompletionSource = new TaskCompletionSource<Response>();
-            this.bodyTransitionCompletionSource = new TaskCompletionSource<object>();
-            this.bodyCompletionSource = new TaskCompletionSource<object>();
+            this.environment = environment;
 
             this.completeToken = completed;
             this.Encoding = defaultEncoding;
-        }
 
-        internal Func<Task<ResultParameters>> Next { get; set; }
+            this.responseCompletion = new TaskCompletionSource<object>();
+        }
+        
+        internal Func<Task> Next { get; set; }
 
         public void Skip()
         {
-            Next.Invoke().CopyResultToCompletionSource(callCompletionSource);
+            throw new NotImplementedException();
+            // Next.Invoke().CopyResultToCompletionSource(callCompletionSource);
+        }
+
+        public IDictionary<string, object> Environment
+        {
+            get { return environment; }
+            set { environment = value; }
         }
 
         public IDictionary<string, string[]> Headers
         {
-            get { return result.Headers; }
-            set { result.Headers = value; }
-        }
-
-        public IDictionary<string, object> Properties
-        {
-            get { return result.Properties; }
-            set { result.Properties = value; }
+            get { return Environment.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
+            set { Environment.Set<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders, value); }
         }
 
         public string Status
@@ -104,36 +67,25 @@ namespace Gate
                 {
                     throw new ArgumentException("Status must be a string with 3 digit statuscode, a space, and a reason phrase");
                 }
-                result.Status = int.Parse(value.Substring(0, 3));
+                StatusCode = int.Parse(value.Substring(0, 3));
                 ReasonPhrase = value.Length < 4 ? null : value.Substring(4);
             }
         }
 
         public int StatusCode
         {
-            get
-            {
-                return result.Status;
-            }
-            set
-            {
-                if (result.Status != value)
-                {
-                    result.Status = value;
-                    ReasonPhrase = null;
-                }
-            }
+            get { return Environment.Get<int>(OwinConstants.ResponseStatusCode); }
+            set { Environment.Set<int>(OwinConstants.ResponseStatusCode, value); }
         }
 
         public string ReasonPhrase
         {
             get
             {
-                object value;
-                var reasonPhrase = Properties.TryGetValue("owin.ReasonPhrase", out value) ? Convert.ToString(value) : null;
+                string reasonPhrase = Environment.Get<string>(OwinConstants.ResponseReasonPhrase);
                 return string.IsNullOrEmpty(reasonPhrase) ? ReasonPhrases.ToReasonPhrase(StatusCode) : reasonPhrase;
             }
-            set { Properties["owin.ReasonPhrase"] = value; }
+            set { Environment.Set<string>(OwinConstants.ResponseReasonPhrase, value); }
         }
 
         public string GetHeader(string name)
@@ -284,48 +236,13 @@ namespace Gate
 
         public Encoding Encoding { get; set; }
 
-        // (true) Buffer or (false) auto-start/SendHeaders on write 
-        public bool Buffer { get; set; }
-
-        public Func<Stream, Task> BodyDelegate
-        {
-            get
-            {
-                return result.Body;
-            }
-            set
-            {
-                result.Body = value;
-            }
-        }
-
-        private void EnsureResponseStream()
-        {
-            if (responseStream == null)
-            {
-                responseStream = new ResponseStream(this.completeToken);
-                if (result.Body != defaultBodyDelegate)
-                {
-                    if (callCompletionSource.Task.IsCompleted)
-                    {
-                        throw new InvalidOperationException("The result has already been returned, the body delegate cannot be modified.");
-                    }
-                    result.Body = defaultBodyDelegate;
-                }
-            }
-        }
+        // TODO:
+        // public bool Buffer { get; set; }
 
         public Stream OutputStream
         {
-            get
-            {
-                EnsureResponseStream();
-                if (!Buffer) // Auto-Start
-                {
-                    Start();
-                }
-                return responseStream;
-            }
+            get { return Environment.Get<Stream>(OwinConstants.ResponseBody); }
+            set { Environment.Set<Stream>(OwinConstants.ResponseBody, value); }
         }
 
         public void Write(string text)
@@ -383,69 +300,9 @@ namespace Gate
             OutputStream.Flush();
         }
 
-        // Copy the buffer to the output and then provide direct access to the output stream.
-        private Task DefaultBodyDelegate(Stream output)
+        public Task Task
         {
-            EnsureResponseStream();
-            Task transitionTask = responseStream.TransitionFromBufferedToUnbuffered(output)
-                .Then(() =>
-                {
-                    // Offload complete
-                    sendHeaderAsyncCompletionSource.TrySetResult(this);
-                })
-                .Catch(errorInfo =>
-                {
-                    sendHeaderAsyncCompletionSource.TrySetCanceled();
-                    bodyCompletionSource.TrySetException(errorInfo.Exception);
-                    return errorInfo.Handled();
-                })
-                .Finally(() =>
-                {
-                    bodyTransitionCompletionSource.TrySetResult(null);
-                });
-
-            return bodyCompletionSource.Task;
-        }
-
-        public void Start()
-        {
-            StartAsync();
-        }
-
-        // Finalizes the status/headers/properties and returns a Task to notify the caller when the 
-        // BodyDelegate has been invoked, the buffered data offloaded, and it is now safe to write unbuffered data.
-        public Task<Response> StartAsync()
-        {
-            // Only execute once.
-            if (!callCompletionSource.Task.IsCompleted)
-            {
-                callCompletionSource.TrySetResult(result);
-
-                // TODO: Make Headers and Properties read only to prevent user errors
-
-                if (result.Body == defaultBodyDelegate)
-                {
-                    // Register for cancelation in case the body delegate is not invoked.
-                    completeToken.Register(() => sendHeaderAsyncCompletionSource.TrySetCanceled());
-                }
-                else
-                {
-                    // Not using the default body delegate, don't block.
-                    sendHeaderAsyncCompletionSource.TrySetResult(this);
-                    bodyTransitionCompletionSource.TrySetResult(null);
-                }
-            }
-            return sendHeaderAsyncCompletionSource.Task;
-        }
-
-        public ResultParameters Result
-        {
-            get { return result; }
-        }
-
-        public Task<ResultParameters> ResultTask
-        {
-            get { return callCompletionSource.Task; }
+            get { return responseCompletion.Task; }
         }
 
         public void End()
@@ -454,21 +311,21 @@ namespace Gate
         }
 
         // We are completely done with the response and body.
-        public Task<ResultParameters> EndAsync()
+        public Task EndAsync()
         {
-            Start();
-            sendHeaderAsyncCompletionSource.TrySetCanceled();
-            // End the body as soon as the buffer copies.
-            bodyTransitionCompletionSource.Task.Then(() => { bodyCompletionSource.TrySetResult(null); });
-            return callCompletionSource.Task;
+            responseCompletion.TrySetResult(null);
+            return Task;
         }
 
-        public void Error(Exception error)
+        public void End(Exception error)
         {
-            callCompletionSource.TrySetException(error);
-            // This just goes back to user code, we don't need to report their own exception back to them.
-            sendHeaderAsyncCompletionSource.TrySetCanceled();
-            bodyCompletionSource.TrySetException(error);
+            EndAsync(error);
+        }
+
+        public Task EndAsync(Exception error)
+        {
+            responseCompletion.TrySetException(error);
+            return Task;
         }
     }
 }

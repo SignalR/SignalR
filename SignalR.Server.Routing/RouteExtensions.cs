@@ -109,7 +109,7 @@ namespace SignalR
 
             // TODO: IgnoreJsRouteConstraint?
 
-            return routes.MapOwinRoute("signalr.hubs", routeUrl, map => map.Use(TraceCalls()).MapHubs(resolver));
+            return routes.MapOwinRoute("signalr.hubs", routeUrl, map => map.MapHubs(resolver));
             //var existing = routes["signalr.hubs"];
             //if (existing != null)
             //{
@@ -135,21 +135,21 @@ namespace SignalR
             //return route;
         }
 
-        static Func<AppDelegate,AppDelegate> TraceCalls()
-        {
-            var count = 0;
-            return app => call =>
-            {
-                var number = Interlocked.Increment(ref count);
-                var req = new Gate.Request(call);
-                Trace.WriteLine(string.Format("#{0} {1} {2}{3} {4}", number, req.Method, req.PathBase, req.Path, req.QueryString));
-                return app(call).Then(result=>
-                {
-                    Trace.WriteLine(string.Format("#{0} {1}", number, result.Status));
-                    return result;
-                });
-            };
-        }
+        //static Func<AppDelegate,AppDelegate> TraceCalls()
+        //{
+        //    var count = 0;
+        //    return app => call =>
+        //    {
+        //        var number = Interlocked.Increment(ref count);
+        //        var req = new Gate.Request(call);
+        //        Trace.WriteLine(string.Format("#{0} {1} {2}{3} {4}", number, req.Method, req.PathBase, req.Path, req.QueryString));
+        //        return app(call).Then(result=>
+        //        {
+        //            Trace.WriteLine(string.Format("#{0} {1}", number, result.Status));
+        //            return result;
+        //        });
+        //    };
+        //}
 
         static void NormalizePath(string appDomainAppVirtualPath)
         {
@@ -167,12 +167,15 @@ namespace SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, IDependencyResolver resolver)
         {
-            return routes.MapOwinRoute(name, url, map => map.MapConnection(url, type, resolver));
-            //var route = new Route(path, new PersistentRouteHandler(type, resolver));
-            //route.Constraints = new RouteValueDictionary();
-            //route.Constraints.Add("Incoming", new IncomingOnlyRouteConstraint());
-            //routes.Add(name, route);
-            //return route;
+            var routeUrl = url ?? "";
+            var catchAllIndex = routeUrl.LastIndexOf("/{*", StringComparison.Ordinal);
+            if (routeUrl.EndsWith("}") && catchAllIndex != -1)
+            {
+                routeUrl = routeUrl.Substring(0, catchAllIndex);
+            }
+            routeUrl = routeUrl.TrimStart('~').TrimStart('/');
+
+            return routes.MapOwinRoute(name, routeUrl, map => map.MapConnection("", type, resolver));
         }
     }
 }
