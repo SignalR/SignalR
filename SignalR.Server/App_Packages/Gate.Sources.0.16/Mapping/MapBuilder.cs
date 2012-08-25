@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Owin;
 
 namespace Gate.Mapping
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     class MapBuilder : IAppBuilder
     {
         readonly IAppBuilder _builder;
-        readonly IDictionary<string, AppDelegate> _map;
-        readonly Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> _mapper;
+        readonly IDictionary<string, AppFunc> _map;
+        readonly Func<AppFunc, IDictionary<string, AppFunc>, AppFunc> _mapper;
 
-        public MapBuilder(IAppBuilder builder, Func<AppDelegate, IDictionary<string, AppDelegate>, AppDelegate> mapper)
+        public MapBuilder(IAppBuilder builder, Func<AppFunc, IDictionary<string, AppFunc>, AppFunc> mapper)
         {
-            _map = new Dictionary<string, AppDelegate>();
+            _map = new Dictionary<string, AppFunc>();
             _mapper = mapper;
-            _builder = builder.UseFunc<AppDelegate>(a => _mapper(a, _map));
+            _builder = builder.UseFunc<AppFunc>(a => _mapper(a, _map));
         }
 
-        public void MapInternal(string path, AppDelegate app)
+        public void MapInternal(string path, AppFunc app)
         {
             _map[path] = app;
         }

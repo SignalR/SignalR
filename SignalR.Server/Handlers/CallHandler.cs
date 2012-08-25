@@ -1,18 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gate;
 using Owin;
-using SignalR.Server.Utils;
 
 namespace SignalR.Server.Handlers
 {
     public class CallHandler
     {
-        readonly IDependencyResolver _resolver;
-        readonly PersistentConnection _connection;
+        private readonly IDependencyResolver _resolver;
+        private readonly PersistentConnection _connection;
 
-        static readonly string[] AllowCredentialsTrue = new[] { "true" };
+        private static readonly string[] AllowCredentialsTrue = new[] {"true"};
 
         public CallHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -20,14 +20,13 @@ namespace SignalR.Server.Handlers
             _connection = connection;
         }
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string,object> env)
         {
-            var req = new Request(call);
-
-            var tcs = new TaskCompletionSource<ResultParameters>();
+            var req = new Request(env);
+            var res = new Response(env);
 
             var serverRequest = new ServerRequest(req);
-            var serverResponse = new ServerResponse(req.Completed, tcs);
+            var serverResponse = new ServerResponse(res);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
             var origin = req.Headers.GetHeaders("Origin");
@@ -37,13 +36,13 @@ namespace SignalR.Server.Handlers
                 serverResponse.Headers["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
             }
 
-            var disableRequestBuffering = call.Get<Action>("server.DisableRequestBuffering");
+            var disableRequestBuffering = env.Get<Action>("server.DisableRequestBuffering");
             if (disableRequestBuffering != null)
             {
                 disableRequestBuffering();
             }
 
-            var disableResponseBuffering = call.Get<Action>("server.DisableResponseBuffering");
+            var disableResponseBuffering = env.Get<Action>("server.DisableResponseBuffering");
             if (disableResponseBuffering != null)
             {
                 disableResponseBuffering();
@@ -51,11 +50,7 @@ namespace SignalR.Server.Handlers
 
             _connection.Initialize(_resolver);
 
-            _connection
-                .ProcessRequestAsync(hostContext)
-                .Finally(serverResponse.End, runSynchronously: true);
-
-            return tcs.Task;
+            return _connection.ProcessRequestAsync(hostContext);
         }
     }
 }

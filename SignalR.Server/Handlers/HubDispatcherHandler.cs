@@ -1,18 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Owin;
 using SignalR.Hubs;
-using SignalR.Server.Utils;
 
 namespace SignalR.Server.Handlers
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class HubDispatcherHandler
     {
-        readonly AppDelegate _app;
+        readonly AppFunc _app;
         readonly string _path;
         Func<IDependencyResolver> _resolver;
 
-        public HubDispatcherHandler(AppDelegate app)
+        public HubDispatcherHandler(AppFunc app)
         {
             _app = app;
             _path = "";
@@ -21,14 +22,14 @@ namespace SignalR.Server.Handlers
             _resolver = DeferredGlobalHostResolver;
         }
 
-        public HubDispatcherHandler(AppDelegate app, IDependencyResolver resolver)
+        public HubDispatcherHandler(AppFunc app, IDependencyResolver resolver)
         {
             _app = app;
             _path = "";
             _resolver = () => resolver;
         }
 
-        public HubDispatcherHandler(AppDelegate app, string path)
+        public HubDispatcherHandler(AppFunc app, string path)
         {
             _app = app;
             _path = path;
@@ -37,7 +38,7 @@ namespace SignalR.Server.Handlers
             _resolver = DeferredGlobalHostResolver;
         }
 
-        public HubDispatcherHandler(AppDelegate app, string path, IDependencyResolver resolver)
+        public HubDispatcherHandler(AppFunc app, string path, IDependencyResolver resolver)
         {
             _app = app;
             _path = path;
@@ -52,18 +53,19 @@ namespace SignalR.Server.Handlers
         }
 
 
-        public Task<ResultParameters> Invoke(CallParameters call)
+        public Task Invoke(IDictionary<string,object> env)
         {
-            var path = call.Path();
+            var path = env.Get<string>("owin.RequestPath");
             if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
-                return _app.Invoke(call);
+                return _app.Invoke(env);
             }
 
-            var dispatcher = new HubDispatcher(call.PathBase() + _path);
+            var pathBase = env.Get<string>("owin.RequestPathBase");
+            var dispatcher = new HubDispatcher(pathBase + _path);
 
             var handler = new CallHandler(_resolver.Invoke(), dispatcher);
-            return handler.Invoke(call);
+            return handler.Invoke(env);
         }
     }
 }

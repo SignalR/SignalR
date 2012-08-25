@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using Owin;
+using System.Collections.Generic;
 
 namespace Gate
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     internal static class AppBuilderInlineExtensions
     {
         public static IAppBuilder MapDirect(this IAppBuilder builder, string path, Func<Request, Response, Task> app)
@@ -13,21 +16,22 @@ namespace Gate
 
         public static IAppBuilder UseDirect(this IAppBuilder builder, Func<Request, Response, Task> app)
         {
-            return builder.UseFunc<AppDelegate>(next => call =>
+            return builder.UseFunc<AppFunc>(next => environment =>
             {
-                var req = new Request(call);
-                var resp = new Response
+                var req = new Request(environment);
+                var resp = new Response(environment)
                 {
-                    Next = () => next(call)
+                    Next = () => next(environment)
                 };
 
                 app.Invoke(req, resp)
+                    .Then(() => resp.EndAsync())
                     .Catch(caught =>
                     {
-                        resp.Error(caught.Exception);
+                        resp.End(caught.Exception);
                         return caught.Handled();
                     });
-                return resp.ResultTask;
+                return resp.Task;
             });
         }
     }

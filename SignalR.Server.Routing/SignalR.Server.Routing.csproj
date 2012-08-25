@@ -32,18 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.AspNet.Owin">
-      <HintPath>..\packages\Microsoft.AspNet.Owin.0.5\lib\Microsoft.AspNet.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin">
-      <HintPath>..\packages\Owin.0.14\lib\net40\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin.Startup">
-      <HintPath>..\packages\Owin.Startup.0.3\lib\net40\Owin.Startup.dll</HintPath>
+    <Reference Include="Owin.Startup, Version=0.4.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Owin.Startup.0.4\lib\net40\Owin.Startup.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,24 +45,14 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Gate.Sources.0.15\AppBuilderInlineExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\AppBuilderMapExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Headers.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Mapping\MapBuilder.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Mapping\UrlMapper.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\OwinConstants.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Request.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Response.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\ResponseStream.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Utils\Net40Extensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Utils\ParamDictionary.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.15\Utils\ReasonPhrases.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="RouteExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\katana\src\Microsoft.AspNet.Owin\Microsoft.AspNet.Owin.csproj">
+      <Project>{e31826e6-c29a-4f08-bd4f-e17aca793bbc}</Project>
+      <Name>Microsoft.AspNet.Owin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SignalR.Server\SignalR.Server.csproj">
       <Project>{2B8C6DAD-4D85-41B1-83FD-248D9F347522}</Project>
       <Name>SignalR.Server</Name>

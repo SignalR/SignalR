@@ -1,12 +1,11 @@
-using Gate;
 
 namespace SignalR.Server
 {
     class ServerRequestCookieCollection : IRequestCookieCollection
     {
-        readonly Request _req;
+        readonly Gate.Request _req;
 
-        public ServerRequestCookieCollection(Request req)
+        public ServerRequestCookieCollection(Gate.Request req)
         {
             _req = req;
         }

@@ -7,18 +7,20 @@ using Owin;
 
 namespace Gate.Mapping
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     internal class UrlMapper
     {
-        readonly AppDelegate _defaultApp;
-        IEnumerable<Tuple<string, AppDelegate>> _map = Enumerable.Empty<Tuple<string, AppDelegate>>();
+        readonly AppFunc _defaultApp;
+        IEnumerable<Tuple<string, AppFunc>> _map = Enumerable.Empty<Tuple<string, AppFunc>>();
 
-        UrlMapper(AppDelegate app)
+        UrlMapper(AppFunc app)
         {
             _defaultApp = app;
         }
 
 
-        public static AppDelegate Create(AppDelegate defaultApp, IDictionary<string, AppDelegate> map)
+        public static AppFunc Create(AppFunc defaultApp, IDictionary<string, AppFunc> map)
         {
             if (defaultApp == null)
                 throw new ArgumentNullException("defaultApp");
@@ -28,7 +30,7 @@ namespace Gate.Mapping
             return mapper.Call;
         }
 
-        public void Remap(IDictionary<string, AppDelegate> map)
+        public void Remap(IDictionary<string, AppFunc> map)
         {
             _map = map
                 .Select(kv => Tuple.Create(kv.Key, kv.Value))
@@ -36,9 +38,9 @@ namespace Gate.Mapping
                 .ToArray();
         }
 
-        public Task<ResultParameters> Call(CallParameters call)
+        public Task Call(IDictionary<string, object> env)
         {
-            var paths = new Paths(call.Environment);
+            var paths = new Paths(env);
             var path = paths.Path;
             var pathBase = paths.PathBase;
             
@@ -46,18 +48,17 @@ namespace Gate.Mapping
             if (match == null)
             {
                 // fall-through to default
-                return _defaultApp(call);
+                return _defaultApp(env);
             }
 
             // Map moves the matched portion of Path into PathBase
             paths.PathBase = pathBase + match.Item1;
             paths.Path = path.Substring(match.Item1.Length);
-            return match.Item2.Invoke(call).Then(result =>
+            return match.Item2.Invoke(env).Then(() =>
             {
-                // Path and PathBase are restored as the call returnss
+                // Path and PathBase are restored as the call returns
                 paths.Path = path;
                 paths.PathBase = pathBase;
-                return result;
             });
         }
 

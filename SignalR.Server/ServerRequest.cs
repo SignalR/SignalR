@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using SignalR.Server.Utils;
 
 namespace SignalR.Server
 {
@@ -19,7 +19,12 @@ namespace SignalR.Server
         {
             get
             {
-                var uriBuilder = new UriBuilder(_req.Scheme, _req.Host, _req.Call.Port(), _req.PathBase + _req.Path);
+                int port;
+                if (!int.TryParse(_req.Port, out port) || port == 0)
+                {
+                    port = _req.Scheme == "https" ? 443 : 80;
+                }
+                var uriBuilder = new UriBuilder(_req.Scheme, _req.Host, port, _req.PathBase + _req.Path);
                 if (!string.IsNullOrEmpty(_req.QueryString))
                 {
                     uriBuilder.Query = _req.QueryString;
@@ -27,6 +32,7 @@ namespace SignalR.Server
                 return uriBuilder.Uri;
             }
         }
+
 
         public NameValueCollection QueryString
         {
@@ -65,10 +71,10 @@ namespace SignalR.Server
             get
             {
                 var collection = new NameValueCollection();
-                var remoteIp = _req.Call.RemoteIp();
-                if (!string.IsNullOrEmpty(remoteIp))
+                var remoteIpAddress = _req.Environment.Get<string>("server.RemoteIpAddress");
+                if (!string.IsNullOrEmpty(remoteIpAddress))
                 {
-                    collection["REMOTE_ADDR"] = remoteIp;
+                    collection["REMOTE_ADDR"] = remoteIpAddress;
                 }
                 return collection;
             }
@@ -79,19 +85,11 @@ namespace SignalR.Server
             get
             {
                 var collection = new NameValueCollection();
-#if true
                 var form = _req.ReadForm();
                 foreach (var kv in form)
                 {
                     collection.Add(kv.Key, kv.Value);
                 }
-#else
-                var readText = _req.ReadText();
-                foreach (var kv in ParamDictionary.Parse(readText))
-                {
-                    collection.Add(kv.Key, kv.Value);
-                }
-#endif
                 return collection;
             }
         }
@@ -103,7 +101,7 @@ namespace SignalR.Server
 
         public IPrincipal User
         {
-            get { return _req.Call.Get<IPrincipal>("server.User"); }
+            get { return _req.Environment.Get<IPrincipal>("server.User"); }
         }
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
