@@ -1,5 +1,5 @@
 /*!
- * SignalR JavaScript Library v0.5.3
+ * SignalR JavaScript Library v0.5.3.3.3.3.3.3.3
  * http://signalr.net/
  *
  * Copyright David Fowler and Damian Edwards 2012
@@ -23,21 +23,20 @@
     function makeProxyCallback(hub, callback) {
         return function () {
             updateHubState(hub, this.state);
-            
+
             // Call the client hub method
-            callback.apply(hub, $.makeArray(arguments));
+            callback.apply(hub.client, $.makeArray(arguments));
         };
     }
 
     function updateHubState(hub, newState) {
-        var oldState = hub._.oldState;
+        var oldState = hub.oldState;
 
         if (!oldState) {
             // First time updating client state, just copy it all over
-            $.extend(hub, newState);
-            hub._.oldState = $.extend({}, newState);
+            hub.oldState = $.extend({}, newState);
             return;
-        } 
+        }
 
         // Compare the old client state to current client state and preserve any changes
         for (var key in newState) {
@@ -45,8 +44,8 @@
                 // Key is different between old state and new state thus it's changed locally
                 continue;
             }
-            hub[key] = newState[key];
-            hub._.oldState[key] = newState[key];
+            hub.state[key] = newState[key];
+            hub.oldState[key] = newState[key];
         }
     }
 
@@ -57,27 +56,26 @@
             if (instance.hasOwnProperty(key)) {
                 hub = instance[key];
 
-                if (!(hub._ && hub._.hubName)) {
+                if (!(hub.hubName)) {
                     // Not a client hub
                     continue;
                 }
 
                 // Create and store the hub proxy
-                hub._.proxy = hubConnection.createProxy(hub._.hubName);
+                hub = hubConnection.createProxy(hub.hubName);
 
                 // Loop through all members on the hub and find client hub functions to subscribe to
-                for (memberKey in hub) {
-                    if (hub.hasOwnProperty(memberKey)) {
-                        memberValue = hub[memberKey];
+                for (memberKey in hub.client) {
+                    if (hub.client.hasOwnProperty(memberKey)) {
+                        memberValue = hub.client[memberKey];
 
-                        if (memberKey === "_" || $.type(memberValue) !== "function"
-                            || $.inArray(memberKey, hub._.ignoreMembers) >= 0) {
+                        if ($.type(memberValue) !== "function") {
                             // Not a client hub function
                             continue;
                         }
-                        
+
                         // Subscribe to the hub event for this method
-                        hub._.proxy.on(memberKey, makeProxyCallback(hub, memberValue));
+                        hub.on(memberKey, makeProxyCallback(hub, memberValue));
                     }
                 }
             }
@@ -96,46 +94,42 @@
     }
 
     function invoke(hub, methodName, args) {
-        // Extract user callback from args
-        var userCallback = args[args.length - 1], // last argument
-            callback,
-            connection = hub._.connection();
-
-        if ($.isFunction(userCallback)) {
-            // Replace user's callback with our own
-            callback = function (result) {
-                // Update hub state from proxy state
-                $.extend(hub, hub._.proxy.state);
-                if ($.isFunction(userCallback)) {
-                    userCallback.call(hub, result);
-                }
-            };
-            args = $.merge(args.splice(0, args.length - 1), [callback]);
-        }
-
-        if (!hub._.proxy) {
-            if (connection.state === signalR.connectionState.disconnected) {
+        if (!hub) {
+            if (hub.connection.state === signalR.connectionState.disconnected) {
                 // Connection hasn't been started yet
                 throw "SignalR: Connection must be started before data can be sent. Call .start() before .send()";
             }
 
-            if (connection.state === signalR.connectionState.connecting) {
+            if (hub.connection.state === signalR.connectionState.connecting) {
                 // Connection hasn't been started yet
                 throw "SignalR: Connection has not been fully initialized. Use .start().done() or .start().fail() to run logic after the connection has started.";
             }
         }
 
-        // Update proxy state from hub state
-        $.extend(hub._.proxy.state, copy(hub, ["_"]));
+        // Extract user callback from args
+        var userCallback = args[args.length - 1], // last argument
+            callback;
 
-        return hub._.proxy.invoke.apply(hub._.proxy, $.merge([methodName], args));
+        if ($.isFunction(userCallback)) {
+            // Replace user's callback with our own
+            callback = function (result) {
+                if ($.isFunction(userCallback)) {
+                    userCallback.call(hub, result); // TODO: What is this supposed to call?
+                }
+            };
+            args = $.merge(args.splice(0, args.length - 1), [callback]);
+        }
+
+        return hub.invoke.apply(hub, $.merge([methodName], args));
     }
-
-    /*hubs*/
 
     signalR.hub = $.hubConnection("{serviceUrl}")
         .starting(function () {
             createHubProxies(signalR, this);
         });
+
+    /*hubs*/
+
+
 
 }(window.jQuery, window));

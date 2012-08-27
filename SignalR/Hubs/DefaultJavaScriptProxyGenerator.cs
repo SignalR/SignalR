@@ -65,7 +65,7 @@ namespace SignalR.Hubs
             if (hubs.Length > 0)
             {
                 hubs.Append(";");
-            } 
+            }
             script = script.Replace("/*hubs*/", hubs.ToString());
 
             if (!IsDebuggingEnabled)
@@ -84,18 +84,11 @@ namespace SignalR.Hubs
             var methods = GetMethods(descriptor);
 
             var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
-
-            sb.AppendFormat("signalR.{0} = {{", GetHubName(descriptor)).AppendLine();
-            sb.AppendFormat("        _: {{").AppendLine();
-            sb.AppendFormat("            hubName: '{0}',", descriptor.Name ?? "null").AppendLine();
-            sb.AppendFormat("            ignoreMembers: [{0}],", Commas(members, m => "'" + Json.CamelCase(m) + "'")).AppendLine();
-            sb.AppendLine("            connection: function () { return signalR.hub; }");
-            sb.AppendFormat("        }}");
-
-            if (methods.Any())
-            {
-                sb.Append(",").AppendLine();
-            }
+            var hubName = GetHubName(descriptor);
+            sb.AppendFormat("signalR.{0} = signalR.hub.createProxy('{1}'); ", hubName, hubName).AppendLine();
+            sb.AppendFormat("    signalR.{0}.hubName = '{1}';", hubName, descriptor.Name ?? "null").AppendLine();
+            sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
+            sb.AppendFormat("    signalR.{0}.server = {{", hubName).AppendLine();
 
             bool first = true;
 
@@ -105,7 +98,7 @@ namespace SignalR.Hubs
                 {
                     sb.Append(",").AppendLine();
                 }
-                this.GenerateMethod(sb, method, includeDocComments);
+                this.GenerateMethod(sb, method, includeDocComments, hubName);
                 first = false;
             }
             sb.AppendLine();
@@ -127,22 +120,22 @@ namespace SignalR.Hubs
                    select oload;
         }
 
-        private void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments)
+        private void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments, string hubName)
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
-            sb.AppendFormat("        {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
+            sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
             if (includeDocComments)
             {
-                sb.AppendFormat("            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
-                var parameterDoc = method.Parameters.Select(p => String.Format("            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
+                sb.AppendFormat("                /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
+                var parameterDoc = method.Parameters.Select(p => String.Format("                /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
                 if (parameterDoc.Any())
                 {
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));
                 }
             }
-            sb.AppendFormat("            return invoke(this, \"{0}\", $.makeArray(arguments));", method.Name).AppendLine();
-            sb.Append("        }");
+            sb.AppendFormat("                return invoke(signalR.{0}, \"{1}\", $.makeArray(arguments));", hubName, method.Name).AppendLine();
+            sb.Append("            }");
         }
 
         private string MapToJavaScriptType(Type type)
