@@ -42,7 +42,7 @@ namespace SignalR.Transports
                            Context.Response.ContentType = "text/event-stream";
 
                            // "data: initialized\n\n"
-                           OutputWriter.WriteLine("data: initialized");
+                           OutputWriter.Write("data: initialized");
                            OutputWriter.WriteLine();
                            OutputWriter.WriteLine();
                            OutputWriter.Flush();

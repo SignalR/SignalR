@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -224,8 +225,13 @@ namespace SignalR.Transports
                 }
             });
 
+            var wh = new ManualResetEventSlim(initialState: false);
+
             subscription = connection.Receive(LastMessageId, response =>
             {
+                // We need to wait until post receive has been called
+                wh.Wait();
+
                 response.TimedOut = IsTimedOut;
 
                 if (response.Disconnect ||
@@ -253,6 +259,9 @@ namespace SignalR.Transports
             {
                 postReceive();
             }
+
+            // Mark this as completed
+            wh.Set();
         }
     }
 }
