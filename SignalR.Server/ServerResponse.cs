@@ -12,7 +12,7 @@ namespace SignalR.Server
         public ServerResponse(Response res)
         {
             _res = res;
-            _clientConnected = _res.Environment.Get<dynamic>("aspnet.ClientConnected");
+            _clientConnected = _res.Environment.Get<dynamic>("server.ClientConnected");
         }
 
         public bool IsClientConnected
