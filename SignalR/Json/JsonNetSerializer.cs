@@ -111,6 +111,9 @@ namespace SignalR
             jsonWriter.WritePropertyName("Disconnect");
             jsonWriter.WriteValue(response.Disconnect);
 
+            jsonWriter.WritePropertyName("TimedOut");
+            jsonWriter.WriteValue(response.TimedOut);
+
             if (response.TransportData != null)
             {
                 jsonWriter.WritePropertyName("TransportData");
