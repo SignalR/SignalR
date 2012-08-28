@@ -163,10 +163,7 @@ namespace SignalR
                 ulong id = eventCursor == null ? 0 : UInt64.Parse(eventCursor);
 
                 // Add or update the cursor (in case it already exists)
-                subscription.AddOrUpdateCursor(eventKey, id);
-
-                // Set the topic
-                subscription.SetCursorTopic(eventKey, topic);
+                subscription.AddOrUpdateCursor(eventKey, id, topic);
 
                 lock (topic.Subscriptions)
                 {
@@ -286,6 +283,7 @@ namespace SignalR
                 {
                     var tcs = new TaskCompletionSource<object>();
 
+
                     WorkImpl(topics, tcs);
 
                     // Fast Path
@@ -338,7 +336,6 @@ namespace SignalR
 
             private void WorkImpl(ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
             {
-
             Process:
                 int totalCount = 0;
                 string nextCursor = null;
@@ -350,6 +347,7 @@ namespace SignalR
                     for (int i = 0; i < Cursors.Count; i++)
                     {
                         Cursor cursor = Cursors[i];
+
                         MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, _messageBufferSize);
                         ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
                         cursor.Id = next;
@@ -424,7 +422,7 @@ namespace SignalR
                 });
             }
 
-            public void AddOrUpdateCursor(string key, ulong id)
+            public void AddOrUpdateCursor(string key, ulong id, Topic topic)
             {
                 lock (_lockObj)
                 {
@@ -432,14 +430,17 @@ namespace SignalR
                     var index = _cursors.FindIndex(c => c.Key == key);
                     if (index != -1)
                     {
-                        _cursors[index].Id = id;
+                        Cursor cursor = _cursors[index];
+                        cursor.Id = id;
+                        cursor.Topic = topic;
                     }
                     else
                     {
                         _cursors.Add(new Cursor
                         {
                             Key = key,
-                            Id = id
+                            Id = id,
+                            Topic = topic
                         });
                     }
                 }
@@ -662,6 +663,11 @@ namespace SignalR
                 }
 
                 return cursors.ToArray();
+            }
+
+            public override string ToString()
+            {
+                return Key;
             }
         }
 
