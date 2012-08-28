@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-
 using IClientResponse = SignalR.Client.Http.IResponse;
 
 namespace SignalR.Hosting.Memory
@@ -38,7 +35,7 @@ namespace SignalR.Hosting.Memory
         {
             get
             {
-                return !_stream.CancellationToken.IsCancellationRequested && 
+                return !_stream.CancellationToken.IsCancellationRequested &&
                        !_clientToken.IsCancellationRequested;
             }
         }
@@ -54,14 +51,16 @@ namespace SignalR.Hosting.Memory
             get { return _stream; }
         }
 
+
         /// <summary>
         /// Mimics a network stream between client and server.
         /// </summary>
         private class ResponseStream : Stream
         {
-            private readonly BlockingCollection<ArraySegment<byte>> _queue;
-            private readonly Stack<ArraySegment<byte>> _backlog;
+            private MemoryStream _currentStream;
+            private int _readPos;
             private readonly CancellationTokenSource _cancellationTokenSource;
+
             private event Action _onWrite;
             private event Action _onClosed;
             private Action _flush;
@@ -70,8 +69,7 @@ namespace SignalR.Hosting.Memory
             public ResponseStream(Action flush)
             {
                 _flush = flush;
-                _queue = new BlockingCollection<ArraySegment<byte>>();
-                _backlog = new Stack<ArraySegment<byte>>();
+                _currentStream = new MemoryStream();
                 _cancellationTokenSource = new CancellationTokenSource();
             }
 
@@ -133,32 +131,21 @@ namespace SignalR.Hosting.Memory
             {
                 try
                 {
-                    ArraySegment<byte> queuedBuffer;
+                    byte[] underlyingBuffer = _currentStream.GetBuffer();
 
-                    // First check to see if there's a backlog
-                    if (_backlog.Count > 0)
+                    int canRead = (int)_currentStream.Length - _readPos;
+
+                    if (canRead == 0)
                     {
-                        queuedBuffer = _backlog.Pop();
-                    }
-                    else
-                    {
-                        // Read the next chunk from the buffer
-                        if (!_queue.TryTake(out queuedBuffer))
-                        {
-                            queuedBuffer = _queue.Take(CancellationToken);
-                        }
+                        // Consider trimming the buffer after consuming up to _readPos
+                        return 0;
                     }
 
-                    int read = Math.Min(count, queuedBuffer.Count);
-                    int remainder = queuedBuffer.Count - read;
+                    int read = Math.Min(count, canRead);
 
-                    if (remainder > 0)
-                    {
-                        // Push the remainder back onto the backlog
-                        _backlog.Push(new ArraySegment<byte>(queuedBuffer.Array, queuedBuffer.Offset + read, remainder));
-                    }
+                    Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
 
-                    Array.Copy(queuedBuffer.Array, queuedBuffer.Offset, buffer, offset, read);
+                    _readPos += read;
 
                     return read;
                 }
@@ -265,7 +252,7 @@ namespace SignalR.Hosting.Memory
 
             public override void Write(byte[] buffer, int offset, int count)
             {
-                _queue.Add(new ArraySegment<byte>(buffer, offset, count));
+                _currentStream.Write(buffer, offset, count);
 
                 if (_onWrite != null)
                 {
@@ -273,6 +260,5 @@ namespace SignalR.Hosting.Memory
                 }
             }
         }
-
     }
 }
