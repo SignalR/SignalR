@@ -22,10 +22,10 @@
 
     function makeProxyCallback(hub, callback) {
         return function () {
-            updateHubState(hub, this.state);
+            //updateHubState(hub, this.state);
 
             // Call the client hub method
-            callback.apply(hub.client, $.makeArray(arguments));
+            callback.apply(hub, $.makeArray(arguments));
         };
     }
 
@@ -62,7 +62,7 @@
                 }
 
                 // Create and store the hub proxy
-                hub = hubConnection.createProxy(hub.hubName);
+                //hub = hubConnection.createProxy(hub.hubName);
 
                 // Loop through all members on the hub and find client hub functions to subscribe to
                 for (memberKey in hub.client) {
@@ -80,17 +80,6 @@
                 }
             }
         }
-    }
-
-    function copy(obj, exclude) {
-        var newObj = {};
-        $.each(obj, function (key, value) {
-            if (!$.isFunction(value) && $.inArray(key, exclude) === -1) {
-                // We don't use "this" because browsers suck!
-                newObj[key] = value;
-            }
-        });
-        return newObj;
     }
 
     function invoke(hub, methodName, args) {

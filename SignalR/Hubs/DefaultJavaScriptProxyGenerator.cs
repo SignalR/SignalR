@@ -88,7 +88,7 @@ namespace SignalR.Hubs
             sb.AppendFormat("signalR.{0} = signalR.hub.createProxy('{1}'); ", hubName, hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.hubName = '{1}';", hubName, descriptor.Name ?? "null").AppendLine();
             sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
-            sb.AppendFormat("    signalR.{0}.server = {{", hubName).AppendLine();
+            sb.AppendFormat("    signalR.{0}.server = {{", hubName);
 
             bool first = true;
 
@@ -124,18 +124,18 @@ namespace SignalR.Hubs
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
-            sb.AppendFormat("            {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
+            sb.AppendFormat("        {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
             if (includeDocComments)
             {
-                sb.AppendFormat("                /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
-                var parameterDoc = method.Parameters.Select(p => String.Format("                /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
+                sb.AppendFormat("            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
+                var parameterDoc = method.Parameters.Select(p => String.Format("            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
                 if (parameterDoc.Any())
                 {
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));
                 }
             }
-            sb.AppendFormat("                return invoke(signalR.{0}, \"{1}\", $.makeArray(arguments));", hubName, method.Name).AppendLine();
-            sb.Append("            }");
+            sb.AppendFormat("            return signalR.{0}.invoke.apply(signalR.{0}, $.merge([\"{1}\"], $.makeArray(arguments)));", hubName, method.Name).AppendLine();
+            sb.Append("         }");
         }
 
         private string MapToJavaScriptType(Type type)

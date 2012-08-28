@@ -10,7 +10,7 @@ $(function () {
     var shapeShare = $.connection.shapeShare;
 
     function changeShape(el) {
-        shapeShare.changeShape($(el).data("shapeId"), el.offsetLeft, el.offsetTop || 0, el.clientWidth, el.clientHeight);
+        shapeShare.server.changeShape($(el).data("shapeId"), el.offsetLeft, el.offsetTop || 0, el.clientWidth, el.clientHeight);
     }
 
     function makeShape(shape) {
@@ -41,11 +41,11 @@ $(function () {
             .addClass(shape.Type)
             .attr("id", "s-" + shape.ID)
             .data("shapeId", shape.ID)
-            .append("<div class='user-info' id='u-" + shape.ID + "'>" + (shapeShare.user.Name === shape.ChangedBy.Name ? "" : "changed by " + shape.ChangedBy.Name) + "</div>");
+            .append("<div class='user-info' id='u-" + shape.ID + "'>" + (shapeShare.state.user.Name === shape.ChangedBy.Name ? "" : "changed by " + shape.ChangedBy.Name) + "</div>");
         return el;
     }
 
-    shapeShare.shapeAdded = function (shape) {
+    shapeShare.client.shapeAdded = function (shape) {
         makeShape(shape)
             .hide()
             .appendTo("#shapes")
@@ -72,7 +72,7 @@ $(function () {
             .fadeIn();
     };
 
-    shapeShare.shapeChanged = function (shape) {
+    shapeShare.client.shapeChanged = function (shape) {
         if (this.user.ID === shape.ChangedBy.ID) {
             $("#u-" + shape.ID).text("");
             return;
@@ -89,15 +89,15 @@ $(function () {
             .text("changed by " + shape.ChangedBy.Name);
     };
 
-    shapeShare.shapeDeleted = function (id) {
+    shapeShare.client.shapeDeleted = function (id) {
         $("#s-" + id).fadeOut(250, function () {
             $(this).remove();
         });
     };
 
-    shapeShare.shapesDeleted = function (shapes) {
+    shapeShare.client.shapesDeleted = function (shapes) {
         $.each(shapes, function () {
-            shapeShare.shapeDeleted(this.id);
+            shapeShare.server.shapeDeleted(this.id);
         });
     };
 
@@ -105,7 +105,7 @@ $(function () {
         .delegate("menu[label=add] a", "click", function (e) {
             e.preventDefault();
 
-            shapeShare.createShape(this.className.toLowerCase());
+            shapeShare.server.createShape(this.className.toLowerCase());
 
             //            switch (this.className.toLowerCase()) {
             //                case "square":
@@ -120,29 +120,29 @@ $(function () {
         })
         .delegate("a.delete", "click", function (e) {
             e.preventDefault();
-            shapeShare.deleteAllShapes();
+            shapeShare.server.deleteAllShapes();
             return false;
         });
 
     $("#user").change(function () {
-        shapeShare.changeUserName(shapeShare.user.Name, $(this).val(), function () {
-            $.cookie("userName", shapeShare.user.Name, { expires: 30 })
-            $("#user").val(shapeShare.user.Name);
+        shapeShare.server.changeUserName(shapeShare.state.user.Name, $(this).val(), function () {
+            $.cookie("userName", shapeShare.state.user.Name, { expires: 30 })
+            $("#user").val(shapeShare.state.user.Name);
         });
     });
 
     function load() {
-        shapeShare.getShapes(function (shapes) {
+        shapeShare.server.getShapes(function (shapes) {
             $.each(shapes, function () {
-                shapeShare.shapeAdded(this);
+                shapeShare.server.shapeAdded(this);
             });
         });
     }
 
     $.connection.hub.start({ transport: activeTransport }, function () {
-        shapeShare.join($.cookie("userName"), function () {
-            $.cookie("userName", shapeShare.user.Name, { expires: 30 });
-            $("#user").val(shapeShare.user.Name);
+        shapeShare.server.join($.cookie("userName"), function () {
+            $.cookie("userName", shapeShare.state.user.Name, { expires: 30 });
+            $("#user").val(shapeShare.state.user.Name);
             load();
         });
     });

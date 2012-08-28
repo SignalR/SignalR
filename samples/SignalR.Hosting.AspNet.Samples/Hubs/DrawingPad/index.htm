@@ -32,7 +32,7 @@
             var id = -1;
 
             // someone draw something
-            signalR.drawingPad.lineDrawed = function (senderId, value) {
+            signalR.drawingPad.client.lineDrawed = function (senderId, value) {
                 if (senderId != id) { // Do not redraw own data, in order to avoid infinit loop
                     value.Callback = true;
                     $("#pad").drawingpad("line", value);
@@ -40,18 +40,17 @@
             };
 
             signalR.hub.start({ transport: activeTransport }, function () {
-
-                signalR.drawingPad.join(function () {
+                signalR.drawingPad.server.join(function () {
                     $("#connecting").hide();
                     $("#connected").show();
 
-                    id = signalR.drawingPad.id;
-                    color = signalR.drawingPad.color;
+                    id = signalR.drawingPad.state.id;
+                    color = signalR.drawingPad.state.color;
 
                     // Listen for drawing
-                    $("#pad").drawingpad({linecolor : color}).bind('line.drawingpad', function (event, args) {
-                        if(!args.Callback)
-                            signalR.drawingPad.drawLine(args);
+                    $("#pad").drawingpad({ linecolor: color }).bind('line.drawingpad', function (event, args) {
+                        if (!args.Callback)
+                            signalR.drawingPad.server.drawLine(args);
                     });
                 });
             });
