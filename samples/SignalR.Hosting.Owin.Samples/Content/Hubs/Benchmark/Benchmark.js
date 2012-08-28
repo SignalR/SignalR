@@ -13,12 +13,12 @@ $(function () {
                 countOne = 0,
                 countAll = 0;
 
-    bench.stepOne = function (ndx) {
+    bench.client.stepOne = function (ndx) {
         delete idSet[ndx + ""];
         ++countOne;
     };
 
-    bench.doneOne = function (start, expected) {
+    bench.client.doneOne = function (start, expected) {
         var duration = new Date().getTime() - start;
         var $msg = log(countOne + " in " + duration + "ms");
         var theCount = countOne;
@@ -33,12 +33,12 @@ $(function () {
 
     };
 
-    bench.stepAll = function (ndx) {
+    bench.client.stepAll = function (ndx) {
         delete idSet[ndx + ""];
         ++countAll;
     };
 
-    bench.doneAll = function (start, expected, numConnections, connectionId) {
+    bench.client.doneAll = function (start, expected, numConnections, connectionId) {
         var duration = new Date().getTime() - start;
         var $msg = log(countAll + " in " + duration + "ms.  " + numConnections + " connections");
         var theCount = countAll;
@@ -69,7 +69,7 @@ $(function () {
         var numCalls = parseInt($("#clientCalls").val());
         initSet(numCalls);
         var now = new Date().getTime();
-        bench.hitMe(now, numCalls, $.connection.hub.id);
+        bench.server.hitMe(now, numCalls, $.connection.hub.id);
     });
 
     //benchmark messages to all clients
@@ -77,6 +77,6 @@ $(function () {
         var numCalls = parseInt($("#clientCalls").val());
         initSet(numCalls);
         var now = new Date().getTime();
-        bench.hitUs(now, numCalls);
+        bench.server.hitUs(now, numCalls);
     });
 });

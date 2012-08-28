@@ -73,7 +73,7 @@ $(function () {
     };
 
     shapeShare.client.shapeChanged = function (shape) {
-        if (this.user.ID === shape.ChangedBy.ID) {
+        if (this.state.user.ID === shape.ChangedBy.ID) {
             $("#u-" + shape.ID).text("");
             return;
         }
@@ -97,7 +97,7 @@ $(function () {
 
     shapeShare.client.shapesDeleted = function (shapes) {
         $.each(shapes, function () {
-            shapeShare.server.shapeDeleted(this.id);
+            shapeShare.client.shapeDeleted(this.id);
         });
     };
 
