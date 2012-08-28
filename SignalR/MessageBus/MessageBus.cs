@@ -687,6 +687,8 @@ namespace SignalR
             private readonly Queue<Subscription> _queue = new Queue<Subscription>();
             private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
 
+            private static readonly TimeSpan _idleTimeout = TimeSpan.FromSeconds(30);
+
             // The maximum number of workers (threads) allowed to process all incoming messages
             private static readonly int MaxWorkers = 3 * Environment.ProcessorCount;
 
@@ -822,7 +824,7 @@ namespace SignalR
                     {
                         while (_queue.Count == 0)
                         {
-                            if (!Monitor.Wait(_queue, TimeSpan.FromSeconds(5)))
+                            if (!Monitor.Wait(_queue, _idleTimeout))
                             {
                                 taskCompletionSource.TrySetResult(null);
                                 return;
