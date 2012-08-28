@@ -122,12 +122,12 @@ namespace SignalR
             var subscription = new Subscription(cursors, callback, messageBufferSize);
             var topics = new List<Topic>();
 
-            foreach (var eventKey in subscriber.EventKeys)
+            foreach (var c in cursors)
             {
-                Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+                Topic topic = _topics.GetOrAdd(c.Key, _ => new Topic());
 
                 // Set the subscription for this topic
-                subscription.SetCursorTopic(eventKey, topic);
+                subscription.SetCursorTopic(c.Key, topic);
 
                 // Add it to the list of topics
                 topics.Add(topic);
