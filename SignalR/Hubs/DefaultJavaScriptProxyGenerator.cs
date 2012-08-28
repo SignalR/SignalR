@@ -85,7 +85,6 @@ namespace SignalR.Hubs
             var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
             var hubName = GetHubName(descriptor);
             sb.AppendFormat("signalR.{0} = signalR.hub.createProxy('{1}'); ", hubName, hubName).AppendLine();
-            sb.AppendFormat("    signalR.{0}.hubName = '{1}';", hubName, descriptor.Name ?? "null").AppendLine();
             sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.server = {{", hubName);
 

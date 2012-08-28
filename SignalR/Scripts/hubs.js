@@ -43,8 +43,8 @@
                 for (memberKey in hub.client) {
                     if (hub.client.hasOwnProperty(memberKey)) {
                         memberValue = hub.client[memberKey];
-
-                        if ($.type(memberValue) !== "function") {
+                        
+                        if (!$.isFunction(memberValue)) {
                             // Not a client hub function
                             continue;
                         }
