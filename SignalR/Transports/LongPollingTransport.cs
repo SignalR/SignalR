@@ -162,20 +162,24 @@ namespace SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            var payload = _jsonSerializer.Stringify(value);
+            if (IsJsonp)
+            {
+                OutputWriter.Write(JsonpCallback);
+                OutputWriter.Write("(");
+            }
+
+            _jsonSerializer.Stringify(value, OutputWriter);
 
             if (IsJsonp)
             {
-                payload = Json.CreateJsonpCallback(JsonpCallback, payload);
-            }
-
-            if (Sending != null)
-            {
-                Sending(payload);
+                OutputWriter.Write(");");
             }
 
             Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
-            return Context.Response.EndAsync(payload);
+
+            // REVIEW: Consider async
+            OutputWriter.Close();
+            return TaskAsyncHelper.Empty;
         }
 
         private Task ProcessSendRequest()
