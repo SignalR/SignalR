@@ -293,7 +293,7 @@ namespace SignalR.Tests
             {
                 lock (list)
                 {
-                    list.Remove(user.Index);
+                    Assert.True(list.Remove(user.Index));
                 }
 
                 countDown.Dec();
