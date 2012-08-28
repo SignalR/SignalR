@@ -43,8 +43,8 @@
                 for (memberKey in hub.client) {
                     if (hub.client.hasOwnProperty(memberKey)) {
                         memberValue = hub.client[memberKey];
-
-                        if ($.type(memberValue) !== "function") {
+                        
+                        if (!$.isFunction(memberValue)) {
                             // Not a client hub function
                             continue;
                         }
@@ -63,7 +63,6 @@
         });
 
     signalR.chat = signalR.hub.createProxy('chat'); 
-    signalR.chat.hubName = 'Chat';
     signalR.chat.client = { };
     signalR.chat.server = {
         join: function () {
@@ -84,7 +83,6 @@
     };
 
     signalR.demo = signalR.hub.createProxy('demo'); 
-    signalR.demo.hubName = 'demo';
     signalR.demo.client = { };
     signalR.demo.server = {
         getValue: function () {
@@ -196,7 +194,6 @@
     };
 
     signalR.drawingPad = signalR.hub.createProxy('drawingPad'); 
-    signalR.drawingPad.hubName = 'DrawingPad';
     signalR.drawingPad.client = { };
     signalR.drawingPad.server = {
         join: function () {
@@ -212,7 +209,6 @@
     };
 
     signalR.hubBench = signalR.hub.createProxy('hubBench'); 
-    signalR.hubBench.hubName = 'HubBench';
     signalR.hubBench.client = { };
     signalR.hubBench.server = {
         hitMe: function (start, clientCalls, connectionId) {
@@ -232,7 +228,6 @@
     };
 
     signalR.mouseTracking = signalR.hub.createProxy('mouseTracking'); 
-    signalR.mouseTracking.hubName = 'MouseTracking';
     signalR.mouseTracking.client = { };
     signalR.mouseTracking.server = {
         join: function () {
@@ -249,7 +244,6 @@
     };
 
     signalR.shapeShare = signalR.hub.createProxy('shapeShare'); 
-    signalR.shapeShare.hubName = 'ShapeShare';
     signalR.shapeShare.client = { };
     signalR.shapeShare.server = {
         getShapes: function () {
@@ -299,7 +293,6 @@
     };
 
     signalR.status = signalR.hub.createProxy('status'); 
-    signalR.status.hubName = 'Status';
     signalR.status.client = { };
     signalR.status.server = {
     };
