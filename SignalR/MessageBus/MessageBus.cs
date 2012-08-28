@@ -824,11 +824,7 @@ namespace SignalR
                     {
                         while (_queue.Count == 0)
                         {
-                            if (!Monitor.Wait(_queue, _idleTimeout))
-                            {
-                                taskCompletionSource.TrySetResult(null);
-                                return;
-                            }
+                            Monitor.Wait(_queue);
                         }
 
                         subscription = _queue.Dequeue();
