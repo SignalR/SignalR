@@ -428,13 +428,7 @@ namespace SignalR
                 {
                     // O(n), but small n and it's not common
                     var index = _cursors.FindIndex(c => c.Key == key);
-                    if (index != -1)
-                    {
-                        Cursor cursor = _cursors[index];
-                        cursor.Id = id;
-                        cursor.Topic = topic;
-                    }
-                    else
+                    if (index == -1)
                     {
                         _cursors.Add(new Cursor
                         {
@@ -828,7 +822,11 @@ namespace SignalR
                     {
                         while (_queue.Count == 0)
                         {
-                            Monitor.Wait(_queue);
+                            if (!Monitor.Wait(_queue, TimeSpan.FromSeconds(5)))
+                            {
+                                taskCompletionSource.TrySetResult(null);
+                                return;
+                            }
                         }
 
                         subscription = _queue.Dequeue();
