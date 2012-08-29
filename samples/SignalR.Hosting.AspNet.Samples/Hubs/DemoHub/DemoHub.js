@@ -6,9 +6,9 @@
         $('#msg').append('<li>' + index + ' client state index ->' + this.state.index + '</li>');
     };
 
-    demo.client.signal = function (id) {
+    demo.on('signal', function (id) {
         $('#dynamicTask').html('The dynamic task! ' + id);
-    };
+    });
 
     demo.client.fromArbitraryCode = function (value) {
         $('#arbitraryCode').html('Sending ' + value + ' from arbitrary code without the hub itself!');
