@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using SignalR.Hubs;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.Benchmark
 {
-    public class HubBench : Hub, IConnected, IDisconnect
+    public class HubBench : Hub
     {
         public static int Connections;
 
@@ -32,20 +32,15 @@ namespace SignalR.Samples.Hubs.Benchmark
             Clients.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
         }
 
-        public Task Connect()
+        public override Task Connect()
         {
             Interlocked.Increment(ref HubBench.Connections);
             return null;
         }
 
-        public Task Disconnect()
+        public override Task Disconnect()
         {
             Interlocked.Decrement(ref HubBench.Connections);
-            return null;
-        }
-
-        public Task Reconnect(IEnumerable<string> groups)
-        {
             return null;
         }
     }

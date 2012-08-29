@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 namespace SignalR.Samples.Hubs.ConnectDisconnect
 {
     [HubName("StatusHub")]
-    public class Status : Hub, IDisconnect, IConnected
+    public class Status : Hub
     {
-        public Task Disconnect()
+        public override Task Disconnect()
         {
             return Clients.leave(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public Task Connect()
+        public override Task Connect()
         {
             return Clients.joined(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public Task Reconnect(IEnumerable<string> groups)
+        public override Task Reconnect(IEnumerable<string> groups)
         {
             return Clients.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }

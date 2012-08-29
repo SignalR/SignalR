@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SignalR.Samples.Hubs.Chat
 {
-    public class Chat : Hub, IDisconnect
+    public class Chat : Hub
     {
         private static readonly ConcurrentDictionary<string, ChatUser> _users = new ConcurrentDictionary<string, ChatUser>(StringComparer.OrdinalIgnoreCase);
         private static readonly ConcurrentDictionary<string, HashSet<string>> _userRooms = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
@@ -122,7 +122,7 @@ namespace SignalR.Samples.Hubs.Chat
             }
         }
 
-        public Task Disconnect()
+        public override Task Disconnect()
         {
             ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)

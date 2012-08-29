@@ -1,12 +1,12 @@
-﻿using System;
+﻿using SignalR.Hosting.Memory;
+using SignalR.Hubs;
+using SignalR.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Hosting.Memory;
-using SignalR.Hubs;
-using SignalR.Infrastructure;
 using Xunit;
 
 using IClientRequest = SignalR.Client.Http.IRequest;
@@ -174,7 +174,7 @@ namespace SignalR.Tests
             }
         }
 
-        public class MyHub : Hub, IDisconnect, IConnected
+        public class MyHub : Hub
         {
             private ManualResetEventSlim _connectWh;
             private ManualResetEventSlim _disconnectWh;
@@ -185,21 +185,21 @@ namespace SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            public Task Disconnect()
+            public override Task Disconnect()
             {
                 _disconnectWh.Set();
 
                 return null;
             }
 
-            public Task Connect()
+            public override Task Connect()
             {
                 _connectWh.Set();
 
                 return TaskAsyncHelper.Empty;
             }
 
-            public Task Reconnect(IEnumerable<string> groups)
+            public override Task Reconnect(IEnumerable<string> groups)
             {
                 return TaskAsyncHelper.Empty;
             }
