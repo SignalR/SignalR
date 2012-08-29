@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace SignalR.Hosting.AspNet
@@ -19,7 +19,6 @@ namespace SignalR.Hosting.AspNet
         public AspNetResponse(HttpContextBase context)
         {
             _context = context;
-            OutputStream = new AspNetResponseStream(context.Response);
 
             DisableResponseBuffering();
         }
@@ -67,8 +66,6 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
-        public Stream OutputStream { get; private set; }
-
         private void DisableResponseBuffering()
         {
             if (_bufferingDisabled)
@@ -114,6 +111,21 @@ namespace SignalR.Hosting.AspNet
             }
         }
 
+        public void Write(ArraySegment<byte> data)
+        {
+            _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
+        }
+
+        public Task FlushAsync()
+        {
+            return _context.Response.FlushAsync();
+        }
+
+        public Task EndAsync()
+        {
+            return TaskAsyncHelper.Empty;
+        }
+
         private static bool IsIIS7WorkerRequest(HttpWorkerRequest workerRequest)
         {
             return workerRequest != null && workerRequest.GetType().FullName == IIS7WorkerRequestTypeName;
@@ -128,97 +140,6 @@ namespace SignalR.Hosting.AspNet
             var iis7wrParamExpr = Expression.Convert(wrParamExpr, iis7wrType);
             var callExpr = Expression.Call(iis7wrParamExpr, methodInfo, Expression.Constant(HttpWorkerRequest.HeaderAcceptEncoding), Expression.Constant(null, typeof(string)), Expression.Constant(false));
             return Expression.Lambda<RemoveHeaderDel>(callExpr, wrParamExpr).Compile();
-        }
-
-        private class AspNetResponseStream : Stream
-        {
-            private readonly HttpResponseBase _response;
-            public AspNetResponseStream(HttpResponseBase response)
-            {
-                _response = response;
-            }
-
-            public override bool CanRead
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            public override bool CanSeek
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            public override bool CanWrite
-            {
-                get { return true; }
-            }
-
-            public override void Flush()
-            {
-                try
-                {
-                    if (_response.IsClientConnected)
-                    {
-                        _response.Flush();
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-
-            public override long Length
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override long Position
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void SetLength(long value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                try
-                {
-                    if (_response.IsClientConnected)
-                    {
-                        _response.OutputStream.Write(buffer, offset, count);
-                    }
-                }
-                catch
-                {
-                }
-            }
         }
     }
 }

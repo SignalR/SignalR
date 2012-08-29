@@ -29,12 +29,14 @@ namespace SignalR.Transports
             _isDebug = context.IsDebuggingEnabled();
         }
 
-        public override void KeepAlive()
+        public override Task KeepAlive()
         {
             OutputWriter.Write("<script>r(c, {});</script>");
             OutputWriter.WriteLine();
             OutputWriter.WriteLine();
             OutputWriter.Flush();
+
+            return Context.Response.FlushAsync();
         }
 
         public override Task Send(PersistentResponse response)
@@ -46,7 +48,7 @@ namespace SignalR.Transports
             OutputWriter.Write(");</script>\r\n");
             OutputWriter.Flush();
 
-            return TaskAsyncHelper.Empty;
+            return Context.Response.FlushAsync();
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)
@@ -57,6 +59,8 @@ namespace SignalR.Transports
                     Context.Response.ContentType = "text/html";
                     OutputWriter.Write(initScript);
                     OutputWriter.Flush();
+
+                    return Context.Response.FlushAsync();
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }

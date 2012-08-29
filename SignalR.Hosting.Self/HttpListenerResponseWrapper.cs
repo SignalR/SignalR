@@ -1,7 +1,7 @@
-using System.IO;
-using SignalR.Hosting.Self.Infrastructure;
+using System;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SignalR.Hosting.Self
 {
@@ -36,12 +36,25 @@ namespace SignalR.Hosting.Self
             }
         }
 
-        public Stream OutputStream
+        public void Write(ArraySegment<byte> data)
         {
-            get
-            {
-                return _httpListenerResponse.OutputStream;
-            }
+            _httpListenerResponse.OutputStream.Write(data.Array, data.Offset, data.Count);
+        }
+
+        public Task FlushAsync()
+        {
+#if NET45
+            return _httpListenerResponse.OutputStream.FlushAsync();
+#else
+            _httpListenerResponse.OutputStream.Flush();
+            return TaskAsyncHelper.Empty;
+#endif
+        }
+
+        public Task EndAsync()
+        {
+            _httpListenerResponse.Close();
+            return TaskAsyncHelper.Empty;
         }
     }
 }

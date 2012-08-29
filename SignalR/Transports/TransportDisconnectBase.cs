@@ -58,7 +58,7 @@ namespace SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.OutputStream, Encoding.UTF8);
+                    _outputWriter = new StreamWriter(Context.Response.AsStream(), Encoding.UTF8);
                     _outputWriter.NewLine = "\n";
                 }
 
@@ -182,8 +182,9 @@ namespace SignalR.Transports
             _timeoutTokenSource.Cancel();
         }
 
-        public virtual void KeepAlive()
+        public virtual Task KeepAlive()
         {
+            return TaskAsyncHelper.Empty;
         }
 
         public void End()

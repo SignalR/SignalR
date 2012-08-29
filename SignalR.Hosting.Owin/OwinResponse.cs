@@ -152,5 +152,21 @@ namespace SignalR.Hosting.Owin
         {
             get { throw new NotImplementedException(); }
         }
+
+
+        public void Write(ArraySegment<byte> data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task FlushAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task EndAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

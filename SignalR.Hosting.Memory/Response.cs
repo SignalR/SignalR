@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using IClientResponse = SignalR.Client.Http.IResponse;
 
 namespace SignalR.Hosting.Memory
@@ -9,11 +10,13 @@ namespace SignalR.Hosting.Memory
     {
         private readonly CancellationToken _clientToken;
         private readonly ResponseStream _stream;
+        private Action _flush;
 
         public Response(CancellationToken clientToken, Action flush)
         {
             _clientToken = clientToken;
-            _stream = new ResponseStream(flush);
+            _stream = new ResponseStream();
+            _flush = flush;
         }
 
         public string ReadAsString()
@@ -46,11 +49,22 @@ namespace SignalR.Hosting.Memory
             set;
         }
 
-        public Stream OutputStream
+        public Task FlushAsync()
         {
-            get { return _stream; }
+            Interlocked.Exchange(ref _flush, () => { }).Invoke();
+            return TaskAsyncHelper.Empty;
         }
 
+        public Task EndAsync()
+        {
+            Interlocked.Exchange(ref _flush, () => { }).Invoke();
+            return TaskAsyncHelper.Empty;
+        }
+
+        public void Write(ArraySegment<byte> data)
+        {
+            _stream.Write(data.Array, data.Offset, data.Count);
+        }
 
         /// <summary>
         /// Mimics a network stream between client and server.
@@ -63,12 +77,10 @@ namespace SignalR.Hosting.Memory
 
             private event Action _onWrite;
             private event Action _onClosed;
-            private Action _flush;
             private readonly object _lockObj = new object();
 
-            public ResponseStream(Action flush)
+            public ResponseStream()
             {
-                _flush = flush;
                 _currentStream = new MemoryStream();
                 _cancellationTokenSource = new CancellationTokenSource();
             }
@@ -107,7 +119,7 @@ namespace SignalR.Hosting.Memory
 
             public override void Flush()
             {
-                Interlocked.Exchange(ref _flush, () => { }).Invoke();
+
             }
 
             public override long Length

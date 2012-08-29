@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace SignalR
 {
@@ -18,8 +20,21 @@ namespace SignalR
         string ContentType { get; set; }
 
         /// <summary>
-        /// The response stream
+        /// Writes buffered data.
         /// </summary>
-        Stream OutputStream { get; }
+        /// <param name="data">The data to write to the buffer.</param>
+        void Write(ArraySegment<byte> data);
+
+        /// <summary>
+        /// Flushes the buffered response to the client.
+        /// </summary>
+        /// <returns>A task that represents when the data has been flushed.</returns>
+        Task FlushAsync();
+
+        /// <summary>
+        /// Closes the connection to the client.
+        /// </summary>
+        /// <returns>A task that represents when the connection is closed.</returns>
+        Task EndAsync();
     }
 }

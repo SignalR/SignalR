@@ -51,7 +51,7 @@ namespace SignalR.Transports
         /// <summary>
         /// Sends a keep alive ping over the connection.
         /// </summary>
-        void KeepAlive();
+        Task KeepAlive();
 
         /// <summary>
         /// Kills the connection.

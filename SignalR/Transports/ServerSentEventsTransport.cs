@@ -10,12 +10,14 @@ namespace SignalR.Transports
 
         }
 
-        public override void KeepAlive()
+        public override Task KeepAlive()
         {
             OutputWriter.Write("data: {}");
             OutputWriter.WriteLine();
             OutputWriter.WriteLine();
             OutputWriter.Flush();
+
+            return Context.Response.FlushAsync();
         }
 
         public override Task Send(PersistentResponse response)
@@ -31,7 +33,7 @@ namespace SignalR.Transports
             OutputWriter.WriteLine();
             OutputWriter.Flush();
 
-            return TaskAsyncHelper.Empty;
+            return Context.Response.FlushAsync();
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)
@@ -46,6 +48,8 @@ namespace SignalR.Transports
                            OutputWriter.WriteLine();
                            OutputWriter.WriteLine();
                            OutputWriter.Flush();
+
+                           return Context.Response.FlushAsync();
                        });
         }
     }

@@ -162,6 +162,8 @@ namespace SignalR.Transports
 
         public virtual Task Send(object value)
         {
+            Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
+
             if (IsJsonp)
             {
                 OutputWriter.Write(JsonpCallback);
@@ -175,11 +177,8 @@ namespace SignalR.Transports
                 OutputWriter.Write(");");
             }
 
-            Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
-
-            // REVIEW: Consider async
-            OutputWriter.Close();
-            return TaskAsyncHelper.Empty;
+            OutputWriter.Flush();
+            return Context.Response.EndAsync();
         }
 
         private Task ProcessSendRequest()

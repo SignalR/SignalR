@@ -146,10 +146,9 @@ namespace SignalR.Transports
         public virtual Task Send(object value)
         {
             JsonSerializer.Stringify(value, OutputWriter);
-
             OutputWriter.Flush();
 
-            return TaskAsyncHelper.Empty;
+            return Context.Response.FlushAsync();
         }
 
         protected virtual Task InitializeResponse(ITransportConnection connection)

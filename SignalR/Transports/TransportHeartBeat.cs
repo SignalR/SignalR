@@ -194,7 +194,7 @@ namespace SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
-                    metadata.Connection.KeepAlive();
+                    metadata.Connection.KeepAlive().Catch();
                     metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
                 }
 
