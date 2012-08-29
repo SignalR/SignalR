@@ -176,7 +176,7 @@ namespace SignalR.Transports
 
         private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
         {
-            Action afterReceive = () =>
+            Func<Task> afterReceive = () =>
             {
                 if (TransportConnected != null)
                 {
@@ -188,13 +188,13 @@ namespace SignalR.Transports
                     postReceive();
                 }
 
-                InitializeResponse(connection).Catch();
+                return InitializeResponse(connection);
             };
 
             return ProcessMessages(connection, afterReceive);
         }
 
-        private Task ProcessMessages(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessMessages(ITransportConnection connection, Func<Task> postReceive = null)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -209,7 +209,7 @@ namespace SignalR.Transports
             return tcs.Task;
         }
 
-        private void ProcessMessages(ITransportConnection connection, Action postReceive, Action endRequest)
+        private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action endRequest)
         {
             IDisposable subscription = null;
 
@@ -254,11 +254,13 @@ namespace SignalR.Transports
 
             if (postReceive != null)
             {
-                postReceive();
+                postReceive().Catch()
+                             .ContinueWith(task => wh.Set());
             }
-
-            // Mark this as completed
-            wh.Set();
+            else
+            {
+                wh.Set();
+            }
         }
     }
 }
