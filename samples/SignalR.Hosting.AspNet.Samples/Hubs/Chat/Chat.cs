@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.Security.Application;
+using SignalR.Hubs;
+using SignalR.Samples.Hubs.Chat.ContentProviders;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -8,17 +12,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Security.Application;
-using SignalR.Hubs;
-using SignalR.Samples.Hubs.Chat.ContentProviders;
 
 namespace SignalR.Samples.Hubs.Chat
 {
     public class Chat : Hub, IDisconnect
     {
-        private static readonly Dictionary<string, ChatUser> _users = new Dictionary<string, ChatUser>(StringComparer.OrdinalIgnoreCase);
-        private static readonly Dictionary<string, HashSet<string>> _userRooms = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        private static readonly Dictionary<string, ChatRoom> _rooms = new Dictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, ChatUser> _users = new ConcurrentDictionary<string, ChatUser>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, HashSet<string>> _userRooms = new ConcurrentDictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, ChatRoom> _rooms = new ConcurrentDictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly List<IContentProvider> _contentProviders = new List<IContentProvider>() {
             new ImageContentProvider(),
@@ -126,7 +127,8 @@ namespace SignalR.Samples.Hubs.Chat
             ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
-                _users.Remove(user.Name);
+                ChatUser ignoredUser;
+                _users.TryRemove(user.Name, out ignoredUser);
 
                 // Leave all rooms
                 HashSet<string> rooms;
@@ -140,7 +142,8 @@ namespace SignalR.Samples.Hubs.Chat
                     }
                 }
 
-                _userRooms.Remove(user.Name);
+                HashSet<string> ignoredRoom;
+                _userRooms.TryRemove(user.Name, out ignoredRoom);
             }
 
             return null;
@@ -220,9 +223,10 @@ namespace SignalR.Samples.Hubs.Chat
                                     Clients[r].changeUserName(oldUser, newUser);
                                 }
                             }
-
-                            _userRooms.Remove(name);
-                            _users.Remove(name);
+                            HashSet<string> ignoredRoom;
+                            ChatUser ignoredUser;
+                            _userRooms.TryRemove(name, out ignoredRoom);
+                            _users.TryRemove(name, out ignoredUser);
 
                             Caller.hash = newUser.Hash;
                             Caller.name = newUser.Name;
@@ -267,7 +271,7 @@ namespace SignalR.Samples.Hubs.Chat
                         if (!_rooms.TryGetValue(newRoom, out chatRoom))
                         {
                             chatRoom = new ChatRoom();
-                            _rooms.Add(newRoom, chatRoom);
+                            _rooms.TryAdd(newRoom, chatRoom);
                         }
 
                         // Remove the old room

@@ -10,12 +10,12 @@ namespace SignalR.Samples.Hubs.ShapeShare
     public class ShapeShare : Hub
     {
         private static ConcurrentDictionary<string, User> _users = new ConcurrentDictionary<string, User>(StringComparer.OrdinalIgnoreCase);
-        private static List<Shape> _shapes = new List<Shape>();
+        private static ConcurrentDictionary<string, Shape> _shapes = new ConcurrentDictionary<string, Shape>();
         private static Random _userNameGenerator = new Random();
 
         public IEnumerable<Shape> GetShapes()
         {
-            return _shapes;
+            return _shapes.Values;
         }
 
         public void Join(string userName)
@@ -57,7 +57,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
             var user = _users[name];
             var shape = Shape.Create(type);
             shape.ChangedBy = user;
-            _shapes.Add(shape);
+            _shapes.TryAdd(shape.ID, shape);
 
             return Clients.shapeAdded(shape);
         }
@@ -97,14 +97,15 @@ namespace SignalR.Samples.Hubs.ShapeShare
                 return;
             }
 
-            _shapes.Remove(shape);
+            Shape ignored;
+            _shapes.TryRemove(id, out ignored);
 
             Clients.shapeDeleted(id);
         }
 
         public void DeleteAllShapes()
         {
-            var shapes = _shapes.Select(s => new { id = s.ID }).ToList();
+            var shapes = _shapes.Select(s => new { id = s.Value.ID }).ToList();
 
             _shapes.Clear();
 
@@ -113,7 +114,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
 
         private Shape FindShape(string id)
         {
-            return _shapes.Find(s => s.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
+            return _shapes[id];
         }
     }
 

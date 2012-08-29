@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using SignalR.Hosting;
 
 namespace SignalR.Samples.Raw
 {
     public class Raw : PersistentConnection
     {
-        private static readonly Dictionary<string, string> _users = new Dictionary<string, string>();
-        private static readonly Dictionary<string, string> _clients = new Dictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, string> _clients = new ConcurrentDictionary<string, string>();
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
@@ -36,7 +36,8 @@ namespace SignalR.Samples.Raw
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            _users.Remove(connectionId);
+            string ignored;
+            _users.TryRemove(connectionId, out ignored);
             return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
         }
 
