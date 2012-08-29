@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SignalR.Tests
 {
-    public class DefaultActionResolverTest
+    public class DefaultActionResolverFacts
     {
         [Fact]
         public void ResolveActionExcludeHubMethods()

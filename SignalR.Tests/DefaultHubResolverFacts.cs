@@ -3,7 +3,7 @@ using Xunit;
 
 namespace SignalR.Tests
 {
-    public class DefaultHubResolverTest
+    public class DefaultHubResolverFacts
     {
         [Fact]
         public void ShouldResolveHubByTypeName()

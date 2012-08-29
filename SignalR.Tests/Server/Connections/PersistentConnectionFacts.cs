@@ -11,7 +11,7 @@ namespace SignalR.Tests
 {
     public class PersistentConnectionFacts
     {
-        public class OnConnectedAsync
+        public class OnConnectedAsync : IDisposable
         {
             [Fact]
             public void GroupsAreNotReadOnConnectedAsync()
@@ -82,9 +82,15 @@ namespace SignalR.Tests
                 Assert.Equal("OnReceivedAsync1", results[2]);
                 Assert.Equal("OnReceivedAsync2", results[3]);
             }
+
+            public void Dispose()
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
 
-        public class OnReconnectedAsync
+        public class OnReconnectedAsync : IDisposable
         {
             [Fact]
             public void ReconnectFiresAfterHostShutDown()
@@ -147,9 +153,15 @@ namespace SignalR.Tests
 
                 Assert.InRange(conn.Reconnects, 1, 4);
             }
+
+            public void Dispose()
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
 
-        public class GroupTest
+        public class GroupTest : IDisposable
         {
             [Fact]
             public void GroupsReceiveMessages()
@@ -184,6 +196,12 @@ namespace SignalR.Tests
 
                 Assert.Equal(1, list.Count);
                 Assert.Equal("hello to group test", list[0]);
+            }
+
+            public void Dispose()
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
     }

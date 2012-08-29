@@ -10,7 +10,7 @@ namespace SignalR.Client.Tests
 {
     public class ConnectionFacts
     {
-        public class Start
+        public class Start : IDisposable
         {
             [Fact]
             public void FailsIfProtocolVersionIsNull()
@@ -95,6 +95,12 @@ namespace SignalR.Client.Tests
 
                     return base.OnConnectedAsync(request, connectionId);
                 }
+            }
+
+            public void Dispose()
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
     }

@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SignalR.Tests
 {
-    public class HubProxyTest
+    public class HubProxyFacts : IDisposable
     {
         [Fact]
         public void InvokeWithErrorInHubResultReturnsFaultedTask()
@@ -188,6 +188,12 @@ namespace SignalR.Tests
             {
 
             }
+        }
+
+        public void Dispose()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         public class ChatHub : Hub

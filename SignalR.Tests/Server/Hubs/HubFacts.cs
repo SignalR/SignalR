@@ -11,7 +11,7 @@ using Xunit;
 
 namespace SignalR.Tests
 {
-    public class HubFacts
+    public class HubFacts : IDisposable
     {
         [Fact]
         public void ReadingState()
@@ -379,6 +379,12 @@ namespace SignalR.Tests
             public int Index { get; set; }
             public string Name { get; set; }
             public string Room { get; set; }
+        }
+
+        public void Dispose()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

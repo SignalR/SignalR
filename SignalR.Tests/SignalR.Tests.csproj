@@ -52,19 +52,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
-      <Link>DemoHub.cs</Link>
+      <Link>Hubs\DemoHub.cs</Link>
     </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
-    <Compile Include="ConnectionFacts.cs" />
+    <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="CursorFacts.cs" />
-    <Compile Include="CountDown.cs" />
-    <Compile Include="DefaultHubResolverTest.cs" />
-    <Compile Include="DisconnectFacts.cs" />
+    <Compile Include="Infrastructure\CountDown.cs" />
+    <Compile Include="DefaultHubResolverFacts.cs" />
+    <Compile Include="Server\Connections\DisconnectFacts.cs" />
     <Compile Include="EventSourceStreamReaderFacts.cs" />
-    <Compile Include="HubProxyTest.cs" />
-    <Compile Include="HubFacts.cs" />
-    <Compile Include="DefaultActionResolverTest.cs" />
-    <Compile Include="PersistentConnectionFacts.cs" />
+    <Compile Include="Client\HubProxyFacts.cs" />
+    <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="DefaultActionResolverFacts.cs" />
+    <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -14,7 +14,7 @@ using IClientResponse = SignalR.Client.Http.IResponse;
 
 namespace SignalR.Tests
 {
-    public class DisconnectFacts
+    public class DisconnectFacts : IDisposable
     {
         [Fact]
         public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
@@ -227,6 +227,12 @@ namespace SignalR.Tests
                 _disconnectWh.Set();
                 return base.OnDisconnectAsync(connectionId);
             }
+        }
+
+        public void Dispose()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

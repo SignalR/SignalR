@@ -8,7 +8,7 @@ using Xunit;
 
 namespace SignalR.Tests
 {
-    public class EventSourceStreamReaderFacts
+    public class EventSourceStreamReaderFacts : IDisposable
     {
         [Fact]
         public void ReadTriggersOpenedOnOpen()
@@ -39,12 +39,15 @@ namespace SignalR.Tests
             };
 
             eventSource.Start();
-            
+                        
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        }
+
+        public void Dispose()
+        {
             // Force any finalizers to run so we can see unhandled task errors
             GC.Collect();
             GC.WaitForPendingFinalizers();
-
-            Thread.Sleep(TimeSpan.FromSeconds(5));
         }
 
         private MemoryStream MemoryStream(string data)
