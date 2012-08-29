@@ -35,11 +35,6 @@ namespace SignalR.Transports
         Func<Task> Disconnected { get; set; }
 
         /// <summary>
-        /// Gets or sets a callback that is invoked when the transport throws an error.
-        /// </summary>
-        Func<Exception, Task> Error { get; set; }
-
-        /// <summary>
         /// Gets the connection id for the transport.
         /// </summary>
         string ConnectionId { get; }

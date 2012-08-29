@@ -90,8 +90,6 @@ namespace SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
-        public Func<Exception, Task> Error { get; set; }
-
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;

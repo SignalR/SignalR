@@ -160,8 +160,6 @@ namespace SignalR
                 return OnReceivedAsync(context.Request, connectionId, data);
             };
 
-            _transport.Error = OnErrorAsync;
-
             _transport.Disconnected = () =>
             {
                 return OnDisconnectAsync(connectionId);
@@ -245,16 +243,6 @@ namespace SignalR
         protected virtual Task OnDisconnectAsync(string connectionId)
         {
             OnClientDisconnected(connectionId);
-            return TaskAsyncHelper.Empty;
-        }
-
-        /// <summary>
-        /// Called when there's an error on the connection.
-        /// </summary>
-        /// <param name="error">The <see cref="Exception"/> that occurred.</param>
-        /// <returns>A <see cref="Task"/> that completes when the error operation is complete.</returns>
-        protected virtual Task OnErrorAsync(Exception error)
-        {
             return TaskAsyncHelper.Empty;
         }
 

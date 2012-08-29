@@ -55,14 +55,6 @@ namespace SignalR.Transports
                     }
                 };
 
-                socket.OnError = ex =>
-                {
-                    if (Error != null)
-                    {
-                        Error(ex).Catch();
-                    }
-                };
-
                 return ProcessRequestCore(connection);
             });
         }
