@@ -113,7 +113,16 @@ namespace SignalR.Hosting.AspNet
 
         public void Write(ArraySegment<byte> data)
         {
-            _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
+            try
+            {
+                if (_context.Response.IsClientConnected)
+                {
+                    _context.Response.OutputStream.Write(data.Array, data.Offset, data.Count);
+                }
+            }
+            catch
+            {
+            }
         }
 
         public Task FlushAsync()

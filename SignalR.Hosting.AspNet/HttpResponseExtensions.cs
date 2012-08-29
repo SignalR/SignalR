@@ -7,18 +7,26 @@ namespace SignalR.Hosting.AspNet
     {
         public static Task FlushAsync(this HttpResponseBase response)
         {
+            if (!response.IsClientConnected)
+            {
+                return TaskAsyncHelper.Empty;
+            }
 #if NET45
             if (response.SupportsAsyncFlush)
             {
                 return Task.Factory.FromAsync((cb, state) => response.BeginFlush(cb, state), ar => response.EndFlush(ar), null);
+            }      
+#endif
+            try
+            {
+                response.Flush();
+            }
+            catch
+            {
+
             }
 
-            response.Flush();
             return TaskAsyncHelper.Empty;
-#else
-            response.Flush();
-            return TaskAsyncHelper.Empty;
-#endif
         }
     }
 }

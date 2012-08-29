@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Hosting.Self.Infrastructure;
 
 namespace SignalR.Hosting.Self
 {
@@ -9,6 +10,7 @@ namespace SignalR.Hosting.Self
     {
         private readonly HttpListenerResponse _httpListenerResponse;
         private readonly CancellationToken _cancellationToken;
+        private bool _connectionFailed;
 
         public HttpListenerResponseWrapper(HttpListenerResponse httpListenerResponse, CancellationToken cancellationToken)
         {
@@ -32,13 +34,20 @@ namespace SignalR.Hosting.Self
         {
             get
             {
-                return !_cancellationToken.IsCancellationRequested;
+                return !_connectionFailed && !_cancellationToken.IsCancellationRequested;
             }
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            _httpListenerResponse.OutputStream.Write(data.Array, data.Offset, data.Count);
+            try
+            {
+                _httpListenerResponse.OutputStream.Write(data.Array, data.Offset, data.Count);
+            }
+            catch
+            {
+                _connectionFailed = true;
+            }
         }
 
         public Task FlushAsync()
@@ -46,14 +55,22 @@ namespace SignalR.Hosting.Self
 #if NET45
             return _httpListenerResponse.OutputStream.FlushAsync();
 #else
-            _httpListenerResponse.OutputStream.Flush();
+            try
+            {
+                _httpListenerResponse.OutputStream.Flush();
+            }
+            catch
+            {
+                _connectionFailed = true;
+            }
+
             return TaskAsyncHelper.Empty;
 #endif
         }
 
         public Task EndAsync()
         {
-            _httpListenerResponse.Close();
+            _httpListenerResponse.CloseSafe();
             return TaskAsyncHelper.Empty;
         }
     }
