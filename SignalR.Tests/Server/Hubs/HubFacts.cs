@@ -190,6 +190,20 @@ namespace SignalR.Tests
         }
 
         [Fact]
+        public void HubHasConnectionEvents()
+        {
+            var type = typeof(Hub);
+            // Hub has the disconnect method
+            Assert.True(type.GetMethod("Disconnect") != null);
+
+            // Hub has the connect method
+            Assert.True(type.GetMethod("Connect") != null);
+
+            // Hub has the reconnect method
+            Assert.True(type.GetMethod("Connect") != null);      
+        }
+
+        [Fact]
         public void ComplexPersonState()
         {
             var host = new MemoryHost();
