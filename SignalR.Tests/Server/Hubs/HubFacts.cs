@@ -200,7 +200,7 @@ namespace SignalR.Tests
             Assert.True(type.GetMethod("Connect") != null);
 
             // Hub has the reconnect method
-            Assert.True(type.GetMethod("Connect") != null);      
+            Assert.True(type.GetMethod("Reconnect") != null);      
         }
 
         [Fact]
