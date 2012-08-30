@@ -43,6 +43,7 @@ namespace SignalR.Hubs
             var cacheEntries = types
                 .Select(type => new HubDescriptor
                                 {
+                                    Derived = (type.GetHubAttributeName() == null) ? DerivedFrom.Source : DerivedFrom.Attribute,
                                     Name = type.GetHubName(),
                                     Type = type
                                 })
@@ -59,7 +60,7 @@ namespace SignalR.Hubs
             {
                 return typeof(IHub).IsAssignableFrom(type) &&
                        !type.IsAbstract &&
-                       (type.Attributes.HasFlag(TypeAttributes.Public) || 
+                       (type.Attributes.HasFlag(TypeAttributes.Public) ||
                         type.Attributes.HasFlag(TypeAttributes.NestedPublic));
             }
             catch

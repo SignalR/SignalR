@@ -105,7 +105,15 @@ namespace SignalR.Hubs
 
         protected virtual string GetHubName(HubDescriptor descriptor)
         {
-            return Json.CamelCase(descriptor.Name);
+            string hubName = descriptor.Name;
+
+            // If our hub name was derived from source then we want to camel case.
+            if (descriptor.Derived == DerivedFrom.Source)
+            {
+                hubName = Json.CamelCase(hubName);
+            }
+
+            return hubName;
         }
 
         private IEnumerable<MethodDescriptor> GetMethods(HubDescriptor descriptor)

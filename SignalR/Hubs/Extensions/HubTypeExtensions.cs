@@ -1,5 +1,4 @@
 ﻿using System;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
@@ -12,8 +11,18 @@ namespace SignalR.Hubs
                 return null;
             }
 
-            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName)
-                   ?? type.Name;
-        } 
+            return GetHubAttributeName(type) ?? type.Name;
+        }
+
+        internal static string GetHubAttributeName(this Type type)
+        {
+            if (!typeof(IHub).IsAssignableFrom(type))
+            {
+                return null;
+            }
+
+            // We can still return null if there is no attribute name
+            return ReflectionHelper.GetAttributeValue<HubNameAttribute, string>(type, attr => attr.HubName);
+        }
     }
 }

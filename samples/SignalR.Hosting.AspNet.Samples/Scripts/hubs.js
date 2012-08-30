@@ -193,18 +193,18 @@
          }
     };
 
-    signalR.drawingPad = signalR.hub.createProxy('drawingPad'); 
-    signalR.drawingPad.client = { };
-    signalR.drawingPad.server = {
+    signalR.DrawingPad = signalR.hub.createProxy('DrawingPad'); 
+    signalR.DrawingPad.client = { };
+    signalR.DrawingPad.server = {
         join: function () {
             /// <summary>Calls the Join method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.drawingPad.invoke.apply(signalR.drawingPad, $.merge(["Join"], $.makeArray(arguments)));
+            return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["Join"], $.makeArray(arguments)));
          },
 
         drawLine: function (data) {
             /// <summary>Calls the DrawLine method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name="data" type="Object">Server side type is SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad.DrawingPad+Line</param>
-            return signalR.drawingPad.invoke.apply(signalR.drawingPad, $.merge(["DrawLine"], $.makeArray(arguments)));
+            return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["DrawLine"], $.makeArray(arguments)));
          }
     };
 
@@ -225,6 +225,11 @@
             /// <param name="clientCalls" type="Number">Server side type is System.Int32</param>
             return signalR.hubBench.invoke.apply(signalR.hubBench, $.merge(["HitUs"], $.makeArray(arguments)));
          }
+    };
+
+    signalR.John = signalR.hub.createProxy('John'); 
+    signalR.John.client = { };
+    signalR.John.server = {
     };
 
     signalR.mouseTracking = signalR.hub.createProxy('mouseTracking'); 
@@ -290,11 +295,6 @@
             /// <summary>Calls the DeleteAllShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["DeleteAllShapes"], $.makeArray(arguments)));
          }
-    };
-
-    signalR.status = signalR.hub.createProxy('status'); 
-    signalR.status.client = { };
-    signalR.status.server = {
     };
 
 }(window.jQuery, window));
