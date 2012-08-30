@@ -15,6 +15,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(hub);
             Assert.Equal(hub.Name, "HubWithoutAttribute");
+            Assert.Equal(hub.Derived, DerivedFrom.Source);
         }
 
         [Fact]
@@ -27,6 +28,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(hub);
             Assert.Equal(hub.Name, "NameFromAttribute");
+            Assert.Equal(hub.Derived, DerivedFrom.Attribute);
         }
 
         [Fact]
@@ -61,6 +63,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(hub);
             Assert.Equal(hub.Name, "HubWithoutAttribute");
+            Assert.Equal(hub.Derived, DerivedFrom.Source);
         }
 
         [Fact]
@@ -72,6 +75,7 @@ namespace SignalR.Tests
 
             Assert.NotNull(hub);
             Assert.Equal(hub.Name, "HubWithoutAttribute");
+            Assert.Equal(hub.Derived, DerivedFrom.Source);
         }
 
         [HubName("NameFromAttribute")]
