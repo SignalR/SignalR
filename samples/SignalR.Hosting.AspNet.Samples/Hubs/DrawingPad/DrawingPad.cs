@@ -1,5 +1,5 @@
-﻿using System.Threading;
-using SignalR.Hubs;
+﻿using SignalR.Hubs;
+using System.Threading;
 
 namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 {
@@ -36,7 +36,7 @@ namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 
         // A user has drawed a line ...
         public void DrawLine(Line data)
-        {            
+        {
             // ... propagate it to all users
             Clients.lineDrawed(Caller.id, data);
         }

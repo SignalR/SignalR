@@ -1,11 +1,11 @@
-﻿using System;
+﻿using SignalR.Hubs;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SignalR.Hosting;
-using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.ConnectDisconnect
 {
+    [HubName("StatusHub")]
     public class Status : Hub, IDisconnect, IConnected
     {
         public Task Disconnect()

@@ -1,5 +1,5 @@
 $(function () {
-    var status = $.connection.status;
+    var status = $.connection.StatusHub;
 
     status.client.joined = function (id, when) {
         if ($.connection.hub.id === id) {

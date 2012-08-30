@@ -227,11 +227,6 @@
          }
     };
 
-    signalR.John = signalR.hub.createProxy('John'); 
-    signalR.John.client = { };
-    signalR.John.server = {
-    };
-
     signalR.mouseTracking = signalR.hub.createProxy('mouseTracking'); 
     signalR.mouseTracking.client = { };
     signalR.mouseTracking.server = {
@@ -295,6 +290,11 @@
             /// <summary>Calls the DeleteAllShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["DeleteAllShapes"], $.makeArray(arguments)));
          }
+    };
+
+    signalR.StatusHub = signalR.hub.createProxy('StatusHub'); 
+    signalR.StatusHub.client = { };
+    signalR.StatusHub.server = {
     };
 
 }(window.jQuery, window));
