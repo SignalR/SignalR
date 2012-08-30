@@ -8,9 +8,9 @@ namespace SignalR.Hubs
     public class HubDescriptor
     {
         /// <summary>
-        /// Hub derivation flag.  Used to monitor changes to the hub descriptor.
+        /// Flags whether the name was specified.
         /// </summary>
-        public virtual DerivedFrom Derived { get; set; }
+        public virtual bool NameSpecified { get; set; }
 
         /// <summary>
         /// Hub name.

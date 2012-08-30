@@ -107,8 +107,8 @@ namespace SignalR.Hubs
         {
             string hubName = descriptor.Name;
 
-            // If our hub name was derived from source then we want to camel case.
-            if (descriptor.Derived == DerivedFrom.Source)
+            // If our hub name was not specified then do not camel case
+            if (!descriptor.NameSpecified)
             {
                 hubName = Json.CamelCase(hubName);
             }

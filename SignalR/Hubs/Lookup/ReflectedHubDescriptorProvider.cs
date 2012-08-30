@@ -43,7 +43,7 @@ namespace SignalR.Hubs
             var cacheEntries = types
                 .Select(type => new HubDescriptor
                                 {
-                                    Derived = (type.GetHubAttributeName() == null) ? DerivedFrom.Source : DerivedFrom.Attribute,
+                                    NameSpecified = (type.GetHubAttributeName() != null),
                                     Name = type.GetHubName(),
                                     Type = type
                                 })

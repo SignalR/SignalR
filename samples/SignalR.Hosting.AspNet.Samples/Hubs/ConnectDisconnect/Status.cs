@@ -22,5 +22,10 @@ namespace SignalR.Samples.Hubs.ConnectDisconnect
         {
             return Clients.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }
+
+        [HubMethodName("John")]
+        public void Foo()
+        {
+        }
     }
 }
