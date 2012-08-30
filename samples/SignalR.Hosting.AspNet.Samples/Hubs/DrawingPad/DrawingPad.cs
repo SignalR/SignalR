@@ -35,6 +35,7 @@ namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
         }
 
         // A user has drawed a line ...
+        [HubMethodName("DrawALine")]
         public void DrawLine(Line data)
         {
             // ... propagate it to all users

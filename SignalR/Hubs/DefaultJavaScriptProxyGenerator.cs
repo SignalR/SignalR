@@ -83,7 +83,7 @@ namespace SignalR.Hubs
             var methods = GetMethods(descriptor);
 
             var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
-            var hubName = GetHubName(descriptor);
+            var hubName = GetDescriptorName(descriptor);
             sb.AppendFormat("signalR.{0} = signalR.hub.createProxy('{1}'); ", hubName, hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.server = {{", hubName);
@@ -103,17 +103,17 @@ namespace SignalR.Hubs
             sb.Append("    }");
         }
 
-        protected virtual string GetHubName(HubDescriptor descriptor)
+        protected virtual string GetDescriptorName(Descriptor descriptor)
         {
-            string hubName = descriptor.Name;
+            string name = descriptor.Name;
 
-            // If our hub name was not specified then do not camel case
+            // If the name was not specified then do not camel case
             if (!descriptor.NameSpecified)
             {
-                hubName = Json.CamelCase(hubName);
+                name = Json.CamelCase(name);
             }
 
-            return hubName;
+            return name;
         }
 
         private IEnumerable<MethodDescriptor> GetMethods(HubDescriptor descriptor)
@@ -130,7 +130,7 @@ namespace SignalR.Hubs
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
-            sb.AppendFormat("        {0}: function ({1}) {{", GetMethodName(method), Commas(parameterNames)).AppendLine();
+            sb.AppendFormat("        {0}: function ({1}) {{", GetDescriptorName(method), Commas(parameterNames)).AppendLine();
             if (includeDocComments)
             {
                 sb.AppendFormat("            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
@@ -167,11 +167,6 @@ namespace SignalR.Hubs
                 return "Date";
             }
             return String.Empty;
-        }
-
-        private static string GetMethodName(MethodDescriptor method)
-        {
-            return Json.CamelCase(method.Name);
         }
 
         private static string Commas(IEnumerable<string> values)

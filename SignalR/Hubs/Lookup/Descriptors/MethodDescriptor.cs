@@ -6,13 +6,8 @@ namespace SignalR.Hubs
     /// <summary>
     /// Holds information about a single hub method.
     /// </summary>
-    public class MethodDescriptor
+    public class MethodDescriptor : Descriptor
     {
-        /// <summary>
-        /// Name of this method.
-        /// </summary>
-        public virtual string Name { get; set; }
-
         /// <summary>
         /// The return type of this method.
         /// </summary>

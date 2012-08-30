@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
-using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
@@ -57,6 +55,7 @@ namespace SignalR.Hubs
                                   {
                                       ReturnType = oload.ReturnType,
                                       Name = group.Key,
+                                      NameSpecified = (GetMethodAttributeName(oload) != null),
                                       Invoker = oload.Invoke,
                                       Hub = hub,
                                       Parameters = oload.GetParameters()
@@ -86,16 +85,16 @@ namespace SignalR.Hubs
         {
             string hubMethodKey = BuildHubExecutableMethodCacheKey(hub, method, parameters);
 
-            if(!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
+            if (!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
             {
                 IEnumerable<MethodDescriptor> overloads;
 
-                if(FetchMethodsFor(hub).TryGetValue(method, out overloads))
+                if (FetchMethodsFor(hub).TryGetValue(method, out overloads))
                 {
                     var matches = overloads.Where(o => o.Matches(parameters)).ToList();
 
                     // If only one match is found, that is the "executable" version, otherwise none of the methods can be returned because we don't know which one was actually being targeted
-                    descriptor =  matches.Count == 1 ? matches[0] : null;
+                    descriptor = matches.Count == 1 ? matches[0] : null;
                 }
                 else
                 {
@@ -103,7 +102,7 @@ namespace SignalR.Hubs
                 }
 
                 // If an executable method was found, cache it for future lookups (NOTE: we don't cache null instances because it could be a surface area for DoS attack by supplying random method names to flood the cache)
-                if(descriptor != null)
+                if (descriptor != null)
                 {
                     _executableMethods.TryAdd(hubMethodKey, descriptor);
                 }
@@ -116,7 +115,7 @@ namespace SignalR.Hubs
         {
             string normalizedParameterCountKeyPart;
 
-            if(parameters != null)
+            if (parameters != null)
             {
                 normalizedParameterCountKeyPart = parameters.Length.ToString(CultureInfo.InvariantCulture);
             }
@@ -128,16 +127,20 @@ namespace SignalR.Hubs
 
             // NOTE: we always normalize to all uppercase since method names are case insensitive and could theoretically come in diff. variations per call
             string normalizedMethodName = method.ToUpperInvariant();
-            
+
             string methodKey = hub.Name + "::" + normalizedMethodName + "(" + normalizedParameterCountKeyPart + ")";
-            
+
             return methodKey;
         }
 
         private static string GetMethodName(MethodInfo method)
         {
-            return ReflectionHelper.GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName)
-                   ?? method.Name;
+            return GetMethodAttributeName(method) ?? method.Name;
+        }
+
+        private static string GetMethodAttributeName(MethodInfo method)
+        {
+            return ReflectionHelper.GetAttributeValue<HubMethodNameAttribute, string>(method, a => a.MethodName);
         }
     }
 }
