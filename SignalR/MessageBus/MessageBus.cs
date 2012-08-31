@@ -137,8 +137,11 @@ namespace SignalR
             {
                 lock (topic.Subscriptions)
                 {
-                    // Add this subscription to the list of subs
-                    topic.Subscriptions.Add(subscription);
+                    if (!topic.Subscriptions.Contains(subscription))
+                    {
+                        // Add this subscription to the list of subs
+                        topic.Subscriptions.Add(subscription);
+                    }
                 }
             }
 
@@ -167,8 +170,11 @@ namespace SignalR
 
                 lock (topic.Subscriptions)
                 {
-                    // Add it to the list of subs
-                    topic.Subscriptions.Add(subscription);
+                    if (!topic.Subscriptions.Contains(subscription))
+                    {
+                        // Add it to the list of subs
+                        topic.Subscriptions.Add(subscription);
+                    }
                 }
             };
 
