@@ -70,9 +70,9 @@ namespace SignalR.Stress
             //ThreadPool.SetMinThreads(32, 32);
 
             // RunBusTest();
-            ////RunConnectionTest();
-            //// RunConnectionReceiveLoopTest();
-            //// RunMemoryHost();
+            //RunConnectionTest();
+            //RunConnectionReceiveLoopTest();
+            // RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -87,7 +87,7 @@ namespace SignalR.Stress
         {
             var host = new MemoryHost();
             host.MapHubs();
-            int max = 2;
+            int max = 15;
 
             var countDown = new CountDown(max);
             var list = Enumerable.Range(0, max).ToList();
@@ -109,7 +109,7 @@ namespace SignalR.Stress
 
             try
             {
-                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+                connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
 
                 for (int i = 0; i < max; i++)
                 {
@@ -151,8 +151,8 @@ namespace SignalR.Stress
                     var transportConnection = (ITransportConnection)context.Connection;
                     transportConnection.Receive(null, r =>
                     {
-                        Interlocked.Add(ref _received, r.Messages.Count);
-                        Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+                        Interlocked.Add(ref _received, r.TotalCount);
+                        Interlocked.Add(ref _avgLastReceivedCount, r.TotalCount);
                         return TaskAsyncHelper.True;
                     },
                     messageBufferSize: 10);
@@ -180,8 +180,8 @@ namespace SignalR.Stress
 
             Action<PersistentResponse> handler = (r) =>
             {
-                Interlocked.Add(ref _received, r.Messages.Count);
-                Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+                Interlocked.Add(ref _received, r.TotalCount);
+                Interlocked.Add(ref _avgLastReceivedCount, r.TotalCount);
             };
 
             LongPollingTransport.SendingResponse += handler;
@@ -261,8 +261,8 @@ namespace SignalR.Stress
         {
             connection.ReceiveAsync(messageId, CancellationToken.None, messageBufferSize: 5000).Then(r =>
             {
-                Interlocked.Add(ref _received, r.Messages.Count);
-                Interlocked.Add(ref _avgLastReceivedCount, r.Messages.Count);
+                Interlocked.Add(ref _received, r.TotalCount);
+                Interlocked.Add(ref _avgLastReceivedCount, r.TotalCount);
 
                 ReceiveLoop(connection, r.MessageId);
             });
@@ -476,6 +476,7 @@ namespace SignalR.Stress
     {
         public Task Do(int index)
         {
+            // Groups.Add(Context.ConnectionId, "one").Wait();
             Groups.Add(Context.ConnectionId, "one").Wait();
             return Clients["one"].Do(index);
         }
