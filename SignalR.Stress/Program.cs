@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Client.Hubs;
 using SignalR.Hosting.Memory;
+using SignalR.Hubs;
 using SignalR.Transports;
 
 namespace SignalR.Stress
@@ -50,15 +52,86 @@ namespace SignalR.Stress
 
         static void Main(string[] args)
         {
-            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-            ThreadPool.SetMinThreads(32, 32);
+            Debug.Listeners.Add(new ConsoleTraceListener());
+            Debug.AutoFlush = true;
 
-            RunBusTest();
-            //RunConnectionTest();
-            // RunConnectionReceiveLoopTest();
-            // RunMemoryHost();
+            while (true)
+            {
+                Console.WriteLine("==================================");
+                Console.WriteLine("BEGIN RUN");
+                Console.WriteLine("==================================");
+                StressGroups();
+                Console.WriteLine("==================================");
+                Console.WriteLine("END RUN");
+                Console.WriteLine("==================================");
+            }
+
+            //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+            //ThreadPool.SetMinThreads(32, 32);
+
+            // RunBusTest();
+            ////RunConnectionTest();
+            //// RunConnectionReceiveLoopTest();
+            //// RunMemoryHost();
 
             Console.ReadLine();
+        }
+
+        private static void Write(Stream stream, string raw)
+        {
+            var data = Encoding.Default.GetBytes(raw);
+            stream.Write(data, 0, data.Length);
+        }
+
+        public static void StressGroups()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            int max = 2;
+
+            var countDown = new CountDown(max);
+            var list = Enumerable.Range(0, max).ToList();
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateProxy("MultGroupHub");
+
+            proxy.On<int>("Do", i =>
+            {
+                lock (list)
+                {
+                    if (!list.Remove(i))
+                    {
+                        Debugger.Break();
+                    }
+                }
+
+                countDown.Dec();
+            });
+
+            try
+            {
+                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+
+                for (int i = 0; i < max; i++)
+                {
+                    proxy.Invoke("Do", i).Wait();
+                }
+
+                if (!countDown.Wait(TimeSpan.FromSeconds(10)))
+                {
+                    Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
+                    var bus = host.DependencyResolver.Resolve<INewMessageBus>();
+                    Debugger.Break();
+                }
+            }
+            finally
+            {
+                connection.Stop();
+                host.Dispose();
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
         }
 
         private static void RunConnectionTest()
@@ -396,6 +469,54 @@ namespace SignalR.Stress
         public class StressConnection : PersistentConnection
         {
 
+        }
+    }
+
+    public class MultGroupHub : Hub
+    {
+        public Task Do(int index)
+        {
+            Groups.Add(Context.ConnectionId, "one").Wait();
+            return Clients["one"].Do(index);
+        }
+    }
+
+    public class User
+    {
+        public int Index { get; set; }
+        public string Name { get; set; }
+        public string Room { get; set; }
+    }
+
+    public class CountDown
+    {
+        private int _count;
+        private ManualResetEventSlim _wh = new ManualResetEventSlim(false);
+
+        public int Count
+        {
+            get
+            {
+                return _count;
+            }
+        }
+
+        public CountDown(int count)
+        {
+            _count = count;
+        }
+
+        public void Dec()
+        {
+            if (Interlocked.Decrement(ref _count) == 0)
+            {
+                _wh.Set();
+            }
+        }
+
+        public bool Wait(TimeSpan timeout)
+        {
+            return _wh.Wait(timeout);
         }
     }
 }
