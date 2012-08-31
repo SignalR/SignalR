@@ -21,5 +21,13 @@ namespace SignalR.Stress
         public event Action<string, string> EventAdded;
 
         public event Action<string> EventRemoved;
+
+        public string Identity
+        {
+            get
+            {
+                return "Foo";
+            }
+        }
     }
 }

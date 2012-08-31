@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -117,7 +118,21 @@ namespace SignalR
             if (response.TransportData != null)
             {
                 jsonWriter.WritePropertyName("TransportData");
-                jsonWriter.WriteValue(response.TransportData);
+                jsonWriter.WriteStartObject();
+
+                object value;
+                if (response.TransportData.TryGetValue("Groups", out value))
+                {
+                    jsonWriter.WritePropertyName("Groups");
+                    jsonWriter.WriteStartArray();
+                    foreach (var group in (IEnumerable<string>)value)
+                    {
+                        jsonWriter.WriteValue(group);
+                    }
+                    jsonWriter.WriteEndArray();
+                }
+
+                jsonWriter.WriteEndObject();
             }
             
             jsonWriter.WritePropertyName("Messages");

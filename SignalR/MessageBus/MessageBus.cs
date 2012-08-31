@@ -119,15 +119,15 @@ namespace SignalR
                 cursors = Cursor.GetCursors(cursor);
             }
 
-            var subscription = new Subscription(cursors, callback, messageBufferSize);
-            var topics = new List<Topic>();
+            var subscription = new Subscription(subscriber.Identity, cursors, callback, messageBufferSize);
+            var topics = new HashSet<Topic>();
 
-            foreach (var c in cursors)
+            foreach (var key in subscriber.EventKeys)
             {
-                Topic topic = _topics.GetOrAdd(c.Key, _ => new Topic());
+                Topic topic = _topics.GetOrAdd(key, _ => new Topic());
 
                 // Set the subscription for this topic
-                subscription.SetCursorTopic(c.Key, topic);
+                subscription.SetCursorTopic(key, topic);
 
                 // Add it to the list of topics
                 topics.Add(topic);
@@ -265,8 +265,11 @@ namespace SignalR
                 }
             }
 
-            public Subscription(IEnumerable<Cursor> cursors, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
+            public string Identity { get; private set; }
+
+            public Subscription(string identity, IEnumerable<Cursor> cursors, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
             {
+                Identity = identity;
                 _cursors = new List<Cursor>(cursors);
                 _callback = callback;
                 _messageBufferSize = messageBufferSize;
@@ -481,6 +484,16 @@ namespace SignalR
             {
                 // REVIEW: Should we make this block if there's pending work
                 Interlocked.Exchange(ref _disposed, 1);
+            }
+
+            public override int GetHashCode()
+            {
+                return Identity.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Identity.Equals(((Subscription)obj).Identity);
             }
         }
 

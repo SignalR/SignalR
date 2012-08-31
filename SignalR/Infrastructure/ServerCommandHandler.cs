@@ -55,6 +55,14 @@ namespace SignalR.Infrastructure
 
         public event Action<string> EventRemoved;
 
+        public string Identity
+        {
+            get
+            {
+                return _serverIdManager.ServerId;
+            }
+        }
+
         public Task SendCommand(ServerCommand command)
         {
             // Store where the message originated from

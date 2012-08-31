@@ -15,7 +15,7 @@ namespace SignalR
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
-        private readonly HashSet<string> _groups;
+        private readonly SafeSet<string> _groups;
         private bool _disconnected;
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
@@ -33,7 +33,7 @@ namespace SignalR
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals);
-            _groups = new HashSet<string>(groups);
+            _groups = new SafeSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
         }
 
@@ -49,11 +49,19 @@ namespace SignalR
 
         public event Action<string> EventRemoved;
 
+        public string Identity
+        {
+            get
+            {
+                return _connectionId;
+            }
+        }
+
         private IEnumerable<string> Signals
         {
             get
             {
-                return _signals.Concat(_groups);
+                return _signals.Concat(_groups.GetSnapshot());
             }
         }
 
@@ -129,20 +137,31 @@ namespace SignalR
             subscription = _bus.Subscribe(this, messageId, result =>
             {
                 PersistentResponse response = GetResponse(result);
-                tcs.TrySetResult(response);
-
-                registration.Dispose();
-
-                if (subscription != null)
+                if (cancel.IsCancellationRequested || ProcessMessage(response))
                 {
-                    subscription.Dispose();
+                    tcs.TrySetResult(response);
+                    registration.Dispose();
+
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                    return TaskAsyncHelper.False;
                 }
 
-                return TaskAsyncHelper.False;
+                return TaskAsyncHelper.True;
             },
             messageBufferSize);
 
             return tcs.Task;
+        }
+
+        private static bool ProcessMessage(PersistentResponse response)
+        {
+            return response.Disconnect ||
+                   response.Aborted ||
+                   response.TimedOut ||
+                   response.Messages.Count > 0;
         }
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int messageBufferSize)
@@ -202,6 +221,7 @@ namespace SignalR
 
                         if (EventAdded != null)
                         {
+                            _groups.Add(groupData.Name);
                             EventAdded(groupData.Name, groupData.Cursor);
                         }
                     }
@@ -212,6 +232,7 @@ namespace SignalR
 
                         if (EventRemoved != null)
                         {
+                            _groups.Remove(groupData.Name);
                             EventRemoved(groupData.Name);
                         }
                     }
@@ -234,7 +255,8 @@ namespace SignalR
                 {
                     response.TransportData = new Dictionary<string, object>();
                 }
-                response.TransportData["Groups"] = _groups;
+
+                response.TransportData["Groups"] = _groups.GetSnapshot();
             }
         }
 
