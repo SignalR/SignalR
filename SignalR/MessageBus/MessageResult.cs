@@ -40,7 +40,7 @@ namespace SignalR
         /// </summary>
         /// <param name="messages">The array of messages associated with this <see cref="MessageResult"/>.</param>
         /// <param name="lastMessageId">Gets a cursor representing the caller state.</param>
-        /// <param name="count">The amount of messages populated in the messages array.</param>
+        /// <param name="totalCount">The amount of messages populated in the messages array.</param>
         public MessageResult(IList<ArraySegment<Message>> messages, string lastMessageId, int totalCount)
             : this()
         {
