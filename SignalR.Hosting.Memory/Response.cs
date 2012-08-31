@@ -57,8 +57,7 @@ namespace SignalR.Hosting.Memory
 
         public Task EndAsync()
         {
-            Interlocked.Exchange(ref _flush, () => { }).Invoke();
-            return TaskAsyncHelper.Empty;
+            return FlushAsync();
         }
 
         public void Write(ArraySegment<byte> data)
