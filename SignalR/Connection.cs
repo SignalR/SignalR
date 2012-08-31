@@ -125,27 +125,36 @@ namespace SignalR
         {
             var tcs = new TaskCompletionSource<PersistentResponse>();
             IDisposable subscription = null;
+            var wh = new ManualResetEventSlim(initialState: false);
+
 
             CancellationTokenRegistration registration = cancel.Register(() =>
             {
-                if (subscription != null)
-                {
-                    subscription.Dispose();
-                }
+                wh.Wait();
+                subscription.Dispose();
             });
+
+            PersistentResponse response = null;
 
             subscription = _bus.Subscribe(this, messageId, result =>
             {
-                PersistentResponse response = GetResponse(result);
-                if (cancel.IsCancellationRequested || ProcessMessage(response))
-                {
-                    tcs.TrySetResult(response);
-                    registration.Dispose();
+                wh.Wait();
 
-                    if (subscription != null)
-                    {
-                        subscription.Dispose();
-                    }
+                if (Interlocked.CompareExchange(ref response, GetResponse(result), null) == null)
+                {
+                    registration.Dispose();
+                    subscription.Dispose();
+                }
+
+                if (result.Terminal)
+                {
+                    // Use the terminal message id since it's the most accurate
+                    // This is important for things like manipulating groups
+                    // since the message id is only updated after processing the commands
+                    // as part of this call itself.
+                    response.MessageId = result.LastMessageId;
+                    tcs.TrySetResult(response);
+
                     return TaskAsyncHelper.False;
                 }
 
@@ -153,15 +162,10 @@ namespace SignalR
             },
             messageBufferSize);
 
-            return tcs.Task;
-        }
+            // Set this after the subscription is assigned
+            wh.Set();
 
-        private static bool ProcessMessage(PersistentResponse response)
-        {
-            return response.Disconnect ||
-                   response.Aborted ||
-                   response.TimedOut ||
-                   response.Messages.Count > 0;
+            return tcs.Task;
         }
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int messageBufferSize)

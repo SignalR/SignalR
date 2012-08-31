@@ -18,6 +18,8 @@ namespace SignalR
 
         public int TotalCount { get; private set; }
 
+        public bool Terminal { get; set; }
+
         /// <summary>
         /// Gets a cursor representing the caller state.
         /// </summary>
@@ -30,6 +32,7 @@ namespace SignalR
         public MessageResult(string lastMessageId) :
             this(_emptyList, lastMessageId, totalCount: 0)
         {
+            Terminal = true;
         }
 
         /// <summary>
