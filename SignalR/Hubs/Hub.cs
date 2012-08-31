@@ -29,7 +29,7 @@ namespace SignalR.Hubs
         public IGroupManager Groups { get; set; }
 
         /// <summary>
-        /// Disconnect handler for this hub instance.
+        /// Called when a connection disconects from this hub instance.
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task Disconnect()
@@ -38,7 +38,7 @@ namespace SignalR.Hubs
         }
 
         /// <summary>
-        /// Connection handler for this hub instance.
+        /// Called when the connection connects to this hub instance.
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task Connect()
@@ -47,7 +47,7 @@ namespace SignalR.Hubs
         }
 
         /// <summary>
-        /// Reconnect handler for this hub instance.
+        /// Called when the connection reconnects to this hub instance.
         /// </summary>
         /// <param name="groups">The groups that the client was subscribed to</param>
         /// <returns>A <see cref="Task"/></returns>
