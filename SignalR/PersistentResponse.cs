@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SignalR
 {
@@ -16,7 +16,12 @@ namespace SignalR
         /// <summary>
         /// The list of messages to be sent to the receiving connection.
         /// </summary>
-        public IList<string> Messages { get; set; }
+        public IList<ArraySegment<Message>> Messages { get; set; }
+
+        /// <summary>
+        /// The total count of the messages sent the receiving connection.
+        /// </summary>
+        public int TotalCount { get; set; }
 
         /// <summary>
         /// True if the connection receives a disconnect command.

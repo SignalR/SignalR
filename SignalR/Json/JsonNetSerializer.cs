@@ -137,12 +137,20 @@ namespace SignalR
             
             jsonWriter.WritePropertyName("Messages");
             jsonWriter.WriteStartArray();
-            for (var i = 0; i < response.Messages.Count; i++)
-            {
-                jsonWriter.WriteRawValue(response.Messages[i]);
-            }
-            jsonWriter.WriteEndArray();
 
+            for (int i = 0; i < response.Messages.Count; i++)
+            {
+                for (int j = response.Messages[i].Offset; j < response.Messages[i].Offset + response.Messages[i].Count; j++)
+                {
+                    Message message = response.Messages[i].Array[j];
+                    if (!SignalCommand.IsCommand(message))
+                    {
+                        jsonWriter.WriteRawValue(message.Value);
+                    }
+                }
+            }
+
+            jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
         }
     }

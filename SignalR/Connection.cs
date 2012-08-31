@@ -127,7 +127,6 @@ namespace SignalR
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
 
-
             CancellationTokenRegistration registration = cancel.Register(() =>
             {
                 wh.Wait();
@@ -176,14 +175,15 @@ namespace SignalR
         private PersistentResponse GetResponse(MessageResult result)
         {
             // Do a single sweep through the results to process commands and extract values
-            var messageValues = ProcessResults(result);
+            ProcessResults(result);
 
             var response = new PersistentResponse
             {
                 MessageId = result.LastMessageId,
-                Messages = messageValues,
+                Messages = result.Messages,
                 Disconnect = _disconnected,
-                Aborted = _aborted
+                Aborted = _aborted,
+                TotalCount = result.TotalCount
             };
 
             PopulateResponseState(response);
@@ -191,10 +191,8 @@ namespace SignalR
             return response;
         }
 
-        private List<string> ProcessResults(MessageResult result)
+        private void ProcessResults(MessageResult result)
         {
-            var messageValues = new List<string>(result.TotalCount);
-
             for (int i = 0; i < result.Messages.Count; i++)
             {
                 for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
@@ -205,14 +203,8 @@ namespace SignalR
                         var command = _serializer.Parse<SignalCommand>(message.Value);
                         ProcessCommand(command);
                     }
-                    else
-                    {
-                        messageValues.Add(message.Value);
-                    }
                 }
             }
-
-            return messageValues;
         }
 
         private void ProcessCommand(SignalCommand command)
