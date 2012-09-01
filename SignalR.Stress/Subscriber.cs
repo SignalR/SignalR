@@ -7,8 +7,9 @@ namespace SignalR.Stress
 {
     public class Subscriber : ISubscriber
     {
-        public Subscriber(IEnumerable<string> eventKeys)
+        public Subscriber(string id, IEnumerable<string> eventKeys)
         {
+            Identity = id;
             EventKeys = eventKeys;
         }
 
@@ -24,10 +25,8 @@ namespace SignalR.Stress
 
         public string Identity
         {
-            get
-            {
-                return "Foo";
-            }
+            get;
+            private set;
         }
     }
 }

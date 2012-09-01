@@ -52,24 +52,24 @@ namespace SignalR.Stress
 
         static void Main(string[] args)
         {
-            Debug.Listeners.Add(new ConsoleTraceListener());
-            Debug.AutoFlush = true;
+            //Debug.Listeners.Add(new ConsoleTraceListener());
+            //Debug.AutoFlush = true;
 
-            while (true)
-            {
-                Console.WriteLine("==================================");
-                Console.WriteLine("BEGIN RUN");
-                Console.WriteLine("==================================");
-                StressGroups();
-                Console.WriteLine("==================================");
-                Console.WriteLine("END RUN");
-                Console.WriteLine("==================================");
-            }
+            //while (true)
+            //{
+            //    Console.WriteLine("==================================");
+            //    Console.WriteLine("BEGIN RUN");
+            //    Console.WriteLine("==================================");
+            //    StressGroups();
+            //    Console.WriteLine("==================================");
+            //    Console.WriteLine("END RUN");
+            //    Console.WriteLine("==================================");
+            //}
 
             //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             //ThreadPool.SetMinThreads(32, 32);
 
-            // RunBusTest();
+            RunBusTest();
             //RunConnectionTest();
             //RunConnectionReceiveLoopTest();
             // RunMemoryHost();
@@ -109,7 +109,7 @@ namespace SignalR.Stress
 
             try
             {
-                connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
+                connection.Start(host).Wait();
 
                 for (int i = 0; i < max; i++)
                 {
@@ -278,7 +278,7 @@ namespace SignalR.Stress
 
             for (int i = 0; i < _clients; i++)
             {
-                var subscriber = new Subscriber(new[] { "a", "b", "c" });
+                var subscriber = new Subscriber(i.ToString(), new[] { "a", "b", "c" });
                 ThreadPool.QueueUserWorkItem(_ => StartClientLoop(bus, subscriber));
             }
 
