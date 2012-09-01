@@ -47,18 +47,18 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Gate.Sources.0.16\AppBuilderInlineExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\AppBuilderMapExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\DictionaryExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Headers.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Mapping\MapBuilder.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Mapping\UrlMapper.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\OwinConstants.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Request.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Response.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Utils\Net40Extensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Utils\ParamDictionary.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.16\Utils\ReasonPhrases.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\AppBuilderInlineExtensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\AppBuilderMapExtensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\DictionaryExtensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Headers.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Mapping\MapBuilder.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Mapping\UrlMapper.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\OwinConstants.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Request.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Response.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Utils\Net40Extensions.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Utils\ParamDictionary.cs" />
+    <Compile Include="App_Packages\Gate.Sources.0.17\Utils\ReasonPhrases.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
     <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
     <Compile Include="Handlers\CallHandler.cs" />

@@ -26,7 +26,7 @@ namespace SignalR.Server.Handlers
             var res = new Response(env);
 
             var serverRequest = new ServerRequest(req);
-            var serverResponse = new ServerResponse(res);
+            var serverResponse = new ServerResponse(res, req.CancellationToken);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
             var origin = req.Headers.GetHeaders("Origin");
