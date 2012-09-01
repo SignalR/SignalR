@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Gate.Utils;
-using Owin;
 using System.Text;
 using System.IO;
 using System.Threading;
@@ -14,37 +13,13 @@ namespace Gate
     // A helper class for creating, modifying, or consuming response data in the Environment dictionary.
     internal class Response
     {
-        private static readonly Encoding defaultEncoding = Encoding.UTF8;
-
-        private IDictionary<string, object> environment;
-
-        private CancellationToken completeToken;
-
-        private TaskCompletionSource<object> responseCompletion;
-
-        public Response(IDictionary<string, object> environment, CancellationToken completed = default(CancellationToken))
+        public Response(IDictionary<string, object> environment)
         {
-            this.environment = environment;
-
-            this.completeToken = completed;
-            this.Encoding = defaultEncoding;
-
-            this.responseCompletion = new TaskCompletionSource<object>();
-        }
-        
-        internal Func<Task> Next { get; set; }
-
-        public void Skip()
-        {
-            throw new NotImplementedException();
-            // Next.Invoke().CopyResultToCompletionSource(callCompletionSource);
+            this.Environment = environment;
+            this.Encoding = Encoding.UTF8;
         }
 
-        public IDictionary<string, object> Environment
-        {
-            get { return environment; }
-            set { environment = value; }
-        }
+        public IDictionary<string, object> Environment { get; set; }
 
         public IDictionary<string, string[]> Headers
         {
@@ -137,7 +112,7 @@ namespace Gate
             var setCookieValue = string.Concat(
                 Uri.EscapeDataString(key),
                 "=",
-                Uri.EscapeDataString(cookie.Value ?? ""), //TODO: concat complex value type with '&'?
+                Uri.EscapeDataString(cookie.Value ?? ""),
                 !domainHasValue ? null : "; domain=",
                 !domainHasValue ? null : cookie.Domain,
                 !pathHasValue ? null : "; path=",
@@ -236,9 +211,6 @@ namespace Gate
 
         public Encoding Encoding { get; set; }
 
-        // TODO:
-        // public bool Buffer { get; set; }
-
         public Stream OutputStream
         {
             get { return Environment.Get<Stream>(OwinConstants.ResponseBody); }
@@ -247,7 +219,7 @@ namespace Gate
 
         public void Write(string text)
         {
-            var data = (Encoding ?? defaultEncoding).GetBytes(text);
+            var data = (Encoding ?? Encoding.UTF8).GetBytes(text);
             Write(data);
         }
 
@@ -258,74 +230,40 @@ namespace Gate
 
         public void Write(byte[] buffer)
         {
-            completeToken.ThrowIfCancellationRequested();
             OutputStream.Write(buffer, 0, buffer.Length);
         }
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            completeToken.ThrowIfCancellationRequested();
             OutputStream.Write(buffer, offset, count);
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            completeToken.ThrowIfCancellationRequested();
             OutputStream.Write(data.Array, data.Offset, data.Count);
         }
 
-        public Task WriteAsync(byte[] buffer, int offset, int count)
+        public Task WriteAsync(string text, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return OutputStream.WriteAsync(buffer, offset, count, completeToken);
+            var data = (Encoding ?? Encoding.UTF8).GetBytes(text);
+            return WriteAsync(data,cancellationToken);
         }
 
-        public Task WriteAsync(ArraySegment<byte> data)
+        public Task WriteAsync(byte[] buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return OutputStream.WriteAsync(data.Array, data.Offset, data.Count, completeToken);
+            TaskHelpers.Canceled();
+            return OutputStream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
         }
 
-        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default(CancellationToken))
         {
-
-            return OutputStream.BeginWrite(buffer, offset, count, callback, state);
+            TaskHelpers.Canceled();
+            return OutputStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-        public void EndWrite(IAsyncResult result)
+        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
-            OutputStream.EndWrite(result);
-        }
-
-        public void Flush()
-        {
-            OutputStream.Flush();
-        }
-
-        public Task Task
-        {
-            get { return responseCompletion.Task; }
-        }
-
-        public void End()
-        {
-            EndAsync();
-        }
-
-        // We are completely done with the response and body.
-        public Task EndAsync()
-        {
-            responseCompletion.TrySetResult(null);
-            return Task;
-        }
-
-        public void End(Exception error)
-        {
-            EndAsync(error);
-        }
-
-        public Task EndAsync(Exception error)
-        {
-            responseCompletion.TrySetException(error);
-            return Task;
+            return OutputStream.WriteAsync(data.Array, data.Offset, data.Count, cancellationToken);
         }
     }
 }

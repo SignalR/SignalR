@@ -19,12 +19,7 @@ namespace SignalR.Server
         {
             get
             {
-                int port;
-                if (!int.TryParse(_req.Port, out port) || port == 0)
-                {
-                    port = _req.Scheme == "https" ? 443 : 80;
-                }
-                var uriBuilder = new UriBuilder(_req.Scheme, _req.Host, port, _req.PathBase + _req.Path);
+                var uriBuilder = new UriBuilder(_req.Scheme, _req.Host, _req.Port, _req.PathBase + _req.Path);
                 if (!string.IsNullOrEmpty(_req.QueryString))
                 {
                     uriBuilder.Query = _req.QueryString;

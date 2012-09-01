@@ -13,7 +13,7 @@
         public const string RequestQueryString = "owin.RequestQueryString";
         public const string RequestProtocol = "owin.RequestProtocol";
 
-        public const string CallCompleted = "owin.CallCompleted";
+        public const string CallCancelled = "owin.CallCancelled";
 
         public const string ResponseStatusCode = "owin.ResponseStatusCode";
         public const string ResponseReasonPhrase = "owin.ResponseReasonPhrase";
