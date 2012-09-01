@@ -11,7 +11,7 @@ namespace SignalR.Transports
 
         // This should be ok to do since long polling request never hang around too long
         // so we won't bloat memory
-        private const int MessageBufferSize = 5000;
+        private const int MaxMessages = 5000;
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
@@ -232,8 +232,8 @@ namespace SignalR.Transports
 
             // ReceiveAsync() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
-                              connection.ReceiveAsync(null, ConnectionEndToken, MessageBufferSize) :
-                              connection.ReceiveAsync(MessageId, ConnectionEndToken, MessageBufferSize);
+                              connection.ReceiveAsync(null, ConnectionEndToken, MaxMessages) :
+                              connection.ReceiveAsync(MessageId, ConnectionEndToken, MaxMessages);
 
             if (postReceive != null)
             {

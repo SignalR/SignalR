@@ -75,7 +75,7 @@ namespace SignalR.Infrastructure
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, messageBufferSize: MessageBufferSize);
+            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MessageBufferSize);
         }
 
         private Task<bool> HandleServerCommands(MessageResult result)

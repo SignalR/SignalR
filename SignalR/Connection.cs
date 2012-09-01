@@ -121,7 +121,7 @@ namespace SignalR
             return command;
         }
 
-        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int messageBufferSize)
+        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int maxMessages)
         {
             var tcs = new TaskCompletionSource<PersistentResponse>();
             IDisposable subscription = null;
@@ -159,7 +159,7 @@ namespace SignalR
 
                 return TaskAsyncHelper.True;
             },
-            messageBufferSize);
+            maxMessages);
 
             // Set this after the subscription is assigned
             wh.Set();
@@ -167,9 +167,9 @@ namespace SignalR
             return tcs.Task;
         }
 
-        public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int messageBufferSize)
+        public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
         {
-            return _bus.Subscribe(this, messageId, result => callback(GetResponse(result)), messageBufferSize);
+            return _bus.Subscribe(this, messageId, result => callback(GetResponse(result)), maxMessages);
         }
 
         private PersistentResponse GetResponse(MessageResult result)

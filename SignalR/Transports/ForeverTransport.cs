@@ -10,7 +10,7 @@ namespace SignalR.Transports
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
 
-        private const int MessageBufferSize = 10;
+        private const int MaxMessages = 10;
 
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
@@ -212,17 +212,14 @@ namespace SignalR.Transports
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action endRequest)
         {
             IDisposable subscription = null;
+            var wh = new ManualResetEventSlim(initialState: false);
 
             // End the request if the connection end token is triggered
-            ConnectionEndToken.Register(() =>
+            CancellationTokenRegistration registration = ConnectionEndToken.Register(() =>
             {
-                if (subscription != null)
-                {
-                    subscription.Dispose();
-                }
+                wh.Wait();
+                subscription.Dispose();
             });
-
-            var wh = new ManualResetEventSlim(initialState: false);
 
             subscription = connection.Receive(LastMessageId, response =>
             {
@@ -243,6 +240,8 @@ namespace SignalR.Transports
                     }
 
                     endRequest();
+                    registration.Dispose();
+
                     return TaskAsyncHelper.False;
                 }
                 else
@@ -250,7 +249,7 @@ namespace SignalR.Transports
                     return Send(response).Then(() => TaskAsyncHelper.True);
                 }
             },
-            MessageBufferSize);
+            MaxMessages);
 
             if (postReceive != null)
             {
