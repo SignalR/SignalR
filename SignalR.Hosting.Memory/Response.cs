@@ -239,8 +239,6 @@ namespace SignalR.Hosting.Memory
 
             public override void Close()
             {
-                Flush();
-
                 _cancellationTokenSource.Cancel(throwOnFirstException: false);
 
                 if (_onClosed != null)
