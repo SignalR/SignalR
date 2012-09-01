@@ -155,7 +155,7 @@ namespace SignalR.Stress
                         Interlocked.Add(ref _avgLastReceivedCount, r.TotalCount);
                         return TaskAsyncHelper.True;
                     },
-                    messageBufferSize: 10);
+                    maxMessages: 10);
 
                 }, i);
             }
@@ -259,7 +259,7 @@ namespace SignalR.Stress
 
         private static void ReceiveLoop(ITransportConnection connection, string messageId)
         {
-            connection.ReceiveAsync(messageId, CancellationToken.None, messageBufferSize: 5000).Then(r =>
+            connection.ReceiveAsync(messageId, CancellationToken.None, maxMessages: 5000).Then(r =>
             {
                 Interlocked.Add(ref _received, r.TotalCount);
                 Interlocked.Add(ref _avgLastReceivedCount, r.TotalCount);
