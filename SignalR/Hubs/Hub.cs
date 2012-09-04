@@ -8,6 +8,12 @@ namespace SignalR.Hubs
     /// </summary>
     public abstract class Hub : IHub, IConnected, IDisconnect
     {
+        protected Hub()
+        {
+            Clients = new NullClientProxy();
+            Caller = new NullClientProxy();
+        }
+
         /// <summary>
         /// A dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>

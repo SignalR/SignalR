@@ -61,6 +61,7 @@
     <Compile Include="CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
+    <Compile Include="Hubs\NullClientProxy.cs" />
     <Compile Include="Hubs\HubContext.cs" />
     <Compile Include="Hubs\HubRequest.cs" />
     <Compile Include="Hubs\HubRequestParser.cs" />
