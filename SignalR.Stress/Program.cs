@@ -69,10 +69,10 @@ namespace SignalR.Stress
             //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             //ThreadPool.SetMinThreads(32, 32);
 
-            RunBusTest();
+            // RunBusTest();
             //RunConnectionTest();
             //RunConnectionReceiveLoopTest();
-            // RunMemoryHost();
+            RunMemoryHost();
 
             Console.ReadLine();
         }
@@ -194,8 +194,8 @@ namespace SignalR.Stress
                     Interlocked.Increment(ref _clientsRunning);
                     string connectionId = state.ToString();
 
-                    // LongPollingLoop(host, connectionId);
-                    ProcessRequest(host, "serverSentEvents", connectionId);
+                    LongPollingLoop(host, connectionId);
+                    // ProcessRequest(host, "serverSentEvents", connectionId);
                 }, i);
             }
 

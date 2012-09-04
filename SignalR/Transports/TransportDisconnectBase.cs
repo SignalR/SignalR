@@ -190,6 +190,10 @@ namespace SignalR.Transports
         public void End()
         {
             _endTokenSource.Cancel();
+            _connectionEndToken.Dispose();
+            _timeoutTokenSource.Dispose();
+            _disconnectedToken.Dispose();
+            _endTokenSource.Dispose();
         }
 
         public void CompleteRequest()
