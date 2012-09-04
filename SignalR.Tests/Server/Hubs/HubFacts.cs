@@ -363,6 +363,27 @@ namespace SignalR.Tests
             connection.Stop();
         }
 
+        [Fact]
+        public void UsingHubAfterManualCreationThrows()
+        {
+            var hub = new SomeHub();
+            Assert.Throws<InvalidOperationException>(() => hub.AllFoo());
+            Assert.Throws<InvalidOperationException>(() => hub.OneFoo());
+        }
+
+        public class SomeHub : Hub
+        {
+            public void AllFoo()
+            {
+                Clients.foo();
+            }
+
+            public void OneFoo()
+            {
+                Caller.foo();
+            }
+        }
+
         public class CustomQueryHub : Hub
         {
             public string GetQueryString(string key)
