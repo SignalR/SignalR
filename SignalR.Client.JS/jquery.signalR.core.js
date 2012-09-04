@@ -211,7 +211,7 @@
                         }
                     }
 
-                    // If we're using jsonp thn just change to longpolling
+                    // If we're using jsonp then just change to longpolling
                     if (config.jsonp === true) {
                         config.transport = "longPolling";
                     }
