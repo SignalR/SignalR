@@ -7,7 +7,15 @@ namespace SignalR.Client.Infrastructure
     {
         internal static bool IsRequestAborted(Exception exception)
         {
-            var webException = exception.Unwrap() as WebException;
+            exception = exception.Unwrap();
+
+            // Support an alternative way to propagate aborted requests
+            if (exception is OperationCanceledException)
+            {
+                return true;
+            }
+
+            var webException = exception as WebException;
             return (webException != null && webException.Status == WebExceptionStatus.RequestCanceled);
         }
     }
