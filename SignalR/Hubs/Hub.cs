@@ -10,8 +10,8 @@ namespace SignalR.Hubs
     {
         protected Hub()
         {
-            this.Clients = new NullClientProxy();
-            this.Caller = new NullClientProxy();
+            Clients = new NullClientProxy();
+            Caller = new NullClientProxy();
         }
 
         /// <summary>
