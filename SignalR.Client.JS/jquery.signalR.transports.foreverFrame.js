@@ -117,7 +117,7 @@
                 if (connection.frame.stop) {
                     connection.frame.stop();
                 } else {
-                    cw = connection.frame.contentWindow || connection.frame.contentDocument;
+                    cw = connection.frame.contentWindow.parent || connection.frame.contentDocument.parent;
                     if (cw.document && cw.document.execCommand) {
                         cw.document.execCommand("Stop");
                     }
