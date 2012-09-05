@@ -213,6 +213,9 @@ namespace SignalR.Transports
 
                     // Fire disconnect on the connection
                     metadata.Connection.Disconnect();
+
+                    // End the connection
+                    metadata.Connection.End();
                 }
             }
             catch (Exception ex)
