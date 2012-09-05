@@ -28,7 +28,7 @@ namespace SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
 
                 connection.Stop();
             }
@@ -49,7 +49,7 @@ namespace SignalR.Tests
                 var transport = new Client.Transports.LongPollingTransport(host);
                 connection.Start(transport).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
 
                 connection.Stop();
             }
@@ -70,7 +70,7 @@ namespace SignalR.Tests
                 connection.Start(host).Wait();
                 connection.Send("").Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
 
                 connection.Stop();
 
@@ -126,7 +126,7 @@ namespace SignalR.Tests
                 var connection = new Client.Connection("http://foo/endpoint");
                 connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(10));
 
                 connection.Stop();
 
@@ -147,7 +147,7 @@ namespace SignalR.Tests
                 var connection = new Client.Connection("http://foo/endpoint");
                 connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(10));
 
                 connection.Stop();
 
@@ -190,7 +190,7 @@ namespace SignalR.Tests
                 // Send a message
                 connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
 
                 connection.Stop();
 

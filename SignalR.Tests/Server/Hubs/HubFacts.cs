@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using SignalR.Client.Hubs;
 using SignalR.Hosting.Memory;
 using SignalR.Hubs;
+using SignalR.Tests.Infrastructure;
 using Xunit;
 
 namespace SignalR.Tests
@@ -298,19 +299,13 @@ namespace SignalR.Tests
             host.MapHubs();
             int max = 100;
 
-            var countDown = new CountDown(max);
-            var list = Enumerable.Range(0, max).ToList();
+            var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
             var proxy = connection.CreateProxy("MultGroupHub");
 
             proxy.On<User>("onRoomJoin", user =>
             {
-                lock (list)
-                {
-                    Assert.True(list.Remove(user.Index));
-                }
-
-                countDown.Dec();
+                Assert.True(countDown.Mark(user.Index));
             });
 
             connection.Start(host).Wait();
@@ -320,7 +315,7 @@ namespace SignalR.Tests
                 proxy.Invoke("login", new User { Index = i, Name = "tester", Room = "test" + i }).Wait();
             }
 
-            Assert.True(countDown.Wait(TimeSpan.FromSeconds(10)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", list.Select(i => i.ToString())));
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(10)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
 
             connection.Stop();
         }

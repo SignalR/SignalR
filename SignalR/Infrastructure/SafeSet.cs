@@ -34,10 +34,10 @@ namespace SignalR.Infrastructure
             _items.TryAdd(item, null);
         }
 
-        public void Remove(T item)
+        public bool Remove(T item)
         {
             object _;
-            _items.TryRemove(item, out _);
+            return _items.TryRemove(item, out _);
         }
 
         public bool Any()
