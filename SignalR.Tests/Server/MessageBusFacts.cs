@@ -20,6 +20,8 @@ namespace SignalR.Tests.Server
 
             try
             {
+                bus.Publish("test", "key", "1").Wait();
+
                 subscription = bus.Subscribe(subscriber, null, result =>
                 {
                     if (!result.Terminal)
