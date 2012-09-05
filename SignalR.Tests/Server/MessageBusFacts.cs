@@ -122,7 +122,7 @@ namespace SignalR.Tests.Server
                         {
                             Assert.True(cdKey.Mark(n));
                         }
-                        else 
+                        else
                         {
                             Assert.True(cdKey2.Mark(n));
                         }
@@ -136,7 +136,7 @@ namespace SignalR.Tests.Server
                 bus.Publish("test", "key2", "10");
 
                 Assert.True(cdKey.Wait(TimeSpan.FromSeconds(5)));
-                Assert.True(cdKey2.Wait(TimeSpan.Zero));
+                Assert.True(cdKey2.Wait(TimeSpan.FromSeconds(5)));
             }
             finally
             {
