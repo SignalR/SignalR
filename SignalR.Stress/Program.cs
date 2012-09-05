@@ -194,8 +194,8 @@ namespace SignalR.Stress
                     Interlocked.Increment(ref _clientsRunning);
                     string connectionId = state.ToString();
 
-                    LongPollingLoop(host, connectionId);
-                    // ProcessRequest(host, "serverSentEvents", connectionId);
+                    //LongPollingLoop(host, connectionId);
+                    ProcessRequest(host, "serverSentEvents", connectionId);
                 }, i);
             }
 
