@@ -1,4 +1,6 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
+using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
@@ -6,8 +8,8 @@ namespace SignalR.Hubs
     {
         private readonly TrackingDictionary _state;
 
-        public StatefulSignalProxy(IConnection connection, string signal, string hubName, TrackingDictionary state)
-            : base(connection, signal, hubName)
+        public StatefulSignalProxy(Func<string, ClientHubInvocation, Task> send, string signal, string hubName, TrackingDictionary state)
+            : base(send, signal, hubName)
         {
             _state = state;
         }
@@ -23,14 +25,15 @@ namespace SignalR.Hubs
             result = _state[binder.Name];
             return true;
         }
-        
-        protected override object GetInvocationData(string method, object[] args)
+
+        protected override ClientHubInvocation GetInvocationData(string method, object[] args)
         {
-            return new
+            return new ClientHubInvocation
             {
                 Hub = _hubName,
                 Method = method,
                 Args = args,
+                GroupOrConnectionId = _signal,
                 State = _state.GetChanges()
             };
         }

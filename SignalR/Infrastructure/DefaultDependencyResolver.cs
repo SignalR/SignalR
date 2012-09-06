@@ -83,6 +83,11 @@ namespace SignalR
 
             var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
             Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
+
+            // Setup the default hub pipeline
+            var dispatcher = new Lazy<IHubPipeline>(() => new HubPipeline());
+            Register(typeof(IHubPipeline), () => dispatcher.Value);
+            Register(typeof(IHubPipelineInvoker), () => dispatcher.Value);
         }
 
         public virtual object GetService(Type serviceType)

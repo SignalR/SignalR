@@ -19,6 +19,7 @@ namespace SignalR.Hubs
         private IHubManager _manager;
         private IHubRequestParser _requestParser;
         private IParameterResolver _binder;
+        private IHubPipelineInvoker _pipelineInvoker;
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private bool _isDebuggingEnabled;
         private PerformanceCounter _allErrorsTotalCounter;
@@ -52,6 +53,7 @@ namespace SignalR.Hubs
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
+            _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
 
             var counters = resolver.Resolve<IPerformanceCounterWriter>();
             _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
@@ -93,58 +95,30 @@ namespace SignalR.Hubs
             var state = new TrackingDictionary(hubRequest.State);
             var hub = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
 
-            Task resultTask;
+            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hub);
+        }
 
-            try
-            {
-                // Invoke the method
-                object result = methodDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(methodDescriptor, parameterValues));
-                Type returnType = result != null ? result.GetType() : methodDescriptor.ReturnType;
+        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, IHub hub)
+        {
 
-                if (typeof(Task).IsAssignableFrom(returnType))
-                {
-                    var task = (Task)result;
-                    if (!returnType.IsGenericType)
-                    {
-                        return task.ContinueWith(t => ProcessResponse(state, null, hubRequest, t.Exception))
+            var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+            var context = new HubInvokerContext(hub, state, methodDescriptor, args);
+
+            // Invoke the pipeline
+            return _pipelineInvoker.Invoke(context)
+                                   .ContinueWith(task =>
+                                   {
+                                       if (task.IsFaulted)
+                                       {
+                                           return ProcessResponse(state, null, hubRequest, task.Exception);
+                                       }
+                                       else
+                                       {
+                                           return ProcessResponse(state, task.Result, hubRequest, null);
+                                       }
+                                   })
                                    .FastUnwrap();
-                    }
-                    else
-                    {
-                        // Get the <T> in Task<T>
-                        Type resultType = returnType.GetGenericArguments().Single();
 
-                        // Get the correct ContinueWith overload
-                        var continueWith = TaskAsyncHelper.GetContinueWith(task.GetType());
-
-                        var taskParameter = Expression.Parameter(continueWith.Type);
-                        var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
-
-                        var body = Expression.Call(Expression.Constant(this),
-                                                   processResultMethod,
-                                                   Expression.Constant(state),
-                                                   Expression.Constant(hubRequest),
-                                                   taskParameter);
-
-                        var lambda = Expression.Lambda(body, taskParameter);
-
-                        var call = Expression.Call(Expression.Constant(task, continueWith.Type), continueWith.Method, lambda);
-                        Func<Task<Task>> continueWithMethod = Expression.Lambda<Func<Task<Task>>>(call).Compile();
-                        return continueWithMethod.Invoke().FastUnwrap();
-                    }
-                }
-                else
-                {
-                    resultTask = ProcessResponse(state, result, hubRequest, null);
-                }
-            }
-            catch (TargetInvocationException e)
-            {
-                resultTask = ProcessResponse(state, null, hubRequest, e);
-            }
-
-            return resultTask.Then(() => base.OnReceivedAsync(request, connectionId, data))
-                             .Catch();
         }
 
         public override Task ProcessRequestAsync(HostContext context)
@@ -161,14 +135,104 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
+        internal static Task Connect(IHub hub)
+        {
+            return ((IConnected)hub).Connect();
+        }
+
+        internal static Task Reconnect(IHub hub, IEnumerable<string> groups)
+        {
+            return ((IConnected)hub).Reconnect(groups);
+        }
+
+        internal static Task Disconnect(IHub hub)
+        {
+            return ((IDisconnect)hub).Disconnect();
+        }
+
+        internal static Task<object> Incoming(IHubIncomingInvokerContext context)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            try
+            {
+                var result = context.MethodDescriptor.Invoker.Invoke(context.Hub, context.Args);
+                Type returnType = context.MethodDescriptor.ReturnType;
+
+                if (typeof(Task).IsAssignableFrom(returnType))
+                {
+                    var task = (Task)result;
+                    if (!returnType.IsGenericType)
+                    {
+                        task.ContinueWith(tcs);
+                    }
+                    else
+                    {
+                        // Get the <T> in Task<T>
+                        Type resultType = returnType.GetGenericArguments().Single();
+
+                        Type genericTaskType = typeof(Task<>).MakeGenericType(resultType);
+
+                        // Get the correct ContinueWith overload
+                        var parameter = Expression.Parameter(typeof(object));
+
+                        // TODO: Cache this whole thing
+                        var continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static)
+                                                                      .MakeGenericMethod(resultType);
+
+                        Expression body = Expression.Call(continueWithMethod,
+                                                          Expression.Convert(parameter, genericTaskType),
+                                                          Expression.Constant(tcs));
+
+                        var continueWithInvoker = Expression.Lambda<Action<object>>(body, parameter).Compile();
+                        continueWithInvoker.Invoke(result);
+                    }
+                }
+                else
+                {
+                    tcs.TrySetResult(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+
+            return tcs.Task;
+        }
+
+        private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.TrySetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else
+                {
+                    tcs.TrySetResult(t.Result);
+                }
+            });
+        }
+
+        internal static Task Outgoing(IHubOutgoingInvokerContext context)
+        {
+            return context.Connection.Send(context.Signal, context.Invocation);
+        }
+
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Connect());
+            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => _pipelineInvoker.Connect(hub));
         }
 
         protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Reconnect(groups));
+            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => _pipelineInvoker.Reconnect(hub, groups));
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
@@ -188,14 +252,14 @@ namespace SignalR.Hubs
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => hub.Disconnect());
+            return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => _pipelineInvoker.Disconnect(hub));
         }
 
-        private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<T, Task> action) where T : class
+        private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<IHub, Task> action) where T : class
         {
             var operations = GetHubsImplementingInterface(typeof(T))
                 .Select(hub => CreateHub(request, hub, connectionId))
-                .OfType<T>()
+                .Where(hub => hub != null)
                 .Select(instance => action(instance).Catch().OrEmpty())
                 .ToList();
 
@@ -234,9 +298,12 @@ namespace SignalR.Hubs
                 if (hub != null)
                 {
                     state = state ?? new TrackingDictionary();
+
+                    Func<string, ClientHubInvocation, Task> send = (signal, value) => _pipelineInvoker.Send(new HubOutgoingInvokerContext(Connection, signal, value));
+
                     hub.Context = new HubCallerContext(request, connectionId);
-                    hub.Caller = new StatefulSignalProxy(Connection, connectionId, descriptor.Name, state);
-                    hub.Clients = new ClientProxy(Connection, descriptor.Name);
+                    hub.Caller = new StatefulSignalProxy(send, connectionId, descriptor.Name, state);
+                    hub.Clients = new ClientProxy(send, descriptor.Name);
                     hub.Groups = new GroupManager(Connection, descriptor.Name);
                 }
 

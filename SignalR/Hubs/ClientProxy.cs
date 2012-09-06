@@ -1,16 +1,17 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
     public class ClientProxy : DynamicObject, IClientProxy
     {
-        private readonly IConnection _connection;
+        private readonly Func<string, ClientHubInvocation, Task> _send;
         private readonly string _hubName;
 
-        public ClientProxy(IConnection connection, string hubName)
+        public ClientProxy(Func<string, ClientHubInvocation, Task> send, string hubName)
         {
-            _connection = connection;
+            _send = send;
             _hubName = hubName;
         }
 
@@ -18,7 +19,7 @@ namespace SignalR.Hubs
         {
             get
             {
-                return new SignalProxy(_connection, key, _hubName);
+                return new SignalProxy(_send, key, _hubName);
             }
         }
 
@@ -36,14 +37,14 @@ namespace SignalR.Hubs
 
         public Task Invoke(string method, params object[] args)
         {
-            var invocation = new
+            var invocation = new ClientHubInvocation
             {
                 Hub = _hubName,
                 Method = method,
                 Args = args
             };
 
-            return _connection.Send(_hubName, invocation);
+            return _send(_hubName, invocation);
         }
     }
 }

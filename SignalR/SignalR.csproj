@@ -63,7 +63,13 @@
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
     <Compile Include="Hubs\NullClientProxy.cs" />
+    <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />
+    <Compile Include="Hubs\ClientHubInvocation.cs" />
     <Compile Include="Hubs\HubContext.cs" />
+    <Compile Include="Hubs\Pipeline\HubPipelineModule.cs" />
+    <Compile Include="Hubs\Pipeline\IHubOutgoingInvokerContext.cs" />
+    <Compile Include="Hubs\Pipeline\IHubPipelineInvoker.cs" />
+    <Compile Include="Hubs\Pipeline\HubInvokerContext.cs" />
     <Compile Include="Hubs\HubRequest.cs" />
     <Compile Include="Hubs\HubRequestParser.cs" />
     <Compile Include="Hubs\HubResponse.cs" />
@@ -72,6 +78,10 @@
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="IAckHandler.cs" />
+    <Compile Include="Hubs\Pipeline\HubPipeline.cs" />
+    <Compile Include="Hubs\Pipeline\IHubIncomingInvokerContext.cs" />
+    <Compile Include="Hubs\Pipeline\IHubPipeline.cs" />
+    <Compile Include="Hubs\Pipeline\IHubPipelineModule.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\IPerformanceCounterWriter.cs" />
     <Compile Include="Infrastructure\PerformanceCounterExtensions.cs" />

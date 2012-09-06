@@ -1,4 +1,5 @@
 ﻿using System;
+using SignalR.Hubs;
 
 namespace SignalR
 {
@@ -44,6 +45,17 @@ namespace SignalR
             get
             {
                 return DependencyResolver.Resolve<IConnectionManager>();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static IHubPipeline HubPipeline
+        {
+            get
+            {
+                return DependencyResolver.Resolve<IHubPipeline>();
             }
         }
     }

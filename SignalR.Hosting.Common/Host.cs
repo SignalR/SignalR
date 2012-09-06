@@ -1,4 +1,6 @@
-﻿namespace SignalR.Hosting.Common
+﻿using SignalR.Hubs;
+
+namespace SignalR.Hosting.Common
 {
     public class Host
     {
@@ -39,6 +41,17 @@
             get
             {
                 return DependencyResolver.Resolve<IConfigurationManager>();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IHubPipeline HubPipeline
+        {
+            get
+            {
+                return DependencyResolver.Resolve<IHubPipeline>();
             }
         }
     }
