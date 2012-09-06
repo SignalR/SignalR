@@ -206,7 +206,6 @@ namespace SignalR
         /// <returns>A <see cref="Task"/> that completes when the connect operation is complete.</returns>
         protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            OnClientConnected(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
@@ -231,7 +230,6 @@ namespace SignalR
         /// <returns>A <see cref="Task"/> that completes when the receive operation is complete.</returns>
         protected virtual Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
-            OnReceiving();
             return TaskAsyncHelper.Empty;
         }
 
@@ -242,7 +240,6 @@ namespace SignalR
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
         protected virtual Task OnDisconnectAsync(string connectionId)
         {
-            OnClientDisconnected(connectionId);
             return TaskAsyncHelper.Empty;
         }
 
@@ -282,30 +279,6 @@ namespace SignalR
         private ITransport GetTransport(HostContext context)
         {
             return _transportManager.GetTransport(context);
-        }
-
-        private static void OnReceiving()
-        {
-            if (Receiving != null)
-            {
-                Receiving();
-            }
-        }
-
-        private static void OnClientConnected(string id)
-        {
-            if (Connected != null)
-            {
-                Connected(id);
-            }
-        }
-
-        private static void OnClientDisconnected(string id)
-        {
-            if (Disconnected != null)
-            {
-                Disconnected(id);
-            }
         }
     }
 }
