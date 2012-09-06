@@ -43,7 +43,7 @@
             this.state = {};
             this.connection = connection;
             this.hubName = hubName;
-            this.subscribed = false;
+            this.subscribed = [];
         },
 
         on: function (eventName, callback) {
@@ -58,7 +58,30 @@
             $(self).bind(eventNamespace + eventName, function (e, data) {
                 callback.apply(self, data);
             });
-            self.subscribed = true;
+
+            self.subscribed.push(eventName);
+
+            return self;
+        },
+
+        off: function (eventName) {
+            /// <summary>Removes the callback invocation request from the server hub for the given event name.</summary>
+            /// <param name="eventName" type="String">The name of the hub event to unregister the callback for.</param>
+            var self = this;
+
+            // Normalize the event name to lowercase
+            eventName = eventName.toLowerCase();
+
+            // Find the location of the event within our subscribed list
+            var eventLocation = self.subscribed.indexOf(eventName);
+
+            // We only want to unbind/remove from our subscribed list if it's an event that we've bound
+            if (eventLocation >= 0) {
+                $(self).unbind(eventNamespace + eventName);
+
+                // Remove the event from the subscribed list
+                self.subscribed.splice(self.subscribed.indexOf(eventName), 1);
+            }
             return self;
         },
 
@@ -111,7 +134,7 @@
         var settings = {
             qs: null,
             logging: false,
-            useDefaultPath : true
+            useDefaultPath: true
         };
 
         $.extend(settings, options);
@@ -126,10 +149,10 @@
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
-                qs: null,
-                logging: false,
-                useDefaultPath: true
-            },
+            qs: null,
+            logging: false,
+            useDefaultPath: true
+        },
             connection = this;
 
         $.extend(settings, options);
@@ -147,7 +170,7 @@
             var subscribedHubs = [];
 
             $.each(this.proxies, function (key) {
-                if (this.subscribed) {
+                if (this.subscribed.length > 0) {
                     subscribedHubs.push({ name: key });
                 }
             });
@@ -181,7 +204,7 @@
                 // Normalize the names to lowercase
                 hubName = data.Hub.toLowerCase();
                 eventName = data.Method.toLowerCase();
-                
+
                 // Trigger the local invocation event
                 proxy = this.proxies[hubName];
 
@@ -216,4 +239,4 @@
 
     $.hubConnection = hubConnection;
 
-} (window.jQuery, window));
+}(window.jQuery, window));
