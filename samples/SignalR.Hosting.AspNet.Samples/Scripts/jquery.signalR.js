@@ -1400,27 +1400,33 @@
             /// <param name="eventName" type="String">The name of the hub event to unregister the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
             var self = this,
-                callbackMap = self._.callbackMap;
+                callbackMap = self._.callbackMap,
+                callbackSpace;
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
 
-            // Only unbind if there's an event bound with eventName and a callback with the specified callback
-            if (callbackMap[eventName][callback]) {
-                $(self).unbind(makeEventName(eventName), callbackMap[eventName][callback]);
+            callbackSpace = callbackMap[eventName];
 
-                // Remove the callback from the callback map
-                delete callbackMap[eventName][callback];
+            // Verify that there is an event space to unbind
+            if (callbackSpace) {
+                // Only unbind if there's an event bound with eventName and a callback with the specified callback
+                if (callbackSpace[callback]) {
+                    $(self).unbind(makeEventName(eventName), callbackSpace[callback]);
 
-                // Check if there are any members left on the event, if not we need to destroy it.
-                if (!hasMembers(callbackMap[eventName])) {
+                    // Remove the callback from the callback map
+                    delete callbackSpace[callback];
+
+                    // Check if there are any members left on the event, if not we need to destroy it.
+                    if (!hasMembers(callbackSpace)) {
+                        delete callbackMap[eventName];
+                    }
+                }
+                else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
+                    $(self).unbind(makeEventName(eventName));
+
                     delete callbackMap[eventName];
                 }
-            }
-            else if (callbackMap[eventName] && !callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
-                $(self).unbind(makeEventName(eventName));
-
-                delete callbackMap[eventName];
             }
 
             return self;
