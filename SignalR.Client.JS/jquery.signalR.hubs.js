@@ -7,7 +7,11 @@
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
     var callbackId = 0,
         callbacks = {},
-        eventNamespace = "proxy.";
+        eventNamespace = ".hubProxy";
+
+    function makeEventName(event) {
+        return event + eventNamespace;
+    }
 
     // Array.prototype.map
     if (!Array.prototype.hasOwnProperty("map")) {
@@ -29,6 +33,17 @@
         return $.isFunction(a) ? null : ($.type(a) === "undefined" ? null : a);
     }
 
+    function hasMembers(obj) {
+        for (var key in obj) {
+            // If we have any properties in our callback map then we have callbacks and can exit the loop via return
+            if (obj.hasOwnProperty(key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // hubProxy
     function hubProxy(hubConnection, hubName) {
         /// <summary>
@@ -43,45 +58,68 @@
             this.state = {};
             this.connection = connection;
             this.hubName = hubName;
-            this.subscribed = [];
+            this._ = {
+                callbackMap: {}
+            };
+        },
+
+        hasSubscriptions: function () {
+            return hasMembers(this._.callbackMap);
         },
 
         on: function (eventName, callback) {
             /// <summary>Wires up a callback to be invoked when a invocation request is received from the server hub.</summary>
             /// <param name="eventName" type="String">The name of the hub event to register the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
-            var self = this;
+            var self = this,
+                callbackMap = self._.callbackMap;
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
 
-            $(self).bind(eventNamespace + eventName, function (e, data) {
-                callback.apply(self, data);
-            });
+            // If there is not an event registered for this callback yet we want to create its event space in the callback map.
+            if (!callbackMap[eventName]) {
+                callbackMap[eventName] = {};
+            }
 
-            self.subscribed.push(eventName);
+            // Map the callback to our encompassed function
+            callbackMap[eventName][callback] = function (e, data) {
+                callback.apply(self, data);
+            };
+
+            $(self).bind(makeEventName(eventName), callbackMap[eventName][callback]);
 
             return self;
         },
 
-        off: function (eventName) {
+        off: function (eventName, callback) {
             /// <summary>Removes the callback invocation request from the server hub for the given event name.</summary>
             /// <param name="eventName" type="String">The name of the hub event to unregister the callback for.</param>
-            var self = this;
+            /// <param name="callback" type="Function">The callback to be invoked.</param>
+            var self = this,
+                callbackMap = self._.callbackMap;
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
 
-            // Find the location of the event within our subscribed list
-            var eventLocation = self.subscribed.indexOf(eventName);
+            // Only unbind if there's an event bound with eventName and a callback with the specified callback
+            if (callbackMap[eventName][callback]) {
+                $(self).unbind(makeEventName(eventName), callbackMap[eventName][callback]);
 
-            // We only want to unbind/remove from our subscribed list if it's an event that we've bound
-            if (eventLocation >= 0) {
-                $(self).unbind(eventNamespace + eventName);
+                // Remove the callback from the callback map
+                delete callbackMap[eventName][callback];
 
-                // Remove the event from the subscribed list
-                self.subscribed.splice(self.subscribed.indexOf(eventName), 1);
+                // Check if there are any members left on the event, if not we need to destroy it.
+                if (!hasMembers(callbackMap[eventName])) {
+                    delete callbackMap[eventName];
+                }
             }
+            else if (callbackMap[eventName] && !callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
+                $(self).unbind(makeEventName(eventName));
+
+                delete callbackMap[eventName];
+            }
+
             return self;
         },
 
@@ -170,7 +208,7 @@
             var subscribedHubs = [];
 
             $.each(this.proxies, function (key) {
-                if (this.subscribed.length > 0) {
+                if (this.hasSubscriptions()) {
                     subscribedHubs.push({ name: key });
                 }
             });
@@ -210,7 +248,7 @@
 
                 // Update the hub state
                 $.extend(proxy.state, data.State);
-                $(proxy).trigger(eventNamespace + eventName, [data.Args]);
+                $(proxy).trigger(makeEventName(eventName), [data.Args]);
             }
         });
     };
