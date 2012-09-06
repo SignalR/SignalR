@@ -181,7 +181,7 @@ namespace SignalR.Transports
 
         private Task ProcessSendRequest()
         {
-            string data = IsJsonp ? Context.Request.QueryString["data"] : Context.Request.Form["data"];
+            string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
 
             if (Receiving != null)
             {

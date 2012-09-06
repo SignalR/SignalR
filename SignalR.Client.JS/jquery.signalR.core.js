@@ -11,7 +11,7 @@
 /// <reference path="Scripts/jquery-1.6.2.js" />
 (function ($, window) {
     "use strict";
-    
+
     if (typeof ($) !== "function") {
         // no jQuery!
         throw "SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.";
@@ -197,28 +197,31 @@
             // Set the websocket protocol
             connection.wsProtocol = connection.protocol === "https:" ? "wss://" : "ws://";
 
+            // If jsonp with no/auto transport is specified, then set the transport to long polling
+            // since that is the only transport for which jsonp really makes sense.
+            // Some developers might actually choose to specify jsonp for same origin requests
+            // as demonstrated by Issue #623.
+            if (config.transport === "auto" && config.jsonp === true) {
+                config.transport = "longPolling";
+            }
+
             if (isCrossDomain(connection.url)) {
                 connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {
-                    // If you didn't say you wanted to use jsonp, determine if it's your only choice
-                    // i.e. if your browser doesn't supports CORS
-                    if (!config.jsonp) {
-                        config.jsonp = !$.support.cors;
+                    // Try webSockets and longPolling since SSE doesn't support CORS
+                    // TODO: Support XDM with foreverFrame
+                    config.transport = ["webSockets", "longPolling"];
+                }
 
-                        if (config.jsonp) {
-                            connection.log("Using jsonp because this browser doesn't support CORS");
-                        }
-                    }
+                // Determine if jsonp is the only choice for negotiation, ajaxSend and ajaxAbort.
+                // i.e. if the browser doesn't supports CORS
+                // If it is, ignore any preference to the contrary, and switch to jsonp.
+                if (!config.jsonp) {
+                    config.jsonp = !$.support.cors;
 
-                    // If we're using jsonp then just change to longpolling
-                    if (config.jsonp === true) {
-                        config.transport = "longPolling";
-                    }
-                    else {
-                        // Otherwise try webSockets and longPolling since SSE doesn't support CORS
-                        // TODO: Support XDM with foreverFrame
-                        config.transport = ["webSockets", "longPolling"];
+                    if (config.jsonp) {
+                        connection.log("Using jsonp because this browser doesn't support CORS");
                     }
                 }
             }
