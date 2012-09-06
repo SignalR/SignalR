@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalR.Hosting.AspNet.Samples
@@ -9,7 +10,7 @@ namespace SignalR.Hosting.AspNet.Samples
         {            
             for (int i = 0; i < 10; i++)
             {
-                Connection.Send(connectionId, i).Wait();
+                Connection.Send(connectionId, String.Format("{0}{1}", data, i)).Wait();
             }
 
             var tcs = new TaskCompletionSource<object>();

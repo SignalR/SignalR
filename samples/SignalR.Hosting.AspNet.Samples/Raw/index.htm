@@ -69,7 +69,7 @@
             });
 
             var start = function () {
-                connection.start({ transport: activeTransport })
+                connection.start({ transport: activeTransport, jsonp: isJsonp })
                     .then(function () {
                         $("#stopStart").val("Stop").prop("disabled", false);
                     });
