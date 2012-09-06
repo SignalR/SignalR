@@ -50,21 +50,6 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Occurs when a data is received from a connection.
-        /// </summary>
-        public static event Action Receiving;
-
-        /// <summary>
-        /// Occurs when a new connection is established.
-        /// </summary>
-        public static event Action<string> Connected;
-
-        /// <summary>
-        /// Occurs when an existing connection ends.
-        /// </summary>
-        public static event Action<string> Disconnected;
-
-        /// <summary>
         /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
         /// </summary>
         public IConnection Connection
