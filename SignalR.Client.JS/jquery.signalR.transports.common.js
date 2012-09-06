@@ -61,7 +61,7 @@
             return $.ajax({
                 url: url,
                 global: false,
-                type: "POST",
+                type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
