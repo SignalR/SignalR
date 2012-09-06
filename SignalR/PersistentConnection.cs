@@ -147,25 +147,25 @@ namespace SignalR
 
             _transport.Connected = () =>
             {
-                return OnConnectedAsync(context.Request, connectionId);
+                return OnConnectedAsync(context.Request, connectionId).OrEmpty();
             };
 
             _transport.Reconnected = () =>
             {
-                return OnReconnectedAsync(context.Request, groups, connectionId);
+                return OnReconnectedAsync(context.Request, groups, connectionId).OrEmpty();
             };
 
             _transport.Received = data =>
             {
-                return OnReceivedAsync(context.Request, connectionId, data);
+                return OnReceivedAsync(context.Request, connectionId, data).OrEmpty();
             };
 
             _transport.Disconnected = () =>
             {
-                return OnDisconnectAsync(connectionId);
+                return OnDisconnectAsync(connectionId).OrEmpty();
             };
 
-            return _transport.ProcessRequest(connection) ?? TaskAsyncHelper.Empty;
+            return _transport.ProcessRequest(connection).OrEmpty();
         }
 
         protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)

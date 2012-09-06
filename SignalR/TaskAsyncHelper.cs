@@ -42,6 +42,11 @@ namespace SignalR
             }
         }
 
+        public static Task OrEmpty(this Task task)
+        {
+            return task ?? Empty;
+        }
+
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
