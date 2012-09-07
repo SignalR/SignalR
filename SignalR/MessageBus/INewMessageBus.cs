@@ -12,7 +12,7 @@ namespace SignalR
         /// <param name="source"></param>
         /// <param name="eventKey"></param>
         /// <param name="value"></param>
-        Task Publish(string source, string eventKey, string value);
+        Task Publish(Message message);
 
         /// <summary>
         /// 

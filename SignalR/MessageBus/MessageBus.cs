@@ -74,13 +74,11 @@ namespace SignalR
         /// Publishes a new message to the specified event on the bus.
         /// </summary>
         /// <param name="source">A value representing the source of the data sent.</param>
-        /// <param name="eventKey">The specific event key to send data to.</param>
-        /// <param name="value">The value to send.</param>
-        public Task Publish(string source, string eventKey, string value)
+        public Task Publish(Message message)
         {
-            Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
+            Topic topic = _topics.GetOrAdd(message.Key, _ => new Topic());
 
-            topic.Store.Add(new Message(eventKey, value));
+            topic.Store.Add(message);
 
             // TODO: Consider a ReaderWriterLockSlim (or use our LockedList<T>)
             lock (topic.Subscriptions)
