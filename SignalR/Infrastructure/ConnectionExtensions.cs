@@ -11,7 +11,7 @@ namespace SignalR.Infrastructure
                 Type = CommandType.Disconnect
             };
 
-            return connection.Send(SignalCommand.AddCommandSuffix(connectionId), command);
+            return connection.Send(connectionId, command);
         }
 
         public static Task Abort(this ITransportConnection connection, string connectionId)
@@ -21,7 +21,7 @@ namespace SignalR.Infrastructure
                 Type = CommandType.Abort
             };
 
-            return connection.Send(SignalCommand.AddCommandSuffix(connectionId), command);
+            return connection.Send(connectionId, command);
         }
     }
 }

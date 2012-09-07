@@ -298,8 +298,7 @@ namespace SignalR.Hubs
             // 3. The command signal for this connection
             var clientSignals = new[] {
                 hubInfo.Name,
-                hubInfo.CreateQualifiedName(connectionId),
-                SignalCommand.AddCommandSuffix(hubInfo.CreateQualifiedName(connectionId))
+                hubInfo.CreateQualifiedName(connectionId)
             };
 
             return clientSignals;

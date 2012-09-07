@@ -174,12 +174,10 @@ namespace SignalR
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
-            // 3. Connection id + SIGNALRCOMMAND -> for built in commands that we need to process
 
             return new string[] {
                 DefaultSignal,
-                connectionId,
-                SignalCommand.AddCommandSuffix(connectionId)
+                connectionId
             };
         }
 

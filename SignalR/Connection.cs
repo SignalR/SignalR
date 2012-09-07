@@ -85,18 +85,34 @@ namespace SignalR
 
         private Task SendMessage(string key, object value)
         {
-            var serializedValue = _serializer.Stringify(PreprocessValue(value));
-            return _bus.Publish(_connectionId, key, serializedValue);
+            Message message = CreateMessage(key, value);
+            return _bus.Publish(message);
         }
 
-        private object PreprocessValue(object value)
+        private Message CreateMessage(string key, object value)
         {
+            bool isCommand;
+            value = PreprocessValue(value, out isCommand);
+            var serializedValue = _serializer.Stringify(value);
+
+            return new Message(_connectionId, key, serializedValue)
+            {
+                IsCommand = isCommand
+            };
+        }
+
+        private object PreprocessValue(object value, out bool isCommand)
+        {
+            isCommand = false;
+
             // If this isn't a command then ignore it
             var command = value as SignalCommand;
             if (command == null)
             {
                 return value;
             }
+
+            isCommand = true;
 
             if (command.Type == CommandType.AddToGroup)
             {
@@ -198,7 +214,7 @@ namespace SignalR
                 for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
                 {
                     Message message = result.Messages[i].Array[j];
-                    if (SignalCommand.IsCommand(message))
+                    if (message.IsCommand)
                     {
                         var command = _serializer.Parse<SignalCommand>(message.Value);
                         ProcessCommand(command);

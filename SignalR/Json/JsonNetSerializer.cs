@@ -143,7 +143,7 @@ namespace SignalR
                 for (int j = response.Messages[i].Offset; j < response.Messages[i].Offset + response.Messages[i].Count; j++)
                 {
                     Message message = response.Messages[i].Array[j];
-                    if (!SignalCommand.IsCommand(message))
+                    if (!message.IsCommand)
                     {
                         jsonWriter.WriteRawValue(message.Value);
                     }

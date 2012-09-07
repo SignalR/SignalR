@@ -47,7 +47,7 @@ namespace SignalR
                 Value = CreateQualifiedName(groupName)
             };
 
-            return _connection.Send(SignalCommand.AddCommandSuffix(connectionId), command);
+            return _connection.Send(connectionId, command);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace SignalR
                 Value = CreateQualifiedName(groupName)
             };
 
-            return _connection.Send(SignalCommand.AddCommandSuffix(connectionId), command);
+            return _connection.Send(connectionId, command);
         }
 
         private string CreateQualifiedName(string groupName)
