@@ -59,6 +59,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Server", "SignalR.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Server.Routing", "SignalR.Server.Routing\SignalR.Server.Routing.csproj", "{37C04B69-0989-458A-B80C-A1ED574ADBE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Console.Samples", "samples\SignalR.Hosting.Console.Samples\SignalR.Hosting.Console.Samples.csproj", "{3F79472C-5EA7-4260-B124-BBD209B329FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
