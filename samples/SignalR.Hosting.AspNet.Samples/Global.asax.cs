@@ -50,16 +50,16 @@ namespace SignalR.Hosting.AspNet.Samples
 
         private class SamplePipelineModule : HubPipelineModule
         {
-            protected override void OnBeforeInvoke(IHubIncomingInvokerContext context)
+            protected override bool OnBeforeIncoming(IHubIncomingInvokerContext context)
             {
                 Debug.WriteLine("=> Invoking " + context.MethodDescriptor.Name + " on hub " + context.MethodDescriptor.Hub.Name);
-                base.OnBeforeInvoke(context);
+                return base.OnBeforeIncoming(context);
             }
 
-            protected override void OnBeforeOutgoing(IHubOutgoingInvokerContext context)
+            protected override bool OnBeforeOutgoing(IHubOutgoingInvokerContext context)
             {
                 Debug.WriteLine("<= Invoking " + context.Invocation.Method + " on client hub " + context.Invocation.Hub); 
-                base.OnBeforeOutgoing(context);
+                return base.OnBeforeOutgoing(context);
             }
         }
     }

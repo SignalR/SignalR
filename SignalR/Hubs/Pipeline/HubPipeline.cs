@@ -19,7 +19,7 @@ namespace SignalR.Hubs
         {
             // Add one item to the list so we don't have to special case the logic if
             // there's no builders in the pipeline
-            AddModule(new NoopModule());
+            AddModule(new PassThroughModule());
         }
 
         public IHubPipeline AddModule(IHubPipelineModule builder)
@@ -76,7 +76,7 @@ namespace SignalR.Hubs
             return _outgoingPipeling.Invoke(context);
         }
 
-        private class NoopModule : IHubPipelineModule
+        private class PassThroughModule : IHubPipelineModule
         {
             public Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> invoke)
             {
