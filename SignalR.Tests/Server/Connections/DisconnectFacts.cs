@@ -113,14 +113,14 @@ namespace SignalR.Tests
 
             private IConnection _connection;
 
-            public ServerNode(INewMessageBus bus)
+            public ServerNode(IMessageBus bus)
             {
                 // Give each server it's own dependency resolver
                 Server = new MemoryHost(new DefaultDependencyResolver());
                 Connection = new FarmConnection();
 
                 Server.DependencyResolver.Register(typeof(FarmConnection), () => Connection);
-                Server.DependencyResolver.Register(typeof(INewMessageBus), () => bus);
+                Server.DependencyResolver.Register(typeof(IMessageBus), () => bus);
 
                 var context = Server.ConnectionManager.GetConnectionContext<FarmConnection>();
                 _connection = context.Connection;

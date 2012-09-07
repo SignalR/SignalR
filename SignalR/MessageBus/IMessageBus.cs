@@ -4,14 +4,13 @@ using System.Threading.Tasks;
 
 namespace SignalR
 {
-    public interface INewMessageBus
+    public interface IMessageBus
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="eventKey"></param>
-        /// <param name="value"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         Task Publish(Message message);
 
         /// <summary>
@@ -20,6 +19,7 @@ namespace SignalR
         /// <param name="subscriber"></param>
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
+        /// <param name="maxMessages"></param>
         /// <returns></returns>
         IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages);
 

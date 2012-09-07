@@ -14,7 +14,7 @@ namespace SignalR
     /// <summary>
     /// 
     /// </summary>
-    public class MessageBus : INewMessageBus
+    public class MessageBus : IMessageBus
     {
         private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
         private readonly Engine _engine;

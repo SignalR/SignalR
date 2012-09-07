@@ -30,8 +30,8 @@ namespace SignalR
             var serverMessageHandler = new Lazy<IServerCommandHandler>(() => new ServerCommandHandler(this));
             Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
 
-            var newMessageBus = new Lazy<INewMessageBus>(() => new MessageBus(this));
-            Register(typeof(INewMessageBus), () => newMessageBus.Value);
+            var newMessageBus = new Lazy<IMessageBus>(() => new MessageBus(this));
+            Register(typeof(IMessageBus), () => newMessageBus.Value);
 
             var serializer = new Lazy<JsonNetSerializer>();
             Register(typeof(IJsonSerializer), () => serializer.Value);

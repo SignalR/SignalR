@@ -14,7 +14,7 @@ namespace SignalR
     {
         private const string WebSocketsTransportName = "webSockets";
 
-        protected INewMessageBus _newMessageBus;
+        protected IMessageBus _newMessageBus;
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdGenerator _connectionIdGenerator;
         private ITransportManager _transportManager;
@@ -31,7 +31,7 @@ namespace SignalR
                 return;
             }
 
-            _newMessageBus = resolver.Resolve<INewMessageBus>();
+            _newMessageBus = resolver.Resolve<IMessageBus>();
             _connectionIdGenerator = resolver.Resolve<IConnectionIdGenerator>();
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();

@@ -10,7 +10,7 @@ namespace SignalR.Infrastructure
     /// </summary>
     public class ServerCommandHandler : IServerCommandHandler, ISubscriber
     {
-        private readonly INewMessageBus _messageBus;
+        private readonly IMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;
         private readonly IJsonSerializer _serializer;
         private const int MaxMessages = 10;
@@ -20,14 +20,14 @@ namespace SignalR.Infrastructure
         private static readonly string[] ServerSignals = new[] { ServerSignal };
 
         public ServerCommandHandler(IDependencyResolver resolver) :
-            this(resolver.Resolve<INewMessageBus>(),
+            this(resolver.Resolve<IMessageBus>(),
                  resolver.Resolve<IServerIdManager>(),
                  resolver.Resolve<IJsonSerializer>())
         {
 
         }
 
-        public ServerCommandHandler(INewMessageBus messageBus, IServerIdManager serverIdManager, IJsonSerializer serializer)
+        public ServerCommandHandler(IMessageBus messageBus, IServerIdManager serverIdManager, IJsonSerializer serializer)
         {
             _messageBus = messageBus;
             _serverIdManager = serverIdManager;

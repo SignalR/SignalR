@@ -9,7 +9,7 @@ namespace SignalR.Tests.Server
         [Fact]
         public void SendingCommandObjectSetsCommandOnBus()
         {
-            var messageBus = new Mock<INewMessageBus>();
+            var messageBus = new Mock<IMessageBus>();
             Message message = null;
             messageBus.Setup(m => m.Publish(It.IsAny<Message>())).Callback<Message>(m => message = m);
             var serializer = new JsonNetSerializer();

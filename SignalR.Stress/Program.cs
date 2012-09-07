@@ -119,7 +119,7 @@ namespace SignalR.Stress
                 if (!countDown.Wait(TimeSpan.FromSeconds(10)))
                 {
                     Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
-                    var bus = host.DependencyResolver.Resolve<INewMessageBus>();
+                    var bus = host.DependencyResolver.Resolve<IMessageBus>();
                     Debugger.Break();
                 }
             }
@@ -139,7 +139,7 @@ namespace SignalR.Stress
             string payload = GetPayload();
 
             var dr = new DefaultDependencyResolver();
-            MeasureStats((MessageBus)dr.Resolve<INewMessageBus>());
+            MeasureStats((MessageBus)dr.Resolve<IMessageBus>());
             var connectionManager = new ConnectionManager(dr);
             var context = connectionManager.GetConnectionContext<StressConnection>();
 
@@ -176,7 +176,7 @@ namespace SignalR.Stress
 
             string payload = GetPayload();
 
-            MeasureStats((MessageBus)host.DependencyResolver.Resolve<INewMessageBus>());
+            MeasureStats((MessageBus)host.DependencyResolver.Resolve<IMessageBus>());
 
             Action<PersistentResponse> handler = (r) =>
             {
@@ -234,7 +234,7 @@ namespace SignalR.Stress
             string payload = GetPayload();
 
             var dr = new DefaultDependencyResolver();
-            MeasureStats((MessageBus)dr.Resolve<INewMessageBus>());
+            MeasureStats((MessageBus)dr.Resolve<IMessageBus>());
             var connectionManager = new ConnectionManager(dr);
             var context = connectionManager.GetConnectionContext<StressConnection>();
 
