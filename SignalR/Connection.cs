@@ -106,7 +106,7 @@ namespace SignalR
             isCommand = false;
 
             // If this isn't a command then ignore it
-            var command = value as SignalCommand;
+            var command = value as Command;
             if (command == null)
             {
                 return value;
@@ -216,14 +216,14 @@ namespace SignalR
                     Message message = result.Messages[i].Array[j];
                     if (message.IsCommand)
                     {
-                        var command = _serializer.Parse<SignalCommand>(message.Value);
+                        var command = _serializer.Parse<Command>(message.Value);
                         ProcessCommand(command);
                     }
                 }
             }
         }
 
-        private void ProcessCommand(SignalCommand command)
+        private void ProcessCommand(Command command)
         {
             switch (command.Type)
             {

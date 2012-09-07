@@ -2,7 +2,7 @@
 
 namespace SignalR
 {
-    public class SignalCommand
+    public class Command
     {
         public CommandType Type { get; set; }
         public string Value { get; set; }

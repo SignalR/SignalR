@@ -6,7 +6,7 @@ namespace SignalR.Infrastructure
     {
         public static Task Close(this ITransportConnection connection, string connectionId)
         {
-            var command = new SignalCommand
+            var command = new Command
             {
                 Type = CommandType.Disconnect
             };
@@ -16,7 +16,7 @@ namespace SignalR.Infrastructure
 
         public static Task Abort(this ITransportConnection connection, string connectionId)
         {
-            var command = new SignalCommand
+            var command = new Command
             {
                 Type = CommandType.Abort
             };

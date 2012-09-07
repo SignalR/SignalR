@@ -41,7 +41,7 @@ namespace SignalR
         /// <returns>A task that represents the connection id being added to the group.</returns>
         public Task Add(string connectionId, string groupName)
         {
-            var command = new SignalCommand
+            var command = new Command
             {
                 Type = CommandType.AddToGroup,
                 Value = CreateQualifiedName(groupName)
@@ -58,7 +58,7 @@ namespace SignalR
         /// <returns>A task that represents the connection id being removed from the group.</returns>
         public Task Remove(string connectionId, string groupName)
         {
-            var command = new SignalCommand
+            var command = new Command
             {
                 Type = CommandType.RemoveFromGroup,
                 Value = CreateQualifiedName(groupName)
