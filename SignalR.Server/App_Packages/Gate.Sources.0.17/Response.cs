@@ -219,7 +219,7 @@ namespace Gate
 
         public void Write(string text)
         {
-            var data = (Encoding ?? Encoding.UTF8).GetBytes(text);
+            var data = Encoding.GetBytes(text);
             Write(data);
         }
 
@@ -245,19 +245,17 @@ namespace Gate
 
         public Task WriteAsync(string text, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var data = (Encoding ?? Encoding.UTF8).GetBytes(text);
-            return WriteAsync(data,cancellationToken);
+            var data = Encoding.GetBytes(text);
+            return WriteAsync(data, cancellationToken);
         }
 
         public Task WriteAsync(byte[] buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
-            TaskHelpers.Canceled();
             return OutputStream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
         }
 
         public Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default(CancellationToken))
         {
-            TaskHelpers.Canceled();
             return OutputStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
