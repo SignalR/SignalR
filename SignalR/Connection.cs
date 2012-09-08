@@ -143,16 +143,16 @@ namespace SignalR
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
 
-            const int STATE_UNASSIGNED = 0;
-            const int STATE_ASSIGNED = 1;
-            const int STATE_DISPOSED = 2;
+            const int state_unassigned = 0;
+            const int state_assigned = 1;
+            const int state_disposed = 2;
 
-            int flag = STATE_UNASSIGNED;
+            int state = state_unassigned;
 
             CancellationTokenRegistration registration = cancel.Register(() =>
             {
                 // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                if (Interlocked.Exchange(ref flag, STATE_DISPOSED) == STATE_ASSIGNED)
+                if (Interlocked.Exchange(ref state, state_disposed) == state_assigned)
                 {
                     subscription.Dispose();
                 }
@@ -166,7 +166,7 @@ namespace SignalR
                 {
                     registration.Dispose();
                     // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                    if (Interlocked.Exchange(ref flag, STATE_DISPOSED) == STATE_ASSIGNED)
+                    if (Interlocked.Exchange(ref state, state_disposed) == state_assigned)
                     {
                         subscription.Dispose();
                     }
@@ -189,7 +189,7 @@ namespace SignalR
             maxMessages);
 
             // If callbacks have already run, they maybe have not been able to Dispose the subscription because the instance was not yet assigned
-            if (Interlocked.Exchange(ref flag, STATE_ASSIGNED) == STATE_DISPOSED)
+            if (Interlocked.Exchange(ref state, state_assigned) == state_disposed)
             {
                 // In this case, we will dispose of it immediately.
                 subscription.Dispose();
