@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Owin;
 using SignalR.Server.Util;
 
 namespace SignalR.Server.Handlers
