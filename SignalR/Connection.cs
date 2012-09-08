@@ -141,24 +141,34 @@ namespace SignalR
         {
             var tcs = new TaskCompletionSource<PersistentResponse>();
             IDisposable subscription = null;
-            var wh = new ManualResetEventSlim(initialState: false);
+
+            const int stateUnassigned = 0;
+            const int stateAssigned = 1;
+            const int stateDisposed = 2;
+
+            int state = stateUnassigned;
 
             CancellationTokenRegistration registration = cancel.Register(() =>
             {
-                wh.Wait();
-                subscription.Dispose();
+                // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
+                if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
+                {
+                    subscription.Dispose();
+                }
             });
 
             PersistentResponse response = null;
 
             subscription = _bus.Subscribe(this, messageId, result =>
             {
-                wh.Wait();
-
                 if (Interlocked.CompareExchange(ref response, GetResponse(result), null) == null)
                 {
                     registration.Dispose();
-                    subscription.Dispose();
+                    // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
+                    if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
+                    {
+                        subscription.Dispose();
+                    }
                 }
 
                 if (result.Terminal)
@@ -177,8 +187,12 @@ namespace SignalR
             },
             maxMessages);
 
-            // Set this after the subscription is assigned
-            wh.Set();
+            // If callbacks have already run, they maybe have not been able to Dispose the subscription because the instance was not yet assigned
+            if (Interlocked.Exchange(ref state, stateAssigned) == stateDisposed)
+            {
+                // In this case, we will dispose of it immediately.
+                subscription.Dispose();
+            }
 
             return tcs.Task;
         }
@@ -211,9 +225,10 @@ namespace SignalR
         {
             for (int i = 0; i < result.Messages.Count; i++)
             {
-                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
+                ArraySegment<Message> segment = result.Messages[i];
+                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
                 {
-                    Message message = result.Messages[i].Array[j];
+                    Message message = segment.Array[j];
                     if (message.IsCommand)
                     {
                         var command = _serializer.Parse<Command>(message.Value);
