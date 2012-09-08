@@ -11,7 +11,7 @@ namespace SignalR.Server.Handlers
         private readonly IDependencyResolver _resolver;
         private readonly PersistentConnection _connection;
 
-        private static readonly string[] AllowCredentialsTrue = new[] {"true"};
+        private static readonly string[] AllowCredentialsTrue = new[] { "true" };
 
         public CallHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -19,16 +19,16 @@ namespace SignalR.Server.Handlers
             _connection = connection;
         }
 
-        public Task Invoke(IDictionary<string,object> env)
+        public Task Invoke(IDictionary<string, object> env)
         {
             var serverRequest = new ServerRequest(env);
             var serverResponse = new ServerResponse(env);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
-            var origin = serverRequest.RequestHeaders.GetHeaders("Origin");
-            if (origin != null && origin.Any(sz => !String.IsNullOrEmpty(sz)))
+            var origins = serverRequest.RequestHeaders.GetHeaders("Origin");
+            if (origins != null && origins.Any(origin => !String.IsNullOrEmpty(origin)))
             {
-                serverResponse.ResponseHeaders["Access-Control-Allow-Origin"] = origin;
+                serverResponse.ResponseHeaders["Access-Control-Allow-Origin"] = origins;
                 serverResponse.ResponseHeaders["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
             }
 
