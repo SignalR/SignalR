@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gate.Utils
+namespace SignalR.Server.Util
 {
     internal class ParamDictionary : IDictionary<string, string>
     {

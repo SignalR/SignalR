@@ -2,29 +2,39 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Server.Util;
 
 namespace SignalR.Server
 {
-    class ServerRequest : IRequest
+    public partial class ServerRequest : IRequest
     {
-        readonly Gate.Request _req;
+        private static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
-        internal ServerRequest(Gate.Request req)
-        {
-            _req = req;
-        }
+        private Uri _url;
+        private NameValueCollection _queryString;
+        private NameValueCollection _headers;
+        private NameValueCollection _serverVariables;
+        private NameValueCollection _form;
+        private bool _formInitialized;
+        private object _formLock;
+        private ServerRequestCookieCollection _cookies;
 
         public Uri Url
         {
             get
             {
-                var uriBuilder = new UriBuilder(_req.Scheme, _req.Host, _req.Port, _req.PathBase + _req.Path);
-                if (!string.IsNullOrEmpty(_req.QueryString))
-                {
-                    uriBuilder.Query = _req.QueryString;
-                }
-                return uriBuilder.Uri;
+                return LazyInitializer.EnsureInitialized(
+                    ref _url, () =>
+                    {
+                        var uriBuilder = new UriBuilder(RequestScheme, RequestHost, RequestPort, RequestPathBase + RequestPath);
+                        if (!string.IsNullOrEmpty(RequestQueryString))
+                        {
+                            uriBuilder.Query = RequestQueryString;
+                        }
+                        return uriBuilder.Uri;
+                    });
             }
         }
 
@@ -33,12 +43,16 @@ namespace SignalR.Server
         {
             get
             {
-                var collection = new NameValueCollection();
-                foreach (var kv in _req.Query)
-                {
-                    collection.Add(kv.Key, kv.Value);
-                }
-                return collection;
+                return LazyInitializer.EnsureInitialized(
+                    ref _queryString, () =>
+                    {
+                        var collection = new NameValueCollection();
+                        foreach (var kv in ParamDictionary.ParseToEnumerable(RequestQueryString, null))
+                        {
+                            collection.Add(kv.Key, kv.Value);
+                        }
+                        return collection;
+                    });
             }
         }
 
@@ -46,18 +60,22 @@ namespace SignalR.Server
         {
             get
             {
-                var collection = new NameValueCollection();
-                foreach (var kv in _req.Headers)
-                {
-                    if (kv.Value != null)
+                return LazyInitializer.EnsureInitialized(
+                    ref _headers, () =>
                     {
-                        for (var index = 0; index != kv.Value.Length; ++index)
+                        var collection = new NameValueCollection();
+                        foreach (var kv in RequestHeaders)
                         {
-                            collection.Add(kv.Key, kv.Value[index]);
+                            if (kv.Value != null)
+                            {
+                                for (var index = 0; index != kv.Value.Length; ++index)
+                                {
+                                    collection.Add(kv.Key, kv.Value[index]);
+                                }
+                            }
                         }
-                    }
-                }
-                return collection;
+                        return collection;
+                    });
             }
         }
 
@@ -65,13 +83,17 @@ namespace SignalR.Server
         {
             get
             {
-                var collection = new NameValueCollection();
-                var remoteIpAddress = _req.Environment.Get<string>("server.RemoteIpAddress");
-                if (!string.IsNullOrEmpty(remoteIpAddress))
-                {
-                    collection["REMOTE_ADDR"] = remoteIpAddress;
-                }
-                return collection;
+                return LazyInitializer.EnsureInitialized(
+                    ref _serverVariables, () =>
+                    {
+                        var collection = new NameValueCollection();
+                        var remoteIpAddress = Get<string>(OwinConstants.RemoteIpAddress);
+                        if (!string.IsNullOrEmpty(remoteIpAddress))
+                        {
+                            collection["REMOTE_ADDR"] = remoteIpAddress;
+                        }
+                        return collection;
+                    });
             }
         }
 
@@ -79,24 +101,44 @@ namespace SignalR.Server
         {
             get
             {
-                var collection = new NameValueCollection();
-                var form = _req.ReadForm();
-                foreach (var kv in form)
-                {
-                    collection.Add(kv.Key, kv.Value);
-                }
-                return collection;
+                return LazyInitializer.EnsureInitialized(
+                    ref _form, ref _formInitialized, ref _formLock, () =>
+                    {
+                        var collection = new NameValueCollection();
+                        foreach (var kv in ReadForm())
+                        {
+                            collection.Add(kv.Key, kv.Value);
+                        }
+                        return collection;
+                    });
             }
         }
 
+
         public IRequestCookieCollection Cookies
         {
-            get { return new ServerRequestCookieCollection(_req); }
+            get
+            {
+                return LazyInitializer.EnsureInitialized(
+                    ref _cookies, () =>
+                    {
+                        IDictionary<string, Cookie> cookies = new Dictionary<string, Cookie>();
+                        var text = RequestHeaders.GetHeader("Cookie");
+                        foreach (var kv in ParamDictionary.ParseToEnumerable(text, CommaSemicolon))
+                        {
+                            if (!cookies.ContainsKey(kv.Key))
+                            {
+                                cookies.Add(kv.Key, new Cookie(kv.Key, kv.Value));
+                            }
+                        }
+                        return new ServerRequestCookieCollection(cookies);
+                    });
+            }
         }
 
         public IPrincipal User
         {
-            get { return _req.Environment.Get<IPrincipal>("server.User"); }
+            get { return Get<IPrincipal>(OwinConstants.User); }
         }
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)

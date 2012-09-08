@@ -1,27 +1,28 @@
+using System.Collections.Generic;
 
 namespace SignalR.Server
 {
     class ServerRequestCookieCollection : IRequestCookieCollection
     {
-        readonly Gate.Request _req;
+        private readonly IDictionary<string, Cookie> _cookies;
 
-        public ServerRequestCookieCollection(Gate.Request req)
+        public ServerRequestCookieCollection(IDictionary<string, Cookie> cookies)
         {
-            _req = req;
+            _cookies = cookies;
         }
 
         public Cookie this[string name]
         {
             get
             {
-                string value;
-                return _req.Cookies.TryGetValue(name, out value) ? new Cookie(name, value) : null;
+                Cookie value;
+                return _cookies.TryGetValue(name, out value) ? value : null;
             }
         }
 
         public int Count
         {
-            get { return _req.Cookies.Count; }
+            get { return _cookies.Count; }
         }
     }
 }

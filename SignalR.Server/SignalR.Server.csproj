@@ -47,29 +47,23 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Gate.Sources.0.17\AppBuilderInlineExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\AppBuilderMapExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\DictionaryExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Headers.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Mapping\MapBuilder.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Mapping\UrlMapper.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\OwinConstants.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Request.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Response.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Utils\Net40Extensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Utils\ParamDictionary.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.17\Utils\ReasonPhrases.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.1\TaskHelpersExtensions.cs" />
+    <Compile Include="..\SignalR\TaskAsyncHelper.cs">
+      <Link>Util\TaskAsyncHelper.cs</Link>
+    </Compile>
+    <Compile Include="Util\Headers.cs" />
+    <Compile Include="Util\OwinConstants.cs" />
+    <Compile Include="Util\ParamDictionary.cs" />
     <Compile Include="Handlers\CallHandler.cs" />
     <Compile Include="GlobalHost.cs" />
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />
     <Compile Include="Handlers\HubDispatcherHandler.cs" />
+    <Compile Include="ServerRequest.Owin.cs" />
     <Compile Include="ServerRequestCookieCollection.cs" />
     <Compile Include="ServerRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerResponse.cs" />
     <Compile Include="OwinExtensions.cs" />
+    <Compile Include="ServerResponse.Owin.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SignalR\SignalR.csproj">

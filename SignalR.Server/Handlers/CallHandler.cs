@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Gate;
-using Owin;
+using SignalR.Server.Util;
 
 namespace SignalR.Server.Handlers
 {
@@ -22,31 +21,19 @@ namespace SignalR.Server.Handlers
 
         public Task Invoke(IDictionary<string,object> env)
         {
-            var req = new Request(env);
-            var res = new Response(env);
-
-            var serverRequest = new ServerRequest(req);
-            var serverResponse = new ServerResponse(res, req.CancellationToken);
+            var serverRequest = new ServerRequest(env);
+            var serverResponse = new ServerResponse(env);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
-            var origin = req.Headers.GetHeaders("Origin");
+            var origin = serverRequest.RequestHeaders.GetHeaders("Origin");
             if (origin != null && origin.Any(sz => !String.IsNullOrEmpty(sz)))
             {
-                serverResponse.Headers["Access-Control-Allow-Origin"] = origin;
-                serverResponse.Headers["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
+                serverResponse.ResponseHeaders["Access-Control-Allow-Origin"] = origin;
+                serverResponse.ResponseHeaders["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
             }
 
-            var disableRequestBuffering = env.Get<Action>("server.DisableRequestBuffering");
-            if (disableRequestBuffering != null)
-            {
-                disableRequestBuffering();
-            }
-
-            var disableResponseBuffering = env.Get<Action>("server.DisableResponseBuffering");
-            if (disableResponseBuffering != null)
-            {
-                disableResponseBuffering();
-            }
+            serverRequest.DisableRequestBuffering();
+            serverResponse.DisableResponseBuffering();
 
             _connection.Initialize(_resolver);
 

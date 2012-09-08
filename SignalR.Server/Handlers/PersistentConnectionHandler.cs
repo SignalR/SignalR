@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Owin;
+using SignalR.Server.Util;
 
 namespace SignalR.Server.Handlers
 {
@@ -37,9 +38,15 @@ namespace SignalR.Server.Handlers
             return resolver;
         }
 
+        private static T Get<T>(IDictionary<string, object> env, string key)
+        {
+            object value;
+            return env.TryGetValue(key, out value) ? (T)value : default(T);
+        }
+
         public Task Invoke(IDictionary<string, object> env)
         {
-            var path = env.Get<string>("owin.RequestPath");
+            var path = Get<string>(env, OwinConstants.RequestPath);
             if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
                 return _app.Invoke(env);

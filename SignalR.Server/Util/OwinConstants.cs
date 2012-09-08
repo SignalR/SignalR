@@ -1,4 +1,4 @@
-﻿namespace Gate
+﻿namespace SignalR.Server.Util
 {
     internal static class OwinConstants
     {
@@ -22,9 +22,13 @@
 
         public const string TraceOutput = "host.TraceOutput";
 
+        public const string User = "server.User";
         public const string RemoteIpAddress = "server.RemoteIpAddress";
         public const string RemotePort = "server.RemotePort";
         public const string LocalIpAddress = "server.LocalIpAddress";
         public const string LocalPort = "server.LocalPort";
+
+        public const string DisableRequestBuffering = "server.DisableRequestBuffering";
+        public const string DisableResponseBuffering = "server.DisableResponseBuffering";
     }
 }

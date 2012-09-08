@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SignalR.Hubs;
+using SignalR.Server.Util;
 
 namespace SignalR.Server.Handlers
 {
@@ -52,16 +53,21 @@ namespace SignalR.Server.Handlers
             return resolver;
         }
 
-
-        public Task Invoke(IDictionary<string,object> env)
+        private static T Get<T>(IDictionary<string, object> env, string key)
         {
-            var path = env.Get<string>("owin.RequestPath");
+            object value;
+            return env.TryGetValue(key, out value) ? (T)value : default(T);
+        }
+
+        public Task Invoke(IDictionary<string, object> env)
+        {
+            var path = Get<string>(env, OwinConstants.RequestPath);
             if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
                 return _app.Invoke(env);
             }
 
-            var pathBase = env.Get<string>("owin.RequestPathBase");
+            var pathBase = Get<string>(env, OwinConstants.RequestPathBase);
             var dispatcher = new HubDispatcher(pathBase + _path);
 
             var handler = new CallHandler(_resolver.Invoke(), dispatcher);
