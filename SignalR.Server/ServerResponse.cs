@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Gate;
+using SignalR.Server.Util;
 
 namespace SignalR.Server
 {
-    class ServerResponse : IResponse
+    public partial class ServerResponse : IResponse
     {
-        private readonly Response _res;
         private readonly CancellationToken _callCancelled;
-
-        public ServerResponse(Response res, CancellationToken callCancelled)
-        {
-            _res = res;
-            _callCancelled = callCancelled;
-        }
 
         public bool IsClientConnected
         {
@@ -25,30 +16,25 @@ namespace SignalR.Server
 
         public string ContentType
         {
-            get { return _res.ContentType; }
-            set { _res.ContentType = value; }
+            get { return ResponseHeaders.GetHeader("Content-Type"); }
+            set { ResponseHeaders.SetHeader("Content-Type", value); }
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            _res.OutputStream.Write(data.Array, data.Offset, data.Count);
+            ResponseBody.Write(data.Array, data.Offset, data.Count);
         }
 
         public Task FlushAsync()
         {
-            _res.OutputStream.Flush();
-            return TaskHelpers.Completed();
+            ResponseBody.Flush();
+            return TaskAsyncHelper.Empty;
         }
 
         public Task EndAsync()
         {
-            _res.OutputStream.Flush();
-            return TaskHelpers.Completed();
-        }
-
-        public IDictionary<string, string[]> Headers
-        {
-            get { return _res.Headers; }
+            ResponseBody.Flush();
+            return TaskAsyncHelper.Empty;
         }
     }
 }
