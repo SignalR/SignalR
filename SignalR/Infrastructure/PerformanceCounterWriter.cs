@@ -107,6 +107,25 @@ namespace SignalR.Infrastructure
             }
         }
 
+        public void SetRaw(string counterName, long value)
+        {
+            if (String.IsNullOrEmpty(counterName))
+            {
+                throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
+            }
+
+            if (!_countersInstalled)
+            {
+                return;
+            }
+
+            PerformanceCounter counter;
+            if (_counters.TryGetValue(counterName, out counter))
+            {
+                counter.RawValue = value;
+            }
+        }
+
         public void Decrement(string counterName)
         {
             if (String.IsNullOrEmpty(counterName))

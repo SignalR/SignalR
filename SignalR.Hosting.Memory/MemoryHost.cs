@@ -29,7 +29,8 @@ namespace SignalR.Hosting.Memory
         {
             var process = Process.GetCurrentProcess();
             _mutexPrefix = process.ProcessName;
-            _instanceNamePrefix = process.ProcessName + " (PID " + process.Id + "): ";
+            // TODO: Need to distinguish between different instances of a process
+            _instanceNamePrefix = process.ProcessName + ": ";
             InstanceName = GetNextInstanceId();
         }
 

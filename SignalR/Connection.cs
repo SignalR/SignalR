@@ -89,6 +89,8 @@ namespace SignalR
         private Task SendMessage(string key, object value)
         {
             Message message = CreateMessage(key, value);
+            _counters.Increment(PerformanceCounters.ConnectionMessagesSent);
+            _counters.Increment(PerformanceCounters.ConnectionMessagesSentPerSecond);
             return _bus.Publish(message);
         }
 
@@ -221,8 +223,8 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceived, result.Messages.Count);
-            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceivedPerSec, result.Messages.Count);
+            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceived, result.TotalCount);
+            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceivedPerSec, result.TotalCount);
 
             return response;
         }

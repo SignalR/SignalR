@@ -10,6 +10,7 @@ namespace SignalR.Tests.Server
         public void SendingCommandObjectSetsCommandOnBus()
         {
             var messageBus = new Mock<IMessageBus>();
+            var counters = new Mock<IPerformanceCounterWriter>();
             Message message = null;
             messageBus.Setup(m => m.Publish(It.IsAny<Message>())).Callback<Message>(m => message = m);
             var serializer = new JsonNetSerializer();
@@ -20,7 +21,8 @@ namespace SignalR.Tests.Server
                                             "connectonid",
                                             new[] { "a", "signal", "connectionid" },
                                             new string[] { },
-                                            traceManager.Object);
+                                            traceManager.Object,
+                                            counters.Object);
 
             connection.Send("a", new Command
             {

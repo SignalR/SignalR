@@ -72,9 +72,10 @@ namespace SignalR.Stress
             // RunBusTest();
             //RunConnectionTest();
             //RunConnectionReceiveLoopTest();
-            RunMemoryHost();
+            var host = RunMemoryHost();
 
             Console.ReadLine();
+            host.Dispose();
         }
 
         private static void Write(Stream stream, string raw)
@@ -169,7 +170,7 @@ namespace SignalR.Stress
             }
         }
 
-        private static void RunMemoryHost()
+        private static MemoryHost RunMemoryHost()
         {
             var host = new MemoryHost();
             host.MapConnection<StressConnection>("/echo");
@@ -207,6 +208,8 @@ namespace SignalR.Stress
                     StartSendLoop(i.ToString(), (source, key, value) => context.Connection.Broadcast(value), payload);
                 });
             }
+
+            return host;
         }
 
         private static void LongPollingLoop(MemoryHost host, string connectionId)
