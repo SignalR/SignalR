@@ -211,9 +211,10 @@ namespace SignalR
         {
             for (int i = 0; i < result.Messages.Count; i++)
             {
-                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
+                ArraySegment<Message> segment = result.Messages[i];
+                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
                 {
-                    Message message = result.Messages[i].Array[j];
+                    Message message = segment.Array[j];
                     if (message.IsCommand)
                     {
                         var command = _serializer.Parse<Command>(message.Value);
