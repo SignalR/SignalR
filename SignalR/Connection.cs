@@ -143,22 +143,33 @@ namespace SignalR
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
 
+            const int STATE_UNASSIGNED = 0;
+            const int STATE_ASSIGNED = 1;
+            const int STATE_DISPOSED = 2;
+
+            int flag = STATE_UNASSIGNED;
+
             CancellationTokenRegistration registration = cancel.Register(() =>
             {
-                wh.Wait();
-                subscription.Dispose();
+                // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
+                if (Interlocked.Exchange(ref flag, STATE_DISPOSED) == STATE_ASSIGNED)
+                {
+                    subscription.Dispose();
+                }
             });
 
             PersistentResponse response = null;
 
             subscription = _bus.Subscribe(this, messageId, result =>
             {
-                wh.Wait();
-
                 if (Interlocked.CompareExchange(ref response, GetResponse(result), null) == null)
                 {
                     registration.Dispose();
-                    subscription.Dispose();
+                    // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
+                    if (Interlocked.Exchange(ref flag, STATE_DISPOSED) == STATE_ASSIGNED)
+                    {
+                        subscription.Dispose();
+                    }
                 }
 
                 if (result.Terminal)
@@ -177,8 +188,12 @@ namespace SignalR
             },
             maxMessages);
 
-            // Set this after the subscription is assigned
-            wh.Set();
+            // If callbacks have already run, they maybe have not been able to Dispose the subscription because the instance was not yet assigned
+            if (Interlocked.Exchange(ref flag, STATE_ASSIGNED) == STATE_DISPOSED)
+            {
+                // In this case, we will dispose of it immediately.
+                subscription.Dispose();
+            }
 
             return tcs.Task;
         }
