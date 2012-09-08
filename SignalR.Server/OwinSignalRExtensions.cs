@@ -4,7 +4,7 @@ using SignalR.Server.Handlers;
 
 namespace Owin
 {
-    public static class HubDispatcherExtensions
+    public static class OwinSignalRExtensions
     {
         public static IAppBuilder MapHubs(this IAppBuilder builder)
         {
@@ -25,10 +25,7 @@ namespace Owin
         {
             return builder.UseType<HubDispatcherHandler>(path, resolver);
         }
-    }
 
-    public static class PersistentConnectionExtensions
-    {
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url)
         {
             return builder.UseType<PersistentConnectionHandler>(url, typeof (T));
