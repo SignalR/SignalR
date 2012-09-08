@@ -141,7 +141,6 @@ namespace SignalR
         {
             var tcs = new TaskCompletionSource<PersistentResponse>();
             IDisposable subscription = null;
-            var wh = new ManualResetEventSlim(initialState: false);
 
             const int stateUnassigned = 0;
             const int stateAssigned = 1;
