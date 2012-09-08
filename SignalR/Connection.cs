@@ -143,16 +143,16 @@ namespace SignalR
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
 
-            const int state_unassigned = 0;
-            const int state_assigned = 1;
-            const int state_disposed = 2;
+            const int stateUnassigned = 0;
+            const int stateAssigned = 1;
+            const int stateDisposed = 2;
 
-            int state = state_unassigned;
+            int state = stateUnassigned;
 
             CancellationTokenRegistration registration = cancel.Register(() =>
             {
                 // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                if (Interlocked.Exchange(ref state, state_disposed) == state_assigned)
+                if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
                 {
                     subscription.Dispose();
                 }
@@ -166,7 +166,7 @@ namespace SignalR
                 {
                     registration.Dispose();
                     // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                    if (Interlocked.Exchange(ref state, state_disposed) == state_assigned)
+                    if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
                     {
                         subscription.Dispose();
                     }
@@ -189,7 +189,7 @@ namespace SignalR
             maxMessages);
 
             // If callbacks have already run, they maybe have not been able to Dispose the subscription because the instance was not yet assigned
-            if (Interlocked.Exchange(ref state, state_assigned) == state_disposed)
+            if (Interlocked.Exchange(ref state, stateAssigned) == stateDisposed)
             {
                 // In this case, we will dispose of it immediately.
                 subscription.Dispose();
