@@ -62,7 +62,7 @@
     <Compile Include="ServerRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerResponse.cs" />
-    <Compile Include="OwinExtensions.cs" />
+    <Compile Include="OwinSignalRExtensions.cs" />
     <Compile Include="ServerResponse.Owin.cs" />
   </ItemGroup>
   <ItemGroup>
