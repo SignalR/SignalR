@@ -140,9 +140,10 @@ namespace SignalR
 
             for (int i = 0; i < response.Messages.Count; i++)
             {
-                for (int j = response.Messages[i].Offset; j < response.Messages[i].Offset + response.Messages[i].Count; j++)
+                ArraySegment<Message> segment = response.Messages[i];
+                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
                 {
-                    Message message = response.Messages[i].Array[j];
+                    Message message = segment.Array[j];
                     if (!message.IsCommand)
                     {
                         jsonWriter.WriteRawValue(message.Value);
