@@ -226,7 +226,7 @@ namespace SignalR
 
         internal class Subscription : IDisposable
         {
-            private readonly List<Cursor> _cursors;
+            private List<Cursor> _cursors;
             private readonly Func<MessageResult, Task<bool>> _callback;
             private readonly int _maxMessages;
 
@@ -330,16 +330,19 @@ namespace SignalR
                 int totalCount = 0;
                 string nextCursor = null;
                 List<ArraySegment<Message>> items = null;
+                var cursors = new List<Cursor>();
 
                 lock (_lockObj)
                 {
                     items = new List<ArraySegment<Message>>(Cursors.Count);
                     for (int i = 0; i < Cursors.Count; i++)
                     {
-                        Cursor cursor = Cursors[i];
+                        Cursor cursor = Cursor.Clone(Cursors[i]);
+                        cursors.Add(cursor);
 
                         MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, _maxMessages);
                         ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
+
                         cursor.Id = next;
 
                         if (storeResult.Messages.Count > 0)
@@ -349,14 +352,20 @@ namespace SignalR
                         }
                     }
 
-                    nextCursor = Cursor.MakeCursor(Cursors);
+                    nextCursor = Cursor.MakeCursor(cursors);
                 }
 
                 if (Alive && items.Count > 0)
                 {
+                    lock (_lockObj)
+                    {
+                        _cursors = cursors;
+                        cursors = null;
+                    }
+
                     var messageResult = new MessageResult(items, nextCursor, totalCount);
                     Task<bool> callbackTask = Invoke(messageResult);
-
+                    
                     if (callbackTask.IsCompleted)
                     {
                         try
@@ -507,6 +516,16 @@ namespace SignalR
             public ulong Id { get; set; }
 
             public Topic Topic { get; set; }
+
+            public static Cursor Clone(Cursor cursor)
+            {
+                return new Cursor
+                {
+                    Id = cursor.Id,
+                    Key = cursor.Key,
+                    Topic = cursor.Topic
+                };
+            }
 
             public static string MakeCursor(IList<Cursor> cursors)
             {
