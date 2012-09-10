@@ -13,6 +13,8 @@
     signalR.transports.longPolling = {
         name: "longPolling",
 
+        supportsKeepAlive: false,
+
         reconnectDelay: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -20,14 +22,14 @@
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
                 initialConnectFired = false;
-            
+
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
                 connection.stop();
             }
-            
+
             connection.messageId = null;
-            
+
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
                     $(instance).trigger(events.onSending);

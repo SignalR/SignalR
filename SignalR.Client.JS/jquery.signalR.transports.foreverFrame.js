@@ -12,6 +12,8 @@
     signalR.transports.foreverFrame = {
         name: "foreverFrame",
 
+        supportsKeepAlive: true,
+
         timeOut: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -99,6 +101,7 @@
 
         receive: function (connection, data) {
             var cw;
+
             transportLogic.processMessages(connection, data);
             // Delete the script & div elements
             connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;

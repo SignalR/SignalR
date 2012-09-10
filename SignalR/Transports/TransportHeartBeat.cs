@@ -202,12 +202,13 @@ namespace SignalR.Transports
             else
             {
                 // The connection is still alive so we need to keep it alive with a server side "ping".
-                // This is for scenarios where networing hardware (proxies, loadbalancers) get in the way
+                // This is for scenarios where networking hardware (proxies, loadbalancers) get in the way
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
+                    TimeSpan? keepAlive = _configurationManager.KeepAlive;
                     metadata.Connection.KeepAlive().Catch();
-                    metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
+                    metadata.UpdateKeepAlive(keepAlive);
                 }
 
                 MarkConnection(metadata.Connection);

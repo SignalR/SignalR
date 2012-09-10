@@ -12,6 +12,8 @@
     signalR.transports.serverSentEvents = {
         name: "serverSentEvents",
 
+        supportsKeepAlive: true,
+
         timeOut: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -114,6 +116,7 @@
                 if (e.data === "initialized") {
                     return;
                 }
+
                 transportLogic.processMessages(connection, window.JSON.parse(e.data));
             }, false);
 

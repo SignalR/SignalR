@@ -19,8 +19,10 @@ namespace SignalR
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdPrefixGenerator _connectionIdPrefixGenerator;
         protected IAckHandler _ackHandler;
+        private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
+
 
         protected ITraceManager _trace;
         protected IPerformanceCounterManager _counters;
@@ -35,7 +37,8 @@ namespace SignalR
             }
 
             _newMessageBus = resolver.Resolve<IMessageBus>();
-            _connectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
+            _configurationManager = resolver.Resolve<IConfigurationManager>();
+			_connectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
@@ -90,7 +93,7 @@ namespace SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        public virtual Task ProcessRequestAsync(HostContext context)     
+        public virtual Task ProcessRequestAsync(HostContext context)
         {
             if (!_initialized)
             {
@@ -263,6 +266,7 @@ namespace SignalR
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
+                KeepAlive = _configurationManager.KeepAlive.Value.Seconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"

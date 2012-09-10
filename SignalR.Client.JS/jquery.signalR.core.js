@@ -16,7 +16,7 @@
         // no jQuery!
         throw new Error("SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.");
     }
-    
+
     if (!window.JSON) {
         // no JSON!
         throw new Error("SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.");
@@ -99,7 +99,7 @@
 
         return new signalR.fn.init(url, qs, logging);
     };
-    
+
     signalR.events = events;
 
     signalR.changeState = changeState;
@@ -112,7 +112,7 @@
         reconnecting: 2,
         disconnected: 4
     };
-    
+
     signalR.hub = {
         start: function () {
             // This will get replaced with the real hub connection start method when hubs is referenced correctly
@@ -147,11 +147,12 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false
+                    jsonp: false,
+                    keepAliveTimeoutOffset: 15
                 },
                 initialize,
                 deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
-                parser = window.document.createElement("a");            
+                parser = window.document.createElement("a");
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -258,6 +259,10 @@
                 }
 
                 transport.start(connection, function () { // success
+                    if (transport.supportsKeepAlive) {
+                        signalR.transports._logic.monitorKeepAlive(connection);
+                    }
+
                     connection.transport = transport;
 
                     changeState(connection,
@@ -294,6 +299,7 @@
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
+                    connection.keepAliveTimeout = res.KeepAlive + config.keepAliveTimeoutOffset;
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
@@ -324,7 +330,7 @@
                         });
                     } else if ($.type(config.transport) === "object" ||
                                     $.inArray(config.transport, supportedTransports) >= 0) {
-                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                        // specific transport provided, as object or a named transport, e.g. "longPolling"
                         transports.push(config.transport);
                     } else { // default "auto"
                         transports = supportedTransports;

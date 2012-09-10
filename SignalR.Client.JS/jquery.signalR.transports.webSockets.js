@@ -12,6 +12,8 @@
     signalR.transports.webSockets = {
         name: "webSockets",
 
+        supportsKeepAlive: true,
+
         send: function (connection, data) {
             connection.socket.send(data);
         },
@@ -73,8 +75,8 @@
                         return;
                     }
                     else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
-                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                        // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                        // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                         $(connection).trigger(events.onError, [event.reason]);
                         connection.log("Unclean disconnect from websocket." + event.reason);
                     }
