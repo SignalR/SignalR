@@ -17,7 +17,7 @@
         // no jQuery!
         throw new Error("SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.");
     }
-    
+
     if (!window.JSON) {
         // no JSON!
         throw new Error("SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.");
@@ -100,7 +100,7 @@
 
         return new signalR.fn.init(url, qs, logging);
     };
-    
+
     signalR.events = events;
 
     signalR.changeState = changeState;
@@ -113,7 +113,7 @@
         reconnecting: 2,
         disconnected: 4
     };
-    
+
     signalR.hub = {
         start: function () {
             // This will get replaced with the real hub connection start method when hubs is referenced correctly
@@ -148,11 +148,12 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false
+                    jsonp: false,
+                    keepAliveTimeoutOffset: 15
                 },
                 initialize,
                 deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
-                parser = window.document.createElement("a");            
+                parser = window.document.createElement("a");
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -259,6 +260,10 @@
                 }
 
                 transport.start(connection, function () { // success
+                    if (transport.supportsKeepAlive) {
+                        signalR.transports._logic.monitorKeepAlive(connection);
+                    }
+
                     connection.transport = transport;
 
                     changeState(connection,
@@ -295,6 +300,7 @@
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
+                    connection.keepAliveTimeout = res.KeepAlive + config.keepAliveTimeoutOffset;
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
@@ -325,7 +331,7 @@
                         });
                     } else if ($.type(config.transport) === "object" ||
                                     $.inArray(config.transport, supportedTransports) >= 0) {
-                            // specific transport provided, as object or a named transport, e.g. "longPolling"
+                        // specific transport provided, as object or a named transport, e.g. "longPolling"
                         transports.push(config.transport);
                     } else { // default "auto"
                         transports = supportedTransports;
@@ -500,9 +506,30 @@
     "use strict";
 
     var signalR = $.signalR,
-        events = $.signalR.events;
+        events = $.signalR.events,
+        keepAliveInterval,
+        keepAliveTimeout,
+        lastKeepAlivePinged;
 
     signalR.transports = {};
+
+    function checkIfAlive(connection) {
+        // Only check if we're alive (if we're connected)
+        if (connection.state === signalR.connectionState.connected) {
+            var diff = new Date();
+
+            diff.setTime(diff - lastKeepAlivePinged);
+
+            // Check if the keep alive has timed out
+            if (diff.getTime() >= keepAliveTimeout) {
+                window.console.log("Keep alive timed out, shifting to reconnecting.");
+                // Shift into reconnecting
+                connection.transport.reconnect(connection);
+                // Trigger the reconnect event
+                $(connection).trigger(events.onReconnect);
+            }
+        }
+    }
 
     signalR.transports._logic = {
         addQs: function (url, connection) {
@@ -605,6 +632,9 @@
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
+            window.console.log("Pinging via message received.");
+            this.pingKeepAlive(connection);
+
             if (!data) {
                 return;
             }
@@ -638,6 +668,32 @@
             }
         },
 
+        monitorKeepAlive: function (connection) {
+            // If we haven't initiated the keep alive timeouts then we need to set them up
+            if (!keepAliveTimeout) {
+                window.console.log("Now monitoring Keep alive");
+                // Converting the timeout to millseconds
+                keepAliveTimeout = connection.keepAliveTimeout * 1000;
+                window.console.log("Keep alive timeout: " + keepAliveTimeout);
+
+                // Set the ping time tracker
+                window.console.log("Pinging via monitorKeepAlive.");
+                this.pingKeepAlive(connection);
+
+                // Initiate interval to check timeouts
+                keepAliveInterval = window.setInterval(function () {
+                    checkIfAlive(connection);
+                }, keepAliveTimeout);
+            }
+            else {
+                window.console.log("Tried to monitor keep alive but it's already being monitored");
+            }
+        },
+
+        pingKeepAlive: function (connection) {
+            lastKeepAlivePinged = new Date();
+        },
+
         foreverFrame: {
             count: 0,
             connections: {}
@@ -659,6 +715,8 @@
 
     signalR.transports.webSockets = {
         name: "webSockets",
+
+        supportsKeepAlive: true,
 
         send: function (connection, data) {
             connection.socket.send(data);
@@ -721,8 +779,8 @@
                         return;
                     }
                     else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
-                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                        // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                        // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                         $(connection).trigger(events.onError, [event.reason]);
                         connection.log("Unclean disconnect from websocket." + event.reason);
                     }
@@ -793,6 +851,8 @@
 
     signalR.transports.serverSentEvents = {
         name: "serverSentEvents",
+
+        supportsKeepAlive: true,
 
         timeOut: 3000,
 
@@ -896,6 +956,7 @@
                 if (e.data === "initialized") {
                     return;
                 }
+
                 transportLogic.processMessages(connection, window.JSON.parse(e.data));
             }, false);
 
@@ -972,6 +1033,8 @@
 
     signalR.transports.foreverFrame = {
         name: "foreverFrame",
+
+        supportsKeepAlive: true,
 
         timeOut: 3000,
 
@@ -1060,6 +1123,7 @@
 
         receive: function (connection, data) {
             var cw;
+
             transportLogic.processMessages(connection, data);
             // Delete the script & div elements
             connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;
@@ -1135,6 +1199,8 @@
     signalR.transports.longPolling = {
         name: "longPolling",
 
+        supportsKeepAlive: false,
+
         reconnectDelay: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -1142,14 +1208,14 @@
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
                 initialConnectFired = false;
-            
+
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
                 connection.stop();
             }
-            
+
             connection.messageId = null;
-            
+
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
                     $(instance).trigger(events.onSending);
