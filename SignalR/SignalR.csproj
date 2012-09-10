@@ -72,6 +72,7 @@
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Json\IJsonValue.cs" />
+    <Compile Include="Json\IJsonWritable.cs" />
     <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
     <Compile Include="Infrastructure\ConnectionExtensions.cs" />

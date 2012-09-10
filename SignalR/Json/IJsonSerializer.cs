@@ -4,14 +4,14 @@ using System.IO;
 namespace SignalR
 {
     /// <summary>
-    /// Used to serialize and deserialze outgoing/incoming data.
+    /// Used to serialize and deserialize outgoing/incoming data.
     /// </summary>
     public interface IJsonSerializer
     {
         /// <summary>
         /// Serializes the specified object to a JSON string.
         /// </summary>
-        /// <param name="value">The object to serailize.</param>
+        /// <param name="value">The object to serialize.</param>
         /// <returns>A JSON string representation of the object.</returns>
         string Stringify(object value);
 

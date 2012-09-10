@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace SignalR
 {
     /// <summary>
     /// Represents a response to a connection.
     /// </summary>
-    public class PersistentResponse
+    public class PersistentResponse : IJsonWritable
     {
         /// <summary>
         /// The id of the last message in the connection received.
@@ -42,5 +44,64 @@ namespace SignalR
         /// Transport specific configurtion information.
         /// </summary>
         public IDictionary<string, object> TransportData { get; set; }
+
+        /// <summary>
+        /// Serializes only the necessary components of the <see cref="SignalR.PersistentResponse"/> to JSON
+        /// using Json.NET's JsonTextWriter to improve performance.
+        /// </summary>
+        /// <param name="writer">The <see cref="System.IO.TextWriter"/> that receives the JSON serialization.</param>
+        void IJsonWritable.WriteJson(TextWriter writer)
+        {
+            var jsonWriter = new JsonTextWriter(writer);
+            jsonWriter.WriteStartObject();
+
+            jsonWriter.WritePropertyName("MessageId");
+            jsonWriter.WriteValue(MessageId);
+
+            jsonWriter.WritePropertyName("Disconnect");
+            jsonWriter.WriteValue(Disconnect);
+
+            jsonWriter.WritePropertyName("TimedOut");
+            jsonWriter.WriteValue(TimedOut);
+
+            if (TransportData != null)
+            {
+                jsonWriter.WritePropertyName("TransportData");
+                jsonWriter.WriteStartObject();
+
+                object value;
+                if (TransportData.TryGetValue("Groups", out value))
+                {
+                    jsonWriter.WritePropertyName("Groups");
+                    jsonWriter.WriteStartArray();
+                    foreach (var group in (IEnumerable<string>)value)
+                    {
+                        jsonWriter.WriteValue(group);
+                    }
+                    jsonWriter.WriteEndArray();
+                }
+
+                jsonWriter.WriteEndObject();
+            }
+            
+            jsonWriter.WritePropertyName("Messages");
+            jsonWriter.WriteStartArray();
+
+            for (int i = 0; i < Messages.Count; i++)
+            {
+                ArraySegment<Message> segment = Messages[i];
+                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
+                {
+                    Message message = segment.Array[j];
+                    if (!message.IsCommand)
+                    {
+                        jsonWriter.WriteRawValue(message.Value);
+                    }
+                }
+            }
+
+            jsonWriter.WriteEndArray();
+            jsonWriter.WriteEndObject();
+        }
     }
 }
