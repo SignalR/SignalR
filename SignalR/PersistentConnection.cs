@@ -262,11 +262,12 @@ namespace SignalR
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
+            var keepAlive = _configurationManager.KeepAlive;
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
-                KeepAlive = _configurationManager.KeepAlive.Value.Seconds,
+                KeepAlive = (keepAlive != null) ? keepAlive.Value.Seconds : -1,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"

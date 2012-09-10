@@ -299,7 +299,7 @@
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection.keepAliveTimeout = res.KeepAlive + config.keepAliveTimeoutOffset;
+                    connection.keepAliveTimeout = (res.KeepAlive > 0) ? res.KeepAlive + config.keepAliveTimeoutOffset : null;
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
