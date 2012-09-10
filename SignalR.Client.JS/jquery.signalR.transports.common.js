@@ -22,6 +22,7 @@
             // Check if the keep alive has timed out
             if (diff.getTime() >= keepAliveTimeout) {
                 window.console.log("Keep alive timed out, shifting to reconnecting.");
+
                 // Shift into reconnecting
                 connection.transport.reconnect(connection);
                 // Trigger the reconnect event

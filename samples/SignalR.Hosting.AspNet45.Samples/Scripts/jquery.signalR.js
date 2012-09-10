@@ -149,7 +149,7 @@
                     waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false,
-                    keepAliveTimeoutOffset: 15
+                    keepAliveTimeoutOffset: 2
                 },
                 initialize,
                 deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
