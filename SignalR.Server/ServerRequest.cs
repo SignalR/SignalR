@@ -29,7 +29,7 @@ namespace SignalR.Server
                     ref _url, () =>
                     {
                         var uriBuilder = new UriBuilder(RequestScheme, RequestHost, RequestPort, RequestPathBase + RequestPath);
-                        if (!string.IsNullOrEmpty(RequestQueryString))
+                        if (!String.IsNullOrEmpty(RequestQueryString))
                         {
                             uriBuilder.Query = RequestQueryString;
                         }
@@ -88,7 +88,7 @@ namespace SignalR.Server
                     {
                         var collection = new NameValueCollection();
                         var remoteIpAddress = Get<string>(OwinConstants.RemoteIpAddress);
-                        if (!string.IsNullOrEmpty(remoteIpAddress))
+                        if (!String.IsNullOrEmpty(remoteIpAddress))
                         {
                             collection["REMOTE_ADDR"] = remoteIpAddress;
                         }

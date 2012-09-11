@@ -69,7 +69,7 @@ namespace SignalR.Server
             port = 0;
 
             var hostHeader = RequestHeaders.GetHeader("Host");
-            if (string.IsNullOrWhiteSpace(hostHeader))
+            if (String.IsNullOrWhiteSpace(hostHeader))
             {
                 return false;
             }
@@ -149,7 +149,7 @@ namespace SignalR.Server
                 {
                     return port;
                 }
-                return string.Equals(RequestScheme, "https", StringComparison.OrdinalIgnoreCase) ? 443 : 80;
+                return String.Equals(RequestScheme, "https", StringComparison.OrdinalIgnoreCase) ? 443 : 80;
             }
         }
 
@@ -178,7 +178,7 @@ namespace SignalR.Server
             get
             {
                 var mediaType = MediaType;
-                return (RequestMethod == "POST" && string.IsNullOrEmpty(mediaType))
+                return (RequestMethod == "POST" && String.IsNullOrEmpty(mediaType))
                     || mediaType == "application/x-www-form-urlencoded"
                     || mediaType == "multipart/form-data";
             }

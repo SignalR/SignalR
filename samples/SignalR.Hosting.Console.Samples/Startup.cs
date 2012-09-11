@@ -101,7 +101,7 @@ namespace SignalR.Hosting.Console.Samples
             {
                 var req = new Request(env);
                 var res = new Response(env);
-                if (string.IsNullOrEmpty(res.ContentType) &&
+                if (String.IsNullOrEmpty(res.ContentType) &&
                     req.Path.EndsWith(_extension, StringComparison.OrdinalIgnoreCase))
                 {
                     res.ContentType = _contentType;
