@@ -23,8 +23,8 @@
             if (diff.getTime() >= keepAliveTimeout) {
                 window.console.log("Keep alive timed out, shifting to reconnecting.");
 
-                // Shift into reconnecting
-                connection.transport.reconnect(connection);
+                // Notify transport that the connection has been lost
+                connection.transport.lostConnection(connection);
             }
         }
     }
@@ -129,7 +129,7 @@
 
         processMessages: function (connection, data) {
             var $connection = $(connection);
-           
+
             if (connection.transport.supportsKeepAlive) {
                 window.console.log("Pinging via message received.");
                 this.pingKeepAlive(connection);

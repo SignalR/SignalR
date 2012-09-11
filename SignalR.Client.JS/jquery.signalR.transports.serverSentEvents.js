@@ -161,6 +161,10 @@
             }, connection.reconnectDelay);
         },
 
+        lostConnection: function (connection) {
+            this.reconnect(connection);
+        },
+
         send: function (connection, data) {
             transportLogic.ajaxSend(connection, data);
         },

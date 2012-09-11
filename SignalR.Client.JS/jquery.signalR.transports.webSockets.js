@@ -120,6 +120,10 @@
             connection.reconnectDelay);
         },
 
+        lostConnection: function (connection) {
+            this.stop(connection);
+        },
+
         stop: function (connection) {
             if (connection.socket !== null) {
                 connection.log("Closing the Websocket");

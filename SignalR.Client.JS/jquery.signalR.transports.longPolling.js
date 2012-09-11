@@ -163,6 +163,10 @@
             }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
         },
 
+        lostConnection: function (connection) {
+            throw "Lost Connection not handled for LongPolling";
+        },
+
         send: function (connection, data) {
             transportLogic.ajaxSend(connection, data);
         },
