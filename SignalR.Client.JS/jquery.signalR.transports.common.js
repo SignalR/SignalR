@@ -25,8 +25,6 @@
 
                 // Shift into reconnecting
                 connection.transport.reconnect(connection);
-                // Trigger the reconnect event
-                $(connection).trigger(events.onReconnect);
             }
         }
     }
@@ -131,9 +129,11 @@
 
         processMessages: function (connection, data) {
             var $connection = $(connection);
-
-            window.console.log("Pinging via message received.");
-            this.pingKeepAlive(connection);
+           
+            if (connection.transport.supportsKeepAlive) {
+                window.console.log("Pinging via message received.");
+                this.pingKeepAlive(connection);
+            }
 
             if (!data) {
                 return;
