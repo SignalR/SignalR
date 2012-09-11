@@ -26,7 +26,7 @@ namespace SignalR.Server.Infrastructure
             string[] values;
             if (!headers.TryGetValue(name, out values) || values == null)
                 return false;
-            return values.Any(value => !string.IsNullOrWhiteSpace(value));
+            return values.Any(value => !String.IsNullOrWhiteSpace(value));
         }
 
         public static IDictionary<string, string[]> SetHeader(this IDictionary<string, string[]> headers,
@@ -83,11 +83,11 @@ namespace SignalR.Server.Infrastructure
             switch (values.Length)
             {
                 case 0:
-                    return string.Empty;
+                    return String.Empty;
                 case 1:
                     return values[0];
                 default:
-                    return string.Join(",", values);
+                    return String.Join(",", values);
             }
         }
     }

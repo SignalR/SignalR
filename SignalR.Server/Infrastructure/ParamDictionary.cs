@@ -25,7 +25,7 @@ namespace SignalR.Server.Infrastructure
         {
             var d = ParseToEnumerable(queryString, delimiters)
                 .GroupBy(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => string.Join(",", g.ToArray()), StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(g => g.Key, g => String.Join(",", g.ToArray()), StringComparer.OrdinalIgnoreCase);
 
             return new ParamDictionary(d);
         }
