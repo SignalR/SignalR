@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
+using System.Diagnostics;
 
 namespace SignalR.Transports
 {
@@ -9,20 +10,30 @@ namespace SignalR.Transports
     {
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
+        private readonly PerformanceCounter _connConnectedCounter;
+        private readonly PerformanceCounter _connReconnectedCounter;
 
         private const int MaxMessages = 10;
 
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>())
+                   resolver.Resolve<ITransportHeartBeat>(),
+                   resolver.Resolve<IPerformanceCounterWriter>())
         {
         }
 
-        public ForeverTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
-            : base(context, jsonSerializer, heartBeat)
+        public ForeverTransport(HostContext context,
+                                IJsonSerializer jsonSerializer,
+                                ITransportHeartBeat heartBeat,
+                                IPerformanceCounterWriter performanceCounterWriter)
+            : base(context, jsonSerializer, heartBeat, performanceCounterWriter)
         {
             _jsonSerializer = jsonSerializer;
+            
+            var counters = performanceCounterWriter;
+            _connConnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsConnected);
+            _connReconnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsReconnected);
         }
 
         protected string LastMessageId
@@ -114,7 +125,7 @@ namespace SignalR.Transports
                         {
                             if (newConnection)
                             {
-                                return Connected();
+                                return Connected().Then(() => _connConnectedCounter.SafeIncrement());
                             }
                             return TaskAsyncHelper.Empty;
                         }
@@ -127,7 +138,8 @@ namespace SignalR.Transports
                 if (Reconnected != null)
                 {
                     // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, Reconnected, connection, Completed);
+                    Func<Task> reconnected = () => Reconnected().Then(() => _connReconnectedCounter.SafeIncrement());
+                    return TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
                 }
 
                 return ProcessReceiveRequest(connection);

@@ -16,7 +16,12 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly SafeSet<string> _groups;
-        private readonly IPerformanceCounterWriter _counters;
+        
+        private readonly PerformanceCounter _msgsRecTotalCounter;
+        private readonly PerformanceCounter _msgsRecPerSecCounter;
+        private readonly PerformanceCounter _msgsSentTotalCounter;
+        private readonly PerformanceCounter _msgsSentPerSecCounter;
+
         private bool _disconnected;
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
@@ -37,7 +42,12 @@ namespace SignalR
             _signals = new HashSet<string>(signals);
             _groups = new SafeSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
-            _counters = performanceCounterWriter;
+            
+            var counters = performanceCounterWriter;
+            _msgsRecTotalCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesReceivedTotal);
+            _msgsRecPerSecCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesReceivedPerSec);
+            _msgsSentTotalCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesSentTotal);
+            _msgsSentPerSecCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesSentPerSec);
         }
 
         IEnumerable<string> ISubscriber.EventKeys
@@ -89,8 +99,8 @@ namespace SignalR
         private Task SendMessage(string key, object value)
         {
             Message message = CreateMessage(key, value);
-            _counters.Increment(PerformanceCounters.ConnectionMessagesSent);
-            _counters.Increment(PerformanceCounters.ConnectionMessagesSentPerSecond);
+            _msgsSentTotalCounter.SafeIncrement();
+            _msgsSentPerSecCounter.SafeIncrement();
             return _bus.Publish(message);
         }
 
@@ -223,8 +233,8 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceived, result.TotalCount);
-            _counters.IncrementBy(PerformanceCounters.ConnectionMessagesReceivedPerSec, result.TotalCount);
+            _msgsRecTotalCounter.IncrementBy(result.TotalCount);
+            _msgsRecPerSecCounter.IncrementBy(result.TotalCount);
 
             return response;
         }

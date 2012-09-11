@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace SignalR.Transports
         private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly PerformanceCounter _connDisconnectedCounter;
         private TextWriter _outputWriter;
 
         protected int _isDisconnected;
@@ -24,7 +26,7 @@ namespace SignalR.Transports
         private readonly CancellationTokenSource _disconnectedToken;
         private string _connectionId;
 
-        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat)
+        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterWriter performanceCounterWriter)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;
@@ -34,6 +36,9 @@ namespace SignalR.Transports
             _disconnectedToken = new CancellationTokenSource();
             _hostShutdownToken = context.HostShutdownToken();
             Completed = new TaskCompletionSource<object>();
+
+            var counters = performanceCounterWriter;
+            _connDisconnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsDisconnected);
 
             // Create a token that represents the end of this connection's life
             _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _disconnectedToken.Token, _hostShutdownToken);
@@ -170,7 +175,8 @@ namespace SignalR.Transports
                 var disconnected = Disconnected; // copy before invoking event to avoid race
                 if (disconnected != null)
                 {
-                    return disconnected().Catch();
+                    return disconnected().Catch()
+                        .Then(() => _connDisconnectedCounter.SafeIncrement());
                 }
             }
 

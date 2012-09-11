@@ -19,7 +19,7 @@ namespace SignalR.Transports
         private readonly IServerCommandHandler _serverCommandHandler;
         private readonly ITraceManager _trace;
         private readonly string _serverId;
-        private readonly IPerformanceCounterWriter _counters;
+        private readonly PerformanceCounter _connectionsCurrentCounter;
         private readonly object _counterLock = new object();
 
         private int _running;
@@ -34,7 +34,9 @@ namespace SignalR.Transports
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
             _trace = resolver.Resolve<ITraceManager>();
-            _counters = resolver.Resolve<IPerformanceCounterWriter>();
+
+            var counters = resolver.Resolve<IPerformanceCounterWriter>();
+            _connectionsCurrentCounter = counters.GetCounter(PerformanceCounters.ConnectionsCurrent);
 
             _serverCommandHandler.Command = ProcessServerCommand;
 
@@ -101,14 +103,9 @@ namespace SignalR.Transports
                 Trace.TraceInformation("Connection is New=({0}).", connection.Url);
             }
 
-            if (isNewConnection)
-            {
-                _counters.Increment(PerformanceCounters.ConnectionsConnected);
-            }
-
             lock (_counterLock)
             {
-                _counters.SetRaw(PerformanceCounters.ConnectionsCurrent, _connections.Count);
+                _connectionsCurrentCounter.RawValue = _connections.Count;
             }
 
             // Set the initial connection time
@@ -128,7 +125,7 @@ namespace SignalR.Transports
             {
                 lock (_counterLock)
                 {
-                    _counters.SetRaw(PerformanceCounters.ConnectionsCurrent, _connections.Count);
+                    _connectionsCurrentCounter.RawValue = _connections.Count;
                 }
                 Trace.TraceInformation("Removing connection {0}", connectionId);
             }
@@ -230,8 +227,6 @@ namespace SignalR.Transports
 
                     // Fire disconnect on the connection
                     metadata.Connection.Disconnect();
-
-                    _counters.Increment(PerformanceCounters.ConnectionsDisconnected);
 
                     // End the connection
                     metadata.Connection.End();

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using SignalR.Infrastructure;
+using System.Threading.Tasks;
 
 namespace SignalR.Transports
 {
@@ -7,21 +8,25 @@ namespace SignalR.Transports
         private readonly HostContext _context;
         private IWebSocket _socket;
         private bool _isAlive = true;
+        private readonly IPerformanceCounterWriter _counters;
 
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
             : this(context, 
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>())
+                   resolver.Resolve<ITransportHeartBeat>(),
+                   resolver.Resolve<IPerformanceCounterWriter>())
         {
         }
 
         public WebSocketTransport(HostContext context, 
                                   IJsonSerializer serializer, 
-                                  ITransportHeartBeat heartBeat)
-            : base(context, serializer, heartBeat)
+                                  ITransportHeartBeat heartBeat,
+                                  IPerformanceCounterWriter performanceCounterWriter)
+            : base(context, serializer, heartBeat, performanceCounterWriter)
         {
             _context = context;
+            _counters = performanceCounterWriter;
         }
 
         public override bool IsAlive

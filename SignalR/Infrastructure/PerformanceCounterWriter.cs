@@ -5,10 +5,12 @@ using System.Threading;
 
 namespace SignalR.Infrastructure
 {
+    /// <summary>
+    /// Writes performance counter data to Windows performance counters.
+    /// </summary>
     public class PerformanceCounterWriter : IPerformanceCounterWriter
     {
         private object _initLocker = new object();
-        private string _instanceName;
         private bool _countersInstalled = false;
         private CancellationToken _hostShutdownToken;
 
@@ -25,35 +27,43 @@ namespace SignalR.Infrastructure
             {
                 if (!_countersInstalled)
                 {
-                    _instanceName = hostContext.InstanceName() ?? Guid.NewGuid().ToString();
+                    var instanceName = hostContext.InstanceName() ?? Guid.NewGuid().ToString();
+                    
+                    LoadCounters(instanceName);
+
                     _hostShutdownToken = hostContext.HostShutdownToken();
                     if (_hostShutdownToken != null)
                     {
-                        LoadCounters();
                         _hostShutdownToken.Register(() => UnloadCounters());
                     }
+
+                    _countersInstalled = true;
                 }
             }
         }
 
-        private void LoadCounters()
+        public PerformanceCounter GetCounter(string counterName)
+        {
+            PerformanceCounter counter;
+            _counters.TryGetValue(counterName, out counter);
+            return counter;
+        }
+
+        private void LoadCounters(string instanceName)
         {
             foreach (var counterData in PerformanceCounters.Counters)
             {
-                var counter = GetCounter(PerformanceCounters.CategoryName, counterData.CounterName, _instanceName);
+                var counter = LoadCounter(PerformanceCounters.CategoryName, counterData.CounterName, instanceName);
                 if (counter == null)
                 {
-                    // A counter is missing, go into no-op mode
-                    // REVIEW: Should we trace a message here?
+                    // A counter is missing so we'll assume they're not installed properly, go into no-op mode
                     return;
                 }
                 _counters.Add(counter.CounterName, counter);
-                
+
                 // Initialize the sample
                 counter.NextSample();
             }
-            
-            _countersInstalled = true;
         }
 
         private void UnloadCounters()
@@ -69,83 +79,7 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public void Increment(string counterName)
-        {
-            if (String.IsNullOrEmpty(counterName))
-            {
-                throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
-            }
-
-            if (!_countersInstalled)
-            {
-                return;
-            }
-
-            PerformanceCounter counter;
-            if (_counters.TryGetValue(counterName, out counter))
-            {
-                counter.Increment();
-            }
-        }
-
-        public void IncrementBy(string counterName, long value)
-        {
-            if (String.IsNullOrEmpty(counterName))
-            {
-                throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
-            }
-
-            if (!_countersInstalled)
-            {
-                return;
-            }
-
-            PerformanceCounter counter;
-            if (_counters.TryGetValue(counterName, out counter))
-            {
-                counter.IncrementBy(value);
-            }
-        }
-
-        public void SetRaw(string counterName, long value)
-        {
-            if (String.IsNullOrEmpty(counterName))
-            {
-                throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
-            }
-
-            if (!_countersInstalled)
-            {
-                return;
-            }
-
-            PerformanceCounter counter;
-            if (_counters.TryGetValue(counterName, out counter))
-            {
-                counter.RawValue = value;
-            }
-        }
-
-        public void Decrement(string counterName)
-        {
-            if (String.IsNullOrEmpty(counterName))
-            {
-                throw new ArgumentException("A value for parameter 'counterName' is required.", "counterName");
-            }
-
-            if (!_countersInstalled)
-            {
-                return;
-            }
-
-            PerformanceCounter counter;
-            if (_counters.TryGetValue(counterName, out counter))
-            {
-                counter.Decrement();
-            }
-        }
-
-        private static PerformanceCounter GetCounter(string categoryName, string counterName, string instanceName)
+        private static PerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
         {
             try
             {

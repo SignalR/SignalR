@@ -23,12 +23,20 @@ namespace SignalR
 
         private readonly ITraceManager _trace;
 
+        private readonly PerformanceCounter _allocatedWorkersCounter;
+        private readonly PerformanceCounter _busyWorkersCounter;
+        private readonly PerformanceCounter _subsCurrentCounter;
+        private readonly PerformanceCounter _subsTotalCounter;
+        private readonly PerformanceCounter _subsPerSecCounter;
+        private readonly PerformanceCounter _msgsTotalCounter;
+        private readonly PerformanceCounter _msgsPerSecCounter;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="resolver"></param>
         public MessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>())
+            : this(resolver.Resolve<ITraceManager>(), resolver.Resolve<IPerformanceCounterWriter>())
         {
 
         }
@@ -37,10 +45,18 @@ namespace SignalR
         /// 
         /// </summary>
         /// <param name="traceManager"></param>
-        public MessageBus(ITraceManager traceManager)
+        public MessageBus(ITraceManager traceManager, IPerformanceCounterWriter performanceCounterWriter)
         {
             _trace = traceManager;
-            _engine = new Engine(_topics)
+            
+            var counters = performanceCounterWriter;
+            _subsCurrentCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersCurrent);
+            _subsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersTotal);
+            _subsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersPerSec);
+            _msgsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedTotal);
+            _msgsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedPerSec);
+
+            _engine = new Engine(_topics, performanceCounterWriter)
             {
                 Trace = Trace
             };
@@ -730,6 +746,9 @@ namespace SignalR
             private readonly Queue<Subscription> _queue = new Queue<Subscription>();
             private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
 
+            private readonly PerformanceCounter _allocatedWorkersCounter;
+            private readonly PerformanceCounter _busyWorkersCounter;
+
             private static readonly TimeSpan _idleTimeout = TimeSpan.FromSeconds(30);
 
             // The maximum number of workers (threads) allowed to process all incoming messages
@@ -744,9 +763,13 @@ namespace SignalR
             // The number of workers that are *actually* doing work
             private int _busyWorkers;
 
-            public Engine(ConcurrentDictionary<string, Topic> topics)
+            public Engine(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterWriter performanceCounterWriter)
             {
                 _topics = topics;
+                
+                var counters = performanceCounterWriter;
+                _allocatedWorkersCounter = counters.GetCounter(PerformanceCounters.MessageBusAllocatedWorkers);
+                _busyWorkersCounter = counters.GetCounter(PerformanceCounters.MessageBusBusyWorkers);
             }
 
             public TraceSource Trace
@@ -790,6 +813,7 @@ namespace SignalR
                 if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
                 {
                     Interlocked.Increment(ref _allocatedWorkers);
+                    _allocatedWorkersCounter.SafeIncrement();
 
                     Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
@@ -826,6 +850,7 @@ namespace SignalR
                 {
                     // After the pump runs decrement the number of workers in flight
                     Interlocked.Decrement(ref _allocatedWorkers);
+                    _allocatedWorkersCounter.SafeDecrement();
                 }
             }
 
@@ -835,6 +860,7 @@ namespace SignalR
                 {
                     // After the pump runs decrement the number of workers in flight
                     Interlocked.Decrement(ref _allocatedWorkers);
+                    _allocatedWorkersCounter.SafeDecrement();
 
                     if (task.IsFaulted)
                     {
@@ -874,6 +900,7 @@ namespace SignalR
                     }
 
                     Interlocked.Increment(ref _busyWorkers);
+                    _busyWorkersCounter.SafeIncrement();
                     Task workTask = subscription.WorkAsync(_topics);
 
                     if (workTask.IsCompleted)
@@ -892,6 +919,7 @@ namespace SignalR
                         {
                             subscription.UnsetQueued();
                             Interlocked.Decrement(ref _busyWorkers);
+                            _busyWorkersCounter.SafeDecrement();
 
                             Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
                         }
@@ -914,6 +942,7 @@ namespace SignalR
                 {
                     subscription.UnsetQueued();
                     Interlocked.Decrement(ref _busyWorkers);
+                    _busyWorkersCounter.SafeDecrement();
 
                     Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
 
