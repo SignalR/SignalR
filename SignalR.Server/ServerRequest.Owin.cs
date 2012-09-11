@@ -62,9 +62,6 @@ namespace SignalR.Server
             get { return Get<Action>(OwinConstants.DisableRequestBuffering) ?? (() => { }); }
         }
 
-
-
-
         private bool TryParseHostHeader(out IPAddress address, out string host, out int port)
         {
             address = null;
