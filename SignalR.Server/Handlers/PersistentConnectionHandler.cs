@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SignalR.Server.Util;
+using SignalR.Server.Infrastructure;
 
 namespace SignalR.Server.Handlers
 {

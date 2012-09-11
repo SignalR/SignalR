@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using SignalR.Server.Util;
+using SignalR.Server.Infrastructure;
 
 namespace SignalR.Server
 {

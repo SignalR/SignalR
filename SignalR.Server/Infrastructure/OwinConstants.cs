@@ -1,4 +1,4 @@
-﻿namespace SignalR.Server.Util
+﻿namespace SignalR.Server.Infrastructure
 {
     internal static class OwinConstants
     {

@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using SignalR.Server.Util;
+using SignalR.Server.Infrastructure;
 
 namespace SignalR.Server
 {
