@@ -22,12 +22,5 @@ namespace SignalR
         /// <param name="maxMessages"></param>
         /// <returns></returns>
         IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="eventKey"></param>
-        /// <returns></returns>
-        string GetCursor(string eventKey);
     }
 }

@@ -58,7 +58,7 @@ namespace SignalR
             }
         }
 
-        public event Action<string, string> EventAdded;
+        public event Action<string> EventAdded;
 
         public event Action<string> EventRemoved;
 
@@ -101,115 +101,37 @@ namespace SignalR
             Message message = CreateMessage(key, value);
             _msgsSentTotalCounter.SafeIncrement();
             _msgsSentPerSecCounter.SafeIncrement();
+
+            if (message.IsCommand)
+            {
+                // REVIEW: What do we need to pass for the cancellation token here
+                Task ackTask = _bus.ReceiveAck(message, CancellationToken.None);
+                return _bus.Publish(message).Then(task => task, ackTask);
+            }
+
             return _bus.Publish(message);
         }
 
         private Message CreateMessage(string key, object value)
         {
-            bool isCommand;
-            value = PreprocessValue(value, out isCommand);
-            var serializedValue = _serializer.Stringify(value);
-
-            return new Message(_connectionId, key, serializedValue)
-            {
-                IsCommand = isCommand
-            };
-        }
-
-        private object PreprocessValue(object value, out bool isCommand)
-        {
-            isCommand = false;
-
-            // If this isn't a command then ignore it
             var command = value as Command;
-            if (command == null)
+            var message = new Message(_connectionId, key, _serializer.Stringify(value));
+
+            if (command != null)
             {
-                return value;
+                // Set the command id
+                message.CommandId = command.Id;
             }
 
-            isCommand = true;
-
-            if (command.Type == CommandType.AddToGroup)
-            {
-                var group = new GroupData
-                {
-                    Name = command.Value,
-                    Cursor = _bus.GetCursor(command.Value)
-                };
-
-                command.Value = _serializer.Stringify(group);
-            }
-            else if (command.Type == CommandType.RemoveFromGroup)
-            {
-                var group = new GroupData
-                {
-                    Name = command.Value
-                };
-
-                command.Value = _serializer.Stringify(group);
-            }
-
-            return command;
+            return message;
         }
 
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int maxMessages)
         {
-            var tcs = new TaskCompletionSource<PersistentResponse>();
-            IDisposable subscription = null;
-
-            const int stateUnassigned = 0;
-            const int stateAssigned = 1;
-            const int stateDisposed = 2;
-
-            int state = stateUnassigned;
-
-            CancellationTokenRegistration registration = cancel.Register(() =>
+            return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse, (result, response) =>
             {
-                // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
-                {
-                    subscription.Dispose();
-                }
+                response.MessageId = result.LastMessageId;
             });
-
-            PersistentResponse response = null;
-
-            subscription = _bus.Subscribe(this, messageId, result =>
-            {
-                if (Interlocked.CompareExchange(ref response, GetResponse(result), null) == null)
-                {
-                    registration.Dispose();
-                    // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                    if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
-                    {
-                        subscription.Dispose();
-                    }
-                }
-
-                if (result.Terminal)
-                {
-                    // Use the terminal message id since it's the most accurate
-                    // This is important for things like manipulating groups
-                    // since the message id is only updated after processing the commands
-                    // as part of this call itself.
-                    response.MessageId = result.LastMessageId;
-                    tcs.TrySetResult(response);
-
-                    return TaskAsyncHelper.False;
-                }
-
-                return TaskAsyncHelper.True;
-            },
-            maxMessages);
-
-            // If callbacks have already run, they maybe have not been able to Dispose the subscription because the instance was not yet assigned
-            if (Interlocked.Exchange(ref state, stateAssigned) == stateDisposed)
-            {
-                // In this case, we will dispose of it immediately.
-                subscription.Dispose();
-            }
-
-            return tcs.Task;
         }
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
@@ -241,19 +163,16 @@ namespace SignalR
 
         private void ProcessResults(MessageResult result)
         {
-            for (int i = 0; i < result.Messages.Count; i++)
-            {
-                ArraySegment<Message> segment = result.Messages[i];
-                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
-                {
-                    Message message = segment.Array[j];
-                    if (message.IsCommand)
-                    {
-                        var command = _serializer.Parse<Command>(message.Value);
-                        ProcessCommand(command);
-                    }
-                }
-            }
+            result.Messages.Enumerate(message => message.IsCommand,
+                                      message =>
+                                      {
+                                          var command = _serializer.Parse<Command>(message.Value);
+                                          ProcessCommand(command);
+
+                                          // Send a message through the bus confirming that we got the message
+                                          // REVIEW: Do we retry if this fails?
+                                          _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
+                                      });
         }
 
         private void ProcessCommand(Command command)
@@ -262,23 +181,23 @@ namespace SignalR
             {
                 case CommandType.AddToGroup:
                     {
-                        var groupData = _serializer.Parse<GroupData>(command.Value);
+                        var name = command.Value;
 
                         if (EventAdded != null)
                         {
-                            _groups.Add(groupData.Name);
-                            EventAdded(groupData.Name, groupData.Cursor);
+                            _groups.Add(name);
+                            EventAdded(name);
                         }
                     }
                     break;
                 case CommandType.RemoveFromGroup:
                     {
-                        var groupData = _serializer.Parse<GroupData>(command.Value);
+                        var name = command.Value;
 
                         if (EventRemoved != null)
                         {
-                            _groups.Remove(groupData.Name);
-                            EventRemoved(groupData.Name);
+                            _groups.Remove(name);
+                            EventRemoved(name);
                         }
                     }
                     break;
@@ -303,12 +222,6 @@ namespace SignalR
 
                 response.TransportData["Groups"] = _groups.GetSnapshot();
             }
-        }
-
-        private class GroupData
-        {
-            public string Name { get; set; }
-            public string Cursor { get; set; }
         }
     }
 }

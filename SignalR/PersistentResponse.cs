@@ -83,22 +83,12 @@ namespace SignalR
 
                 jsonWriter.WriteEndObject();
             }
-            
+
             jsonWriter.WritePropertyName("Messages");
             jsonWriter.WriteStartArray();
 
-            for (int i = 0; i < Messages.Count; i++)
-            {
-                ArraySegment<Message> segment = Messages[i];
-                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
-                {
-                    Message message = segment.Array[j];
-                    if (!message.IsCommand)
-                    {
-                        jsonWriter.WriteRawValue(message.Value);
-                    }
-                }
-            }
+            Messages.Enumerate(m => !m.IsCommand,
+                               m => jsonWriter.WriteRawValue(m.Value));
 
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();

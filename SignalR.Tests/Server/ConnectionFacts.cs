@@ -12,7 +12,12 @@ namespace SignalR.Tests.Server
             var messageBus = new Mock<IMessageBus>();
             var counters = new Mock<IPerformanceCounterWriter>();
             Message message = null;
-            messageBus.Setup(m => m.Publish(It.IsAny<Message>())).Callback<Message>(m => message = m);
+            messageBus.Setup(m => m.Publish(It.IsAny<Message>())).Returns<Message>(m =>
+            {
+                message = m;
+                return TaskAsyncHelper.Empty;
+            });
+
             var serializer = new JsonNetSerializer();
             var traceManager = new Mock<ITraceManager>();
             var connection = new Connection(messageBus.Object,
@@ -34,7 +39,7 @@ namespace SignalR.Tests.Server
             Assert.True(message.IsCommand);
             var command = serializer.Parse<Command>(message.Value);
             Assert.Equal(CommandType.AddToGroup, command.Type);
-            Assert.Equal(@"{""Name"":""foo"",""Cursor"":null}", command.Value);
+            Assert.Equal("foo", command.Value);
         }
     }
 }

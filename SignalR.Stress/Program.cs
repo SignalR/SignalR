@@ -52,24 +52,24 @@ namespace SignalR.Stress
 
         static void Main(string[] args)
         {
-            //Debug.Listeners.Add(new ConsoleTraceListener());
-            //Debug.AutoFlush = true;
+            Debug.Listeners.Add(new ConsoleTraceListener());
+            Debug.AutoFlush = true;
 
-            //while (true)
-            //{
-            //    Console.WriteLine("==================================");
-            //    Console.WriteLine("BEGIN RUN");
-            //    Console.WriteLine("==================================");
-            //    StressGroups();
-            //    Console.WriteLine("==================================");
-            //    Console.WriteLine("END RUN");
-            //    Console.WriteLine("==================================");
-            //}
+            while (true)
+            {
+                Console.WriteLine("==================================");
+                Console.WriteLine("BEGIN RUN");
+                Console.WriteLine("==================================");
+                StressGroups();
+                Console.WriteLine("==================================");
+                Console.WriteLine("END RUN");
+                Console.WriteLine("==================================");
+            }
 
             //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             //ThreadPool.SetMinThreads(32, 32);
 
-            // RunBusTest();
+            //RunBusTest();
             //RunConnectionTest();
             //RunConnectionReceiveLoopTest();
             var host = RunMemoryHost();
@@ -110,7 +110,7 @@ namespace SignalR.Stress
 
             try
             {
-                connection.Start(host).Wait();
+                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
 
                 for (int i = 0; i < max; i++)
                 {

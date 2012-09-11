@@ -9,7 +9,7 @@ namespace SignalR
 
         string Identity { get; }
 
-        event Action<string, string> EventAdded;
+        event Action<string> EventAdded;
 
         event Action<string> EventRemoved;
     }

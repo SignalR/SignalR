@@ -214,15 +214,15 @@ namespace SignalR.Tests.Server
 
             public string Identity { get; private set; }
 
-            public event Action<string, string> EventAdded;
+            public event Action<string> EventAdded;
 
             public event Action<string> EventRemoved;
 
-            public void AddEvent(string eventName, string cursor = "0")
+            public void AddEvent(string eventName)
             {
                 if (EventAdded != null)
                 {
-                    EventAdded(eventName, cursor);
+                    EventAdded(eventName);
                 }
             }
 

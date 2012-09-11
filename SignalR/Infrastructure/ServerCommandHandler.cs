@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SignalR.Infrastructure
@@ -51,7 +50,7 @@ namespace SignalR.Infrastructure
             }
         }
 
-        public event Action<string, string> EventAdded;
+        public event Action<string> EventAdded;
 
         public event Action<string> EventRemoved;
 
@@ -80,21 +79,12 @@ namespace SignalR.Infrastructure
 
         private Task<bool> HandleServerCommands(MessageResult result)
         {
-            for (int i = 0; i < result.Messages.Count; i++)
-            {
-                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
-                {
-                    Message message = result.Messages[i].Array[j];
-
-                    // Only handle server commands
-                    if (ServerSignal.Equals(message.Key))
-                    {
-                        // Uwrap the command and raise the event
-                        var command = _serializer.Parse<ServerCommand>(message.Value);
-                        OnCommand(command);
-                    }
-                }
-            }
+            result.Messages.Enumerate(m => ServerSignal.Equals(m.Key),
+                                      m =>
+                                      {
+                                          var command = _serializer.Parse<ServerCommand>(m.Value);
+                                          OnCommand(command);
+                                      });
 
             return TaskAsyncHelper.True;
         }

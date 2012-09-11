@@ -161,15 +161,12 @@ namespace SignalR
                 }
             }
 
-            Action<string, string> eventAdded = (eventKey, eventCursor) =>
+            Action<string> eventAdded = (eventKey) =>
             {
                 Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
 
-                // Get the cursor for this event key
-                ulong id = eventCursor == null ? 0 : UInt64.Parse(eventCursor);
-
                 // Add or update the cursor (in case it already exists)
-                subscription.AddOrUpdateCursor(eventKey, id, topic);
+                subscription.AddOrUpdateCursor(eventKey, GetMessageId(eventKey), topic);
 
                 // Add it to the list of subs
                 topic.AddSubscription(subscription);
