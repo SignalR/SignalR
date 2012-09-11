@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace SignalR.Server
 {
-    class ServerRequestCookieCollection : IRequestCookieCollection
+    public class ServerRequestCookieCollection : IRequestCookieCollection
     {
         private readonly IDictionary<string, Cookie> _cookies;
 
