@@ -50,9 +50,9 @@
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Util\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="Util\Headers.cs" />
-    <Compile Include="Util\OwinConstants.cs" />
-    <Compile Include="Util\ParamDictionary.cs" />
+    <Compile Include="Infrastructure\Headers.cs" />
+    <Compile Include="Infrastructure\OwinConstants.cs" />
+    <Compile Include="Infrastructure\ParamDictionary.cs" />
     <Compile Include="Handlers\CallHandler.cs" />
     <Compile Include="GlobalHost.cs" />
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />

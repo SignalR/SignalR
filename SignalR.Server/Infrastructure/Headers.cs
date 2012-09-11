@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SignalR.Server.Util
+namespace SignalR.Server.Infrastructure
 {
     // Helper methods for creating and consuming CallParameters.Headers and ResultParameters.Headers.
     internal static class Headers
