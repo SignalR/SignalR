@@ -76,6 +76,7 @@
     <Compile Include="Infrastructure\PerformanceCounterInstaller.cs" />
     <Compile Include="Infrastructure\PerformanceCounters.cs" />
     <Compile Include="Infrastructure\PerformanceCounterWriter.cs" />
+    <Compile Include="Infrastructure\Disposer.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
     <Compile Include="Json\JTokenValue.cs" />

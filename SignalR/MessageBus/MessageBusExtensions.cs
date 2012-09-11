@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR
 {
@@ -32,39 +33,30 @@ namespace SignalR
             var tcs = new TaskCompletionSource<T>();
             IDisposable subscription = null;
 
-            const int stateUnassigned = 0;
-            const int stateAssigned = 1;
-            const int stateDisposed = 2;
-
-            int state = stateUnassigned;
+            var disposer = new Disposer();
+            int resultSet = 0;
             var result = default(T);
 
-            CancellationTokenRegistration registration = cancel.Register(() =>
-            {
-                // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
-                {
-                    subscription.Dispose();
-                }
-            });
+            CancellationTokenRegistration registration = cancel.Register(disposer.Dispose);
 
             subscription = bus.Subscribe(subscriber, cursor, messageResult =>
             {
                 // Mark the flag as set so we only set the result once
-                if (Interlocked.CompareExchange(ref result, map(messageResult), null) == null)
+                if (Interlocked.Exchange(ref resultSet, 1) == 0)
                 {
+                    result = map(messageResult);
+
                     // Dispose of the cancellation token subscription
                     registration.Dispose();
 
-                    // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
-                    if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
-                    {
-                        subscription.Dispose();
-                    }
+                    // Dispose the subscription
+                    disposer.Dispose();
                 }
 
                 if (messageResult.Terminal)
                 {
+                    Interlocked.CompareExchange(ref result, map(messageResult), null);
+
                     // Fire a callback before the result is set
                     end(messageResult, result);
 
@@ -78,12 +70,8 @@ namespace SignalR
             },
             maxMessages);
 
-            // If callbacks have already run, they maybe have not been able to Dispose the subscription because the instance was not yet assigned
-            if (Interlocked.Exchange(ref state, stateAssigned) == stateDisposed)
-            {
-                // In this case, we will dispose of it immediately.
-                subscription.Dispose();
-            }
+            // Set the disposable
+            disposer.Set(subscription);
 
             return tcs.Task;
         }

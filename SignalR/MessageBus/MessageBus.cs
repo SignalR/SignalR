@@ -89,14 +89,19 @@ namespace SignalR
 
             topic.Store.Add(message);
 
-            // TODO: Consider a ReaderWriterLockSlim (or use our LockedList<T>)
-            lock (topic.Subscriptions)
+            try
             {
+                topic.SubscriptionLock.EnterReadLock();
+
                 for (int i = 0; i < topic.Subscriptions.Count; i++)
                 {
                     Subscription subscription = topic.Subscriptions[i];
                     _engine.Schedule(subscription);
                 }
+            }
+            finally
+            {
+                topic.SubscriptionLock.ExitReadLock();
             }
 
             _msgsTotalCounter.SafeIncrement();
@@ -719,32 +724,46 @@ namespace SignalR
 
             public IList<Subscription> Subscriptions { get; private set; }
             public MessageStore<Message> Store { get; private set; }
+            public ReaderWriterLockSlim SubscriptionLock { get; private set; }
 
             public Topic()
             {
                 Subscriptions = new List<Subscription>();
                 Store = new MessageStore<Message>(DefaultMessageStoreSize);
+                SubscriptionLock = new ReaderWriterLockSlim();
             }
 
             public void AddSubscription(Subscription subscription)
             {
-                lock (Subscriptions)
+                try
                 {
+                    SubscriptionLock.EnterWriteLock();
+
                     if (_subs.Add(subscription.Identity))
                     {
                         Subscriptions.Add(subscription);
                     }
                 }
+                finally
+                {
+                    SubscriptionLock.ExitWriteLock();
+                }
             }
 
             public void RemoveSubscription(Subscription subscription)
             {
-                lock (Subscriptions)
+                try
                 {
+                    SubscriptionLock.EnterWriteLock();
+
                     if (_subs.Remove(subscription.Identity))
                     {
                         Subscriptions.Remove(subscription);
                     }
+                }
+                finally
+                {
+                    SubscriptionLock.ExitWriteLock();
                 }
             }
         }
@@ -825,13 +844,19 @@ namespace SignalR
 
                 foreach (var topic in _topics.Values)
                 {
-                    lock (topic.Subscriptions)
+                    try
                     {
+                        topic.SubscriptionLock.EnterReadLock();
+
                         for (int i = 0; i < topic.Subscriptions.Count; i++)
                         {
                             Subscription subscription = topic.Subscriptions[i];
                             Schedule(subscription);
                         }
+                    }
+                    finally
+                    {
+                        topic.SubscriptionLock.ExitReadLock();
                     }
                 }
 

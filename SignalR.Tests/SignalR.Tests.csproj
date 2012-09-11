@@ -63,6 +63,7 @@
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
     <Compile Include="EventSourceStreamReaderFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
+    <Compile Include="Server\DisposerFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
     <Compile Include="DefaultActionResolverFacts.cs" />
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
