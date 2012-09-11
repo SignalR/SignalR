@@ -7,6 +7,7 @@
         public string Value { get; private set; }
 
         public string CommandId { get; set; }
+        public bool WaitForAck { get; set; }
         public bool IsAck { get; set; }
 
         public bool IsCommand

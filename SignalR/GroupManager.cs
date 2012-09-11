@@ -10,7 +10,7 @@ namespace SignalR
     {
         private readonly IConnection _connection;
         private readonly string _groupPrefix;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupManager"/> class.
         /// </summary>
@@ -44,7 +44,8 @@ namespace SignalR
             var command = new Command
             {
                 Type = CommandType.AddToGroup,
-                Value = CreateQualifiedName(groupName)
+                Value = CreateQualifiedName(groupName),
+                WaitForAck = true
             };
 
             return _connection.Send(connectionId, command);
@@ -61,7 +62,8 @@ namespace SignalR
             var command = new Command
             {
                 Type = CommandType.RemoveFromGroup,
-                Value = CreateQualifiedName(groupName)
+                Value = CreateQualifiedName(groupName),
+                WaitForAck = true
             };
 
             return _connection.Send(connectionId, command);

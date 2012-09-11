@@ -67,10 +67,10 @@ namespace SignalR.Stress
             }
 
             //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-            //ThreadPool.SetMinThreads(32, 32);
+            ThreadPool.SetMinThreads(32, 32);
 
-            //RunBusTest();
-            //RunConnectionTest();
+            // RunBusTest();
+            // RunConnectionTest();
             //RunConnectionReceiveLoopTest();
             var host = RunMemoryHost();
 
@@ -95,6 +95,8 @@ namespace SignalR.Stress
             var connection = new Client.Hubs.HubConnection("http://foo");
             var proxy = connection.CreateProxy("MultGroupHub");
 
+            var bus = (MessageBus)host.DependencyResolver.Resolve<IMessageBus>();
+
             proxy.On<int>("Do", i =>
             {
                 lock (list)
@@ -110,17 +112,33 @@ namespace SignalR.Stress
 
             try
             {
-                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+                connection.Start(host).Wait();
 
                 for (int i = 0; i < max; i++)
                 {
                     proxy.Invoke("Do", i).Wait();
                 }
 
-                if (!countDown.Wait(TimeSpan.FromSeconds(10)))
+                int retry = 3;
+                bool result = false;
+
+                do
                 {
-                    Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
-                    var bus = host.DependencyResolver.Resolve<IMessageBus>();
+                    result = countDown.Wait(TimeSpan.FromSeconds(10));
+                    if (!result)
+                    {
+                        Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
+                        Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
+                        countDown.Reset();
+                    }
+
+                    retry--;
+
+                } while (retry > 0);
+
+                if (!result)
+                {
+                    Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
                     Debugger.Break();
                 }
             }
@@ -521,6 +539,11 @@ namespace SignalR.Stress
         public bool Wait(TimeSpan timeout)
         {
             return _wh.Wait(timeout);
+        }
+
+        internal void Reset()
+        {
+            _wh.Reset();
         }
     }
 }

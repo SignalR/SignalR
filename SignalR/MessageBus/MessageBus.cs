@@ -165,8 +165,10 @@ namespace SignalR
             {
                 Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic());
 
+                ulong id = GetMessageId(eventKey);
+
                 // Add or update the cursor (in case it already exists)
-                subscription.AddOrUpdateCursor(eventKey, GetMessageId(eventKey), topic);
+                subscription.AddOrUpdateCursor(eventKey, id, topic);
 
                 // Add it to the list of subs
                 topic.AddSubscription(subscription);
@@ -385,7 +387,7 @@ namespace SignalR
 
                     var messageResult = new MessageResult(items, nextCursor, totalCount);
                     Task<bool> callbackTask = Invoke(messageResult);
-                    
+
                     if (callbackTask.IsCompleted)
                     {
                         try
@@ -441,7 +443,7 @@ namespace SignalR
                 });
             }
 
-            public void AddOrUpdateCursor(string key, ulong id, Topic topic)
+            public bool AddOrUpdateCursor(string key, ulong id, Topic topic)
             {
                 lock (_lockObj)
                 {
@@ -455,7 +457,11 @@ namespace SignalR
                             Id = id,
                             Topic = topic
                         });
+
+                        return true;
                     }
+
+                    return false;
                 }
             }
 
@@ -770,10 +776,19 @@ namespace SignalR
             // The number of workers that are *actually* doing work
             private int _busyWorkers;
 
+            // The interval at which to check if there's work to be done
+            private static readonly TimeSpan CheckWorkInterval = TimeSpan.FromSeconds(1);
+
+            private Timer _timer;
+
+            private int _checkingWork;
+
             public Engine(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterWriter performanceCounterWriter)
             {
                 _topics = topics;
                 
+                _timer = new Timer(_ => OnTimer(), state: null, dueTime: CheckWorkInterval, period: CheckWorkInterval);
+
                 var counters = performanceCounterWriter;
                 _allocatedWorkersCounter = counters.GetCounter(PerformanceCounters.MessageBusAllocatedWorkers);
                 _busyWorkersCounter = counters.GetCounter(PerformanceCounters.MessageBusBusyWorkers);
@@ -799,6 +814,28 @@ namespace SignalR
                 {
                     return _busyWorkers;
                 }
+            }
+
+            private void OnTimer()
+            {
+                if (Interlocked.Exchange(ref _checkingWork, 1) == 1)
+                {
+                    return;
+                }
+
+                foreach (var topic in _topics.Values)
+                {
+                    lock (topic.Subscriptions)
+                    {
+                        for (int i = 0; i < topic.Subscriptions.Count; i++)
+                        {
+                            Subscription subscription = topic.Subscriptions[i];
+                            Schedule(subscription);
+                        }
+                    }
+                }
+
+                Interlocked.Exchange(ref _checkingWork, 0);
             }
 
             public void Schedule(Subscription subscription)

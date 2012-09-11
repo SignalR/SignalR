@@ -12,47 +12,6 @@ namespace SignalR
             return bus.Publish(new Message(source, key, value));
         }
 
-        public static Task ReceiveAck(this IMessageBus bus,
-                                      Message message,
-                                      CancellationToken cancel)
-        {
-            if (message.IsCommand)
-            {
-                // Only supported for commands
-                return ReceiveAck(bus, message.Source, message.Source, message.CommandId, cancel);
-            }
-
-            return TaskAsyncHelper.Empty;
-        }
-
-        private static Task ReceiveAck(IMessageBus bus,
-                                       string source,
-                                       string eventKey,
-                                       string commandId,
-                                       CancellationToken cancel)
-        {
-            var tcs = new TaskCompletionSource<object>();
-
-            // Subscribe to the "ack" event so that we can get a reply for the command id specified
-            var eventKeys = new[] { AckPrefix(eventKey) };
-
-            // We don't care about the task returned from this since we're looking for a specific message
-            bus.ReceiveAsync<object>(new Subscriber(eventKeys, source),
-                                     cursor: null,
-                                     cancel: cancel,
-                                     maxMessages: Int32.MaxValue,
-                                     map: result =>
-                                     {
-                                         // Set the result if we have the response for the specified command id
-                                         result.Messages.Enumerate(m => m.IsAck && m.CommandId.Equals(commandId),
-                                                                   m => tcs.TrySetResult(null));
-                                         return null;
-                                     },
-                                     end: (result, obj) => { });
-
-            return tcs.Task;
-        }
-        
         public static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
         {
             // Prepare the ack
@@ -68,7 +27,7 @@ namespace SignalR
                                               CancellationToken cancel,
                                               int maxMessages,
                                               Func<MessageResult, T> map,
-                                              Action<MessageResult, T> end)
+                                              Action<MessageResult, T> end) where T : class
         {
             var tcs = new TaskCompletionSource<T>();
             IDisposable subscription = null;
@@ -78,7 +37,6 @@ namespace SignalR
             const int stateDisposed = 2;
 
             int state = stateUnassigned;
-            int resultSet = 0;
             var result = default(T);
 
             CancellationTokenRegistration registration = cancel.Register(() =>
@@ -93,13 +51,10 @@ namespace SignalR
             subscription = bus.Subscribe(subscriber, cursor, messageResult =>
             {
                 // Mark the flag as set so we only set the result once
-                if (Interlocked.Exchange(ref resultSet, 1) == 0)
+                if (Interlocked.CompareExchange(ref result, map(messageResult), null) == null)
                 {
                     // Dispose of the cancellation token subscription
                     registration.Dispose();
-
-                    // Get the result
-                    result = map(messageResult);
 
                     // Dispose the subscription only if the handle has been assigned. If not, flag it so that the subscriber knows to Dispose of it for use
                     if (Interlocked.Exchange(ref state, stateDisposed) == stateAssigned)
