@@ -137,7 +137,16 @@ namespace SignalR
         }
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
         {
-            return _bus.Subscribe(this, messageId, result => callback(GetResponse(result)), maxMessages);
+            return _bus.Subscribe(this, messageId, result =>
+            {
+                Task<bool> keepGoing = callback(GetResponse(result));
+                if (result.Terminal)
+                {
+                    keepGoing = TaskAsyncHelper.False;
+                }
+                return keepGoing;
+            },
+            maxMessages);
         }
 
         private PersistentResponse GetResponse(MessageResult result)
