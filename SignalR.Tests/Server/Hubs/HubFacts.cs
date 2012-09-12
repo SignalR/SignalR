@@ -292,7 +292,7 @@ namespace SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Groups need fixing")]
+        [Fact]
         public void AddingToMultipleGroups()
         {
             var host = new MemoryHost();
