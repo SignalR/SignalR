@@ -62,11 +62,9 @@ namespace SignalR
 
                     // Set the result
                     tcs.TrySetResult(result);
-
-                    return TaskAsyncHelper.False;
                 }
 
-                return TaskAsyncHelper.True;
+                return TaskAsyncHelper.False;
             },
             maxMessages);
 
