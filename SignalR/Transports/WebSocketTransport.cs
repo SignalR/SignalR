@@ -8,8 +8,7 @@ namespace SignalR.Transports
         private readonly HostContext _context;
         private IWebSocket _socket;
         private bool _isAlive = true;
-        private readonly IPerformanceCounterWriter _counters;
-
+        
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
             : this(context, 
@@ -26,7 +25,6 @@ namespace SignalR.Transports
             : base(context, serializer, heartBeat, performanceCounterWriter)
         {
             _context = context;
-            _counters = performanceCounterWriter;
         }
 
         public override bool IsAlive
@@ -70,7 +68,7 @@ namespace SignalR.Transports
 
             OnSending(data);
 
-            return _socket.Send(data);
+            return _socket.Send(data).Catch(IncrementErrorCounters);
         }
 
         public override Task Send(PersistentResponse response)
@@ -79,7 +77,7 @@ namespace SignalR.Transports
 
             OnSending(data);
 
-            return _socket.Send(data);
+            return _socket.Send(data).Catch(IncrementErrorCounters);
         }
     }
 }

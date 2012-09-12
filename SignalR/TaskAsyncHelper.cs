@@ -63,6 +63,23 @@ namespace SignalR
             return task;
         }
 
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
+        public static TTask Catch<TTask>(this TTask task, params PerformanceCounter[] counters) where TTask : Task
+        {
+            return Catch(task, _ => 
+                {
+                    if (counters == null)
+                    {
+                        return;
+                    }
+                    for (var i = 0; i < counters.Length; i++)
+                    {
+                        counters[i].Increment();
+                    }
+                });
+        }
+#endif
+
         public static TTask Catch<TTask>(this TTask task, Action<Exception> handler) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,7 +49,7 @@ namespace SignalR.Transports
             OutputWriter.Write(");</script>\r\n");
             OutputWriter.Flush();
 
-            return Context.Response.FlushAsync();
+            return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)

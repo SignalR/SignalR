@@ -25,6 +25,9 @@ namespace SignalR
         protected ITransport _transport;
         private IServerCommandHandler _serverMessageHandler;
 
+        private PerformanceCounter _allErrorsTotalCounter;
+        private PerformanceCounter _allErrorsPerSecCounter;
+
         public virtual void Initialize(IDependencyResolver resolver)
         {
             if (_initialized)
@@ -39,7 +42,10 @@ namespace SignalR
             _trace = resolver.Resolve<ITraceManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
             _counters = resolver.Resolve<IPerformanceCounterWriter>();
-
+            
+            _allErrorsTotalCounter = _counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
+            _allErrorsPerSecCounter = _counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
+            
             _initialized = true;
         }
 
@@ -93,8 +99,6 @@ namespace SignalR
             {
                 throw new InvalidOperationException("Connection not initialized.");
             }
-
-            _counters.Initialize(context);
 
             if (IsNegotiationRequest(context.Request))
             {
@@ -154,7 +158,7 @@ namespace SignalR
                 return OnDisconnectAsync(connectionId).OrEmpty();
             };
 
-            return _transport.ProcessRequest(connection).OrEmpty();
+            return _transport.ProcessRequest(connection).OrEmpty().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter);
         }
 
         protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hubs
 {
@@ -20,7 +21,12 @@ namespace SignalR.Hubs
         private IParameterResolver _binder;
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private bool _isDebuggingEnabled;
-
+        private PerformanceCounter _allErrorsTotalCounter;
+        private PerformanceCounter _allErrorsPerSecCounter;
+        private PerformanceCounter _hubInvocationErrorsTotalCounter;
+        private PerformanceCounter _hubInvocationErrorsPerSecCounter;
+        private PerformanceCounter _hubResolutionErrorsTotalCounter;
+        private PerformanceCounter _hubResolutionErrorsPerSecCounter;
         private readonly string _url;
 
         /// <summary>
@@ -47,6 +53,14 @@ namespace SignalR.Hubs
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
 
+            var counters = resolver.Resolve<IPerformanceCounterWriter>();
+            _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
+            _allErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
+            _hubInvocationErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubInvocationTotal);
+            _hubInvocationErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubInvocationPerSec);
+            _hubResolutionErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionTotal);
+            _hubResolutionErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionPerSec);
+
             base.Initialize(resolver);
         }
 
@@ -58,7 +72,11 @@ namespace SignalR.Hubs
             HubRequest hubRequest = _requestParser.Parse(data);
 
             // Create the hub
-            HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub);
+            HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub,
+                _hubResolutionErrorsTotalCounter,
+                _hubResolutionErrorsPerSecCounter,
+                _allErrorsTotalCounter,
+                _allErrorsPerSecCounter);
 
             IJsonValue[] parameterValues = hubRequest.ParameterValues;
 
@@ -66,6 +84,8 @@ namespace SignalR.Hubs
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
             if (methodDescriptor == null)
             {
+                _hubResolutionErrorsTotalCounter.SafeIncrement();
+                _hubResolutionErrorsPerSecCounter.SafeIncrement();
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' method could not be resolved.", hubRequest.Method));
             }
 
@@ -241,6 +261,14 @@ namespace SignalR.Hubs
             string stackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;
             string errorMessage = exception != null ? exception.Message : null;
 
+            if (exception != null)
+            {
+                _hubInvocationErrorsTotalCounter.SafeIncrement();
+                _hubInvocationErrorsPerSecCounter.SafeIncrement();
+                _allErrorsTotalCounter.SafeIncrement();
+                _allErrorsPerSecCounter.SafeIncrement();
+            }
+
             var hubResult = new HubResponse
             {
                 State = state.GetChanges(),
@@ -278,7 +306,11 @@ namespace SignalR.Hubs
         private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
         {
             // Try to find the associated hub type
-            HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name);
+            HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
+                _hubResolutionErrorsTotalCounter,
+                _hubResolutionErrorsPerSecCounter,
+                _allErrorsTotalCounter,
+                _allErrorsPerSecCounter);
 
             // Add this to the list of hub desciptors this connection is interested in
             _hubs.Add(hubDescriptor);
@@ -307,5 +339,7 @@ namespace SignalR.Hubs
                 return Name + "." + unqualifiedName;
             }
         }
+
+        public object IPerformaceCounterWriter { get; set; }
     }
 }

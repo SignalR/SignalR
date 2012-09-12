@@ -12,6 +12,10 @@ namespace SignalR.Transports
         private string _lastMessageId;
         private readonly PerformanceCounter _connConnectedCounter;
         private readonly PerformanceCounter _connReconnectedCounter;
+        private readonly PerformanceCounter _allErrorsTotalCounter;
+        private readonly PerformanceCounter _allErrorsPerSecCounter;
+        private readonly PerformanceCounter _transportErrorsTotalCounter;
+        private readonly PerformanceCounter _transportErrorsPerSecCounter;
 
         private const int MaxMessages = 10;
 
@@ -34,6 +38,10 @@ namespace SignalR.Transports
             var counters = performanceCounterWriter;
             _connConnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsConnected);
             _connReconnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsReconnected);
+            _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
+            _allErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
+            _transportErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsTransportTotal);
+            _transportErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsTransportPerSec);
         }
 
         protected string LastMessageId
@@ -166,6 +174,14 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
+        protected void IncrementErrorCounters(Exception exception)
+        {
+            _transportErrorsTotalCounter.SafeIncrement();
+            _transportErrorsPerSecCounter.SafeIncrement();
+            _allErrorsTotalCounter.SafeIncrement();
+            _allErrorsTotalCounter.SafeIncrement();
+        }
+
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"];
@@ -192,7 +208,7 @@ namespace SignalR.Transports
             {
                 if (TransportConnected != null)
                 {
-                    TransportConnected().Catch();
+                    TransportConnected().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter);
                 }
 
                 if (postReceive != null)
@@ -265,7 +281,7 @@ namespace SignalR.Transports
 
             if (postReceive != null)
             {
-                postReceive().Catch()
+                postReceive().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter)
                              .ContinueWith(task => wh.Set());
             }
             else

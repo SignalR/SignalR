@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using SignalR.Infrastructure;
 
 namespace SignalR
 {
@@ -24,6 +26,15 @@ namespace SignalR
         public static IEnumerable<object> ResolveAll(this IDependencyResolver resolver, Type type)
         {
             return resolver.GetServices(type);
+        }
+
+        public static void InitializePerformanceCounters(this IDependencyResolver resolver, string instanceName, CancellationToken hostShutdownToken)
+        {
+            var counters = resolver.Resolve<IPerformanceCounterWriter>();
+            if (counters != null)
+            {
+                counters.Initialize(instanceName, hostShutdownToken);
+            }
         }
     }
 }

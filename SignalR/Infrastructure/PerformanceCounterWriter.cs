@@ -12,11 +12,10 @@ namespace SignalR.Infrastructure
     {
         private object _initLocker = new object();
         private bool _countersInstalled = false;
-        private CancellationToken _hostShutdownToken;
 
         private readonly Dictionary<string, PerformanceCounter> _counters = new Dictionary<string, PerformanceCounter>();
 
-        public void Initialize(HostContext hostContext)
+        public void Initialize(string instanceName, CancellationToken hostShutdownToken)
         {
             if (_countersInstalled)
             {
@@ -27,14 +26,13 @@ namespace SignalR.Infrastructure
             {
                 if (!_countersInstalled)
                 {
-                    var instanceName = hostContext.InstanceName() ?? Guid.NewGuid().ToString();
+                    instanceName = instanceName ?? Guid.NewGuid().ToString();
                     
                     LoadCounters(instanceName);
 
-                    _hostShutdownToken = hostContext.HostShutdownToken();
-                    if (_hostShutdownToken != null)
+                    if (hostShutdownToken != null)
                     {
-                        _hostShutdownToken.Register(() => UnloadCounters());
+                        hostShutdownToken.Register(UnloadCounters);
                     }
 
                     _countersInstalled = true;

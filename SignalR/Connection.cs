@@ -233,8 +233,8 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            _msgsRecTotalCounter.IncrementBy(result.TotalCount);
-            _msgsRecPerSecCounter.IncrementBy(result.TotalCount);
+            _msgsRecTotalCounter.SafeIncrementBy(result.TotalCount);
+            _msgsRecPerSecCounter.SafeIncrementBy(result.TotalCount);
 
             return response;
         }

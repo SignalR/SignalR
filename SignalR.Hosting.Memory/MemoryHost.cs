@@ -8,16 +8,14 @@ using SignalR.Hosting.Common;
 using IClientRequest = SignalR.Client.Http.IRequest;
 using IClientResponse = SignalR.Client.Http.IResponse;
 using System.Diagnostics;
+using SignalR.Infrastructure;
 
 namespace SignalR.Hosting.Memory
 {
     public class MemoryHost : RoutingHost, IHttpClient, IDisposable
     {
         private readonly CancellationTokenSource _shutDownToken = new CancellationTokenSource();
-        private readonly string _mutexPrefix;
-        private readonly string _instanceNamePrefix;
-        private Mutex _instanceNameMutex;
-
+        
         public MemoryHost()
             : this(new DefaultDependencyResolver())
         {
@@ -27,11 +25,7 @@ namespace SignalR.Hosting.Memory
         public MemoryHost(IDependencyResolver resolver)
             : base(resolver)
         {
-            var process = Process.GetCurrentProcess();
-            _mutexPrefix = process.ProcessName;
-            // TODO: Need to distinguish between different instances of a process
-            _instanceNamePrefix = process.ProcessName + ": ";
-            InstanceName = GetNextInstanceId();
+            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken.Token), _shutDownToken.Token);
         }
 
         public string InstanceName { get; set; }
@@ -61,8 +55,7 @@ namespace SignalR.Hosting.Memory
                 Response response = null;
                 response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response));
                 var hostContext = new HostContext(request, response);
-                var instanceName = GetInstanceName();
-                hostContext.Items[HostConstants.InstanceName] = instanceName;
+                
                 hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;
 
                 connection.Initialize(DependencyResolver);
@@ -91,45 +84,9 @@ namespace SignalR.Hosting.Memory
             return TaskAsyncHelper.FromError<IClientResponse>(new InvalidOperationException("Not a valid end point"));
         }
 
-        private string GetInstanceName()
-        {
-            return _instanceNamePrefix + InstanceName;
-        }
-
-        private string GetNextInstanceId()
-        {
-            var instanceId = 0;
-            while (true)
-            {
-                var mutexName = _mutexPrefix + instanceId;
-                bool createdMutex;
-                // Try to create the mutex with ownership
-                try
-                {
-                    var mutex = new Mutex(true, mutexName, out createdMutex);
-                    if (createdMutex)
-                    {
-                        _instanceNameMutex = mutex;
-                        break;
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    // Mutex exists but we don't have access to it
-                }
-                catch (WaitHandleCannotBeOpenedException)
-                {
-                    // Name conflict with another native handle
-                }
-                instanceId++;
-            }
-            return instanceId.ToString();
-        }
-
         public void Dispose()
         {
             _shutDownToken.Cancel(throwOnFirstException: false);
-            _instanceNameMutex.ReleaseMutex();
         }
     }
 }

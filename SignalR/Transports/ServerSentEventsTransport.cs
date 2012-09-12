@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
@@ -7,7 +9,6 @@ namespace SignalR.Transports
         public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
-
         }
 
         public override Task KeepAlive()
@@ -33,7 +34,7 @@ namespace SignalR.Transports
             OutputWriter.WriteLine();
             OutputWriter.Flush();
 
-            return Context.Response.FlushAsync();
+            return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)

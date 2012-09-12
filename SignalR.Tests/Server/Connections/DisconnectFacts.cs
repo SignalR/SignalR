@@ -11,6 +11,7 @@ using Xunit;
 
 using IClientRequest = SignalR.Client.Http.IRequest;
 using IClientResponse = SignalR.Client.Http.IResponse;
+using Moq;
 
 namespace SignalR.Tests
 {
@@ -70,7 +71,8 @@ namespace SignalR.Tests
         public void FarmDisconnectOnlyRaisesEventOnce()
         {
             // Each node shares the same bus but are indepenent servers
-            var bus = new MessageBus(new TraceManager());
+            var counters = new Mock<IPerformanceCounterWriter>();
+            var bus = new MessageBus(new TraceManager(), counters.Object);
             var nodeCount = 3;
             var nodes = new List<ServerNode>();
             for (int i = 0; i < nodeCount; i++)

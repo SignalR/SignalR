@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Web.Hosting;
 using System.Web.Routing;
+using SignalR.Hosting.AspNet;
 using SignalR.Hosting.AspNet.Infrastructure;
 using SignalR.Hosting.AspNet.Routing;
 using SignalR.Hubs;
+using SignalR.Infrastructure;
 
 namespace SignalR
 {
@@ -98,6 +101,8 @@ namespace SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)
         {
+            resolver.InitializePerformanceCounters(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
+
             var existing = routes["signalr.hubs"];
             if (existing != null)
             {
@@ -134,11 +139,17 @@ namespace SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, IDependencyResolver resolver)
         {
+            resolver.InitializePerformanceCounters(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
             var route = new Route(url, new PersistentRouteHandler(type, resolver));
             route.Constraints = new RouteValueDictionary();
             route.Constraints.Add("Incoming", new IncomingOnlyRouteConstraint());
             routes.Add(name, route);
             return route;
+        }
+
+        internal static string GetInstanceName()
+        {
+            return HostingEnvironment.SiteName; // +" (" + HostingEnvironment.ApplicationID + ")";
         }
     }
 }

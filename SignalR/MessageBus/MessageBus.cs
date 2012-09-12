@@ -23,11 +23,7 @@ namespace SignalR
 
         private readonly ITraceManager _trace;
 
-        private readonly PerformanceCounter _allocatedWorkersCounter;
-        private readonly PerformanceCounter _busyWorkersCounter;
-        private readonly PerformanceCounter _subsCurrentCounter;
-        private readonly PerformanceCounter _subsTotalCounter;
-        private readonly PerformanceCounter _subsPerSecCounter;
+        private readonly IPerformanceCounterWriter _counters;
         private readonly PerformanceCounter _msgsTotalCounter;
         private readonly PerformanceCounter _msgsPerSecCounter;
 
@@ -49,14 +45,11 @@ namespace SignalR
         {
             _trace = traceManager;
             
-            var counters = performanceCounterWriter;
-            _subsCurrentCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersCurrent);
-            _subsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersTotal);
-            _subsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersPerSec);
-            _msgsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedTotal);
-            _msgsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedPerSec);
+            _counters = performanceCounterWriter;
+            _msgsTotalCounter = _counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedTotal);
+            _msgsPerSecCounter = _counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedPerSec);
 
-            _engine = new Engine(_topics, performanceCounterWriter)
+            _engine = new Engine(_topics, _counters)
             {
                 Trace = Trace
             };
@@ -106,6 +99,9 @@ namespace SignalR
                 }
             }
 
+            _msgsTotalCounter.SafeIncrement();
+            _msgsPerSecCounter.SafeIncrement();
+
             return TaskAsyncHelper.Empty;
         }
 
@@ -133,7 +129,7 @@ namespace SignalR
                 cursors = Cursor.GetCursors(cursor);
             }
 
-            var subscription = new Subscription(subscriber.Identity, cursors, callback, messageBufferSize);
+            var subscription = new Subscription(subscriber.Identity, cursors, callback, messageBufferSize, _counters);
             var topics = new HashSet<Topic>();
 
             foreach (var key in subscriber.EventKeys)
@@ -246,6 +242,10 @@ namespace SignalR
             private readonly Func<MessageResult, Task<bool>> _callback;
             private readonly int _maxMessages;
 
+            private readonly PerformanceCounter _subsTotalCounter;
+            private readonly PerformanceCounter _subsCurrentCounter;
+            private readonly PerformanceCounter _subsPerSecCounter;
+
             private readonly object _lockObj = new object();
             private int _disposed;
 
@@ -270,12 +270,19 @@ namespace SignalR
 
             public string Identity { get; private set; }
 
-            public Subscription(string identity, IEnumerable<Cursor> cursors, Func<MessageResult, Task<bool>> callback, int maxMessages)
+            public Subscription(string identity, IEnumerable<Cursor> cursors, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterWriter counters)
             {
                 Identity = identity;
                 _cursors = new List<Cursor>(cursors);
                 _callback = callback;
                 _maxMessages = maxMessages;
+                _subsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersTotal);
+                _subsCurrentCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersCurrent);
+                _subsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersPerSec);
+
+                _subsTotalCounter.SafeIncrement();
+                _subsCurrentCounter.SafeIncrement();
+                _subsPerSecCounter.SafeIncrement();
             }
 
             public Task<bool> Invoke(MessageResult result)
@@ -496,6 +503,9 @@ namespace SignalR
             {
                 // REVIEW: Should we make this block if there's pending work
                 Interlocked.Exchange(ref _disposed, 1);
+
+                _subsCurrentCounter.SafeDecrement();
+                _subsPerSecCounter.SafeDecrement();
             }
 
             public override int GetHashCode()
@@ -812,8 +822,7 @@ namespace SignalR
                 // Only create a new worker if everyone is busy (up to the max)
                 if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
                 {
-                    Interlocked.Increment(ref _allocatedWorkers);
-                    _allocatedWorkersCounter.SafeIncrement();
+                    _allocatedWorkersCounter.SafeSetRaw(Interlocked.Increment(ref _allocatedWorkers));
 
                     Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
@@ -849,8 +858,7 @@ namespace SignalR
                 finally
                 {
                     // After the pump runs decrement the number of workers in flight
-                    Interlocked.Decrement(ref _allocatedWorkers);
-                    _allocatedWorkersCounter.SafeDecrement();
+                    _allocatedWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _allocatedWorkers));
                 }
             }
 
@@ -859,8 +867,7 @@ namespace SignalR
                 pumpTask.ContinueWith(task =>
                 {
                     // After the pump runs decrement the number of workers in flight
-                    Interlocked.Decrement(ref _allocatedWorkers);
-                    _allocatedWorkersCounter.SafeDecrement();
+                    _allocatedWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _allocatedWorkers));
 
                     if (task.IsFaulted)
                     {
@@ -899,8 +906,7 @@ namespace SignalR
                         subscription = _queue.Dequeue();
                     }
 
-                    Interlocked.Increment(ref _busyWorkers);
-                    _busyWorkersCounter.SafeIncrement();
+                    _busyWorkersCounter.SafeSetRaw(Interlocked.Increment(ref _busyWorkers));
                     Task workTask = subscription.WorkAsync(_topics);
 
                     if (workTask.IsCompleted)
@@ -918,8 +924,7 @@ namespace SignalR
                         finally
                         {
                             subscription.UnsetQueued();
-                            Interlocked.Decrement(ref _busyWorkers);
-                            _busyWorkersCounter.SafeDecrement();
+                            _busyWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _busyWorkers));
 
                             Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
                         }
@@ -941,8 +946,7 @@ namespace SignalR
                 workTask.ContinueWith(task =>
                 {
                     subscription.UnsetQueued();
-                    Interlocked.Decrement(ref _busyWorkers);
-                    _busyWorkersCounter.SafeDecrement();
+                    _busyWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _busyWorkers));
 
                     Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
 

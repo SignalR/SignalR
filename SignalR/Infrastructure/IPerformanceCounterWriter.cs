@@ -1,5 +1,6 @@
 ﻿
 using System.Diagnostics;
+using System.Threading;
 namespace SignalR.Infrastructure
 {
     /// <summary>
@@ -10,8 +11,9 @@ namespace SignalR.Infrastructure
         /// <summary>
         /// Initializes the performance counter instances for the specified HostContext.
         /// </summary>
-        /// <param name="hostContext">The HostContext.</param>
-        void Initialize(HostContext hostContext);
+        /// <param name="instanceName">The host instance name.</param>
+        /// <param name="hostShutdownToken">The CancellationToken representing the host shutdown.</param>
+        void Initialize(string instanceName, CancellationToken hostShutdownToken);
 
         /// <summary>
         /// Gets the performance counter with the specified name.

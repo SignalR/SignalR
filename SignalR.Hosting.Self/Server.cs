@@ -11,12 +11,13 @@ using System.Threading.Tasks;
 
 namespace SignalR.Hosting.Self
 {
-    public unsafe class Server : RoutingHost
+    public unsafe class Server : RoutingHost, IDisposable
     {
         private readonly string _url;
         private readonly HttpListener _listener;
         private CriticalHandle _requestQueueHandle;
         private DisconnectHandler _disconnectHandler;
+        private readonly CancellationTokenSource _shutdownToken = new CancellationTokenSource();
 
         public Action<HostContext> OnProcessRequest { get; set; }
 
@@ -41,6 +42,7 @@ namespace SignalR.Hosting.Self
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
             _disconnectHandler = new DisconnectHandler(_listener);
+            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutdownToken.Token), _shutdownToken.Token);
         }
 
         public AuthenticationSchemes AuthenticationSchemes
@@ -125,7 +127,7 @@ namespace SignalR.Hosting.Self
                     var request = new HttpListenerRequestWrapper(context);
                     var response = new HttpListenerResponseWrapper(context.Response, _disconnectHandler.GetDisconnectToken(context));
                     var hostContext = new HostContext(request, response);
-
+                    
 #if NET45
                     hostContext.Items[HostConstants.SupportsWebSockets] = Environment.OSVersion.Version.Major >= 6 && Environment.OSVersion.Version.Minor >= 2;
 #endif
@@ -139,6 +141,7 @@ namespace SignalR.Hosting.Self
                     hostContext.Items[HostConstants.DebugMode] = true;
 #endif
                     hostContext.Items["System.Net.HttpListenerContext"] = context;
+                    hostContext.Items[HostConstants.ShutdownToken] = _shutdownToken.Token;
 
                     // Initialize the connection
                     connection.Initialize(DependencyResolver);
@@ -178,6 +181,9 @@ namespace SignalR.Hosting.Self
             return path;
         }
 
-
+        public void Dispose()
+        {
+            _shutdownToken.Cancel(throwOnFirstException: false);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using SignalR.Hubs;
 using SignalR.Infrastructure;
@@ -11,6 +12,10 @@ namespace SignalR
     public class ConnectionManager : IConnectionManager
     {
         private readonly IDependencyResolver _resolver;
+        private PerformanceCounter _allErrorsTotalCounter;
+        private PerformanceCounter _allErrorsPerSecCounter;
+        private PerformanceCounter _hubResolutionErrorsTotalCounter;
+        private PerformanceCounter _hubResolutionErrorsPerSecCounter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionManager"/> class.
@@ -19,6 +24,11 @@ namespace SignalR
         public ConnectionManager(IDependencyResolver resolver)
         {
             _resolver = resolver;
+            var counters = _resolver.Resolve<IPerformanceCounterWriter>();
+            _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
+            _allErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
+            _hubResolutionErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionTotal);
+            _hubResolutionErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionPerSec);
         }
 
         /// <summary>
@@ -63,7 +73,11 @@ namespace SignalR
         {
             var connection = GetConnection(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
-            HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName);
+            HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName,
+                _hubResolutionErrorsTotalCounter,
+                _hubResolutionErrorsPerSecCounter,
+                _allErrorsTotalCounter,
+                _allErrorsPerSecCounter);
 
             return new HubContext(new ClientProxy(connection, hubDescriptor.Name), 
                                   new GroupManager(connection, hubName));

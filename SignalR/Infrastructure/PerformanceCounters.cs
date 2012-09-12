@@ -18,10 +18,10 @@ namespace SignalR.Infrastructure
         public const string ConnectionsReconnected = "Connections Reconnected";
         public const string ConnectionsDisconnected = "Connections Disconnected";
         public const string ConnectionsCurrent = "Connections Current";
-        public const string ConnectionsCurrentWebSockets = "Connections Current (WebSockets)";
-        public const string ConnectionsCurrentServerSentEvents = "Connections Current (Server Sent Events)";
-        public const string ConnectionsCurrentForeverFrame = "Connections Current (Forever Frame)";
-        public const string ConnectionsCurrentLongPolling = "Connections Current (Long Polling)";
+        //public const string ConnectionsCurrentWebSockets = "Connections Current (WebSockets)";
+        //public const string ConnectionsCurrentServerSentEvents = "Connections Current (Server Sent Events)";
+        //public const string ConnectionsCurrentForeverFrame = "Connections Current (Forever Frame)";
+        //public const string ConnectionsCurrentLongPolling = "Connections Current (Long Polling)";
 
         // Connections throughput
         public const string ConnectionMessagesReceivedTotal = "Connection Messages Received Total";
@@ -62,10 +62,10 @@ namespace SignalR.Infrastructure
                 new CounterCreationData(ConnectionsReconnected, "The total number of connection Reconnect events since the application was started.", PerformanceCounterType.NumberOfItems32),
                 new CounterCreationData(ConnectionsDisconnected, "The total number of connection Disconnect events since the application was started.", PerformanceCounterType.NumberOfItems32),
                 new CounterCreationData(ConnectionsCurrent, "The number of connections currently connected.", PerformanceCounterType.NumberOfItems32),
-                new CounterCreationData(ConnectionsCurrentWebSockets, "The number of connections using the WebSockets transport currently connected.", PerformanceCounterType.NumberOfItems32),
-                new CounterCreationData(ConnectionsCurrentServerSentEvents, "The number of connections using the Server Sent Events transport  currently connected.", PerformanceCounterType.NumberOfItems32),
-                new CounterCreationData(ConnectionsCurrentForeverFrame, "The number of connections using the Forever Frame transport  currently connected.", PerformanceCounterType.NumberOfItems32),
-                new CounterCreationData(ConnectionsCurrentLongPolling, "The number of connections using the Long Polling transport  currently connected.", PerformanceCounterType.NumberOfItems32),
+                //new CounterCreationData(ConnectionsCurrentWebSockets, "The number of connections using the WebSockets transport currently connected.", PerformanceCounterType.NumberOfItems32),
+                //new CounterCreationData(ConnectionsCurrentServerSentEvents, "The number of connections using the Server Sent Events transport  currently connected.", PerformanceCounterType.NumberOfItems32),
+                //new CounterCreationData(ConnectionsCurrentForeverFrame, "The number of connections using the Forever Frame transport  currently connected.", PerformanceCounterType.NumberOfItems32),
+                //new CounterCreationData(ConnectionsCurrentLongPolling, "The number of connections using the Long Polling transport  currently connected.", PerformanceCounterType.NumberOfItems32),
 
                 new CounterCreationData(ConnectionMessagesReceivedTotal, "The toal number of messages received by connections (server to client) since the application was started.", PerformanceCounterType.NumberOfItems64),
                 new CounterCreationData(ConnectionMessagesSentTotal, "The total number of messages sent by connections (client to server) since the application was started.", PerformanceCounterType.NumberOfItems64),
@@ -75,10 +75,10 @@ namespace SignalR.Infrastructure
                 new CounterCreationData(MessageBusMessagesPublishedTotal, "The total number of messages published to the message bus since the application was started.", PerformanceCounterType.NumberOfItems64),
                 new CounterCreationData(MessageBusMessagesPublishedPerSec, "The number of messages published to the message bus per second.", PerformanceCounterType.RateOfCountsPerSecond32),
                 new CounterCreationData(MessageBusSubscribersCurrent, "The current number of subscribers to the message bus.", PerformanceCounterType.NumberOfItems32),
-                new CounterCreationData(MessageBusSubscribersTotal, "The total number of subscribers to the message bus since the application was started.", PerformanceCounterType.NumberOfItems64),
+                new CounterCreationData(MessageBusSubscribersTotal, "The total number of subscribers to the message bus since the application was started.", PerformanceCounterType.NumberOfItems32),
                 new CounterCreationData(MessageBusSubscribersPerSec, "The number of new subscribers to the message bus per second.", PerformanceCounterType.RateOfCountsPerSecond32),
-                new CounterCreationData(MessageBusAllocatedWorkers, "The number of workers allocated to deliver messages in the message bus.", PerformanceCounterType.NumberOfItems64),
-                new CounterCreationData(MessageBusBusyWorkers, "The number of workers currently busy delivering messages in the message bus.", PerformanceCounterType.RateOfCountsPerSecond32),
+                new CounterCreationData(MessageBusAllocatedWorkers, "The number of workers allocated to deliver messages in the message bus.", PerformanceCounterType.NumberOfItems32),
+                new CounterCreationData(MessageBusBusyWorkers, "The number of workers currently busy delivering messages in the message bus.", PerformanceCounterType.NumberOfItems32),
 
                 new CounterCreationData(ErrorsAllTotal, "The total number of all errors processed since the application was started.", PerformanceCounterType.NumberOfItems32),
                 new CounterCreationData(ErrorsAllPerSec, "The number of all errors processed per second.", PerformanceCounterType.RateOfCountsPerSecond32),
