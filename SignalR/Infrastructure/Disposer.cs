@@ -10,13 +10,11 @@ namespace SignalR
 
         public void Set(IDisposable disposable)
         {
+            _disposable = disposable;
+
             if (Interlocked.Exchange(ref _state, 1) == 1)
             {
                 disposable.Dispose();
-            }
-            else
-            {
-                _disposable = disposable;
             }
         }
 
