@@ -33,5 +33,22 @@ namespace SignalR.Tests.Server
             disposer.Set(disposable);
             Assert.True(disposed);
         }
+
+        [Fact]
+        public void MultipleDisposes()
+        {
+            bool disposed = false;
+            var disposable = new DisposableAction(() => { disposed = true; });
+            var disposer = new Disposer();
+
+            Assert.False(disposed);
+            disposer.Dispose();
+            disposer.Dispose();
+            disposer.Dispose();
+            disposer.Dispose();
+
+            disposer.Set(disposable);
+            Assert.True(disposed);
+        }
     }
 }
