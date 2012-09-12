@@ -189,9 +189,19 @@ namespace SignalR
                                               var command = _serializer.Parse<Command>(message.Value);
                                               ProcessCommand(command);
 
-                                              // Send a message through the bus confirming that we got the message
-                                              // REVIEW: Do we retry if this fails?
-                                              _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
+                                              // If we're on the same box and there's a pending ack for this command then
+                                              // just trip it
+                                              TaskCompletionSource<object> tcs;
+                                              if (_acks.TryRemove(message.CommandId, out tcs))
+                                              {
+                                                  tcs.TrySetResult(null);
+                                              }
+                                              else
+                                              {
+                                                  // Send a message through the bus confirming that we got the message
+                                                  // REVIEW: Do we retry if this fails?
+                                                  _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
+                                              }
                                           }
                                       });
         }
