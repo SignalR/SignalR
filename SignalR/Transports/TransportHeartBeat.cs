@@ -105,7 +105,7 @@ namespace SignalR.Transports
 
             lock (_counterLock)
             {
-                _connectionsCurrentCounter.RawValue = _connections.Count;
+                _connectionsCurrentCounter.SafeSetRaw(_connections.Count);
             }
 
             // Set the initial connection time
@@ -125,7 +125,7 @@ namespace SignalR.Transports
             {
                 lock (_counterLock)
                 {
-                    _connectionsCurrentCounter.RawValue = _connections.Count;
+                    _connectionsCurrentCounter.SafeSetRaw(_connections.Count);
                 }
                 Trace.TraceInformation("Removing connection {0}", connectionId);
             }

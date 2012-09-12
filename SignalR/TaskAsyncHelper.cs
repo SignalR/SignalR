@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Infrastructure;
 
 namespace SignalR
 {
@@ -74,7 +75,7 @@ namespace SignalR
                     }
                     for (var i = 0; i < counters.Length; i++)
                     {
-                        counters[i].Increment();
+                        counters[i].SafeIncrement();
                     }
                 });
         }
