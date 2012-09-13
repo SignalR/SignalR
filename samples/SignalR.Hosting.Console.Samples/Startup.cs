@@ -69,7 +69,7 @@ namespace SignalR.Hosting.Console.Samples
                 _next = next;
             }
 
-            public async Task Invoke(IDictionary<string, object> env)
+            public Task Invoke(IDictionary<string, object> env)
             {
                 var req = new Request(env);
                 if (req.Path.StartsWith("/") && !req.Path.EndsWith("/") && Directory.Exists(req.Path.Substring(1)))
@@ -79,11 +79,10 @@ namespace SignalR.Hosting.Console.Samples
                         StatusCode = 301
                     };
                     resp.Headers["Location"] = new[] { req.PathBase + req.Path + "/" };
+                    return TaskAsyncHelper.Empty;
                 }
-                else
-                {
-                    await _next(env);
-                }
+
+                return _next(env);                
             }
         }
 
