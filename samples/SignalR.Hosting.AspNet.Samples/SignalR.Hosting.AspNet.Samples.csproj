@@ -148,6 +148,7 @@
     <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
+    <Content Include="index.htm" />
     <Content Include="Streaming\index.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -211,13 +212,13 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
-      <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
-      <Name>SignalR.Hosting.AspNet</Name>
+    <ProjectReference Include="..\..\SignalR.Server.Routing\SignalR.Server.Routing.csproj">
+      <Project>{37c04b69-0989-458a-b80c-a1ed574adbe4}</Project>
+      <Name>SignalR.Server.Routing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
-      <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
-      <Name>SignalR.Hosting.Common</Name>
+    <ProjectReference Include="..\..\SignalR.Server\SignalR.Server.csproj">
+      <Project>{2b8c6dad-4d85-41b1-83fd-248d9f347522}</Project>
+      <Name>SignalR.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
@@ -233,6 +234,9 @@
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
