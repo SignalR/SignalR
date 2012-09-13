@@ -10,3 +10,4 @@
 }
 
 var activeTransport = getQueryVariable('transport') || 'auto';
+var isJsonp = getQueryVariable('jsonp') === 'true';

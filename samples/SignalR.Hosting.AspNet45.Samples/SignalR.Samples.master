@@ -1,8 +1,0 @@
-﻿<%@ Master Language="C#" MasterPageFile="~/SignalR.Master" AutoEventWireup="true" CodeBehind="SignalR.Samples.master.cs"
-    Inherits="SignalR.Samples.SignalRSamples.SignalRSamples" %>
-<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
-    <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
-</asp:Content>
-<asp:Content ID="Content3" ContentPlaceHolderID="MainContent" runat="server">
-    <asp:ContentPlaceHolder ID="MainContent" runat="server" />
-</asp:Content>

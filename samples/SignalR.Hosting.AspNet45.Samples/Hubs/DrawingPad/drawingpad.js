@@ -24,7 +24,6 @@
         if (e.which === 1 && !leftButtonDown) e.which = 0;
     }
 
-
     var methods = {
         init: function (options) {
 
@@ -89,7 +88,7 @@
                         X: data.coords.X,
                         Y: data.coords.Y
                     },
-                    Color : settings.linecolor
+                    Color: settings.linecolor
                 });
             }
 
@@ -130,8 +129,6 @@
             $this.trigger('line.drawingpad', data);
         }
     };
-
-
 
     $.fn.drawingpad = function (method) {
         if (methods[method]) {
