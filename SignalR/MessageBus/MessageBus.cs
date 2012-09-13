@@ -14,7 +14,7 @@ namespace SignalR
     /// <summary>
     /// 
     /// </summary>
-    public class MessageBus : IMessageBus
+    public class MessageBus : IMessageBus, IDisposable
     {
         private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
         private readonly Engine _engine;
@@ -207,6 +207,10 @@ namespace SignalR
 
                 subscription.Invoke(new MessageResult(currentCursor));
             });
+        }
+
+        public virtual void Dispose()
+        {
         }
 
         private void RemoveEvent(Subscription subscription, string eventKey)

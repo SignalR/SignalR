@@ -102,6 +102,7 @@
     <Compile Include="Infrastructure\ServerIdManager.cs" />
     <Compile Include="IPersistentConnectionContext.cs" />
     <Compile Include="Infrastructure\IServerCommandHandler.cs" />
+    <Compile Include="MessageBus\ScaleoutMessageBus.cs" />
     <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="MessageBus\ISubscriber.cs" />
     <Compile Include="MessageBus\MessageBus.cs" />
