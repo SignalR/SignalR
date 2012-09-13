@@ -30,5 +30,8 @@
 
         public const string DisableRequestBuffering = "server.DisableRequestBuffering";
         public const string DisableResponseBuffering = "server.DisableResponseBuffering";
+
+        public const string WebSocketSupport = "websocket.Support";
+        public const string WebSocketFunc = "websocket.Func";
     }
 }

@@ -143,7 +143,10 @@ namespace SignalR.Server
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-            throw new NotImplementedException();
+            var serverRequestWebSocket = new ServerRequestWebSocket(callback);
+            _env[OwinConstants.ResponseStatusCode] = 101;
+            _env[OwinConstants.WebSocketFunc] = (Func<IDictionary<string, object>, Task>)serverRequestWebSocket.Invoke;
+            return TaskAsyncHelper.Empty;
         }
     }
 }

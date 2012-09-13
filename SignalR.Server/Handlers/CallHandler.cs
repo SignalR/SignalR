@@ -32,6 +32,8 @@ namespace SignalR.Server.Handlers
                 serverResponse.ResponseHeaders["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
             }
 
+            hostContext.Items[HostConstants.SupportsWebSockets] = env.ContainsKey(OwinConstants.WebSocketSupport);
+
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
 
