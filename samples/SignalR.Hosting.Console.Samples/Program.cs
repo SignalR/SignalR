@@ -12,7 +12,7 @@ namespace SignalR.Hosting.Console.Samples
             var app = new AppBuilder();
             app.Properties["host.Addresses"] = HostAddresses;
 
-            ServerFactory.Initialize(app.Properties);
+            ServerFactory.Initialize(app);
             Startup.Configuration(app);
             var server = ServerFactory.Create(app.Build(), app.Properties);
 

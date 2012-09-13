@@ -43,8 +43,8 @@ namespace SignalR.Hosting.Console.Samples
                     }
                     Thread.Sleep(2000);
                 }
-            }); 
-            
+            });
+
             app.MapHubs("/signalr");
 
             app.MapConnection<SendingConnection>("/sending-connection");
@@ -69,18 +69,21 @@ namespace SignalR.Hosting.Console.Samples
                 _next = next;
             }
 
-            public Task Invoke(IDictionary<string, object> env)
+            public async Task Invoke(IDictionary<string, object> env)
             {
                 var req = new Request(env);
                 if (req.Path.StartsWith("/") && !req.Path.EndsWith("/") && Directory.Exists(req.Path.Substring(1)))
                 {
-                    new Response(env)
-                        {
-                            StatusCode = 301
-                        }.Headers["Location"] = new[] { req.PathBase + req.Path + "/" };
-                    return TaskHelpers.Completed();
+                    var resp = new Response(env)
+                    {
+                        StatusCode = 301
+                    };
+                    resp.Headers["Location"] = new[] { req.PathBase + req.Path + "/" };
                 }
-                return _next(env);
+                else
+                {
+                    await _next(env);
+                }
             }
         }
 
