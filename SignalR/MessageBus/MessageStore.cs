@@ -9,6 +9,7 @@ namespace SignalR
         private static readonly uint _minFragmentCount = 4;
         private static readonly uint _maxFragmentSize = (IntPtr.Size == 4) ? (uint)16384 : (uint)8192; // guarantees that fragments never end up in the LOH
         private static readonly ArraySegment<T> _emptyArraySegment = new ArraySegment<T>(new T[0]);
+        private readonly uint _offset;
 
         private Fragment[] _fragments;
         private readonly uint _fragmentSize;
@@ -17,13 +18,15 @@ namespace SignalR
 
         // Creates a message store with the specified capacity. The actual capacity will be *at least* the
         // specified value. That is, GetMessages may return more data than 'capacity'.
-        public MessageStore(uint capacity)
+        public MessageStore(uint capacity, uint offset = 0)
         {
             // set a minimum capacity
             if (capacity < 32)
             {
                 capacity = 32;
             }
+
+            _offset = offset;
 
             // Dynamically choose an appropriate number of fragments and the size of each fragment.
             // This is chosen to avoid allocations on the large object heap and to minimize contention
@@ -99,7 +102,7 @@ namespace SignalR
             int idxIntoFragmentsArray, idxIntoFragment;
             GetFragmentOffsets(firstMessageIdRequestedByClient, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
             Fragment thisFragment = _fragments[idxIntoFragmentsArray];
-            ulong firstMessageIdInThisFragment = GetMessageId(thisFragment.FragmentNum, 0);
+            ulong firstMessageIdInThisFragment = GetMessageId(thisFragment.FragmentNum, offset: _offset);
             ulong firstMessageIdInNextFragment = firstMessageIdInThisFragment + _fragmentSize;
 
             // Case 2:
@@ -124,7 +127,7 @@ namespace SignalR
                 Fragment tailFragment = _fragments[(idxIntoFragmentsArray + 1) % _fragments.Length];
                 if (tailFragment.FragmentNum < fragmentNum)
                 {
-                    firstMessageIdInThisFragment = GetMessageId(tailFragment.FragmentNum, offset: 0);
+                    firstMessageIdInThisFragment = GetMessageId(tailFragment.FragmentNum, offset: _offset);
                     int count = Math.Min(maxMessages, tailFragment.Data.Length);
                     return new MessageStoreResult<T>(firstMessageIdInThisFragment, new ArraySegment<T>(tailFragment.Data, 0, count), hasMoreData: true);
                 }
@@ -154,7 +157,7 @@ namespace SignalR
                     Fragment existingFragment = Interlocked.CompareExchange(ref _fragments[idxIntoFragmentsArray], newFragment, fragment);
                     if (existingFragment == fragment)
                     {
-                        newMessageId = GetMessageId(fragmentNum, offset: 0);
+                        newMessageId = GetMessageId(fragmentNum, offset: _offset);
                         return true;
                     }
                 }
