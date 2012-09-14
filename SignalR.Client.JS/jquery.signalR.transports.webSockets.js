@@ -91,13 +91,8 @@
                     var data = window.JSON.parse(event.data),
                         $connection;
                     if (data) {
-                        $connection = $(connection);
-
-                        if (data.Messages) {
-                            transportLogic.processMessages(connection, data);
-                        } else {
-                            $connection.trigger(events.onReceived, [data]);
-                        }
+                        $connection = $(connection);                        
+                        transportLogic.processMessages(connection, data);
                     }
                 };
             }

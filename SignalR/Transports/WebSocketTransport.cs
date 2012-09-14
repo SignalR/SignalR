@@ -35,6 +35,12 @@ namespace SignalR.Transports
             }
         }
 
+        public override Task KeepAlive()
+        {
+            return this.Send(new object());
+        }
+
+
         public override Task ProcessRequest(ITransportConnection connection)
         {
             return _context.Request.AcceptWebSocketRequest(socket =>
