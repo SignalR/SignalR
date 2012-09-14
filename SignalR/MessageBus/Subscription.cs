@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -8,7 +7,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    internal class Subscription : IDisposable
+    internal class Subscription : IDisposable, ISubscription
     {
         private List<Cursor> _cursors;
         private readonly Func<MessageResult, Task<bool>> _callback;
@@ -62,14 +61,14 @@ namespace SignalR
             return _callback.Invoke(result);
         }
 
-        public Task WorkAsync(ConcurrentDictionary<string, Topic> topics)
+        public Task WorkAsync()
         {
             if (SetWorking())
             {
                 var tcs = new TaskCompletionSource<object>();
 
 
-                WorkImpl(topics, tcs);
+                WorkImpl(tcs);
 
                 // Fast Path
                 if (tcs.Task.IsCompleted)
@@ -119,7 +118,7 @@ namespace SignalR
             }).FastUnwrap();
         }
 
-        private void WorkImpl(ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
+        private void WorkImpl(TaskCompletionSource<object> taskCompletionSource)
         {
         Process:
             int totalCount = 0;
@@ -197,7 +196,7 @@ namespace SignalR
                 }
                 else
                 {
-                    WorkImplAsync(callbackTask, topics, taskCompletionSource);
+                    WorkImplAsync(callbackTask, taskCompletionSource);
                 }
             }
             else
@@ -206,7 +205,7 @@ namespace SignalR
             }
         }
 
-        private void WorkImplAsync(Task<bool> callbackTask, ConcurrentDictionary<string, Topic> topics, TaskCompletionSource<object> taskCompletionSource)
+        private void WorkImplAsync(Task<bool> callbackTask, TaskCompletionSource<object> taskCompletionSource)
         {
             // Async path
             callbackTask.ContinueWith(task =>
@@ -217,7 +216,7 @@ namespace SignalR
                 }
                 else if (task.Result)
                 {
-                    WorkImpl(topics, taskCompletionSource);
+                    WorkImpl(taskCompletionSource);
                 }
                 else
                 {

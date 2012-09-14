@@ -2,10 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -34,7 +31,6 @@ namespace SignalR
         public MessageBus(IDependencyResolver resolver)
             : this(resolver.Resolve<ITraceManager>(), resolver.Resolve<IPerformanceCounterWriter>())
         {
-
         }
 
         /// <summary>
@@ -95,7 +91,7 @@ namespace SignalR
 
                 for (int i = 0; i < topic.Subscriptions.Count; i++)
                 {
-                    Subscription subscription = topic.Subscriptions[i];
+                    ISubscription subscription = topic.Subscriptions[i];
                     _broker.Schedule(subscription);
                 }
             }
@@ -218,8 +214,18 @@ namespace SignalR
                 cursors = Cursor.GetCursors(cursor);
             }
 
-            var subscription = new Subscription(subscriber.Identity, cursors, callback, messageBufferSize, _counters);
-            return subscription;
+            return new Subscription(subscriber.Identity, cursors, callback, messageBufferSize, _counters);
+        }
+        
+        protected ulong GetMessageId(string key)
+        {
+            Topic topic;
+            if (_topics.TryGetValue(key, out topic))
+            {
+                return topic.Store.GetMessageCount();
+            }
+
+            return 0;
         }
 
         public virtual void Dispose()
@@ -235,26 +241,5 @@ namespace SignalR
                 subscription.RemoveCursor(eventKey);
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="eventKey"></param>
-        /// <returns></returns>
-        public string GetCursor(string eventKey)
-        {
-            return GetMessageId(eventKey).ToString();
-        }
-
-        protected ulong GetMessageId(string key)
-        {
-            Topic topic;
-            if (_topics.TryGetValue(key, out topic))
-            {
-                return topic.Store.GetMessageCount();
-            }
-
-            return 0;
-        }        
     }
 }

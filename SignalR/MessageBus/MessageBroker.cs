@@ -15,13 +15,11 @@ namespace SignalR
     /// </summary>
     internal class MessageBroker
     {
-        private readonly Queue<Subscription> _queue = new Queue<Subscription>();
-        private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
+        private readonly Queue<ISubscription> _queue = new Queue<ISubscription>();
+        private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>(StringComparer.OrdinalIgnoreCase);
 
         private readonly PerformanceCounter _allocatedWorkersCounter;
         private readonly PerformanceCounter _busyWorkersCounter;
-
-        private static readonly TimeSpan _idleTimeout = TimeSpan.FromSeconds(30);
 
         // The maximum number of workers (threads) allowed to process all incoming messages
         private static readonly int MaxWorkers = 3 * Environment.ProcessorCount;
@@ -90,7 +88,7 @@ namespace SignalR
 
                     for (int i = 0; i < topic.Subscriptions.Count; i++)
                     {
-                        Subscription subscription = topic.Subscriptions[i];
+                        ISubscription subscription = topic.Subscriptions[i];
                         Schedule(subscription);
                     }
                 }
@@ -103,7 +101,7 @@ namespace SignalR
             Interlocked.Exchange(ref _checkingWork, 0);
         }
 
-        public void Schedule(Subscription subscription)
+        public void Schedule(ISubscription subscription)
         {
             if (subscription.SetQueued())
             {
@@ -193,7 +191,7 @@ namespace SignalR
             int idleWorkers = _allocatedWorkers - _busyWorkers;
             if (idleWorkers <= MaxIdleWorkers)
             {
-                Subscription subscription;
+                ISubscription subscription;
 
                 lock (_queue)
                 {
@@ -206,7 +204,7 @@ namespace SignalR
                 }
 
                 _busyWorkersCounter.SafeSetRaw(Interlocked.Increment(ref _busyWorkers));
-                Task workTask = subscription.WorkAsync(_topics);
+                Task workTask = subscription.WorkAsync();
 
                 if (workTask.IsCompleted)
                 {
@@ -239,7 +237,7 @@ namespace SignalR
             }
         }
 
-        private void PumpImplAsync(Task workTask, Subscription subscription, TaskCompletionSource<object> taskCompletionSource)
+        private void PumpImplAsync(Task workTask, ISubscription subscription, TaskCompletionSource<object> taskCompletionSource)
         {
             // Async path
             workTask.ContinueWith(task =>

@@ -8,18 +8,18 @@ namespace SignalR
     {
         private HashSet<string> _subs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public IList<Subscription> Subscriptions { get; private set; }
+        public IList<ISubscription> Subscriptions { get; private set; }
         public MessageStore<Message> Store { get; private set; }
         public ReaderWriterLockSlim SubscriptionLock { get; private set; }
 
         public Topic(uint storeSize)
         {
-            Subscriptions = new List<Subscription>();
+            Subscriptions = new List<ISubscription>();
             Store = new MessageStore<Message>(storeSize);
             SubscriptionLock = new ReaderWriterLockSlim();
         }
 
-        public void AddSubscription(Subscription subscription)
+        public void AddSubscription(ISubscription subscription)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace SignalR
             }
         }
 
-        public void RemoveSubscription(Subscription subscription)
+        public void RemoveSubscription(ISubscription subscription)
         {
             try
             {
