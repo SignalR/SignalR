@@ -4,9 +4,9 @@ using System.Threading;
 
 namespace SignalR
 {
-    internal class Topic
+    public class Topic
     {
-        private HashSet<string> _subs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> _subcriptionIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public IList<ISubscription> Subscriptions { get; private set; }
         public MessageStore<Message> Store { get; private set; }
@@ -25,7 +25,7 @@ namespace SignalR
             {
                 SubscriptionLock.EnterWriteLock();
 
-                if (_subs.Add(subscription.Identity))
+                if (_subcriptionIdentities.Add(subscription.Identity))
                 {
                     Subscriptions.Add(subscription);
                 }
@@ -42,7 +42,7 @@ namespace SignalR
             {
                 SubscriptionLock.EnterWriteLock();
 
-                if (_subs.Remove(subscription.Identity))
+                if (_subcriptionIdentities.Remove(subscription.Identity))
                 {
                     Subscriptions.Remove(subscription);
                 }
@@ -52,5 +52,6 @@ namespace SignalR
                 SubscriptionLock.ExitWriteLock();
             }
         }
+
     }
 }

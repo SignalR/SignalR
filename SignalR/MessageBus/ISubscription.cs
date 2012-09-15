@@ -2,7 +2,7 @@
 
 namespace SignalR
 {
-    internal interface ISubscription
+    public interface ISubscription
     {
         string Identity { get; }
 

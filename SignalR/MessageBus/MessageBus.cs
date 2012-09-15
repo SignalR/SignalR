@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 
@@ -81,7 +80,7 @@ namespace SignalR
         /// <param name="source">A value representing the source of the data sent.</param>
         public virtual Task Publish(Message message)
         {
-            Topic topic = _topics.GetOrAdd(message.Key, _ => new Topic(DefaultMessageStoreSize));
+            Topic topic = GetTopic(message.Key);
 
             topic.Store.Add(message);
 
@@ -108,7 +107,7 @@ namespace SignalR
 
         protected ulong Save(Message message)
         {
-            Topic topic = _topics.GetOrAdd(message.Key, _ => new Topic(DefaultMessageStoreSize));
+            Topic topic = GetTopic(message.Key);
 
             return topic.Store.Add(message);
         }
@@ -123,14 +122,15 @@ namespace SignalR
         public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
             Subscription subscription = CreateSubscription(subscriber, cursor, callback, messageBufferSize);
+
             var topics = new HashSet<Topic>();
 
             foreach (var key in subscriber.EventKeys)
             {
-                Topic topic = _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize));
+                Topic topic = GetTopic(key);
 
                 // Set the subscription for this topic
-                subscription.SetCursorTopic(key, topic);
+                subscription.SetEventTopic(key, topic);
 
                 // Add it to the list of topics
                 topics.Add(topic);
@@ -141,27 +141,12 @@ namespace SignalR
                 topic.AddSubscription(subscription);
             }
 
-            if (!String.IsNullOrEmpty(cursor))
+            Action<string> eventAdded = eventKey =>
             {
-                // Update all of the cursors so we're within the range
-                foreach (var pair in subscription.Cursors)
-                {
-                    Topic topic;
-                    if (_topics.TryGetValue(pair.Key, out topic) && pair.Id > topic.Store.GetMessageCount())
-                    {
-                        subscription.UpdateCursor(pair.Key, 0);
-                    }
-                }
-            }
-
-            Action<string> eventAdded = (eventKey) =>
-            {
-                Topic topic = _topics.GetOrAdd(eventKey, _ => new Topic(DefaultMessageStoreSize));
-
-                ulong id = GetMessageId(eventKey);
+                Topic topic = GetTopic(eventKey);
 
                 // Add or update the cursor (in case it already exists)
-                subscription.AddOrUpdateCursor(eventKey, id, topic);
+                subscription.AddEvent(eventKey, topic);
 
                 // Add it to the list of subs
                 topic.AddSubscription(subscription);
@@ -186,7 +171,7 @@ namespace SignalR
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
 
-                string currentCursor = Cursor.MakeCursor(subscription.Cursors);
+                string currentCursor = subscription.GetCursor();
 
                 foreach (var eventKey in subscriber.EventKeys)
                 {
@@ -197,39 +182,18 @@ namespace SignalR
             });
         }
 
-        private Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
+        protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
-            IEnumerable<Cursor> cursors = null;
-            if (cursor == null)
-            {
-                cursors = from key in subscriber.EventKeys
-                          select new Cursor
-                          {
-                              Key = key,
-                              Id = GetMessageId(key)
-                          };
-            }
-            else
-            {
-                cursors = Cursor.GetCursors(cursor);
-            }
-
-            return new Subscription(subscriber.Identity, cursors, callback, messageBufferSize, _counters);
+            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, _topics, cursor, callback, messageBufferSize, _counters);
         }
         
-        protected ulong GetMessageId(string key)
-        {
-            Topic topic;
-            if (_topics.TryGetValue(key, out topic))
-            {
-                return topic.Store.GetMessageCount();
-            }
-
-            return 0;
-        }
-
         public virtual void Dispose()
         {
+        }
+
+        private Topic GetTopic(string key)
+        {
+            return _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize));
         }
 
         private void RemoveEvent(Subscription subscription, string eventKey)
@@ -238,7 +202,7 @@ namespace SignalR
             if (_topics.TryGetValue(eventKey, out topic))
             {
                 topic.RemoveSubscription(subscription);
-                subscription.RemoveCursor(eventKey);
+                subscription.RemoveEvent(eventKey);
             }
         }
     }

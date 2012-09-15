@@ -7,9 +7,8 @@ using SignalR.Infrastructure;
 
 namespace SignalR
 {
-    internal class Subscription : IDisposable, ISubscription
+    public abstract class Subscription : ISubscription, IDisposable
     {
-        private List<Cursor> _cursors;
         private readonly Func<MessageResult, Task<bool>> _callback;
         private readonly int _maxMessages;
 
@@ -17,7 +16,6 @@ namespace SignalR
         private readonly PerformanceCounter _subsCurrentCounter;
         private readonly PerformanceCounter _subsPerSecCounter;
 
-        private readonly object _lockObj = new object();
         private int _disposed;
 
         private int _queued;
@@ -31,22 +29,20 @@ namespace SignalR
             }
         }
 
-        public IList<Cursor> Cursors
-        {
-            get
-            {
-                return _cursors;
-            }
-        }
-
         public string Identity { get; private set; }
 
-        public Subscription(string identity, IEnumerable<Cursor> cursors, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterWriter counters)
+        public IEnumerable<object> EventKeys { get; set; }
+
+        public int MaxMessages { get; set; }
+
+        public Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterWriter counters)
         {
             Identity = identity;
-            _cursors = new List<Cursor>(cursors);
             _callback = callback;
             _maxMessages = maxMessages;
+            EventKeys = eventKeys;
+            MaxMessages = maxMessages;
+
             _subsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersTotal);
             _subsCurrentCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersCurrent);
             _subsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersPerSec);
@@ -56,7 +52,7 @@ namespace SignalR
             _subsPerSecCounter.SafeIncrement();
         }
 
-        public Task<bool> Invoke(MessageResult result)
+        public virtual Task<bool> Invoke(MessageResult result)
         {
             return _callback.Invoke(result);
         }
@@ -121,11 +117,6 @@ namespace SignalR
         private void WorkImpl(TaskCompletionSource<object> taskCompletionSource)
         {
         Process:
-            int totalCount = 0;
-            string nextCursor = null;
-            List<ArraySegment<Message>> items = null;
-            var cursors = new List<Cursor>();
-
             if (!Alive)
             {
                 // If this subscription is dead then return immediately
@@ -133,36 +124,16 @@ namespace SignalR
                 return;
             }
 
-            lock (_lockObj)
-            {
-                items = new List<ArraySegment<Message>>(Cursors.Count);
-                for (int i = 0; i < Cursors.Count; i++)
-                {
-                    Cursor cursor = Cursor.Clone(Cursors[i]);
-                    cursors.Add(cursor);
+            int totalCount = 0;
+            string nextCursor = null;
+            var items = new List<ArraySegment<Message>>();
+            object state = null;
 
-                    MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, _maxMessages);
-                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
-
-                    cursor.Id = next;
-
-                    if (storeResult.Messages.Count > 0)
-                    {
-                        items.Add(storeResult.Messages);
-                        totalCount += storeResult.Messages.Count;
-                    }
-                }
-
-                nextCursor = Cursor.MakeCursor(cursors);
-            }
+            PerformWork(ref items, out nextCursor, ref totalCount, out state);
 
             if (Alive && items.Count > 0)
             {
-                lock (_lockObj)
-                {
-                    _cursors = cursors;
-                    cursors = null;
-                }
+                BeforeInvoke(state);
 
                 var messageResult = new MessageResult(items, nextCursor, totalCount);
                 Task<bool> callbackTask = Invoke(messageResult);
@@ -205,6 +176,12 @@ namespace SignalR
             }
         }
 
+        protected virtual void BeforeInvoke(object state)
+        {
+        }
+
+        protected abstract void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state);
+
         private void WorkImplAsync(Task<bool> callbackTask, TaskCompletionSource<object> taskCompletionSource)
         {
             // Async path
@@ -230,64 +207,11 @@ namespace SignalR
             });
         }
 
-        public bool AddOrUpdateCursor(string key, ulong id, Topic topic)
-        {
-            lock (_lockObj)
-            {
-                // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
-                if (index == -1)
-                {
-                    _cursors.Add(new Cursor
-                    {
-                        Key = key,
-                        Id = id,
-                        Topic = topic
-                    });
+        public abstract bool AddEvent(string key, Topic topic);
 
-                    return true;
-                }
+        public abstract void RemoveEvent(string eventKey);
 
-                return false;
-            }
-        }
-
-        public bool UpdateCursor(string key, ulong id)
-        {
-            lock (_lockObj)
-            {
-                // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
-                if (index != -1)
-                {
-                    _cursors[index].Id = id;
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        public void RemoveCursor(string eventKey)
-        {
-            lock (_lockObj)
-            {
-                _cursors.RemoveAll(c => c.Key == eventKey);
-            }
-        }
-
-        public void SetCursorTopic(string key, Topic topic)
-        {
-            lock (_lockObj)
-            {
-                // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
-                if (index != -1)
-                {
-                    _cursors[index].Topic = topic;
-                }
-            }
-        }
+        public abstract void SetEventTopic(string key, Topic topic);
 
         public void Dispose()
         {
@@ -298,6 +222,8 @@ namespace SignalR
             _subsPerSecCounter.SafeDecrement();
         }
 
+        public abstract string GetCursor();
+
         public override int GetHashCode()
         {
             return Identity.GetHashCode();
@@ -305,7 +231,7 @@ namespace SignalR
 
         public override bool Equals(object obj)
         {
-            return Identity.Equals(((Subscription)obj).Identity);
+            return Identity.Equals(((DefaultSubscription)obj).Identity);
         }
     }
 }

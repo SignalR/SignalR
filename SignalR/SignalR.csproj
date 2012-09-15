@@ -114,6 +114,8 @@
     <Compile Include="MessageBus\MessageResult.cs" />
     <Compile Include="MessageBus\MessageStore.cs" />
     <Compile Include="MessageBus\MessageStoreResult.cs" />
+    <Compile Include="MessageBus\ScaleoutSubscription.cs" />
+    <Compile Include="MessageBus\DefaultSubscription.cs" />
     <Compile Include="MessageBus\Subscription.cs" />
     <Compile Include="MessageBus\Topic.cs" />
     <Compile Include="MessageBus\Volatile.cs" />

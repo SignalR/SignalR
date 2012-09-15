@@ -69,6 +69,7 @@
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\MessageBusFacts.cs" />
+    <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
