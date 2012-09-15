@@ -84,6 +84,9 @@ namespace SignalR
 
             topic.Store.Add(message);
 
+            _msgsTotalCounter.SafeIncrement();
+            _msgsPerSecCounter.SafeIncrement();
+
             ScheduleTopic(topic);
 
             return TaskAsyncHelper.Empty;
@@ -93,7 +96,12 @@ namespace SignalR
         {
             Topic topic = GetTopic(message.Key);
 
-            return topic.Store.Add(message);
+            ulong id = topic.Store.Add(message);
+
+            _msgsTotalCounter.SafeIncrement();
+            _msgsPerSecCounter.SafeIncrement();
+
+            return id;
         }
 
         /// <summary>
@@ -107,6 +115,8 @@ namespace SignalR
         {
             Subscription subscription = CreateSubscription(subscriber, cursor, callback, messageBufferSize);
 
+            var topics = new HashSet<Topic>();
+
             foreach (var key in subscriber.EventKeys)
             {
                 Topic topic = GetTopic(key);
@@ -114,8 +124,7 @@ namespace SignalR
                 // Set the subscription for this topic
                 subscription.SetEventTopic(key, topic);
 
-                // Add the subscription
-                topic.AddSubscription(subscription);
+                topics.Add(topic);
             }
 
             Action<string> eventAdded = eventKey =>
@@ -133,6 +142,13 @@ namespace SignalR
 
             subscriber.EventAdded += eventAdded;
             subscriber.EventRemoved += eventRemoved;
+
+            // Add the subscription when it's all set and can be scheduled
+            // for work
+            foreach (var topic in topics)
+            {
+                topic.AddSubscription(subscription);
+            }
 
             // If there's a cursor then schedule work for this subscription
             if (!String.IsNullOrEmpty(cursor))
@@ -189,9 +205,6 @@ namespace SignalR
             {
                 topic.SubscriptionLock.ExitReadLock();
             }
-
-            _msgsTotalCounter.SafeIncrement();
-            _msgsPerSecCounter.SafeIncrement();
         }
 
         
