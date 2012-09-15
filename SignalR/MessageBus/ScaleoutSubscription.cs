@@ -12,8 +12,6 @@ namespace SignalR
         private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streamMappings;
         private List<Cursor> _cursors;
 
-        private readonly object _lockObj = new object();
-
         public ScaleoutSubscription(string identity,
                                     IEnumerable<string> eventKeys,
                                     string cursor,
@@ -87,7 +85,8 @@ namespace SignalR
                     {
                         KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
 
-                        // For each of the event keys we care about
+                        // For each of the event keys we care about, extract all of the messages
+                        // from the payload
                         foreach (var eventKey in EventKeys)
                         {
                             LocalEventKeyInfo info;
@@ -118,10 +117,7 @@ namespace SignalR
 
         protected override void BeforeInvoke(object state)
         {
-            lock (_lockObj)
-            {
-                _cursors = (List<Cursor>)state;
-            }
+            _cursors = (List<Cursor>)state;
         }
     }
 }
