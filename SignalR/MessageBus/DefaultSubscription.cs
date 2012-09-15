@@ -11,14 +11,6 @@ namespace SignalR
         private List<Cursor> _cursors;
         private readonly object _lockObj = new object();
 
-        public IList<Cursor> Cursors
-        {
-            get
-            {
-                return _cursors;
-            }
-        }
-
         public DefaultSubscription(string identity,
                                    IEnumerable<string> eventKeys,
                                    IDictionary<string, Topic> topics,
@@ -107,7 +99,7 @@ namespace SignalR
 
         public override string GetCursor()
         {
-            return Cursor.MakeCursor(Cursors);
+            return Cursor.MakeCursor(_cursors);
         }
 
         protected override void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state)
@@ -116,10 +108,10 @@ namespace SignalR
 
             lock (_lockObj)
             {
-                items = new List<ArraySegment<Message>>(Cursors.Count);
-                for (int i = 0; i < Cursors.Count; i++)
+                items = new List<ArraySegment<Message>>(_cursors.Count);
+                for (int i = 0; i < _cursors.Count; i++)
                 {
-                    Cursor cursor = Cursor.Clone(Cursors[i]);
+                    Cursor cursor = Cursor.Clone(_cursors[i]);
                     cursors.Add(cursor);
 
                     MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, MaxMessages);
