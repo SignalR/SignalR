@@ -134,7 +134,7 @@ $(function () {
     function load() {
         shapeShare.server.getShapes(function (shapes) {
             $.each(shapes, function () {
-                shapeShare.server.shapeAdded(this);
+                shapeShare.client.shapeAdded(this);
             });
         });
     }

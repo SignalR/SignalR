@@ -254,7 +254,7 @@
 
                 // Update the hub state
                 $.extend(proxy.state, data.State);
-                $(proxy).trigger(makeEventName(eventName), [data.Args]);
+                $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
             }
         });
     };
