@@ -56,22 +56,6 @@ namespace SignalR
             return 0;
         }
 
-        public override bool AddEvent(string key, Topic topic)
-        {
-            // This isn't relevant to us as EventKeys is up to date
-            return false;
-        }
-
-        public override void RemoveEvent(string eventKey)
-        {
-            // This isn't relevant to us as EventKeys is up to date
-        }
-
-        public override void SetEventTopic(string key, Topic topic)
-        {
-            // This isn't relevant to us as EventKeys is up to date
-        }
-
         public override string GetCursor()
         {
             return Cursor.MakeCursor(_cursors);

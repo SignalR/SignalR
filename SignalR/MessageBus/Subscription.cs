@@ -207,11 +207,20 @@ namespace SignalR
             });
         }
 
-        public abstract bool AddEvent(string key, Topic topic);
+        public virtual bool AddEvent(string key, Topic topic)
+        {
+            return false;
+        }
 
-        public abstract void RemoveEvent(string eventKey);
+        public virtual void RemoveEvent(string eventKey)
+        {
 
-        public abstract void SetEventTopic(string key, Topic topic);
+        }
+
+        public virtual void SetEventTopic(string key, Topic topic)
+        {
+
+        }
 
         public void Dispose()
         {
