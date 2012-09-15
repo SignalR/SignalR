@@ -107,8 +107,6 @@ namespace SignalR
         {
             Subscription subscription = CreateSubscription(subscriber, cursor, callback, messageBufferSize);
 
-            var topics = new HashSet<Topic>();
-
             foreach (var key in subscriber.EventKeys)
             {
                 Topic topic = GetTopic(key);
@@ -116,12 +114,7 @@ namespace SignalR
                 // Set the subscription for this topic
                 subscription.SetEventTopic(key, topic);
 
-                // Add it to the list of topics
-                topics.Add(topic);
-            }
-
-            foreach (var topic in topics)
-            {
+                // Add the subscription
                 topic.AddSubscription(subscription);
             }
 
