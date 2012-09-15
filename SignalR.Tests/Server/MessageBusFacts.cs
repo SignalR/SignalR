@@ -14,7 +14,7 @@ namespace SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var bus = new MessageBus(dr);
-            var subscriber = new Subscriber(new[] { "key" });
+            var subscriber = new TestSubscriber(new[] { "key" });
             var wh = new ManualResetEventSlim(initialState: false);
             IDisposable subscription = null;
 
@@ -26,7 +26,7 @@ namespace SignalR.Tests.Server
                 {
                     if (!result.Terminal)
                     {
-                        var m = EnumerateMessages(result).Single();
+                        var m = result.GetMessages().Single();
 
                         Assert.Equal("key", m.Key);
                         Assert.Equal("value", m.Value);
@@ -58,7 +58,7 @@ namespace SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var bus = new MessageBus(dr);
-            var subscriber = new Subscriber(new[] { "key" });
+            var subscriber = new TestSubscriber(new[] { "key" });
             var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
             IDisposable subscription = null;
 
@@ -71,7 +71,7 @@ namespace SignalR.Tests.Server
             {
                 subscription = bus.Subscribe(subscriber, "key,00000001", result =>
                 {
-                    foreach (var m in EnumerateMessages(result))
+                    foreach (var m in result.GetMessages())
                     {
                         int n = Int32.Parse(m.Value);
                         Assert.True(cd.Mark(n));
@@ -99,7 +99,7 @@ namespace SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var bus = new MessageBus(dr);
-            var subscriber = new Subscriber(new[] { "key", "key2" });
+            var subscriber = new TestSubscriber(new[] { "key", "key2" });
             var cdKey = new CountDownRange<int>(Enumerable.Range(2, 4));
             var cdKey2 = new CountDownRange<int>(new[] { 1, 2, 10 });
             IDisposable subscription = null;
@@ -115,7 +115,7 @@ namespace SignalR.Tests.Server
             {
                 subscription = bus.Subscribe(subscriber, "key,00000001|key2,00000000", result =>
                 {
-                    foreach (var m in EnumerateMessages(result))
+                    foreach (var m in result.GetMessages())
                     {
                         int n = Int32.Parse(m.Value);
                         if (m.Key == "key")
@@ -152,7 +152,7 @@ namespace SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var bus = new MessageBus(dr);
-            var subscriber = new Subscriber(new[] { "a" });
+            var subscriber = new TestSubscriber(new[] { "a" });
             int max = 100;
             var cd = new CountDownRange<int>(Enumerable.Range(0, max));
             int prev = -1;
@@ -162,7 +162,7 @@ namespace SignalR.Tests.Server
             {
                 subscription = bus.Subscribe(subscriber, null, result =>
                 {
-                    foreach (var m in EnumerateMessages(result))
+                    foreach (var m in result.GetMessages())
                     {
                         int n = Int32.Parse(m.Value);
                         Assert.True(prev < n, "out of order");
@@ -186,51 +186,6 @@ namespace SignalR.Tests.Server
                 if (subscription != null)
                 {
                     subscription.Dispose();
-                }
-            }
-        }
-
-        private static IEnumerable<Message> EnumerateMessages(MessageResult result)
-        {
-            for (int i = 0; i < result.Messages.Count; i++)
-            {
-                for (int j = result.Messages[i].Offset; j < result.Messages[i].Offset + result.Messages[i].Count; j++)
-                {
-                    Message message = result.Messages[i].Array[j];
-                    yield return message;
-                }
-            }
-        }
-
-        private class Subscriber : ISubscriber
-        {
-            public Subscriber(IEnumerable<string> keys)
-            {
-                EventKeys = keys;
-                Identity = Guid.NewGuid().ToString();
-            }
-
-            public IEnumerable<string> EventKeys { get; private set; }
-
-            public string Identity { get; private set; }
-
-            public event Action<string> EventAdded;
-
-            public event Action<string> EventRemoved;
-
-            public void AddEvent(string eventName)
-            {
-                if (EventAdded != null)
-                {
-                    EventAdded(eventName);
-                }
-            }
-
-            public void RemoveEvent(string eventName)
-            {
-                if (EventRemoved != null)
-                {
-                    EventRemoved(eventName);
                 }
             }
         }

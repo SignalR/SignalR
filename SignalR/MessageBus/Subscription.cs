@@ -231,7 +231,7 @@ namespace SignalR
 
         public override bool Equals(object obj)
         {
-            return Identity.Equals(((DefaultSubscription)obj).Identity);
+            return Identity.Equals(((Subscription)obj).Identity);
         }
     }
 }

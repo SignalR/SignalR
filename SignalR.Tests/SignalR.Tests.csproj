@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
+    <Compile Include="Server\MessageResultExtensions.cs" />
     <Compile Include="Server\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="CursorFacts.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
+    <Compile Include="Server\TestSubscriber.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

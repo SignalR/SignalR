@@ -12,14 +12,14 @@ namespace SignalR
     /// </summary>
     public class MessageBus : IMessageBus, IDisposable
     {
-        private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
+        protected readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>();
         private readonly MessageBroker _broker;
 
         private const int DefaultMessageStoreSize = 5000;
 
         private readonly ITraceManager _trace;
 
-        private readonly IPerformanceCounterWriter _counters;
+        protected readonly IPerformanceCounterWriter _counters;
         private readonly PerformanceCounter _msgsTotalCounter;
         private readonly PerformanceCounter _msgsPerSecCounter;
 
@@ -84,27 +84,11 @@ namespace SignalR
 
             topic.Store.Add(message);
 
-            try
-            {
-                topic.SubscriptionLock.EnterReadLock();
-
-                for (int i = 0; i < topic.Subscriptions.Count; i++)
-                {
-                    ISubscription subscription = topic.Subscriptions[i];
-                    _broker.Schedule(subscription);
-                }
-            }
-            finally
-            {
-                topic.SubscriptionLock.ExitReadLock();
-            }
-
-            _msgsTotalCounter.SafeIncrement();
-            _msgsPerSecCounter.SafeIncrement();
+            ScheduleTopic(topic);
 
             return TaskAsyncHelper.Empty;
         }
-
+        
         protected ulong Save(Message message)
         {
             Topic topic = GetTopic(message.Key);
@@ -186,6 +170,37 @@ namespace SignalR
         {
             return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, _topics, cursor, callback, messageBufferSize, _counters);
         }
+
+        protected void ScheduleEvent(string eventKey)
+        {
+            Topic topic;
+            if (_topics.TryGetValue(eventKey, out topic))
+            {
+                ScheduleTopic(topic);
+            }
+        }
+
+        private void ScheduleTopic(Topic topic)
+        {
+            try
+            {
+                topic.SubscriptionLock.EnterReadLock();
+
+                for (int i = 0; i < topic.Subscriptions.Count; i++)
+                {
+                    ISubscription subscription = topic.Subscriptions[i];
+                    _broker.Schedule(subscription);
+                }
+            }
+            finally
+            {
+                topic.SubscriptionLock.ExitReadLock();
+            }
+
+            _msgsTotalCounter.SafeIncrement();
+            _msgsPerSecCounter.SafeIncrement();
+        }
+
         
         public virtual void Dispose()
         {

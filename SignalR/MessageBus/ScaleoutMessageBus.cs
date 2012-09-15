@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalR
@@ -8,6 +10,8 @@ namespace SignalR
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
+        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streamMappings = new ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>>();
+
         public ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
@@ -35,31 +39,30 @@ namespace SignalR
         /// <returns></returns>
         protected Task<bool> OnReceived(string streamId, ulong id, Message[] messages)
         {
-            // { 0, 0, ({foo, 1}, {bar,2}) }
+            var stream = _streamMappings.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>());
 
-            // foo -> [1]
-            // bar -> [2]
+            var mapping = new ScaleoutMapping();
+            stream.Add(id, mapping);
 
-            // { 0, 1, ({foo, 2}, {bar,3}, {foo, 10}) }
+            foreach (var m in messages)
+            {
+                // Get the payload info
+                var info = mapping.EventKeyMappings.GetOrAdd(m.Key, _ => new LocalEventKeyInfo());
 
-            // foo -> [1, 2, 10]
-            // bar -> [2, 3]
+                // Save the min and max for this payload for later
+                ulong localId = Save(m);
 
-            // { 0, 2, ({foo, 3}, {bar,4}, {baz, hi}) }
+                // Set the topic pointer for this event key so we don't need to look it up later
+                info.Topic = _topics[m.Key];
 
-            // foo -> [1, 2, 10, 3]
-            // bar -> [2, 3, 4]
-            // baz -> [hi]
+                info.MinLocal = Math.Min(localId, info.MinLocal);
+                info.Count++;
+            }
 
-            // { 0, 0, (foo, 0), (bar, 0) }
-            // { 0, 1, (foo, 1), (bar, 1), (foo, 2) }
-            // { 0, 2, (foo, 3), (bar, 2), (baz, 0) }
-
-
-            // cursor = null = (foo, 0), (bar, 0)
-            // cursor = (0, 0)
-
-            // subscribe((foo, bar, baz), (0, 0))
+            foreach (var eventKey in mapping.EventKeyMappings.Keys)
+            {
+                ScheduleEvent(eventKey);
+            }
 
             return TaskAsyncHelper.True;
         }
@@ -70,11 +73,9 @@ namespace SignalR
             return Send(new[] { message });
         }
 
-        public override IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
+        protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
-            // The format of the cursor is (sid, pid, localid)
-
-            return base.Subscribe(subscriber, cursor, callback, messageBufferSize);
+            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streamMappings, callback, messageBufferSize, _counters);
         }
     }
 }
