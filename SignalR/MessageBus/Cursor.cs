@@ -23,7 +23,7 @@ namespace SignalR
             }
         }
 
-        public string EscapedKey { get; private set; }
+        private string EscapedKey { get; set; }
 
         public ulong Id { get; set; }
 
