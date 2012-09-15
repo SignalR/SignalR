@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SignalR.Tests.Infrastructure;
 using Xunit;
 
 namespace SignalR.Tests.Server
@@ -60,6 +60,63 @@ namespace SignalR.Tests.Server
             }
         }
 
+        [Fact]
+        public void SubscriptionWithExistingCursor()
+        {
+            var dr = new DefaultDependencyResolver();
+            var bus = new TestScaleoutBus(dr, topicCount: 2);
+            var subscriber = new TestSubscriber(new[] { "key" });
+            var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
+            IDisposable subscription = null;
+
+            // test, test2 = 1
+            // test1, test3 = 0
+            // 
+
+            // Cursor 1, 1
+            bus.SendMany(new[] { 
+                 new Message("test", "key", "1"),
+                 new Message("test", "key", "50")
+            });
+
+            // Cursor 0,1|1,1
+            bus.SendMany(new[] {
+                new Message("test1", "key", "51")
+            });
+
+            bus.SendMany(new[]{
+                 new Message("test2", "key", "2"),
+                 new Message("test3", "key", "3"),
+                 new Message("test2", "key", "4"),
+            });
+
+            try
+            {
+                subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", result =>
+                {
+                    foreach (var m in result.GetMessages())
+                    {
+                        int n = Int32.Parse(m.Value);
+                        Assert.True(cd.Mark(n));
+                    }
+
+                    return TaskAsyncHelper.True;
+
+                }, 10);
+
+                bus.SendMany(new[] { new Message("test", "key", "5") });
+
+                Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+            }
+            finally
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+            }
+        }
+
         private class TestScaleoutBus : ScaleoutMessageBus
         {
             private long[] _topics;
@@ -85,7 +142,7 @@ namespace SignalR.Tests.Server
                 foreach (var g in messages.GroupBy(m => m.Source))
                 {
                     int topic = Math.Abs(g.Key.GetHashCode()) % _topics.Length;
-                    OnReceived(g.Key, (ulong)Interlocked.Increment(ref _topics[topic]), g.ToArray()).Wait();
+                    OnReceived(topic.ToString(), (ulong)Interlocked.Increment(ref _topics[topic]), g.ToArray()).Wait();
                 }
                 return TaskAsyncHelper.Empty;
             }
