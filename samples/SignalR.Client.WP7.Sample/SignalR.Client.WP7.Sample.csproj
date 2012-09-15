@@ -18,7 +18,7 @@
     <SilverlightApplication>true</SilverlightApplication>
     <SupportedCultures>
     </SupportedCultures>
-    <XapOutputs>true</XapOutputs>
+    <XapOutputs Condition=" '$(LocalToolsPath)' == '' ">true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
     <XapFilename>SignalR.Client.WP7.Sample.xap</XapFilename>
     <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
