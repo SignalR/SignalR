@@ -31,7 +31,7 @@ namespace SignalR
 
         public string Identity { get; private set; }
 
-        public IEnumerable<object> EventKeys { get; set; }
+        public IEnumerable<string> EventKeys { get; set; }
 
         public int MaxMessages { get; set; }
 
