@@ -27,15 +27,12 @@ namespace SignalR
 
         public ulong Id { get; set; }
 
-        public Topic Topic { get; set; }
-
         public static Cursor Clone(Cursor cursor)
         {
             return new Cursor
             {
                 Id = cursor.Id,
-                Key = cursor.Key,
-                Topic = cursor.Topic
+                Key = cursor.Key
             };
         }
 

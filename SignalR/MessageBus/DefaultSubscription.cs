@@ -9,6 +9,8 @@ namespace SignalR
     internal class DefaultSubscription : Subscription
     {
         private List<Cursor> _cursors;
+        private List<Topic> _cursorTopics;
+
         private readonly object _lockObj = new object();
 
         public DefaultSubscription(string identity,
@@ -37,7 +39,13 @@ namespace SignalR
             }
 
             _cursors = new List<Cursor>(cursors);
+            _cursorTopics = new List<Topic>();
 
+            // Add dummy entries so they can be filled in
+            for (int i = 0; i < _cursors.Count; i++)
+            {
+                _cursorTopics.Add(null);
+            }
 
             if (!String.IsNullOrEmpty(cursor))
             {
@@ -51,23 +59,23 @@ namespace SignalR
                     }
                 }
             }
-
         }
 
-        public override bool AddEvent(string key, Topic topic)
+        public override bool AddEvent(string eventKey, Topic topic)
         {
             lock (_lockObj)
             {
                 // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
+                var index = _cursors.FindIndex(c => c.Key == eventKey);
                 if (index == -1)
                 {
                     _cursors.Add(new Cursor
                     {
-                        Key = key,
-                        Id = GetMessageId(topic),
-                        Topic = topic
+                        Key = eventKey,
+                        Id = GetMessageId(topic)
                     });
+
+                    _cursorTopics.Add(topic);
 
                     return true;
                 }
@@ -80,19 +88,24 @@ namespace SignalR
         {
             lock (_lockObj)
             {
-                _cursors.RemoveAll(c => c.Key == eventKey);
+                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                if (index != -1)
+                {
+                    _cursors.RemoveAt(index);
+                    _cursorTopics.RemoveAt(index);
+                }
             }
         }
 
-        public override void SetEventTopic(string key, Topic topic)
+        public override void SetEventTopic(string eventKey, Topic topic)
         {
             lock (_lockObj)
             {
                 // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
+                var index = _cursors.FindIndex(c => c.Key == eventKey);
                 if (index != -1)
                 {
-                    _cursors[index].Topic = topic;
+                    _cursorTopics[index] = topic;
                 }
             }
         }
@@ -114,7 +127,7 @@ namespace SignalR
                     Cursor cursor = Cursor.Clone(_cursors[i]);
                     cursors.Add(cursor);
 
-                    MessageStoreResult<Message> storeResult = cursor.Topic.Store.GetMessages(cursor.Id, MaxMessages);
+                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(cursor.Id, MaxMessages);
                     ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
                     cursor.Id = next;
