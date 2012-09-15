@@ -11,6 +11,7 @@ namespace SignalR
     {
         private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streamMappings;
         private List<Cursor> _cursors;
+
         private readonly object _lockObj = new object();
 
         public ScaleoutSubscription(string identity,
@@ -57,18 +58,18 @@ namespace SignalR
 
         public override bool AddEvent(string key, Topic topic)
         {
-            // Noop since we use the topics passed in
+            // This isn't relevant to us as EventKeys is up to date
             return false;
         }
 
         public override void RemoveEvent(string eventKey)
         {
-            // Noop since we use the topics passed in
+            // This isn't relevant to us as EventKeys is up to date
         }
 
         public override void SetEventTopic(string key, Topic topic)
         {
-            // Noop since we use the topics passed in
+            // This isn't relevant to us as EventKeys is up to date
         }
 
         public override string GetCursor()
