@@ -196,7 +196,13 @@
     </None>
   </ItemGroup>
   <ItemGroup />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+
+  <Import Project="$(LocalToolsPath)\Silverlight\v4.0\SignalR.Silverlight.targets"
+          Condition="'$(LocalToolsPath)'!=''" />
+
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets"
+          Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets')" />
+  
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <ProjectExtensions>
     <VisualStudio>

@@ -47,7 +47,8 @@
 
         <!-- Commands -->
         <RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source "$(PackageSources)" -o "$(PackagesDir)"</RestoreCommand>
-        <BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -p Configuration=$(Configuration) -o "$(PackageOutputDir)" -symbols</BuildCommand>
+
+        <BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -p "Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath)" -o "$(PackageOutputDir)" -symbols</BuildCommand>
 
         <!-- Make the build depend on restore packages -->
         <BuildDependsOn Condition="$(RestorePackages) == 'true'">
@@ -79,6 +80,8 @@
     </Target>
 
     <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
+        <Message Importance="high" Text="NuGet.targets: LocalToolsPath = $(LocalToolsPath)" />
+
         <Exec Command="$(BuildCommand)" 
               Condition=" '$(OS)' != 'Windows_NT' " />
               

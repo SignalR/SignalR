@@ -18,6 +18,7 @@
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
         <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
+        <LocalToolsPath></LocalToolsPath>
     </PropertyGroup>
   
     <PropertyGroup>
@@ -84,6 +85,9 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
+  <Target Name="CI" DependsOnTargets="Build; RunTests; BuildPackages;">
+  </Target>
+
   <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
   </Target>
   
@@ -109,12 +113,12 @@
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.WP7.sln"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')"
+             Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
              Properties="Configuration=$(Configuration)" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Silverlight.sln"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
+             Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')) Or (Exists('$(LocalToolsPath)\Silverlight'))"
              Properties="Configuration=$(Configuration)" />
              
     <MSBuild Projects="$(ProjectRoot)\SignalR.WinRT.sln"
@@ -142,6 +146,8 @@
   </Target>
   
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
+    <Message Importance="high" Text="Using build resources from local tools path $(LocalToolsPath)"  /> 
+
     <ItemGroup>
       <JsPackage Include="$(ProjectRoot)\SignalR.Client.JS\Properties\SignalR.Js.nuspec" />
       <MetaPackage Include="$(ProjectRoot)\SignalR\Properties\SignalR.All.nuspec" />
@@ -165,18 +171,18 @@
     <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.WP7\SignalR.Client.WP7.csproj"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')"
-             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+             Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
+             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath);" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight\SignalR.Client.Silverlight.csproj"
              Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0')"
-             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') Or Exists('$(LocalToolsPath)\Silverlight\v4.0')"
+             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath);" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.Client.Silverlight5\SignalR.Client.Silverlight5.csproj"
-         Targets="Build"
-         Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
-         Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
+             Targets="Build"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets') Or Exists('$(LocalToolsPath)\Silverlight\v5.0')"
+             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath);" />
 
     <RemoveDir Directories="$(ScriptTempPath)" />
     <MakeDir Directories="$(ScriptTempPath)" />
