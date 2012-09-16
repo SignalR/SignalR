@@ -15,13 +15,7 @@ namespace SignalR
         public ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
-            Initialize();
         }
-
-        /// <summary>
-        /// Initializes the backplane
-        /// </summary>
-        protected abstract void Initialize();
 
         /// <summary>
         /// Sends messages to the backplane
@@ -37,7 +31,7 @@ namespace SignalR
         /// <param name="id">id of the payload within that stream</param>
         /// <param name="messages">List of messages associated</param>
         /// <returns></returns>
-        protected Task<bool> OnReceived(string streamId, ulong id, Message[] messages)
+        protected Task OnReceived(string streamId, ulong id, Message[] messages)
         {
             var stream = _streamMappings.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>());
 
@@ -64,7 +58,7 @@ namespace SignalR
                 ScheduleEvent(eventKey);
             }
 
-            return TaskAsyncHelper.True;
+            return TaskAsyncHelper.Empty;
         }
 
         public override Task Publish(Message message)

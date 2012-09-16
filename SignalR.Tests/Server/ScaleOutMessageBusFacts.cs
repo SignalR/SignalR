@@ -127,11 +127,6 @@ namespace SignalR.Tests.Server
                 _topics = new long[topicCount];
             }
 
-            protected override void Initialize()
-            {
-
-            }
-
             public Task SendMany(Message[] messages)
             {
                 return Send(messages);

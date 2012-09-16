@@ -1,10 +1,14 @@
-﻿namespace SignalR
+﻿using System;
+
+namespace SignalR
 {
+    [Serializable]
     public class Message
     {
-        public string Source { get; private set; }
-        public string Key { get; private set; }
-        public string Value { get; private set; }
+        // Core properties
+        public string Source { get; set; }
+        public string Key { get; set; }
+        public string Value { get; set; }
 
         public string CommandId { get; set; }
         public bool WaitForAck { get; set; }
@@ -16,6 +20,10 @@
             {
                 return CommandId != null;
             }
+        }
+
+        public Message()
+        {
         }
         
         public Message(string source, string key, string value)
