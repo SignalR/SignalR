@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace SignalR
 {
+    // TODO: This structure grows infinitely so we need to bound it
     public class Linktionary<TKey, TValue>
     {
         private readonly ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _lookup = new ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
