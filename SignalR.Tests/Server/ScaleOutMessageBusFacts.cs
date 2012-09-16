@@ -117,6 +117,48 @@ namespace SignalR.Tests.Server
             }
         }
 
+        [Fact]
+        public void SubscriptionPublishingAfter()
+        {
+            var dr = new DefaultDependencyResolver();
+            var bus = new TestScaleoutBus(dr, topicCount: 5);
+            var subscriber = new TestSubscriber(new[] { "key" });
+            IDisposable subscription = null;
+            var wh = new ManualResetEventSlim();
+
+            // test, test2 = 1
+            // test1, test3 = 0
+            
+            try
+            {
+                subscription = bus.Subscribe(subscriber, null, result =>
+                {
+                    if (!result.Terminal)
+                    {
+                        var messages = result.GetMessages().ToList();
+                        Assert.Equal(1, messages.Count);
+                        Assert.Equal("connected", messages[0].Value);
+                        wh.Set();
+
+                    }
+
+                    return TaskAsyncHelper.True;
+
+                }, 10);
+
+                bus.SendMany(new[] { new Message("test", "key", "connected") });
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+            }
+            finally
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+            }
+        }
+
         private class TestScaleoutBus : ScaleoutMessageBus
         {
             private long[] _topics;

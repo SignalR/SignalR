@@ -60,6 +60,7 @@ namespace SignalR
                 // See if we have a cursor for this key
                 Cursor cursor = null;
 
+
                 // REVIEW: We should optimize this
                 int index = _cursors.FindIndex(c => c.Key == streamPair.Key);
                 if (index != -1)
@@ -68,7 +69,8 @@ namespace SignalR
                 }
                 else
                 {
-                    // Create a cursor and add it to the list
+                    // Create a cursor and add it to the list.
+                    // Point the Id to the first value
                     cursor = new Cursor
                     {
                         Id = GetCursorId(streamPair.Value),
@@ -81,7 +83,8 @@ namespace SignalR
                 // Try to find a local mapping for this payload
                 LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping[cursor.Id];
 
-                if (node != null)
+                // Skip this node only if this isn't a new cursor
+                if (node != null && index != -1)
                 {
                     // Skip this node since we've already consumed it
                     node = node.Next;
