@@ -47,7 +47,7 @@ namespace SignalR
                 ulong localId = Save(m);
 
                 // Set the topic pointer for this event key so we don't need to look it up later
-                info.Topic = _topics[m.Key];
+                info.Store = _topics[m.Key].Store;
 
                 info.MinLocal = Math.Min(localId, info.MinLocal);
                 info.Count++;

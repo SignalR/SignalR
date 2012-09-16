@@ -74,7 +74,7 @@ namespace SignalR
                     if (mapping[cursor.Id] == null)
                     {
                         // Set it to the first id in this mapping
-                        cursor.Id = GetMinCursorId(streamPair.Value);
+                        cursor.Id = streamPair.Value.MinKey;
 
                         // Mark this cursor as unconsumed
                         consumed = false;
@@ -86,7 +86,7 @@ namespace SignalR
                     // Point the Id to the first value
                     cursor = new Cursor
                     {
-                        Id = GetMaxCursorId(streamPair.Value),
+                        Id = streamPair.Value.MaxKey,
                         Key = streamPair.Key
                     };
 
@@ -123,7 +123,7 @@ namespace SignalR
                         if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info) && info.Count > 0)
                         {
                             int maxMessages = Math.Min(info.Count, MaxMessages);
-                            MessageStoreResult<Message> storeResult = info.Topic.Store.GetMessages(info.MinLocal, maxMessages);
+                            MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
 
                             if (storeResult.Messages.Count > 0)
                             {
@@ -154,27 +154,7 @@ namespace SignalR
             Linktionary<ulong, ScaleoutMapping> mapping;
             if (_streamMappings.TryGetValue(key, out mapping))
             {
-                return GetMaxCursorId(mapping);
-            }
-
-            return 0;
-        }
-
-        private ulong GetMaxCursorId(Linktionary<ulong, ScaleoutMapping> mapping)
-        {
-            if (mapping.Last != null)
-            {
-                return mapping.Last.Value.Key;
-            }
-
-            return 0;
-        }
-
-        private ulong GetMinCursorId(Linktionary<ulong, ScaleoutMapping> mapping)
-        {
-            if (mapping.First != null)
-            {
-                return mapping.First.Value.Key;
+                return mapping.MaxKey;
             }
 
             return 0;

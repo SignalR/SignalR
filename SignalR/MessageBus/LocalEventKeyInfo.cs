@@ -9,7 +9,7 @@ namespace SignalR
             MinLocal = Int32.MaxValue;
         }
 
-        public Topic Topic { get; set; }
+        public MessageStore<Message> Store { get; set; }
         public ulong MinLocal { get; set; }
         public int Count { get; set; }
     }

@@ -14,19 +14,19 @@ namespace SignalR
             _lookup.TryAdd(key, _list.AddLast(new KeyValuePair<TKey, TValue>(key, value)));
         }
 
-        public LinkedListNode<KeyValuePair<TKey, TValue>> First
+        public TKey MinKey
         {
             get
             {
-                return _list.First;
+                return GetKey(_list.First);
             }
         }
 
-        public LinkedListNode<KeyValuePair<TKey, TValue>> Last
+        public TKey MaxKey
         {
             get
             {
-                return _list.Last;
+                return GetKey(_list.Last);
             }
         }
 
@@ -42,6 +42,15 @@ namespace SignalR
 
                 return null;
             }
+        }
+
+        private TKey GetKey(LinkedListNode<KeyValuePair<TKey, TValue>> node)
+        {
+            if (node == null)
+            {
+                return default(TKey);
+            }
+            return node.Value.Key;
         }
     }
 }
