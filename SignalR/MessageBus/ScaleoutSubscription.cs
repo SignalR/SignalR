@@ -60,12 +60,25 @@ namespace SignalR
                 // See if we have a cursor for this key
                 Cursor cursor = null;
 
-
                 // REVIEW: We should optimize this
                 int index = _cursors.FindIndex(c => c.Key == streamPair.Key);
+
+                bool consumed = true;
+
                 if (index != -1)
                 {
                     cursor = _cursors[index];
+
+                    // If there's no node for this cursor id it's likely because we've
+                    // had an app domain restart and the cursor position is now invalid.
+                    if (mapping[cursor.Id] == null)
+                    {
+                        // Set it to the first id in this mapping
+                        cursor.Id = GetMinCursorId(streamPair.Value);
+
+                        // Mark this cursor as unconsumed
+                        consumed = false;
+                    }
                 }
                 else
                 {
@@ -73,9 +86,11 @@ namespace SignalR
                     // Point the Id to the first value
                     cursor = new Cursor
                     {
-                        Id = GetCursorId(streamPair.Value),
+                        Id = GetMaxCursorId(streamPair.Value),
                         Key = streamPair.Key
                     };
+
+                    consumed = false;
                 }
 
                 cursors.Add(cursor);
@@ -84,7 +99,7 @@ namespace SignalR
                 LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping[cursor.Id];
 
                 // Skip this node only if this isn't a new cursor
-                if (node != null && index != -1)
+                if (node != null && consumed)
                 {
                     // Skip this node since we've already consumed it
                     node = node.Next;
@@ -139,17 +154,27 @@ namespace SignalR
             Linktionary<ulong, ScaleoutMapping> mapping;
             if (_streamMappings.TryGetValue(key, out mapping))
             {
-                return GetCursorId(mapping);
+                return GetMaxCursorId(mapping);
             }
 
             return 0;
         }
 
-        private ulong GetCursorId(Linktionary<ulong, ScaleoutMapping> mapping)
+        private ulong GetMaxCursorId(Linktionary<ulong, ScaleoutMapping> mapping)
         {
             if (mapping.Last != null)
             {
                 return mapping.Last.Value.Key;
+            }
+
+            return 0;
+        }
+
+        private ulong GetMinCursorId(Linktionary<ulong, ScaleoutMapping> mapping)
+        {
+            if (mapping.First != null)
+            {
+                return mapping.First.Value.Key;
             }
 
             return 0;

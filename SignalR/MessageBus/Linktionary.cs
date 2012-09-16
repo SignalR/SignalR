@@ -14,6 +14,14 @@ namespace SignalR
             _lookup.TryAdd(key, _list.AddLast(new KeyValuePair<TKey, TValue>(key, value)));
         }
 
+        public LinkedListNode<KeyValuePair<TKey, TValue>> First
+        {
+            get
+            {
+                return _list.First;
+            }
+        }
+
         public LinkedListNode<KeyValuePair<TKey, TValue>> Last
         {
             get
