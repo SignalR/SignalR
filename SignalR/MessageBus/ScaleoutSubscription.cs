@@ -42,18 +42,6 @@ namespace SignalR
             _cursors = new List<Cursor>(cursors);
         }
 
-        private ulong GetCursorId(string key)
-        {
-            Linktionary<ulong, ScaleoutMapping> mapping;
-            if (_streamMappings.TryGetValue(key, out mapping) &&
-                mapping.Last != null)
-            {
-                return mapping.Last.Value.Key;
-            }
-
-            return 0;
-        }
-
         public override string GetCursor()
         {
             return Cursor.MakeCursor(_cursors);
@@ -64,49 +52,72 @@ namespace SignalR
             // The list of cursors represent (streamid, payloadid)
             var cursors = new List<Cursor>();
 
-            for (int i = 0; i < _cursors.Count; i++)
+            foreach (var streamPair in _streamMappings)
             {
-                Cursor cursor = Cursor.Clone(_cursors[i]);
+                // Get the mapping for this stream
+                Linktionary<ulong, ScaleoutMapping> mapping = streamPair.Value;
+
+                // See if we have a cursor for this key
+                Cursor cursor = null;
+
+                // REVIEW: We should optimize this
+                int index = _cursors.FindIndex(c => c.Key == streamPair.Key);
+                if (index != -1)
+                {
+                    cursor = _cursors[index];
+                }
+                else
+                {
+                    // Create a cursor and add it to the list
+                    cursor = new Cursor
+                    {
+                        Id = GetCursorId(streamPair.Value),
+                        Key = streamPair.Key
+                    };
+                }
+
                 cursors.Add(cursor);
 
-                Linktionary<ulong, ScaleoutMapping> mapping;
-                if (_streamMappings.TryGetValue(cursor.Key, out mapping))
-                {
-                    // Try to find a local mapping for this payload
-                    LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping[cursor.Id];
+                // Try to find a local mapping for this payload
+                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping[cursor.Id];
 
-                    if(node != null)
+                if (node != null)
+                {
+                    // Skip this node since we've already consumed it
+                    node = node.Next;
+                }
+
+                while (node != null)
+                {
+                    KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
+
+                    // Stop if we got more than max messages
+                    if (totalCount >= MaxMessages)
                     {
-                        // Skip this node since we've already consumed it
-                        node = node.Next;
+                        break;
                     }
 
-                    while (node != null)
+                    // For each of the event keys we care about, extract all of the messages
+                    // from the payload
+                    foreach (var eventKey in EventKeys)
                     {
-                        KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
-
-                        // For each of the event keys we care about, extract all of the messages
-                        // from the payload
-                        foreach (var eventKey in EventKeys)
+                        LocalEventKeyInfo info;
+                        if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info) && info.Count > 0)
                         {
-                            LocalEventKeyInfo info;
-                            if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
-                            {
-                                int maxMessages = Math.Min(info.Count, MaxMessages);
-                                MessageStoreResult<Message> storeResult = info.Topic.Store.GetMessages(info.MinLocal, maxMessages);
+                            int maxMessages = Math.Min(info.Count, MaxMessages);
+                            MessageStoreResult<Message> storeResult = info.Topic.Store.GetMessages(info.MinLocal, maxMessages);
 
-                                if (storeResult.Messages.Count > 0)
-                                {
-                                    items.Add(storeResult.Messages);
-                                    totalCount += storeResult.Messages.Count;
-                                }
+                            if (storeResult.Messages.Count > 0)
+                            {
+                                items.Add(storeResult.Messages);
+                                totalCount += storeResult.Messages.Count;
                             }
                         }
-
-                        // Update the cursor id
-                        cursor.Id = pair.Key;
-                        node = node.Next;
                     }
+
+                    // Update the cursor id
+                    cursor.Id = pair.Key;
+                    node = node.Next;
                 }
             }
 
@@ -118,6 +129,27 @@ namespace SignalR
         protected override void BeforeInvoke(object state)
         {
             _cursors = (List<Cursor>)state;
+        }
+
+        private ulong GetCursorId(string key)
+        {
+            Linktionary<ulong, ScaleoutMapping> mapping;
+            if (_streamMappings.TryGetValue(key, out mapping))
+            {
+                return GetCursorId(mapping);
+            }
+
+            return 0;
+        }
+
+        private ulong GetCursorId(Linktionary<ulong, ScaleoutMapping> mapping)
+        {
+            if (mapping.Last != null)
+            {
+                return mapping.Last.Value.Key;
+            }
+
+            return 0;
         }
     }
 }
