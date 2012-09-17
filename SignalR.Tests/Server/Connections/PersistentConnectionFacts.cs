@@ -126,7 +126,7 @@ namespace SignalR.Tests
                 var connection = new Client.Connection("http://foo/endpoint");
                 connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                Thread.Sleep(TimeSpan.FromSeconds(15));
 
                 connection.Stop();
 
