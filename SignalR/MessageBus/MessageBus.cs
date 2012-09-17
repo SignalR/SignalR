@@ -210,6 +210,7 @@ namespace SignalR
         
         public virtual void Dispose()
         {
+            _broker.Dispose();
         }
 
         private Topic GetTopic(string key)
