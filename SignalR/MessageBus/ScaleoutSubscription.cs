@@ -86,7 +86,7 @@ namespace SignalR
                     // Point the Id to the first value
                     cursor = new Cursor
                     {
-                        Id = streamPair.Value.MaxKey,
+                        Id = streamPair.Value.MinKey,
                         Key = streamPair.Key
                     };
 
