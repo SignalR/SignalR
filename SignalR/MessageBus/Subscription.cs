@@ -31,7 +31,7 @@ namespace SignalR
 
         public string Identity { get; private set; }
 
-        public IEnumerable<string> EventKeys { get; set; }
+        public HashSet<string> EventKeys { get; private set; }
 
         public int MaxMessages { get; set; }
 
@@ -40,7 +40,7 @@ namespace SignalR
             Identity = identity;
             _callback = callback;
             _maxMessages = maxMessages;
-            EventKeys = eventKeys;
+            EventKeys = new HashSet<string>(eventKeys);
             MaxMessages = maxMessages;
 
             _subsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersTotal);
@@ -209,17 +209,26 @@ namespace SignalR
 
         public virtual bool AddEvent(string key, Topic topic)
         {
-            return false;
+            lock (EventKeys)
+            {
+                return EventKeys.Add(key);
+            }
         }
 
-        public virtual void RemoveEvent(string eventKey)
+        public virtual void RemoveEvent(string key)
         {
-
+            lock (EventKeys)
+            {
+                EventKeys.Remove(key);
+            }
         }
 
         public virtual void SetEventTopic(string key, Topic topic)
         {
-
+            lock (EventKeys)
+            {
+                EventKeys.Add(key);
+            }
         }
 
         public void Dispose()
