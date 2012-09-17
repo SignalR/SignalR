@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalR
@@ -33,15 +32,13 @@ namespace SignalR
         /// <returns></returns>
         protected Task OnReceived(string streamId, ulong id, Message[] messages)
         {
-            var stream = _streamMappings.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>());
-
-            var mapping = new ScaleoutMapping();
-            stream.Add(id, mapping);
+            // Create a local dictionary for this payload
+            var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
 
             foreach (var m in messages)
             {
                 // Get the payload info
-                var info = mapping.EventKeyMappings.GetOrAdd(m.Key, _ => new LocalEventKeyInfo());
+                var info = dictionary.GetOrAdd(m.Key, _ => new LocalEventKeyInfo());
 
                 // Save the min and max for this payload for later
                 ulong localId = Save(m);
@@ -53,7 +50,17 @@ namespace SignalR
                 info.Count++;
             }
 
-            foreach (var eventKey in mapping.EventKeyMappings.Keys)
+            // Create the mapping for this payload
+            var mapping = new ScaleoutMapping(dictionary);
+
+            // Get the stream for this payload
+            var stream = _streamMappings.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>()); 
+
+            // Publish only after we've setup the mapping fully
+            stream.Add(id, mapping);
+
+            // Schedule after we're done
+            foreach (var eventKey in dictionary.Keys)
             {
                 ScheduleEvent(eventKey);
             }
