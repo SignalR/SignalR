@@ -9,7 +9,7 @@ namespace SignalR
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
-        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streamMappings = new ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>>();
+        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>>();
 
         public ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
@@ -54,7 +54,7 @@ namespace SignalR
             var mapping = new ScaleoutMapping(dictionary);
 
             // Get the stream for this payload
-            var stream = _streamMappings.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>()); 
+            var stream = _streams.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>()); 
 
             // Publish only after we've setup the mapping fully
             stream.Add(id, mapping);
@@ -76,7 +76,7 @@ namespace SignalR
 
         protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
-            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streamMappings, callback, messageBufferSize, _counters);
+            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streams, callback, messageBufferSize, _counters);
         }
     }
 }

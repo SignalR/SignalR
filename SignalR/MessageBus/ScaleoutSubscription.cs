@@ -9,7 +9,7 @@ namespace SignalR
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streamMappings;
+        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streams;
         private List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
@@ -21,13 +21,13 @@ namespace SignalR
                                     IPerformanceCounterWriter counters)
             : base(identity, eventKeys, callback, maxMessages, counters)
         {
-            _streamMappings = streamMappings;
+            _streams = streamMappings;
 
             IEnumerable<Cursor> cursors = null;
 
             if (cursor == null)
             {
-                cursors = from key in _streamMappings.Keys
+                cursors = from key in _streams.Keys
                           select new Cursor
                           {
                               Key = key,
@@ -52,16 +52,16 @@ namespace SignalR
             // The list of cursors represent (streamid, payloadid)
             var cursors = new List<Cursor>();
 
-            foreach (var streamPair in _streamMappings)
+            foreach (var stream in _streams)
             {
                 // Get the mapping for this stream
-                Linktionary<ulong, ScaleoutMapping> mapping = streamPair.Value;
+                Linktionary<ulong, ScaleoutMapping> mapping = stream.Value;
 
                 // See if we have a cursor for this key
                 Cursor cursor = null;
 
                 // REVIEW: We should optimize this
-                int index = _cursors.FindIndex(c => c.Key == streamPair.Key);
+                int index = _cursors.FindIndex(c => c.Key == stream.Key);
 
                 bool consumed = true;
 
@@ -74,7 +74,7 @@ namespace SignalR
                     if (mapping[cursor.Id] == null)
                     {
                         // Set it to the first id in this mapping
-                        cursor.Id = streamPair.Value.MinKey;
+                        cursor.Id = stream.Value.MinKey;
 
                         // Mark this cursor as unconsumed
                         consumed = false;
@@ -86,8 +86,8 @@ namespace SignalR
                     // Point the Id to the first value
                     cursor = new Cursor
                     {
-                        Id = streamPair.Value.MinKey,
-                        Key = streamPair.Key
+                        Id = stream.Value.MinKey,
+                        Key = stream.Key
                     };
 
                     consumed = false;
@@ -156,7 +156,7 @@ namespace SignalR
         private ulong GetCursorId(string key)
         {
             Linktionary<ulong, ScaleoutMapping> mapping;
-            if (_streamMappings.TryGetValue(key, out mapping))
+            if (_streams.TryGetValue(key, out mapping))
             {
                 return mapping.MaxKey;
             }
