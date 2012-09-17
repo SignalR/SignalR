@@ -9,7 +9,7 @@ namespace SignalR.Infrastructure
     internal sealed class TaskQueue
     {
         private readonly object _lockObj = new object();
-        private Task _lastQueuedTask = Task.FromResult<int>(0);
+        private Task _lastQueuedTask = TaskAsyncHelper.Empty;
 
         public Task Enqueue(Func<Task> taskFunc)
         {

@@ -64,7 +64,7 @@ namespace SignalR
             return task;
         }
 
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
+#if PERFCOUNTERS
         public static TTask Catch<TTask>(this TTask task, params PerformanceCounter[] counters) where TTask : Task
         {
             return Catch(task, _ => 
