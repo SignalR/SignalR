@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace SignalR
 {
@@ -7,9 +8,9 @@ namespace SignalR
     {
         public ConcurrentDictionary<string, LocalEventKeyInfo> EventKeyMappings { get; private set; }
 
-        public ScaleoutMapping()
+        public ScaleoutMapping(IDictionary<string, LocalEventKeyInfo> mappings)
         {
-            EventKeyMappings = new ConcurrentDictionary<string, LocalEventKeyInfo>(StringComparer.OrdinalIgnoreCase);
+            EventKeyMappings = new ConcurrentDictionary<string, LocalEventKeyInfo>(mappings, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
