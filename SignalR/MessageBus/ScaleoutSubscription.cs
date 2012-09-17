@@ -67,7 +67,7 @@ namespace SignalR
 
                 if (index != -1)
                 {
-                    cursor = _cursors[index];
+                    cursor = Cursor.Clone(_cursors[index]);
 
                     // If there's no node for this cursor id it's likely because we've
                     // had an app domain restart and the cursor position is now invalid.
@@ -115,20 +115,24 @@ namespace SignalR
                         break;
                     }
 
-                    // For each of the event keys we care about, extract all of the messages
-                    // from the payload
-                    foreach (var eventKey in EventKeys)
+                    // It should be ok to lock here since groups aren't modified that often
+                    lock (EventKeys)
                     {
-                        LocalEventKeyInfo info;
-                        if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info) && info.Count > 0)
+                        // For each of the event keys we care about, extract all of the messages
+                        // from the payload
+                        foreach (var eventKey in EventKeys)
                         {
-                            int maxMessages = Math.Min(info.Count, MaxMessages);
-                            MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
-
-                            if (storeResult.Messages.Count > 0)
+                            LocalEventKeyInfo info;
+                            if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
                             {
-                                items.Add(storeResult.Messages);
-                                totalCount += storeResult.Messages.Count;
+                                int maxMessages = Math.Min(info.Count, MaxMessages);
+                                MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
+
+                                if (storeResult.Messages.Count > 0)
+                                {
+                                    items.Add(storeResult.Messages);
+                                    totalCount += storeResult.Messages.Count;
+                                }
                             }
                         }
                     }
