@@ -13,7 +13,7 @@ namespace SignalR
     /// and has an algorithm for choosing a number of workers (thread pool threads), to handle
     /// the scheduled work.
     /// </summary>
-    internal class MessageBroker
+    internal class MessageBroker : IDisposable
     {
         private readonly Queue<ISubscription> _queue = new Queue<ISubscription>();
         private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>(StringComparer.OrdinalIgnoreCase);
@@ -256,6 +256,11 @@ namespace SignalR
                     PumpImpl(taskCompletionSource);
                 }
             });
+        }
+
+        public void Dispose()
+        {
+            _timer.Dispose();
         }
     }
 }
