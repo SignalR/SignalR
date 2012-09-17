@@ -13,8 +13,8 @@ namespace SignalR.Redis
             Messages = message;
         }
 
-        public long Id { get; private set; }
-        public Message[] Messages { get; private set; }
+        public long Id { get; set; }
+        public Message[] Messages { get; set; }
 
         public byte[] GetBytes()
         {
