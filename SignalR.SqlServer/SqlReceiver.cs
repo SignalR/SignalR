@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SignalR.SqlServer
 {
-    internal class SqlReceiver
+    internal class SqlReceiver: IDisposable
     {
         private readonly string _connectionString;
         private readonly string _tableName;
@@ -30,6 +30,14 @@ namespace SignalR.SqlServer
             ListenForMessages();
         }
 
+        public void Dispose()
+        {
+            if (_sqlDependencyInit != null)
+            {
+                SqlDependency.Stop(_connectionString);
+            }
+        }
+
         private void ListenForMessages()
         {
             InitSqlDependency();
@@ -40,7 +48,7 @@ namespace SignalR.SqlServer
             sqlDependency.OnChange += (sender, e) =>
                 {
                     GetMessages()
-                        .Then(hasMessages => ListenForMessages()) // TODO: Decide whether to immediately query or setup a dependency to wait
+                        .Then(hadMessages => ListenForMessages()) // TODO: Decide whether to immediately query or setup a dependency to wait
                         .Catch();
                 };
 
@@ -74,10 +82,10 @@ namespace SignalR.SqlServer
                         ReadRow(rdr, tcs);
                         return tcs.Task;
                     })
-                .Then(hasMessages =>
+                .Then(hadMessages =>
                     {
                         connection.Close();
-                        return hasMessages;
+                        return hadMessages;
                     });
         }
 

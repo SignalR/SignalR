@@ -33,5 +33,11 @@ namespace SignalR.SqlServer
         {
             return _sender.Send(messages);
         }
+
+        public override void Dispose()
+        {
+
+            base.Dispose();
+        }
     }
 }
