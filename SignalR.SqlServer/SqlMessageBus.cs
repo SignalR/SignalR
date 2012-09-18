@@ -4,21 +4,21 @@ namespace SignalR.SqlServer
 {
     public class SqlMessageBus : ScaleoutMessageBus
     {
-        private readonly string _tableName = "[dbo].[SignalR_Messages]";
+        private readonly string _tableName = "SignalR_Messages";
         private readonly SqlInstaller _installer;
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
 
-        public SqlMessageBus(string connectionString, IDependencyResolver dependencyResolver)
-            : this(connectionString, null, null, null, dependencyResolver)
+        public SqlMessageBus(string connectionString, int tableCount, IDependencyResolver dependencyResolver)
+            : this(connectionString, tableCount, null, null, null, dependencyResolver)
         {
             
         }
 
-        internal SqlMessageBus(string connectionString, SqlInstaller sqlInstaller, SqlSender sqlSender, SqlReceiver sqlReceiver, IDependencyResolver dependencyResolver)
+        internal SqlMessageBus(string connectionString, int tableCount, SqlInstaller sqlInstaller, SqlSender sqlSender, SqlReceiver sqlReceiver, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
-            _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName);
+            _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName, tableCount);
             _installer.EnsureInstalled();
 
             _sender = sqlSender ?? new SqlSender(connectionString, _tableName);

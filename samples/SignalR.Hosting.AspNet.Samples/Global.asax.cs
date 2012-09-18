@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
 using SignalR.Samples.Streaming;
+using SignalR.SqlServer;
 
 namespace SignalR.Hosting.AspNet.Samples
 {
@@ -12,6 +14,8 @@ namespace SignalR.Hosting.AspNet.Samples
     {
         protected void Application_Start(object sender, EventArgs e)
         {
+            //GlobalHost.DependencyResolver.UseSqlServer(ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
+
             ThreadPool.QueueUserWorkItem(_ =>
             {
                 var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();

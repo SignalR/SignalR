@@ -15,6 +15,7 @@ namespace SignalR.SqlServer
         private readonly Func<string, ulong, Message[], Task> _onReceive;
 
         private string _selectSql = "SELECT PayloadId, Payload FROM {0} WHERE PayloadId > @PayloadId";
+        private string _maxIdSql = "SELECT MAX(PayloadId) FROM {0}";
         private object _sqlDependencyInit;
         private long _lastPayloadId = 0;
 
@@ -25,7 +26,9 @@ namespace SignalR.SqlServer
             _onReceive = onReceive;
 
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
+            _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, _tableName);
 
+            GetStartingId();
             ListenForMessages();
         }
 
@@ -34,6 +37,19 @@ namespace SignalR.SqlServer
             if (_sqlDependencyInit != null)
             {
                 SqlDependency.Stop(_connectionString);
+            }
+        }
+
+        private void GetStartingId()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                using (var cmd = new SqlCommand(_maxIdSql, connection))
+                {
+                    var maxId = cmd.ExecuteScalar();
+                    _lastPayloadId = maxId != null ? (long)maxId : _lastPayloadId;
+                }
             }
         }
 
@@ -51,6 +67,7 @@ namespace SignalR.SqlServer
                         .Catch();
                 };
 
+            connection.Open();
             command.ExecuteReaderAsync()
                 .Then(() => connection.Close())
                 .Catch(_ => connection.Close());
@@ -67,6 +84,7 @@ namespace SignalR.SqlServer
         private Task<bool> GetMessages()
         {
             var connection = new SqlConnection(_connectionString);
+            connection.Open();
             var command = BuildQueryCommand(connection);
             return command.ExecuteReaderAsync()
                 .Then(rdr =>
