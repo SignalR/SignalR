@@ -163,10 +163,12 @@ namespace SignalR.Transports
 
         public virtual Task Send(object value)
         {
+            Context.Response.ContentType = Json.MimeType;
+
             JsonSerializer.Stringify(value, OutputWriter);
             OutputWriter.Flush();
 
-            return Context.Response.FlushAsync();
+            return Context.Response.EndAsync();
         }
 
         protected virtual Task InitializeResponse(ITransportConnection connection)
