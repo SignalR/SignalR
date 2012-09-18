@@ -139,7 +139,7 @@ namespace SignalR.Infrastructure
             }
             finally
             {
-                _listLock.EnterWriteLock();
+                _listLock.ExitWriteLock();
             }
         }
     }
