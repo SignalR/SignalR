@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace SignalR.SqlServer
 {
@@ -12,18 +13,16 @@ namespace SignalR.SqlServer
         private readonly string _connectionString;
         private readonly string _tableName;
         private readonly Func<string, ulong, Message[], Task> _onReceive;
-        private readonly IJsonSerializer _json;
 
         private string _selectSql = "SELECT PayloadId, Payload FROM {0} WHERE PayloadId > @PayloadId";
         private object _sqlDependencyInit;
         private long _lastPayloadId = 0;
 
-        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, Message[], Task> onReceive, IJsonSerializer jsonSerializer)
+        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, Message[], Task> onReceive)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _onReceive = onReceive;
-            _json = jsonSerializer;
 
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
 
@@ -93,7 +92,13 @@ namespace SignalR.SqlServer
         {
             if (reader.Read())
             {
-                _onReceive("0", (ulong)reader.GetInt64(0), _json.Parse<Message[]>(reader.GetString(1)))
+                var id = reader.GetInt64(0);
+                var messages = JsonConvert.DeserializeObject<Message[]>(reader.GetString(1));
+
+                // Update the last payload id
+                _lastPayloadId = id;
+
+                _onReceive("0", (ulong)id, messages)
                     .Then((rdr, innerTcs) => ReadRow(rdr, innerTcs), reader, tcs)
                     .Catch();
             }

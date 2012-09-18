@@ -5,7 +5,6 @@ namespace SignalR.SqlServer
     public class SqlMessageBus : ScaleoutMessageBus
     {
         private readonly string _tableName = "[dbo].[SignalR_Messages]";
-        private readonly IDependencyResolver _dependencyResolver;
         private readonly SqlInstaller _installer;
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
@@ -19,14 +18,11 @@ namespace SignalR.SqlServer
         internal SqlMessageBus(string connectionString, SqlInstaller sqlInstaller, SqlSender sqlSender, SqlReceiver sqlReceiver, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
-            _dependencyResolver = dependencyResolver;
-            
             _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName);
             _installer.EnsureInstalled();
 
-            var json = _dependencyResolver.Resolve<IJsonSerializer>();
-            _sender = sqlSender ?? new SqlSender(connectionString, _tableName, json);
-            _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived, json);
+            _sender = sqlSender ?? new SqlSender(connectionString, _tableName);
+            _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived);
         }
 
         protected override Task Send(Message[] messages)
@@ -36,7 +32,7 @@ namespace SignalR.SqlServer
 
         public override void Dispose()
         {
-
+            _receiver.Dispose();
             base.Dispose();
         }
     }

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace SignalR.SqlServer
 {
@@ -9,15 +10,13 @@ namespace SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
-        private readonly IJsonSerializer _json;
 
         private string _insertSql = "INSERT INTO {0} (Payload) VALUES (@Payload)";
 
-        public SqlSender(string connectionString, string tableName, IJsonSerializer jsonSerializer)
+        public SqlSender(string connectionString, string tableName)
         {
             _connectionString = connectionString;
             _tableName = tableName;
-            _json = jsonSerializer;
             _insertSql = String.Format(_insertSql, _tableName);
         }
 
@@ -34,7 +33,7 @@ namespace SignalR.SqlServer
                 connection = new SqlConnection(_connectionString);
                 connection.Open();
                 var cmd = new SqlCommand(_insertSql, connection);
-                cmd.Parameters.AddWithValue("Payload", _json.Stringify(messages));
+                cmd.Parameters.AddWithValue("Payload", JsonConvert.SerializeObject(messages));
                 
                 return cmd.ExecuteNonQueryAsync()
                     .Then(() => connection.Close()) // close the connection if successful
