@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hubs;
@@ -145,6 +146,11 @@ namespace SignalR.Samples.Hubs.DemoHub
         public void MispelledClientMethod()
         {
             Caller.clientMethd();
+        }
+
+        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+        {
+            return groups;
         }
 
         public class Person

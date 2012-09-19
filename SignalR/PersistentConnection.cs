@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
 using SignalR.Transports;
@@ -122,9 +123,10 @@ namespace SignalR
                 throw new InvalidOperationException("Protocol error: Missing connection id.");
             }
 
-            var groups = new List<string>(_transport.Groups);
+            IEnumerable<string> signals = GetSignals(connectionId, context.Request);
+            IEnumerable<string> groups = OnRejoiningGroups(context.Request, _transport.Groups, connectionId);
 
-            Connection connection = CreateConnection(connectionId, groups, context.Request);
+            Connection connection = CreateConnection(connectionId, signals, groups);
 
             Connection = connection;
             Groups = new GroupManager(connection, DefaultSignal);
@@ -163,13 +165,13 @@ namespace SignalR
             return _transport.ProcessRequest(connection).OrEmpty().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter);
         }
 
-        protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
+        protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
         {
             return new Connection(_newMessageBus,
                                   _jsonSerializer,
                                   DefaultSignal,
                                   connectionId,
-                                  GetDefaultSignals(connectionId),
+                                  signals,
                                   groups,
                                   _trace,
                                   _ackHandler,
@@ -193,6 +195,28 @@ namespace SignalR
                 connectionId,
                 "ACK_" + connectionId
             };
+        }
+
+        /// <summary>
+        /// Returns the signals used in the <see cref="PersistentConnection"/>.
+        /// </summary>
+        /// <param name="connectionId">The id of the incoming connection.</param>
+        /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
+        protected virtual IEnumerable<string> GetSignals(string connectionId, IRequest request)
+        {
+            return GetDefaultSignals(connectionId);
+        }
+
+        /// <summary>
+        /// Called when a connection reconnects after a timeout to determine which groups should be rejoined.
+        /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
+        /// <param name="groups">The groups the calling connection claims to be part of.</param>
+        /// <param name="connectionId">The id of the reconnecting client.</param>
+        /// <returns>A collection of group names that should be joined on reconnect</returns>
+        protected virtual IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return Enumerable.Empty<string>();
         }
 
         /// <summary>

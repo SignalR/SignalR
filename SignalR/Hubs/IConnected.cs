@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace SignalR.Hubs
 {
     /// <summary>
-    /// Enables connect and reconenct notificatins for a <see cref="IHub"/>
+    /// Enables connect and reconnect notifications for a <see cref="IHub"/>
     /// </summary>
     /// <example>
     /// public class MyHub : Hub, IConnected
@@ -28,9 +28,16 @@ namespace SignalR.Hubs
         Task Connect();
 
         /// <summary>
-        /// Called when a connection reconencts to the <see cref="IHub"/> after a timeout.
+        /// Called when a connection reconnects to the <see cref="IHub"/> after a timeout.
         /// </summary>
-        /// <param name="groups">The groups the connection are a member of.</param>
+        /// <param name="groups">The groups the connection is a member of.</param>
         Task Reconnect(IEnumerable<string> groups);
+
+        /// <summary>
+        /// Called before a connection completes reconnecting to the <see cref="IHub"/> after a timeout.
+        /// </summary>
+        /// <param name="groups">The groups the reconnecting client claims to be a member of.</param>
+        /// <returns>The groups the client will actually join.</returns>
+        IEnumerable<string> RejoiningGroups(IEnumerable<string> groups);
     }
 }
