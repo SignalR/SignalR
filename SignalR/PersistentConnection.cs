@@ -16,7 +16,7 @@ namespace SignalR
 
         protected IMessageBus _newMessageBus;
         protected IJsonSerializer _jsonSerializer;
-        protected IConnectionIdGenerator _connectionIdGenerator;
+        protected IConnectionIdPrefixGenerator _connectionIdPrefixGenerator;
         private ITransportManager _transportManager;
         private bool _initialized;
 
@@ -36,7 +36,7 @@ namespace SignalR
             }
 
             _newMessageBus = resolver.Resolve<IMessageBus>();
-            _connectionIdGenerator = resolver.Resolve<IConnectionIdGenerator>();
+            _connectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
@@ -242,7 +242,7 @@ namespace SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdGenerator.GenerateConnectionId(context.Request),
+                ConnectionId = _connectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"

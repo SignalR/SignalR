@@ -36,8 +36,8 @@ namespace SignalR
             var serializer = new Lazy<JsonNetSerializer>();
             Register(typeof(IJsonSerializer), () => serializer.Value);
 
-            var connectionIdGenerator = new GuidConnectionIdGenerator();
-            Register(typeof(IConnectionIdGenerator), () => connectionIdGenerator);
+            var connectionIdPrefixGenerator = new EmptyConnectionIdPrefixGenerator();
+            Register(typeof(IConnectionIdPrefixGenerator), () => connectionIdPrefixGenerator);
 
             var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
             Register(typeof(ITransportManager), () => transportManager.Value);

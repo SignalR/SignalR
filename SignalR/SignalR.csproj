@@ -124,14 +124,14 @@
     <Compile Include="MessageBus\Volatile.cs" />
     <Compile Include="PersistentConnectionContext.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
-    <Compile Include="GuidConnectionIdGenerator.cs" />
+    <Compile Include="EmptyConnectionIdPrefixGenerator.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\MethodDescriptor.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IDisconnect.cs" />
     <Compile Include="Hubs\IHub.cs" />
-    <Compile Include="IConnectionIdGenerator.cs" />
+    <Compile Include="IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Infrastructure\CustomStack.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
