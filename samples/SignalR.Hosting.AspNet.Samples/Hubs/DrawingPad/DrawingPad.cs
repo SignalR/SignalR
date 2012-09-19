@@ -1,5 +1,6 @@
 ﻿using SignalR.Hubs;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 {
@@ -40,6 +41,11 @@ namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
         {
             // ... propagate it to all users
             Clients.lineDrawed(Caller.id, data);
+        }
+
+        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+        {
+            return groups;
         }
     }
 }

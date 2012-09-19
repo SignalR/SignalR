@@ -198,6 +198,83 @@ namespace SignalR.Tests
                 Assert.Equal("hello to group test", list[0]);
             }
 
+            [Fact]
+            public void GroupsDontRejoinByDefault()
+            {
+                var host = new MemoryHost();
+                host.Configuration.KeepAlive = null;
+                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
+                host.MapConnection<MyGroupConnection>("/groups");
+
+                var connection = new Client.Connection("http://foo/groups");
+                var list = new List<string>();
+                connection.Received += data =>
+                {
+                    list.Add(data);
+                };
+
+                connection.Start(host).Wait();
+
+                // Join the group
+                connection.Send(new { type = 1, group = "test" }).Wait();
+
+                // Sent a message
+                connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+
+                // Force Reconnect
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                // Send a message
+                connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                connection.Stop();
+
+                Assert.Equal(1, list.Count);
+                Assert.Equal("hello to group test", list[0]);
+            }
+
+            [Fact]
+            public void GroupsRejoinedWhenOnRejoiningGroupsOverridden()
+            {
+                var host = new MemoryHost();
+                host.Configuration.KeepAlive = null;
+                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
+                host.MapConnection<MyRejoinGroupConnection>("/groups");
+
+                var connection = new Client.Connection("http://foo/groups");
+                var list = new List<string>();
+                connection.Received += data =>
+                {
+                    list.Add(data);
+                };
+
+                connection.Start(host).Wait();
+
+                // Join the group
+                connection.Send(new { type = 1, group = "test" }).Wait();
+
+                // Sent a message
+                connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+
+                // Force Reconnect
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                // Send a message
+                connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                connection.Stop();
+
+                Assert.Equal(2, list.Count);
+                Assert.Equal("hello to group test", list[0]);
+                Assert.Equal("goodbye to group test", list[1]);
+            }
+
             public void Dispose()
             {
                 GC.Collect();
@@ -228,6 +305,14 @@ namespace SignalR.Tests
             }
 
             return base.OnReceivedAsync(request, connectionId, data);
+        }
+    }
+
+    public class MyRejoinGroupConnection : MyGroupConnection
+    {
+        protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return groups;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.MouseTracking
@@ -15,6 +16,11 @@ namespace SignalR.Samples.Hubs.MouseTracking
         public void Move(int x, int y)
         {
             Clients.moveMouse(Caller.id, x, y);
+        }
+
+        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+        {
+            return groups;
         }
     }
 }

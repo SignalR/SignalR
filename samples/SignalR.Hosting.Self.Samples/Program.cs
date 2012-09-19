@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using SignalR.Samples.Raw;
@@ -52,6 +53,11 @@ namespace SignalR.Hosting.Self.Samples
             {
                 Console.WriteLine("{0} left", connectionId);
                 return base.OnDisconnectAsync(connectionId);
+            }
+
+            protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+            {
+                return groups;
             }
         }
     }

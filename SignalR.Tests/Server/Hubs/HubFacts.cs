@@ -297,7 +297,7 @@ namespace SignalR.Tests
         {
             var host = new MemoryHost();
             host.MapHubs();
-            int max = 100;
+            int max = 10;
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
@@ -312,10 +312,161 @@ namespace SignalR.Tests
 
             for (int i = 0; i < max; i++)
             {
-                proxy.Invoke("login", new User { Index = i, Name = "tester", Room = "test" + i }).Wait();
+                var user = new User { Index = i, Name = "tester", Room = "test" + i };
+                proxy.Invoke("login", user).Wait();
+                proxy.Invoke("joinRoom", user).Wait();
             }
 
             Assert.True(countDown.Wait(TimeSpan.FromSeconds(10)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+
+            connection.Stop();
+        }
+
+        [Fact]
+        public void HubGroupsDontRejoinByDefault()
+        {
+            var host = new MemoryHost();
+            host.Configuration.KeepAlive = null;
+            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+            host.MapHubs();
+            int max = 10;
+
+            var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
+            var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateProxy("MultGroupHub");
+
+            proxy.On<User>("onRoomJoin", u =>
+            {
+                if (u.Index < max)
+                {
+                    Assert.True(countDown.Mark(u.Index));
+                }
+                else
+                {
+                    Assert.True(countDownAfterReconnect.Mark(u.Index));
+                }
+            });
+
+            connection.Start(host).Wait();
+
+            var user = new User { Name = "tester" };
+            proxy.Invoke("login", user).Wait();
+
+            for (int i = 0; i < max; i++)
+            {
+                user.Index = i;
+                proxy.Invoke("joinRoom", user).Wait();
+            }
+
+            // Force Reconnect
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            for (int i = max; i < 2 * max; i++)
+            {
+                user.Index = i;
+                proxy.Invoke("joinRoom", user).Wait();
+            }
+
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(!countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)) && countDownAfterReconnect.Count == max);
+
+            connection.Stop();
+        }
+
+        [Fact]
+        public void HubGroupsRejoinWhenRejoiningGroupsOverridden()
+        {
+            var host = new MemoryHost();
+            host.Configuration.KeepAlive = null;
+            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+            host.MapHubs();
+            int max = 10;
+
+            var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
+            var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateProxy("RejoinMultGroupHub");
+
+            proxy.On<User>("onRoomJoin", u =>
+            {
+                if (u.Index < max)
+                {
+                    Assert.True(countDown.Mark(u.Index));
+                }
+                else
+                {
+                    Assert.True(countDownAfterReconnect.Mark(u.Index));
+                }
+            });
+
+            connection.Start(host).Wait();
+
+            var user = new User { Name = "tester" };
+            proxy.Invoke("login", user).Wait();
+
+            for (int i = 0; i < max; i++)
+            {
+                user.Index = i;
+                proxy.Invoke("joinRoom", user).Wait();
+            }
+
+            // Force Reconnect
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            for (int i = max; i < 2 * max; i++)
+            {
+                user.Index = i;
+                proxy.Invoke("joinRoom", user).Wait();
+            }
+
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+
+            connection.Stop();
+        }
+
+        [Fact]
+        public void RejoiningGroupsOnlyReceivesGroupsBelongingToHub()
+        {
+            var host = new MemoryHost();
+            var groupsRequestedToBeRejoined = new List<string>();
+            var groupsRequestedToBeRejoined2 = new List<string>();
+            host.DependencyResolver.Register(typeof(RejoinMultGroupHub), () => new RejoinMultGroupHub(groupsRequestedToBeRejoined));
+            host.DependencyResolver.Register(typeof(RejoinMultGroupHub2), () => new RejoinMultGroupHub2(groupsRequestedToBeRejoined2));
+            host.Configuration.KeepAlive = null;
+            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+            host.MapHubs();
+
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateProxy("RejoinMultGroupHub");
+            var proxy2 = connection.CreateProxy("RejoinMultGroupHub2");
+
+            connection.Start(host).Wait();
+
+            var user = new User { Name = "tester" };
+            proxy.Invoke("login", user).Wait();
+            proxy2.Invoke("login", user).Wait();
+
+            // Force Reconnect
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            proxy.Invoke("joinRoom", user).Wait();
+            proxy2.Invoke("joinRoom", user).Wait();
+
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            Assert.True(groupsRequestedToBeRejoined.Contains("foo"));
+            Assert.True(groupsRequestedToBeRejoined.Contains("tester"));
+            Assert.False(groupsRequestedToBeRejoined.Contains("foo2"));
+            Assert.False(groupsRequestedToBeRejoined.Contains("tester2"));
+            Assert.True(groupsRequestedToBeRejoined2.Contains("foo2"));
+            Assert.True(groupsRequestedToBeRejoined2.Contains("tester2"));
+            Assert.False(groupsRequestedToBeRejoined2.Contains("foo"));
+            Assert.False(groupsRequestedToBeRejoined2.Contains("tester"));
 
             connection.Stop();
         }
@@ -389,7 +540,7 @@ namespace SignalR.Tests
 
         public class MultGroupHub : Hub
         {
-            public Task Login(User user)
+            public virtual Task Login(User user)
             {
                 return Task.Factory.StartNew(
                     () =>
@@ -399,7 +550,53 @@ namespace SignalR.Tests
 
                         Groups.Remove(Context.ConnectionId, user.Name).Wait();
                         Groups.Add(Context.ConnectionId, user.Name).Wait();
+                    });
+            }
+
+            public Task JoinRoom(User user)
+            {
+                return Task.Factory.StartNew(
+                    () =>
+                    {
                         Clients[user.Name].onRoomJoin(user).Wait();
+                    });
+            }
+        }
+
+        public class RejoinMultGroupHub : MultGroupHub
+        {
+            private List<string> _groupsRequestedToBeRejoined;
+
+            public RejoinMultGroupHub() : this(new List<string>()) { }
+
+            public RejoinMultGroupHub(List<string> groupsRequestedToBeRejoined)
+            {
+                _groupsRequestedToBeRejoined = groupsRequestedToBeRejoined;
+            }
+
+            public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+            {
+                _groupsRequestedToBeRejoined.AddRange(groups);
+                return groups;
+            }
+        }
+
+        public class RejoinMultGroupHub2 : RejoinMultGroupHub
+        {
+            public RejoinMultGroupHub2() : this(new List<string>()) { }
+
+            public RejoinMultGroupHub2(List<string> groupsRequestedToBeRejoined) : base(groupsRequestedToBeRejoined) { }
+
+            public override Task Login(User user)
+            {
+                return Task.Factory.StartNew(
+                    () =>
+                    {
+                        Groups.Remove(Context.ConnectionId, "foo2").Wait();
+                        Groups.Add(Context.ConnectionId, "foo2").Wait();
+
+                        Groups.Remove(Context.ConnectionId, user.Name + "2").Wait();
+                        Groups.Add(Context.ConnectionId, user.Name + "2").Wait();
                     });
             }
         }

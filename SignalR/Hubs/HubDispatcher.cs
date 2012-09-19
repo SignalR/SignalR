@@ -171,6 +171,21 @@ namespace SignalR.Hubs
             return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Reconnect(groups));
         }
 
+        protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return GetHubsImplementingInterface(typeof(IConnected))
+                .Select(hub => CreateHub(request, hub, connectionId))
+                .OfType<IConnected>()
+                .Select(hub =>
+                {
+                    string groupPrefix = hub.GetType().Name + ".";
+                    return hub.RejoiningGroups(groups.Where(g => g.StartsWith(groupPrefix))
+                                                     .Select(g => g.Substring(groupPrefix.Length)))
+                              .Select(g => groupPrefix + g);
+                })
+                .SelectMany(groupsToReconnect => groupsToReconnect);
+        }
+
         protected override Task OnDisconnectAsync(string connectionId)
         {
             return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => hub.Disconnect());
@@ -281,29 +296,19 @@ namespace SignalR.Hubs
             return _transport.Send(hubResult);
         }
 
-        protected override Connection CreateConnection(string connectionId, IEnumerable<string> groups, IRequest request)
+        protected override Connection CreateConnection(string connectionId, IEnumerable<string> groups, IEnumerable<string> signals)
         {
-            string data = request.QueryStringOrForm("connectionData");
-
-            if (String.IsNullOrEmpty(data))
+            if (_hubs.Any())
             {
-                return base.CreateConnection(connectionId, groups, request);
+                return new Connection(_newMessageBus, _jsonSerializer, null, connectionId, signals, groups, _trace, _counters);
             }
-
-            var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
-
-            if (clientHubInfo == null || !clientHubInfo.Any())
+            else
             {
-                return base.CreateConnection(connectionId, groups, request);
+                return base.CreateConnection(connectionId, groups, signals);
             }
-
-            IEnumerable<string> hubSignals = clientHubInfo.SelectMany(info => GetSignals(info, connectionId))
-                                                          .Concat(GetDefaultSignals(connectionId));
-
-            return new Connection(_newMessageBus, _jsonSerializer, null, connectionId, hubSignals, groups, _trace, _counters);
         }
 
-        private IEnumerable<string> GetSignals(ClientHubInfo hubInfo, string connectionId)
+        private IEnumerable<string> GetHubSignals(ClientHubInfo hubInfo, string connectionId)
         {
             // Try to find the associated hub type
             HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
@@ -312,7 +317,7 @@ namespace SignalR.Hubs
                 _allErrorsTotalCounter,
                 _allErrorsPerSecCounter);
 
-            // Add this to the list of hub desciptors this connection is interested in
+            // Add this to the list of hub descriptors this connection is interested in
             _hubs.Add(hubDescriptor);
 
             // Update the name (Issue #344)
@@ -328,6 +333,27 @@ namespace SignalR.Hubs
             };
 
             return clientSignals;
+        }
+
+        protected override IEnumerable<string> GetSignals(string connectionId, IRequest request)
+        {
+            string data = request.QueryStringOrForm("connectionData");
+
+            if (String.IsNullOrEmpty(data))
+            {
+                return base.GetSignals(connectionId, request);
+            }
+
+            var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
+
+            if (clientHubInfo == null || !clientHubInfo.Any())
+            {
+                base.GetSignals(connectionId, request);
+            }
+
+            return clientHubInfo.SelectMany(info => GetHubSignals(info, connectionId))
+                                .Concat(base.GetSignals(connectionId, request));
+
         }
 
         private class ClientHubInfo

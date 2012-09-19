@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -500,6 +501,11 @@ namespace SignalR.Stress
             // Groups.Add(Context.ConnectionId, "one").Wait();
             Groups.Add(Context.ConnectionId, "one").Wait();
             return Clients["one"].Do(index);
+        }
+
+        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+        {
+            return groups;
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SignalR.Hubs
@@ -35,7 +36,7 @@ namespace SignalR.Hubs
         public IGroupManager Groups { get; set; }
 
         /// <summary>
-        /// Called when a connection disconects from this hub instance.
+        /// Called when a connection disconnects from this hub instance.
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task Disconnect()
@@ -60,6 +61,16 @@ namespace SignalR.Hubs
         public virtual Task Reconnect(IEnumerable<string> groups)
         {
             return TaskAsyncHelper.Empty;
+        }
+
+        /// <summary>
+        /// Called before a connection completes reconnecting to this <see cref="IHub"/> instance.
+        /// </summary>
+        /// <param name="groups">The groups the reconnecting client claims to be a member of.</param>
+        /// <returns>The groups the client will actually join.</returns>
+        public virtual IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+        {
+            return Enumerable.Empty<string>();
         }
     }
 }

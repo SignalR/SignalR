@@ -112,6 +112,11 @@ namespace SignalR.Samples.Hubs.ShapeShare
             Clients.shapesDeleted(shapes);
         }
 
+        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
+        {
+            return groups;
+        }
+
         private Shape FindShape(string id)
         {
             return _shapes[id];

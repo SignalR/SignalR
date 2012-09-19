@@ -35,29 +35,34 @@ namespace SignalR
             }
             else
             {
-                cursors = Cursor.GetCursors(cursor);
+               cursors = Cursor.GetCursors(cursor);
             }
 
             _cursors = new List<Cursor>(cursors);
             _cursorTopics = new List<Topic>();
 
+            if (!String.IsNullOrEmpty(cursor))
+            {
+                // Update all of the cursors so we're within the range
+                for (int i = _cursors.Count - 1; i >= 0; i--)
+                {
+                    Cursor c = _cursors[i];
+                    Topic topic;
+                    if (!eventKeys.Contains(c.Key))
+                    {
+                        _cursors.Remove(c);
+                    }
+                    else if (topics.TryGetValue(_cursors[i].Key, out topic) && _cursors[i].Id > topic.Store.GetMessageCount())
+                    {
+                        UpdateCursor(c.Key, 0);
+                    }
+                }
+            }
+
             // Add dummy entries so they can be filled in
             for (int i = 0; i < _cursors.Count; i++)
             {
                 _cursorTopics.Add(null);
-            }
-
-            if (!String.IsNullOrEmpty(cursor))
-            {
-                // Update all of the cursors so we're within the range
-                foreach (var pair in _cursors)
-                {
-                    Topic topic;
-                    if (topics.TryGetValue(pair.Key, out topic) && pair.Id > topic.Store.GetMessageCount())
-                    {
-                        UpdateCursor(pair.Key, 0);
-                    }
-                }
             }
         }
 
