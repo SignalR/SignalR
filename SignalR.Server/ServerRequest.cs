@@ -144,14 +144,15 @@ namespace SignalR.Server
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-            var accept = Get<Action<WebSocketFunc>>(OwinConstants.WebSocketAccept);
+            var accept = Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
             {
                 return TaskAsyncHelper.FromError(new InvalidOperationException("Not a web socket request"));
             }
 
+            var options = new Dictionary<string, object>();
             var worker = new ServerRequestWebSocket(callback);
-            accept(worker.Invoke);
+            accept(options, worker.Invoke);
             return TaskAsyncHelper.Empty;
         }
     }
