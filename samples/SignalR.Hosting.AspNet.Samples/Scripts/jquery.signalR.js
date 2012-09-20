@@ -127,6 +127,7 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
+            this.keepAliveData = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
@@ -149,7 +150,7 @@
                     waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false,
-                    keepAliveTimeoutOffset: 15
+                    keepAliveTimeoutOffset: 20
                 },
                 initialize,
                 deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -300,7 +301,7 @@
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection.keepAliveTimeout = (res.KeepAlive > 0) ? res.KeepAlive + config.keepAliveTimeoutOffset : null;
+                    connection.keepAliveData.timeout = (res.KeepAlive > 0) ? (res.KeepAlive + config.keepAliveTimeoutOffset) * 1000 : null;
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
@@ -458,6 +459,11 @@
             try {
                 if (connection.transport) {
                     connection.transport.abort(connection, async);
+
+                    if (connection.transport.supportsKeepAlive) {
+                        signalR.transports._logic.stopMonitoringKeepAlive(connection);
+                    }
+
                     connection.transport.stop(connection);
                     connection.transport = null;
                 }
@@ -506,27 +512,24 @@
     "use strict";
 
     var signalR = $.signalR,
-        events = $.signalR.events,
-        keepAliveInterval,
-        keepAliveTimeout,
-        lastKeepAlivePinged;
+        events = $.signalR.events;
 
     signalR.transports = {};
 
     function checkIfAlive(connection) {
-        // Only check if we're alive (if we're connected)
+        // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            var diff = new Date();
+            var keepAliveData = connection.keepAliveData,
+                diff = new Date();
 
-            diff.setTime(diff - lastKeepAlivePinged);
+            diff.setTime(diff - keepAliveData.lastPinged);
 
             // Check if the keep alive has timed out
-            if (diff.getTime() >= keepAliveTimeout) {
-                window.console.log("Keep alive timed out, shifting to reconnecting.");
-                // Shift into reconnecting
-                connection.transport.reconnect(connection);
-                // Trigger the reconnect event
-                $(connection).trigger(events.onReconnect);
+            if (diff.getTime() >= keepAliveData.timeout) {
+                connection.log("Keep alive timed out");
+
+                // Notify transport that the connection has been lost
+                connection.transport.lostConnection(connection);
             }
         }
     }
@@ -632,8 +635,10 @@
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
-            window.console.log("Pinging via message received.");
-            this.pingKeepAlive(connection);
+            // If our transport supports keep alive then we need to update the ping time stamp.
+            if (connection.transport.supportsKeepAlive) {
+                this.pingKeepAlive(connection);
+            }
 
             if (!data) {
                 return;
@@ -669,29 +674,43 @@
         },
 
         monitorKeepAlive: function (connection) {
-            // If we haven't initiated the keep alive timeouts then we need to set them up
-            if (!keepAliveTimeout) {
-                window.console.log("Now monitoring Keep alive");
-                // Converting the timeout to millseconds
-                keepAliveTimeout = connection.keepAliveTimeout * 1000;
-                window.console.log("Keep alive timeout: " + keepAliveTimeout);
+            var keepAliveData = connection.keepAliveData;
 
-                // Set the ping time tracker
-                window.console.log("Pinging via monitorKeepAlive.");
+            // If we haven't initiated the keep alive timeouts then we need to
+            if (!keepAliveData.keepAliveCheckIntervalID) {
+               
+                // Initialize the keep alive time stamp ping
                 this.pingKeepAlive(connection);
 
                 // Initiate interval to check timeouts
-                keepAliveInterval = window.setInterval(function () {
+                keepAliveData.keepAliveCheckIntervalID = window.setInterval(function () {
                     checkIfAlive(connection);
-                }, keepAliveTimeout);
+                }, keepAliveData.timeout);
+
+                connection.log("Now monitoring keep alive with timeout of: " + keepAliveData.timeout);
             }
             else {
-                window.console.log("Tried to monitor keep alive but it's already being monitored");
+                connection.log("Tried to monitor keep alive but it's already being monitored");
+            }
+        },
+
+        stopMonitoringKeepAlive: function (connection) {
+            var keepAliveInterval = connection.keepAliveData.keepAliveCheckIntervalID;
+
+            // Only attempt to stop the keep alive monitoring if its being monitored
+            if (keepAliveInterval) {
+                // Stop the interval
+                window.clearInterval(keepAliveInterval);
+
+                // Clear all the keep alive data
+                connection.keepAliveData = {};
+                connection.log("Stopping the monitoring of the keep alive");
             }
         },
 
         pingKeepAlive: function (connection) {
-            lastKeepAlivePinged = new Date();
+            connection.log("Pinging keep alive");
+            connection.keepAliveData.lastPinged = new Date();
         },
 
         foreverFrame: {
@@ -795,13 +814,8 @@
                     var data = window.JSON.parse(event.data),
                         $connection;
                     if (data) {
-                        $connection = $(connection);
-
-                        if (data.Messages) {
-                            transportLogic.processMessages(connection, data);
-                        } else {
-                            $connection.trigger(events.onReceived, [data]);
-                        }
+                        $connection = $(connection);                        
+                        transportLogic.processMessages(connection, data);
                     }
                 };
             }
@@ -822,6 +836,10 @@
                 }
             },
             connection.reconnectDelay);
+        },
+
+        lostConnection: function (connection) {
+            this.stop(connection);
         },
 
         stop: function (connection) {
@@ -965,6 +983,7 @@
                     if (onFailed) {
                         onFailed();
                     }
+
                     return;
                 }
 
@@ -987,18 +1006,21 @@
 
         reconnect: function (connection) {
             var that = this;
-            window.setTimeout(function () {
-                that.stop(connection);
-
+            window.setTimeout(function () {                
                 if (connection.state === signalR.connectionState.reconnecting ||
                     changeState(connection,
                                 signalR.connectionState.connected,
                                 signalR.connectionState.reconnecting) === true) {
                     connection.log("EventSource reconnecting");
+                    that.stop(connection);
                     that.start(connection);
                 }
 
             }, connection.reconnectDelay);
+        },
+
+        lostConnection: function (connection) {
+            this.reconnect(connection);
         },
 
         send: function (connection, data) {
@@ -1115,6 +1137,10 @@
                 }
 
             }, connection.reconnectDelay);
+        },
+
+        lostConnection: function (connection) {
+            this.reconnect(connection);
         },
 
         send: function (connection, data) {
@@ -1347,6 +1373,10 @@
                 }, 150);
 
             }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
+        },
+
+        lostConnection: function (connection) {
+            throw "Lost Connection not handled for LongPolling";
         },
 
         send: function (connection, data) {

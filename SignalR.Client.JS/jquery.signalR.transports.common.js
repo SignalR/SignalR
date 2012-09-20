@@ -202,7 +202,6 @@
         },
 
         pingKeepAlive: function (connection) {
-            connection.log("Pinging keep alive");
             connection.keepAliveData.lastPinged = new Date();
         },
 
