@@ -73,6 +73,12 @@ namespace SignalR
             {
                 _timer.Dispose();
             }
+
+            // Trip all pending acks
+            foreach (var ackInfo in _acks.Values)
+            {
+                ackInfo.Tcs.TrySetCanceled();
+            }
         }
 
         private class AckInfo
