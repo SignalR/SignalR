@@ -8,6 +8,7 @@ using SignalR.Server.Infrastructure;
 
 namespace SignalR.Server
 {
+    using WebSocketFunc = Func<IDictionary<string, object>, Task>;
     public partial class ServerRequest : IRequest
     {
         private static readonly char[] CommaSemicolon = new[] { ',', ';' };
@@ -143,9 +144,14 @@ namespace SignalR.Server
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-            var serverRequestWebSocket = new ServerRequestWebSocket(callback);
-            _env[OwinConstants.ResponseStatusCode] = 101;
-            _env[OwinConstants.WebSocketFunc] = (Func<IDictionary<string, object>, Task>)serverRequestWebSocket.Invoke;
+            var accept = Get<Action<WebSocketFunc>>(OwinConstants.WebSocketAccept);
+            if (accept == null)
+            {
+                return TaskAsyncHelper.FromError(new InvalidOperationException("Not a web socket request"));
+            }
+
+            var worker = new ServerRequestWebSocket(callback);
+            accept(worker.Invoke);
             return TaskAsyncHelper.Empty;
         }
     }
