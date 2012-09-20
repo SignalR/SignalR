@@ -125,6 +125,7 @@
                     if (onFailed) {
                         onFailed();
                     }
+
                     return;
                 }
 
@@ -147,14 +148,13 @@
 
         reconnect: function (connection) {
             var that = this;
-            window.setTimeout(function () {
-                that.stop(connection);
-
+            window.setTimeout(function () {                
                 if (connection.state === signalR.connectionState.reconnecting ||
                     changeState(connection,
                                 signalR.connectionState.connected,
                                 signalR.connectionState.reconnecting) === true) {
                     connection.log("EventSource reconnecting");
+                    that.stop(connection);
                     that.start(connection);
                 }
 

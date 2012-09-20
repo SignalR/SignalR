@@ -126,6 +126,7 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
+            this.keepAliveData = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
@@ -148,7 +149,7 @@
                     waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false,
-                    keepAliveTimeoutOffset: 15
+                    keepAliveTimeoutOffset: 20
                 },
                 initialize,
                 deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -299,7 +300,7 @@
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection.keepAliveTimeout = (res.KeepAlive > 0) ? res.KeepAlive + config.keepAliveTimeoutOffset : null;
+                    connection.keepAliveData.timeout = (res.KeepAlive > 0) ? (res.KeepAlive + config.keepAliveTimeoutOffset) * 1000 : null;
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
@@ -457,6 +458,11 @@
             try {
                 if (connection.transport) {
                     connection.transport.abort(connection, async);
+
+                    if (connection.transport.supportsKeepAlive) {
+                        signalR.transports._logic.stopMonitoringKeepAlive(connection);
+                    }
+
                     connection.transport.stop(connection);
                     connection.transport = null;
                 }

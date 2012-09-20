@@ -5,23 +5,21 @@
     "use strict";
 
     var signalR = $.signalR,
-        events = $.signalR.events,
-        keepAliveInterval,
-        keepAliveTimeout,
-        lastKeepAlivePinged;
+        events = $.signalR.events;
 
     signalR.transports = {};
 
     function checkIfAlive(connection) {
-        // Only check if we're alive (if we're connected)
+        // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            var diff = new Date();
+            var keepAliveData = connection.keepAliveData,
+                diff = new Date();
 
-            diff.setTime(diff - lastKeepAlivePinged);
+            diff.setTime(diff - keepAliveData.lastPinged);
 
             // Check if the keep alive has timed out
-            if (diff.getTime() >= keepAliveTimeout) {
-                window.console.log("Keep alive timed out, shifting to reconnecting.");
+            if (diff.getTime() >= keepAliveData.timeout) {
+                connection.log("Keep alive timed out");
 
                 // Notify transport that the connection has been lost
                 connection.transport.lostConnection(connection);
@@ -130,8 +128,8 @@
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
+            // If our transport supports keep alive then we need to update the ping time stamp.
             if (connection.transport.supportsKeepAlive) {
-                window.console.log("Pinging via message received.");
                 this.pingKeepAlive(connection);
             }
 
@@ -169,29 +167,43 @@
         },
 
         monitorKeepAlive: function (connection) {
-            // If we haven't initiated the keep alive timeouts then we need to set them up
-            if (!keepAliveTimeout) {
-                window.console.log("Now monitoring Keep alive");
-                // Converting the timeout to millseconds
-                keepAliveTimeout = connection.keepAliveTimeout * 1000;
-                window.console.log("Keep alive timeout: " + keepAliveTimeout);
+            var keepAliveData = connection.keepAliveData;
 
-                // Set the ping time tracker
-                window.console.log("Pinging via monitorKeepAlive.");
+            // If we haven't initiated the keep alive timeouts then we need to
+            if (!keepAliveData.keepAliveCheckIntervalID) {
+               
+                // Initialize the keep alive time stamp ping
                 this.pingKeepAlive(connection);
 
                 // Initiate interval to check timeouts
-                keepAliveInterval = window.setInterval(function () {
+                keepAliveData.keepAliveCheckIntervalID = window.setInterval(function () {
                     checkIfAlive(connection);
-                }, keepAliveTimeout);
+                }, keepAliveData.timeout);
+
+                connection.log("Now monitoring keep alive with timeout of: " + keepAliveData.timeout);
             }
             else {
-                window.console.log("Tried to monitor keep alive but it's already being monitored");
+                connection.log("Tried to monitor keep alive but it's already being monitored");
+            }
+        },
+
+        stopMonitoringKeepAlive: function (connection) {
+            var keepAliveInterval = connection.keepAliveData.keepAliveCheckIntervalID;
+
+            // Only attempt to stop the keep alive monitoring if its being monitored
+            if (keepAliveInterval) {
+                // Stop the interval
+                window.clearInterval(keepAliveInterval);
+
+                // Clear all the keep alive data
+                connection.keepAliveData = {};
+                connection.log("Stopping the monitoring of the keep alive");
             }
         },
 
         pingKeepAlive: function (connection) {
-            lastKeepAlivePinged = new Date();
+            connection.log("Pinging keep alive");
+            connection.keepAliveData.lastPinged = new Date();
         },
 
         foreverFrame: {
