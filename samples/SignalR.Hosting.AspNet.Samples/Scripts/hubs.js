@@ -57,7 +57,7 @@
         }
     }
 
-    signalR.hub = $.hubConnection("/signalr")
+    signalR.hub = $.hubConnection("/signalr", { useDefaultPath: false })
         .starting(function () {
             createHubProxies(signalR, this);
         });
