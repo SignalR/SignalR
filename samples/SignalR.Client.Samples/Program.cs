@@ -1,5 +1,6 @@
 ﻿using System;
 using SignalR.Client.Hubs;
+using System.Collections.Generic;
 #if !NET35
 using SignalR.Hosting.Memory;
 #endif
@@ -200,6 +201,11 @@ namespace SignalR.Client.Samples
             protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
+            }
+
+            protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+            {
+                return groups;
             }
         }
 #endif

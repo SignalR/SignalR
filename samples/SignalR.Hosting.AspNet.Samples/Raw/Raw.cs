@@ -103,6 +103,11 @@ namespace SignalR.Samples.Raw
             return base.OnReceivedAsync(request, connectionId, data);
         }
 
+        protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        {
+            return groups;
+        }
+
         private string GetUser(string connectionId)
         {
             string user;
