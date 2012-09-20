@@ -49,6 +49,7 @@
     <Compile Include="..\SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>
     </Compile>
+    <Compile Include="AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Hubs\IHubContext.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
+    <Compile Include="IAckHandler.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\IPerformanceCounterWriter.cs" />
     <Compile Include="Infrastructure\PerformanceCounterExtensions.cs" />

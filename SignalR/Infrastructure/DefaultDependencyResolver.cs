@@ -51,6 +51,9 @@ namespace SignalR
             var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
             Register(typeof(IConnectionManager), () => connectionManager.Value);
 
+            var ackHandler = new Lazy<AckHandler>();
+            Register(typeof(IAckHandler), () => ackHandler.Value);
+
             var perfCounterWriter = new Lazy<PerformanceCounterWriter>(() => new PerformanceCounterWriter());
             Register(typeof(IPerformanceCounterWriter), () => perfCounterWriter.Value);
         }

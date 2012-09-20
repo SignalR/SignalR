@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
+    <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\MessageResultExtensions.cs" />
     <Compile Include="Server\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />

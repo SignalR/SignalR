@@ -17,6 +17,7 @@ namespace SignalR
         protected IMessageBus _newMessageBus;
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdPrefixGenerator _connectionIdPrefixGenerator;
+        protected IAckHandler _ackHandler;
         private ITransportManager _transportManager;
         private bool _initialized;
 
@@ -42,6 +43,7 @@ namespace SignalR
             _trace = resolver.Resolve<ITraceManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
             _counters = resolver.Resolve<IPerformanceCounterWriter>();
+            _ackHandler = resolver.Resolve<IAckHandler>();
             
             _allErrorsTotalCounter = _counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
             _allErrorsPerSecCounter = _counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
@@ -170,6 +172,7 @@ namespace SignalR
                                   GetDefaultSignals(connectionId),
                                   groups,
                                   _trace,
+                                  _ackHandler,
                                   _counters);
         }
 

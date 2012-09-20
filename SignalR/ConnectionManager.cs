@@ -96,6 +96,7 @@ namespace SignalR
                                   signals,
                                   Enumerable.Empty<string>(),
                                   _resolver.Resolve<ITraceManager>(),
+                                  _resolver.Resolve<IAckHandler>(),
                                   _resolver.Resolve<IPerformanceCounterWriter>());
         }
     }

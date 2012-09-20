@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,7 +16,7 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly SafeSet<string> _groups;
-        
+
         private readonly PerformanceCounter _msgsRecTotalCounter;
         private readonly PerformanceCounter _msgsRecPerSecCounter;
         private readonly PerformanceCounter _msgsSentTotalCounter;
@@ -26,7 +25,7 @@ namespace SignalR
         private bool _disconnected;
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
-        private static readonly ConcurrentDictionary<string, TaskCompletionSource<object>> _acks = new ConcurrentDictionary<string, TaskCompletionSource<object>>();
+        private readonly IAckHandler _ackHandler;
 
         public Connection(IMessageBus newMessageBus,
                           IJsonSerializer jsonSerializer,
@@ -35,6 +34,7 @@ namespace SignalR
                           IEnumerable<string> signals,
                           IEnumerable<string> groups,
                           ITraceManager traceManager,
+                          IAckHandler ackHandler,
                           IPerformanceCounterWriter performanceCounterWriter)
         {
             _bus = newMessageBus;
@@ -44,7 +44,8 @@ namespace SignalR
             _signals = new HashSet<string>(signals);
             _groups = new SafeSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
-            
+            _ackHandler = ackHandler;
+
             var counters = performanceCounterWriter;
             _msgsRecTotalCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesReceivedTotal);
             _msgsRecPerSecCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesReceivedPerSec);
@@ -106,7 +107,7 @@ namespace SignalR
 
             if (message.WaitForAck)
             {
-                Task ackTask = _acks.GetOrAdd(message.CommandId, _ => new TaskCompletionSource<object>()).Task;
+                Task ackTask = _ackHandler.CreateAck(message.CommandId);
                 return _bus.Publish(message).Then(task => task, ackTask);
             }
 
@@ -178,11 +179,7 @@ namespace SignalR
                                       {
                                           if (message.IsAck)
                                           {
-                                              TaskCompletionSource<object> tcs;
-                                              if (_acks.TryRemove(message.CommandId, out tcs))
-                                              {
-                                                  tcs.TrySetResult(null);
-                                              }
+                                              _ackHandler.TriggerAck(message.CommandId);
                                           }
                                           else
                                           {
@@ -194,15 +191,8 @@ namespace SignalR
                                               {
                                                   // If we're on the same box and there's a pending ack for this command then
                                                   // just trip it
-                                                  TaskCompletionSource<object> tcs;
-                                                  if (_acks.TryRemove(message.CommandId, out tcs))
+                                                  if (!_ackHandler.TriggerAck(message.CommandId))
                                                   {
-                                                      tcs.TrySetResult(null);
-                                                  }
-                                                  else
-                                                  {
-                                                      // Send a message through the bus confirming that we got the message
-                                                      // REVIEW: Do we retry if this fails?
                                                       _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
                                                   }
                                               }
