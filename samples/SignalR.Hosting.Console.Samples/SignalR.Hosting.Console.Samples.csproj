@@ -47,10 +47,10 @@
       <HintPath>..\..\packages\Microsoft.HttpListener.Owin.0.7\lib\Microsoft.HttpListener.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Owin.Builder">
-      <HintPath>..\packages\Owin.Builder.0.4\lib\net40\Owin.Builder.dll</HintPath>
+      <HintPath>..\..\packages\Owin.Builder.0.4\lib\net40\Owin.Builder.dll</HintPath>
     </Reference>
     <Reference Include="Owin.Startup">
-      <HintPath>..\packages\Owin.Startup.0.4\lib\net40\Owin.Startup.dll</HintPath>
+      <HintPath>..\..\packages\Owin.Startup.0.4\lib\net40\Owin.Startup.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
