@@ -15,7 +15,9 @@ namespace SignalR.Server.Infrastructure
         public static IDictionary<string, string[]> New(IDictionary<string, string[]> headers)
         {
             if (headers == null)
+            {
                 return New();
+            }
 
             return new Dictionary<string, string[]>(headers, StringComparer.OrdinalIgnoreCase);
         }
@@ -25,7 +27,10 @@ namespace SignalR.Server.Infrastructure
         {
             string[] values;
             if (!headers.TryGetValue(name, out values) || values == null)
+            {
                 return false;
+            }
+
             return values.Any(value => !String.IsNullOrWhiteSpace(value));
         }
 

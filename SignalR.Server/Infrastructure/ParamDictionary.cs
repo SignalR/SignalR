@@ -7,9 +7,9 @@ namespace SignalR.Server.Infrastructure
 {
     internal class ParamDictionary : IDictionary<string, string>
     {
-        static readonly char[] DefaultParamSeparators = new[] { '&', ';' };
-        static readonly char[] ParamKeyValueSeparator = new[] { '=' };
-        static readonly char[] LeadingWhitespaceChars = new[] { ' ' };
+        private static readonly char[] DefaultParamSeparators = new[] { '&', ';' };
+        private static readonly char[] ParamKeyValueSeparator = new[] { '=' };
+        private static readonly char[] LeadingWhitespaceChars = new[] { ' ' };
 
         public static IEnumerable<KeyValuePair<string, string>> ParseToEnumerable(string queryString, char[] delimiters)
         {
@@ -31,8 +31,6 @@ namespace SignalR.Server.Infrastructure
         }
 
         readonly IDictionary<string, string> _impl;
-
-
 
         ParamDictionary(IDictionary<string, string> impl)
         {

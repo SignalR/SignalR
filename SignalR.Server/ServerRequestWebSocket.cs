@@ -7,16 +7,6 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Server
 {
-    using WebSocketSendAsync =
-       Func
-       <
-           ArraySegment<byte> /* data */,
-           int /* messageType */,
-           bool /* endOfMessage */,
-           CancellationToken /* cancel */,
-           Task
-       >;
-
     using WebSocketReceiveAsync =
         Func
         <
@@ -34,41 +24,40 @@ namespace SignalR.Server
                 >
             >
         >;
-
     using WebSocketReceiveTuple =
-        Tuple
-        <
-            int /* messageType */,
-            bool /* endOfMessage */,
-            int? /* count */,
-            int? /* closeStatus */,
-            string /* closeStatusDescription */
-        >;
+            Tuple
+            <
+                int /* messageType */,
+                bool /* endOfMessage */,
+                int? /* count */,
+                int? /* closeStatus */,
+                string /* closeStatusDescription */
+            >;
+    using WebSocketSendAsync =
+           Func
+           <
+               ArraySegment<byte> /* data */,
+               int /* messageType */,
+               bool /* endOfMessage */,
+               CancellationToken /* cancel */,
+               Task
+           >;
 
-    using WebSocketCloseAsync =
-        Func
-        <
-            int /* closeStatus */,
-            string /* closeDescription */,
-            CancellationToken /* cancel */,
-            Task
-        >;
-
-    class ServerRequestWebSocket : IWebSocket
+    internal class ServerRequestWebSocket : IWebSocket
     {
         private readonly Func<IWebSocket, Task> _callback;
         private readonly TaskQueue _sendQueue = new TaskQueue(); // queue for sending messages
-
-        public ServerRequestWebSocket(Func<IWebSocket, Task> callback)
-        {
-            _callback = callback;
-        }
 
         private WebSocketSendAsync _sendAsync;
         private WebSocketReceiveAsync _receiveAsync;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ArraySegment<byte> _buffer = new ArraySegment<byte>(new byte[8 << 10]);
         private string _text;
+
+        public ServerRequestWebSocket(Func<IWebSocket, Task> callback)
+        {
+            _callback = callback;
+        }
 
         public Task Invoke(IDictionary<string, object> context)
         {
@@ -78,6 +67,7 @@ namespace SignalR.Server
             var task = _callback(this)
                 .Then(cts => cts.Cancel(false), _cts)
                 .Catch(ex => _cts.Cancel(false));
+
             StartReceiving();
             return task;
         }
