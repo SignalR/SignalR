@@ -225,13 +225,13 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+      <Project>{3b71f0ae-d4b6-4f47-bf62-333d45615673}</Project>
+      <Name>SignalR.Hosting.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\SignalR.Server.Routing\SignalR.Server.Routing.csproj">
       <Project>{37c04b69-0989-458a-b80c-a1ed574adbe4}</Project>
       <Name>SignalR.Server.Routing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SignalR.Server\SignalR.Server.csproj">
-      <Project>{2b8c6dad-4d85-41b1-83fd-248d9f347522}</Project>
-      <Name>SignalR.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\SignalR.SqlServer\SignalR.SqlServer.csproj">
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>

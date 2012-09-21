@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Web.Routing;
+using SignalR;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
 using SignalR.Samples.Streaming;
-using SignalR.Server;
 
 namespace SignalR.Hosting.AspNet.Samples
 {

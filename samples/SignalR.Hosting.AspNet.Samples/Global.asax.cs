@@ -9,7 +9,6 @@ using SignalR.Hubs;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
 using SignalR.Samples.Streaming;
-using SignalR.Server;
 
 namespace SignalR.Hosting.AspNet.Samples
 {
