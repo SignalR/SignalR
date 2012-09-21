@@ -45,7 +45,7 @@ namespace SignalR.Hubs
                 Hub = _hubName,
                 Method = method,
                 Args = args,
-                GroupOrConnectionId = _signal
+                Target = _signal
             };
         }
     }

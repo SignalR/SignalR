@@ -10,7 +10,7 @@ namespace SignalR.Hubs
         /// <summary>
         /// 
         /// </summary>
-        public string GroupOrConnectionId { get; set; }
+        public string Target { get; set; }
 
         /// <summary>
         /// 
