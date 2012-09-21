@@ -34,12 +34,31 @@
                     messages.push(message);
                 });
 
-                connection.start({ transport: activeTransport }).done(function () {
+                connection.start({ transport: activeTransport, jsonp: isJsonp }).done(function () {
                     connection.send('blah');
 
                     setTimeout(function () {
                         start();
-                        equal(10, messages.length, 'All messages received');
+                        equal(messages.length, 10, 'All messages received');
+                    }, 5000);
+                });
+            });
+
+            asyncTest('jsonp-same-origin', function () {
+                var connection = $.connection('../../sending-connection', null, true);
+                var messages = [];
+                connection.received(function (message) {
+                    messages.push(message);
+                });
+
+                connection.start({ transport: 'longPolling', jsonp: true }).done(function () {
+                    connection.send('blah');
+
+                    setTimeout(function () {
+                        start();
+                        for (var i = 0; i < 10; i++) {
+                            equal(messages[i], 'blah' + i, 'Message ' + i + ' successfully received', i);
+                        }
                     }, 5000);
                 });
             });

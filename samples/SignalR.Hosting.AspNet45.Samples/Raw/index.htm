@@ -69,7 +69,7 @@
             });
 
             var start = function () {
-                connection.start({ transport: activeTransport })
+                connection.start({ transport: activeTransport, jsonp: isJsonp })
                     .then(function () {
                         $("#stopStart").val("Stop").prop("disabled", false);
                     });
@@ -117,6 +117,7 @@
     </script>
 </head>
 <body>
+    <a href="crossdomain.htm">Cross Domain</a>
     <h2>
         To Everybody</h2>
     <form>
