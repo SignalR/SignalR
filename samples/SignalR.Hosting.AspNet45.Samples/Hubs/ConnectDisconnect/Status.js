@@ -1,7 +1,7 @@
 $(function () {
-    var status = $.connection.status;
+    var status = $.connection.StatusHub;
 
-    status.joined = function (id, when) {
+    status.client.joined = function (id, when) {
         if ($.connection.hub.id === id) {
             addMessage(id, 'blue');
         }
@@ -9,11 +9,11 @@ $(function () {
         addMessage(id + ' joined at ' + when, 'green');
     };
 
-    status.rejoined = function (id, when) {
+    status.client.rejoined = function (id, when) {
         addMessage(id + ' reconnected at ' + when, 'purple');
     };
 
-    status.leave = function (id, when) {
+    status.client.leave = function (id, when) {
         addMessage(id + ' left at ' + when, 'red');
     };
 
@@ -22,5 +22,4 @@ $(function () {
     }
 
     $.connection.hub.start({ transport: activeTransport });
-
 });

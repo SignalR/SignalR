@@ -47,7 +47,19 @@
     <Reference Include="HtmlSanitizationLibrary">
       <HintPath>..\..\packages\AntiXSS.4.0.1\lib\net35\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.AspNet.Owin, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.Owin.0.7\lib\Microsoft.AspNet.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin.Startup, Version=0.4.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Owin.Startup.0.4\lib\net40\Owin.Startup.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Web" />
@@ -149,6 +161,7 @@
     <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
+    <Content Include="index.htm" />
     <Content Include="Streaming\index.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -212,13 +225,13 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SignalR.Hosting.AspNet\SignalR.Hosting.AspNet.csproj">
-      <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
-      <Name>SignalR.Hosting.AspNet</Name>
+    <ProjectReference Include="..\..\SignalR.Server.Routing\SignalR.Server.Routing.csproj">
+      <Project>{37c04b69-0989-458a-b80c-a1ed574adbe4}</Project>
+      <Name>SignalR.Server.Routing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
-      <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
-      <Name>SignalR.Hosting.Common</Name>
+    <ProjectReference Include="..\..\SignalR.Server\SignalR.Server.csproj">
+      <Project>{2b8c6dad-4d85-41b1-83fd-248d9f347522}</Project>
+      <Name>SignalR.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\SignalR.SqlServer\SignalR.SqlServer.csproj">
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
@@ -238,6 +251,9 @@
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />

@@ -35,14 +35,14 @@ $(function () {
         return e;
     }
 
-    chat.refreshRoom = function (room) {
+    chat.client.refreshRoom = function (room) {
         clearMessages();
         clearUsers();
 
-        chat.getUsers()
+        chat.server.getUsers()
             .done(function (users) {
                 $.each(users, function () {
-                    chat.addUser(this, true);
+                    chat.client.addUser(this, true);
                 });
                 refreshUsers();
 
@@ -52,7 +52,7 @@ $(function () {
         addMessage('Entered ' + room, 'notification');
     };
 
-    chat.showRooms = function (rooms) {
+    chat.client.showRooms = function (rooms) {
         if (!rooms.length) {
             addMessage('No rooms available', 'notification');
         }
@@ -63,14 +63,14 @@ $(function () {
         }
     };
 
-    chat.addMessageContent = function (id, content) {
+    chat.client.addMessageContent = function (id, content) {
         var e = $('#m-' + id).append(content);
         refreshMessages();
         updateUnread();
         e[0].scrollIntoView();
     };
 
-    chat.addMessage = function (id, name, message) {
+    chat.client.addMessage = function (id, name, message) {
         var data = {
             name: name,
             message: message,
@@ -84,7 +84,7 @@ $(function () {
         e[0].scrollIntoView();
     };
 
-    chat.addUser = function (user, exists) {
+    chat.client.addUser = function (user, exists) {
         var id = 'u-' + user.Name;
         if (document.getElementById(id)) {
             return;
@@ -99,15 +99,15 @@ $(function () {
                                        .appendTo($('#users'));
         refreshUsers();
 
-        if (!exists && this.name != user.Name) {
-            addMessage(user.Name + ' just entered ' + this.room, 'notification');
+        if (!exists && this.state.name != user.Name) {
+            addMessage(user.Name + ' just entered ' + this.state.room, 'notification');
             e.hide().fadeIn('slow');
         }
 
         updateCookie();
     };
 
-    chat.changeUserName = function (oldUser, newUser) {
+    chat.client.changeUserName = function (oldUser, newUser) {
         $('#u-' + oldUser.Name).replaceWith(
                 $('#new-user-template').tmpl({
                     name: newUser.Name,
@@ -116,7 +116,7 @@ $(function () {
         );
         refreshUsers();
 
-        if (newUser.Name === this.name) {
+        if (newUser.Name === this.state.name) {
             addMessage('Your name is now ' + newUser.Name, 'notification');
             updateCookie();
         }
@@ -125,28 +125,28 @@ $(function () {
         }
     };
 
-    chat.sendMeMessage = function (name, message) {
+    chat.client.sendMeMessage = function (name, message) {
         addMessage('*' + name + '* ' + message, 'notification');
     };
 
-    chat.sendPrivateMessage = function (from, to, message) {
+    chat.client.sendPrivateMessage = function (from, to, message) {
         addMessage('<emp>*' + from + '*</emp> ' + message, 'pm');
     };
 
-    chat.leave = function (user) {
-        if (this.id != user.Id) {
+    chat.client.leave = function (user) {
+        if (this.state.id != user.Id) {
             $('#u-' + user.Name).fadeOut('slow', function () {
                 $(this).remove();
             });
 
-            addMessage(user.Name + ' left ' + this.room, 'notification');
+            addMessage(user.Name + ' left ' + this.state.room, 'notification');
         }
     };
 
     $('#send-message').submit(function () {
         var command = $('#new-message').val();
 
-        chat.send(command)
+        chat.server.send(command)
             .fail(function (e) {
                 addMessage(e, 'error');
             });
@@ -158,36 +158,36 @@ $(function () {
     });
 
     $(window).blur(function () {
-        chat.focus = false;
+        chat.state.focus = false;
     });
 
     $(window).focus(function () {
-        chat.focus = true;
-        chat.unread = 0;
+        chat.state.focus = true;
+        chat.state.unread = 0;
         document.title = 'SignalR Chat';
     });
 
     function updateUnread() {
-        if (!chat.focus) {
-            if (!chat.unread) {
-                chat.unread = 0;
+        if (!chat.state.focus) {
+            if (!chat.state.unread) {
+                chat.state.unread = 0;
             }
-            chat.unread++;
+            chat.state.unread++;
         }
         updateTitle();
     }
 
     function updateTitle() {
-        if (chat.unread == 0) {
+        if (chat.state.unread == 0) {
             document.title = 'SignalR Chat';
         }
         else {
-            document.title = 'SignalR Chat (' + chat.unread + ')';
+            document.title = 'SignalR Chat (' + chat.state.unread + ')';
         }
     }
 
     function updateCookie() {
-        $.cookie('userid', chat.id, { path: '/', expires: 30 });
+        $.cookie('userid', chat.state.id, { path: '/', expires: 30 });
     }
 
     addMessage('Welcome to the SignalR IRC clone', 'notification');
@@ -196,7 +196,7 @@ $(function () {
     $('#new-message').focus();
 
     $.connection.hub.start({ transport: activeTransport }, function () {
-        chat.join()
+        chat.server.join()
             .done(function (success) {
                 if (success === false) {
                     $.cookie('userid', '');
