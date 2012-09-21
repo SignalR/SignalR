@@ -282,7 +282,8 @@
             };
 
             var url = connection.url + "/negotiate",
-                keepAliveMultiplier = 1.5; // Used to detect when we miss a keep alive.
+                keepAliveMultiplier = 1.5,
+                keepAliveCheckInterval = 5000; // Used to detect when we miss a keep alive.
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
@@ -316,8 +317,7 @@
                         keepAliveData.timeout = res.KeepAlive * 2;
 
                         // Instantiate the frequency in which we check the keep alive.
-                        // It's set to the warn because this is the minimum time for a message to be triggered.
-                        keepAliveData.checkInterval = keepAliveData.timeoutWarning;
+                        keepAliveData.checkInterval = keepAliveCheckInterval;
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {

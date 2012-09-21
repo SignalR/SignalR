@@ -13,6 +13,10 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
+        
+        attemptingReconnect: false,
+
+        currentSocketID: 0,
 
         send: function (connection, data) {
             connection.socket.send(data);
@@ -49,9 +53,15 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
+                connection.socket.ID = ++that.currentSocketID;
                 connection.socket.onopen = function () {
                     opened = true;
                     connection.log("Websocket opened");
+
+                    if (that.attemptingReconnect) {
+                        that.attemptingReconnect = false;
+                    }
+
                     if (onSuccess) {
                         onSuccess();
                     }
@@ -65,33 +75,38 @@
                 };
 
                 connection.socket.onclose = function (event) {
-                    if (!opened) {
-                        if (onFailed) {
-                            onFailed();
+                    // Only handle a socket close if the close is from the current socket.
+                    // Sometimes on disconnect the server will push down an onclose event
+                    // to an expired socket.
+                    if (this.ID === that.currentSocketID) {
+                        if (!opened) {
+                            if (onFailed) {
+                                onFailed();
+                            }
+                            else if (reconnecting) {
+                                that.reconnect(connection);
+                            }
+                            return;
                         }
-                        else if (reconnecting) {
-                            that.reconnect(connection);
+                        else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
+                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                            $(connection).trigger(events.onError, [event.reason]);
+                            connection.log("Unclean disconnect from websocket." + event.reason);
                         }
-                        return;
-                    }
-                    else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
-                        // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                        // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                        $(connection).trigger(events.onError, [event.reason]);
-                        connection.log("Unclean disconnect from websocket." + event.reason);
-                    }
-                    else {
-                        connection.log("Websocket closed");
-                    }
+                        else {
+                            connection.log("Websocket closed");
+                        }
 
-                    that.reconnect(connection);
+                        that.reconnect(connection);
+                    }
                 };
 
                 connection.socket.onmessage = function (event) {
                     var data = window.JSON.parse(event.data),
                         $connection;
                     if (data) {
-                        $connection = $(connection);                        
+                        $connection = $(connection);
                         transportLogic.processMessages(connection, data);
                     }
                 };
@@ -100,8 +115,14 @@
 
         reconnect: function (connection) {
             var that = this;
+            if (!that.attemptingReconnect) {
+                that.attemptingReconnect = true;
+            }
+
             window.setTimeout(function () {
-                that.stop(connection);
+                if (that.attemptingReconnect) {
+                    that.stop(connection);
+                }
 
                 if (connection.state === signalR.connectionState.reconnecting ||
                     changeState(connection,
@@ -116,8 +137,7 @@
         },
 
         lostConnection: function (connection) {
-            this.stop(connection);
-            $(connection).triggerHandler("error", ["Lost Connection"]);
+            this.reconnect(connection);
 
         },
 
