@@ -73,11 +73,6 @@ $(function () {
     };
 
     shapeShare.client.shapeChanged = function (shape) {
-        if (this.state.user.ID === shape.ChangedBy.ID) {
-            $("#u-" + shape.ID).text("");
-            return;
-        }
-
         $("#s-" + shape.ID).css({
             top: shape.Location.Y,
             left: shape.Location.X,

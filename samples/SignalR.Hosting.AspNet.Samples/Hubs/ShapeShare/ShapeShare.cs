@@ -81,7 +81,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
             shape.Location.Y = y;
             shape.ChangedBy = user;
 
-            Task task = Clients.All.shapeChanged(shape);
+            Task task = Clients.Others.shapeChanged(shape);
             task.Wait();
             if (task.Exception != null)
             {
