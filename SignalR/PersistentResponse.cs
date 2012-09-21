@@ -87,7 +87,7 @@ namespace SignalR
             jsonWriter.WritePropertyName("Messages");
             jsonWriter.WriteStartArray();
 
-            Messages.Enumerate(m => !m.IsCommand,
+            Messages.Enumerate(m => !m.IsCommand && !m.Skip,
                                m => jsonWriter.WriteRawValue(m.Value));
 
             jsonWriter.WriteEndArray();

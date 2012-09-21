@@ -10,12 +10,12 @@ namespace SignalR.Samples.Hubs.MouseTracking
 
         public void Join()
         {
-            Caller.id = Interlocked.Increment(ref _id);
+            Clients.Caller.id = Interlocked.Increment(ref _id);
         }
 
         public void Move(int x, int y)
         {
-            Clients.moveMouse(Caller.id, x, y);
+            Clients.Others.moveMouse(Clients.Caller.id, x, y);
         }
     }
 }

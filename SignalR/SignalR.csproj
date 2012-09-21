@@ -55,6 +55,7 @@
     <Compile Include="AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
+    <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
+    <Compile Include="Hubs\HubConnectionContext.cs" />
     <Compile Include="Hubs\NullClientProxy.cs" />
     <Compile Include="Hubs\Pipeline\AutoRejoiningGroupsModule.cs" />
     <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />

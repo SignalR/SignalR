@@ -17,6 +17,13 @@ namespace SignalR
         Task Send(string signal, object value);
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        Task Send(ConnectionMessage message);
+
+        /// <summary>
         /// Broadcasts a value to all connections.
         /// </summary>
         /// <param name="value">The value to broadcast.</param>

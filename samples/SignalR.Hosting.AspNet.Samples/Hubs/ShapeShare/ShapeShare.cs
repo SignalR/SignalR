@@ -34,7 +34,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
                 user = new User { Name = userName };
                 _users.TryAdd(userName, user);
             }
-            Caller.user = user;
+            Clients.Caller.user = user;
         }
 
         public void ChangeUserName(string currentUserName, string newUserName)
@@ -46,20 +46,20 @@ namespace SignalR.Samples.Hubs.ShapeShare
                 User oldUser;
                 _users.TryRemove(currentUserName, out oldUser);
                 _users.TryAdd(newUserName, user);
-                Clients.userNameChanged(currentUserName, newUserName);
-                Caller.user = user;
+                Clients.All.userNameChanged(currentUserName, newUserName);
+                Clients.Caller.user = user;
             }
         }
 
         public Task CreateShape(string type = "rectangle")
         {
-            string name = Caller.user["Name"];
+            string name = Clients.Caller.user["Name"];
             var user = _users[name];
             var shape = Shape.Create(type);
             shape.ChangedBy = user;
             _shapes.TryAdd(shape.ID, shape);
 
-            return Clients.shapeAdded(shape);
+            return Clients.All.shapeAdded(shape);
         }
 
         public void ChangeShape(string id, int x, int y, int w, int h)
@@ -72,7 +72,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
                 return;
             }
 
-            string name = Caller.user["Name"];
+            string name = Clients.Caller.user["Name"];
             var user = _users[name];
 
             shape.Width = w;
@@ -81,7 +81,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
             shape.Location.Y = y;
             shape.ChangedBy = user;
 
-            Task task = Clients.shapeChanged(shape);
+            Task task = Clients.All.shapeChanged(shape);
             task.Wait();
             if (task.Exception != null)
             {
@@ -100,7 +100,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
             Shape ignored;
             _shapes.TryRemove(id, out ignored);
 
-            Clients.shapeDeleted(id);
+            Clients.All.shapeDeleted(id);
         }
 
         public void DeleteAllShapes()
@@ -109,7 +109,7 @@ namespace SignalR.Samples.Hubs.ShapeShare
 
             _shapes.Clear();
 
-            Clients.shapesDeleted(shapes);
+            Clients.All.shapesDeleted(shapes);
         }
 
         private Shape FindShape(string id)

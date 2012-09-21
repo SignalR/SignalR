@@ -5,11 +5,8 @@ $(function () {
     var hubConnection = $.hubConnection('/signalr', { qs: 'test=1', logging: false, useDefaultPath: false }),
         hub = hubConnection.createProxy('mouseTracking');
 
-    hub.on('MoveMouse', function (id, x, y) {
-        if (id == this.state.id) {
-            return;
-        }
 
+    hub.on('MoveMouse', function (id, x, y) {
         updateCursor(id, x, y);
     });
 
@@ -25,11 +22,12 @@ $(function () {
         e.css({ left: x, top: y });
     }
 
+    hubConnection.logging = true;
     hubConnection.start({ transport: activeTransport })
-        .done(function () {
+        .pipe(function () {
             return hub.invoke('join');
         })
-        .done(function () {
+        .pipe(function () {
             $(document).mousemove(function (e) {
                 hub.invoke('Move', e.pageX, e.pageY);
                 updateCursor(hub.state.id, e.pageX, e.pageY);

@@ -12,19 +12,16 @@ namespace SignalR.Hubs
     {
         protected Hub()
         {
-            Clients = new NullClientProxy();
-            Caller = new NullClientProxy();
+            Clients = new HubConnectionContext();
+            Clients.All = new NullClientProxy();
+            Clients.Others = new NullClientProxy();
+            Clients.Caller = new NullClientProxy();
         }
 
         /// <summary>
-        /// A dynamic object that represents all clients connected to this hub (not hub instance).
+        /// 
         /// </summary>
-        public dynamic Clients { get; set; }
-
-        /// <summary>
-        /// A dynamic object that represents the calling client.
-        /// </summary>
-        public dynamic Caller { get; set; }
+        public HubConnectionContext Clients { get; set; }
 
         /// <summary>
         /// Provides information about the calling client.

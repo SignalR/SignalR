@@ -676,12 +676,12 @@ namespace SignalR.Tests
         {
             public void AllFoo()
             {
-                Clients.foo();
+                Clients.All.foo();
             }
 
             public void OneFoo()
             {
-                Caller.foo();
+                Clients.Caller.foo();
             }
         }
 
@@ -713,7 +713,7 @@ namespace SignalR.Tests
                 return Task.Factory.StartNew(
                     () =>
                     {
-                        Clients[user.Name].onRoomJoin(user).Wait();
+                        Clients.Group(user.Name).onRoomJoin(user).Wait();
                     });
             }
         }

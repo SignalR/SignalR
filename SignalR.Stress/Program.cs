@@ -501,7 +501,7 @@ namespace SignalR.Stress
         {
             // Groups.Add(Context.ConnectionId, "one").Wait();
             Groups.Add(Context.ConnectionId, "one").Wait();
-            return Clients["one"].Do(index);
+            return Clients.Group("one").Do(index);
         }
     }
 

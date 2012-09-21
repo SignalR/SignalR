@@ -14,22 +14,22 @@ namespace SignalR.Samples.Hubs.Benchmark
             var tasks = new List<Task>();
             for (int i = 0; i < clientCalls; i++)
             {
-                tasks.Add(Clients[connectionId].stepOne());
+                tasks.Add(Clients.Client(connectionId).stepOne());
             }
 
             Task.WaitAll(tasks.ToArray());
 
-            Clients[connectionId].doneOne(start, clientCalls).Wait();
+            Clients.Client(connectionId).doneOne(start, clientCalls).Wait();
         }
 
         public void HitUs(long start, int clientCalls)
         {
             for (int i = 0; i < clientCalls; i++)
             {
-                Clients.stepAll().Wait();
+                Clients.All.stepAll().Wait();
             }
 
-            Clients.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
+            Clients.All.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
         }
 
         public override Task Connect()

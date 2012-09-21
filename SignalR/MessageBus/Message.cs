@@ -13,6 +13,9 @@ namespace SignalR
         public string CommandId { get; set; }
         public bool WaitForAck { get; set; }
         public bool IsAck { get; set; }
+        public bool IgnoreSender { get; set; }
+
+        public bool Skip { get; set; }
 
         public bool IsCommand
         {

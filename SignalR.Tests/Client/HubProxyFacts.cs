@@ -200,7 +200,7 @@ namespace SignalR.Tests
         {
             public Task Send(string message)
             {
-                return Clients.addMessage(message);
+                return Clients.All.addMessage(message);
             }
         }
     }

@@ -31,8 +31,8 @@ namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 
         public void Join()
         {
-            Caller.id = Interlocked.Increment(ref _id);
-            Caller.color = colors[_id % colors.Length];
+            Clients.Caller.id = Interlocked.Increment(ref _id);
+            Clients.Caller.color = colors[_id % colors.Length];
         }
 
         // A user has drawed a line ...
@@ -40,7 +40,7 @@ namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
         public void DrawLine(Line data)
         {
             // ... propagate it to all users
-            Clients.lineDrawed(Caller.id, data);
+            Clients.All.lineDrawed(data);
         }
     }
 }

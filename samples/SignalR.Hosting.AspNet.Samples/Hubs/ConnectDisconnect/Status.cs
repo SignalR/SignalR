@@ -10,17 +10,17 @@ namespace SignalR.Samples.Hubs.ConnectDisconnect
     {
         public override Task Disconnect()
         {
-            return Clients.leave(Context.ConnectionId, DateTime.Now.ToString());
+            return Clients.All.leave(Context.ConnectionId, DateTime.Now.ToString());
         }
 
         public override Task Connect()
         {
-            return Clients.joined(Context.ConnectionId, DateTime.Now.ToString());
+            return Clients.All.joined(Context.ConnectionId, DateTime.Now.ToString());
         }
 
         public override Task Reconnect()
         {
-            return Clients.rejoined(Context.ConnectionId, DateTime.Now.ToString());
+            return Clients.All.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }
     }
 }

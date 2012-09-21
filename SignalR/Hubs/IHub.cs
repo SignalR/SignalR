@@ -7,11 +7,6 @@ namespace SignalR.Hubs
     public interface IHub : IDisposable
     {
         /// <summary>
-        /// Gets a dynamic object that represents the calling client.
-        /// </summary>
-        dynamic Caller { get; set; }
-
-        /// <summary>
         /// Gets a <see cref="HubCallerContext"/>. Which contains information about the calling client.
         /// </summary>
         HubCallerContext Context { get; set; }
@@ -19,7 +14,7 @@ namespace SignalR.Hubs
         /// <summary>
         /// Gets a dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>
-        dynamic Clients { get; set; }
+        HubConnectionContext Clients { get; set; }
 
         /// <summary>
         /// Called before a connection completes reconnecting to the <see cref="IHub"/> after a timeout.

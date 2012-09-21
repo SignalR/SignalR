@@ -44,9 +44,9 @@ namespace SignalR.Samples.Hubs.Chat
                 user.ConnectionId = Context.ConnectionId;
 
                 // Set some client state
-                Caller.id = user.Id;
-                Caller.name = user.Name;
-                Caller.hash = user.Hash;
+                Clients.Caller.id = user.Id;
+                Clients.Caller.name = user.Name;
+                Clients.Caller.hash = user.Hash;
 
                 // Leave all rooms
                 HashSet<string> rooms;
@@ -54,7 +54,7 @@ namespace SignalR.Samples.Hubs.Chat
                 {
                     foreach (var room in rooms)
                     {
-                        Clients[room].leave(user);
+                        Clients.Group(room).leave(user);
                         ChatRoom chatRoom = _rooms[room];
                         chatRoom.Users.Remove(user.Name);
                     }
@@ -63,7 +63,7 @@ namespace SignalR.Samples.Hubs.Chat
                 _userRooms[user.Name] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 // Add this user to the list of users
-                Caller.addUser(user);
+                Clients.Caller.addUser(user);
                 return true;
             }
 
@@ -76,8 +76,8 @@ namespace SignalR.Samples.Hubs.Chat
 
             if (!TryHandleCommand(content))
             {
-                string roomName = Caller.room;
-                string name = Caller.name;
+                string roomName = Clients.Caller.room;
+                string name = Clients.Caller.name;
 
                 EnsureUserAndRoom();
 
@@ -87,7 +87,7 @@ namespace SignalR.Samples.Hubs.Chat
 
                 _rooms[roomName].Messages.Add(chatMessage);
 
-                Clients[roomName].addMessage(chatMessage.Id, chatMessage.User, chatMessage.Text);
+                Clients.Group(roomName).addMessage(chatMessage.Id, chatMessage.User, chatMessage.Text);
 
                 if (links.Any())
                 {
@@ -115,7 +115,7 @@ namespace SignalR.Samples.Hubs.Chat
                             // If we did get something, update the message and notify all clients
                             chatMessage.Text += extractedContent;
 
-                            Clients[roomName].addMessageContent(chatMessage.Id, extractedContent);
+                            Clients.Group(roomName).addMessageContent(chatMessage.Id, extractedContent);
                         }
                     });
                 }
@@ -136,7 +136,7 @@ namespace SignalR.Samples.Hubs.Chat
                 {
                     foreach (var room in rooms)
                     {
-                        Clients[room].leave(user);
+                        Clients.Group(room).leave(user);
                         ChatRoom chatRoom = _rooms[room];
                         chatRoom.Users.Remove(user.Name);
                     }
@@ -151,7 +151,7 @@ namespace SignalR.Samples.Hubs.Chat
 
         public IEnumerable<ChatUser> GetUsers()
         {
-            string room = Caller.room;
+            string room = Clients.Caller.room;
 
             if (String.IsNullOrEmpty(room))
             {
@@ -171,8 +171,8 @@ namespace SignalR.Samples.Hubs.Chat
 
         private bool TryHandleCommand(string message)
         {
-            string room = Caller.room;
-            string name = Caller.name;
+            string room = Clients.Caller.room;
+            string name = Clients.Caller.name;
 
             message = message.Trim();
             if (message.StartsWith("/"))
@@ -220,7 +220,7 @@ namespace SignalR.Samples.Hubs.Chat
                                 {
                                     _rooms[r].Users.Remove(name);
                                     _rooms[r].Users.Add(newUserName);
-                                    Clients[r].changeUserName(oldUser, newUser);
+                                    Clients.Group(r).changeUserName(oldUser, newUser);
                                 }
                             }
                             HashSet<string> ignoredRoom;
@@ -228,10 +228,10 @@ namespace SignalR.Samples.Hubs.Chat
                             _userRooms.TryRemove(name, out ignoredRoom);
                             _users.TryRemove(name, out ignoredUser);
 
-                            Caller.hash = newUser.Hash;
-                            Caller.name = newUser.Name;
+                            Clients.Caller.hash = newUser.Hash;
+                            Clients.Caller.name = newUser.Name;
 
-                            Caller.changeUserName(oldUser, newUser);
+                            Clients.Caller.changeUserName(oldUser, newUser);
                         }
                     }
                     else
@@ -252,7 +252,7 @@ namespace SignalR.Samples.Hubs.Chat
                             Count = r.Value.Users.Count
                         });
 
-                        Caller.showRooms(rooms);
+                        Clients.Caller.showRooms(rooms);
 
                         return true;
                     }
@@ -280,7 +280,7 @@ namespace SignalR.Samples.Hubs.Chat
                             _userRooms[name].Remove(room);
                             _rooms[room].Users.Remove(name);
 
-                            Clients[room].leave(_users[name]);
+                            Clients.Group(room).leave(_users[name]);
                             Groups.Remove(Context.ConnectionId, room);
                         }
 
@@ -290,14 +290,14 @@ namespace SignalR.Samples.Hubs.Chat
                             throw new InvalidOperationException("You're already in that room!");
                         }
 
-                        Clients[newRoom].addUser(_users[name]);
+                        Clients.Group(newRoom).addUser(_users[name]);
 
                         // Set the room on the caller
-                        Caller.room = newRoom;
+                        Clients.Caller.room = newRoom;
 
                         Groups.Add(Context.ConnectionId, newRoom);
 
-                        Caller.refreshRoom(newRoom);
+                        Clients.Caller.refreshRoom(newRoom);
 
                         return true;
                     }
@@ -333,8 +333,8 @@ namespace SignalR.Samples.Hubs.Chat
 
                         string recipientId = _users[to].ConnectionId;
                         // Send a message to the sender and the sendee                        
-                        Clients[recipientId].sendPrivateMessage(name, to, messageText);
-                        Caller.sendPrivateMessage(name, to, messageText);
+                        Clients.Group(recipientId).sendPrivateMessage(name, to, messageText);
+                        Clients.Caller.sendPrivateMessage(name, to, messageText);
 
                         return true;
                     }
@@ -349,7 +349,7 @@ namespace SignalR.Samples.Hubs.Chat
                             }
                             var content = String.Join(" ", parts.Skip(1));
 
-                            Clients[room].sendMeMessage(name, content);
+                            Clients.Group(room).sendMeMessage(name, content);
                             return true;
                         }
                         else if (commandName.Equals("leave", StringComparison.OrdinalIgnoreCase))
@@ -360,12 +360,12 @@ namespace SignalR.Samples.Hubs.Chat
                                 chatRoom.Users.Remove(name);
                                 _userRooms[name].Remove(room);
 
-                                Clients[room].leave(_users[name]);
+                                Clients.Group(room).leave(_users[name]);
                             }
 
                             Groups.Remove(Context.ConnectionId, room);
 
-                            Caller.room = null;
+                            Clients.Caller.room = null;
 
                             return true;
                         }
@@ -384,11 +384,11 @@ namespace SignalR.Samples.Hubs.Chat
             _users[newUserName] = user;
             _userRooms[newUserName] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            Caller.name = user.Name;
-            Caller.hash = user.Hash;
-            Caller.id = user.Id;
+            Clients.Caller.name = user.Name;
+            Clients.Caller.hash = user.Hash;
+            Clients.Caller.id = user.Id;
 
-            Caller.addUser(user);
+            Clients.Caller.addUser(user);
 
             return user;
         }
@@ -398,8 +398,8 @@ namespace SignalR.Samples.Hubs.Chat
             EnsureUser();
 
             // TODO: Restore when groups work
-            string room = Caller.room;
-            string name = Caller.name;
+            string room = Clients.Caller.room;
+            string name = Clients.Caller.name;
 
             if (String.IsNullOrEmpty(room) || !_rooms.ContainsKey(room))
             {
@@ -415,7 +415,7 @@ namespace SignalR.Samples.Hubs.Chat
 
         private void EnsureUser()
         {
-            string name = Caller.name;
+            string name = Clients.Caller.name;
             if (String.IsNullOrEmpty(name) || !_users.ContainsKey(name))
             {
                 throw new InvalidOperationException("You don't have a name. Pick a name using '/nick nickname'.");
