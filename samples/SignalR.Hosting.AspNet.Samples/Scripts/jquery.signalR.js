@@ -34,6 +34,7 @@
             onSending: "onSending",
             onReceived: "onReceived",
             onError: "onError",
+            onConnectionSlow: "onConnectionSlow",
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
@@ -149,12 +150,11 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false,
-                    keepAliveTimeoutOffset: 20
+                    jsonp: false
                 },
                 initialize,
-                deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
-                parser = window.document.createElement("a");
+                deferred = connection.deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                parser = window.document.createElement("a");                
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -282,7 +282,8 @@
                 });
             };
 
-            var url = connection.url + "/negotiate";
+            var url = connection.url + "/negotiate",
+                keepAliveMultiplier = 1.5; // Used to detect when we miss a keep alive.
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
@@ -298,10 +299,27 @@
                     connection.stop();
                 },
                 success: function (res) {
+                    var keepAliveData = connection.keepAliveData;
+
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection.keepAliveData.timeout = (res.KeepAlive > 0) ? (res.KeepAlive + config.keepAliveTimeoutOffset) * 1000 : null;
+
+                    // If we have a keep alive
+                    if (res.KeepAlive) {
+                        // Convert to milliseconds
+                        res.KeepAlive *= 1000;
+
+                        // Timeout to designate to warn the developer that the connection may be dead or is hanging.
+                        keepAliveData.timeoutWarning = res.KeepAlive * keepAliveMultiplier;
+
+                        // Timeout to designate when to force the connection into reconnecting
+                        keepAliveData.timeout = res.KeepAlive * 2;
+
+                        // Instantiate the frequency in which we check the keep alive.
+                        // It's set to the warn because this is the minimum time for a message to be triggered.
+                        keepAliveData.checkInterval = keepAliveData.timeoutWarning;
+                    }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
@@ -517,20 +535,34 @@
     signalR.transports = {};
 
     function checkIfAlive(connection) {
+        var keepAliveData = connection.keepAliveData;
+
         // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            var keepAliveData = connection.keepAliveData,
-                diff = new Date();
+            var diff = new Date(),
+                timeElapsed;
 
-            diff.setTime(diff - keepAliveData.lastPinged);
+            diff.setTime(diff - keepAliveData.lastKeepAlive);
+            timeElapsed = diff.getTime();
 
-            // Check if the keep alive has timed out
-            if (diff.getTime() >= keepAliveData.timeout) {
-                connection.log("Keep alive timed out");
+            // Check if the keep alive has completely timed out
+            if (timeElapsed >= keepAliveData.timeout) {
+                connection.log("Keep alive timed out.  Notifying transport that connection has been lost.");
 
                 // Notify transport that the connection has been lost
                 connection.transport.lostConnection(connection);
             }
+            else if (timeElapsed >= keepAliveData.timeoutWarning) {
+                connection.log("Keep alive has been missed, connection may be dead/slow.");
+                $(connection).triggerHandler(events.onConnectionSlow);
+            }
+        }
+
+        // Verify we're monitoring the keep alive
+        if (keepAliveData.monitoring) {
+            window.setTimeout(function () {
+                checkIfAlive(connection);
+            }, keepAliveData.checkInterval);
         }
     }
 
@@ -635,9 +667,9 @@
         processMessages: function (connection, data) {
             var $connection = $(connection);
 
-            // If our transport supports keep alive then we need to update the ping time stamp.
+            // If our transport supports keep alive then we need to update the last keep alive time stamp.
             if (connection.transport.supportsKeepAlive) {
-                this.pingKeepAlive(connection);
+                this.updateKeepAlive(connection);
             }
 
             if (!data) {
@@ -677,17 +709,15 @@
             var keepAliveData = connection.keepAliveData;
 
             // If we haven't initiated the keep alive timeouts then we need to
-            if (!keepAliveData.keepAliveCheckIntervalID) {
-               
+            if (!keepAliveData.monitoring) {
+                keepAliveData.monitoring = true;
+
                 // Initialize the keep alive time stamp ping
-                this.pingKeepAlive(connection);
+                this.updateKeepAlive(connection);
 
-                // Initiate interval to check timeouts
-                keepAliveData.keepAliveCheckIntervalID = window.setInterval(function () {
-                    checkIfAlive(connection);
-                }, keepAliveData.timeout);
-
-                connection.log("Now monitoring keep alive with timeout of: " + keepAliveData.timeout);
+                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout);
+                // Start the monitoring of the keep alive
+                checkIfAlive(connection);
             }
             else {
                 connection.log("Tried to monitor keep alive but it's already being monitored");
@@ -695,22 +725,21 @@
         },
 
         stopMonitoringKeepAlive: function (connection) {
-            var keepAliveInterval = connection.keepAliveData.keepAliveCheckIntervalID;
+            var keepAliveData = connection.keepAliveData;
 
             // Only attempt to stop the keep alive monitoring if its being monitored
-            if (keepAliveInterval) {
-                // Stop the interval
-                window.clearInterval(keepAliveInterval);
+            if (keepAliveData.monitoring) {
+                // Stop monitoring
+                keepAliveData.monitoring = false;
 
                 // Clear all the keep alive data
-                connection.keepAliveData = {};
+                keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive");
             }
         },
 
-        pingKeepAlive: function (connection) {
-            connection.log("Pinging keep alive");
-            connection.keepAliveData.lastPinged = new Date();
+        updateKeepAlive: function (connection) {
+            connection.keepAliveData.lastKeepAlive = new Date();
         },
 
         foreverFrame: {

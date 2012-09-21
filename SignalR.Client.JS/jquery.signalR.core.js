@@ -33,6 +33,7 @@
             onSending: "onSending",
             onReceived: "onReceived",
             onError: "onError",
+            onConnectionSlow: "onConnectionSlow",
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
@@ -148,12 +149,11 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false,
-                    keepAliveTimeoutOffset: 20
+                    jsonp: false
                 },
                 initialize,
-                deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
-                parser = window.document.createElement("a");
+                deferred = connection.deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                parser = window.document.createElement("a");                
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -281,7 +281,8 @@
                 });
             };
 
-            var url = connection.url + "/negotiate";
+            var url = connection.url + "/negotiate",
+                keepAliveMultiplier = 1.5; // Used to detect when we miss a keep alive.
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
@@ -297,10 +298,27 @@
                     connection.stop();
                 },
                 success: function (res) {
+                    var keepAliveData = connection.keepAliveData;
+
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection.keepAliveData.timeout = (res.KeepAlive > 0) ? (res.KeepAlive + config.keepAliveTimeoutOffset) * 1000 : null;
+
+                    // If we have a keep alive
+                    if (res.KeepAlive) {
+                        // Convert to milliseconds
+                        res.KeepAlive *= 1000;
+
+                        // Timeout to designate to warn the developer that the connection may be dead or is hanging.
+                        keepAliveData.timeoutWarning = res.KeepAlive * keepAliveMultiplier;
+
+                        // Timeout to designate when to force the connection into reconnecting
+                        keepAliveData.timeout = res.KeepAlive * 2;
+
+                        // Instantiate the frequency in which we check the keep alive.
+                        // It's set to the warn because this is the minimum time for a message to be triggered.
+                        keepAliveData.checkInterval = keepAliveData.timeoutWarning;
+                    }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");

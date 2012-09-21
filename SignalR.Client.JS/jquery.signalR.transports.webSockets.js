@@ -117,6 +117,8 @@
 
         lostConnection: function (connection) {
             this.stop(connection);
+            $(connection).triggerHandler("error", ["Lost Connection"]);
+
         },
 
         stop: function (connection) {
