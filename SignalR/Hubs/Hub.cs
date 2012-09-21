@@ -58,7 +58,7 @@ namespace SignalR.Hubs
         /// </summary>
         /// <param name="groups">The groups that the client was subscribed to</param>
         /// <returns>A <see cref="Task"/></returns>
-        public virtual Task Reconnect(IEnumerable<string> groups)
+        public virtual Task Reconnect()
         {
             return TaskAsyncHelper.Empty;
         }

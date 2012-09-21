@@ -149,7 +149,7 @@ namespace SignalR
 
             _transport.Reconnected = () =>
             {
-                return OnReconnectedAsync(context.Request, groups, connectionId).OrEmpty();
+                return OnReconnectedAsync(context.Request, connectionId).OrEmpty();
             };
 
             _transport.Received = data =>
@@ -234,10 +234,9 @@ namespace SignalR
         /// Called when a connection reconnects after a timeout.
         /// </summary>
         /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
-        /// <param name="groups">The groups the calling connection is a part of.</param>
         /// <param name="connectionId">The id of the re-connecting client.</param>
         /// <returns>A <see cref="Task"/> that completes when the re-connect operation is complete.</returns>
-        protected virtual Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected virtual Task OnReconnectedAsync(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }

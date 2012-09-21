@@ -27,7 +27,7 @@ namespace SignalR.Samples.Raw
                    Connection.Broadcast(DateTime.Now + ": " + user + " joined from " + clientIp)).Unwrap();
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
         {
             string user = GetUser(connectionId);
 

@@ -31,7 +31,7 @@ namespace SignalR.Hubs
         /// Called when a connection reconnects to the <see cref="IHub"/> after a timeout.
         /// </summary>
         /// <param name="groups">The groups the connection is a member of.</param>
-        Task Reconnect(IEnumerable<string> groups);
+        Task Reconnect();
 
         /// <summary>
         /// Called before a connection completes reconnecting to the <see cref="IHub"/> after a timeout.

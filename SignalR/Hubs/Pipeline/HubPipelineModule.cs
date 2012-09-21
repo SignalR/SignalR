@@ -4,7 +4,11 @@ using System.Threading.Tasks;
 
 namespace SignalR.Hubs
 {
-    public class HubPipelineModule : IHubPipelineModule
+    /// <summary>
+    /// Common base class to simplify the implementation of IHubPipelineModules
+    /// A module can be activated by calling IHubPipeline.AddModule.
+    /// </summary>
+    public abstract class HubPipelineModule : IHubPipelineModule
     {
         public virtual Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> invoke)
         {
@@ -33,13 +37,13 @@ namespace SignalR.Hubs
             };
         }
 
-        public virtual Func<IHub, IEnumerable<string>, Task> BuildReconnect(Func<IHub, IEnumerable<string>, Task> reconnect)
+        public virtual Func<IHub, Task> BuildReconnect(Func<IHub, Task> reconnect)
         {
-            return (hub, groups) =>
+            return (hub) =>
             {
-                if (OnBeforeReconnect(hub, groups))
+                if (OnBeforeReconnect(hub))
                 {
-                    return reconnect(hub, groups).Then((h, g) => OnAfterReconnect(h, g), hub, groups);
+                    return reconnect(hub).Then(h => OnAfterReconnect(h), hub);
                 }
                 return TaskAsyncHelper.Empty;
             };
@@ -58,7 +62,12 @@ namespace SignalR.Hubs
             };
         }
 
-        public Func<IHubOutgoingInvokerContext, Task> BuildOutgoing(Func<IHubOutgoingInvokerContext, Task> send)
+        public virtual Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+        {
+            return rejoiningGroups;
+        }
+
+        public virtual Func<IHubOutgoingInvokerContext, Task> BuildOutgoing(Func<IHubOutgoingInvokerContext, Task> send)
         {
             return context =>
             {
@@ -81,12 +90,12 @@ namespace SignalR.Hubs
 
         }
 
-        protected virtual bool OnBeforeReconnect(IHub hub, IEnumerable<string> groups)
+        protected virtual bool OnBeforeReconnect(IHub hub)
         {
             return true;
         }
 
-        protected virtual void OnAfterReconnect(IHub hub, IEnumerable<string> groups)
+        protected virtual void OnAfterReconnect(IHub hub)
         {
 
         }

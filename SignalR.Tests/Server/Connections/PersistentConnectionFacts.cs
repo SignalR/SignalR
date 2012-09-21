@@ -325,10 +325,10 @@ namespace SignalR.Tests
             return null;
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
         {
             Reconnects++;
-            return base.OnReconnectedAsync(request, groups, connectionId);
+            return base.OnReconnectedAsync(request, connectionId);
         }
     }
 

@@ -11,8 +11,9 @@ namespace SignalR.Hubs
 
         private Func<IHubIncomingInvokerContext, Task<object>> _incomingPipeline;
         private Func<IHub, Task> _connectPipeline;
-        private Func<IHub, IEnumerable<string>, Task> _reconnectPipeline;
+        private Func<IHub, Task> _reconnectPipeline;
         private Func<IHub, Task> _disconnectPipeline;
+        private Func<IHub, IEnumerable<string>, IEnumerable<string>> _rejoiningGroupsPipeline;
         private Func<IHubOutgoingInvokerContext, Task> _outgoingPipeling;
 
         public HubPipeline()
@@ -37,6 +38,7 @@ namespace SignalR.Hubs
                 _connectPipeline = module.BuildConnect(HubDispatcher.Connect);
                 _reconnectPipeline = module.BuildReconnect(HubDispatcher.Reconnect);
                 _disconnectPipeline = module.BuildDisconnect(HubDispatcher.Disconnect);
+                _rejoiningGroupsPipeline = module.BuildRejoiningGroups(HubDispatcher.RejoiningGroups);
                 _outgoingPipeling = module.BuildOutgoing(HubDispatcher.Outgoing);
             }
         }
@@ -55,11 +57,11 @@ namespace SignalR.Hubs
             return _connectPipeline.Invoke(hub);
         }
 
-        public Task Reconnect(IHub hub, IEnumerable<string> groups)
+        public Task Reconnect(IHub hub)
         {
             EnsurePipeline();
 
-            return _reconnectPipeline.Invoke(hub, groups);
+            return _reconnectPipeline.Invoke(hub);
         }
 
         public Task Disconnect(IHub hub)
@@ -67,6 +69,13 @@ namespace SignalR.Hubs
             EnsurePipeline();
 
             return _disconnectPipeline.Invoke(hub);
+        }
+
+        public IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
+        {
+            EnsurePipeline();
+
+            return _rejoiningGroupsPipeline(hub, groups);
         }
 
         public Task Send(IHubOutgoingInvokerContext context)
@@ -93,9 +102,14 @@ namespace SignalR.Hubs
                 return connect;
             }
 
-            public Func<IHub, IEnumerable<string>, Task> BuildReconnect(Func<IHub, IEnumerable<string>, Task> reconnect)
+            public Func<IHub, Task> BuildReconnect(Func<IHub, Task> reconnect)
             {
                 return reconnect;
+            }
+
+            public Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+            {
+                return rejoiningGroups;
             }
 
             public Func<IHub, Task> BuildDisconnect(Func<IHub, Task> disconnect)
@@ -117,42 +131,32 @@ namespace SignalR.Hubs
 
             public Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> callback)
             {
-                return context =>
-                {
-                    return _left.BuildIncoming(_right.BuildIncoming(callback))(context);
-                };
+                return _left.BuildIncoming(_right.BuildIncoming(callback));
             }
 
             public Func<IHub, Task> BuildConnect(Func<IHub, Task> callback)
             {
-                return hub =>
-                {
-                    return _left.BuildConnect(_right.BuildConnect(callback))(hub);
-                };
+                return _left.BuildConnect(_right.BuildConnect(callback));
             }
 
-            public Func<IHub, IEnumerable<string>, Task> BuildReconnect(Func<IHub, IEnumerable<string>, Task> callback)
+            public Func<IHub, Task> BuildReconnect(Func<IHub, Task> callback)
             {
-                return (hub, groups) =>
-                {
-                    return _left.BuildReconnect(_right.BuildReconnect(callback))(hub, groups);
-                };
+                return _left.BuildReconnect(_right.BuildReconnect(callback));
             }
 
             public Func<IHub, Task> BuildDisconnect(Func<IHub, Task> callback)
             {
-                return hub =>
-                {
-                    return _left.BuildDisconnect(_right.BuildDisconnect(callback))(hub);
-                };
+                return _left.BuildDisconnect(_right.BuildDisconnect(callback));
+            }
+
+            public Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> callback)
+            {
+                return _left.BuildRejoiningGroups(_right.BuildRejoiningGroups(callback));
             }
 
             public Func<IHubOutgoingInvokerContext, Task> BuildOutgoing(Func<IHubOutgoingInvokerContext, Task> send)
             {
-                return context =>
-                {
-                    return _left.BuildOutgoing(_right.BuildOutgoing(send))(context);
-                };
+                return _left.BuildOutgoing(_right.BuildOutgoing(send));
             }
         }
     }

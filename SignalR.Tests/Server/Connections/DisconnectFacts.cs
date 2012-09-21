@@ -201,7 +201,7 @@ namespace SignalR.Tests
                 return TaskAsyncHelper.Empty;
             }
 
-            public override Task Reconnect(IEnumerable<string> groups)
+            public override Task Reconnect()
             {
                 return TaskAsyncHelper.Empty;
             }

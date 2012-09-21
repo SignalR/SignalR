@@ -18,7 +18,7 @@ namespace SignalR.Samples.Hubs.ConnectDisconnect
             return Clients.joined(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public override Task Reconnect(IEnumerable<string> groups)
+        public override Task Reconnect()
         {
             return Clients.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }

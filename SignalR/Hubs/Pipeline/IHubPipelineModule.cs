@@ -36,7 +36,7 @@ namespace SignalR.Hubs
         /// </summary>
         /// <param name="reconnect"></param>
         /// <returns></returns>
-        Func<IHub, IEnumerable<string>, Task> BuildReconnect(Func<IHub, IEnumerable<string>, Task> reconnect);
+        Func<IHub, Task> BuildReconnect(Func<IHub, Task> reconnect);
 
         /// <summary>
         /// 
@@ -44,5 +44,12 @@ namespace SignalR.Hubs
         /// <param name="disconnect"></param>
         /// <returns></returns>
         Func<IHub, Task> BuildDisconnect(Func<IHub, Task> disconnect);
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rejoiningGroups"></param>
+        /// <returns></returns>
+        Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups);
     }
 }
