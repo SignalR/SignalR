@@ -429,6 +429,60 @@ namespace SignalR.Tests
         }
 
         [Fact]
+        public void HubGroupsRejoinWhenAutoRejoiningGroupsEnabled()
+        {
+            var host = new MemoryHost();
+            host.HubPipeline.EnableAutoRejoiningGroups();
+            host.Configuration.KeepAlive = null;
+            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+            host.MapHubs();
+            int max = 10;
+
+            var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
+            var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateProxy("MultGroupHub");
+
+            proxy.On<User>("onRoomJoin", u =>
+            {
+                if (u.Index < max)
+                {
+                    Assert.True(countDown.Mark(u.Index));
+                }
+                else
+                {
+                    Assert.True(countDownAfterReconnect.Mark(u.Index));
+                }
+            });
+
+            connection.Start(host).Wait();
+
+            var user = new User { Name = "tester" };
+            proxy.Invoke("login", user).Wait();
+
+            for (int i = 0; i < max; i++)
+            {
+                user.Index = i;
+                proxy.Invoke("joinRoom", user).Wait();
+            }
+
+            // Force Reconnect
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            for (int i = max; i < 2 * max; i++)
+            {
+                user.Index = i;
+                proxy.Invoke("joinRoom", user).Wait();
+            }
+
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+
+            connection.Stop();
+        }
+
+        [Fact]
         public void RejoiningGroupsOnlyReceivesGroupsBelongingToHub()
         {
             var host = new MemoryHost();

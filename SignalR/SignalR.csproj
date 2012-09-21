@@ -63,9 +63,11 @@
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
     <Compile Include="Hubs\NullClientProxy.cs" />
+    <Compile Include="Hubs\Pipeline\AutoRejoiningGroupsModule.cs" />
     <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />
     <Compile Include="Hubs\ClientHubInvocation.cs" />
     <Compile Include="Hubs\HubContext.cs" />
+    <Compile Include="Hubs\Pipeline\HubPipelineExtensions.cs" />
     <Compile Include="Hubs\Pipeline\HubPipelineModule.cs" />
     <Compile Include="Hubs\Pipeline\IHubOutgoingInvokerContext.cs" />
     <Compile Include="Hubs\Pipeline\IHubPipelineInvoker.cs" />
