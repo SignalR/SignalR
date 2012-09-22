@@ -88,7 +88,7 @@
   <Target Name="CI" DependsOnTargets="Build; RunInstaller; RunTests; BuildPackages;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunInstaller; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
   </Target>
   
   <Target Name="RunInstaller">
