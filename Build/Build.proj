@@ -85,16 +85,18 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="CI" DependsOnTargets="Build; RunInstaller; RunTests; BuildPackages;">
+  <Target Name="CI" DependsOnTargets="Build; RunTests; RunInstaller; BuildPackages;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunInstaller; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests; RunInstaller;">
   </Target>
   
   <Target Name="RunInstaller">
     <ItemGroup>
       <InstallerExe Include="$(ProjectRoot)\SignalR.Server.Installer\bin\$(Configuration)\signalr.exe" />
     </ItemGroup>
+
+    <Copy SourceFiles="%(InstallerExe.Identity)" DestinationFolder="$(ArtifactsDir)" />
 
     <Exec Command="&quot;%(InstallerExe.Identity)&quot; -install" LogStandardErrorAsError="true" />
   </Target>
