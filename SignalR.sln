@@ -65,7 +65,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.SqlServer", "SignalR.SqlServer\SignalR.SqlServer.csproj", "{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Hosting.Console.Samples", "samples\SignalR.Hosting.Console.Samples\SignalR.Hosting.Console.Samples.csproj", "{3F79472C-5EA7-4260-B124-BBD209B329FF}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.ServiceBus", "SignalR.ServiceBus\SignalR.ServiceBus.csproj", "{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Server.Installer", "SignalR.Server.Installer\SignalR.Server.Installer.csproj", "{990B347D-F5BF-4F94-9967-D98D24ACEA43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -297,6 +300,16 @@ Global
 		{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}.Release|x86.ActiveCfg = Release|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

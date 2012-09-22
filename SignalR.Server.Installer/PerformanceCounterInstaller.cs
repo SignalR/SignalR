@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using SignalR.Infrastructure;
 
-namespace SignalR.Infrastructure
+namespace SignalR
 {
     /// <summary>
     /// Manages installation of performance counters for SignalR applications.

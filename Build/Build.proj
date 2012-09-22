@@ -85,12 +85,20 @@
     <TestProjects Include="$(ProjectRoot)\SignalR.Tests\bin\$(Configuration)\SignalR.Tests.dll" />
   </ItemGroup>
 
-  <Target Name="CI" DependsOnTargets="Build; RunTests; BuildPackages;">
+  <Target Name="CI" DependsOnTargets="Build; RunInstaller; RunTests; BuildPackages;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests;">
+  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunInstaller; RunTests;">
   </Target>
   
+  <Target Name="RunInstaller">
+    <ItemGroup>
+      <InstallerExe Include="$(ProjectRoot)\SignalR.Server.Installer\bin\$(Configuration)\signalr.exe" />
+    </ItemGroup>
+
+    <Exec Command="&quot;%(InstallerExe.Identity)&quot; -install" LogStandardErrorAsError="true" />
+  </Target>
+
   <Target Name="RunTests">
     <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
     <RemoveDir Directories="$(ProjectRoot)\SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>

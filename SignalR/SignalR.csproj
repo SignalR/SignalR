@@ -75,7 +75,6 @@
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\IPerformanceCounterWriter.cs" />
     <Compile Include="Infrastructure\PerformanceCounterExtensions.cs" />
-    <Compile Include="Infrastructure\PerformanceCounterInstaller.cs" />
     <Compile Include="Infrastructure\PerformanceCounters.cs" />
     <Compile Include="Infrastructure\PerformanceCounterWriter.cs" />
     <Compile Include="Infrastructure\Disposer.cs" />
