@@ -95,7 +95,8 @@ namespace SignalR.Hubs
             var state = new TrackingDictionary(hubRequest.State);
             var hub = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
 
-            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hub);
+            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hub)
+                .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, IHub hub)
@@ -247,11 +248,13 @@ namespace SignalR.Hubs
                 .Select(hub =>
                 {
                     string groupPrefix = hub.GetType().Name + ".";
-                    return _pipelineInvoker.RejoiningGroups(hub, groups.Where(g => g.StartsWith(groupPrefix))
-                                                                       .Select(g => g.Substring(groupPrefix.Length)))
-                                           .Select(g => groupPrefix + g);
+                    IEnumerable<string> groupsToRejoin =  _pipelineInvoker.RejoiningGroups(hub, groups.Where(g => g.StartsWith(groupPrefix))
+                                                                                                      .Select(g => g.Substring(groupPrefix.Length)))
+                                                                          .Select(g => groupPrefix + g).ToList();
+                    hub.Dispose();
+                    return groupsToRejoin;
                 })
-                .SelectMany(groupsToReconnect => groupsToReconnect);
+                .SelectMany(groupsToRejoin => groupsToRejoin);
         }
 
         protected override Task OnDisconnectAsync(string connectionId)
@@ -261,18 +264,19 @@ namespace SignalR.Hubs
 
         private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<IHub, Task> action) where T : class
         {
-            var operations = GetHubsImplementingInterface(typeof(T), request, connectionId)
-                .Select(instance => action(instance).Catch().OrEmpty())
-                .ToArray();
+            var hubs = GetHubsImplementingInterface(typeof(T), request, connectionId);
+            var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
 
             if (operations.Length == 0)
             {
+                DisposeHubs(hubs);
                 return TaskAsyncHelper.Empty;
             }
 
             var tcs = new TaskCompletionSource<object>();
             Task.Factory.ContinueWhenAll(operations, tasks =>
             {
+                DisposeHubs(hubs);
                 var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
                 if (faulted != null)
                 {
@@ -329,7 +333,15 @@ namespace SignalR.Hubs
             // Get hubs that implement the specified interface
             return _hubs.Where(hubDescriptor => interfaceType.IsAssignableFrom(hubDescriptor.Type))
                         .Select(hub => CreateHub(request, hub, connectionId))
-                        .Where(hub => hub != null);
+                        .Where(hub => hub != null).ToList();
+        }
+
+        private void DisposeHubs(IEnumerable<IHub> hubs)
+        {
+            foreach (var hub in hubs)
+            {
+                hub.Dispose();
+            }
         }
 
         private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
@@ -367,7 +379,7 @@ namespace SignalR.Hubs
             return _transport.Send(hubResult);
         }
 
-        protected override Connection CreateConnection(string connectionId, IEnumerable<string> groups, IEnumerable<string> signals)
+        protected override Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
         {
             if (_hubs.Count > 0)
             {
@@ -375,7 +387,7 @@ namespace SignalR.Hubs
             }
             else
             {
-                return base.CreateConnection(connectionId, groups, signals);
+                return base.CreateConnection(connectionId, signals, groups);
             }
         }
 
@@ -397,7 +409,6 @@ namespace SignalR.Hubs
             // Create the signals for hubs
             // 1. The hub name e.g. MyHub
             // 2. The connection id for this hub e.g. MyHub.{guid}
-            // 3. The command signal for this connection
             var clientSignals = new[] {
                 hubInfo.Name,
                 hubInfo.CreateQualifiedName(connectionId)
@@ -423,8 +434,7 @@ namespace SignalR.Hubs
             }
 
             return clientHubInfo.SelectMany(info => GetHubSignals(info, connectionId))
-                                .Concat(base.GetSignals(connectionId, request));
-
+                                .Concat(base.GetSignals(connectionId, request)).ToList();
         }
 
         private class ClientHubInfo

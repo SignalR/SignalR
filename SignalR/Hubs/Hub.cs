@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -71,6 +72,10 @@ namespace SignalR.Hubs
         public virtual IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
         {
             return Enumerable.Empty<string>();
+        }
+
+        public virtual void Dispose()
+        {
         }
     }
 }

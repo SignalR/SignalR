@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Moq;
 using SignalR.Client.Hubs;
 using SignalR.Hosting.Memory;
 using SignalR.Hubs;
@@ -423,7 +424,7 @@ namespace SignalR.Tests
             }
 
             Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
 
             connection.Stop();
         }
@@ -477,7 +478,7 @@ namespace SignalR.Tests
             }
 
             Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
 
             connection.Stop();
         }
@@ -569,6 +570,35 @@ namespace SignalR.Tests
             var hub = new SomeHub();
             Assert.Throws<InvalidOperationException>(() => hub.AllFoo());
             Assert.Throws<InvalidOperationException>(() => hub.OneFoo());
+        }
+
+        [Fact]
+        public void CreatedHubsGetDisposed()
+        {
+            var mockDemoHubs = new List<Mock<SignalR.Samples.Hubs.DemoHub.DemoHub>>();
+
+            var host = new MemoryHost();
+            host.DependencyResolver.Register(typeof(SignalR.Samples.Hubs.DemoHub.DemoHub), () =>
+            {
+                var mockDemoHub = new Mock<SignalR.Samples.Hubs.DemoHub.DemoHub>() { CallBase = true };
+                mockDemoHubs.Add(mockDemoHub);
+                return mockDemoHub.Object;
+            });
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo/");
+
+            var hub = connection.CreateProxy("demo");
+
+            connection.Start(host).Wait();
+
+            var result = hub.Invoke<string>("ReadStateValue").Result;
+
+            foreach (var mockDemoHub in mockDemoHubs)
+            {
+                mockDemoHub.Verify(d => d.Dispose(), Times.Once());
+            }
+
+            connection.Stop();
         }
 
         public class SomeHub : Hub
