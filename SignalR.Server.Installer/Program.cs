@@ -32,9 +32,15 @@ namespace SignalR.Server.Installer
                     return;
                 }
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Probably due to not running as admin, let's just stop here
+                PrintWarning(ex.Message + " Try running as admin.");
+                return;
+            }
             catch (Exception ex)
             {
-                PrintError(ex.ToString());
+                ExitWithError(ex.ToString());
                 return;
             }
 
@@ -43,7 +49,7 @@ namespace SignalR.Server.Installer
 
         private static void InstallPerformanceCounters()
         {
-            Console.WriteLine("  Installing performance counters...");
+            Console.WriteLine("Installing performance counters...");
 
             var installer = new PerformanceCounterInstaller();
             var counters = installer.InstallCounters();
@@ -54,7 +60,7 @@ namespace SignalR.Server.Installer
             }
 
             Console.WriteLine();
-            Console.WriteLine("  Performance counters installed!");
+            Console.WriteLine("Performance counters installed!");
             Console.WriteLine();
         }
 
@@ -63,17 +69,36 @@ namespace SignalR.Server.Installer
             var installer = new PerformanceCounterInstaller();
             installer.UninstallCounters();
 
-            Console.WriteLine("  Performance counters uninstalled!");
+            Console.WriteLine("Performance counters uninstalled!");
             Console.WriteLine();
+        }
+
+        private static void ExitWithError(string error = null)
+        {
+            PrintError(error);
+            Environment.Exit(1); // non-zero is all we need for error
         }
 
         private static void PrintBanner()
         {
             var banner =
 @"-----------------------------------------------------------------
-    SignalR Installer Utility v{0}
+SignalR Installer Utility v{0}
 -----------------------------------------------------------------";
             Console.WriteLine(String.Format(banner, Assembly.GetExecutingAssembly().GetName().Version));
+            Console.WriteLine();
+        }
+
+        private static void PrintWarning(string info)
+        {
+            if (!String.IsNullOrWhiteSpace(info))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine();
+                Console.WriteLine("Warning: " + info);
+                Console.WriteLine();
+                Console.ResetColor();
+            }
         }
 
         private static void PrintError(string error)
@@ -81,6 +106,7 @@ namespace SignalR.Server.Installer
             if (!String.IsNullOrWhiteSpace(error))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine();
                 Console.WriteLine("Error: " + error);
                 Console.WriteLine();
                 Console.ResetColor();
@@ -94,10 +120,10 @@ namespace SignalR.Server.Installer
             var help =
 @"Usage: signalr.exe [command]
 
-  Commands:
+Commands:
 
-    -i, -install      Installs SignalR performance counters.
-    -u, -uninstall    Uninstalls SignalR performance counters.";
+  -i, -install      Installs SignalR performance counters.
+  -u, -uninstall    Uninstalls SignalR performance counters.";
 
             Console.WriteLine();
             Console.WriteLine(help);
