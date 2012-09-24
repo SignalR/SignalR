@@ -15,12 +15,12 @@
 
     if (typeof ($) !== "function") {
         // no jQuery!
-        throw "SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.";
+        throw new Error("SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.");
     }
     
     if (!window.JSON) {
         // no JSON!
-        throw "SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.";
+        throw new Error("SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.");
     }
 
     var signalR,
@@ -117,7 +117,7 @@
     signalR.hub = {
         start: function () {
             // This will get replaced with the real hub connection start method when hubs is referenced correctly
-            throw "SignalR: Error loading hubs. Ensure your hubs reference is correct, e.g. <script src='/signalr/hubs'></script>.";
+            throw new Error("SignalR: Error loading hubs. Ensure your hubs reference is correct, e.g. <script src='/signalr/hubs'></script>.");
         }
     };
 
@@ -361,12 +361,12 @@
 
             if (connection.state === signalR.connectionState.disconnected) {
                 // Connection hasn't been started yet
-                throw "SignalR: Connection must be started before data can be sent. Call .start() before .send()";
+                throw new Error("SignalR: Connection must be started before data can be sent. Call .start() before .send()");
             }
 
             if (connection.state === signalR.connectionState.connecting) {
                 // Connection hasn't been started yet
-                throw "SignalR: Connection has not been fully initialized. Use .start().done() or .start().fail() to run logic after the connection has started.";
+                throw new Error("SignalR: Connection has not been fully initialized. Use .start().done() or .start().fail() to run logic after the connection has started.");
             }
 
             connection.transport.send(connection, data);
