@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using SignalR.Hubs;
 using SignalR.Samples.Raw;
 
 namespace SignalR.Hosting.Self.Samples
@@ -16,6 +17,7 @@ namespace SignalR.Hosting.Self.Samples
             string url = "http://*:8081/";
             var server = new Server(url);
             server.Configuration.DisconnectTimeout = TimeSpan.Zero;
+            server.HubPipeline.EnableAutoRejoiningGroups();
 
             // Map connections
             server.MapConnection<MyConnection>("/echo")

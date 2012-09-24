@@ -43,10 +43,5 @@ namespace SignalR.Samples.Hubs.Benchmark
             Interlocked.Decrement(ref HubBench.Connections);
             return null;
         }
-
-        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return groups;
-        }
     }
 }

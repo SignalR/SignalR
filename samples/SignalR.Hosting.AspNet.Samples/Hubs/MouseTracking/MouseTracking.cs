@@ -17,10 +17,5 @@ namespace SignalR.Samples.Hubs.MouseTracking
         {
             Clients.moveMouse(Caller.id, x, y);
         }
-
-        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return groups;
-        }
     }
 }

@@ -149,11 +149,6 @@ namespace SignalR.Samples.Hubs.Chat
             return null;
         }
 
-        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return groups;
-        }
-
         public IEnumerable<ChatUser> GetUsers()
         {
             string room = Caller.room;

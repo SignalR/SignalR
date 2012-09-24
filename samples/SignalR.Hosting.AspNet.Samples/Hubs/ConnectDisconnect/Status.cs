@@ -22,10 +22,5 @@ namespace SignalR.Samples.Hubs.ConnectDisconnect
         {
             return Clients.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }
-
-        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return groups;
-        }
     }
 }

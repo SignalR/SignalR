@@ -18,6 +18,7 @@ namespace SignalR.Hosting.AspNet.Samples
         {
             //GlobalHost.DependencyResolver.UseSqlServer(ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
             GlobalHost.HubPipeline.AddModule(new SamplePipelineModule());
+            GlobalHost.HubPipeline.EnableAutoRejoiningGroups();
 
             ThreadPool.QueueUserWorkItem(_ =>
             {
