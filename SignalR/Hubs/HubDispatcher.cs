@@ -47,7 +47,7 @@ namespace SignalR.Hubs
             }
         }
 
-        public override void Initialize(IDependencyResolver resolver)
+        public override void Initialize(IDependencyResolver resolver, HostContext context)
         {
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
             _manager = resolver.Resolve<IHubManager>();
@@ -63,7 +63,31 @@ namespace SignalR.Hubs
             _hubResolutionErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionTotal);
             _hubResolutionErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionPerSec);
 
-            base.Initialize(resolver);
+            // Call base initializer before populating _hubs so the _jsonSerializer is initialized
+            base.Initialize(resolver, context);
+
+            // Populate _hubs
+            string data = context.Request.QueryStringOrForm("connectionData");
+
+            if (!String.IsNullOrEmpty(data))
+            {
+                var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
+                if (clientHubInfo != null)
+                {
+                    foreach (var hubInfo in clientHubInfo)
+                    {
+                        // Try to find the associated hub type
+                        HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
+                            _hubResolutionErrorsTotalCounter,
+                            _hubResolutionErrorsPerSecCounter,
+                            _allErrorsTotalCounter,
+                            _allErrorsPerSecCounter);
+
+                        // Add this to the list of hub descriptors this connection is interested in
+                        _hubs.Add(hubDescriptor);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -264,7 +288,7 @@ namespace SignalR.Hubs
 
         private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<IHub, Task> action) where T : class
         {
-            var hubs = GetHubsImplementingInterface(typeof(T), request, connectionId);
+            var hubs = GetHubsImplementingInterface(typeof(T), request, connectionId).ToList();
             var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
 
             if (operations.Length == 0)
@@ -333,7 +357,7 @@ namespace SignalR.Hubs
             // Get hubs that implement the specified interface
             return _hubs.Where(hubDescriptor => interfaceType.IsAssignableFrom(hubDescriptor.Type))
                         .Select(hub => CreateHub(request, hub, connectionId))
-                        .Where(hub => hub != null).ToList();
+                        .Where(hub => hub != null);
         }
 
         private void DisposeHubs(IEnumerable<IHub> hubs)
@@ -379,72 +403,15 @@ namespace SignalR.Hubs
             return _transport.Send(hubResult);
         }
 
-        protected override Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
+        protected override IEnumerable<string> GetSignals(string connectionId)
         {
-            if (_hubs.Count > 0)
-            {
-                return new Connection(_newMessageBus, _jsonSerializer, null, connectionId, signals, groups, _trace, _ackHandler, _counters);
-            }
-            else
-            {
-                return base.CreateConnection(connectionId, signals, groups);
-            }
-        }
-
-        private IEnumerable<string> GetHubSignals(ClientHubInfo hubInfo, string connectionId)
-        {
-            // Try to find the associated hub type
-            HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
-                _hubResolutionErrorsTotalCounter,
-                _hubResolutionErrorsPerSecCounter,
-                _allErrorsTotalCounter,
-                _allErrorsPerSecCounter);
-
-            // Add this to the list of hub descriptors this connection is interested in
-            _hubs.Add(hubDescriptor);
-
-            // Update the name (Issue #344)
-            hubInfo.Name = hubDescriptor.Name;
-
-            // Create the signals for hubs
-            // 1. The hub name e.g. MyHub
-            // 2. The connection id for this hub e.g. MyHub.{guid}
-            var clientSignals = new[] {
-                hubInfo.Name,
-                hubInfo.CreateQualifiedName(connectionId)
-            };
-
-            return clientSignals;
-        }
-
-        protected override IEnumerable<string> GetSignals(string connectionId, IRequest request)
-        {
-            string data = request.QueryStringOrForm("connectionData");
-
-            if (String.IsNullOrEmpty(data))
-            {
-                return base.GetSignals(connectionId, request);
-            }
-
-            var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
-
-            if (clientHubInfo == null || !clientHubInfo.Any())
-            {
-                base.GetSignals(connectionId, request);
-            }
-
-            return clientHubInfo.SelectMany(info => GetHubSignals(info, connectionId))
-                                .Concat(base.GetSignals(connectionId, request)).ToList();
+            return _hubs.SelectMany(info => new[] { info.Name, info.CreateQualifiedName(connectionId) })
+                        .Concat(base.GetSignals(connectionId));
         }
 
         private class ClientHubInfo
         {
             public string Name { get; set; }
-
-            public string CreateQualifiedName(string unqualifiedName)
-            {
-                return Name + "." + unqualifiedName;
-            }
         }
 
         public object IPerformaceCounterWriter { get; set; }

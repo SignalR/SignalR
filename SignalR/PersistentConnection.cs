@@ -30,7 +30,7 @@ namespace SignalR
         private PerformanceCounter _allErrorsTotalCounter;
         private PerformanceCounter _allErrorsPerSecCounter;
 
-        public virtual void Initialize(IDependencyResolver resolver)
+        public virtual void Initialize(IDependencyResolver resolver, HostContext context)
         {
             if (_initialized)
             {
@@ -123,7 +123,7 @@ namespace SignalR
                 throw new InvalidOperationException("Protocol error: Missing connection id.");
             }
 
-            IEnumerable<string> signals = GetSignals(connectionId, context.Request);
+            IEnumerable<string> signals = GetSignals(connectionId);
             IEnumerable<string> groups = OnRejoiningGroups(context.Request, _transport.Groups, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
@@ -202,7 +202,7 @@ namespace SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
-        protected virtual IEnumerable<string> GetSignals(string connectionId, IRequest request)
+        protected virtual IEnumerable<string> GetSignals(string connectionId)
         {
             return GetDefaultSignals(connectionId);
         }

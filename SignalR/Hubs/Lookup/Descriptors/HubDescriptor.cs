@@ -11,5 +11,10 @@ namespace SignalR.Hubs
         /// Hub type.
         /// </summary>
         public virtual Type Type { get; set; }
+
+        public string CreateQualifiedName(string unqualifiedName)
+        {
+            return Name + "." + unqualifiedName;
+        }
     }
 }

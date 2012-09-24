@@ -62,7 +62,7 @@ namespace SignalR.Hosting.AspNet
             hostContext.Items["System.Web.HttpContext"] = context;
 
             // Initialize the connection
-            _connection.Initialize(_resolver);
+            _connection.Initialize(_resolver, hostContext);
 
             try
             {

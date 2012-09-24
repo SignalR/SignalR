@@ -144,7 +144,7 @@ namespace SignalR.Hosting.Self
                     hostContext.Items[HostConstants.ShutdownToken] = _shutdownToken.Token;
 
                     // Initialize the connection
-                    connection.Initialize(DependencyResolver);
+                    connection.Initialize(DependencyResolver, hostContext);
 
                     return connection.ProcessRequestAsync(hostContext);
                 }
