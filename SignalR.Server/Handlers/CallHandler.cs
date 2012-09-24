@@ -37,7 +37,7 @@ namespace SignalR.Server.Handlers
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
 
-            _connection.Initialize(_resolver);
+            _connection.Initialize(_resolver, hostContext);
 
             return _connection.ProcessRequestAsync(hostContext);
         }

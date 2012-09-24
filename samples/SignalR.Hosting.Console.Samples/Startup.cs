@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Gate;
 using Gate.Middleware;
 using Owin;
+using SignalR;
 using SignalR.Hosting.AspNet.Samples;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
 using SignalR.Samples.Streaming;
-using SignalR.Server;
 
 namespace SignalR.Hosting.Console.Samples
 {

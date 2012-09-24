@@ -19,6 +19,7 @@ namespace SignalR.Hubs
         private IHubManager _manager;
         private IHubRequestParser _requestParser;
         private IParameterResolver _binder;
+        private IHubPipelineInvoker _pipelineInvoker;
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private bool _isDebuggingEnabled;
         private PerformanceCounter _allErrorsTotalCounter;
@@ -46,12 +47,13 @@ namespace SignalR.Hubs
             }
         }
 
-        public override void Initialize(IDependencyResolver resolver)
+        public override void Initialize(IDependencyResolver resolver, HostContext context)
         {
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
+            _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
 
             var counters = resolver.Resolve<IPerformanceCounterWriter>();
             _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
@@ -61,7 +63,31 @@ namespace SignalR.Hubs
             _hubResolutionErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionTotal);
             _hubResolutionErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionPerSec);
 
-            base.Initialize(resolver);
+            // Call base initializer before populating _hubs so the _jsonSerializer is initialized
+            base.Initialize(resolver, context);
+
+            // Populate _hubs
+            string data = context.Request.QueryStringOrForm("connectionData");
+
+            if (!String.IsNullOrEmpty(data))
+            {
+                var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
+                if (clientHubInfo != null)
+                {
+                    foreach (var hubInfo in clientHubInfo)
+                    {
+                        // Try to find the associated hub type
+                        HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
+                            _hubResolutionErrorsTotalCounter,
+                            _hubResolutionErrorsPerSecCounter,
+                            _allErrorsTotalCounter,
+                            _allErrorsPerSecCounter);
+
+                        // Add this to the list of hub descriptors this connection is interested in
+                        _hubs.Add(hubDescriptor);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -93,58 +119,31 @@ namespace SignalR.Hubs
             var state = new TrackingDictionary(hubRequest.State);
             var hub = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
 
-            Task resultTask;
+            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hub)
+                .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+        }
 
-            try
-            {
-                // Invoke the method
-                object result = methodDescriptor.Invoker.Invoke(hub, _binder.ResolveMethodParameters(methodDescriptor, parameterValues));
-                Type returnType = result != null ? result.GetType() : methodDescriptor.ReturnType;
+        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, IHub hub)
+        {
 
-                if (typeof(Task).IsAssignableFrom(returnType))
-                {
-                    var task = (Task)result;
-                    if (!returnType.IsGenericType)
-                    {
-                        return task.ContinueWith(t => ProcessResponse(state, null, hubRequest, t.Exception))
+            var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+            var context = new HubInvokerContext(hub, state, methodDescriptor, args);
+
+            // Invoke the pipeline
+            return _pipelineInvoker.Invoke(context)
+                                   .ContinueWith(task =>
+                                   {
+                                       if (task.IsFaulted)
+                                       {
+                                           return ProcessResponse(state, null, hubRequest, task.Exception);
+                                       }
+                                       else
+                                       {
+                                           return ProcessResponse(state, task.Result, hubRequest, null);
+                                       }
+                                   })
                                    .FastUnwrap();
-                    }
-                    else
-                    {
-                        // Get the <T> in Task<T>
-                        Type resultType = returnType.GetGenericArguments().Single();
 
-                        // Get the correct ContinueWith overload
-                        var continueWith = TaskAsyncHelper.GetContinueWith(task.GetType());
-
-                        var taskParameter = Expression.Parameter(continueWith.Type);
-                        var processResultMethod = typeof(HubDispatcher).GetMethod("ProcessTaskResult", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(resultType);
-
-                        var body = Expression.Call(Expression.Constant(this),
-                                                   processResultMethod,
-                                                   Expression.Constant(state),
-                                                   Expression.Constant(hubRequest),
-                                                   taskParameter);
-
-                        var lambda = Expression.Lambda(body, taskParameter);
-
-                        var call = Expression.Call(Expression.Constant(task, continueWith.Type), continueWith.Method, lambda);
-                        Func<Task<Task>> continueWithMethod = Expression.Lambda<Func<Task<Task>>>(call).Compile();
-                        return continueWithMethod.Invoke().FastUnwrap();
-                    }
-                }
-                else
-                {
-                    resultTask = ProcessResponse(state, result, hubRequest, null);
-                }
-            }
-            catch (TargetInvocationException e)
-            {
-                resultTask = ProcessResponse(state, null, hubRequest, e);
-            }
-
-            return resultTask.Then(() => base.OnReceivedAsync(request, connectionId, data))
-                             .Catch();
         }
 
         public override Task ProcessRequestAsync(HostContext context)
@@ -161,52 +160,147 @@ namespace SignalR.Hubs
             return base.ProcessRequestAsync(context);
         }
 
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        internal static Task Connect(IHub hub)
         {
-            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Connect());
+            return ((IConnected)hub).Connect();
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        internal static Task Reconnect(IHub hub)
         {
-            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => hub.Reconnect(groups));
+            return ((IConnected)hub).Reconnect();
+        }
+
+        internal static Task Disconnect(IHub hub)
+        {
+            return ((IDisconnect)hub).Disconnect();
+        }
+
+        internal static IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
+        {
+            return ((IConnected)hub).RejoiningGroups(groups);
+        }
+
+        internal static Task<object> Incoming(IHubIncomingInvokerContext context)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            try
+            {
+                var result = context.MethodDescriptor.Invoker.Invoke(context.Hub, context.Args);
+                Type returnType = context.MethodDescriptor.ReturnType;
+
+                if (typeof(Task).IsAssignableFrom(returnType))
+                {
+                    var task = (Task)result;
+                    if (!returnType.IsGenericType)
+                    {
+                        task.ContinueWith(tcs);
+                    }
+                    else
+                    {
+                        // Get the <T> in Task<T>
+                        Type resultType = returnType.GetGenericArguments().Single();
+
+                        Type genericTaskType = typeof(Task<>).MakeGenericType(resultType);
+
+                        // Get the correct ContinueWith overload
+                        var parameter = Expression.Parameter(typeof(object));
+
+                        // TODO: Cache this whole thing
+                        // Action<object> callback = result => ContinueWith((Task<T>)result, tcs);
+                        var continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static)
+                                                                      .MakeGenericMethod(resultType);
+
+                        Expression body = Expression.Call(continueWithMethod,
+                                                          Expression.Convert(parameter, genericTaskType),
+                                                          Expression.Constant(tcs));
+
+                        var continueWithInvoker = Expression.Lambda<Action<object>>(body, parameter).Compile();
+                        continueWithInvoker.Invoke(result);
+                    }
+                }
+                else
+                {
+                    tcs.TrySetResult(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+
+            return tcs.Task;
+        }
+
+        private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.TrySetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else
+                {
+                    tcs.TrySetResult(t.Result);
+                }
+            });
+        }
+
+        internal static Task Outgoing(IHubOutgoingInvokerContext context)
+        {
+            return context.Connection.Send(context.Signal, context.Invocation);
+        }
+
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        {
+            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => _pipelineInvoker.Connect(hub));
+        }
+
+        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+        {
+            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return GetHubsImplementingInterface(typeof(IConnected))
-                .Select(hub => CreateHub(request, hub, connectionId))
-                .OfType<IConnected>()
+            return GetHubsImplementingInterface(typeof(IHub), request, connectionId)
                 .Select(hub =>
                 {
                     string groupPrefix = hub.GetType().Name + ".";
-                    return hub.RejoiningGroups(groups.Where(g => g.StartsWith(groupPrefix))
-                                                     .Select(g => g.Substring(groupPrefix.Length)))
-                              .Select(g => groupPrefix + g);
+                    IEnumerable<string> groupsToRejoin =  _pipelineInvoker.RejoiningGroups(hub, groups.Where(g => g.StartsWith(groupPrefix))
+                                                                                                      .Select(g => g.Substring(groupPrefix.Length)))
+                                                                          .Select(g => groupPrefix + g).ToList();
+                    hub.Dispose();
+                    return groupsToRejoin;
                 })
-                .SelectMany(groupsToReconnect => groupsToReconnect);
+                .SelectMany(groupsToRejoin => groupsToRejoin);
         }
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => hub.Disconnect());
+            return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => _pipelineInvoker.Disconnect(hub));
         }
 
-        private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<T, Task> action) where T : class
+        private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<IHub, Task> action) where T : class
         {
-            var operations = GetHubsImplementingInterface(typeof(T))
-                .Select(hub => CreateHub(request, hub, connectionId))
-                .OfType<T>()
-                .Select(instance => action(instance).Catch().OrEmpty())
-                .ToList();
+            var hubs = GetHubsImplementingInterface(typeof(T), request, connectionId).ToList();
+            var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
 
-            if (operations.Count == 0)
+            if (operations.Length == 0)
             {
+                DisposeHubs(hubs);
                 return TaskAsyncHelper.Empty;
             }
 
             var tcs = new TaskCompletionSource<object>();
-            Task.Factory.ContinueWhenAll(operations.ToArray(), tasks =>
+            Task.Factory.ContinueWhenAll(operations, tasks =>
             {
+                DisposeHubs(hubs);
                 var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
                 if (faulted != null)
                 {
@@ -234,9 +328,12 @@ namespace SignalR.Hubs
                 if (hub != null)
                 {
                     state = state ?? new TrackingDictionary();
+
+                    Func<string, ClientHubInvocation, Task> send = (signal, value) => _pipelineInvoker.Send(new HubOutgoingInvokerContext(Connection, signal, value));
+
                     hub.Context = new HubCallerContext(request, connectionId);
-                    hub.Caller = new StatefulSignalProxy(Connection, connectionId, descriptor.Name, state);
-                    hub.Clients = new ClientProxy(Connection, descriptor.Name);
+                    hub.Caller = new StatefulSignalProxy(send, connectionId, descriptor.Name, state);
+                    hub.Clients = new ClientProxy(send, descriptor.Name);
                     hub.Groups = new GroupManager(Connection, descriptor.Name);
                 }
 
@@ -255,10 +352,20 @@ namespace SignalR.Hubs
             }
         }
 
-        private IEnumerable<HubDescriptor> GetHubsImplementingInterface(Type interfaceType)
+        private IEnumerable<IHub> GetHubsImplementingInterface(Type interfaceType, IRequest request, string connectionId)
         {
             // Get hubs that implement the specified interface
-            return _hubs.Where(hub => interfaceType.IsAssignableFrom(hub.Type));
+            return _hubs.Where(hubDescriptor => interfaceType.IsAssignableFrom(hubDescriptor.Type))
+                        .Select(hub => CreateHub(request, hub, connectionId))
+                        .Where(hub => hub != null);
+        }
+
+        private void DisposeHubs(IEnumerable<IHub> hubs)
+        {
+            foreach (var hub in hubs)
+            {
+                hub.Dispose();
+            }
         }
 
         private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
@@ -296,74 +403,15 @@ namespace SignalR.Hubs
             return _transport.Send(hubResult);
         }
 
-        protected override Connection CreateConnection(string connectionId, IEnumerable<string> groups, IEnumerable<string> signals)
+        protected override IEnumerable<string> GetSignals(string connectionId)
         {
-            if (_hubs.Any())
-            {
-                return new Connection(_newMessageBus, _jsonSerializer, null, connectionId, signals, groups, _trace, _ackHandler, _counters);
-            }
-            else
-            {
-                return base.CreateConnection(connectionId, groups, signals);
-            }
-        }
-
-        private IEnumerable<string> GetHubSignals(ClientHubInfo hubInfo, string connectionId)
-        {
-            // Try to find the associated hub type
-            HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
-                _hubResolutionErrorsTotalCounter,
-                _hubResolutionErrorsPerSecCounter,
-                _allErrorsTotalCounter,
-                _allErrorsPerSecCounter);
-
-            // Add this to the list of hub descriptors this connection is interested in
-            _hubs.Add(hubDescriptor);
-
-            // Update the name (Issue #344)
-            hubInfo.Name = hubDescriptor.Name;
-
-            // Create the signals for hubs
-            // 1. The hub name e.g. MyHub
-            // 2. The connection id for this hub e.g. MyHub.{guid}
-            // 3. The command signal for this connection
-            var clientSignals = new[] {
-                hubInfo.Name,
-                hubInfo.CreateQualifiedName(connectionId)
-            };
-
-            return clientSignals;
-        }
-
-        protected override IEnumerable<string> GetSignals(string connectionId, IRequest request)
-        {
-            string data = request.QueryStringOrForm("connectionData");
-
-            if (String.IsNullOrEmpty(data))
-            {
-                return base.GetSignals(connectionId, request);
-            }
-
-            var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
-
-            if (clientHubInfo == null || !clientHubInfo.Any())
-            {
-                base.GetSignals(connectionId, request);
-            }
-
-            return clientHubInfo.SelectMany(info => GetHubSignals(info, connectionId))
-                                .Concat(base.GetSignals(connectionId, request));
-
+            return _hubs.SelectMany(info => new[] { info.Name, info.CreateQualifiedName(connectionId) })
+                        .Concat(base.GetSignals(connectionId));
         }
 
         private class ClientHubInfo
         {
             public string Name { get; set; }
-
-            public string CreateQualifiedName(string unqualifiedName)
-            {
-                return Name + "." + unqualifiedName;
-            }
         }
 
         public object IPerformaceCounterWriter { get; set; }

@@ -57,7 +57,6 @@
     <Compile Include="Infrastructure\OwinConstants.cs" />
     <Compile Include="Infrastructure\ParamDictionary.cs" />
     <Compile Include="Handlers\CallHandler.cs" />
-    <Compile Include="GlobalHost.cs" />
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />
     <Compile Include="Handlers\HubDispatcherHandler.cs" />
     <Compile Include="Infrastructure\TaskQueue.cs" />
@@ -71,6 +70,10 @@
     <Compile Include="ServerResponse.Owin.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SignalR.Hosting.Common\SignalR.Hosting.Common.csproj">
+      <Project>{3b71f0ae-d4b6-4f47-bf62-333d45615673}</Project>
+      <Name>SignalR.Hosting.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SignalR\SignalR.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>SignalR</Name>

@@ -58,7 +58,7 @@ namespace SignalR.Hosting.Memory
                 
                 hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;
 
-                connection.Initialize(DependencyResolver);
+                connection.Initialize(DependencyResolver, hostContext);
 
                 connection.ProcessRequestAsync(hostContext).ContinueWith(task =>
                 {

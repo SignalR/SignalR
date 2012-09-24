@@ -30,7 +30,7 @@ namespace SignalR
         private PerformanceCounter _allErrorsTotalCounter;
         private PerformanceCounter _allErrorsPerSecCounter;
 
-        public virtual void Initialize(IDependencyResolver resolver)
+        public virtual void Initialize(IDependencyResolver resolver, HostContext context)
         {
             if (_initialized)
             {
@@ -123,7 +123,7 @@ namespace SignalR
                 throw new InvalidOperationException("Protocol error: Missing connection id.");
             }
 
-            IEnumerable<string> signals = GetSignals(connectionId, context.Request);
+            IEnumerable<string> signals = GetSignals(connectionId);
             IEnumerable<string> groups = OnRejoiningGroups(context.Request, _transport.Groups, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
@@ -149,7 +149,7 @@ namespace SignalR
 
             _transport.Reconnected = () =>
             {
-                return OnReconnectedAsync(context.Request, groups, connectionId).OrEmpty();
+                return OnReconnectedAsync(context.Request, connectionId).OrEmpty();
             };
 
             _transport.Received = data =>
@@ -202,7 +202,7 @@ namespace SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
-        protected virtual IEnumerable<string> GetSignals(string connectionId, IRequest request)
+        protected virtual IEnumerable<string> GetSignals(string connectionId)
         {
             return GetDefaultSignals(connectionId);
         }
@@ -234,10 +234,9 @@ namespace SignalR
         /// Called when a connection reconnects after a timeout.
         /// </summary>
         /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
-        /// <param name="groups">The groups the calling connection is a part of.</param>
         /// <param name="connectionId">The id of the re-connecting client.</param>
         /// <returns>A <see cref="Task"/> that completes when the re-connect operation is complete.</returns>
-        protected virtual Task OnReconnectedAsync(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected virtual Task OnReconnectedAsync(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }

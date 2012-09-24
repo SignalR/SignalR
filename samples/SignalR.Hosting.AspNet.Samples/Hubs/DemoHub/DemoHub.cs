@@ -148,11 +148,6 @@ namespace SignalR.Samples.Hubs.DemoHub
             Caller.clientMethd();
         }
 
-        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return groups;
-        }
-
         public class Person
         {
             public string Name { get; set; }

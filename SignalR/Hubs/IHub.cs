@@ -1,6 +1,8 @@
-﻿namespace SignalR.Hubs
+﻿using System;
+
+namespace SignalR.Hubs
 {
-    public interface IHub
+    public interface IHub : IDisposable
     {
         /// <summary>
         /// Gets a dynamic object that represents the calling client.

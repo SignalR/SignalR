@@ -88,6 +88,7 @@ namespace SignalR.Stress
         public static void StressGroups()
         {
             var host = new MemoryHost();
+            host.HubPipeline.EnableAutoRejoiningGroups();
             host.MapHubs();
             int max = 15;
 
@@ -501,11 +502,6 @@ namespace SignalR.Stress
             // Groups.Add(Context.ConnectionId, "one").Wait();
             Groups.Add(Context.ConnectionId, "one").Wait();
             return Clients["one"].Do(index);
-        }
-
-        public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return groups;
         }
     }
 
