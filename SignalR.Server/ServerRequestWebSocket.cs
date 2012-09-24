@@ -64,11 +64,13 @@ namespace SignalR.Server
             _sendAsync = (WebSocketSendAsync)context["websocket.SendAsyncFunc"];
             _receiveAsync = (WebSocketReceiveAsync)context["websocket.ReceiveAsyncFunc"];
 
+            // Invoke the call back as we're ready to start receiving
             var task = _callback(this)
                 .Then(cts => cts.Cancel(false), _cts)
                 .Catch(ex => _cts.Cancel(false));
 
             StartReceiving();
+
             return task;
         }
 
@@ -78,16 +80,16 @@ namespace SignalR.Server
 
         public Task Send(string value)
         {
-            _sendQueue.Enqueue(
-                () =>
-                {
-                    var data = Encoding.UTF8.GetBytes(value);
-                    return _sendAsync(new ArraySegment<byte>(data), 1, true, CancellationToken.None);
-                });
+            _sendQueue.Enqueue(() =>
+            {
+                var data = Encoding.UTF8.GetBytes(value);
+                return _sendAsync(new ArraySegment<byte>(data), (int)WebSocketMessageType.Text, true, CancellationToken.None);
+            });
+
             return TaskAsyncHelper.Empty;
         }
 
-        void StartReceiving()
+        private void StartReceiving()
         {
             ContinueReceiving(null);
         }
@@ -104,52 +106,62 @@ namespace SignalR.Server
                     }
 
                     var receiveTask = _receiveAsync(_buffer, _cts.Token);
+
                     if (!receiveTask.IsCompleted)
                     {
                         receiveTask
                             .Then((Action<WebSocketReceiveTuple>)ContinueReceiving)
                             .Catch(ErrorReceiving);
+
                         return;
                     }
+
                     receiveData = receiveTask.Result;
 
                 mark1:
                     var messageType = receiveData.Item1;
                     var endOfMessage = receiveData.Item2;
                     var count = receiveData.Item3;
+
                     receiveData = null;
-                    if (messageType == 1)
+
+                    if (messageType == (int)WebSocketMessageType.Text)
                     {
                         if (count.HasValue)
                         {
                             var text = Encoding.UTF8.GetString(_buffer.Array, 0, count.Value);
                             if (_text != null)
                             {
-                                _text = _text + text;
+                                _text += text;
                             }
                             else
                             {
                                 _text = text;
                             }
                         }
+
                         if (endOfMessage)
                         {
                             var text = _text;
+
                             _text = null;
+
                             if (OnMessage != null)
                             {
                                 OnMessage(text);
                             }
                         }
+
                         continue;
                     }
 
-                    if (messageType == 8)
+                    if (messageType == (int)WebSocketMessageType.Close)
                     {
                         if (OnClose != null)
                         {
                             OnClose();
                         }
+
                         return;
                     }
 
@@ -172,8 +184,10 @@ namespace SignalR.Server
                 }
                 catch
                 {
+
                 }
             }
+
             if (OnClose != null)
             {
                 try
@@ -182,8 +196,30 @@ namespace SignalR.Server
                 }
                 catch
                 {
+
                 }
             }
+        }
+
+        // IANA has added initial values to the registry as follows.
+        // |Opcode  | Meaning                             | Reference |
+        //-+--------+-------------------------------------+-----------|
+        // | 0      | Continuation Frame                  | RFC 6455 <http://tools.ietf.org/html/rfc6455>   |
+        //-+--------+-------------------------------------+-----------|
+        // | 1      | Text Frame                          | RFC 6455 <http://tools.ietf.org/html/rfc6455>   |
+        //-+--------+-------------------------------------+-----------|
+        // | 2      | Binary Frame                        | RFC 6455 <http://tools.ietf.org/html/rfc6455>   |
+        //-+--------+-------------------------------------+-----------|
+        // | 8      | Connection Close Frame              | RFC 6455 <http://tools.ietf.org/html/rfc6455>   |
+        //-+--------+-------------------------------------+-----------|
+        // | 9      | Ping Frame                          | RFC 6455 <http://tools.ietf.org/html/rfc6455>   |
+        //-+--------+-------------------------------------+-----------|
+        // | 10     | Pong Frame                          | RFC 6455 <http://tools.ietf.org/html/rfc6455>   |
+        //-+--------+-------------------------------------+-----------|
+        private enum WebSocketMessageType
+        {
+            Text = 1,
+            Close = 8
         }
     }
 }
