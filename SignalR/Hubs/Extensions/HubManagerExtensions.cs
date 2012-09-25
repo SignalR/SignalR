@@ -7,7 +7,7 @@ namespace SignalR.Hubs
 {
     public static class HubManagerExtensions
     {
-        public static HubDescriptor EnsureHub(this IHubManager hubManager, string hubName, params PerformanceCounter[] counters)
+        public static HubDescriptor EnsureHub(this IHubManager hubManager, string hubName, params IPerformanceCounter[] counters)
         {
             var descriptor = hubManager.GetHub(hubName);
 
@@ -15,7 +15,7 @@ namespace SignalR.Hubs
             {
                 for (var i = 0; i < counters.Length; i++)
                 {
-                    counters[i].SafeIncrement();
+                    counters[i].Increment();
                 }
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' hub could not be resolved.", hubName));
             }

@@ -30,7 +30,7 @@ namespace SignalR
 
         public static void InitializePerformanceCounters(this IDependencyResolver resolver, string instanceName, CancellationToken hostShutdownToken)
         {
-            var counters = resolver.Resolve<IPerformanceCounterWriter>();
+            var counters = resolver.Resolve<IPerformanceCounterManager>();
             if (counters != null)
             {
                 counters.Initialize(instanceName, hostShutdownToken);

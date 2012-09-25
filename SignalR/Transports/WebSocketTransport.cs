@@ -14,14 +14,14 @@ namespace SignalR.Transports
             : this(context, 
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>(),
-                   resolver.Resolve<IPerformanceCounterWriter>())
+                   resolver.Resolve<IPerformanceCounterManager>())
         {
         }
 
         public WebSocketTransport(HostContext context, 
                                   IJsonSerializer serializer, 
                                   ITransportHeartBeat heartBeat,
-                                  IPerformanceCounterWriter performanceCounterWriter)
+                                  IPerformanceCounterManager performanceCounterWriter)
             : base(context, serializer, heartBeat, performanceCounterWriter)
         {
             _context = context;

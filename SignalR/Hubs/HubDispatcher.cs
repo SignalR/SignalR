@@ -15,20 +15,16 @@ namespace SignalR.Hubs
     /// </summary>
     public class HubDispatcher : PersistentConnection
     {
+        private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
+        private readonly string _url;
+
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
         private IHubRequestParser _requestParser;
         private IParameterResolver _binder;
         private IHubPipelineInvoker _pipelineInvoker;
-        private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
+        private IPerformanceCounterManager _counters;
         private bool _isDebuggingEnabled;
-        private PerformanceCounter _allErrorsTotalCounter;
-        private PerformanceCounter _allErrorsPerSecCounter;
-        private PerformanceCounter _hubInvocationErrorsTotalCounter;
-        private PerformanceCounter _hubInvocationErrorsPerSecCounter;
-        private PerformanceCounter _hubResolutionErrorsTotalCounter;
-        private PerformanceCounter _hubResolutionErrorsPerSecCounter;
-        private readonly string _url;
 
         /// <summary>
         /// Initializes an instance of the <see cref="HubDispatcher"/> class.
@@ -55,14 +51,8 @@ namespace SignalR.Hubs
             _requestParser = resolver.Resolve<IHubRequestParser>();
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
 
-            var counters = resolver.Resolve<IPerformanceCounterWriter>();
-            _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
-            _allErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
-            _hubInvocationErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubInvocationTotal);
-            _hubInvocationErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubInvocationPerSec);
-            _hubResolutionErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionTotal);
-            _hubResolutionErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionPerSec);
-
+            _counters = resolver.Resolve<IPerformanceCounterManager>();
+            
             // Call base initializer before populating _hubs so the _jsonSerializer is initialized
             base.Initialize(resolver, context);
 
@@ -78,10 +68,10 @@ namespace SignalR.Hubs
                     {
                         // Try to find the associated hub type
                         HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
-                            _hubResolutionErrorsTotalCounter,
-                            _hubResolutionErrorsPerSecCounter,
-                            _allErrorsTotalCounter,
-                            _allErrorsPerSecCounter);
+                            _counters.ErrorsHubResolutionTotal,
+                            _counters.ErrorsHubResolutionPerSec,
+                            _counters.ErrorsAllTotal,
+                            _counters.ErrorsAllPerSec);
 
                         // Add this to the list of hub descriptors this connection is interested in
                         _hubs.Add(hubDescriptor);
@@ -99,10 +89,10 @@ namespace SignalR.Hubs
 
             // Create the hub
             HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub,
-                _hubResolutionErrorsTotalCounter,
-                _hubResolutionErrorsPerSecCounter,
-                _allErrorsTotalCounter,
-                _allErrorsPerSecCounter);
+                _counters.ErrorsHubInvocationTotal,
+                _counters.ErrorsHubInvocationPerSec,
+                _counters.ErrorsAllTotal,
+                _counters.ErrorsAllPerSec);
 
             IJsonValue[] parameterValues = hubRequest.ParameterValues;
 
@@ -110,8 +100,8 @@ namespace SignalR.Hubs
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
             if (methodDescriptor == null)
             {
-                _hubResolutionErrorsTotalCounter.SafeIncrement();
-                _hubResolutionErrorsPerSecCounter.SafeIncrement();
+                _counters.ErrorsHubInvocationTotal.Increment();
+                _counters.ErrorsHubInvocationPerSec.Increment();
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' method could not be resolved.", hubRequest.Method));
             }
 
@@ -385,10 +375,10 @@ namespace SignalR.Hubs
 
             if (exception != null)
             {
-                _hubInvocationErrorsTotalCounter.SafeIncrement();
-                _hubInvocationErrorsPerSecCounter.SafeIncrement();
-                _allErrorsTotalCounter.SafeIncrement();
-                _allErrorsPerSecCounter.SafeIncrement();
+                _counters.ErrorsHubInvocationTotal.Increment();
+                _counters.ErrorsHubInvocationPerSec.Increment();
+                _counters.ErrorsAllTotal.Increment();
+                _counters.ErrorsAllPerSec.Increment();
             }
 
             var hubResult = new HubResponse
@@ -413,7 +403,5 @@ namespace SignalR.Hubs
         {
             public string Name { get; set; }
         }
-
-        public object IPerformaceCounterWriter { get; set; }
     }
 }

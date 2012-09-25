@@ -19,16 +19,14 @@ namespace SignalR
 
         private readonly ITraceManager _trace;
 
-        protected readonly IPerformanceCounterWriter _counters;
-        private readonly PerformanceCounter _msgsTotalCounter;
-        private readonly PerformanceCounter _msgsPerSecCounter;
+        protected readonly IPerformanceCounterManager _counters;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="resolver"></param>
         public MessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>(), resolver.Resolve<IPerformanceCounterWriter>())
+            : this(resolver.Resolve<ITraceManager>(), resolver.Resolve<IPerformanceCounterManager>())
         {
         }
 
@@ -36,13 +34,10 @@ namespace SignalR
         /// 
         /// </summary>
         /// <param name="traceManager"></param>
-        public MessageBus(ITraceManager traceManager, IPerformanceCounterWriter performanceCounterWriter)
+        public MessageBus(ITraceManager traceManager, IPerformanceCounterManager performanceCounterManager)
         {
             _trace = traceManager;
-            
-            _counters = performanceCounterWriter;
-            _msgsTotalCounter = _counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedTotal);
-            _msgsPerSecCounter = _counters.GetCounter(PerformanceCounters.MessageBusMessagesPublishedPerSec);
+            _counters = performanceCounterManager;
 
             _broker = new MessageBroker(_topics, _counters)
             {
@@ -84,8 +79,8 @@ namespace SignalR
 
             topic.Store.Add(message);
 
-            _msgsTotalCounter.SafeIncrement();
-            _msgsPerSecCounter.SafeIncrement();
+            _counters.MessageBusMessagesPublishedTotal.Increment();
+            _counters.MessageBusMessagesPublishedPerSec.Increment();
 
             ScheduleTopic(topic);
 
@@ -98,8 +93,8 @@ namespace SignalR
 
             ulong id = topic.Store.Add(message);
 
-            _msgsTotalCounter.SafeIncrement();
-            _msgsPerSecCounter.SafeIncrement();
+            _counters.MessageBusMessagesPublishedTotal.Increment();
+            _counters.MessageBusMessagesPublishedPerSec.Increment();
 
             return id;
         }

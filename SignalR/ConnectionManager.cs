@@ -13,10 +13,7 @@ namespace SignalR
     public class ConnectionManager : IConnectionManager
     {
         private readonly IDependencyResolver _resolver;
-        private PerformanceCounter _allErrorsTotalCounter;
-        private PerformanceCounter _allErrorsPerSecCounter;
-        private PerformanceCounter _hubResolutionErrorsTotalCounter;
-        private PerformanceCounter _hubResolutionErrorsPerSecCounter;
+        private readonly IPerformanceCounterManager _counters;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionManager"/> class.
@@ -25,11 +22,7 @@ namespace SignalR
         public ConnectionManager(IDependencyResolver resolver)
         {
             _resolver = resolver;
-            var counters = _resolver.Resolve<IPerformanceCounterWriter>();
-            _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
-            _allErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
-            _hubResolutionErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionTotal);
-            _hubResolutionErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsHubResolutionPerSec);
+            _counters = _resolver.Resolve<IPerformanceCounterManager>();
         }
 
         /// <summary>
@@ -76,10 +69,10 @@ namespace SignalR
             var hubManager = _resolver.Resolve<IHubManager>();
             var pipelineInvoker = _resolver.Resolve<IHubPipelineInvoker>();
             HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName,
-                _hubResolutionErrorsTotalCounter,
-                _hubResolutionErrorsPerSecCounter,
-                _allErrorsTotalCounter,
-                _allErrorsPerSecCounter);
+                _counters.ErrorsHubResolutionTotal,
+                _counters.ErrorsHubResolutionPerSec,
+                _counters.ErrorsAllTotal,
+                _counters.ErrorsAllPerSec);
 
             Func<string, ClientHubInvocation, Task> send = (signal, value) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, value));
 
@@ -101,7 +94,7 @@ namespace SignalR
                                   Enumerable.Empty<string>(),
                                   _resolver.Resolve<ITraceManager>(),
                                   _resolver.Resolve<IAckHandler>(),
-                                  _resolver.Resolve<IPerformanceCounterWriter>());
+                                  _resolver.Resolve<IPerformanceCounterManager>());
         }
     }
 }

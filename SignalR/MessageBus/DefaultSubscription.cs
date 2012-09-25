@@ -19,7 +19,7 @@ namespace SignalR
                                    string cursor,
                                    Func<MessageResult, Task<bool>> callback,
                                    int maxMessages,
-                                   IPerformanceCounterWriter counters) :
+                                   IPerformanceCounterManager counters) :
             base(identity, eventKeys, callback, maxMessages, counters)
         {
 

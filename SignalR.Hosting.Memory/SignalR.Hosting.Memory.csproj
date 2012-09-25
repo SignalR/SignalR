@@ -36,9 +36,6 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SignalR\Infrastructure\PerformanceCounterExtensions.cs">
-      <Link>Infrastructure\PerformanceCounterExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\SignalR\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>

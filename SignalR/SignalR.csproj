@@ -85,11 +85,13 @@
     <Compile Include="Hubs\Pipeline\IHubPipeline.cs" />
     <Compile Include="Hubs\Pipeline\IHubPipelineModule.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
-    <Compile Include="Infrastructure\IPerformanceCounterWriter.cs" />
-    <Compile Include="Infrastructure\PerformanceCounterExtensions.cs" />
-    <Compile Include="Infrastructure\PerformanceCounters.cs" />
-    <Compile Include="Infrastructure\PerformanceCounterWriter.cs" />
+    <Compile Include="Infrastructure\IPerformanceCounter.cs" />
+    <Compile Include="Infrastructure\IPerformanceCounterManager.cs" />
+    <Compile Include="Infrastructure\NoOpPerformanceCounter.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterAttribute.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterManager.cs" />
     <Compile Include="Infrastructure\Disposer.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterWrapper.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
     <Compile Include="Json\JTokenValue.cs" />

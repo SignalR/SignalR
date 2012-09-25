@@ -8,40 +8,28 @@ namespace SignalR.Transports
 {
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
+        private readonly IPerformanceCounterManager _counters;
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
-        private readonly PerformanceCounter _connConnectedCounter;
-        private readonly PerformanceCounter _connReconnectedCounter;
-        private readonly PerformanceCounter _allErrorsTotalCounter;
-        private readonly PerformanceCounter _allErrorsPerSecCounter;
-        private readonly PerformanceCounter _transportErrorsTotalCounter;
-        private readonly PerformanceCounter _transportErrorsPerSecCounter;
-
+        
         private const int MaxMessages = 10;
 
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>(),
-                   resolver.Resolve<IPerformanceCounterWriter>())
+                   resolver.Resolve<IPerformanceCounterManager>())
         {
         }
 
         public ForeverTransport(HostContext context,
                                 IJsonSerializer jsonSerializer,
                                 ITransportHeartBeat heartBeat,
-                                IPerformanceCounterWriter performanceCounterWriter)
+                                IPerformanceCounterManager performanceCounterWriter)
             : base(context, jsonSerializer, heartBeat, performanceCounterWriter)
         {
             _jsonSerializer = jsonSerializer;
-            
-            var counters = performanceCounterWriter;
-            _connConnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsConnected);
-            _connReconnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsReconnected);
-            _allErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
-            _allErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
-            _transportErrorsTotalCounter = counters.GetCounter(PerformanceCounters.ErrorsTransportTotal);
-            _transportErrorsPerSecCounter = counters.GetCounter(PerformanceCounters.ErrorsTransportPerSec);
+            _counters = performanceCounterWriter;
         }
 
         protected string LastMessageId
@@ -133,7 +121,7 @@ namespace SignalR.Transports
                         {
                             if (newConnection)
                             {
-                                return Connected().Then(() => _connConnectedCounter.SafeIncrement());
+                                return Connected().Then(() => _counters.ConnectionsConnected.Increment());
                             }
                             return TaskAsyncHelper.Empty;
                         }
@@ -146,7 +134,7 @@ namespace SignalR.Transports
                 if (Reconnected != null)
                 {
                     // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                    Func<Task> reconnected = () => Reconnected().Then(() => _connReconnectedCounter.SafeIncrement());
+                    Func<Task> reconnected = () => Reconnected().Then(() => _counters.ConnectionsReconnected.Increment());
                     return TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
                 }
 
@@ -178,10 +166,10 @@ namespace SignalR.Transports
 
         protected void IncrementErrorCounters(Exception exception)
         {
-            _transportErrorsTotalCounter.SafeIncrement();
-            _transportErrorsPerSecCounter.SafeIncrement();
-            _allErrorsTotalCounter.SafeIncrement();
-            _allErrorsTotalCounter.SafeIncrement();
+            _counters.ErrorsTransportTotal.Increment();
+            _counters.ErrorsTransportPerSec.Increment();
+            _counters.ErrorsAllTotal.Increment();
+            _counters.ErrorsAllPerSec.Increment();
         }
 
         private Task ProcessSendRequest()
@@ -210,7 +198,7 @@ namespace SignalR.Transports
             {
                 if (TransportConnected != null)
                 {
-                    TransportConnected().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter);
+                    TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
                 }
 
                 if (postReceive != null)
@@ -284,7 +272,7 @@ namespace SignalR.Transports
 
             if (postReceive != null)
             {
-                postReceive().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter)
+                postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
                              .ContinueWith(task => wh.Set());
             }
             else

@@ -23,12 +23,9 @@ namespace SignalR
         private bool _initialized;
 
         protected ITraceManager _trace;
-        protected IPerformanceCounterWriter _counters;
+        protected IPerformanceCounterManager _counters;
         protected ITransport _transport;
         private IServerCommandHandler _serverMessageHandler;
-
-        private PerformanceCounter _allErrorsTotalCounter;
-        private PerformanceCounter _allErrorsPerSecCounter;
 
         public virtual void Initialize(IDependencyResolver resolver, HostContext context)
         {
@@ -43,11 +40,8 @@ namespace SignalR
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
-            _counters = resolver.Resolve<IPerformanceCounterWriter>();
+            _counters = resolver.Resolve<IPerformanceCounterManager>();
             _ackHandler = resolver.Resolve<IAckHandler>();
-            
-            _allErrorsTotalCounter = _counters.GetCounter(PerformanceCounters.ErrorsAllTotal);
-            _allErrorsPerSecCounter = _counters.GetCounter(PerformanceCounters.ErrorsAllPerSec);
             
             _initialized = true;
         }
@@ -162,7 +156,7 @@ namespace SignalR
                 return OnDisconnectAsync(connectionId).OrEmpty();
             };
 
-            return _transport.ProcessRequest(connection).OrEmpty().Catch(_allErrorsTotalCounter, _allErrorsPerSecCounter);
+            return _transport.ProcessRequest(connection).OrEmpty().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
         }
 
         protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)

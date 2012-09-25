@@ -11,7 +11,7 @@ namespace SignalR.Tests.Server
         public void SendingCommandObjectSetsCommandOnBus()
         {
             var messageBus = new Mock<IMessageBus>();
-            var counters = new Mock<IPerformanceCounterWriter>();
+            var counters = new Mock<IPerformanceCounterManager>();
             Message message = null;
             messageBus.Setup(m => m.Publish(It.IsAny<Message>())).Returns<Message>(m =>
             {

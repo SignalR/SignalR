@@ -9,8 +9,7 @@ namespace SignalR.Transports
     public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly PerformanceCounter _connConnectedCounter;
-        private readonly PerformanceCounter _connReconnectedCounter;
+        private readonly IPerformanceCounterManager _counters;
 
         // This should be ok to do since long polling request never hang around too long
         // so we won't bloat memory
@@ -20,18 +19,16 @@ namespace SignalR.Transports
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartBeat>(),
-                   resolver.Resolve<IPerformanceCounterWriter>())
+                   resolver.Resolve<IPerformanceCounterManager>())
         {
 
         }
 
-        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterWriter performanceCounterWriter)
-            : base(context, jsonSerializer, heartBeat, performanceCounterWriter)
+        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
+            : base(context, jsonSerializer, heartBeat, performanceCounterManager)
         {
             _jsonSerializer = jsonSerializer;
-            var counters = performanceCounterWriter;
-            _connConnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsConnected);
-            _connReconnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsReconnected);
+            _counters = performanceCounterManager;
         }
 
         // Static events intended for use when measuring performance
@@ -141,7 +138,7 @@ namespace SignalR.Transports
                     if (IsReconnectRequest && Reconnected != null)
                     {
                         // Return a task that completes when the reconnected event task & the receive loop task are both finished
-                        Func<Task> reconnected = () => Reconnected().Then(() => _connReconnectedCounter.SafeIncrement());
+                        Func<Task> reconnected = () => Reconnected().Then(() => _counters.ConnectionsReconnected.Increment());
                         return TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
                     }
 
@@ -215,7 +212,7 @@ namespace SignalR.Transports
                 {
                     if (newConnection)
                     {
-                        return Connected().Then(() => _connConnectedCounter.SafeIncrement());
+                        return Connected().Then(() => _counters.ConnectionsConnected.Increment());
                     }
                     return TaskAsyncHelper.Empty;
                 },

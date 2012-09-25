@@ -19,7 +19,7 @@ namespace SignalR.Transports
         private readonly IServerCommandHandler _serverCommandHandler;
         private readonly ITraceManager _trace;
         private readonly string _serverId;
-        private readonly PerformanceCounter _connectionsCurrentCounter;
+        private readonly IPerformanceCounterManager _counters;
         private readonly object _counterLock = new object();
 
         private int _running;
@@ -34,10 +34,8 @@ namespace SignalR.Transports
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
             _trace = resolver.Resolve<ITraceManager>();
-
-            var counters = resolver.Resolve<IPerformanceCounterWriter>();
-            _connectionsCurrentCounter = counters.GetCounter(PerformanceCounters.ConnectionsCurrent);
-
+            _counters = resolver.Resolve<IPerformanceCounterManager>();
+            
             _serverCommandHandler.Command = ProcessServerCommand;
 
             // REVIEW: When to dispose the timer?
@@ -105,7 +103,7 @@ namespace SignalR.Transports
 
             lock (_counterLock)
             {
-                _connectionsCurrentCounter.SafeSetRaw(_connections.Count);
+                _counters.ConnectionsCurrent.RawValue = _connections.Count;
             }
 
             // Set the initial connection time
@@ -125,7 +123,7 @@ namespace SignalR.Transports
             {
                 lock (_counterLock)
                 {
-                    _connectionsCurrentCounter.SafeSetRaw(_connections.Count);
+                    _counters.ConnectionsCurrent.RawValue = _connections.Count;
                 }
                 Trace.TraceInformation("Removing connection {0}", connectionId);
             }

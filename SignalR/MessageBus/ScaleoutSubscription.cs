@@ -18,7 +18,7 @@ namespace SignalR
                                     ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> streamMappings,
                                     Func<MessageResult, Task<bool>> callback,
                                     int maxMessages,
-                                    IPerformanceCounterWriter counters)
+                                    IPerformanceCounterManager counters)
             : base(identity, eventKeys, callback, maxMessages, counters)
         {
             _streams = streamMappings;

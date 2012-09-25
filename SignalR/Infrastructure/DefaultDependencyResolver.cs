@@ -54,8 +54,8 @@ namespace SignalR
             var ackHandler = new Lazy<AckHandler>();
             Register(typeof(IAckHandler), () => ackHandler.Value);
 
-            var perfCounterWriter = new Lazy<PerformanceCounterWriter>(() => new PerformanceCounterWriter());
-            Register(typeof(IPerformanceCounterWriter), () => perfCounterWriter.Value);
+            var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager());
+            Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
         }
 
         private void RegisterHubExtensions()

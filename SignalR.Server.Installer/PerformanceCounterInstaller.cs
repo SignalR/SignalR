@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using SignalR.Infrastructure;
+using SignalRPerfCounterManager = SignalR.Infrastructure.PerformanceCounterManager;
 
 namespace SignalR
 {
@@ -18,14 +19,22 @@ namespace SignalR
             // Delete any existing counters
             UninstallCounters();
 
-            var createDataCollection = new CounterCreationDataCollection(PerformanceCounters.Counters);
-            
-            PerformanceCounterCategory.Create(PerformanceCounters.CategoryName,
+            var counterCreationData = SignalRPerfCounterManager.GetCounterPropertyInfo()
+                .Select(p =>
+                    {
+                        var attribute = SignalRPerfCounterManager.GetPerformanceCounterAttribute(p);
+                        return new CounterCreationData(attribute.Name, attribute.Description, attribute.CounterType);
+                    })
+                .ToArray();
+
+            var createDataCollection = new CounterCreationDataCollection(counterCreationData);
+
+            PerformanceCounterCategory.Create(SignalRPerfCounterManager.CategoryName,
                 "SignalR application performance counters",
                 PerformanceCounterCategoryType.MultiInstance,
                 createDataCollection);
 
-            return PerformanceCounters.Counters.Select(c => c.CounterName).ToList();
+            return counterCreationData.Select(c => c.CounterName).ToList();
         }
 
         /// <summary>
@@ -33,9 +42,9 @@ namespace SignalR
         /// </summary>
         public void UninstallCounters()
         {
-            if (PerformanceCounterCategory.Exists(PerformanceCounters.CategoryName))
+            if (PerformanceCounterCategory.Exists(SignalRPerfCounterManager.CategoryName))
             {
-                PerformanceCounterCategory.Delete(PerformanceCounters.CategoryName);
+                PerformanceCounterCategory.Delete(SignalRPerfCounterManager.CategoryName);
             }
         }
     }

@@ -11,10 +11,7 @@ namespace SignalR
     {
         private readonly Func<MessageResult, Task<bool>> _callback;
         private readonly int _maxMessages;
-
-        private readonly PerformanceCounter _subsTotalCounter;
-        private readonly PerformanceCounter _subsCurrentCounter;
-        private readonly PerformanceCounter _subsPerSecCounter;
+        private readonly IPerformanceCounterManager _counters;
 
         private int _disposed;
 
@@ -35,21 +32,18 @@ namespace SignalR
 
         public int MaxMessages { get; set; }
 
-        public Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterWriter counters)
+        public Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
         {
             Identity = identity;
             _callback = callback;
             _maxMessages = maxMessages;
             EventKeys = new HashSet<string>(eventKeys);
             MaxMessages = maxMessages;
+            _counters = counters;
 
-            _subsTotalCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersTotal);
-            _subsCurrentCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersCurrent);
-            _subsPerSecCounter = counters.GetCounter(PerformanceCounters.MessageBusSubscribersPerSec);
-
-            _subsTotalCounter.SafeIncrement();
-            _subsCurrentCounter.SafeIncrement();
-            _subsPerSecCounter.SafeIncrement();
+            _counters.MessageBusSubscribersTotal.Increment();
+            _counters.MessageBusSubscribersCurrent.Increment();
+            _counters.MessageBusSubscribersPerSec.Increment();
         }
 
         public virtual Task<bool> Invoke(MessageResult result)
@@ -236,8 +230,8 @@ namespace SignalR
             // REVIEW: Should we make this block if there's pending work
             Interlocked.Exchange(ref _disposed, 1);
 
-            _subsCurrentCounter.SafeDecrement();
-            _subsPerSecCounter.SafeDecrement();
+            _counters.MessageBusSubscribersCurrent.Decrement();
+            _counters.MessageBusSubscribersPerSec.Decrement();
         }
 
         public abstract string GetCursor();

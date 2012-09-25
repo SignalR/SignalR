@@ -18,8 +18,7 @@ namespace SignalR
         private readonly Queue<ISubscription> _queue = new Queue<ISubscription>();
         private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly PerformanceCounter _allocatedWorkersCounter;
-        private readonly PerformanceCounter _busyWorkersCounter;
+        private readonly IPerformanceCounterManager _counters;
 
         // The maximum number of workers (threads) allowed to process all incoming messages
         private static readonly int MaxWorkers = 3 * Environment.ProcessorCount;
@@ -40,15 +39,12 @@ namespace SignalR
 
         private int _checkingWork;
 
-        public MessageBroker(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterWriter performanceCounterWriter)
+        public MessageBroker(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterManager performanceCounterManager)
         {
             _topics = topics;
+            _counters = performanceCounterManager;
 
             _timer = new Timer(_ => OnTimer(), state: null, dueTime: CheckWorkInterval, period: CheckWorkInterval);
-
-            var counters = performanceCounterWriter;
-            _allocatedWorkersCounter = counters.GetCounter(PerformanceCounters.MessageBusAllocatedWorkers);
-            _busyWorkersCounter = counters.GetCounter(PerformanceCounters.MessageBusBusyWorkers);
         }
 
         public TraceSource Trace
@@ -119,7 +115,7 @@ namespace SignalR
             // Only create a new worker if everyone is busy (up to the max)
             if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
             {
-                _allocatedWorkersCounter.SafeSetRaw(Interlocked.Increment(ref _allocatedWorkers));
+                _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
 
                 Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
@@ -155,7 +151,7 @@ namespace SignalR
             finally
             {
                 // After the pump runs decrement the number of workers in flight
-                _allocatedWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _allocatedWorkers));
+                _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Decrement(ref _allocatedWorkers);
             }
         }
 
@@ -164,7 +160,7 @@ namespace SignalR
             pumpTask.ContinueWith(task =>
             {
                 // After the pump runs decrement the number of workers in flight
-                _allocatedWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _allocatedWorkers));
+                _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Decrement(ref _allocatedWorkers);
 
                 if (task.IsFaulted)
                 {
@@ -203,7 +199,7 @@ namespace SignalR
                     subscription = _queue.Dequeue();
                 }
 
-                _busyWorkersCounter.SafeSetRaw(Interlocked.Increment(ref _busyWorkers));
+                _counters.MessageBusBusyWorkers.RawValue = Interlocked.Increment(ref _busyWorkers);
                 Task workTask = subscription.WorkAsync();
 
                 if (workTask.IsCompleted)
@@ -221,7 +217,7 @@ namespace SignalR
                     finally
                     {
                         subscription.UnsetQueued();
-                        _busyWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _busyWorkers));
+                        _counters.MessageBusBusyWorkers.RawValue = Interlocked.Decrement(ref _busyWorkers);
 
                         Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
                     }
@@ -243,7 +239,7 @@ namespace SignalR
             workTask.ContinueWith(task =>
             {
                 subscription.UnsetQueued();
-                _busyWorkersCounter.SafeSetRaw(Interlocked.Decrement(ref _busyWorkers));
+                _counters.MessageBusBusyWorkers.RawValue = Interlocked.Decrement(ref _busyWorkers);
 
                 Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
 

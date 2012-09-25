@@ -16,11 +16,7 @@ namespace SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly SafeSet<string> _groups;
-
-        private readonly PerformanceCounter _msgsRecTotalCounter;
-        private readonly PerformanceCounter _msgsRecPerSecCounter;
-        private readonly PerformanceCounter _msgsSentTotalCounter;
-        private readonly PerformanceCounter _msgsSentPerSecCounter;
+        private readonly IPerformanceCounterManager _counters;
 
         private bool _disconnected;
         private bool _aborted;
@@ -35,7 +31,7 @@ namespace SignalR
                           IEnumerable<string> groups,
                           ITraceManager traceManager,
                           IAckHandler ackHandler,
-                          IPerformanceCounterWriter performanceCounterWriter)
+                          IPerformanceCounterManager performanceCounterManager)
         {
             _bus = newMessageBus;
             _serializer = jsonSerializer;
@@ -45,12 +41,7 @@ namespace SignalR
             _groups = new SafeSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
-
-            var counters = performanceCounterWriter;
-            _msgsRecTotalCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesReceivedTotal);
-            _msgsRecPerSecCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesReceivedPerSec);
-            _msgsSentTotalCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesSentTotal);
-            _msgsSentPerSecCounter = counters.GetCounter(PerformanceCounters.ConnectionMessagesSentPerSec);
+            _counters = performanceCounterManager;
         }
 
         IEnumerable<string> ISubscriber.EventKeys
@@ -102,8 +93,8 @@ namespace SignalR
         private Task SendMessage(string key, object value)
         {
             Message message = CreateMessage(key, value);
-            _msgsSentTotalCounter.SafeIncrement();
-            _msgsSentPerSecCounter.SafeIncrement();
+            _counters.ConnectionMessagesSentTotal.Increment();
+            _counters.ConnectionMessagesSentPerSec.Increment();
 
             if (message.WaitForAck)
             {
@@ -166,8 +157,8 @@ namespace SignalR
 
             PopulateResponseState(response);
 
-            _msgsRecTotalCounter.SafeIncrementBy(result.TotalCount);
-            _msgsRecPerSecCounter.SafeIncrementBy(result.TotalCount);
+            _counters.ConnectionMessagesReceivedTotal.IncrementBy(result.TotalCount);
+            _counters.ConnectionMessagesReceivedPerSec.IncrementBy(result.TotalCount);
 
             return response;
         }

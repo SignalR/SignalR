@@ -40,8 +40,23 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\SignalR\Infrastructure\PerformanceCounters.cs">
-      <Link>Infrastructure\PerformanceCounters.cs</Link>
+    <Compile Include="..\SignalR\Infrastructure\IPerformanceCounter.cs">
+      <Link>Infrastructure\IPerformanceCounter.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\Infrastructure\IPerformanceCounterManager.cs">
+      <Link>Infrastructure\IPerformanceCounterManager.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\Infrastructure\NoOpPerformanceCounter.cs">
+      <Link>Infrastructure\NoOpPerformanceCounter.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\Infrastructure\PerformanceCounterAttribute.cs">
+      <Link>Infrastructure\PerformanceCounterAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\Infrastructure\PerformanceCounterManager.cs">
+      <Link>Infrastructure\PerformanceCounterManager.cs</Link>
+    </Compile>
+    <Compile Include="..\SignalR\Infrastructure\PerformanceCounterWrapper.cs">
+      <Link>Infrastructure\PerformanceCounterWrapper.cs</Link>
     </Compile>
     <Compile Include="PerformanceCounterInstaller.cs" />
     <Compile Include="Program.cs" />

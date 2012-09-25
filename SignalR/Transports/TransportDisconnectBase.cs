@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,7 +14,6 @@ namespace SignalR.Transports
         private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly PerformanceCounter _connDisconnectedCounter;
         private TextWriter _outputWriter;
 
         protected int _isDisconnected;
@@ -24,9 +22,10 @@ namespace SignalR.Transports
         private readonly CancellationToken _hostShutdownToken;
         private readonly CancellationTokenSource _connectionEndToken;
         private readonly CancellationTokenSource _disconnectedToken;
+        private readonly IPerformanceCounterManager _counters;
         private string _connectionId;
 
-        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterWriter performanceCounterWriter)
+        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;
@@ -35,11 +34,10 @@ namespace SignalR.Transports
             _endTokenSource = new CancellationTokenSource();
             _disconnectedToken = new CancellationTokenSource();
             _hostShutdownToken = context.HostShutdownToken();
+            _counters = performanceCounterManager;
+            
             Completed = new TaskCompletionSource<object>();
-
-            var counters = performanceCounterWriter;
-            _connDisconnectedCounter = counters.GetCounter(PerformanceCounters.ConnectionsDisconnected);
-
+            
             // Create a token that represents the end of this connection's life
             _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _disconnectedToken.Token, _hostShutdownToken);
         }
@@ -176,7 +174,7 @@ namespace SignalR.Transports
                 if (disconnected != null)
                 {
                     return disconnected().Catch()
-                        .Then(() => _connDisconnectedCounter.SafeIncrement());
+                        .Then(() => _counters.ConnectionsDisconnected.Increment());
                 }
             }
 
