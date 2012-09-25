@@ -565,6 +565,60 @@ namespace SignalR.Tests
         }
 
         [Fact]
+        public void ReturningNullFromConnectAndDisconnectAccepted()
+        {
+            var mockHub = new Mock<SomeHub>() { CallBase = true };
+            mockHub.Setup(h => h.Connect()).Returns<Task>(null).Verifiable();
+            mockHub.Setup(h => h.Disconnect()).Returns<Task>(null).Verifiable();
+
+            var host = new MemoryHost();
+            host.HubPipeline.EnableAutoRejoiningGroups();
+            host.Configuration.KeepAlive = null;
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+            host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo");
+
+            var hub = connection.CreateProxy("SomeHub");
+            connection.Start(host).Wait();
+
+            connection.Stop();
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            mockHub.Verify();
+        }
+
+        [Fact]
+        public void ReturningNullFromReconnectAccepted()
+        {
+            var mockHub = new Mock<SomeHub>() { CallBase = true };
+            mockHub.Setup(h => h.Reconnect()).Returns<Task>(null).Verifiable();
+
+            var host = new MemoryHost();
+            host.HubPipeline.EnableAutoRejoiningGroups();
+            host.Configuration.KeepAlive = null;
+            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+            host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo");
+
+            var hub = connection.CreateProxy("SomeHub");
+            connection.Start(host).Wait();
+
+            // Force Reconnect
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            hub.Invoke("AllFoo").Wait();
+
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+
+            connection.Stop();
+
+            mockHub.Verify();
+        }
+
+        [Fact]
         public void UsingHubAfterManualCreationThrows()
         {
             var hub = new SomeHub();

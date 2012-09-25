@@ -48,6 +48,11 @@ namespace SignalR
             return task ?? Empty;
         }
 
+        public static Task<T> OrEmpty<T>(this Task<T> task)
+        {
+            return task ?? TaskCache<T>.Empty;
+        }
+
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
@@ -821,6 +826,11 @@ namespace SignalR
             {
                 return TaskRunners<T, Task<T>>.RunTask(task, t => successor(t, arg1));
             }
+        }
+        
+        private static class TaskCache<T>
+        {
+            public static Task<T> Empty = MakeTask<T>(default(T));
         }
     }
 }

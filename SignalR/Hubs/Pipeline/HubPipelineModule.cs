@@ -16,7 +16,8 @@ namespace SignalR.Hubs
             {
                 if (OnBeforeIncoming(context))
                 {
-                    return invoke(context).Then(result => OnAfterIncoming(result, context))
+                    return invoke(context).OrEmpty()
+                                          .Then(result => OnAfterIncoming(result, context))
                                           .Catch(ex => OnIncomingError(ex));
                 }
 
@@ -30,7 +31,7 @@ namespace SignalR.Hubs
             {
                 if (OnBeforeConnect(hub))
                 {
-                    return connect(hub).Then(h => OnAfterConnect(h), hub);
+                    return connect(hub).OrEmpty().Then(h => OnAfterConnect(h), hub);
                 }
 
                 return TaskAsyncHelper.Empty;
@@ -43,7 +44,7 @@ namespace SignalR.Hubs
             {
                 if (OnBeforeReconnect(hub))
                 {
-                    return reconnect(hub).Then(h => OnAfterReconnect(h), hub);
+                    return reconnect(hub).OrEmpty().Then(h => OnAfterReconnect(h), hub);
                 }
                 return TaskAsyncHelper.Empty;
             };
@@ -55,7 +56,7 @@ namespace SignalR.Hubs
             {
                 if (OnBeforeDisconnect(hub))
                 {
-                    return disconnect(hub).Then(h => OnAfterDisconnect(h), hub);
+                    return disconnect(hub).OrEmpty().Then(h => OnAfterDisconnect(h), hub);
                 }
 
                 return TaskAsyncHelper.Empty;
@@ -73,7 +74,7 @@ namespace SignalR.Hubs
             {
                 if (OnBeforeOutgoing(context))
                 {
-                    return send(context).Then(ctx => OnAfterOutgoing(ctx), context);
+                    return send(context).OrEmpty().Then(ctx => OnAfterOutgoing(ctx), context);
                 }
 
                 return TaskAsyncHelper.Empty;
