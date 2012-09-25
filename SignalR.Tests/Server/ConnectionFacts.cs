@@ -11,7 +11,7 @@ namespace SignalR.Tests.Server
         public void SendingCommandObjectSetsCommandOnBus()
         {
             var messageBus = new Mock<IMessageBus>();
-            var counters = new Mock<IPerformanceCounterManager>();
+            var counters = new PerformanceCounterManager();
             Message message = null;
             messageBus.Setup(m => m.Publish(It.IsAny<Message>())).Returns<Message>(m =>
             {
@@ -31,7 +31,7 @@ namespace SignalR.Tests.Server
                                             new AckHandler(cancelAcksOnTimeout: false, 
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
-                                            counters.Object);
+                                            counters);
 
             connection.Send("a", new Command
             {

@@ -8,6 +8,7 @@ namespace SignalR.Infrastructure
         long IncrementBy(long value);
         void NextSample();
         long RawValue { get; set; }
+        void Close();
         void RemoveInstance();
     }
 }

@@ -24,6 +24,11 @@ namespace SignalR.Infrastructure
             set { }
         }
 
+        public void Close()
+        {
+
+        }
+
         public void RemoveInstance()
         {
             

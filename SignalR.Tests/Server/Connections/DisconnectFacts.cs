@@ -71,8 +71,8 @@ namespace SignalR.Tests
         public void FarmDisconnectOnlyRaisesEventOnce()
         {
             // Each node shares the same bus but are indepenent servers
-            var counters = new Mock<IPerformanceCounterManager>();
-            var bus = new MessageBus(new TraceManager(), counters.Object);
+            var counters = new SignalR.Infrastructure.PerformanceCounterManager();
+            var bus = new MessageBus(new TraceManager(), counters);
             var nodeCount = 3;
             var nodes = new List<ServerNode>();
             for (int i = 0; i < nodeCount; i++)

@@ -11,23 +11,6 @@ namespace SignalR.Infrastructure
             _counter = counter;
         }
 
-        public string CategoryName
-        {
-            get { return _counter.CategoryName; }
-            set { _counter.CategoryName = value; }
-        }
-
-        public string CounterName
-        {
-            get { return _counter.CounterName; }
-            set { _counter.CounterName = value; }
-        }
-
-        public string CounterHelp
-        {
-            get { return _counter.CounterHelp; }
-        }
-
         public long RawValue
         {
             get { return _counter.RawValue; }

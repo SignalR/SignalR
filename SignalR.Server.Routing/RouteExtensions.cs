@@ -99,8 +99,6 @@ namespace SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)
         {
-            resolver.InitializePerformanceCounters(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
-
             var existing = routes["signalr.hubs"];
             if (existing != null)
             {
