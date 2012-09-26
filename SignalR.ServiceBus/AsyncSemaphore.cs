@@ -7,14 +7,14 @@
     {
         readonly object syncRoot;
         readonly int maxCount;
-        readonly Queue<IWaiter> waiters;
+        readonly Queue<AsyncWaiter> waiters;
         int count;
 
         public AsyncSemaphore(int maxCount)
         {
             this.syncRoot = new object();
             this.maxCount = maxCount;
-            this.waiters = new Queue<IWaiter>();
+            this.waiters = new Queue<AsyncWaiter>();
         }
 
         public bool TryEnter()
@@ -24,7 +24,6 @@
                 if (this.count < this.maxCount)
                 {
                     this.count++;
-                    this.waiters.Enqueue(new SyncWaiter());
                     return true;
                 }
             }
@@ -61,7 +60,7 @@
 
         public void Exit()
         {
-            IWaiter waiter;
+            AsyncWaiter waiter = null;
 
             lock (this.syncRoot)
             {
@@ -71,30 +70,22 @@
                         "Semaphore's count has already reached zero before this operaiton. Make sure Exit() is called only after successfully entered the semaphore");
                 }
 
-                waiter = this.waiters.Dequeue();
                 this.count--;
+
+                if (this.waiters.Count > 0)
+                {
+                    waiter = this.waiters.Dequeue();
+                    this.count++;
+                }
             }
 
-            waiter.Signal();
-        }
-
-        interface IWaiter
-        {
-            void Signal();
-        }
-
-        sealed class SyncWaiter : IWaiter
-        {
-            public SyncWaiter()
+            if (waiter != null)
             {
-            }
-
-            public void Signal()
-            {
+                waiter.Signal();
             }
         }
 
-        sealed class AsyncWaiter : AsyncResult<AsyncWaiter>, IWaiter
+        sealed class AsyncWaiter : AsyncResult<AsyncWaiter>
         {
             bool result;
 
@@ -111,8 +102,7 @@
 
             public void Signal()
             {
-                //this.result = !isAborted;
-                IOThreadScheduler.ScheduleCallbackNoFlow(state => ((AsyncWaiter)state).Complete(false), this);
+                IOThreadScheduler.ScheduleCallbackNoFlow(s => ((AsyncWaiter)(s)).Complete(false), this);
             }
         }
     }
