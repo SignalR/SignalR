@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SignalR.Server.Installer</RootNamespace>
-    <AssemblyName>signalr</AssemblyName>
+    <AssemblyName>signalr.$(PackageVersion)</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -39,6 +39,9 @@
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
     <Compile Include="..\SignalR\Infrastructure\IPerformanceCounter.cs">
       <Link>Infrastructure\IPerformanceCounter.cs</Link>

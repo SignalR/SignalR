@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client.Samples\Program.cs">
       <Link>Program.cs</Link>
     </Compile>

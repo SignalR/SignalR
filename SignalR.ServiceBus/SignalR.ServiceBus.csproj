@@ -55,6 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="AsyncResult.cs" />
     <Compile Include="AsyncSemaphore.cs" />
     <Compile Include="DbConnectionStringBuilderExtentionMethods.cs" />

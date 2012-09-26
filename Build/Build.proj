@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
+    <Import Project="$(MSBuildProjectDirectory)\SignalR.versions.targets" />
 
     <PropertyGroup>
         <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
@@ -17,64 +18,49 @@
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ProjectRoot)\SignalR\bin\Scripts</ScriptTempPath>
-        <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
         <LocalToolsPath></LocalToolsPath>
     </PropertyGroup>
   
     <PropertyGroup>
-        <MajorVersion>0</MajorVersion>
-        <MinorVersion>5</MinorVersion>
-        <PackageBuild>3</PackageBuild>
-    </PropertyGroup>
-  
-    <PropertyGroup Condition="$(BUILD_NUMBER) != ''">
-        <!-- Ensure that we come up with a new version every 65535 years -->
-        <VersionStartYear>2012</VersionStartYear>
-      
         <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
-        <Build>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</Build>
-        <Revision>$(BUILD_NUMBER)</Revision>
-    </PropertyGroup>
-  
-    <PropertyGroup Condition="$(BUILD_NUMBER) == ''">
-        <Build>0</Build>
-        <Revision>0</Revision>
-    </PropertyGroup>
-  
-    <PropertyGroup>
-       <Version>$(MajorVersion).$(MinorVersion).$(Revision).$(Build)</Version>
-       <PackageVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)$(PrereleaseTagWithSeparator)</PackageVersion>
-       <JsVersion>$(MajorVersion).$(MinorVersion).$(PackageBuild)$(PrereleaseTag)</JsVersion>
+        <BuildDate>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</BuildDate>
+        <Revision Condition="$(BUILD_NUMBER) != ''">$(BUILD_NUMBER)</Revision>
+        <Revision Condition="$(BUILD_NUMBER) == ''">0</Revision>
+        <PrereleaseTag Condition="$(PRERELEASE) != ''">$(BuildQuality)-$([System.DateTime]::Now.ToString("yyMMdd"))</PrereleaseTag>
+        <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
+        <Version>$(MajorVersion).0.0</Version>
+        <FileVersion>$(MajorVersion).$(MinorVersion).$(BuildDate).$(Revision)</FileVersion>
+        <PackageVersion>$(MajorVersion).$(MinorVersion).0$(PrereleaseTagWithSeparator)</PackageVersion>
     </PropertyGroup>
     
     <ItemGroup>
-        <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
-            <Find>\d+\.\d+\.\d+\.\d+</Find>
-            <ReplaceWith>$(Version)</ReplaceWith>
+        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+          <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
+          <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\Common\CommonAssemblyInfo.cs">
-            <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+.\d+"\)</Find>
-            <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
+        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+          <Find>AssemblyFileVersion\("\d+\.\d+\.\d+\.\d+"\)</Find>
+          <ReplaceWith>AssemblyFileVersion("$(FileVersion)")</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\**\AssemblyInfo.cs">
-            <Find>\d+\.\d+\.\d+\.\d+</Find>
-            <ReplaceWith>$(Version)</ReplaceWith>
+        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+          <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*-\d+)?"\)</Find>
+          <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\SignalR.Client\Properties\VersionInfo.cs">
-            <Find>\d+\.\d+\.\d+\.\d+</Find>
-            <ReplaceWith>$(Version)</ReplaceWith>
+        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+          <Find>_assemblyVersion = new Version\("\d+\.\d+\.\d+\.\d+"\)</Find>
+          <ReplaceWith>_assemblyVersion = new Version("$(Version)")</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR.Client.JS\jquery.signalR.core.js">
-            <Find>SignalR JavaScript Library v\d+\.\d+\.\d+</Find>
+            <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*-\d+)?</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
         <RegexTransform Include="$(ProjectRoot)\SignalR\Scripts\hubs.js">
-            <Find>SignalR JavaScript Library v\d+\.\d+</Find>
+            <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*-\d+)?</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
     </ItemGroup>
     
-    <Target Name="UpdateVersion" Condition="'$(BUILD_NUMBER)' != ''">
+    <Target Name="UpdateVersion">
         <RegexTransform Items="@(RegexTransform)" />
     </Target>
   
@@ -88,12 +74,12 @@
   <Target Name="CI" DependsOnTargets="Build; RunTests; RunInstaller; BuildPackages;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="UpdateVersion; Build; RunTests; RunInstaller;">
+  <Target Name="Go" DependsOnTargets="Build; RunTests; RunInstaller;">
   </Target>
   
   <Target Name="RunInstaller">
     <ItemGroup>
-      <InstallerExe Include="$(ProjectRoot)\SignalR.Server.Installer\bin\$(Configuration)\signalr.exe" />
+      <InstallerExe Include="$(ProjectRoot)\SignalR.Server.Installer\bin\$(Configuration)\signalr.$(PackageVersion).exe" />
     </ItemGroup>
 
     <Copy SourceFiles="%(InstallerExe.Identity)" DestinationFolder="$(ArtifactsDir)" />
@@ -119,7 +105,7 @@
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="$(ProjectRoot)\SignalR.sln"
              Targets="Build"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);PackageVersion=$(PackageVersion)" />
 
     <MSBuild Projects="$(ProjectRoot)\SignalR.WP7.sln"
              Targets="Build"
@@ -151,7 +137,7 @@
       <DocProjects Include="$(ProjectRoot)\SignalR.Hosting.Common\bin\$(Configuration)\SignalR.Hosting.Common.dll" />
     </ItemGroup>
     <Exec Command="&quot;$(DocuExePath)&quot; @(DocProjects, ' ')" WorkingDirectory="$(DocsPath)" />
-    <Exec Command="&quot;$(ZipExe)&quot; a ..\..\docs.v$(Version).zip" WorkingDirectory="$(DocsPath)\output" />
+    <Exec Command="&quot;$(ZipExe)&quot; a ..\..\docs.v$(PackageVersion).zip" WorkingDirectory="$(DocsPath)\output" />
   </Target>
   
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
@@ -196,9 +182,9 @@
     <MakeDir Directories="$(ScriptTempPath)" />
     
     <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.js"
-          DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).js" />
+          DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(PackageVersion).js" />
     <Copy SourceFiles="$(ProjectRoot)\SignalR.Client.JS\bin\jquery.signalR.min.js"
-          DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(JsVersion).min.js" />
+          DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(PackageVersion).min.js" />
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />

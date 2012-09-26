@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -7,4 +7,3 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("SignalR.Hosting.Self45")]
 [assembly: AssemblyDescription("HttpListener host for SignalR on .NET 4.5")]
-[assembly: AssemblyVersion("0.5.3.0")]

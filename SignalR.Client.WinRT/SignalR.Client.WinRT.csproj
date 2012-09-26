@@ -112,6 +112,9 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
@@ -183,9 +186,6 @@
     </Compile>
     <Compile Include="..\SignalR.Client\ObservableConnection.cs">
       <Link>ObservableConnection.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
-      <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\Transports\AutoTransport.cs">
       <Link>Transports\AutoTransport.cs</Link>
