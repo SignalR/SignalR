@@ -51,6 +51,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>

@@ -46,6 +46,9 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
@@ -126,9 +129,6 @@
     </Compile>
     <Compile Include="..\SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
-    </Compile>
-    <Compile Include="..\SignalR.Client\Properties\VersionInfo.cs">
-      <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="..\SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>

@@ -1,5 +1,5 @@
 /*!
- * SignalR JavaScript Library v0.5.3
+ * SignalR JavaScript Library v1.0.0
  * http://signalr.net/
  *
  * Copyright David Fowler and Damian Edwards 2012
