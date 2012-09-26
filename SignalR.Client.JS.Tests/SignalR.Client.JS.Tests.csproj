@@ -82,6 +82,9 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="default.aspx.cs">
       <DependentUpon>default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

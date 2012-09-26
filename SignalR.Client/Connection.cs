@@ -410,7 +410,7 @@ namespace SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("0.5.0.0");
+                _assemblyVersion = new Version("1.0.0.0");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
