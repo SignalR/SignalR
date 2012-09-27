@@ -18,7 +18,7 @@ namespace SignalR.Hubs
                 {
                     return invoke(context).OrEmpty()
                                           .Then(result => OnAfterIncoming(result, context))
-                                          .Catch(ex => OnIncomingError(ex));
+                                          .Catch(ex => OnIncomingError(ex, context));
                 }
 
                 return TaskAsyncHelper.FromResult<object>(null);
@@ -131,7 +131,7 @@ namespace SignalR.Hubs
             return result;
         }
 
-        protected virtual void OnIncomingError(Exception ex)
+        protected virtual void OnIncomingError(AggregateException ex, IHubIncomingInvokerContext context)
         {
 
         }
