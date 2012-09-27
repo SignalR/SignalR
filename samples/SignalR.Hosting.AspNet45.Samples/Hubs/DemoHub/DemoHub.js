@@ -37,7 +37,7 @@
 
         demo.server.doSomethingAndCallError();
 
-        demo.server.getValue(function (value) {
+        demo.server.getValue().done(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
 
@@ -47,7 +47,7 @@
             Address: { Street: "One Microsoft Way", Zip: "98052" }
         };
 
-        demo.server.complexType(p, function () {
+        demo.server.complexType(p).done(function () {
             $('#complexType').html('Complex Type ->' + window.JSON.stringify(this.state.person));
         });
 
