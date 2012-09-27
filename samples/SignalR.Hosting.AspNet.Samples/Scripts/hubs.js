@@ -110,9 +110,9 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["PlainTask"], $.makeArray(arguments)));
          },
 
-        genericTaskTypedAsPlain: function () {
-            /// <summary>Calls the GenericTaskTypedAsPlain method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["GenericTaskTypedAsPlain"], $.makeArray(arguments)));
+        genericTaskWithContinueWith: function () {
+            /// <summary>Calls the GenericTaskWithContinueWith method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["GenericTaskWithContinueWith"], $.makeArray(arguments)));
          },
 
         taskWithException: function () {

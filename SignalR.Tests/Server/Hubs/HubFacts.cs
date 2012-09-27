@@ -107,6 +107,23 @@ namespace SignalR.Tests
         }
 
         [Fact]
+        public void GenericTaskWithContinueWith()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection = new Client.Hubs.HubConnection("http://foo/");
+
+            var hub = connection.CreateProxy("demo");
+
+            connection.Start(host).Wait();
+
+            int result = hub.Invoke<int>("GenericTaskWithContinueWith").Result;
+
+            Assert.Equal(4, result);
+            connection.Stop();
+        }
+
+        [Fact]
         public void Overloads()
         {
             var host = new MemoryHost();

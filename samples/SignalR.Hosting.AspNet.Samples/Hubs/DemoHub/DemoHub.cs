@@ -51,17 +51,18 @@ namespace SignalR.Samples.Hubs.DemoHub
 #endif
 
 #if NET45
-        public async Task<int> GenericTaskTypedAsPlain() 
+        public async Task<int> GenericTaskWithContinueWith() 
         {
-            return await Task.Run(() => 2 + 2);
+            return await Task.Run(() => 2 + 2).ContinueWith(task => task.Result);
         }
 #else
-        public Task<int> GenericTaskTypedAsPlain()
+        public Task<int> GenericTaskWithContinueWith()
         {
             return Task.Factory.StartNew(() =>
             {
                 return 2 + 2;
-            });
+            })
+            .ContinueWith(task => task.Result);
         }
 #endif
 

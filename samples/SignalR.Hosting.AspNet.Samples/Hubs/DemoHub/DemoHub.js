@@ -73,8 +73,8 @@
             $('#passingDynamicComplex').html('The person\'s age is ' + age);
         });
 
-        demo.server.genericTaskTypedAsPlain().done(function (result) {
-            $('#genericTaskTypedAsPlain').html(result);
+        demo.server.genericTaskWithContinueWith().done(function (result) {
+            $('#genericTaskWithContinueWith').html(result);
         });
 
         demo.server.taskWithException().fail(function (e) {
