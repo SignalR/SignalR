@@ -65,7 +65,7 @@ namespace SignalR.Server
             _receiveAsync = (WebSocketReceiveAsync)context["websocket.ReceiveAsyncFunc"];
 
             // Invoke the call back as we're ready to start receiving
-            var task = _callback(this)
+            Task task = _callback(this)
                 .Then(cts => cts.Cancel(false), _cts)
                 .Catch(ex => _cts.Cancel(false));
 
@@ -80,6 +80,7 @@ namespace SignalR.Server
 
         public Task Send(string value)
         {
+            // REVIEW: Should we return this task?
             _sendQueue.Enqueue(() =>
             {
                 var data = Encoding.UTF8.GetBytes(value);
@@ -91,7 +92,7 @@ namespace SignalR.Server
 
         private void StartReceiving()
         {
-            ContinueReceiving(null);
+            ContinueReceiving(receiveData: null);
         }
 
         private void ContinueReceiving(WebSocketReceiveTuple receiveData)
@@ -102,7 +103,7 @@ namespace SignalR.Server
                 {
                     if (receiveData != null)
                     {
-                        goto mark1;
+                        goto process;
                     }
 
                     var receiveTask = _receiveAsync(_buffer, _cts.Token);
@@ -118,7 +119,7 @@ namespace SignalR.Server
 
                     receiveData = receiveTask.Result;
 
-                mark1:
+                process:
                     var messageType = receiveData.Item1;
                     var endOfMessage = receiveData.Item2;
                     var count = receiveData.Item3;
