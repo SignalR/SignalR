@@ -135,9 +135,7 @@
 
             var self = this,
                 args = $.makeArray(arguments).slice(1),
-                userCallback = args[args.length - 1], // last argument
-                methodArgs = $.type(userCallback) === "function" ? args.slice(0, args.length - 1) /* all but last */ : args,
-                argValues = methodArgs.map(getArgValue),
+                argValues = args.map(getArgValue),
                 data = { hub: self.hubName, method: methodName, args: argValues, state: self.state, id: callbackId },
                 d = $.Deferred(),
                 callback = function (result) {
@@ -151,10 +149,7 @@
                         }
                         d.rejectWith(self, [result.Error]);
                     } else {
-                        // Server invocation succeeded, invoke any user callback & resolve the deferred
-                        if ($.type(userCallback) === "function") {
-                            userCallback.call(self, result.Result);
-                        }
+                        // Server invocation succeeded, resolve the deferred
                         d.resolveWith(self, [result.Result]);
                     }
                 };
