@@ -46,7 +46,9 @@ namespace SignalR.Server
     internal class ServerRequestWebSocket : IWebSocket
     {
         private readonly Func<IWebSocket, Task> _callback;
-        private readonly TaskQueue _sendQueue = new TaskQueue(); // queue for sending messages
+
+        // Queue for sending messages
+        private readonly TaskQueue _sendQueue = new TaskQueue(); 
 
         private WebSocketSendAsync _sendAsync;
         private WebSocketReceiveAsync _receiveAsync;
@@ -120,13 +122,13 @@ namespace SignalR.Server
                     receiveData = receiveTask.Result;
 
                 process:
-                    var messageType = receiveData.Item1;
-                    var endOfMessage = receiveData.Item2;
-                    var count = receiveData.Item3;
+                    var messageType = (WebSocketMessageType)receiveData.Item1;
+                    bool endOfMessage = receiveData.Item2;
+                    int? count = receiveData.Item3;
 
                     receiveData = null;
 
-                    if (messageType == (int)WebSocketMessageType.Text)
+                    if (messageType == WebSocketMessageType.Text)
                     {
                         if (count.HasValue)
                         {
@@ -156,7 +158,7 @@ namespace SignalR.Server
                         continue;
                     }
 
-                    if (messageType == (int)WebSocketMessageType.Close)
+                    if (messageType == WebSocketMessageType.Close)
                     {
                         if (OnClose != null)
                         {
@@ -219,8 +221,12 @@ namespace SignalR.Server
         //-+--------+-------------------------------------+-----------|
         private enum WebSocketMessageType
         {
+            Continuation = 0,
             Text = 1,
-            Close = 8
+            Binary = 2,
+            Close = 8,
+            Ping = 9,
+            Pong = 10
         }
     }
 }
