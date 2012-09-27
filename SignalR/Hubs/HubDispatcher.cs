@@ -52,7 +52,7 @@ namespace SignalR.Hubs
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
 
             _counters = resolver.Resolve<IPerformanceCounterManager>();
-            
+
             // Call base initializer before populating _hubs so the _jsonSerializer is initialized
             base.Initialize(resolver, context);
 
@@ -152,22 +152,22 @@ namespace SignalR.Hubs
 
         internal static Task Connect(IHub hub)
         {
-            return ((IConnected)hub).Connect();
+            return hub.Connect();
         }
 
         internal static Task Reconnect(IHub hub)
         {
-            return ((IConnected)hub).Reconnect();
+            return hub.Reconnect();
         }
 
         internal static Task Disconnect(IHub hub)
         {
-            return ((IDisconnect)hub).Disconnect();
+            return hub.Disconnect();
         }
 
         internal static IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
         {
-            return ((IConnected)hub).RejoiningGroups(groups);
+            return hub.RejoiningGroups(groups);
         }
 
         internal static Task<object> Incoming(IHubIncomingInvokerContext context)
@@ -248,37 +248,37 @@ namespace SignalR.Hubs
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => _pipelineInvoker.Connect(hub));
+            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Connect(hub));
         }
 
         protected override Task OnReconnectedAsync(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync<IConnected>(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
+            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return GetHubsImplementingInterface(typeof(IHub), request, connectionId)
-                .Select(hub =>
-                {
-                    string groupPrefix = hub.GetType().Name + ".";
-                    IEnumerable<string> groupsToRejoin =  _pipelineInvoker.RejoiningGroups(hub, groups.Where(g => g.StartsWith(groupPrefix))
-                                                                                                      .Select(g => g.Substring(groupPrefix.Length)))
-                                                                          .Select(g => groupPrefix + g).ToList();
-                    hub.Dispose();
-                    return groupsToRejoin;
-                })
-                .SelectMany(groupsToRejoin => groupsToRejoin);
+            return GetHubs(request, connectionId)
+                   .Select(hub =>
+                   {
+                       string groupPrefix = hub.GetType().Name + ".";
+                       IEnumerable<string> groupsToRejoin = _pipelineInvoker.RejoiningGroups(hub, groups.Where(g => g.StartsWith(groupPrefix))
+                                                                                                         .Select(g => g.Substring(groupPrefix.Length)))
+                                                                             .Select(g => groupPrefix + g).ToList();
+                       hub.Dispose();
+                       return groupsToRejoin;
+                   })
+                   .SelectMany(groupsToRejoin => groupsToRejoin);
         }
 
         protected override Task OnDisconnectAsync(string connectionId)
         {
-            return ExecuteHubEventAsync<IDisconnect>(request: null, connectionId: connectionId, action: hub => _pipelineInvoker.Disconnect(hub));
+            return ExecuteHubEventAsync(request: null, connectionId: connectionId, action: hub => _pipelineInvoker.Disconnect(hub));
         }
 
-        private Task ExecuteHubEventAsync<T>(IRequest request, string connectionId, Func<IHub, Task> action) where T : class
+        private Task ExecuteHubEventAsync(IRequest request, string connectionId, Func<IHub, Task> action)
         {
-            var hubs = GetHubsImplementingInterface(typeof(T), request, connectionId).ToList();
+            var hubs = GetHubs(request, connectionId).ToList();
             var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
 
             if (operations.Length == 0)
@@ -342,12 +342,12 @@ namespace SignalR.Hubs
             }
         }
 
-        private IEnumerable<IHub> GetHubsImplementingInterface(Type interfaceType, IRequest request, string connectionId)
+        private IEnumerable<IHub> GetHubs(IRequest request, string connectionId)
         {
-            // Get hubs that implement the specified interface
-            return _hubs.Where(hubDescriptor => interfaceType.IsAssignableFrom(hubDescriptor.Type))
-                        .Select(hub => CreateHub(request, hub, connectionId))
-                        .Where(hub => hub != null);
+            return from descriptor in _hubs
+                   select CreateHub(request, descriptor, connectionId) into hub
+                   where hub != null
+                   select hub;
         }
 
         private void DisposeHubs(IEnumerable<IHub> hubs)
@@ -364,6 +364,7 @@ namespace SignalR.Hubs
             {
                 return ProcessResponse(state, null, request, task.Exception);
             }
+
             return ProcessResponse(state, task.Result, request, null);
         }
 

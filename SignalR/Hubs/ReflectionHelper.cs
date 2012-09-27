@@ -8,7 +8,7 @@ namespace SignalR.Hubs
     public static class ReflectionHelper
     {
         private static readonly Type[] _excludeTypes = new[] { typeof(Hub), typeof(object) };
-        private static readonly Type[] _excludeInterfaces = new[] { typeof(IHub), typeof(IDisconnect), typeof(IConnected) };
+        private static readonly Type[] _excludeInterfaces = new[] { typeof(IHub) };
 
         public static IEnumerable<MethodInfo> GetExportedHubMethods(Type type)
         {

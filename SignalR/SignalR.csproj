@@ -112,7 +112,6 @@
     <Compile Include="Hubs\Lookup\Descriptors\HubDescriptor.cs" />
     <Compile Include="Hubs\Lookup\IMethodDescriptorProvider.cs" />
     <Compile Include="Hubs\Lookup\DefaultHubManager.cs" />
-    <Compile Include="Hubs\IConnected.cs" />
     <Compile Include="Hubs\Lookup\IHubManager.cs" />
     <Compile Include="IConnectionManager.cs" />
     <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
@@ -147,7 +146,6 @@
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
-    <Compile Include="Hubs\IDisconnect.cs" />
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
