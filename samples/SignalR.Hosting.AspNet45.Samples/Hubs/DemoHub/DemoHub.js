@@ -33,7 +33,7 @@
 
     $.connection.hub.logging = true;
 
-    $.connection.hub.start(function () {
+    $.connection.hub.start({ transport: activeTransport }, function () {
 
         demo.server.doSomethingAndCallError();
 
