@@ -86,7 +86,7 @@ namespace SignalR
         }
 #endif
 
-        public static TTask Catch<TTask>(this TTask task, Action<Exception> handler) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
             {
