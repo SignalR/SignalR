@@ -26,6 +26,8 @@ namespace SignalR.Hubs
         private IPerformanceCounterManager _counters;
         private bool _isDebuggingEnabled;
 
+        private static readonly MethodInfo _continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static);
+
         /// <summary>
         /// Initializes an instance of the <see cref="HubDispatcher"/> class.
         /// </summary>
@@ -198,8 +200,7 @@ namespace SignalR.Hubs
 
                         // TODO: Cache this whole thing
                         // Action<object> callback = result => ContinueWith((Task<T>)result, tcs);
-                        var continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static)
-                                                                      .MakeGenericMethod(resultType);
+                        MethodInfo continueWithMethod = _continueWithMethod.MakeGenericMethod(resultType);
 
                         Expression body = Expression.Call(continueWithMethod,
                                                           Expression.Convert(parameter, genericTaskType),
@@ -220,25 +221,6 @@ namespace SignalR.Hubs
             }
 
             return tcs.Task;
-        }
-
-        private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)
-        {
-            task.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    tcs.TrySetException(t.Exception);
-                }
-                else if (t.IsCanceled)
-                {
-                    tcs.TrySetCanceled();
-                }
-                else
-                {
-                    tcs.TrySetResult(t.Result);
-                }
-            });
         }
 
         internal static Task Outgoing(IHubOutgoingInvokerContext context)
@@ -274,6 +256,12 @@ namespace SignalR.Hubs
         protected override Task OnDisconnectAsync(string connectionId)
         {
             return ExecuteHubEventAsync(request: null, connectionId: connectionId, action: hub => _pipelineInvoker.Disconnect(hub));
+        }
+
+        protected override IEnumerable<string> GetSignals(string connectionId)
+        {
+            return _hubs.SelectMany(info => new[] { info.Name, info.CreateQualifiedName(connectionId) })
+                        .Concat(base.GetSignals(connectionId));
         }
 
         private Task ExecuteHubEventAsync(IRequest request, string connectionId, Func<IHub, Task> action)
@@ -394,10 +382,52 @@ namespace SignalR.Hubs
             return _transport.Send(hubResult);
         }
 
-        protected override IEnumerable<string> GetSignals(string connectionId)
+        private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)
         {
-            return _hubs.SelectMany(info => new[] { info.Name, info.CreateQualifiedName(connectionId) })
-                        .Concat(base.GetSignals(connectionId));
+            if (task.IsCompleted)
+            {
+                // Fast path for tasks that completed synchronously
+                ContinueSync<T>(task, tcs);
+            }
+            else
+            {
+                ContinueAsync<T>(task, tcs);
+            }
+        }
+
+        private static void ContinueSync<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        {
+            if (task.IsFaulted)
+            {
+                tcs.TrySetException(task.Exception);
+            }
+            else if (task.IsCanceled)
+            {
+                tcs.TrySetCanceled();
+            }
+            else
+            {
+                tcs.TrySetResult(task.Result);
+            }
+        }
+
+        private static void ContinueAsync<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        {
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.TrySetException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else
+                {
+                    tcs.TrySetResult(t.Result);
+                }
+            });
         }
 
         private class ClientHubInfo
