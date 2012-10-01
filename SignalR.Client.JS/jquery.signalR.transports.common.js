@@ -28,8 +28,15 @@
                 connection.transport.lostConnection(connection);
             }
             else if (timeElapsed >= keepAliveData.timeoutWarning) {
-                connection.log("Keep alive has been missed, connection may be dead/slow.");
-                $(connection).triggerHandler(events.onConnectionSlow);
+                // This is to assure that the user only gets a single warning
+                if (!keepAliveData.userNotified) {
+                    connection.log("Keep alive has been missed, connection may be dead/slow.");
+                    $(connection).triggerHandler(events.onConnectionSlow);
+                    keepAliveData.userNotified = true;
+                }
+            }
+            else {
+                keepAliveData.userNotified = false;
             }
         }
 
@@ -140,43 +147,47 @@
         },
 
         processMessages: function (connection, data) {
-            var $connection = $(connection);
+            // Transport can be null if we've just closed the connection
+            if (connection.transport) {
+                var $connection = $(connection);
 
-            // If our transport supports keep alive then we need to update the last keep alive time stamp.
-            if (connection.transport.supportsKeepAlive) {
-                this.updateKeepAlive(connection);
-            }
+                // If our transport supports keep alive then we need to update the last keep alive time stamp.
+                // Very rarely the transport can be null.
+                if (connection.transport.supportsKeepAlive) {
+                    this.updateKeepAlive(connection);
+                }
 
-            if (!data) {
-                return;
-            }
+                if (!data) {
+                    return;
+                }
 
-            if (data.Disconnect) {
-                connection.log("Disconnect command received from server");
+                if (data.Disconnect) {
+                    connection.log("Disconnect command received from server");
 
-                // Disconnected by the server
-                connection.stop();
-                return;
-            }
+                    // Disconnected by the server
+                    connection.stop(false, false);
+                    return;
+                }
 
-            if (data.Messages) {
-                $.each(data.Messages, function () {
-                    try {
-                        $connection.trigger(events.onReceived, [this]);
-                    }
-                    catch (e) {
-                        connection.log("Error raising received " + e);
-                        $(connection).trigger(events.onError, [e]);
-                    }
-                });
-            }
+                if (data.Messages) {
+                    $.each(data.Messages, function () {
+                        try {
+                            $connection.trigger(events.onReceived, [this]);
+                        }
+                        catch (e) {
+                            connection.log("Error raising received " + e);
+                            $(connection).trigger(events.onError, [e]);
+                        }
+                    });
+                }
 
-            if (data.MessageId) {
-                connection.messageId = data.MessageId;
-            }
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
 
-            if (data.TransportData) {
-                connection.groups = data.TransportData.Groups;
+                if (data.TransportData) {
+                    connection.groups = data.TransportData.Groups;
+                }
             }
         },
 

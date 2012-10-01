@@ -141,6 +141,10 @@
 
         reconnectDelay: 2000,
 
+        keepAliveTimeoutCount: 2,
+
+        keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
+
         start: function (options, callback) {
             /// <summary>Starts the connection</summary>
             /// <param name="options" type="Object">Options map</param>
@@ -153,7 +157,7 @@
                 },
                 initialize,
                 deferred = connection.deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
-                parser = window.document.createElement("a");                
+                parser = window.document.createElement("a");
 
             if ($.type(options) === "function") {
                 // Support calling with single callback parameter
@@ -281,9 +285,7 @@
                 });
             };
 
-            var url = connection.url + "/negotiate",
-                keepAliveMultiplier = 1.5,
-                keepAliveCheckInterval = 5000; // Used to detect when we miss a keep alive.
+            var url = connection.url + "/negotiate";
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
@@ -310,14 +312,14 @@
                         // Convert to milliseconds
                         res.KeepAlive *= 1000;
 
-                        // Timeout to designate to warn the developer that the connection may be dead or is hanging.
-                        keepAliveData.timeoutWarning = res.KeepAlive * keepAliveMultiplier;
-
                         // Timeout to designate when to force the connection into reconnecting
-                        keepAliveData.timeout = res.KeepAlive * 2;
+                        keepAliveData.timeout = res.KeepAlive * connection.keepAliveTimeoutCount;
 
-                        // Instantiate the frequency in which we check the keep alive.
-                        keepAliveData.checkInterval = keepAliveCheckInterval;
+                        // Timeout to designate when to warn the developer that the connection may be dead or is hanging.
+                        keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
+
+                        // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
+                        keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
@@ -464,8 +466,10 @@
             return connection;
         },
 
-        stop: function (async) {
+        stop: function (async, notifyServer) {
             /// <summary>Stops listening</summary>
+            /// <param name="async" type="Boolean">Whether or not to asynchronously abort the connection</param>
+            /// <param name="notifyServer" type="Boolean">Whether we want to notify the server that we are aborting the connection</param>
             /// <returns type="signalR" />
             var connection = this;
 
@@ -475,7 +479,9 @@
 
             try {
                 if (connection.transport) {
-                    connection.transport.abort(connection, async);
+                    if (notifyServer) {
+                        connection.transport.abort(connection, async);
+                    }
 
                     if (connection.transport.supportsKeepAlive) {
                         signalR.transports._logic.stopMonitoringKeepAlive(connection);

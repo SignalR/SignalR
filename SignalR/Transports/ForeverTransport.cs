@@ -246,10 +246,22 @@ namespace SignalR.Transports
 
                 response.TimedOut = IsTimedOut;
 
-                if (response.Disconnect ||
-                    response.TimedOut ||
-                    response.Aborted ||
-                    ConnectionEndToken.IsCancellationRequested)
+                // If we're telling the client to disconnect then clean up the instantiated connection.
+                if (response.Disconnect)
+                {
+                    return Send(response).Then(() =>
+                    {
+                        // Remove connection without triggering disconnect
+                        HeartBeat.RemoveConnection(this);
+
+                        endRequest();
+                        registration.Dispose();
+                        subscription.Dispose();
+                    }).Then(() => TaskAsyncHelper.False);
+                }
+                else if (response.TimedOut ||
+                         response.Aborted ||
+                         ConnectionEndToken.IsCancellationRequested)
                 {
                     if (response.Aborted)
                     {

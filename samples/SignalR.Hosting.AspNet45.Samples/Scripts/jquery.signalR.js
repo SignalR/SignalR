@@ -34,6 +34,7 @@
             onSending: "onSending",
             onReceived: "onReceived",
             onError: "onError",
+            onConnectionSlow: "onConnectionSlow",
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
@@ -141,6 +142,10 @@
 
         reconnectDelay: 2000,
 
+        keepAliveTimeoutCount: 2,
+
+        keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
+
         start: function (options, callback) {
             /// <summary>Starts the connection</summary>
             /// <param name="options" type="Object">Options map</param>
@@ -149,11 +154,10 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false,
-                    keepAliveTimeoutOffset: 20
+                    jsonp: false
                 },
                 initialize,
-                deferred = connection.deferral || $.Deferred(),// Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                deferred = connection.deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
                 parser = window.document.createElement("a");
 
             if ($.type(options) === "function") {
@@ -298,10 +302,26 @@
                     connection.stop();
                 },
                 success: function (res) {
+                    var keepAliveData = connection.keepAliveData;
+
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection.keepAliveData.timeout = (res.KeepAlive > 0) ? (res.KeepAlive + config.keepAliveTimeoutOffset) * 1000 : null;
+
+                    // If we have a keep alive
+                    if (res.KeepAlive) {
+                        // Convert to milliseconds
+                        res.KeepAlive *= 1000;
+
+                        // Timeout to designate when to force the connection into reconnecting
+                        keepAliveData.timeout = res.KeepAlive * connection.keepAliveTimeoutCount;
+
+                        // Timeout to designate when to warn the developer that the connection may be dead or is hanging.
+                        keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
+
+                        // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
+                        keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                    }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
                         $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
@@ -447,8 +467,10 @@
             return connection;
         },
 
-        stop: function (async) {
+        stop: function (async, notifyServer) {
             /// <summary>Stops listening</summary>
+            /// <param name="async" type="Boolean">Whether or not to asynchronously abort the connection</param>
+            /// <param name="notifyServer" type="Boolean">Whether we want to notify the server that we are aborting the connection</param>
             /// <returns type="signalR" />
             var connection = this;
 
@@ -458,7 +480,9 @@
 
             try {
                 if (connection.transport) {
-                    connection.transport.abort(connection, async);
+                    if (notifyServer) {
+                        connection.transport.abort(connection, async);
+                    }
 
                     if (connection.transport.supportsKeepAlive) {
                         signalR.transports._logic.stopMonitoringKeepAlive(connection);
@@ -517,20 +541,41 @@
     signalR.transports = {};
 
     function checkIfAlive(connection) {
+        var keepAliveData = connection.keepAliveData;
+
         // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            var keepAliveData = connection.keepAliveData,
-                diff = new Date();
+            var diff = new Date(),
+                timeElapsed;
 
-            diff.setTime(diff - keepAliveData.lastPinged);
+            diff.setTime(diff - keepAliveData.lastKeepAlive);
+            timeElapsed = diff.getTime();
 
-            // Check if the keep alive has timed out
-            if (diff.getTime() >= keepAliveData.timeout) {
-                connection.log("Keep alive timed out");
+            // Check if the keep alive has completely timed out
+            if (timeElapsed >= keepAliveData.timeout) {
+                connection.log("Keep alive timed out.  Notifying transport that connection has been lost.");
 
                 // Notify transport that the connection has been lost
                 connection.transport.lostConnection(connection);
             }
+            else if (timeElapsed >= keepAliveData.timeoutWarning) {
+                // This is to assure that the user only gets a single warning
+                if (!keepAliveData.userNotified) {
+                    connection.log("Keep alive has been missed, connection may be dead/slow.");
+                    $(connection).triggerHandler(events.onConnectionSlow);
+                    keepAliveData.userNotified = true;
+                }
+            }
+            else {
+                keepAliveData.userNotified = false;
+            }
+        }
+
+        // Verify we're monitoring the keep alive
+        if (keepAliveData.monitoring) {
+            window.setTimeout(function () {
+                checkIfAlive(connection);
+            }, keepAliveData.checkInterval);
         }
     }
 
@@ -633,43 +678,47 @@
         },
 
         processMessages: function (connection, data) {
-            var $connection = $(connection);
+            // Transport can be null if we've just closed the connection
+            if (connection.transport) {
+                var $connection = $(connection);
 
-            // If our transport supports keep alive then we need to update the ping time stamp.
-            if (connection.transport.supportsKeepAlive) {
-                this.pingKeepAlive(connection);
-            }
+                // If our transport supports keep alive then we need to update the last keep alive time stamp.
+                // Very rarely the transport can be null.
+                if (connection.transport.supportsKeepAlive) {
+                    this.updateKeepAlive(connection);
+                }
 
-            if (!data) {
-                return;
-            }
+                if (!data) {
+                    return;
+                }
 
-            if (data.Disconnect) {
-                connection.log("Disconnect command received from server");
+                if (data.Disconnect) {
+                    connection.log("Disconnect command received from server");
 
-                // Disconnected by the server
-                connection.stop();
-                return;
-            }
+                    // Disconnected by the server
+                    connection.stop(false, false);
+                    return;
+                }
 
-            if (data.Messages) {
-                $.each(data.Messages, function () {
-                    try {
-                        $connection.trigger(events.onReceived, [this]);
-                    }
-                    catch (e) {
-                        connection.log("Error raising received " + e);
-                        $(connection).trigger(events.onError, [e]);
-                    }
-                });
-            }
+                if (data.Messages) {
+                    $.each(data.Messages, function () {
+                        try {
+                            $connection.trigger(events.onReceived, [this]);
+                        }
+                        catch (e) {
+                            connection.log("Error raising received " + e);
+                            $(connection).trigger(events.onError, [e]);
+                        }
+                    });
+                }
 
-            if (data.MessageId) {
-                connection.messageId = data.MessageId;
-            }
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
 
-            if (data.TransportData) {
-                connection.groups = data.TransportData.Groups;
+                if (data.TransportData) {
+                    connection.groups = data.TransportData.Groups;
+                }
             }
         },
 
@@ -677,17 +726,15 @@
             var keepAliveData = connection.keepAliveData;
 
             // If we haven't initiated the keep alive timeouts then we need to
-            if (!keepAliveData.keepAliveCheckIntervalID) {
-               
+            if (!keepAliveData.monitoring) {
+                keepAliveData.monitoring = true;
+
                 // Initialize the keep alive time stamp ping
-                this.pingKeepAlive(connection);
+                this.updateKeepAlive(connection);
 
-                // Initiate interval to check timeouts
-                keepAliveData.keepAliveCheckIntervalID = window.setInterval(function () {
-                    checkIfAlive(connection);
-                }, keepAliveData.timeout);
-
-                connection.log("Now monitoring keep alive with timeout of: " + keepAliveData.timeout);
+                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout);
+                // Start the monitoring of the keep alive
+                checkIfAlive(connection);
             }
             else {
                 connection.log("Tried to monitor keep alive but it's already being monitored");
@@ -695,22 +742,21 @@
         },
 
         stopMonitoringKeepAlive: function (connection) {
-            var keepAliveInterval = connection.keepAliveData.keepAliveCheckIntervalID;
+            var keepAliveData = connection.keepAliveData;
 
             // Only attempt to stop the keep alive monitoring if its being monitored
-            if (keepAliveInterval) {
-                // Stop the interval
-                window.clearInterval(keepAliveInterval);
+            if (keepAliveData.monitoring) {
+                // Stop monitoring
+                keepAliveData.monitoring = false;
 
                 // Clear all the keep alive data
-                connection.keepAliveData = {};
+                keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive");
             }
         },
 
-        pingKeepAlive: function (connection) {
-            connection.log("Pinging keep alive");
-            connection.keepAliveData.lastPinged = new Date();
+        updateKeepAlive: function (connection) {
+            connection.keepAliveData.lastKeepAlive = new Date();
         },
 
         foreverFrame: {
@@ -736,6 +782,10 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
+        
+        attemptingReconnect: false,
+
+        currentSocketID: 0,
 
         send: function (connection, data) {
             connection.socket.send(data);
@@ -772,9 +822,15 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
+                connection.socket.ID = ++that.currentSocketID;
                 connection.socket.onopen = function () {
                     opened = true;
                     connection.log("Websocket opened");
+
+                    if (that.attemptingReconnect) {
+                        that.attemptingReconnect = false;
+                    }
+
                     if (onSuccess) {
                         onSuccess();
                     }
@@ -788,33 +844,38 @@
                 };
 
                 connection.socket.onclose = function (event) {
-                    if (!opened) {
-                        if (onFailed) {
-                            onFailed();
+                    // Only handle a socket close if the close is from the current socket.
+                    // Sometimes on disconnect the server will push down an onclose event
+                    // to an expired socket.
+                    if (this.ID === that.currentSocketID) {
+                        if (!opened) {
+                            if (onFailed) {
+                                onFailed();
+                            }
+                            else if (reconnecting) {
+                                that.reconnect(connection);
+                            }
+                            return;
                         }
-                        else if (reconnecting) {
-                            that.reconnect(connection);
+                        else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
+                            // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
+                            // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
+                            $(connection).trigger(events.onError, [event.reason]);
+                            connection.log("Unclean disconnect from websocket." + event.reason);
                         }
-                        return;
-                    }
-                    else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
-                        // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
-                        // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                        $(connection).trigger(events.onError, [event.reason]);
-                        connection.log("Unclean disconnect from websocket." + event.reason);
-                    }
-                    else {
-                        connection.log("Websocket closed");
-                    }
+                        else {
+                            connection.log("Websocket closed");
+                        }
 
-                    that.reconnect(connection);
+                        that.reconnect(connection);
+                    }
                 };
 
                 connection.socket.onmessage = function (event) {
                     var data = window.JSON.parse(event.data),
                         $connection;
                     if (data) {
-                        $connection = $(connection);                        
+                        $connection = $(connection);
                         transportLogic.processMessages(connection, data);
                     }
                 };
@@ -823,8 +884,14 @@
 
         reconnect: function (connection) {
             var that = this;
+            if (!that.attemptingReconnect) {
+                that.attemptingReconnect = true;
+            }
+
             window.setTimeout(function () {
-                that.stop(connection);
+                if (that.attemptingReconnect) {
+                    that.stop(connection);
+                }
 
                 if (connection.state === signalR.connectionState.reconnecting ||
                     changeState(connection,
@@ -839,7 +906,8 @@
         },
 
         lostConnection: function (connection) {
-            this.stop(connection);
+            this.reconnect(connection);
+
         },
 
         stop: function (connection) {
@@ -872,6 +940,10 @@
 
         supportsKeepAlive: true,
 
+        reconnectTimeout: false,
+
+        currentEventSourceID: 0,
+
         timeOut: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -902,6 +974,7 @@
             try {
                 connection.log("Attempting to connect to SSE endpoint '" + url + "'");
                 connection.eventSource = new window.EventSource(url);
+                connection.eventSource.ID = ++that.currentEventSourceID;
             }
             catch (e) {
                 connection.log("EventSource failed trying to connect with error " + e.Message);
@@ -931,13 +1004,7 @@
                     }
 
                     if (reconnecting) {
-                        // If we're reconnecting and the event source is attempting to connect,
-                        // don't keep retrying. This causes duplicate connections to spawn.
-                        if (connection.eventSource.readyState !== window.EventSource.CONNECTING &&
-                            connection.eventSource.readyState !== window.EventSource.OPEN) {
-                            // If we were reconnecting, rather than doing initial connect, then try reconnect again
                             that.reconnect(connection);
-                        }
                     } else if (onFailed) {
                         onFailed();
                     }
@@ -950,6 +1017,10 @@
 
                 if (connectTimeOut) {
                     window.clearTimeout(connectTimeOut);
+                }
+
+                if (that.reconnectTimeout) {
+                    window.clearTimeout(that.reconnectTimeout);
                 }
 
                 if (opened === false) {
@@ -979,40 +1050,48 @@
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
-                if (!opened) {
-                    if (onFailed) {
-                        onFailed();
+                // Only handle an error if the error is from the current Event Source.
+                // Sometimes on disconnect the server will push down an error event
+                // to an expired Event Source.
+                if (this.ID === that.currentEventSourceID) {
+                    if (!opened) {
+                        if (onFailed) {
+                            onFailed();
+                        }
+
+                        return;
                     }
 
-                    return;
-                }
+                    connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
-                connection.log("EventSource readyState: " + connection.eventSource.readyState);
-
-                if (e.eventPhase === window.EventSource.CLOSED) {
-                    // We don't use the EventSource's native reconnect function as it
-                    // doesn't allow us to change the URL when reconnecting. We need
-                    // to change the URL to not include the /connect suffix, and pass
-                    // the last message id we received.
-                    connection.log("EventSource reconnecting due to the server connection ending");
-                    that.reconnect(connection);
-                } else {
-                    // connection error
-                    connection.log("EventSource error");
-                    $connection.trigger(events.onError);
+                    if (e.eventPhase === window.EventSource.CLOSED) {
+                        // We don't use the EventSource's native reconnect function as it
+                        // doesn't allow us to change the URL when reconnecting. We need
+                        // to change the URL to not include the /connect suffix, and pass
+                        // the last message id we received.
+                        connection.log("EventSource reconnecting due to the server connection ending");
+                        that.reconnect(connection);
+                    } else {
+                        // connection error
+                        connection.log("EventSource error");
+                        $connection.trigger(events.onError);
+                    }
                 }
             }, false);
         },
 
         reconnect: function (connection) {
             var that = this;
-            window.setTimeout(function () {                
+
+            that.reconnectTimeout = window.setTimeout(function () {
+                that.stop(connection);
+
                 if (connection.state === signalR.connectionState.reconnecting ||
                     changeState(connection,
                                 signalR.connectionState.connected,
                                 signalR.connectionState.reconnecting) === true) {
                     connection.log("EventSource reconnecting");
-                    that.stop(connection);
+
                     that.start(connection);
                 }
 

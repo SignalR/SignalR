@@ -14,6 +14,10 @@
 
         supportsKeepAlive: true,
 
+        reconnectTimeout: false,
+
+        currentEventSourceID: 0,
+
         timeOut: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -44,6 +48,7 @@
             try {
                 connection.log("Attempting to connect to SSE endpoint '" + url + "'");
                 connection.eventSource = new window.EventSource(url);
+                connection.eventSource.ID = ++that.currentEventSourceID;
             }
             catch (e) {
                 connection.log("EventSource failed trying to connect with error " + e.Message);
@@ -73,13 +78,7 @@
                     }
 
                     if (reconnecting) {
-                        // If we're reconnecting and the event source is attempting to connect,
-                        // don't keep retrying. This causes duplicate connections to spawn.
-                        if (connection.eventSource.readyState !== window.EventSource.CONNECTING &&
-                            connection.eventSource.readyState !== window.EventSource.OPEN) {
-                            // If we were reconnecting, rather than doing initial connect, then try reconnect again
                             that.reconnect(connection);
-                        }
                     } else if (onFailed) {
                         onFailed();
                     }
@@ -92,6 +91,10 @@
 
                 if (connectTimeOut) {
                     window.clearTimeout(connectTimeOut);
+                }
+
+                if (that.reconnectTimeout) {
+                    window.clearTimeout(that.reconnectTimeout);
                 }
 
                 if (opened === false) {
@@ -121,40 +124,48 @@
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
-                if (!opened) {
-                    if (onFailed) {
-                        onFailed();
+                // Only handle an error if the error is from the current Event Source.
+                // Sometimes on disconnect the server will push down an error event
+                // to an expired Event Source.
+                if (this.ID === that.currentEventSourceID) {
+                    if (!opened) {
+                        if (onFailed) {
+                            onFailed();
+                        }
+
+                        return;
                     }
 
-                    return;
-                }
+                    connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
-                connection.log("EventSource readyState: " + connection.eventSource.readyState);
-
-                if (e.eventPhase === window.EventSource.CLOSED) {
-                    // We don't use the EventSource's native reconnect function as it
-                    // doesn't allow us to change the URL when reconnecting. We need
-                    // to change the URL to not include the /connect suffix, and pass
-                    // the last message id we received.
-                    connection.log("EventSource reconnecting due to the server connection ending");
-                    that.reconnect(connection);
-                } else {
-                    // connection error
-                    connection.log("EventSource error");
-                    $connection.trigger(events.onError);
+                    if (e.eventPhase === window.EventSource.CLOSED) {
+                        // We don't use the EventSource's native reconnect function as it
+                        // doesn't allow us to change the URL when reconnecting. We need
+                        // to change the URL to not include the /connect suffix, and pass
+                        // the last message id we received.
+                        connection.log("EventSource reconnecting due to the server connection ending");
+                        that.reconnect(connection);
+                    } else {
+                        // connection error
+                        connection.log("EventSource error");
+                        $connection.trigger(events.onError);
+                    }
                 }
             }, false);
         },
 
         reconnect: function (connection) {
             var that = this;
-            window.setTimeout(function () {                
+
+            that.reconnectTimeout = window.setTimeout(function () {
+                that.stop(connection);
+
                 if (connection.state === signalR.connectionState.reconnecting ||
                     changeState(connection,
                                 signalR.connectionState.connected,
                                 signalR.connectionState.reconnecting) === true) {
                     connection.log("EventSource reconnecting");
-                    that.stop(connection);
+
                     that.start(connection);
                 }
 
