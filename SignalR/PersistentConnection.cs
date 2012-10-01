@@ -267,7 +267,7 @@ namespace SignalR
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = _connectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
-                KeepAlive = (keepAlive != null) ? keepAlive.Value.Seconds : -1,
+                KeepAlive = (keepAlive != null) ? keepAlive.Value.TotalSeconds : (double?)null,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.0"
