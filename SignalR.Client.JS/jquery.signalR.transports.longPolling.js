@@ -164,7 +164,7 @@
         },
 
         lostConnection: function (connection) {
-            throw "Lost Connection not handled for LongPolling";
+            throw new Error("Lost Connection not handled for LongPolling");
         },
 
         send: function (connection, data) {
