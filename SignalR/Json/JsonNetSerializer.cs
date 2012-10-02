@@ -35,34 +35,6 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Serializes the specified object to a JSON string.
-        /// </summary>
-        /// <param name="value">The object to serailize.</param>
-        /// <returns>A JSON string representation of the object.</returns>
-        public string Stringify(object value)
-        {
-            using (var writer = new StringWriter())
-            {
-                Stringify(value, writer);
-                return writer.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Deserializes the JSON to a .NET object.
-        /// </summary>
-        /// <param name="json">The JSON to deserialize.</param>
-        /// <returns>The deserialized object from the JSON string.</returns>
-        public object Parse(string json)
-        {
-            using (var stringReader = new StringReader(json))
-            using (var reader = new JsonTextReader(stringReader))
-            {
-                return _serializer.Deserialize(reader);
-            }
-        }
-
-        /// <summary>
         /// Deserializes the JSON to a .NET object.
         /// </summary>
         /// <param name="json">The JSON to deserialize.</param>
@@ -77,20 +49,12 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Deserializes the JSON to a .NET object.
+        /// Serializes the specified object to a <see cref="TextWriter"/>.
         /// </summary>
-        /// <typeparam name="T">The <see cref="System.Type"/> of object being deserialized.</typeparam>
-        /// <param name="json">The JSON to deserialize</param>
-        /// <returns>The deserialized object from the JSON string.</returns>
-        public T Parse<T>(string json)
-        {
-            return (T)Parse(json, typeof(T));
-        }
-
+        /// <param name="value">The object to serialize</param>
+        /// <param name="writer">The <see cref="TextWriter"/> to serialize the object to.</param>
         public void Stringify(object value, TextWriter writer)
         {
-            // REVIEW: This is a hack to improve performance, we need to abstract this
-            // json writer so we can do it generically (but that might not be worth it).
             var selfSerializer = value as IJsonWritable;
             if (selfSerializer != null)
             {
