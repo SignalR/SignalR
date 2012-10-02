@@ -14,9 +14,14 @@ namespace SignalR
         Action<string> OnMessage { get; set; }
 
         /// <summary>
-        /// Invoked when the websocket closes
+        /// Invoked when the websocket gracefully closes
         /// </summary>
         Action OnClose { get; set; }
+
+        /// <summary>
+        /// Invoked when the websocket ungracefully closes
+        /// </summary>
+        Action OnUngracefulClose { get; set; }
 
         /// <summary>
         /// Invoked when there is an error

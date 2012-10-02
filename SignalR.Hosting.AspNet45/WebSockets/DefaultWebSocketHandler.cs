@@ -21,6 +21,20 @@ namespace SignalR.WebSockets
             }
         }
 
+        public override void OnUngracefulClose()
+        {
+            if (!_raiseEvent)
+            {
+                return;
+            }
+
+            Action onUngracefulClose = ((IWebSocket)this).OnUngracefulClose;
+            if (onUngracefulClose != null)
+            {
+                onUngracefulClose();
+            }
+        }
+
         public override void OnError()
         {
             Action<Exception> onError = ((IWebSocket)this).OnError;
@@ -52,6 +66,12 @@ namespace SignalR.WebSockets
         }
 
         Action IWebSocket.OnClose
+        {
+            get;
+            set;
+        }
+
+        Action IWebSocket.OnUngracefulClose
         {
             get;
             set;

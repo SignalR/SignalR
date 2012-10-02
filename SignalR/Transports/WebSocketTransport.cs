@@ -54,6 +54,12 @@ namespace SignalR.Transports
                     _isAlive = false;
                 };
 
+                socket.OnUngracefulClose = () =>
+                {
+                    // Die but let the heartbeat clean up the connection
+                    _isAlive = false;
+                };
+
                 socket.OnMessage = message =>
                 {
                     OnReceiving(message);

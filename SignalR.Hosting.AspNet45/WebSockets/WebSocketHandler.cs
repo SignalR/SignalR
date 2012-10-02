@@ -32,8 +32,11 @@ namespace SignalR.WebSockets
         // The developer can look at the Error property to get the exception
         public virtual void OnError() { }
 
-        // Called when the socket is closed; invoked 1 time per socket
+        // Called when the socket is closed gracefully; invoked 1 time per socket
         public virtual void OnClose() { }
+
+        // Called when the socket is closed ungracefully
+        public virtual void OnUngracefulClose() { }
 
         /*
          * NON-VIRTUAL HELPER METHODS
@@ -127,6 +130,7 @@ namespace SignalR.WebSockets
 
         internal async Task ProcessWebSocketRequestAsync(WebSocketContext webSocketContext, Func<Task<WebSocketMessage>> messageRetriever)
         {
+            bool GracefulClose = true;
             try
             {
                 // first, set primitives and initialize the object
@@ -163,14 +167,22 @@ namespace SignalR.WebSockets
                 {
                     Error = ex;
                     OnError();
+                    GracefulClose = false;
                 }
             }
             finally
             {
                 try
                 {
-                    // we're finished
-                    OnClose();
+                    if (GracefulClose)
+                    {
+                        // we're finished
+                        OnClose();
+                    }
+                    else
+                    {                        
+                        OnUngracefulClose();
+                    }
                 }
                 finally
                 {
