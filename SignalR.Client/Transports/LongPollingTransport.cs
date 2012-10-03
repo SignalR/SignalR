@@ -35,6 +35,7 @@ namespace SignalR.Client.Transports
             ReconnectDelay = TimeSpan.FromSeconds(5);
             ErrorDelay = TimeSpan.FromSeconds(2);
             ConnectDelay = TimeSpan.FromSeconds(2);
+            _supportsKeepAlive = false;
         }
 
         protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)

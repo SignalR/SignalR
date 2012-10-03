@@ -73,6 +73,7 @@
     <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />
+    <Compile Include="Transports\KeepAliveData.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />

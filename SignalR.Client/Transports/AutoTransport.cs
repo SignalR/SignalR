@@ -92,5 +92,22 @@ namespace SignalR.Client.Transports
                 _transport.Stop(connection);
             }
         }
+
+
+        public bool SupportsKeepAlive()
+        {
+            return _transport.SupportsKeepAlive();
+        }
+
+
+        public void MonitorKeepAlive()
+        {
+            _transport.MonitorKeepAlive();
+        }
+
+        public void StopMonitoringKeepAlive()
+        {
+            _transport.StopMonitoringKeepAlive();
+        }
     }
 }

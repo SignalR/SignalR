@@ -44,6 +44,11 @@ namespace SignalR.Client
         public event Action Closed;
 
         /// <summary>
+        /// Occurs when the <see cref="Connection"/> is hanging/may be offline
+        /// </summary>
+        public event Action OnConnectionSlow;
+
+        /// <summary>
         /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
         /// </summary>
         public event Action Reconnected;

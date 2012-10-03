@@ -23,6 +23,11 @@ namespace SignalR.Client.Transports
 
         protected readonly IHttpClient _httpClient;
 
+        private bool _supportsKeepAlive;
+        private bool _monitoringKeepAlive;
+        private KeepAliveData _keepAliveData = new KeepAliveData();
+        private Timer _keepAliveMonitor;
+
         public HttpBasedTransport(IHttpClient httpClient, string transport)
         {
             _httpClient = httpClient;
@@ -31,7 +36,17 @@ namespace SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return GetNegotiationResponse(_httpClient, connection);
+            var negotationData = GetNegotiationResponse(_httpClient, connection);
+            var keepAlive = negotationData.Result.KeepAlive;
+
+            if (keepAlive.HasValue)
+            {
+                _supportsKeepAlive = true;
+                // Setting the keep alive will calculate the monitoring thresholds
+                _keepAliveData.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
+            }
+
+            return negotationData;
         }
 
         internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
@@ -41,7 +56,6 @@ namespace SignalR.Client.Transports
 #else
             string negotiateUrl = connection.Url + "negotiate";
 #endif
-
 
             return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
@@ -260,11 +274,61 @@ namespace SignalR.Client.Transports
             }
         }
 
+        public void MonitorKeepAlive(IConnection connection)
+        {
+            if (!_monitoringKeepAlive)
+            {
+                _monitoringKeepAlive = true;
+
+                // Initiate the keep alive timestamps
+                UpdateKeepAlive();
+
+                _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
+
+            }
+        }
+
+        private void CheckIfAlive(object state)
+        {
+            IConnection connection = state as IConnection;
+
+            // Only check if we're connected
+            if (connection.State == ConnectionState.Connected) {
+                TimeSpan timeElapsed = (DateTime.UtcNow - _keepAliveData.LastKeepAlive);
+
+                // Check if the keep alive has completely timed out
+                if (timeElapsed >= _keepAliveData.Timeout) {
+                    // Notify transport that the connection has been lost
+                    //connection.transport.lostConnection(connection);
+                }
+                else if (timeElapsed >= _keepAliveData.TimeoutWarning) {
+                    // This is to assure that the user only gets a single warning
+                    if (!_keepAliveData.WarningTriggered) {
+                        $(connection).triggerHandler(events.onConnectionSlow);
+                        _keepAliveData.WarningTriggered = true;
+                    }
+                }
+                else {
+                    keepAliveData.userNotified = false;
+                }
+            }
+        }
+
+        private void UpdateKeepAlive()
+        {
+            _keepAliveData.LastKeepAlive = DateTime.UtcNow;
+        }
+
         private static string GetCustomQueryString(IConnection connection)
         {
             return String.IsNullOrEmpty(connection.QueryString)
                             ? ""
                             : "&" + connection.QueryString;
+        }
+
+        public bool SupportsKeepAlive()
+        {
+            return _supportsKeepAlive;
         }
     }
 }
