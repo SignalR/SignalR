@@ -93,16 +93,19 @@ namespace SignalR.Client.Transports
             }
         }
 
-
         public bool SupportsKeepAlive()
         {
             return _transport.SupportsKeepAlive();
         }
 
-
-        public void MonitorKeepAlive()
+        public void LostConnection(IConnection connection)
         {
-            _transport.MonitorKeepAlive();
+            _transport.LostConnection(connection);
+        }
+
+        public void MonitorKeepAlive(IConnection connection)
+        {
+            _transport.MonitorKeepAlive(connection);
         }
 
         public void StopMonitoringKeepAlive()

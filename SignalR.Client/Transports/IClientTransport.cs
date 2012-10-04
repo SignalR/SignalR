@@ -9,8 +9,10 @@ namespace SignalR.Client.Transports
         Task Start(IConnection connection, string data);
         Task<T> Send<T>(IConnection connection, string data);
         void Stop(IConnection connection);
+
+        void LostConnection(IConnection connection);
         bool SupportsKeepAlive();
-        void MonitorKeepAlive();
+        void MonitorKeepAlive(IConnection connection);
         void StopMonitoringKeepAlive();
     }
 }

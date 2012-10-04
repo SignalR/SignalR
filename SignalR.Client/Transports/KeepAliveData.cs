@@ -5,22 +5,35 @@ using System.Text;
 
 namespace SignalR.Client.Transports
 {
+    /// <summary>
+    /// Used to store Keep Alive information that is retrieved from server.
+    /// </summary>
     public class KeepAliveData
     {
+        /// <summary>
+        /// Set default keep alive values
+        /// </summary>
         public KeepAliveData()
         {
             TimeoutCount = 2;
             TimeoutWarningThreshold = .66;
         }
 
+        /// <summary>
+        /// Main accessor point of the KeepAliveData class.  When set the other members of the class are calculated and set.
+        /// </summary>
+        private TimeSpan _keepAlive;
         public TimeSpan KeepAlive
         {
-            get;
+            get
+            {
+                return _keepAlive;
+            }
             set
             {
-                KeepAlive = value;
+                _keepAlive = value;
                 // Calculate keep alive monitoring thresholds
-                Timeout = TimeSpan.FromSeconds(TimeoutCount * KeepAlive.TotalSeconds);
+                Timeout = TimeSpan.FromSeconds(TimeoutCount * _keepAlive.TotalSeconds);
                 TimeoutWarning = TimeSpan.FromSeconds(Timeout.TotalSeconds * TimeoutWarningThreshold);
                 KeepAliveCheckInterval = TimeSpan.FromSeconds((Timeout - TimeoutWarning).TotalSeconds / 3);
                 WarningTriggered = false;
@@ -72,12 +85,18 @@ namespace SignalR.Client.Transports
             private set;
         }
 
+        /// <summary>
+        /// Last time we received a keep alive from the server.
+        /// </summary>
         public DateTime LastKeepAlive
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Flag that indicates whether we have warned the developer of a potential "slow" connection
+        /// </summary>
         public bool WarningTriggered
         {
             get;

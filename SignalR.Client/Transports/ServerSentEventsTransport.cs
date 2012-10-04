@@ -40,11 +40,19 @@ namespace SignalR.Client.Transports
             OpenConnection(connection, data, initializeCallback, errorCallback);
         }
 
+        public override void LostConnection(IConnection connection)
+        {
+            // TaskAsyncHelper.Delay(TimeSpan.FromSeconds(1)).Then(() => { Stop(connection); }).Then(() => { Reconnect(connection, null); });
+            Stop(connection);
+            Reconnect(connection, null);
+        }
+
         private void Reconnect(IConnection connection, string data)
         {
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
+                (connection.Items[EventSourceKey] as EventSourceStreamReader).Close();
                 if (connection.State == ConnectionState.Reconnecting ||
                     connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
                 {
@@ -131,6 +139,8 @@ namespace SignalR.Client.Transports
 
                             bool timedOut;
                             bool disconnected;
+
+                            UpdateKeepAlive();
                             ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
 
                             if (disconnected)

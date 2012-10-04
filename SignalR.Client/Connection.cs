@@ -46,7 +46,7 @@ namespace SignalR.Client
         /// <summary>
         /// Occurs when the <see cref="Connection"/> is hanging/may be offline
         /// </summary>
-        public event Action OnConnectionSlow;
+        public event Action ConnectionSlow;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
@@ -208,8 +208,16 @@ namespace SignalR.Client
             }
 
             _transport = transport;
+            
+            Task negotation = Negotiate(transport);
 
-            return Negotiate(transport);
+            // We've now determined if the client can support the keep alive so we need to monitor it if it does
+            if (_transport.SupportsKeepAlive())
+            {
+                _transport.MonitorKeepAlive(this);
+            }
+
+            return negotation;
         }
 
         protected virtual string OnSending()
@@ -317,6 +325,12 @@ namespace SignalR.Client
                     return;
                 }
 
+                // Stop the keep alive monitoring if it's supported
+                if (_transport.SupportsKeepAlive())
+                {
+                    _transport.StopMonitoringKeepAlive();
+                }
+
                 _transport.Stop(this);
 
                 if (Closed != null)
@@ -394,6 +408,14 @@ namespace SignalR.Client
             }
         }
 
+        void IConnection.OnConnectionSlow()
+        {
+            if (ConnectionSlow != null)
+            {
+                ConnectionSlow();
+            }
+        }
+
         void IConnection.PrepareRequest(IRequest request)
         {
 #if WINDOWS_PHONE
@@ -462,6 +484,6 @@ namespace SignalR.Client
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
-        }
+        }        
     }
 }

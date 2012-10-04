@@ -27,6 +27,7 @@ namespace SignalR.Client.Transports
         private bool _monitoringKeepAlive;
         private KeepAliveData _keepAliveData = new KeepAliveData();
         private Timer _keepAliveMonitor;
+        private Int32 _checkingKeepAlive = 0;
 
         public HttpBasedTransport(IHttpClient httpClient, string transport)
         {
@@ -43,7 +44,7 @@ namespace SignalR.Client.Transports
             {
                 _supportsKeepAlive = true;
                 // Setting the keep alive will calculate the monitoring thresholds
-                _keepAliveData.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
+                _keepAliveData.KeepAlive = TimeSpan.FromSeconds(5);//TimeSpan.FromSeconds(keepAlive.Value);
             }
 
             return negotationData;
@@ -195,7 +196,6 @@ namespace SignalR.Client.Transports
             }
         }
 
-
         protected virtual void OnBeforeAbort(IConnection connection)
         {
 
@@ -276,6 +276,7 @@ namespace SignalR.Client.Transports
 
         public void MonitorKeepAlive(IConnection connection)
         {
+            // Only monitor the keep alive if it's not already in the process of being monitored;
             if (!_monitoringKeepAlive)
             {
                 _monitoringKeepAlive = true;
@@ -284,37 +285,46 @@ namespace SignalR.Client.Transports
                 UpdateKeepAlive();
 
                 _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
-
             }
         }
 
         private void CheckIfAlive(object state)
         {
-            IConnection connection = state as IConnection;
+            if (Interlocked.Exchange(ref _checkingKeepAlive, 1) == 0)
+            {
+                IConnection connection = state as IConnection;
 
-            // Only check if we're connected
-            if (connection.State == ConnectionState.Connected) {
-                TimeSpan timeElapsed = (DateTime.UtcNow - _keepAliveData.LastKeepAlive);
+                // Only check if we're connected
+                if (connection.State == ConnectionState.Connected)
+                {
+                    TimeSpan timeElapsed = (DateTime.UtcNow - _keepAliveData.LastKeepAlive);
 
-                // Check if the keep alive has completely timed out
-                if (timeElapsed >= _keepAliveData.Timeout) {
-                    // Notify transport that the connection has been lost
-                    //connection.transport.lostConnection(connection);
-                }
-                else if (timeElapsed >= _keepAliveData.TimeoutWarning) {
-                    // This is to assure that the user only gets a single warning
-                    if (!_keepAliveData.WarningTriggered) {
-                        $(connection).triggerHandler(events.onConnectionSlow);
-                        _keepAliveData.WarningTriggered = true;
+                    // Check if the keep alive has completely timed out
+                    if (timeElapsed >= _keepAliveData.Timeout)
+                    {
+                        // Notify transport that the connection has been lost
+                        LostConnection(connection);
+                    }
+                    else if (timeElapsed >= _keepAliveData.TimeoutWarning)
+                    {
+                        // This is to assure that the user only gets a single warning
+                        if (!_keepAliveData.WarningTriggered)
+                        {
+                            connection.OnConnectionSlow();
+                            _keepAliveData.WarningTriggered = true;
+                        }
+                    }
+                    else
+                    {
+                        _keepAliveData.WarningTriggered = false;
                     }
                 }
-                else {
-                    keepAliveData.userNotified = false;
-                }
+
+                _checkingKeepAlive = 0;
             }
         }
 
-        private void UpdateKeepAlive()
+        protected void UpdateKeepAlive()
         {
             _keepAliveData.LastKeepAlive = DateTime.UtcNow;
         }
@@ -329,6 +339,17 @@ namespace SignalR.Client.Transports
         public bool SupportsKeepAlive()
         {
             return _supportsKeepAlive;
+        }
+
+        public virtual void LostConnection(IConnection connection)
+        {
+        }
+
+        public void StopMonitoringKeepAlive()
+        {
+            _monitoringKeepAlive = false;
+            _keepAliveMonitor.Dispose();
+            _keepAliveMonitor = null;
         }
     }
 }
