@@ -16,12 +16,7 @@ namespace SignalR
         /// <summary>
         /// Invoked when the websocket gracefully closes
         /// </summary>
-        Action OnClose { get; set; }
-
-        /// <summary>
-        /// Invoked when the websocket ungracefully closes
-        /// </summary>
-        Action OnUngracefulClose { get; set; }
+        Action<bool> OnClose { get; set; }
 
         /// <summary>
         /// Invoked when there is an error

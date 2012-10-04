@@ -7,31 +7,17 @@ namespace SignalR.WebSockets
     {
         private bool _raiseEvent = true;
 
-        public override void OnClose()
+        public override void OnClose(bool clean)
         {
             if (!_raiseEvent)
             {
                 return;
             }
 
-            Action onClose = ((IWebSocket)this).OnClose;
+            Action<bool> onClose = ((IWebSocket)this).OnClose;
             if (onClose != null)
             {
-                onClose();
-            }
-        }
-
-        public override void OnUngracefulClose()
-        {
-            if (!_raiseEvent)
-            {
-                return;
-            }
-
-            Action onUngracefulClose = ((IWebSocket)this).OnUngracefulClose;
-            if (onUngracefulClose != null)
-            {
-                onUngracefulClose();
+                onClose(clean);
             }
         }
 
@@ -65,13 +51,7 @@ namespace SignalR.WebSockets
             set;
         }
 
-        Action IWebSocket.OnClose
-        {
-            get;
-            set;
-        }
-
-        Action IWebSocket.OnUngracefulClose
+        Action<bool> IWebSocket.OnClose
         {
             get;
             set;

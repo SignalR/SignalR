@@ -47,16 +47,13 @@ namespace SignalR.Transports
             {
                 _socket = socket;
 
-                socket.OnClose = () =>
+                socket.OnClose = clean =>
                 {
-                    OnDisconnect();
+                    if (clean)
+                    {
+                        OnDisconnect();
+                    }
 
-                    _isAlive = false;
-                };
-
-                socket.OnUngracefulClose = () =>
-                {
-                    // Die but let the heartbeat clean up the connection
                     _isAlive = false;
                 };
 

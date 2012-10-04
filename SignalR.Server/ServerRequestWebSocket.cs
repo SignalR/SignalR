@@ -77,8 +77,7 @@ namespace SignalR.Server
         }
 
         public Action<string> OnMessage { get; set; }
-        public Action OnClose { get; set; }
-        public Action OnUngracefulClose { get; set; }
+        public Action<bool> OnClose { get; set; }
         public Action<Exception> OnError { get; set; }
 
         public Task Send(string value)
@@ -163,7 +162,7 @@ namespace SignalR.Server
                     {
                         if (OnClose != null)
                         {
-                            OnClose();
+                            OnClose(true);
                         }
 
                         return;
@@ -192,11 +191,12 @@ namespace SignalR.Server
                 }
             }
 
-            if (OnUngracefulClose != null)
+            // Unclean disconnect
+            if (OnClose != null)
             {
                 try
                 {
-                    OnUngracefulClose();
+                    OnClose(false);
                 }
                 catch
                 {
