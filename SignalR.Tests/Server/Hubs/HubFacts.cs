@@ -672,6 +672,77 @@ namespace SignalR.Tests
             connection.Stop();
         }
 
+        [Fact]
+        public void SendToAllButCaller()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection1 = new Client.Hubs.HubConnection("http://foo/");
+            var connection2 = new Client.Hubs.HubConnection("http://foo/");
+
+            var wh1 = new ManualResetEventSlim(initialState: false);
+            var wh2 = new ManualResetEventSlim(initialState: false);
+
+            var hub1 = connection1.CreateProxy("SendToSome");
+            var hub2 = connection2.CreateProxy("SendToSome");
+
+            connection1.Start(host).Wait();
+            connection2.Start(host).Wait();
+
+            hub1.On("send", wh1.Set);
+            hub2.On("send", wh2.Set);
+
+            hub1.Invoke("SendToAllButCaller").Wait();
+
+            Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+            connection1.Stop();
+            connection2.Stop();
+        }
+
+        [Fact]
+        public void SendToAll()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection1 = new Client.Hubs.HubConnection("http://foo/");
+            var connection2 = new Client.Hubs.HubConnection("http://foo/");
+
+            var wh1 = new ManualResetEventSlim(initialState: false);
+            var wh2 = new ManualResetEventSlim(initialState: false);
+
+            var hub1 = connection1.CreateProxy("SendToSome");
+            var hub2 = connection2.CreateProxy("SendToSome");
+
+            connection1.Start(host).Wait();
+            connection2.Start(host).Wait();
+
+            hub1.On("send", wh1.Set);
+            hub2.On("send", wh2.Set);
+
+            hub1.Invoke("SendToAll").Wait();
+
+            Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+            Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+            connection1.Stop();
+            connection2.Stop();
+        }
+
+        public class SendToSome : Hub
+        {
+            public Task SendToAllButCaller()
+            {
+                return Clients.Others.send();
+            }
+
+            public Task SendToAll()
+            {
+                return Clients.All.send();
+            }
+        }
+
         public class SomeHub : Hub
         {
             public void AllFoo()
