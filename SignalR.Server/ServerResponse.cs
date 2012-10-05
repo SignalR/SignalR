@@ -27,14 +27,20 @@ namespace SignalR.Server
 
         public Task FlushAsync()
         {
-            ResponseBody.Flush();
+            try
+            {
+                ResponseBody.Flush();
+            }
+            catch
+            {
+            }
+
             return TaskAsyncHelper.Empty;
         }
 
         public Task EndAsync()
         {
-            ResponseBody.Flush();
-            return TaskAsyncHelper.Empty;
+            return FlushAsync();
         }
     }
 }
