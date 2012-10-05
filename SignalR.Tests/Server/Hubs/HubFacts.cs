@@ -335,7 +335,7 @@ namespace SignalR.Tests
                 proxy.Invoke("joinRoom", user).Wait();
             }
 
-            Assert.True(countDown.Wait(TimeSpan.FromSeconds(10)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
 
             connection.Stop();
         }
@@ -387,8 +387,8 @@ namespace SignalR.Tests
                 proxy.Invoke("joinRoom", user).Wait();
             }
 
-            Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-            Assert.True(!countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)) && countDownAfterReconnect.Count == max);
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(!countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)) && countDownAfterReconnect.Count == max);
 
             connection.Stop();
         }
@@ -440,8 +440,8 @@ namespace SignalR.Tests
                 proxy.Invoke("joinRoom", user).Wait();
             }
 
-            Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
 
             connection.Stop();
         }
@@ -494,8 +494,8 @@ namespace SignalR.Tests
                 proxy.Invoke("joinRoom", user).Wait();
             }
 
-            Assert.True(countDown.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(3)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
+            Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
+            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
 
             connection.Stop();
         }
