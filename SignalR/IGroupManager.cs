@@ -12,8 +12,9 @@ namespace SignalR
         /// </summary>
         /// <param name="groupName">The name of the group.</param>
         /// <param name="value">The value to send.</param>
+        /// <param name="exclude">List of connection ids to exclude</param>
         /// <returns>A task that represents when send is complete.</returns>
-        Task Send(string groupName, object value);
+        Task Send(string groupName, object value, params string[] exclude);
 
         /// <summary>
         /// Adds a connection to the specified group. 

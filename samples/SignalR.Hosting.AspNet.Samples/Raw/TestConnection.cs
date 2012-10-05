@@ -7,7 +7,7 @@ namespace SignalR.Hosting.AspNet.Samples
     {
         protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
-            return Connection.Send(connectionId, data);
+            return Connection.Publish(connectionId, data);
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)

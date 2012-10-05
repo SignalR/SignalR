@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace SignalR.Hubs
     {
         private readonly TrackingDictionary _state;
 
-        public StatefulSignalProxy(Func<string, ClientHubInvocation, Task> send, string signal, string hubName, TrackingDictionary state)
+        public StatefulSignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, TrackingDictionary state)
             : base(send, signal, hubName)
         {
             _state = state;

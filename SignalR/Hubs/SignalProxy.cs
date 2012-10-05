@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.Threading.Tasks;
 
@@ -6,11 +7,11 @@ namespace SignalR.Hubs
 {
     public class SignalProxy : DynamicObject, IClientProxy
     {
-        protected readonly Func<string, ClientHubInvocation, Task> _send;
+        protected readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
         protected readonly string _signal;
         protected readonly string _hubName;
 
-        public SignalProxy(Func<string, ClientHubInvocation, Task> send, string signal, string hubName)
+        public SignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName)
         {
             _send = send;
             _signal = signal;
@@ -35,7 +36,7 @@ namespace SignalR.Hubs
 
             string signal = _hubName + "." + _signal;
 
-            return _send.Invoke(signal, invocation);
+            return _send(signal, invocation, null);
         }
 
         protected virtual ClientHubInvocation GetInvocationData(string method, object[] args)

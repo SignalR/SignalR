@@ -28,9 +28,15 @@ namespace SignalR
         /// <param name="groupName">The name of the group.</param>
         /// <param name="value">The value to send.</param>
         /// <returns>A task that represents when send is complete.</returns>
-        public Task Send(string groupName, object value)
+        public Task Send(string groupName, object value, params string[] exclude)
         {
-            return _connection.Send(CreateQualifiedName(groupName), value);
+            var qualifiedName = CreateQualifiedName(groupName);
+            var message = new ConnectionMessage(qualifiedName, value)
+            {
+                ExcludedSignals = exclude
+            };
+
+            return _connection.Publish(message);
         }
 
         /// <summary>
@@ -48,7 +54,7 @@ namespace SignalR
                 WaitForAck = true
             };
 
-            return _connection.Send(connectionId, command);
+            return _connection.Publish(connectionId, command);
         }
 
         /// <summary>
@@ -66,7 +72,7 @@ namespace SignalR
                 WaitForAck = true
             };
 
-            return _connection.Send(connectionId, command);
+            return _connection.Publish(connectionId, command);
         }
 
         private string CreateQualifiedName(string groupName)

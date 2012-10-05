@@ -1,4 +1,8 @@
-﻿namespace SignalR.Hubs
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace SignalR.Hubs
 {
     /// <summary>
     /// 
@@ -6,6 +10,7 @@
     public class HubConnectionContext
     {
         private readonly string _hubName;
+        private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
 
         /// <summary>
         /// 
@@ -21,11 +26,13 @@
         /// <param name="hubName"></param>
         /// <param name="connectionId"></param>
         /// <param name="state"></param>
-        public HubConnectionContext(IConnection connection, string hubName, string connectionId, TrackingDictionary state)
+        public HubConnectionContext(IHubPipelineInvoker pipelineInvoker, IConnection connection, string hubName, string connectionId, TrackingDictionary state)
         {
-            Caller = new StatefulSignalProxy(connection, connectionId, hubName, state);
-            All = new ClientProxy(connection, hubName);
-            Others = new ClientProxy(connection, hubName, sendToAll: false);
+            _send = (signal, invocation, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, invocation, exclude));
+
+            Caller = new StatefulSignalProxy(_send, connectionId, hubName, state);
+            All = new ClientProxy(_send, hubName);
+            Others = new ClientProxy(_send, hubName, connectionId);
 
             Connection = connection;
             _hubName = hubName;
@@ -58,7 +65,7 @@
         /// <returns></returns>
         public dynamic Group(string groupName)
         {
-            return new SignalProxy(Connection, groupName, _hubName);
+            return new SignalProxy(_send, groupName, _hubName);
         }
 
         /// <summary>
@@ -68,7 +75,7 @@
         /// <returns></returns>
         public dynamic Client(string connectionId)
         {
-            return new SignalProxy(Connection, connectionId, _hubName);
+            return new SignalProxy(_send, connectionId, _hubName);
         }
     }
 }

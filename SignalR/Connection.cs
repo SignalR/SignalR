@@ -44,6 +44,14 @@ namespace SignalR
             _counters = performanceCounterManager;
         }
 
+        public string DefaultSignal
+        {
+            get
+            {
+                return _baseSignal;
+            }
+        }
+
         IEnumerable<string> ISubscriber.EventKeys
         {
             get
@@ -79,36 +87,24 @@ namespace SignalR
                 return _traceSource.Value;
             }
         }
-
-        public virtual Task Broadcast(object value)
+        
+        public Task Publish(ConnectionMessage message)
         {
-            return Send(_baseSignal, value);
-        }
+            Message busMessage = CreateMessage(message.Signal, message.Value);
 
-        public virtual Task Send(string signal, object value)
-        {
-            return SendMessage(signal, value);
-        }
+            if (message.ExcludedSignals != null)
+            {
+                busMessage.Filter = String.Join("|", message.ExcludedSignals);
+            }
 
-        private Task SendMessage(string key, object value)
-        {
-            Message message = CreateMessage(key, value);
             _counters.ConnectionMessagesSentTotal.Increment();
             _counters.ConnectionMessagesSentPerSec.Increment();
 
-            if (message.WaitForAck)
+            if (busMessage.WaitForAck)
             {
-                Task ackTask = _ackHandler.CreateAck(message.CommandId);
-                return _bus.Publish(message).Then(task => task, ackTask);
+                Task ackTask = _ackHandler.CreateAck(busMessage.CommandId);
+                return _bus.Publish(busMessage).Then(task => task, ackTask);
             }
-
-            return _bus.Publish(message);
-        }
-
-        public Task Send(ConnectionMessage message)
-        {
-            Message busMessage = CreateMessage(message.Signal, message.Value);
-            busMessage.IgnoreSender = message.IgnoreSender;
 
             return _bus.Publish(busMessage);
         }
@@ -173,18 +169,16 @@ namespace SignalR
 
         private void ProcessResults(MessageResult result)
         {
-            result.Messages.Enumerate(message => message.IsCommand || message.IsAck || message.IgnoreSender,
+            result.Messages.Enumerate(message => true,
                                       message =>
                                       {
-                                          if (message.IgnoreSender)
-                                          {
-                                              message.Skip = _connectionId.Equals(message.Source);
-                                          }
-                                          else if (message.IsAck)
+                                          message.Skip = SkipMessage(message);
+
+                                          if (message.IsAck)
                                           {
                                               _ackHandler.TriggerAck(message.CommandId);
                                           }
-                                          else
+                                          else if (message.IsCommand)
                                           {
                                               var command = _serializer.Parse<Command>(message.Value);
                                               ProcessCommand(command);
@@ -201,6 +195,18 @@ namespace SignalR
                                               }
                                           }
                                       });
+        }
+
+        private bool SkipMessage(Message message)
+        {
+            if (String.IsNullOrEmpty(message.Filter))
+            {
+                return false;
+            }
+
+            IEnumerable<string> exclude = message.Filter.Split('|');
+
+            return Signals.Any(s => exclude.Contains(s));
         }
 
         private void ProcessCommand(Command command)

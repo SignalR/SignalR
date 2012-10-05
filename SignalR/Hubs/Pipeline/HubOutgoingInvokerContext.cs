@@ -1,12 +1,16 @@
-﻿namespace SignalR.Hubs
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace SignalR.Hubs
 {
     public class HubOutgoingInvokerContext : IHubOutgoingInvokerContext
     {        
-        public HubOutgoingInvokerContext(IConnection connection, string signal, ClientHubInvocation invocation)
+        public HubOutgoingInvokerContext(IConnection connection, string signal, ClientHubInvocation invocation, IEnumerable<string> excludedSignals)
         {
             Connection = connection;
             Signal = signal;
             Invocation = invocation;
+            ExcludedSignals = excludedSignals ?? Enumerable.Empty<string>();
         }
 
         public IConnection Connection
@@ -28,6 +32,12 @@
         }
 
         public string Signal
+        {
+            get;
+            private set;
+        }
+
+        public IEnumerable<string> ExcludedSignals
         {
             get;
             private set;

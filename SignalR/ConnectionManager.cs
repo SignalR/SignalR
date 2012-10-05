@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -74,7 +75,7 @@ namespace SignalR
                 _counters.ErrorsAllTotal,
                 _counters.ErrorsAllPerSec);
 
-            Func<string, ClientHubInvocation, Task> send = (signal, value) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, value));
+            Func<string, ClientHubInvocation, IEnumerable<string>, Task> send = (signal, value, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, value, exclude));
 
             return new HubContext(new ClientProxy(send, hubDescriptor.Name), 
                                   new GroupManager(connection, hubName));

@@ -225,7 +225,12 @@ namespace SignalR.Hubs
 
         internal static Task Outgoing(IHubOutgoingInvokerContext context)
         {
-            return context.Connection.Send(context.Signal, context.Invocation);
+            var message = new ConnectionMessage(context.Signal, context.Invocation)
+            {
+                ExcludedSignals = context.ExcludedSignals
+            };
+
+            return context.Connection.Publish(message);
         }
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
@@ -307,11 +312,8 @@ namespace SignalR.Hubs
                 {
                     state = state ?? new TrackingDictionary();
 
-                    Func<string, ClientHubInvocation, Task> send = (signal, value) => _pipelineInvoker.Send(new HubOutgoingInvokerContext(Connection, signal, value));
-
                     hub.Context = new HubCallerContext(request, connectionId);
-                    hub.Caller = new StatefulSignalProxy(send, connectionId, descriptor.Name, state);
-                    hub.Clients = new ClientProxy(send, descriptor.Name);
+                    hub.Clients = new HubConnectionContext(_pipelineInvoker, Connection, descriptor.Name, connectionId, state);
                     hub.Groups = new GroupManager(Connection, descriptor.Name);
                 }
 

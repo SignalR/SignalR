@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SignalR.Infrastructure;
 
 namespace SignalR.SqlServer
 {

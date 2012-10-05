@@ -1,4 +1,5 @@
-﻿namespace SignalR.Hubs
+﻿using System.Collections.Generic;
+namespace SignalR.Hubs
 {
     /// <summary>
     /// 
@@ -19,5 +20,10 @@
         /// 
         /// </summary>
         string Signal { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<string> ExcludedSignals { get; }
     }
 }
