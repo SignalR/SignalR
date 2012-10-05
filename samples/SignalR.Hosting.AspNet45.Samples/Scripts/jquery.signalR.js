@@ -456,6 +456,18 @@
             return connection;
         },
 
+        connectionSlow: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the client detects a slow connection</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection is slow</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind(events.onConnectionSlow, function(e, data) {
+                callback.call(connection);
+            });
+
+            return connection;
+        },
+
         reconnected: function (callback) {
             /// <summary>Adds a callback that will be invoked when the underlying transport reconnects</summary>
             /// <param name="callback" type="Function">A callback function to execute when the connection is restored</param>
