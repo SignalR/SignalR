@@ -249,11 +249,12 @@ namespace SignalR.Transports
                 // If we're telling the client to disconnect then clean up the instantiated connection.
                 if (response.Disconnect)
                 {
+                    // Send the response before removing any connection data
                     return Send(response).Then(() =>
                     {
                         // Remove connection without triggering disconnect
                         HeartBeat.RemoveConnection(this);
-
+                        
                         endRequest();
                         registration.Dispose();
                         subscription.Dispose();

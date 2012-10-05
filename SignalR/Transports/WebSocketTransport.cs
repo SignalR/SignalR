@@ -49,6 +49,9 @@ namespace SignalR.Transports
 
                 socket.OnClose = clean =>
                 {
+                    // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
+                    // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
+                    // HeartBeat clean it up.  This is to maintain consistency across the transports.
                     if (clean)
                     {
                         OnDisconnect();
