@@ -63,7 +63,7 @@
             bool shouldContinuePump;
 
             // Variables reused in the loop.
-            IEnumerable<BrokeredMessage> brokeredMessages;
+            BrokeredMessage brokeredMessage;
 
             public PumpAsyncResult(MessagePump owner, AsyncCallback callback, object state)
                 : base(TimeSpan.MaxValue, callback, state)
@@ -79,12 +79,12 @@
                 while (this.shouldContinuePump)
                 {
                     // Reset status for the loop
-                    this.brokeredMessages = null;
+                    this.brokeredMessage = null;
 
                     // Receives the message
                     yield return this.CallAsync(
                         (thisPtr, t, c, s) => thisPtr.owner.receiver.BeginReceive(c, s),
-                        (thisPtr, r) => thisPtr.brokeredMessages = new BrokeredMessage[] { thisPtr.owner.receiver.EndReceive(r) },
+                        (thisPtr, r) => thisPtr.brokeredMessage = thisPtr.owner.receiver.EndReceive(r),
                         ExceptionPolicy.Continue);
 
                     if (this.LastAsyncStepException != null)
@@ -99,43 +99,40 @@
                     }
 
                     // Retry next receive if no message was received.
-                    if (this.brokeredMessages == null)
+                    if (this.brokeredMessage == null)
                     {
                         continue;
                     }
 
                     // Handles the message
-                    foreach (BrokeredMessage brokeredMessage in this.brokeredMessages)
+                    InternalMessage internalMessage = null;
+
+                    try
                     {
-                        InternalMessage internalMessage = null;
+                        ulong sequenceNumber = (ulong)brokeredMessage.SequenceNumber;
+                        Message[] messages = MessageConverter.ToMessages(brokeredMessage);
+                        internalMessage = new InternalMessage(this.owner.id, sequenceNumber, messages);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.MessagePumpDeserializationException(e);
+                    }
+                    finally
+                    {
+                        brokeredMessage.Dispose();
+                    }
 
-                        try
+                    if (internalMessage != null)
+                    {
+                        if (!this.owner.semaphore.TryEnter())
                         {
-                            ulong sequenceNumber = (ulong)brokeredMessage.SequenceNumber;
-                            Message[] messages = MessageConverter.ToMessages(brokeredMessage);
-                            internalMessage = new InternalMessage(this.owner.id, sequenceNumber, messages);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.MessagePumpDeserializationException(e);
-                        }
-                        finally
-                        {
-                            brokeredMessage.Dispose();
+                            yield return this.CallAsync(
+                                (thisPtr, t, c, s) => thisPtr.owner.semaphore.BeginEnter(c, s),
+                                (thisPtr, r) => thisPtr.owner.semaphore.EndEnter(r),
+                                ExceptionPolicy.Transfer);
                         }
 
-                        if (internalMessage != null)
-                        {
-                            if (!this.owner.semaphore.TryEnter())
-                            {
-                                yield return this.CallAsync(
-                                    (thisPtr, t, c, s) => thisPtr.owner.semaphore.BeginEnter(c, s),
-                                    (thisPtr, r) => thisPtr.owner.semaphore.EndEnter(r),
-                                    ExceptionPolicy.Transfer);
-                            }
-
-                            this.owner.inputQueue.EnqueueAndDispatch(internalMessage, this.owner.exitSemaphore);
-                        }
+                        this.owner.inputQueue.EnqueueAndDispatch(internalMessage, this.owner.exitSemaphore);
                     }
                 }
             }
