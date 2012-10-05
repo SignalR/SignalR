@@ -281,6 +281,49 @@ namespace SignalR.Tests
                 GC.WaitForPendingFinalizers();
             }
         }
+
+        public class SendFacts : IDisposable
+        {
+            [Fact]
+            public void SendToAllButCaller()
+            {
+                var host = new MemoryHost();
+                host.MapConnection<FilteredConnection>("/filter");
+                var connection1 = new Client.Connection("http://foo/filter");
+                var connection2 = new Client.Connection("http://foo/filter");
+
+                var wh1 = new ManualResetEventSlim(initialState: false);
+                var wh2 = new ManualResetEventSlim(initialState: false);
+
+                connection1.Received += data => wh1.Set();
+                connection2.Received += data => wh2.Set();
+
+                connection1.Start(host).Wait();
+                connection2.Start(host).Wait();
+
+                connection1.Send("test").Wait();
+
+                Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+                connection1.Stop();
+                connection2.Stop();
+            }
+
+            public void Dispose()
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+    }
+
+    public class FilteredConnection : PersistentConnection
+    {
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        {
+            return Connection.Broadcast(data, connectionId);
+        }
     }
 
     public class MyGroupConnection : PersistentConnection
