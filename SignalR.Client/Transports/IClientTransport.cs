@@ -8,7 +8,7 @@ namespace SignalR.Client.Transports
         Task<NegotiationResponse> Negotiate(IConnection connection);
         Task Start(IConnection connection, string data);
         Task<T> Send<T>(IConnection connection, string data);
-        void Stop(IConnection connection);
+        void Stop(IConnection connection, bool notifyServer = true);
 
         void LostConnection(IConnection connection);
         bool SupportsKeepAlive();

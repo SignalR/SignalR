@@ -158,7 +158,7 @@ namespace SignalR.Client.Transports
             };
         }
 
-        public void Stop(IConnection connection)
+        public void Stop(IConnection connection, bool notifyServer = true)
         {
             var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
             if (httpRequest != null)
@@ -168,7 +168,10 @@ namespace SignalR.Client.Transports
                     OnBeforeAbort(connection);
 
                     // Abort the server side connection
-                    AbortConnection(connection);
+                    if (notifyServer)
+                    {
+                        AbortConnection(connection);
+                    }
 
                     // Now abort the client connection
                     httpRequest.Abort();

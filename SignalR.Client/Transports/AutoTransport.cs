@@ -85,7 +85,7 @@ namespace SignalR.Client.Transports
             return _transport.Send<T>(connection, data);
         }
 
-        public void Stop(IConnection connection)
+        public void Stop(IConnection connection, bool notifyServer = true)
         {
             if (_transport != null)
             {
