@@ -1,15 +1,36 @@
-﻿namespace SignalR.Hubs
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace SignalR.Hubs
 {
     internal class HubContext : IHubContext
     {
-        public HubContext(dynamic clients, IGroupManager groupManager)
+        private Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
+        private readonly string _hubName;
+        private readonly IConnection _connection;
+
+        public HubContext(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName, IConnection connection)
         {
-            Clients = clients;
-            Groups = groupManager;
+            _send = send;
+            _hubName = hubName;
+            _connection = connection;
+
+            Clients = new ClientProxy(send, hubName);
         }
 
         public dynamic Clients { get; private set; }
 
         public IGroupManager Groups { get; private set; }
+
+        public dynamic Group(string groupName)
+        {
+            return new SignalProxy(_send, groupName, _hubName);
+        }
+
+        public dynamic Client(string connectionId)
+        {
+            return new SignalProxy(_send, connectionId, _hubName);
+        }
     }
 }

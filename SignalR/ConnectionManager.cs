@@ -77,8 +77,7 @@ namespace SignalR
 
             Func<string, ClientHubInvocation, IEnumerable<string>, Task> send = (signal, value, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, value, exclude));
 
-            return new HubContext(new ClientProxy(send, hubDescriptor.Name), 
-                                  new GroupManager(connection, hubName));
+            return new HubContext(send, hubName, connection);
         }
 
         private IConnection GetConnection(string connectionName)
