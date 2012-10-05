@@ -50,15 +50,24 @@ namespace SignalR.Samples.Raw
                 case MessageType.Broadcast:
                     Connection.Broadcast(new
                     {
-                        type = MessageType.Broadcast,
+                        type = MessageType.Broadcast.ToString(),
                         from = GetUser(connectionId),
                         data = message.Value
                     });
                     break;
+                case MessageType.BroadcastExceptMe:
+                    Connection.Broadcast(new
+                    {
+                        type = MessageType.Broadcast.ToString(),
+                        from = GetUser(connectionId),
+                        data = message.Value
+                    }, 
+                    connectionId);
+                    break;
                 case MessageType.Send:
                     Connection.Publish(connectionId, new
                     {
-                        type = MessageType.Send,
+                        type = MessageType.Send.ToString(),
                         from = GetUser(connectionId),
                         data = message.Value
                     });
@@ -69,7 +78,7 @@ namespace SignalR.Samples.Raw
                     _users[name] = connectionId;
                     Connection.Publish(connectionId, new
                     {
-                        type = MessageType.Join,
+                        type = MessageType.Join.ToString(),
                         data = message.Value
                     });
                     break;
@@ -136,7 +145,8 @@ namespace SignalR.Samples.Raw
             PrivateMessage,
             AddToGroup,
             RemoveFromGroup,
-            SendToGroup
+            SendToGroup,
+            BroadcastExceptMe,
         }
 
         class Message
