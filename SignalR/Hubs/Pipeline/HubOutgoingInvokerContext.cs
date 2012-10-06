@@ -10,7 +10,7 @@ namespace SignalR.Hubs
             Connection = connection;
             Signal = signal;
             Invocation = invocation;
-            ExcludedSignals = excludedSignals ?? Enumerable.Empty<string>();
+            ExcludedSignals = excludedSignals;
         }
 
         public IConnection Connection
