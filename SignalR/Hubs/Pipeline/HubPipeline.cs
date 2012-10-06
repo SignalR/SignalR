@@ -7,156 +7,93 @@ namespace SignalR.Hubs
 {
     public class HubPipeline : IHubPipeline, IHubPipelineInvoker
     {
-        private readonly Stack<IHubPipelineModule> _modules = new Stack<IHubPipelineModule>();
-
-        private Func<IHubIncomingInvokerContext, Task<object>> _incomingPipeline;
-        private Func<IHub, Task> _connectPipeline;
-        private Func<IHub, Task> _reconnectPipeline;
-        private Func<IHub, Task> _disconnectPipeline;
-        private Func<IHub, IEnumerable<string>, IEnumerable<string>> _rejoiningGroupsPipeline;
-        private Func<IHubOutgoingInvokerContext, Task> _outgoingPipeling;
+        private readonly Stack<IHubPipelineModule> _modules;
+        private Lazy<ComposedPipeline> _pipeline;
 
         public HubPipeline()
         {
-            // Add one item to the list so we don't have to special case the logic if
-            // there's no builders in the pipeline
-            AddModule(new PassThroughModule());
+            _modules = new Stack<IHubPipelineModule>();
+            _pipeline = new Lazy<ComposedPipeline>(() => new ComposedPipeline(_modules));
         }
 
         public IHubPipeline AddModule(IHubPipelineModule builder)
         {
+            if (_pipeline.IsValueCreated)
+            {
+                throw new InvalidOperationException("Unable to add module. The HubPipeline has already been invoked.");
+            }
             _modules.Push(builder);
             return this;
         }
 
-        private void EnsurePipeline()
+        private ComposedPipeline Pipeline
         {
-            if (_incomingPipeline == null)
-            {
-                IHubPipelineModule module = _modules.Reverse().Aggregate((a, b) => new ComposedModule(a, b));
-                _incomingPipeline = module.BuildIncoming(HubDispatcher.Incoming);
-                _connectPipeline = module.BuildConnect(HubDispatcher.Connect);
-                _reconnectPipeline = module.BuildReconnect(HubDispatcher.Reconnect);
-                _disconnectPipeline = module.BuildDisconnect(HubDispatcher.Disconnect);
-                _rejoiningGroupsPipeline = module.BuildRejoiningGroups(HubDispatcher.RejoiningGroups);
-                _outgoingPipeling = module.BuildOutgoing(HubDispatcher.Outgoing);
-            }
+            get { return _pipeline.Value; }
         }
 
         public Task<object> Invoke(IHubIncomingInvokerContext context)
         {
-            EnsurePipeline();
-
-            return _incomingPipeline.Invoke(context);
+            return Pipeline.Invoke(context);
         }
 
         public Task Connect(IHub hub)
         {
-            EnsurePipeline();
-
-            return _connectPipeline.Invoke(hub);
+            return Pipeline.Connect(hub);
         }
 
         public Task Reconnect(IHub hub)
         {
-            EnsurePipeline();
-
-            return _reconnectPipeline.Invoke(hub);
+            return Pipeline.Reconnect(hub);
         }
 
         public Task Disconnect(IHub hub)
         {
-            EnsurePipeline();
+            return Pipeline.Disconnect(hub);
+        }
 
-            return _disconnectPipeline.Invoke(hub);
+        public bool Authorize(IHub hub)
+        {
+            return Pipeline.Authorize(hub);
         }
 
         public IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
         {
-            EnsurePipeline();
-
-            return _rejoiningGroupsPipeline(hub, groups);
+            return Pipeline.RejoiningGroups(hub, groups);
         }
 
         public Task Send(IHubOutgoingInvokerContext context)
         {
-            EnsurePipeline();
-
-            return _outgoingPipeling.Invoke(context);
+            return Pipeline.Send(context);
         }
 
-        private class PassThroughModule : IHubPipelineModule
+        private class ComposedPipeline
         {
-            public Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> invoke)
+
+            public Func<IHubIncomingInvokerContext, Task<object>> Invoke;
+            public Func<IHub, Task> Connect;
+            public Func<IHub, Task> Reconnect;
+            public Func<IHub, Task> Disconnect;
+            public Func<IHub, bool> Authorize;
+            public Func<IHub, IEnumerable<string>, IEnumerable<string>> RejoiningGroups;
+            public Func<IHubOutgoingInvokerContext, Task> Send;
+
+            public ComposedPipeline(Stack<IHubPipelineModule> modules)
             {
-                return invoke;
+                // This wouldn't look nearly as gnarly if C# had better type inference, but now we don't need the ComposedModule or PassThroughModule.
+                Invoke = Compose<Func<IHubIncomingInvokerContext, Task<object>>>(modules, (m, f) => m.BuildIncoming(f))(HubDispatcher.Incoming);
+                Connect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildConnect(f))(HubDispatcher.Connect);
+                Reconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildReconnect(f))(HubDispatcher.Reconnect);
+                Disconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
+                Authorize = Compose<Func<IHub, bool>>(modules, (m, f) => m.BuildAuthorizeConnect(f))(HubDispatcher.AuthorizeConnection);
+                RejoiningGroups = Compose<Func<IHub, IEnumerable<string>, IEnumerable<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))(HubDispatcher.RejoiningGroups);
+                Send = Compose<Func<IHubOutgoingInvokerContext, Task>>(modules, (m, f) => m.BuildOutgoing(f))(HubDispatcher.Outgoing);
             }
 
-            public Func<IHubOutgoingInvokerContext, Task> BuildOutgoing(Func<IHubOutgoingInvokerContext, Task> send)
+            // IHubPipelineModule could be turned into a second generic parameter, but it would make the above invocations even longer than they currently are.
+            private Func<T, T> Compose<T>(IEnumerable<IHubPipelineModule> modules, Func<IHubPipelineModule, T, T> method)
             {
-                return send;
-            }
-
-            public Func<IHub, Task> BuildConnect(Func<IHub, Task> connect)
-            {
-                return connect;
-            }
-
-            public Func<IHub, Task> BuildReconnect(Func<IHub, Task> reconnect)
-            {
-                return reconnect;
-            }
-
-            public Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
-            {
-                return rejoiningGroups;
-            }
-
-            public Func<IHub, Task> BuildDisconnect(Func<IHub, Task> disconnect)
-            {
-                return disconnect;
-            }
-        }
-
-        private class ComposedModule : IHubPipelineModule
-        {
-            private readonly IHubPipelineModule _left;
-            private readonly IHubPipelineModule _right;
-
-            public ComposedModule(IHubPipelineModule left, IHubPipelineModule right)
-            {
-                _left = left;
-                _right = right;
-            }
-
-            public Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> callback)
-            {
-                return _left.BuildIncoming(_right.BuildIncoming(callback));
-            }
-
-            public Func<IHub, Task> BuildConnect(Func<IHub, Task> callback)
-            {
-                return _left.BuildConnect(_right.BuildConnect(callback));
-            }
-
-            public Func<IHub, Task> BuildReconnect(Func<IHub, Task> callback)
-            {
-                return _left.BuildReconnect(_right.BuildReconnect(callback));
-            }
-
-            public Func<IHub, Task> BuildDisconnect(Func<IHub, Task> callback)
-            {
-                return _left.BuildDisconnect(_right.BuildDisconnect(callback));
-            }
-
-            public Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> callback)
-            {
-                return _left.BuildRejoiningGroups(_right.BuildRejoiningGroups(callback));
-            }
-
-            public Func<IHubOutgoingInvokerContext, Task> BuildOutgoing(Func<IHubOutgoingInvokerContext, Task> send)
-            {
-                return _left.BuildOutgoing(_right.BuildOutgoing(send));
+                // Notice we are reversing and aggregating in one step. (Function composition is associative) 
+                return modules.Aggregate<IHubPipelineModule, Func<T, T>>(x => x, (a, b) => (x => method(b, a(x))));
             }
         }
     }
