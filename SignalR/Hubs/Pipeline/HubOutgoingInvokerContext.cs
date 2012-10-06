@@ -19,12 +19,6 @@ namespace SignalR.Hubs
             private set;
         }
 
-        public string Group
-        {
-            get;
-            private set;
-        }
-
         public ClientHubInvocation Invocation
         {
             get;
