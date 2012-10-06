@@ -201,10 +201,10 @@
             return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["Join"], $.makeArray(arguments)));
          },
 
-        DrawALine: function (data) {
-            /// <summary>Calls the DrawALine method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+        Draw: function (data) {
+            /// <summary>Calls the Draw method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name="data" type="Object">Server side type is SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad.DrawingPad+Line</param>
-            return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["DrawALine"], $.makeArray(arguments)));
+            return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["Draw"], $.makeArray(arguments)));
          }
     };
 

@@ -31,16 +31,15 @@ namespace SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 
         public void Join()
         {
-            Clients.Caller.id = Interlocked.Increment(ref _id);
-            Clients.Caller.color = colors[_id % colors.Length];
+            Clients.Caller.color = colors[Interlocked.Increment(ref _id) % colors.Length];
         }
 
         // A user has drawed a line ...
-        [HubMethodName("DrawALine")]
-        public void DrawLine(Line data)
+        [HubMethodName("Draw")]
+        public void Draw(Line data)
         {
             // ... propagate it to all users
-            Clients.Others.lineDrawed(data);
+            Clients.Others.draw(data);
         }
     }
 }

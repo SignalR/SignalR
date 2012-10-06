@@ -27,26 +27,24 @@
     </div>
     <script type="text/javascript">
         $(function () {
-
-            var signalR = $.connection;
-            var id = -1;
+            var drawingPad = $.connection.DrawingPad;
 
             // someone draw something
-            signalR.DrawingPad.client.lineDrawed = function (value) {
+            drawingPad.client.draw = function (value) {
                 $("#pad").drawingpad("line", value);
             };
 
-            signalR.hub.start({ transport: activeTransport }, function () {
-                signalR.DrawingPad.server.join().done(function () {
+            $.connection.hub.start({ transport: activeTransport }, function () {
+
+                drawingPad.server.join().done(function () {
                     $("#connecting").hide();
                     $("#connected").show();
 
-                    id = signalR.DrawingPad.state.id;
-                    color = signalR.DrawingPad.state.color;
+                    color = drawingPad.state.color;
 
                     // Listen for drawing
                     $("#pad").drawingpad({ linecolor: color }).bind('line.drawingpad', function (event, args) {
-                        signalR.DrawingPad.server.DrawALine(args);
+                        drawingPad.server.Draw(args);
                     });
                 });
             });
