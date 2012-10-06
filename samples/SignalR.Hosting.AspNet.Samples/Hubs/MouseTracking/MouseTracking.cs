@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using SignalR.Hubs;
 
 namespace SignalR.Samples.Hubs.MouseTracking
@@ -15,7 +14,7 @@ namespace SignalR.Samples.Hubs.MouseTracking
 
         public void Move(int x, int y)
         {
-            Clients.Others.moveMouse(Clients.Caller.id, x, y);
+            Clients.Others.move(Clients.Caller.id, x, y);
         }
     }
 }
