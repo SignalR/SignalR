@@ -29,6 +29,11 @@ namespace SignalR.Infrastructure
             return _items.Keys;
         }
 
+        public bool Contains(T item)
+        {
+            return _items.ContainsKey(item);
+        }
+
         public void Add(T item)
         {
             _items.TryAdd(item, null);

@@ -120,26 +120,28 @@ $(function () {
         });
 
     $("#user").change(function () {
-        shapeShare.server.changeUserName(shapeShare.state.user.Name, $(this).val(), function () {
+        shapeShare.server.changeUserName(shapeShare.state.user.Name, $(this).val()).done(function () {
             $.cookie("userName", shapeShare.state.user.Name, { expires: 30 })
             $("#user").val(shapeShare.state.user.Name);
         });
     });
 
     function load() {
-        shapeShare.server.getShapes(function (shapes) {
+        shapeShare.server.getShapes().done(function (shapes) {
             $.each(shapes, function () {
                 shapeShare.client.shapeAdded(this);
             });
         });
     }
 
+    $.connection.hub.logging = true;
     $.connection.hub.start({ transport: activeTransport }, function () {
-        shapeShare.server.join($.cookie("userName"), function () {
-            $.cookie("userName", shapeShare.state.user.Name, { expires: 30 });
-            $("#user").val(shapeShare.state.user.Name);
-            load();
-        });
+        shapeShare.server.join($.cookie("userName"))
+                         .done(function () {
+                             $.cookie("userName", shapeShare.state.user.Name, { expires: 30 });
+                             $("#user").val(shapeShare.state.user.Name);
+                             load();
+                         });
     });
 
 });

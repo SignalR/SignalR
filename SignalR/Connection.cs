@@ -37,7 +37,7 @@ namespace SignalR
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
-            _signals = new HashSet<string>(signals);
+            _signals = new HashSet<string>(signals, StringComparer.OrdinalIgnoreCase);
             _groups = new SafeSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
@@ -87,7 +87,7 @@ namespace SignalR
                 return _traceSource.Value;
             }
         }
-        
+
         public Task Publish(ConnectionMessage message)
         {
             Message busMessage = CreateMessage(message.Signal, message.Value);
@@ -150,13 +150,14 @@ namespace SignalR
             // Do a single sweep through the results to process commands and extract values
             ProcessResults(result);
 
-            var response = new PersistentResponse
+            var response = new PersistentResponse(ShouldExcludeSignal)
             {
                 MessageId = result.LastMessageId,
                 Messages = result.Messages,
                 Disconnect = _disconnected,
                 Aborted = _aborted,
-                TotalCount = result.TotalCount
+                TotalCount = result.TotalCount,
+
             };
 
             PopulateResponseState(response);
@@ -167,13 +168,25 @@ namespace SignalR
             return response;
         }
 
+        private bool ShouldExcludeSignal(Message message)
+        {
+            if (String.IsNullOrEmpty(message.Filter))
+            {
+                return false;
+            }
+
+            string[] exclude = message.Filter.Split('|');
+
+            return exclude.Any(signal => Identity.Equals(signal, StringComparison.OrdinalIgnoreCase) ||
+                                                    _signals.Contains(signal) ||
+                                                    _groups.Contains(signal));
+        }
+
         private void ProcessResults(MessageResult result)
         {
-            result.Messages.Enumerate(message => true,
+            result.Messages.Enumerate(message => message.IsAck || message.IsCommand,
                                       message =>
                                       {
-                                          message.Skip = SkipMessage(message);
-
                                           if (message.IsAck)
                                           {
                                               _ackHandler.TriggerAck(message.CommandId);
@@ -195,18 +208,6 @@ namespace SignalR
                                               }
                                           }
                                       });
-        }
-
-        private bool SkipMessage(Message message)
-        {
-            if (String.IsNullOrEmpty(message.Filter))
-            {
-                return false;
-            }
-
-            IEnumerable<string> exclude = message.Filter.Split('|');
-
-            return Signals.Any(s => exclude.Contains(s));
         }
 
         private void ProcessCommand(Command command)

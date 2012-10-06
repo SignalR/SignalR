@@ -15,9 +15,6 @@ namespace SignalR
         public bool IsAck { get; set; }
         public string Filter { get; set; }
 
-        // This doesn't need to be serialized
-        public bool Skip { get; set; }
-
         public bool IsCommand
         {
             get

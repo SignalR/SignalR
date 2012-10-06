@@ -10,6 +10,12 @@ namespace SignalR
     /// </summary>
     public class PersistentResponse : IJsonWritable
     {
+        private readonly Func<Message, bool> _exclude;
+
+        public PersistentResponse(Func<Message, bool> exclude)
+        {
+            _exclude = exclude;
+        }
         /// <summary>
         /// The id of the last message in the connection received.
         /// </summary>
@@ -87,7 +93,7 @@ namespace SignalR
             jsonWriter.WritePropertyName("Messages");
             jsonWriter.WriteStartArray();
 
-            Messages.Enumerate(m => !m.IsCommand && !m.Skip,
+            Messages.Enumerate(m => !m.IsCommand && !_exclude(m),
                                m => jsonWriter.WriteRawValue(m.Value));
 
             jsonWriter.WriteEndArray();
