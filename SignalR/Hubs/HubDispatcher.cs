@@ -75,8 +75,17 @@ namespace SignalR.Hubs
                             _counters.ErrorsAllTotal,
                             _counters.ErrorsAllPerSec);
 
-                        // Add this to the list of hub descriptors this connection is interested in
-                        _hubs.Add(hubDescriptor);
+                        var hub = _manager.ResolveHub(hubDescriptor.Name); 
+                        if (hub != null)
+                        {
+                            hub.Context = new HubCallerContext(context.Request, connectionId: null);
+                            if (_pipelineInvoker.Authorize(hub))
+                            {
+                                // Add this to the list of hub descriptors this connection is interested in
+                                _hubs.Add(hubDescriptor);
+                            }
+                            hub.Dispose();
+                        }
                     }
                 }
             }
@@ -167,6 +176,11 @@ namespace SignalR.Hubs
             return hub.OnDisconnected();
         }
 
+        internal static bool AuthorizeConnection(IHub hub)
+        {
+            return hub.Authorize();
+        }
+
         internal static IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
         {
             return hub.RejoiningGroups(groups);
@@ -176,48 +190,55 @@ namespace SignalR.Hubs
         {
             var tcs = new TaskCompletionSource<object>();
 
-            try
+            if (!context.Hub.Authorize())
             {
-                var result = context.MethodDescriptor.Invoker.Invoke(context.Hub, context.Args);
-                Type returnType = context.MethodDescriptor.ReturnType;
-
-                if (typeof(Task).IsAssignableFrom(returnType))
+                tcs.SetException(new NotAuthorizedException());
+            }
+            else
+            {
+                try
                 {
-                    var task = (Task)result;
-                    if (!returnType.IsGenericType)
+                    var result = context.MethodDescriptor.Invoker.Invoke(context.Hub, context.Args);
+                    Type returnType = context.MethodDescriptor.ReturnType;
+
+                    if (typeof(Task).IsAssignableFrom(returnType))
                     {
-                        task.ContinueWith(tcs);
+                        var task = (Task)result;
+                        if (!returnType.IsGenericType)
+                        {
+                            task.ContinueWith(tcs);
+                        }
+                        else
+                        {
+                            // Get the <T> in Task<T>
+                            Type resultType = returnType.GetGenericArguments().Single();
+
+                            Type genericTaskType = typeof(Task<>).MakeGenericType(resultType);
+
+                            // Get the correct ContinueWith overload
+                            var parameter = Expression.Parameter(typeof(object));
+
+                            // TODO: Cache this whole thing
+                            // Action<object> callback = result => ContinueWith((Task<T>)result, tcs);
+                            MethodInfo continueWithMethod = _continueWithMethod.MakeGenericMethod(resultType);
+
+                            Expression body = Expression.Call(continueWithMethod,
+                                                              Expression.Convert(parameter, genericTaskType),
+                                                              Expression.Constant(tcs));
+
+                            var continueWithInvoker = Expression.Lambda<Action<object>>(body, parameter).Compile();
+                            continueWithInvoker.Invoke(result);
+                        }
                     }
                     else
                     {
-                        // Get the <T> in Task<T>
-                        Type resultType = returnType.GetGenericArguments().Single();
-
-                        Type genericTaskType = typeof(Task<>).MakeGenericType(resultType);
-
-                        // Get the correct ContinueWith overload
-                        var parameter = Expression.Parameter(typeof(object));
-
-                        // TODO: Cache this whole thing
-                        // Action<object> callback = result => ContinueWith((Task<T>)result, tcs);
-                        MethodInfo continueWithMethod = _continueWithMethod.MakeGenericMethod(resultType);
-
-                        Expression body = Expression.Call(continueWithMethod,
-                                                          Expression.Convert(parameter, genericTaskType),
-                                                          Expression.Constant(tcs));
-
-                        var continueWithInvoker = Expression.Lambda<Action<object>>(body, parameter).Compile();
-                        continueWithInvoker.Invoke(result);
+                        tcs.TrySetResult(result);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    tcs.TrySetResult(result);
+                    tcs.TrySetException(ex);
                 }
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetException(ex);
             }
 
             return tcs.Task;

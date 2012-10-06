@@ -160,9 +160,7 @@ namespace SignalR.Tests
             var hubConnection = new HubConnection("http://fake");
             IHubProxy proxy = hubConnection.CreateProxy("MyHub2");
 
-            hubConnection.Start(host).Wait();
-
-            Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());
+            Assert.Throws<AggregateException>(() => hubConnection.Start(host).Wait());
         }
 
         private void AssertAggregateException(Action action, string message)

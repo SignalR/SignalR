@@ -58,6 +58,7 @@ namespace SignalR.Hubs
                                       NameSpecified = (GetMethodAttributeName(oload) != null),
                                       Invoker = oload.Invoke,
                                       Hub = hub,
+                                      Attributes = oload.GetCustomAttributes(typeof(Attribute), inherit: true).Cast<Attribute>(),
                                       Parameters = oload.GetParameters()
                                           .Select(p => new ParameterDescriptor
                                               {

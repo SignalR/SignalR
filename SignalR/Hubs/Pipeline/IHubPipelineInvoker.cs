@@ -47,6 +47,13 @@ namespace SignalR.Hubs
         /// 
         /// </summary>
         /// <param name="hub"></param>
+        /// <returns></returns>
+        bool Authorize(IHub hub);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hub"></param>
         /// <param name="groups"></param>
         /// <returns></returns>
         IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups);
