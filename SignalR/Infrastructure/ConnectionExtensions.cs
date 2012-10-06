@@ -44,7 +44,7 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Broadcasts a value to all connections. Excluding the connection is specified.
+        /// Broadcasts a value to all connections, excluding the connection ids specified.
         /// </summary>
         /// <param name="connection">The connection</param>
         /// <param name="value">The value to broadcast.</param>
