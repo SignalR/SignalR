@@ -58,13 +58,15 @@
                         string commandId = this.GetDataItem();
                         string waitForAcValue = this.GetDataItem();
                         string isAckValue = this.GetDataItem();
+                        string filter = this.GetDataItem();
 
                         messages.Add(
                             new Message(source, key, value)
                             {
                                 CommandId = commandId,
                                 WaitForAck = Boolean.Parse(waitForAcValue),
-                                IsAck = Boolean.Parse(isAckValue)
+                                IsAck = Boolean.Parse(isAckValue),
+                                Filter = filter
                             });
                     }
                     else if (marker == EndOfStreamMarker)
@@ -216,7 +218,7 @@
                 {
                     yield return BitConverter.GetBytes(MessageMarker);
 
-                    string[] itemList = new string[] { message.Source, message.Key, message.Value, message.CommandId, message.WaitForAck.ToString(), message.IsAck.ToString() };
+                    string[] itemList = new string[] { message.Source, message.Key, message.Value, message.CommandId, message.WaitForAck.ToString(), message.IsAck.ToString(), message.Filter };
 
                     foreach (string item in itemList)
                     {
