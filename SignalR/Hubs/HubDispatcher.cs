@@ -258,9 +258,9 @@ namespace SignalR.Hubs
                    .SelectMany(groupsToRejoin => groupsToRejoin);
         }
 
-        protected override Task OnDisconnectAsync(string connectionId)
+        protected override Task OnDisconnectAsync(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request: null, connectionId: connectionId, action: hub => _pipelineInvoker.Disconnect(hub));
+            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }
 
         protected override IEnumerable<string> GetSignals(string connectionId)

@@ -164,10 +164,10 @@ namespace SignalR.Tests
         {
             public int DisconnectCount { get; set; }
 
-            protected override Task OnDisconnectAsync(string connectionId)
+            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
             {
                 DisconnectCount++;
-                return base.OnDisconnectAsync(connectionId);
+                return base.OnDisconnectAsync(request, connectionId);
             }
 
             protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
@@ -224,10 +224,10 @@ namespace SignalR.Tests
                 return base.OnConnectedAsync(request, connectionId);
             }
 
-            protected override Task OnDisconnectAsync(string connectionId)
+            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
             {
                 _disconnectWh.Set();
-                return base.OnDisconnectAsync(connectionId);
+                return base.OnDisconnectAsync(request, connectionId);
             }
         }
 

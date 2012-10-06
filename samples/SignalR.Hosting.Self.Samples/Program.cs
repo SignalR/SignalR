@@ -27,7 +27,7 @@ namespace SignalR.Hosting.Self.Samples
             server.Start();
 
             Console.WriteLine("Server running on {0}", url);
-            
+
             while (true)
             {
                 ConsoleKeyInfo ki = Console.ReadKey(true);
@@ -51,10 +51,10 @@ namespace SignalR.Hosting.Self.Samples
                 return Connection.Broadcast(data);
             }
 
-            protected override Task OnDisconnectAsync(string connectionId)
+            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} left", connectionId);
-                return base.OnDisconnectAsync(connectionId);
+                return base.OnDisconnectAsync(request, connectionId);
             }
 
             protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)

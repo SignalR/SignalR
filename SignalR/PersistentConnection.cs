@@ -38,14 +38,14 @@ namespace SignalR
 
             _newMessageBus = resolver.Resolve<IMessageBus>();
             _configurationManager = resolver.Resolve<IConfigurationManager>();
-			_connectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
+            _connectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
             _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _trace = resolver.Resolve<ITraceManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
             _ackHandler = resolver.Resolve<IAckHandler>();
-            
+
             _initialized = true;
         }
 
@@ -156,7 +156,7 @@ namespace SignalR
 
             _transport.Disconnected = () =>
             {
-                return OnDisconnectAsync(connectionId).OrEmpty();
+                return OnDisconnectAsync(context.Request, connectionId).OrEmpty();
             };
 
             return _transport.ProcessRequest(connection).OrEmpty().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
@@ -255,7 +255,7 @@ namespace SignalR
         /// </summary>
         /// <param name="connectionId">The id of the disconnected connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
-        protected virtual Task OnDisconnectAsync(string connectionId)
+        protected virtual Task OnDisconnectAsync(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }

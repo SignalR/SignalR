@@ -34,7 +34,7 @@ namespace SignalR.Samples.Raw
             return Connection.Broadcast(DateTime.Now + ": " + user + " reconnected");
         }
 
-        protected override Task OnDisconnectAsync(string connectionId)
+        protected override Task OnDisconnectAsync(IRequest request, string connectionId)
         {
             string ignored;
             _users.TryRemove(connectionId, out ignored);
