@@ -62,6 +62,24 @@
             createHubProxies(signalR, this);
         });
 
+    signalR.adminAuthHub = signalR.hub.createProxy('adminAuthHub'); 
+    signalR.adminAuthHub.client = { };
+    signalR.adminAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side AdminAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.adminAuthHub.invoke.apply(signalR.adminAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.authHub = signalR.hub.createProxy('authHub'); 
+    signalR.authHub.client = { };
+    signalR.authHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side AuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.authHub.invoke.apply(signalR.authHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
     signalR.chat = signalR.hub.createProxy('chat'); 
     signalR.chat.client = { };
     signalR.chat.server = {
@@ -227,6 +245,15 @@
          }
     };
 
+    signalR.invokeAuthHub = signalR.hub.createProxy('invokeAuthHub'); 
+    signalR.invokeAuthHub.client = { };
+    signalR.invokeAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side InvokeAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.invokeAuthHub.invoke.apply(signalR.invokeAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
     signalR.mouseTracking = signalR.hub.createProxy('mouseTracking'); 
     signalR.mouseTracking.client = { };
     signalR.mouseTracking.server = {
@@ -240,6 +267,15 @@
             /// <param name="x" type="Number">Server side type is System.Int32</param>
             /// <param name="y" type="Number">Server side type is System.Int32</param>
             return signalR.mouseTracking.invoke.apply(signalR.mouseTracking, $.merge(["Move"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.noAuthHub = signalR.hub.createProxy('noAuthHub'); 
+    signalR.noAuthHub.client = { };
+    signalR.noAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side NoAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.noAuthHub.invoke.apply(signalR.noAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
          }
     };
 
