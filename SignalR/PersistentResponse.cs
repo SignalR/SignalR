@@ -10,12 +10,20 @@ namespace SignalR
     /// </summary>
     public class PersistentResponse : IJsonWritable
     {
-        private readonly Func<Message, bool> _exclude;
-
+        /// <summary>
+        /// Creates a new instance of <see cref="PersistentResponse"/>.
+        /// </summary>
+        /// <param name="exclude">A filter that determines whether messages should be written to the client.</param>
         public PersistentResponse(Func<Message, bool> exclude)
         {
-            _exclude = exclude;
+            ExcludeFilter = exclude;
         }
+
+        /// <summary>
+        /// A filter that determines whether messages should be written to the client.
+        /// </summary>
+        public Func<Message, bool> ExcludeFilter { get; private set; }
+
         /// <summary>
         /// The id of the last message in the connection received.
         /// </summary>
@@ -93,7 +101,7 @@ namespace SignalR
             jsonWriter.WritePropertyName("Messages");
             jsonWriter.WriteStartArray();
 
-            Messages.Enumerate(m => !m.IsCommand && !_exclude(m),
+            Messages.Enumerate(m => !m.IsCommand && !ExcludeFilter(m),
                                m => jsonWriter.WriteRawValue(m.Value));
 
             jsonWriter.WriteEndArray();

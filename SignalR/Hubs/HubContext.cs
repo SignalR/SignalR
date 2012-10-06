@@ -23,9 +23,9 @@ namespace SignalR.Hubs
 
         public IGroupManager Groups { get; private set; }
 
-        public dynamic Group(string groupName)
+        public dynamic Group(string groupName, params string[] exclude)
         {
-            return new SignalProxy(_send, groupName, _hubName);
+            return new SignalProxy(_send, groupName, _hubName, exclude);
         }
 
         public dynamic Client(string connectionId)

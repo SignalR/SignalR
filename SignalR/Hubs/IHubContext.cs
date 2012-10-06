@@ -18,17 +18,18 @@ namespace SignalR.Hubs
         IGroupManager Groups { get; }
 
         /// <summary>
-        /// Get a dynamic representation of the specified group.
+        /// Returns a dynamic representation of the specified group.
         /// </summary>
         /// <param name="groupName">The name of the group</param>
-        /// <returns></returns>
-        dynamic Group(string groupName);
+        /// <param name="exclude">A list of connection ids to exclude.</param>
+        /// <returns>A dynamic representation of the specified group.</returns>
+        dynamic Group(string groupName, params string[] exclude);
 
         /// <summary>
         /// Returns a dynamic representation of the connection with the specified connectionid.
         /// </summary>
         /// <param name="connectionId">The connection id</param>
-        /// <returns></returns>
+        /// <returns>A dynamic representation of the connection with the specified connectionid.</returns>
         dynamic Client(string connectionId);
     }
 }

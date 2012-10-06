@@ -10,12 +10,14 @@ namespace SignalR.Hubs
         protected readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
         protected readonly string _signal;
         protected readonly string _hubName;
+        private readonly string[] _exclude;
 
-        public SignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName)
+        public SignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, params string[] exclude)
         {
             _send = send;
             _signal = signal;
             _hubName = hubName;
+            _exclude = exclude;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -36,7 +38,7 @@ namespace SignalR.Hubs
 
             string signal = _hubName + "." + _signal;
 
-            return _send(signal, invocation, null);
+            return _send(signal, invocation, _exclude);
         }
 
         protected virtual ClientHubInvocation GetInvocationData(string method, object[] args)

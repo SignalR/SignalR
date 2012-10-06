@@ -150,14 +150,13 @@ namespace SignalR
             // Do a single sweep through the results to process commands and extract values
             ProcessResults(result);
 
-            var response = new PersistentResponse(ShouldExcludeSignal)
+            var response = new PersistentResponse(ExcludeMessage)
             {
                 MessageId = result.LastMessageId,
                 Messages = result.Messages,
                 Disconnect = _disconnected,
                 Aborted = _aborted,
                 TotalCount = result.TotalCount,
-
             };
 
             PopulateResponseState(response);
@@ -168,7 +167,7 @@ namespace SignalR
             return response;
         }
 
-        private bool ShouldExcludeSignal(Message message)
+        private bool ExcludeMessage(Message message)
         {
             if (String.IsNullOrEmpty(message.Filter))
             {
