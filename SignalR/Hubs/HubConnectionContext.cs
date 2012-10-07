@@ -32,13 +32,13 @@ namespace SignalR.Hubs
         {
             _send = (signal, invocation, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, invocation, exclude));
             _connectionId = connectionId;
+            _hubName = hubName;
 
             Caller = new StatefulSignalProxy(_send, connectionId, hubName, state);
-            All = new ClientProxy(_send, hubName);
-            Others = new ClientProxy(_send, hubName, connectionId);
+            All = AllExcept();
+            Others = AllExcept(connectionId);
 
             Connection = connection;
-            _hubName = hubName;
         }
 
         /// <summary>
@@ -60,6 +60,17 @@ namespace SignalR.Hubs
         /// Represents the calling client.
         /// </summary>
         public dynamic Caller { get; set; }
+
+        /// <summary>
+        /// Returns a dynamic representation of all clients except the calling client ones specified.
+        /// </summary>
+        /// <param name="exclude">A list of connection ids to exclude.</param>
+        /// <returns>A dynamic representation of all clients except the calling client ones specified.</returns>
+        public dynamic AllExcept(params string[] exclude)
+        {
+            // REVIEW: Should this method be params array?
+            return new ClientProxy(_send, _hubName, exclude);
+        }
 
         /// <summary>
         /// Returns a dynamic representation of all clients in a group except the calling client.
