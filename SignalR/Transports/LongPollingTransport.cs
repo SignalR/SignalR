@@ -173,7 +173,7 @@ namespace SignalR.Transports
                 OutputWriter.Write("(");
             }
 
-            _jsonSerializer.Stringify(value, OutputWriter);
+            _jsonSerializer.Serialize(value, OutputWriter);
 
             if (IsJsonp)
             {

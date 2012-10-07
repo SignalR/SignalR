@@ -153,7 +153,7 @@ namespace SignalR.Transports
         {
             Context.Response.ContentType = Json.MimeType;
 
-            JsonSerializer.Stringify(value, OutputWriter);
+            JsonSerializer.Serialize(value, OutputWriter);
             OutputWriter.Flush();
 
             return Context.Response.EndAsync();

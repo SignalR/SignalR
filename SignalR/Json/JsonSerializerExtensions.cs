@@ -29,7 +29,7 @@ namespace SignalR
         {
             using (var writer = new StringWriter())
             {
-                serializer.Stringify(value, writer);
+                serializer.Serialize(value, writer);
                 return writer.ToString();
             }
         }

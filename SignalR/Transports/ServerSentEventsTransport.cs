@@ -29,7 +29,7 @@ namespace SignalR.Transports
             OutputWriter.Write(response.MessageId);
             OutputWriter.WriteLine();
             OutputWriter.Write("data: ");
-            JsonSerializer.Stringify(response, OutputWriter);
+            JsonSerializer.Serialize(response, OutputWriter);
             OutputWriter.WriteLine();
             OutputWriter.WriteLine();
             OutputWriter.Flush();

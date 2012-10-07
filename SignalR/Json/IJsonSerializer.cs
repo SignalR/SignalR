@@ -13,7 +13,7 @@ namespace SignalR
         /// </summary>
         /// <param name="value">The object to serialize</param>
         /// <param name="writer">The <see cref="System.IO.TextWriter"/> to serialize the object to.</param>
-        void Stringify(object value, TextWriter writer);
+        void Serialize(object value, TextWriter writer);
 
         /// <summary>
         /// Deserializes the JSON to a .NET object.

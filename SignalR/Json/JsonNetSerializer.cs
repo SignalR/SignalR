@@ -53,7 +53,7 @@ namespace SignalR
         /// </summary>
         /// <param name="value">The object to serialize</param>
         /// <param name="writer">The <see cref="TextWriter"/> to serialize the object to.</param>
-        public void Stringify(object value, TextWriter writer)
+        public void Serialize(object value, TextWriter writer)
         {
             var selfSerializer = value as IJsonWritable;
             if (selfSerializer != null)

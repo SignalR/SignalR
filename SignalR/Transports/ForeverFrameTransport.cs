@@ -45,7 +45,7 @@ namespace SignalR.Transports
             OnSendingResponse(response);
 
             OutputWriter.Write("<script>r(c, ");
-            JsonSerializer.Stringify(response, OutputWriter);
+            JsonSerializer.Serialize(response, OutputWriter);
             OutputWriter.Write(");</script>\r\n");
             OutputWriter.Flush();
 
