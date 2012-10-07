@@ -127,7 +127,7 @@ namespace SignalR.WebSockets
 
         internal async Task ProcessWebSocketRequestAsync(WebSocketContext webSocketContext, Func<Task<WebSocketMessage>> messageRetriever)
         {
-            bool CleanClose = true;
+            bool cleanClose = true;
             try
             {
                 // first, set primitives and initialize the object
@@ -164,14 +164,14 @@ namespace SignalR.WebSockets
                 {
                     Error = ex;
                     OnError();
-                    CleanClose = false;
+                    cleanClose = false;
                 }
             }
             finally
             {
                 try
                 {
-                    OnClose(CleanClose);
+                    OnClose(cleanClose);
                 }
                 finally
                 {
