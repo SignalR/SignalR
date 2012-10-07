@@ -122,7 +122,7 @@ namespace SignalR.Samples.Hubs.Chat
             }
         }
 
-        public override Task Disconnect()
+        public override Task OnDisconnected()
         {
             ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)

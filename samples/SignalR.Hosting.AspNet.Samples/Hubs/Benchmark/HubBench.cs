@@ -32,13 +32,13 @@ namespace SignalR.Samples.Hubs.Benchmark
             Clients.All.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
         }
 
-        public override Task Connect()
+        public override Task OnConnected()
         {
             Interlocked.Increment(ref HubBench.Connections);
             return null;
         }
 
-        public override Task Disconnect()
+        public override Task OnDisconnected()
         {
             Interlocked.Decrement(ref HubBench.Connections);
             return null;

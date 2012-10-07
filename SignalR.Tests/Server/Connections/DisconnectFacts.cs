@@ -187,21 +187,21 @@ namespace SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            public override Task Disconnect()
+            public override Task OnDisconnected()
             {
                 _disconnectWh.Set();
 
                 return null;
             }
 
-            public override Task Connect()
+            public override Task OnConnected()
             {
                 _connectWh.Set();
 
                 return TaskAsyncHelper.Empty;
             }
 
-            public override Task Reconnect()
+            public override Task OnReconnected()
             {
                 return TaskAsyncHelper.Empty;
             }

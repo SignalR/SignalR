@@ -154,17 +154,17 @@ namespace SignalR.Hubs
 
         internal static Task Connect(IHub hub)
         {
-            return hub.Connect();
+            return hub.OnConnected();
         }
 
         internal static Task Reconnect(IHub hub)
         {
-            return hub.Reconnect();
+            return hub.OnReconnected();
         }
 
         internal static Task Disconnect(IHub hub)
         {
-            return hub.Disconnect();
+            return hub.OnDisconnected();
         }
 
         internal static IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)

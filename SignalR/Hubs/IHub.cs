@@ -31,21 +31,17 @@ namespace SignalR.Hubs
         /// <summary>
         /// Called when a new connection is made to the <see cref="IHub"/>.
         /// </summary>
-        Task Connect();
+        Task OnConnected();
 
         /// <summary>
         /// Called when a connection reconnects to the <see cref="IHub"/> after a timeout.
         /// </summary>
-        Task Reconnect();
+        Task OnReconnected();
 
         /// <summary>
         /// Called when a connection is disconnected from the <see cref="IHub"/>.
         /// </summary>
-        /// <remarks>
-        /// This method is invoked from the server side which means the only valid property on the <see cref="HubCallerContext"/>
-        /// is the connection id.
-        /// </remarks>
-        Task Disconnect();
+        Task OnDisconnected();
     }
 }
 

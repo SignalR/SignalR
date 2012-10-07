@@ -213,13 +213,13 @@ namespace SignalR.Tests
         {
             var type = typeof(Hub);
             // Hub has the disconnect method
-            Assert.True(type.GetMethod("Disconnect") != null);
+            Assert.True(type.GetMethod("OnDisconnected") != null);
 
             // Hub has the connect method
-            Assert.True(type.GetMethod("Connect") != null);
+            Assert.True(type.GetMethod("OnConnected") != null);
 
             // Hub has the reconnect method
-            Assert.True(type.GetMethod("Reconnect") != null);
+            Assert.True(type.GetMethod("OnReconnected") != null);
         }
 
         [Fact]
@@ -585,8 +585,8 @@ namespace SignalR.Tests
         public void ReturningNullFromConnectAndDisconnectAccepted()
         {
             var mockHub = new Mock<SomeHub>() { CallBase = true };
-            mockHub.Setup(h => h.Connect()).Returns<Task>(null).Verifiable();
-            mockHub.Setup(h => h.Disconnect()).Returns<Task>(null).Verifiable();
+            mockHub.Setup(h => h.OnConnected()).Returns<Task>(null).Verifiable();
+            mockHub.Setup(h => h.OnDisconnected()).Returns<Task>(null).Verifiable();
 
             var host = new MemoryHost();
             host.HubPipeline.EnableAutoRejoiningGroups();
@@ -609,7 +609,7 @@ namespace SignalR.Tests
         public void ReturningNullFromReconnectAccepted()
         {
             var mockHub = new Mock<SomeHub>() { CallBase = true };
-            mockHub.Setup(h => h.Reconnect()).Returns<Task>(null).Verifiable();
+            mockHub.Setup(h => h.OnReconnected()).Returns<Task>(null).Verifiable();
 
             var host = new MemoryHost();
             host.HubPipeline.EnableAutoRejoiningGroups();
