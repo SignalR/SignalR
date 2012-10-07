@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Infrastructure;
-using System.Diagnostics;
 
 namespace SignalR.Transports
 {
@@ -11,7 +10,7 @@ namespace SignalR.Transports
         private readonly IPerformanceCounterManager _counters;
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
-        
+
         private const int MaxMessages = 10;
 
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
@@ -252,27 +251,47 @@ namespace SignalR.Transports
                     // Send the response before removing any connection data
                     return Send(response).Then(() =>
                     {
-                        // Remove connection without triggering disconnect
-                        HeartBeat.RemoveConnection(this);
-                        
-                        endRequest();
-                        registration.Dispose();
-                        subscription.Dispose();
-                    }).Then(() => TaskAsyncHelper.False);
+                        try
+                        {
+                            // Remove connection without triggering disconnect
+                            HeartBeat.RemoveConnection(this);
+                        }
+                        finally
+                        {
+                            endRequest();
+
+                            // Dispose everything
+                            registration.Dispose();
+                            subscription.Dispose();
+
+                            Dispose();
+                        }
+
+                        return TaskAsyncHelper.False;
+                    });
                 }
                 else if (response.TimedOut ||
                          response.Aborted ||
                          ConnectionEndToken.IsCancellationRequested)
                 {
-                    if (response.Aborted)
+                    try
                     {
-                        // If this was a clean disconnect raise the event.
-                        OnDisconnect();
+                        if (response.Aborted)
+                        {
+                            // If this was a clean disconnect raise the event.
+                            OnDisconnect();
+                        }
                     }
+                    finally
+                    {
+                        endRequest();
 
-                    endRequest();
-                    registration.Dispose();
-                    subscription.Dispose();
+                        // Dispose everything
+                        registration.Dispose();
+                        subscription.Dispose();
+
+                        Dispose();
+                    }
 
                     return TaskAsyncHelper.False;
                 }
