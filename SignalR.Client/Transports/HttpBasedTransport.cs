@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
+#if NETFX_CORE
+using Windows.UI.Xaml;
+#endif
 
 namespace SignalR.Client.Transports
 {
@@ -26,7 +29,12 @@ namespace SignalR.Client.Transports
         private bool _supportsKeepAlive;
         private bool _monitoringKeepAlive;
         private KeepAliveData _keepAliveData = new KeepAliveData();
+#if NETFX_CORE
+        private DispatcherTimer _keepAliveMonitor;
+#else
         private Timer _keepAliveMonitor;
+#endif
+
         private Int32 _checkingKeepAlive = 0;
 
         public HttpBasedTransport(IHttpClient httpClient, string transport)
@@ -287,7 +295,18 @@ namespace SignalR.Client.Transports
                 // Initiate the keep alive timestamps
                 UpdateKeepAlive();
 
-                _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
+#if NETFX_CORE
+                _keepAliveMonitor = new DispatcherTimer();
+                _keepAliveMonitor.Interval = _keepAliveData.KeepAliveCheckInterval;
+                _keepAliveMonitor.Tick +=
+                delegate
+                {
+                    CheckIfAlive(connection);
+                };
+                _keepAliveMonitor.Start();
+#else
+                    _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
+#endif
             }
         }
 
@@ -351,7 +370,13 @@ namespace SignalR.Client.Transports
         public void StopMonitoringKeepAlive()
         {
             _monitoringKeepAlive = false;
+
+#if NETFX_CORE
+            _keepAliveMonitor.Stop();
+#else
             _keepAliveMonitor.Dispose();
+#endif
+
             _keepAliveMonitor = null;
         }
     }
