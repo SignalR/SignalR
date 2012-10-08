@@ -888,7 +888,7 @@
                         $connection = $(connection);
 
                     if (data) {
-                        if (data.Messages) {
+                        if ($.isEmptyObject(data) || data.Messages) {
                             transportLogic.processMessages(connection, data);
                         } else {
                             // For websockets we need to trigger onReceived

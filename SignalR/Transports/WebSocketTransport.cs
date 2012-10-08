@@ -37,9 +37,8 @@ namespace SignalR.Transports
 
         public override Task KeepAlive()
         {
-            return this.Send(new object());
+            return Send(new object());
         }
-
 
         public override Task ProcessRequest(ITransportConnection connection)
         {
@@ -85,11 +84,7 @@ namespace SignalR.Transports
 
         public override Task Send(PersistentResponse response)
         {
-            var data = JsonSerializer.Stringify(response);
-
-            OnSending(data);
-
-            return _socket.Send(data).Catch(IncrementErrorCounters);
+            return Send((object)response);
         }
     }
 }
