@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using SignalR.Client.Http;
 using SignalR.Client.Infrastructure;
 using SignalR.Client.Transports.ServerSentEvents;
@@ -143,22 +142,34 @@ namespace SignalR.Client.Transports
 
                     eventSource.Closed = exception =>
                     {
-                        if (exception != null && !ExceptionHelper.IsRequestAborted(exception))
+                        bool isRequestAborted = false;
+
+                        if (exception != null)
                         {
-                            // Don't raise exceptions if the request was aborted (connection was stopped).
-                            connection.OnError(exception);
+                            // Check if the request is aborted
+                            isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
+
+                            if (!isRequestAborted)
+                            {
+                                // Don't raise exceptions if the request was aborted (connection was stopped).
+                                connection.OnError(exception);
+                            }
                         }
 
                         // See http://msdn.microsoft.com/en-us/library/system.net.httpwebresponse.close.aspx
                         response.Close();
 
-                        if (retry)
+                        // Skip reconnect attempt for aborted requests
+                        if (!isRequestAborted)
                         {
-                            Reconnect(connection, data);
-                        }
-                        else
-                        {
-                            connection.Stop();
+                            if (retry)
+                            {
+                                Reconnect(connection, data);
+                            }
+                            else
+                            {
+                                connection.Stop();
+                            }
                         }
                     };
 
