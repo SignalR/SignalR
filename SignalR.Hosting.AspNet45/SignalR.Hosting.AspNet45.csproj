@@ -96,7 +96,6 @@
     <Compile Include="Infrastructure\ByteBuffer.cs" />
     <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebSockets\WebSocketFixModule.cs" />
     <Compile Include="WebSockets\WebSocketHandler.cs" />
     <Compile Include="WebSockets\WebSocketMessage.cs" />
     <Compile Include="WebSockets\WebSocketMessageReader.cs" />
