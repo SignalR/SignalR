@@ -59,6 +59,20 @@ namespace SignalR.Client.Http
             }
         }
 
+#if !SILVERLIGHT
+        public IWebProxy Proxy
+        {
+            get
+            {
+                return _request.Proxy;
+            }
+            set
+            {
+                _request.Proxy = value;
+            }
+        }
+#endif
+
         public void Abort()
         {
             _request.Abort();

@@ -107,6 +107,13 @@ namespace SignalR.Client
         /// </summary>
         public ICredentials Credentials { get; set; }
 
+#if !SILVERLIGHT
+        /// <summary>
+        /// Gets of sets proxy information for the connection.
+        /// </summary>
+        public IWebProxy Proxy { get; set; }
+#endif
+
         /// <summary>
         /// Gets or sets the groups for the connection.
         /// </summary>
@@ -403,6 +410,12 @@ namespace SignalR.Client
             {
                 request.CookieContainer = CookieContainer;
             }
+#if !SILVERLIGHT
+            if (Proxy != null)
+            {
+                request.Proxy = Proxy;
+            }
+#endif
         }
 
         private static string CreateUserAgentString(string client)

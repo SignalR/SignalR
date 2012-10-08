@@ -18,9 +18,16 @@ namespace SignalR.Client.Http
         ICredentials Credentials { get; set; }
 
         /// <summary>
-        ///  The cookies for this request.
+        /// The cookies for this request.
         /// </summary>
         CookieContainer CookieContainer { get; set; }
+
+#if !SILVERLIGHT
+        /// <summary>
+        /// The proxy information for this request.
+        /// </summary>
+        IWebProxy Proxy { get; set; }
+#endif
 
         /// <summary>
         /// The accept header for this request.

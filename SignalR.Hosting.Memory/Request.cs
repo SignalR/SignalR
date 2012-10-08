@@ -48,6 +48,8 @@ namespace SignalR.Hosting.Memory
 
         public CookieContainer CookieContainer { get; set; }
 
+        public IWebProxy Proxy { get; set; }
+
         public string Accept
         {
             get
@@ -82,7 +84,7 @@ namespace SignalR.Hosting.Memory
             get;
             private set;
         }
-        
+
         public NameValueCollection ServerVariables
         {
             get;
