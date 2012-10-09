@@ -178,8 +178,7 @@ namespace SignalR.Client.Transports
                             {
                                 connection.Stop();
                             }
-                        }
-                        }
+                        }                        
                     };
 
                     eventSource.Start();
