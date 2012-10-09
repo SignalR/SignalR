@@ -118,6 +118,11 @@ namespace SignalR.Client.Samples
                 Console.WriteLine(change.OldState + " => " + change.NewState);
             };
 
+            connection.ConnectionSlow += () =>
+            {
+                Console.WriteLine("Keep alive has been missed, connection may be slow or inactive.");
+            };
+
             connection.Error += e =>
             {
                 Console.Error.WriteLine("========ERROR==========");
