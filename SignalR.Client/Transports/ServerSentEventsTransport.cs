@@ -43,7 +43,7 @@ namespace SignalR.Client.Transports
         public override void LostConnection(IConnection connection)
         {
             // Stopping the transport will force it into auto reconnect and maintain the functional flow
-            Stop(connection);
+            Stop(connection, false);
         }
 
         private void Reconnect(IConnection connection, string data)

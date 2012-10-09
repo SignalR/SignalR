@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Threading;
+using System;
 
 namespace SignalR.Client.Transports
 {
@@ -10,6 +11,7 @@ namespace SignalR.Client.Transports
         Task<T> Send<T>(IConnection connection, string data);
         void Stop(IConnection connection, bool notifyServer = true);
 
+        void RegisterKeepAlive(TimeSpan keepAlive);
         void LostConnection(IConnection connection);
         bool SupportsKeepAlive();
         void MonitorKeepAlive(IConnection connection);

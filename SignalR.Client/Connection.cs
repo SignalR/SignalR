@@ -208,7 +208,7 @@ namespace SignalR.Client
             }
 
             _transport = transport;
-            
+
             Task negotation = Negotiate(transport);
 
             negotation.ContinueWith(task =>
@@ -219,7 +219,7 @@ namespace SignalR.Client
                     _transport.MonitorKeepAlive(this);
                 }
             });
-            
+
 
             return negotation;
         }
@@ -235,9 +235,16 @@ namespace SignalR.Client
 
             transport.Negotiate(this).Then(negotiationResponse =>
             {
+                var keepAlive = negotiationResponse.KeepAlive;
+
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
+
+                if (keepAlive.HasValue)
+                {
+                    transport.RegisterKeepAlive(TimeSpan.FromSeconds(keepAlive.Value));
+                }
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -488,6 +495,6 @@ namespace SignalR.Client
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
-        }        
+        }
     }
 }
