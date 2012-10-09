@@ -46,13 +46,17 @@ namespace SignalR.Client.Transports
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
             var negotationData = GetNegotiationResponse(_httpClient, connection);
-            var keepAlive = negotationData.Result.KeepAlive;
-
-            if (keepAlive.HasValue)
+            
+            if (negotationData.Status != TaskStatus.Faulted)
             {
-                _supportsKeepAlive = true;
-                // Setting the keep alive will calculate the monitoring thresholds
-                _keepAliveData.KeepAlive = TimeSpan.FromSeconds(5);//TimeSpan.FromSeconds(keepAlive.Value);
+                var keepAlive = negotationData.Result.KeepAlive;
+
+                if (keepAlive.HasValue)
+                {
+                    _supportsKeepAlive = true;
+                    // Setting the keep alive will calculate the monitoring thresholds
+                    _keepAliveData.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
+                }
             }
 
             return negotationData;
