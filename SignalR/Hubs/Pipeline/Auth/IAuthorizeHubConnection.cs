@@ -8,8 +8,9 @@
         /// <summary>
         /// Given a <see cref="HubCallerContext"/>, determine whether client is authorized to connect to <see cref="IHub"/>.
         /// </summary>
-        /// <param name="hub">The <see cref="IHub"/> the client is attempting to connect to. Request information can be found in <see cref="IHub.Context"/>.</param>
-        /// <returns>true if the caller is authorized to connect to the <see cref="IHub"/>; otherwise, false.</returns>
-        bool AuthorizeHubConnection(IHub hub);
+        /// <param name="hubDescriptor">Description of the hub client is attempting to connect to.</param>
+        /// <param name="request">The connection request from the client.</param>
+        /// <returns>true if the caller is authorized to connect to the hub; otherwise, false.</returns>
+        bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request);
     }
 }

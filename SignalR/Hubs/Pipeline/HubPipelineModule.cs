@@ -63,13 +63,13 @@ namespace SignalR.Hubs
             };
         }
 
-        public virtual Func<IHub, bool> BuildAuthorizeConnect(Func<IHub, bool> authorizeConnect)
+        public virtual Func<HubDescriptor, IRequest, bool> BuildAuthorizeConnect(Func<HubDescriptor, IRequest, bool> authorizeConnect)
         {
-            return hub =>
+            return (hubDescriptor, request) =>
             {
-                if (OnBeforeAuthorizeConnect(hub))
+                if (OnBeforeAuthorizeConnect(hubDescriptor, request))
                 {
-                    return authorizeConnect(hub);
+                    return authorizeConnect(hubDescriptor, request);
                 }
                 return false;
             };
@@ -93,7 +93,7 @@ namespace SignalR.Hubs
             };
         }
 
-        protected virtual bool OnBeforeAuthorizeConnect(IHub hub)
+        protected virtual bool OnBeforeAuthorizeConnect(HubDescriptor hub, IRequest request)
         {
             return true;
         }

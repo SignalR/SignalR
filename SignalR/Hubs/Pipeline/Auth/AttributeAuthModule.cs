@@ -33,24 +33,24 @@ namespace SignalR.Hubs
             _methodInvocationAuthorizers = new ConcurrentDictionary<MethodDescriptor, IEnumerable<IAuthorizeHubMethodInvocation>>();
         }
 
-        public override Func<IHub, bool> BuildAuthorizeConnect(Func<IHub, bool> authorizeConnect)
+        public override Func<HubDescriptor, IRequest, bool> BuildAuthorizeConnect(Func<HubDescriptor, IRequest, bool> authorizeConnect)
         {
-            return base.BuildAuthorizeConnect(hub =>
+            return base.BuildAuthorizeConnect((hubDescriptor, request) =>
             {
                 // Call HubDispatcher.AuthorizedConnection and other custom modules first
-                if (!authorizeConnect(hub))
+                if (!authorizeConnect(hubDescriptor, request))
                 {
                     return false;
                 }
 
-                if (_defaultConnectionAuthorizers != null && !_defaultConnectionAuthorizers.All(a => a.AuthorizeHubConnection(hub)))
+                if (_defaultConnectionAuthorizers != null && !_defaultConnectionAuthorizers.All(a => a.AuthorizeHubConnection(hubDescriptor, request)))
                 {
                     return false;
                 }
 
-                var authorizers = _connectionAuthorizers.GetOrAdd(hub.GetType(),
+                var authorizers = _connectionAuthorizers.GetOrAdd(hubDescriptor.Type,
                     hubType => hubType.GetCustomAttributes(typeof(IAuthorizeHubConnection), inherit: true).Cast<IAuthorizeHubConnection>());
-                return authorizers.All(a => a.AuthorizeHubConnection(hub));
+                return authorizers.All(a => a.AuthorizeHubConnection(hubDescriptor, request));
             });
         }
 
@@ -75,11 +75,10 @@ namespace SignalR.Hubs
                     }
                 }
                 
-                var tcs = new TaskCompletionSource<object>();
-                tcs.SetException(new NotAuthorizedException(String.Format("Caller is not authorized to invoke the {0} method on {1}.",
-                                                                          context.MethodDescriptor.Name,
-                                                                          context.MethodDescriptor.Hub.Name)));
-                return tcs.Task;
+                return TaskAsyncHelper.FromError<object>(
+                    new NotAuthorizedException(String.Format("Caller is not authorized to invoke the {0} method on {1}.",
+                                                             context.MethodDescriptor.Name,
+                                                             context.MethodDescriptor.Hub.Name)));
             });
         }
     }

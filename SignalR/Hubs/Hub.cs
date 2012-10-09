@@ -61,15 +61,6 @@ namespace SignalR.Hubs
         }
 
         /// <summary>
-        /// Called before a client connects to the <see cref="IHub"/> to determine if it is authorized to do so.
-        /// </summary>
-        /// <returns>true if the client requesting to connecting to the hub is authorized; otherwise, false.</returns>
-        public virtual bool Authorize()
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Called before a connection completes reconnecting to this <see cref="IHub"/> instance.
         /// </summary>
         /// <param name="groups">The groups the reconnecting client claims to be a member of.</param>

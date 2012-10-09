@@ -49,7 +49,7 @@ namespace SignalR.Hubs
         /// </summary>
         /// <param name="authorizeConnect"></param>
         /// <returns></returns>
-        Func<IHub, bool> BuildAuthorizeConnect(Func<IHub, bool> authorizeConnect);
+        Func<HubDescriptor, IRequest, bool> BuildAuthorizeConnect(Func<HubDescriptor, IRequest, bool> authorizeConnect);
         
         /// <summary>
         /// 

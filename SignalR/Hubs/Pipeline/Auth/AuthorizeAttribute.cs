@@ -40,9 +40,9 @@ namespace SignalR.Hubs
             }
         }
 
-        public virtual bool AuthorizeHubConnection(IHub hub)
+        public virtual bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
         {
-             return UserAuthorized(hub.Context.User);
+             return UserAuthorized(request.User);
         }
 
         public virtual bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext)
