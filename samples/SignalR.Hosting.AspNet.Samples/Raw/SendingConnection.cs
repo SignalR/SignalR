@@ -10,7 +10,7 @@ namespace SignalR.Hosting.AspNet.Samples
         {            
             for (int i = 0; i < 10; i++)
             {
-                Connection.Publish(connectionId, String.Format("{0}{1}", data, i)).Wait();
+                Connection.Send(connectionId, String.Format("{0}{1}", data, i)).Wait();
             }
 
             var tcs = new TaskCompletionSource<object>();

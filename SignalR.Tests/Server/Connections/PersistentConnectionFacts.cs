@@ -379,16 +379,16 @@ namespace SignalR.Tests
     {
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            Connection.Publish(connectionId, "OnConnectedAsync1");
-            Connection.Publish(connectionId, "OnConnectedAsync2");
+            Connection.Send(connectionId, "OnConnectedAsync1");
+            Connection.Send(connectionId, "OnConnectedAsync2");
 
             return base.OnConnectedAsync(request, connectionId);
         }
 
         protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
-            Connection.Publish(connectionId, "OnReceivedAsync1");
-            Connection.Publish(connectionId, "OnReceivedAsync2");
+            Connection.Send(connectionId, "OnReceivedAsync1");
+            Connection.Send(connectionId, "OnReceivedAsync2");
 
             return base.OnReceivedAsync(request, connectionId, data);
         }

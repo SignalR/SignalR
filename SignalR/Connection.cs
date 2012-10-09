@@ -88,7 +88,7 @@ namespace SignalR
             }
         }
 
-        public Task Publish(ConnectionMessage message)
+        public Task Send(ConnectionMessage message)
         {
             Message busMessage = CreateMessage(message.Signal, message.Value);
 

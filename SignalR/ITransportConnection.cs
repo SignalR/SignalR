@@ -10,6 +10,6 @@ namespace SignalR
 
         Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int maxMessages);
 
-        Task Publish(ConnectionMessage message);
+        Task Send(ConnectionMessage message);
     }
 }

@@ -230,7 +230,7 @@ namespace SignalR.Hubs
                 ExcludedSignals = context.ExcludedSignals
             };
 
-            return context.Connection.Publish(message);
+            return context.Connection.Send(message);
         }
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)

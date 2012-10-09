@@ -36,7 +36,7 @@ namespace SignalR
                 ExcludedSignals = exclude
             };
 
-            return _connection.Publish(message);
+            return _connection.Send(message);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace SignalR
                 WaitForAck = true
             };
 
-            return _connection.Publish(connectionId, command);
+            return _connection.Send(connectionId, command);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace SignalR
                 WaitForAck = true
             };
 
-            return _connection.Publish(connectionId, command);
+            return _connection.Send(connectionId, command);
         }
 
         private string CreateQualifiedName(string groupName)

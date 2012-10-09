@@ -13,10 +13,10 @@ namespace SignalR
         string DefaultSignal { get; }
 
         /// <summary>
-        /// Publishes a message to connections subscribed to the signal.
+        /// Sends a message to connections subscribed to the signal.
         /// </summary>
-        /// <param name="message">The message to publish</param>
-        /// <returns>A task that returns when the message has be published</returns>
-        Task Publish(ConnectionMessage message);
+        /// <param name="message">The message to send.</param>
+        /// <returns>A task that returns when the message has be sent.</returns>
+        Task Send(ConnectionMessage message);
     }
 }

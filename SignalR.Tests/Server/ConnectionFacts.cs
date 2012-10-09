@@ -33,7 +33,7 @@ namespace SignalR.Tests.Server
                                                            ackInterval: TimeSpan.Zero),
                                             counters);
 
-            connection.Publish("a", new Command
+            connection.Send("a", new Command
             {
                 Type = CommandType.AddToGroup,
                 Value = "foo"
