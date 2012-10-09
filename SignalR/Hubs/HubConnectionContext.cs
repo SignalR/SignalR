@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace SignalR.Hubs
 {
     /// <summary>
-    /// 
+    /// Encapsulates all information about an individual SignalR connection for an <see cref="IHub"/>.
     /// </summary>
     public class HubConnectionContext
     {
@@ -14,20 +14,20 @@ namespace SignalR.Hubs
         private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="HubConnectionContext"/>.
         /// </summary>
         public HubConnectionContext()
         {
         }
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="HubConnectionContext"/>.
         /// </summary>
-        /// <param name="pipelineInvoker"></param>
-        /// <param name="connection"></param>
-        /// <param name="hubName"></param>
-        /// <param name="connectionId"></param>
-        /// <param name="state"></param>
+        /// <param name="pipelineInvoker">The pipeline invoker.</param>
+        /// <param name="connection">The connection.</param>
+        /// <param name="hubName">The hub name.</param>
+        /// <param name="connectionId">The connection id.</param>
+        /// <param name="state">The connection hub state.</param>
         public HubConnectionContext(IHubPipelineInvoker pipelineInvoker, IConnection connection, string hubName, string connectionId, TrackingDictionary state)
         {
             _send = (signal, invocation, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, invocation, exclude));
@@ -37,14 +37,7 @@ namespace SignalR.Hubs
             Caller = new StatefulSignalProxy(_send, connectionId, hubName, state);
             All = AllExcept();
             Others = AllExcept(connectionId);
-
-            Connection = connection;
         }
-
-        /// <summary>
-        /// The connection to all hubs.
-        /// </summary>
-        public IConnection Connection { get; private set; }
 
         /// <summary>
         /// All connected clients.
