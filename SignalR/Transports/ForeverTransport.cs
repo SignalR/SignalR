@@ -251,21 +251,14 @@ namespace SignalR.Transports
                     // Send the response before removing any connection data
                     return Send(response).Then(() =>
                     {
-                        try
-                        {
-                            // Remove connection without triggering disconnect
-                            HeartBeat.RemoveConnection(this);
-                        }
-                        finally
-                        {
-                            endRequest();
+                        // Remove connection without triggering disconnect
+                        HeartBeat.RemoveConnection(this);
 
-                            // Dispose everything
-                            registration.Dispose();
-                            subscription.Dispose();
+                        endRequest();
 
-                            Dispose();
-                        }
+                        // Dispose everything
+                        registration.Dispose();
+                        subscription.Dispose();
 
                         return TaskAsyncHelper.False;
                     });
@@ -274,24 +267,17 @@ namespace SignalR.Transports
                          response.Aborted ||
                          ConnectionEndToken.IsCancellationRequested)
                 {
-                    try
+                    if (response.Aborted)
                     {
-                        if (response.Aborted)
-                        {
-                            // If this was a clean disconnect raise the event.
-                            OnDisconnect();
-                        }
+                        // If this was a clean disconnect raise the event.
+                        OnDisconnect();
                     }
-                    finally
-                    {
-                        endRequest();
 
-                        // Dispose everything
-                        registration.Dispose();
-                        subscription.Dispose();
+                    endRequest();
 
-                        Dispose();
-                    }
+                    // Dispose everything
+                    registration.Dispose();
+                    subscription.Dispose();
 
                     return TaskAsyncHelper.False;
                 }

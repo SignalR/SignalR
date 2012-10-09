@@ -9,7 +9,7 @@ using SignalR.Infrastructure;
 
 namespace SignalR.Transports
 {
-    public abstract class TransportDisconnectBase : ITrackingConnection, IDisposable
+    public abstract class TransportDisconnectBase : ITrackingConnection
     {
         private readonly HostContext _context;
         private readonly ITransportHeartBeat _heartBeat;
@@ -20,11 +20,12 @@ namespace SignalR.Transports
         private readonly CancellationTokenSource _timeoutTokenSource;
         private readonly CancellationTokenSource _endTokenSource;
         private readonly CancellationToken _hostShutdownToken;
-        private readonly CancellationTokenSource _connectionEndToken;
+        private readonly CancellationToken _connectionEndToken;
+        private readonly CancellationTokenSource _connectionEndTokenSource;
         private readonly CancellationTokenSource _disconnectedToken;
         private readonly IPerformanceCounterManager _counters;
         private string _connectionId;
-        private int _disposed;
+        private int _ended;
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
         {
@@ -40,7 +41,8 @@ namespace SignalR.Transports
             Completed = new TaskCompletionSource<object>();
             
             // Create a token that represents the end of this connection's life
-            _connectionEndToken = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _disconnectedToken.Token, _hostShutdownToken);
+            _connectionEndTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _disconnectedToken.Token, _hostShutdownToken);
+            _connectionEndToken = _connectionEndTokenSource.Token;
         }
 
         public string ConnectionId
@@ -107,7 +109,7 @@ namespace SignalR.Transports
         {
             get
             {
-                return _connectionEndToken.Token;
+                return _connectionEndToken;
             }
         }
 
@@ -192,11 +194,15 @@ namespace SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        public virtual void End()
+        public void End()
         {
-            if (_disposed == 0)
+            if (Interlocked.Exchange(ref _ended, 1) == 0)
             {
                 _endTokenSource.Cancel();
+                _connectionEndTokenSource.Dispose();
+                _timeoutTokenSource.Dispose();
+                _disconnectedToken.Dispose();
+                _endTokenSource.Dispose();
             }
         }
 
@@ -220,17 +226,6 @@ namespace SignalR.Transports
         public Uri Url
         {
             get { return _context.Request.Url; }
-        }
-
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0)
-            {
-                _connectionEndToken.Dispose();
-                _timeoutTokenSource.Dispose();
-                _disconnectedToken.Dispose();
-                _endTokenSource.Dispose();
-            }
         }
     }
 }
