@@ -37,10 +37,11 @@ namespace SignalR.Client.Transports
         // Used to ensure that only one thread can be in the check keep alive function at a time
         private Int32 _checkingKeepAlive = 0;
 
-        public HttpBasedTransport(IHttpClient httpClient, string transport)
+        public HttpBasedTransport(IHttpClient httpClient, string transport, bool supportsKeepAlive)
         {
             _httpClient = httpClient;
             _transport = transport;
+            _supportsKeepAlive = supportsKeepAlive;
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
@@ -368,9 +369,11 @@ namespace SignalR.Client.Transports
         /// <param name="keepAlive">The server's keep alive configuration</param>
         public void RegisterKeepAlive(TimeSpan keepAlive)
         {
-            _supportsKeepAlive = true;
-            // Setting the keep alive will calculate the monitoring thresholds
-            _keepAliveData.KeepAlive = keepAlive;
+            if (SupportsKeepAlive())
+            {
+                // Setting the keep alive will calculate the monitoring thresholds
+                _keepAliveData.KeepAlive = keepAlive;
+            }
         }
 
         public bool SupportsKeepAlive()

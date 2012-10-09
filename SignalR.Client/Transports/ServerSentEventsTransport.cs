@@ -19,7 +19,7 @@ namespace SignalR.Client.Transports
         }
 
         public ServerSentEventsTransport(IHttpClient httpClient)
-            : base(httpClient, "serverSentEvents")
+            : base(httpClient, "serverSentEvents", true)
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectionTimeout = TimeSpan.FromSeconds(2);
