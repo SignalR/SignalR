@@ -32,6 +32,7 @@ namespace SignalR.Client.Transports
             set
             {
                 _keepAlive = value;
+
                 // Calculate keep alive monitoring thresholds
                 Timeout = TimeSpan.FromSeconds(TimeoutCount * _keepAlive.TotalSeconds);
                 TimeoutWarning = TimeSpan.FromSeconds(Timeout.TotalSeconds * TimeoutWarningThreshold);

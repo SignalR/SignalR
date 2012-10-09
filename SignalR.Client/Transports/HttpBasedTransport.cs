@@ -34,7 +34,7 @@ namespace SignalR.Client.Transports
 #else
         private Timer _keepAliveMonitor;
 #endif
-
+        // Used to ensure that only one thread can be in the check keep alive function at a time
         private Int32 _checkingKeepAlive = 0;
 
         public HttpBasedTransport(IHttpClient httpClient, string transport)
@@ -275,6 +275,19 @@ namespace SignalR.Client.Transports
             }
         }
 
+        private static string GetCustomQueryString(IConnection connection)
+        {
+            return String.IsNullOrEmpty(connection.QueryString)
+                            ? ""
+                            : "&" + connection.QueryString;
+        }
+
+        #region Keep Alive Handling
+
+        /// <summary>
+        /// Start the timer for the keep alive monitoring
+        /// </summary>
+        /// <param name="connection">The current connection associated with the transport</param>
         public void MonitorKeepAlive(IConnection connection)
         {
             // Only monitor the keep alive if it's not already in the process of being monitored;
@@ -295,13 +308,18 @@ namespace SignalR.Client.Transports
                 };
                 _keepAliveMonitor.Start();
 #else
-                    _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
+                _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
 #endif
             }
         }
 
+        /// <summary>
+        /// Called by the keep alive monitor timer
+        /// </summary>
+        /// <param name="state">The current connection associated with the transport</param>
         private void CheckIfAlive(object state)
         {
+            // Ensure that two threads cannot be in here simultaneously
             if (Interlocked.Exchange(ref _checkingKeepAlive, 1) == 0)
             {
                 IConnection connection = state as IConnection;
@@ -336,18 +354,18 @@ namespace SignalR.Client.Transports
             }
         }
 
+        /// <summary>
+        /// Updates the last keep alive time stamp
+        /// </summary>
         protected void UpdateKeepAlive()
         {
             _keepAliveData.LastKeepAlive = DateTime.UtcNow;
         }
 
-        private static string GetCustomQueryString(IConnection connection)
-        {
-            return String.IsNullOrEmpty(connection.QueryString)
-                            ? ""
-                            : "&" + connection.QueryString;
-        }
-
+        /// <summary>
+        /// Initiates the Keep Alive data for the transport
+        /// </summary>
+        /// <param name="keepAlive">The server's keep alive configuration</param>
         public void RegisterKeepAlive(TimeSpan keepAlive)
         {
             _supportsKeepAlive = true;
@@ -360,10 +378,17 @@ namespace SignalR.Client.Transports
             return _supportsKeepAlive;
         }
 
+        /// <summary>
+        /// This is expected to be overriden by LongPollingTransport and ServerSentEvents
+        /// </summary>
+        /// <param name="connection"></param>
         public virtual void LostConnection(IConnection connection)
         {
         }
 
+        /// <summary>
+        /// Stops the monitoring of the keep alive.  Called when the connection is forcibly stopped.
+        /// </summary>
         public void StopMonitoringKeepAlive()
         {
             _monitoringKeepAlive = false;
@@ -376,5 +401,6 @@ namespace SignalR.Client.Transports
 
             _keepAliveMonitor = null;
         }
+        #endregion
     }
 }
