@@ -95,7 +95,14 @@ namespace SignalR.Client.Transports
 
         public bool SupportsKeepAlive()
         {
-            return _transport.SupportsKeepAlive();
+            if (_transport != null)
+            {
+                return _transport.SupportsKeepAlive();
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void LostConnection(IConnection connection)

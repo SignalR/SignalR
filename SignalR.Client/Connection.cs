@@ -211,11 +211,15 @@ namespace SignalR.Client
             
             Task negotation = Negotiate(transport);
 
-            // We've now determined if the client can support the keep alive so we need to monitor it if it does
-            if (_transport.SupportsKeepAlive())
+            negotation.ContinueWith(task =>
             {
-                _transport.MonitorKeepAlive(this);
-            }
+                // We've now determined if the client can support the keep alive so we need to monitor it if it does
+                if (_transport.SupportsKeepAlive())
+                {
+                    _transport.MonitorKeepAlive(this);
+                }
+            });
+            
 
             return negotation;
         }
