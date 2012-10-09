@@ -184,14 +184,6 @@ namespace SignalR.Transports
             return Context.Response.EndAsync();
         }
 
-        public override void End()
-        {
-            base.End();
-
-            // Dispose of the connection state after ending it.
-            Dispose();
-        }
-
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
