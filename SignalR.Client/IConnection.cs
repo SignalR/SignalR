@@ -29,6 +29,7 @@ namespace SignalR.Client
         void OnReceived(JToken data);
         void OnError(Exception ex);
         void OnReconnected();
+        void OnConnectionSlow();
         void PrepareRequest(IRequest request);
     }
 }

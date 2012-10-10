@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using SignalR.Client.Http;
 
@@ -13,6 +14,8 @@ namespace SignalR.Client.Transports
 
         // List of transports in fallback order
         private readonly IClientTransport[] _transports;
+
+        private TimeSpan? _keepAliveToRegister;
 
         public AutoTransport(IHttpClient httpClient)
         {
@@ -73,6 +76,11 @@ namespace SignalR.Client.Transports
                     // Set the active transport
                     _transport = transport;
 
+                    if (_keepAliveToRegister.HasValue)
+                    {
+                        _transport.RegisterKeepAlive(_keepAliveToRegister.Value);
+                    }
+
                     // Complete the process
                     tcs.SetResult(null);
                 }
@@ -87,10 +95,42 @@ namespace SignalR.Client.Transports
 
         public void Stop(IConnection connection)
         {
+            Stop(connection, notifyServer: true);
+        }
+
+        public void Stop(IConnection connection, bool notifyServer)
+        {
             if (_transport != null)
             {
                 _transport.Stop(connection);
             }
+        }
+
+        public void RegisterKeepAlive(TimeSpan keepAlive)
+        {
+            _keepAliveToRegister = keepAlive;
+        }
+
+        public virtual bool SupportsKeepAlive
+        {
+            get
+            {
+                return _transport.SupportsKeepAlive;
+            }
+            set
+            {
+                _transport.SupportsKeepAlive = value;
+            }
+        }
+
+        public void MonitorKeepAlive(IConnection connection)
+        {
+            _transport.MonitorKeepAlive(connection);
+        }
+
+        public void StopMonitoringKeepAlive()
+        {
+            _transport.StopMonitoringKeepAlive();
         }
     }
 }

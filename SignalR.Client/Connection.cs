@@ -44,6 +44,11 @@ namespace SignalR.Client
         public event Action Closed;
 
         /// <summary>
+        /// Occurs when the <see cref="Connection"/> is hanging/may be offline
+        /// </summary>
+        public event Action ConnectionSlow;
+
+        /// <summary>
         /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
         /// </summary>
         public event Action Reconnected;
@@ -204,7 +209,15 @@ namespace SignalR.Client
 
             _transport = transport;
 
-            return Negotiate(transport);
+            // Once the negotation has finished we need to check the keep alive
+            return Negotiate(transport).ContinueWith(task =>
+            {
+                // We've now determined if the client can support the keep alive so we need to monitor it if it does
+                if (_transport.SupportsKeepAlive)
+                {
+                    _transport.MonitorKeepAlive(this);
+                }
+            });
         }
 
         protected virtual string OnSending()
@@ -218,9 +231,16 @@ namespace SignalR.Client
 
             transport.Negotiate(this).Then(negotiationResponse =>
             {
+                var keepAlive = negotiationResponse.KeepAlive;
+
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
+
+                if (keepAlive.HasValue)
+                {
+                    transport.RegisterKeepAlive(TimeSpan.FromSeconds(keepAlive.Value));
+                }
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -299,10 +319,15 @@ namespace SignalR.Client
             }
         }
 
+        public virtual void Stop()
+        {
+            Stop(notifyServer: true);
+        }
+
         /// <summary>
         /// Stops the <see cref="Connection"/>.
         /// </summary>
-        public virtual void Stop()
+        public void Stop(bool notifyServer)
         {
             try
             {
@@ -312,7 +337,13 @@ namespace SignalR.Client
                     return;
                 }
 
-                _transport.Stop(this);
+                // Stop the keep alive monitoring if it's supported
+                if (_transport.SupportsKeepAlive)
+                {
+                    _transport.StopMonitoringKeepAlive();
+                }
+
+                _transport.Stop(this, notifyServer);
 
                 if (Closed != null)
                 {
@@ -386,6 +417,14 @@ namespace SignalR.Client
             if (Reconnected != null)
             {
                 Reconnected();
+            }
+        }
+
+        void IConnection.OnConnectionSlow()
+        {
+            if (ConnectionSlow != null)
+            {
+                ConnectionSlow();
             }
         }
 

@@ -23,6 +23,7 @@ namespace SignalR.Client.Transports
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectionTimeout = TimeSpan.FromSeconds(2);
+            SupportsKeepAlive = true;
         }
 
         /// <summary>
@@ -38,6 +39,12 @@ namespace SignalR.Client.Transports
         protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
         {
             OpenConnection(connection, data, initializeCallback, errorCallback);
+        }
+
+        public override void LostConnection(IConnection connection)
+        {
+            // Stopping the transport will force it into auto reconnect and maintain the functional flow
+            Stop(connection, notifyServer: false);
         }
 
         private void Reconnect(IConnection connection, string data)
@@ -131,6 +138,8 @@ namespace SignalR.Client.Transports
 
                             bool timedOut;
                             bool disconnected;
+
+                            UpdateKeepAlive();
                             ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
 
                             if (disconnected)
@@ -170,7 +179,7 @@ namespace SignalR.Client.Transports
                             {
                                 connection.Stop();
                             }
-                        }
+                        }                        
                     };
 
                     eventSource.Start();

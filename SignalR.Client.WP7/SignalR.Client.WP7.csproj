@@ -151,6 +151,9 @@
     <Compile Include="..\SignalR.Client\Transports\IClientTransport.cs">
       <Link>Transports\IClientTransport.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Transports\KeepAliveData.cs">
+      <Link>Transports\KeepAliveData.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Transports\LongPollingTransport.cs">
       <Link>Transports\LongPollingTransport.cs</Link>
     </Compile>
@@ -188,32 +191,23 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  
   <PropertyGroup>
     <MissingExternalDependenciesBlendDesignTimehack>false</MissingExternalDependenciesBlendDesignTimehack>
     <MissingExternalDependenciesBlendDesignTimehack Condition="!Exists('$(SolutionDir)Build')">true</MissingExternalDependenciesBlendDesignTimehack>
     <CompileTimeSolutionDir Condition="'$(MissingExternalDependenciesBlendDesignTimehack)'!='true'">$(SolutionDir)</CompileTimeSolutionDir>
     <CompileTimeSolutionDir Condition="'$(MissingExternalDependenciesBlendDesignTimehack)'=='true'">$(SolutionDir)..\</CompileTimeSolutionDir>
   </PropertyGroup>
-
   <!--<Import Project="C:\tools\WP7\SignalR.WP7.targets" />-->
-  
-  <Import Project="$(LocalToolsPath)\WP7\SignalR.WP7.targets"
-          Condition=" '$(LocalToolsPath)' != '' " />
-
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets"
-          Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets')" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets"
-          Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets')" />
-
+  <Import Project="$(LocalToolsPath)\WP7\SignalR.WP7.targets" Condition=" '$(LocalToolsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets')" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets')" />
   <ProjectExtensions />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
-    <Message Importance="high" Text="Using build resources from local tools path $(LocalToolsPath)"  />
+    <Message Importance="high" Text="Using build resources from local tools path $(LocalToolsPath)" />
   </Target>
   <!--<Target Name="AfterBuild">
   </Target>-->
-  
 </Project>

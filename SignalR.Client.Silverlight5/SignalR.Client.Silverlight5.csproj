@@ -75,6 +75,9 @@
     <Compile Include="..\SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>
     </Compile>
+    <Compile Include="..\SignalR.Client\Transports\KeepAliveData.cs">
+      <Link>Transports\KeepAliveData.cs</Link>
+    </Compile>
     <Compile Include="..\SignalR.Client\Transports\ServerSentEvents\ChunkBuffer.cs">
       <Link>Transports\ServerSentEvents\ChunkBuffer.cs</Link>
     </Compile>
@@ -196,13 +199,8 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-
-  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\SignalR.Silverlight.targets"
-          Condition="'$(LocalToolsPath)'!=''" />
-
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets"
-          Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets')" />
-
+  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\SignalR.Silverlight.targets" Condition="'$(LocalToolsPath)'!=''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets')" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">

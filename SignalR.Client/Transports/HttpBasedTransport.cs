@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalR.Client.Http;
+#if NETFX_CORE
+using Windows.UI.Xaml;
+#endif
 
 namespace SignalR.Client.Transports
 {
@@ -22,6 +25,16 @@ namespace SignalR.Client.Transports
         protected const string HttpRequestKey = "http.Request";
 
         protected readonly IHttpClient _httpClient;
+
+        private bool _monitoringKeepAlive;
+        private KeepAliveData _keepAliveData = new KeepAliveData();
+#if NETFX_CORE
+        private DispatcherTimer _keepAliveMonitor;
+#else
+        private Timer _keepAliveMonitor;
+#endif
+        // Used to ensure that only one thread can be in the check keep alive function at a time
+        private Int32 _checkingKeepAlive = 0;
 
         public HttpBasedTransport(IHttpClient httpClient, string transport)
         {
@@ -41,7 +54,6 @@ namespace SignalR.Client.Transports
 #else
             string negotiateUrl = connection.Url + "negotiate";
 #endif
-
 
             return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
@@ -145,6 +157,11 @@ namespace SignalR.Client.Transports
 
         public void Stop(IConnection connection)
         {
+            Stop(connection, notifyServer: true);
+        }
+
+        public void Stop(IConnection connection, bool notifyServer)
+        {
             var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
             if (httpRequest != null)
             {
@@ -153,7 +170,10 @@ namespace SignalR.Client.Transports
                     OnBeforeAbort(connection);
 
                     // Abort the server side connection
-                    AbortConnection(connection);
+                    if (notifyServer)
+                    {
+                        AbortConnection(connection);
+                    }
 
                     // Now abort the client connection
                     httpRequest.Abort();
@@ -180,7 +200,6 @@ namespace SignalR.Client.Transports
                 Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
             }
         }
-
 
         protected virtual void OnBeforeAbort(IConnection connection)
         {
@@ -265,6 +284,123 @@ namespace SignalR.Client.Transports
             return String.IsNullOrEmpty(connection.QueryString)
                             ? ""
                             : "&" + connection.QueryString;
+        }
+
+        /// <summary>
+        /// Start the timer for the keep alive monitoring
+        /// </summary>
+        /// <param name="connection">The current connection associated with the transport</param>
+        public void MonitorKeepAlive(IConnection connection)
+        {
+            // Only monitor the keep alive if it's not already in the process of being monitored;
+            if (!_monitoringKeepAlive)
+            {
+                _monitoringKeepAlive = true;
+
+                // Initiate the keep alive timestamps
+                UpdateKeepAlive();
+
+#if NETFX_CORE
+                _keepAliveMonitor = new DispatcherTimer();
+                _keepAliveMonitor.Interval = _keepAliveData.KeepAliveCheckInterval;
+                _keepAliveMonitor.Tick +=
+                delegate
+                {
+                    CheckIfAlive(connection);
+                };
+                _keepAliveMonitor.Start();
+#else
+                _keepAliveMonitor = new Timer(CheckIfAlive, connection, _keepAliveData.KeepAliveCheckInterval, _keepAliveData.KeepAliveCheckInterval);
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Called by the keep alive monitor timer
+        /// </summary>
+        /// <param name="state">The current connection associated with the transport</param>
+        private void CheckIfAlive(object state)
+        {
+            // Ensure that two threads cannot be in here simultaneously
+            if (Interlocked.Exchange(ref _checkingKeepAlive, 1) == 0)
+            {
+                IConnection connection = state as IConnection;
+
+                // Only check if we're connected
+                if (connection.State == ConnectionState.Connected)
+                {
+                    TimeSpan timeElapsed = (DateTime.UtcNow - _keepAliveData.LastKeepAlive);
+
+                    // Check if the keep alive has completely timed out
+                    if (timeElapsed >= _keepAliveData.Timeout)
+                    {
+                        // Notify transport that the connection has been lost
+                        LostConnection(connection);
+                    }
+                    else if (timeElapsed >= _keepAliveData.TimeoutWarning)
+                    {
+                        // This is to assure that the user only gets a single warning
+                        if (!_keepAliveData.WarningTriggered)
+                        {
+                            connection.OnConnectionSlow();
+                            _keepAliveData.WarningTriggered = true;
+                        }
+                    }
+                    else
+                    {
+                        _keepAliveData.WarningTriggered = false;
+                    }
+                }
+
+                _checkingKeepAlive = 0;
+            }
+        }
+
+        /// <summary>
+        /// Updates the last keep alive time stamp
+        /// </summary>
+        protected void UpdateKeepAlive()
+        {
+            _keepAliveData.LastKeepAlive = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Initiates the Keep Alive data for the transport
+        /// </summary>
+        /// <param name="keepAlive">The server's keep alive configuration</param>
+        public void RegisterKeepAlive(TimeSpan keepAlive)
+        {
+            if (SupportsKeepAlive)
+            {
+                // Setting the keep alive will calculate the monitoring thresholds
+                _keepAliveData.KeepAlive = keepAlive;
+            }
+        }
+
+        public bool SupportsKeepAlive { get; set; }
+
+        /// <summary>
+        /// This is expected to be overriden by LongPollingTransport and ServerSentEvents
+        /// </summary>
+        /// <param name="connection"></param>
+        public virtual void LostConnection(IConnection connection)
+        {
+        }
+
+        /// <summary>
+        /// Stops the monitoring of the keep alive.  Called when the connection is forcibly stopped.
+        /// </summary>
+        public void StopMonitoringKeepAlive()
+        {
+            _monitoringKeepAlive = false;
+
+#if NETFX_CORE
+            _keepAliveMonitor.Stop();
+#else
+            _keepAliveMonitor.Dispose();
+#endif
+
+            _keepAliveMonitor = null;
         }
     }
 }
