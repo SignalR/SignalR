@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
 
 namespace SignalR.Hubs
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
-    public class AuthorizeAttribute : Attribute, IAuthorizeHubConnection, IAuthorizeHubMethodInvocation
+    public sealed class AuthorizeAttribute : Attribute, IAuthorizeHubConnection, IAuthorizeHubMethodInvocation
     {
         private string _roles;
         private string[] _rolesSplit = new string[0];
@@ -14,11 +15,14 @@ namespace SignalR.Hubs
 
         public AuthorizeAttribute() { }
 
-        public AuthorizeAttribute(string roles, string users)
+        public AuthorizeAttribute(AuthorizeMode mode, string roles, string users)
         {
+            Mode = mode;
             Roles = roles;
             Users = users;
         }
+
+        public AuthorizeMode Mode { get; set; }
 
         public string Roles
         {
@@ -40,15 +44,30 @@ namespace SignalR.Hubs
             }
         }
 
-        public virtual bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
+        public bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
         {
-             return UserAuthorized(request.User);
+            switch (Mode)
+            {
+                case AuthorizeMode.Both:
+                case AuthorizeMode.Outgoing:
+                    return UserAuthorized(request.User);
+                default:
+                    Debug.Assert(Mode == AuthorizeMode.Incoming); // Guard in case new values are added to the enum
+                    return true;
+            }
         }
 
-        public virtual bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext)
+        public bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext)
         {
-            return UserAuthorized(hubIncomingInvokerContext.Hub.Context.User);
-
+            switch (Mode)
+            {
+                case AuthorizeMode.Both:
+                case AuthorizeMode.Incoming:
+                    return UserAuthorized(hubIncomingInvokerContext.Hub.Context.User);
+                default:
+                    Debug.Assert(Mode == AuthorizeMode.Outgoing); // Guard in case new values are added to the enum
+                    return true;
+            }
         }
 
         private bool UserAuthorized(IPrincipal user)

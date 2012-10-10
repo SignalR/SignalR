@@ -9,7 +9,8 @@ namespace SignalR.Hubs
 
         public static void RequireAuthentication(this IHubPipeline pipeline)
         {
-            pipeline.AddModule(new AttributeAuthModule(new AuthorizeAttribute()));
+            var authorizer = new AuthorizeAttribute();
+            pipeline.AddModule(new AuthorizeModule(globalConnectionAuthorizer: authorizer, globalInvocationAuthorizer: authorizer));
         }
     }
 }
