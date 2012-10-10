@@ -13,8 +13,8 @@ namespace SignalR
         IConnection Connection { get; }
 
         /// <summary>
-        /// Gets the <see cref="IGroupManager" /> for the <see cref="PersistentConnection" />.
+        /// Gets the <see cref="IConnectionGroupManager" /> for the <see cref="PersistentConnection" />.
         /// </summary>
-        IGroupManager Groups { get; }
+        IConnectionGroupManager Groups { get; }
     }
 }

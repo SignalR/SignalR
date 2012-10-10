@@ -6,7 +6,7 @@ namespace SignalR
     /// <summary>
     /// The default <see cref="IGroupManager"/> implementation.
     /// </summary>
-    public class GroupManager : IGroupManager
+    public class GroupManager : IConnectionGroupManager
     {
         private readonly IConnection _connection;
         private readonly string _groupPrefix;

@@ -67,9 +67,9 @@ namespace SignalR
         }
 
         /// <summary>
-        /// Gets the <see cref="IGroupManager"/> for the <see cref="PersistentConnection"/>.
+        /// Gets the <see cref="IConnectionGroupManager"/> for the <see cref="PersistentConnection"/>.
         /// </summary>
-        public IGroupManager Groups
+        public IConnectionGroupManager Groups
         {
             get;
             private set;

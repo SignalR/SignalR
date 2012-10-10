@@ -89,6 +89,7 @@
     <Compile Include="Hubs\Pipeline\IHubIncomingInvokerContext.cs" />
     <Compile Include="Hubs\Pipeline\IHubPipeline.cs" />
     <Compile Include="Hubs\Pipeline\IHubPipelineModule.cs" />
+    <Compile Include="IConnectionGroupManager.cs" />
     <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Infrastructure\IPerformanceCounter.cs" />
     <Compile Include="Infrastructure\IPerformanceCounterManager.cs" />

@@ -2,7 +2,7 @@
 {
     internal class PersistentConnectionContext : IPersistentConnectionContext
     {
-        public PersistentConnectionContext(IConnection connection, IGroupManager groupManager)
+        public PersistentConnectionContext(IConnection connection, IConnectionGroupManager groupManager)
         {
             Connection = connection;
             Groups = groupManager;
@@ -10,6 +10,6 @@
 
         public IConnection Connection { get; private set; }
 
-        public IGroupManager Groups { get; private set; }
+        public IConnectionGroupManager Groups { get; private set; }
     }
 }
