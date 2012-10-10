@@ -16,7 +16,6 @@ namespace SignalR.Hosting.Memory
     public class MemoryHost : RoutingHost, IHttpClient, IDisposable
     {
         private readonly CancellationTokenSource _shutDownToken = new CancellationTokenSource();
-        private Func<IPrincipal> _userThunk = () => Thread.CurrentPrincipal;
         
         public MemoryHost()
             : this(new DefaultDependencyResolver())
@@ -28,15 +27,13 @@ namespace SignalR.Hosting.Memory
             : base(resolver)
         {
             resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken.Token), _shutDownToken.Token);
+
+            User = Thread.CurrentPrincipal;
         }
 
         public string InstanceName { get; set; }
 
-        public IPrincipal User
-        {
-            get { return _userThunk(); }
-            set { _userThunk = () => value; }
-        }
+        public IPrincipal User { get; set; }
 
         Task<IClientResponse> IHttpClient.GetAsync(string url, Action<IClientRequest> prepareRequest)
         {
@@ -57,7 +54,7 @@ namespace SignalR.Hosting.Memory
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
                 var clientTokenSource = new CancellationTokenSource();
-                var request = new Request(uri, clientTokenSource, postData, _userThunk);
+                var request = new Request(uri, clientTokenSource, postData, User);
                 prepareRequest(request);
 
                 Response response = null;

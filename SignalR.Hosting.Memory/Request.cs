@@ -13,13 +13,12 @@ namespace SignalR.Hosting.Memory
     public class Request : IClientRequest, IRequest
     {
         private readonly CancellationTokenSource _clientTokenSource;
-        private readonly Func<IPrincipal> _userThunk;
 
-        public Request(Uri uri, CancellationTokenSource clientTokenSource, Dictionary<string, string> postData, Func<IPrincipal> userThunk)
+        public Request(Uri uri, CancellationTokenSource clientTokenSource, Dictionary<string, string> postData, IPrincipal user)
         {
             Url = uri;
             _clientTokenSource = clientTokenSource;
-            _userThunk = userThunk;
+            User = user;
             Form = new NameValueCollection();
             Headers = new NameValueCollection();
             ServerVariables = new NameValueCollection();
@@ -107,7 +106,8 @@ namespace SignalR.Hosting.Memory
 
         public IPrincipal User
         {
-            get { return _userThunk(); }
+            get;
+            private set;
         }
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
