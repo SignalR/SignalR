@@ -191,6 +191,10 @@
     </Compile>
     <Compile Include="Hubs\Auth\AuthHub.cs" />
     <Compile Include="Hubs\Auth\AdminAuthHub.cs" />
+    <Compile Include="Hubs\Auth\InheritAuthHub.cs" />
+    <Compile Include="Hubs\Auth\OutgoingAuthHub.cs" />
+    <Compile Include="Hubs\Auth\IncomingAuthHub.cs" />
+    <Compile Include="Hubs\Auth\UserAndRoleAuthHub.cs" />
     <Compile Include="Hubs\Auth\InvokeAuthHub.cs" />
     <Compile Include="Hubs\Auth\NoAuthHub.cs" />
     <Compile Include="Hubs\Auth\Default.aspx.cs">
