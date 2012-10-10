@@ -17,7 +17,7 @@ namespace SignalR
 
         public AckHandler()
             : this(cancelAcksOnTimeout: true, 
-                   ackThreshold: TimeSpan.FromMinutes(30),
+                   ackThreshold: TimeSpan.FromMinutes(1),
                    ackInterval: TimeSpan.FromSeconds(10))
         {
         }
