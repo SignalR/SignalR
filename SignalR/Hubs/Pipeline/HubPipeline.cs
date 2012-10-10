@@ -8,7 +8,7 @@ namespace SignalR.Hubs
     public class HubPipeline : IHubPipeline, IHubPipelineInvoker
     {
         private readonly Stack<IHubPipelineModule> _modules;
-        private Lazy<ComposedPipeline> _pipeline;
+        private readonly Lazy<ComposedPipeline> _pipeline;
 
         public HubPipeline()
         {
