@@ -30,11 +30,12 @@ namespace SignalR.Client.Transports
         }
 
         public LongPollingTransport(IHttpClient httpClient)
-            : base(httpClient, "longPolling", false)
+            : base(httpClient, "longPolling")
         {
             ReconnectDelay = TimeSpan.FromSeconds(5);
             ErrorDelay = TimeSpan.FromSeconds(2);
             ConnectDelay = TimeSpan.FromSeconds(2);
+            SupportsKeepAlive = false;
         }
 
         public override void LostConnection(IConnection connection)
