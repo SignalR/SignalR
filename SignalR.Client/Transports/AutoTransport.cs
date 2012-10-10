@@ -93,7 +93,12 @@ namespace SignalR.Client.Transports
             return _transport.Send<T>(connection, data);
         }
 
-        public void Stop(IConnection connection, bool notifyServer = true)
+        public void Stop(IConnection connection)
+        {
+            Stop(connection, notifyServer: true);
+        }
+
+        public void Stop(IConnection connection, bool notifyServer)
         {
             if (_transport != null)
             {
@@ -106,21 +111,16 @@ namespace SignalR.Client.Transports
             _keepAliveToRegister = keepAlive;
         }
 
-        public bool SupportsKeepAlive()
+        public virtual bool SupportsKeepAlive
         {
-            if (_transport != null)
+            get
             {
-                return _transport.SupportsKeepAlive();
+                return _transport.SupportsKeepAlive;
             }
-            else
+            set
             {
-                return false;
+                _transport.SupportsKeepAlive = value;
             }
-        }
-
-        public void LostConnection(IConnection connection)
-        {
-            _transport.LostConnection(connection);
         }
 
         public void MonitorKeepAlive(IConnection connection)

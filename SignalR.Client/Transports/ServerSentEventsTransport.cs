@@ -19,10 +19,11 @@ namespace SignalR.Client.Transports
         }
 
         public ServerSentEventsTransport(IHttpClient httpClient)
-            : base(httpClient, "serverSentEvents", true)
+            : base(httpClient, "serverSentEvents")
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectionTimeout = TimeSpan.FromSeconds(2);
+            SupportsKeepAlive = true;
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace SignalR.Client.Transports
         public override void LostConnection(IConnection connection)
         {
             // Stopping the transport will force it into auto reconnect and maintain the functional flow
-            Stop(connection, false);
+            Stop(connection, notifyServer: false);
         }
 
         private void Reconnect(IConnection connection, string data)

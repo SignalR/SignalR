@@ -22,7 +22,7 @@ namespace SignalR.Client
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
 
-        void Stop(bool notifyServer = true);
+        void Stop();
         Task Send(string data);
         Task<T> Send<T>(string data);
 

@@ -209,19 +209,15 @@ namespace SignalR.Client
 
             _transport = transport;
 
-            Task negotation = Negotiate(transport);
-
             // Once the negotation has finished we need to check the keep alive
-            negotation.ContinueWith(task =>
+            return Negotiate(transport).ContinueWith(task =>
             {
                 // We've now determined if the client can support the keep alive so we need to monitor it if it does
-                if (_transport.SupportsKeepAlive())
+                if (_transport.SupportsKeepAlive)
                 {
                     _transport.MonitorKeepAlive(this);
                 }
             });
-
-            return negotation;
         }
 
         protected virtual string OnSending()
@@ -323,10 +319,15 @@ namespace SignalR.Client
             }
         }
 
+        public virtual void Stop()
+        {
+            Stop(notifyServer: true);
+        }
+
         /// <summary>
         /// Stops the <see cref="Connection"/>.
         /// </summary>
-        public virtual void Stop(bool notifyServer = true)
+        public void Stop(bool notifyServer)
         {
             try
             {
@@ -337,7 +338,7 @@ namespace SignalR.Client
                 }
 
                 // Stop the keep alive monitoring if it's supported
-                if (_transport.SupportsKeepAlive())
+                if (_transport.SupportsKeepAlive)
                 {
                     _transport.StopMonitoringKeepAlive();
                 }

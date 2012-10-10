@@ -9,12 +9,13 @@ namespace SignalR.Client.Transports
         Task<NegotiationResponse> Negotiate(IConnection connection);
         Task Start(IConnection connection, string data);
         Task<T> Send<T>(IConnection connection, string data);
-        void Stop(IConnection connection, bool notifyServer = true);
+        void Stop(IConnection connection);
+        void Stop(IConnection connection, bool notifyServer);
 
-        void RegisterKeepAlive(TimeSpan keepAlive);
-        void LostConnection(IConnection connection);
-        bool SupportsKeepAlive();
+        void RegisterKeepAlive(TimeSpan keepAlive);                
         void MonitorKeepAlive(IConnection connection);
         void StopMonitoringKeepAlive();
+
+        bool SupportsKeepAlive { get; set; }
     }
 }

@@ -26,7 +26,6 @@ namespace SignalR.Client.Transports
 
         protected readonly IHttpClient _httpClient;
 
-        private bool _supportsKeepAlive;
         private bool _monitoringKeepAlive;
         private KeepAliveData _keepAliveData = new KeepAliveData();
 #if NETFX_CORE
@@ -37,11 +36,10 @@ namespace SignalR.Client.Transports
         // Used to ensure that only one thread can be in the check keep alive function at a time
         private Int32 _checkingKeepAlive = 0;
 
-        public HttpBasedTransport(IHttpClient httpClient, string transport, bool supportsKeepAlive)
+        public HttpBasedTransport(IHttpClient httpClient, string transport)
         {
             _httpClient = httpClient;
             _transport = transport;
-            _supportsKeepAlive = supportsKeepAlive;
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
@@ -157,7 +155,12 @@ namespace SignalR.Client.Transports
             };
         }
 
-        public void Stop(IConnection connection, bool notifyServer = true)
+        public void Stop(IConnection connection)
+        {
+            Stop(connection, notifyServer: true);
+        }
+
+        public void Stop(IConnection connection, bool notifyServer)
         {
             var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
             if (httpRequest != null)
@@ -283,8 +286,6 @@ namespace SignalR.Client.Transports
                             : "&" + connection.QueryString;
         }
 
-        #region Keep Alive Handling
-
         /// <summary>
         /// Start the timer for the keep alive monitoring
         /// </summary>
@@ -369,17 +370,14 @@ namespace SignalR.Client.Transports
         /// <param name="keepAlive">The server's keep alive configuration</param>
         public void RegisterKeepAlive(TimeSpan keepAlive)
         {
-            if (SupportsKeepAlive())
+            if (SupportsKeepAlive)
             {
                 // Setting the keep alive will calculate the monitoring thresholds
                 _keepAliveData.KeepAlive = keepAlive;
             }
         }
 
-        public bool SupportsKeepAlive()
-        {
-            return _supportsKeepAlive;
-        }
+        public bool SupportsKeepAlive { get; set; }
 
         /// <summary>
         /// This is expected to be overriden by LongPollingTransport and ServerSentEvents
@@ -404,6 +402,5 @@ namespace SignalR.Client.Transports
 
             _keepAliveMonitor = null;
         }
-        #endregion
     }
 }
