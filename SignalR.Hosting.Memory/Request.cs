@@ -14,10 +14,11 @@ namespace SignalR.Hosting.Memory
     {
         private readonly CancellationTokenSource _clientTokenSource;
 
-        public Request(Uri uri, CancellationTokenSource clientTokenSource, Dictionary<string, string> postData)
+        public Request(Uri uri, CancellationTokenSource clientTokenSource, Dictionary<string, string> postData, IPrincipal user)
         {
             Url = uri;
             _clientTokenSource = clientTokenSource;
+            User = user;
             Form = new NameValueCollection();
             Headers = new NameValueCollection();
             ServerVariables = new NameValueCollection();
@@ -105,10 +106,8 @@ namespace SignalR.Hosting.Memory
 
         public IPrincipal User
         {
-            get
-            {
-                return Thread.CurrentPrincipal;
-            }
+            get;
+            private set;
         }
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)

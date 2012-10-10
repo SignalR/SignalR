@@ -62,6 +62,24 @@
             createHubProxies(signalR, this);
         });
 
+    signalR.adminAuthHub = signalR.hub.createProxy('adminAuthHub'); 
+    signalR.adminAuthHub.client = { };
+    signalR.adminAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side AdminAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.adminAuthHub.invoke.apply(signalR.adminAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.authHub = signalR.hub.createProxy('authHub'); 
+    signalR.authHub.client = { };
+    signalR.authHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side AuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.authHub.invoke.apply(signalR.authHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
     signalR.chat = signalR.hub.createProxy('chat'); 
     signalR.chat.client = { };
     signalR.chat.server = {
@@ -227,6 +245,33 @@
          }
     };
 
+    signalR.incomingAuthHub = signalR.hub.createProxy('incomingAuthHub'); 
+    signalR.incomingAuthHub.client = { };
+    signalR.incomingAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side IncomingAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.incomingAuthHub.invoke.apply(signalR.incomingAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.inheritAuthHub = signalR.hub.createProxy('inheritAuthHub'); 
+    signalR.inheritAuthHub.client = { };
+    signalR.inheritAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side InheritAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.inheritAuthHub.invoke.apply(signalR.inheritAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.invokeAuthHub = signalR.hub.createProxy('invokeAuthHub'); 
+    signalR.invokeAuthHub.client = { };
+    signalR.invokeAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side InvokeAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.invokeAuthHub.invoke.apply(signalR.invokeAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
     signalR.mouseTracking = signalR.hub.createProxy('mouseTracking'); 
     signalR.mouseTracking.client = { };
     signalR.mouseTracking.server = {
@@ -240,6 +285,24 @@
             /// <param name="x" type="Number">Server side type is System.Int32</param>
             /// <param name="y" type="Number">Server side type is System.Int32</param>
             return signalR.mouseTracking.invoke.apply(signalR.mouseTracking, $.merge(["Move"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.noAuthHub = signalR.hub.createProxy('noAuthHub'); 
+    signalR.noAuthHub.client = { };
+    signalR.noAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side NoAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.noAuthHub.invoke.apply(signalR.noAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
+    };
+
+    signalR.outgoingAuthHub = signalR.hub.createProxy('outgoingAuthHub'); 
+    signalR.outgoingAuthHub.client = { };
+    signalR.outgoingAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side OutgoingAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.outgoingAuthHub.invoke.apply(signalR.outgoingAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
          }
     };
 
@@ -295,6 +358,15 @@
     signalR.StatusHub = signalR.hub.createProxy('StatusHub'); 
     signalR.StatusHub.client = { };
     signalR.StatusHub.server = {
+    };
+
+    signalR.userAndRoleAuthHub = signalR.hub.createProxy('userAndRoleAuthHub'); 
+    signalR.userAndRoleAuthHub.client = { };
+    signalR.userAndRoleAuthHub.server = {
+        invokedFromClient: function () {
+            /// <summary>Calls the InvokedFromClient method on the server-side UserAndRoleAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.userAndRoleAuthHub.invoke.apply(signalR.userAndRoleAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
+         }
     };
 
 }(window.jQuery, window));

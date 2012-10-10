@@ -14,7 +14,7 @@ namespace SignalR.Hubs
         public virtual Type ReturnType { get; set; }
 
         /// <summary>
-        /// Hub descriptor object, target to his method.
+        /// Hub descriptor object, target to this method.
         /// </summary>
         public virtual HubDescriptor Hub { get; set; }
 
@@ -28,6 +28,11 @@ namespace SignalR.Hubs
         /// Takes a target hub and an array of invocation arguments as it's arguments.
         /// </summary>
         public virtual Func<IHub, object[], object> Invoker { get; set; }
+
+        /// <summary>
+        /// Attributes attached to this method.
+        /// </summary>
+        public virtual IEnumerable<Attribute> Attributes { get; set; }
     }
 }
 

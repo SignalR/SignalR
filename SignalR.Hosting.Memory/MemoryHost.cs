@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Client.Http;
@@ -26,9 +27,13 @@ namespace SignalR.Hosting.Memory
             : base(resolver)
         {
             resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken.Token), _shutDownToken.Token);
+
+            User = Thread.CurrentPrincipal;
         }
 
         public string InstanceName { get; set; }
+
+        public IPrincipal User { get; set; }
 
         Task<IClientResponse> IHttpClient.GetAsync(string url, Action<IClientRequest> prepareRequest)
         {
@@ -49,7 +54,7 @@ namespace SignalR.Hosting.Memory
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
                 var clientTokenSource = new CancellationTokenSource();
-                var request = new Request(uri, clientTokenSource, postData);
+                var request = new Request(uri, clientTokenSource, postData, User);
                 prepareRequest(request);
 
                 Response response = null;

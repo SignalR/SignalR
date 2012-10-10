@@ -75,8 +75,11 @@ namespace SignalR.Hubs
                             _counters.ErrorsAllTotal,
                             _counters.ErrorsAllPerSec);
 
-                        // Add this to the list of hub descriptors this connection is interested in
-                        _hubs.Add(hubDescriptor);
+                        if (_pipelineInvoker.AuthorizeConnect(hubDescriptor, context.Request))
+                        {
+                            // Add this to the list of hub descriptors this connection is interested in
+                            _hubs.Add(hubDescriptor);
+                        }
                     }
                 }
             }

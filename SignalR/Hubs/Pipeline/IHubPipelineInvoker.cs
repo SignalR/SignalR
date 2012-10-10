@@ -46,6 +46,14 @@ namespace SignalR.Hubs
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="hubDescriptor"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        bool AuthorizeConnect(HubDescriptor hubDescriptor, IRequest request);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="hub"></param>
         /// <param name="groups"></param>
         /// <returns></returns>

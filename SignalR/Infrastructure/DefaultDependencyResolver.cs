@@ -85,7 +85,7 @@ namespace SignalR
             Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
 
             // Setup the default hub pipeline
-            var dispatcher = new Lazy<IHubPipeline>(() => new HubPipeline());
+            var dispatcher = new Lazy<IHubPipeline>(() => new HubPipeline().AddModule(new AuthorizeModule()));
             Register(typeof(IHubPipeline), () => dispatcher.Value);
             Register(typeof(IHubPipelineInvoker), () => dispatcher.Value);
         }

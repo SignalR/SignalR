@@ -54,12 +54,37 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\AdminAuthHub.cs">
+      <Link>Hubs\AdminAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\AuthHub.cs">
+      <Link>Hubs\AuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\IncomingAuthHub.cs">
+      <Link>Hubs\IncomingAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\InheritAuthHub.cs">
+      <Link>Hubs\InheritAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\InvokeAuthHub.cs">
+      <Link>Hubs\InvokeAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\NoAuthHub.cs">
+      <Link>Hubs\NoAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\OutgoingAuthHub.cs">
+      <Link>Hubs\OutgoingAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\Auth\UserAndRoleAuthHub.cs">
+      <Link>Hubs\UserAndRoleAuthHub.cs</Link>
+    </Compile>
     <Compile Include="..\samples\SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
+    <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\MessageResultExtensions.cs" />
     <Compile Include="Server\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />

@@ -113,6 +113,8 @@
     <Content Include="Content\themes\smoothness\jquery-ui-1.8.12.css" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Hubs\Auth\Auth.js" />
+    <Content Include="Hubs\Auth\Default.aspx" />
     <Content Include="Hubs\Benchmark\crossdomain.htm" />
     <Content Include="Hubs\Benchmark\Benchmark.js" />
     <Content Include="Hubs\Benchmark\index.htm" />
@@ -186,6 +188,21 @@
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\Auth\AuthHub.cs" />
+    <Compile Include="Hubs\Auth\AdminAuthHub.cs" />
+    <Compile Include="Hubs\Auth\InheritAuthHub.cs" />
+    <Compile Include="Hubs\Auth\OutgoingAuthHub.cs" />
+    <Compile Include="Hubs\Auth\IncomingAuthHub.cs" />
+    <Compile Include="Hubs\Auth\UserAndRoleAuthHub.cs" />
+    <Compile Include="Hubs\Auth\InvokeAuthHub.cs" />
+    <Compile Include="Hubs\Auth\NoAuthHub.cs" />
+    <Compile Include="Hubs\Auth\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\Auth\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\Benchmark\HubBench.cs" />
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />

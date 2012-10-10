@@ -161,7 +161,6 @@ namespace SignalR.Tests
             IHubProxy proxy = hubConnection.CreateProxy("MyHub2");
 
             hubConnection.Start(host).Wait();
-
             Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());
         }
 

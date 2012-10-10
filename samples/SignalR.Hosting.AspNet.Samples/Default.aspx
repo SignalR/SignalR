@@ -16,6 +16,7 @@
             <li class="drawing-pad"><a href="Hubs/DrawingPad"><p class="title">Drawing pad</p></a></li>
             <li class="shape-share"><a href="Hubs/ShapeShare/"><p class="title">Shape Share</p></a></li>
             <li class="hub-bench"><a href="Hubs/Benchmark/"><p class="title">Hub Ping</p></a></li>
+            <li class="hub-auth"><a href="Hubs/Auth/"><p class="title">Hub Auth</p></a></li>
         </ul>
     </div>
     <div class="clear"></div>

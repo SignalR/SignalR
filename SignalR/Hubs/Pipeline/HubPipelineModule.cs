@@ -63,6 +63,18 @@ namespace SignalR.Hubs
             };
         }
 
+        public virtual Func<HubDescriptor, IRequest, bool> BuildAuthorizeConnect(Func<HubDescriptor, IRequest, bool> authorizeConnect)
+        {
+            return (hubDescriptor, request) =>
+            {
+                if (OnBeforeAuthorizeConnect(hubDescriptor, request))
+                {
+                    return authorizeConnect(hubDescriptor, request);
+                }
+                return false;
+            };
+        }
+
         public virtual Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
         {
             return rejoiningGroups;
@@ -79,6 +91,11 @@ namespace SignalR.Hubs
 
                 return TaskAsyncHelper.Empty;
             };
+        }
+
+        protected virtual bool OnBeforeAuthorizeConnect(HubDescriptor hub, IRequest request)
+        {
+            return true;
         }
 
         protected virtual bool OnBeforeConnect(IHub hub)

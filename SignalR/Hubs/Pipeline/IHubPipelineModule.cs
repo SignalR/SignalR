@@ -16,7 +16,6 @@ namespace SignalR.Hubs
         /// <returns></returns>
         Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> invoke);
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -44,6 +43,13 @@ namespace SignalR.Hubs
         /// <param name="disconnect"></param>
         /// <returns></returns>
         Func<IHub, Task> BuildDisconnect(Func<IHub, Task> disconnect);
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="authorizeConnect"></param>
+        /// <returns></returns>
+        Func<HubDescriptor, IRequest, bool> BuildAuthorizeConnect(Func<HubDescriptor, IRequest, bool> authorizeConnect);
         
         /// <summary>
         /// 

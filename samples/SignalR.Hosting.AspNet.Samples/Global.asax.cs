@@ -4,7 +4,9 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Security.Principal;
 using System.Web.Routing;
+using System.Web.Security;
 using SignalR.Hubs;
 using SignalR.Samples.Hubs.DemoHub;
 using SignalR.Samples.Raw;
@@ -46,6 +48,20 @@ namespace SignalR.Hosting.AspNet.Samples
             RouteTable.Routes.MapConnection<TestConnection>("test-connection", "test-connection/{*operation}");
             RouteTable.Routes.MapConnection<Raw>("raw", "raw/{*operation}");
             RouteTable.Routes.MapConnection<Streaming>("streaming", "streaming/{*operation}");
+        }
+
+        protected void Application_AuthenticateRequest(object sender, EventArgs e)
+        {
+            var authCookie = Request.Cookies[FormsAuthentication.FormsCookieName];
+            if (authCookie != null)
+            {
+                var authTicket = FormsAuthentication.Decrypt(authCookie.Value);
+                var principal = Context.Cache[authTicket.Name] as IPrincipal;
+                if (!authTicket.Expired && principal != null)
+                {
+                    Context.User = principal;
+                }
+            }
         }
 
         private class SamplePipelineModule : HubPipelineModule
