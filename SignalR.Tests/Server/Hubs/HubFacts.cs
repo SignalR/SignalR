@@ -762,6 +762,35 @@ namespace SignalR.Tests
             connection2.Stop();
         }
 
+        [Fact]
+        public void SendToSelf()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection1 = new Client.Hubs.HubConnection("http://foo/");
+            var connection2 = new Client.Hubs.HubConnection("http://foo/");
+
+            var wh1 = new ManualResetEventSlim(initialState: false);
+            var wh2 = new ManualResetEventSlim(initialState: false);
+
+            var hub1 = connection1.CreateProxy("SendToSome");
+            var hub2 = connection2.CreateProxy("SendToSome");
+
+            connection1.Start(host).Wait();
+            connection2.Start(host).Wait();
+
+            hub1.On("send", wh1.Set);
+            hub2.On("send", wh2.Set);
+
+            hub1.Invoke("SendToSelf").Wait();
+
+            Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+            Assert.False(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+            connection1.Stop();
+            connection2.Stop();
+        }
+
         public class SendToSome : Hub
         {
             public Task SendToAllButCaller()
@@ -782,6 +811,11 @@ namespace SignalR.Tests
             public Task AllInGroupButCaller(string group)
             {
                 return Clients.OthersInGroup(group).send();
+            }
+
+            public Task SendToSelf()
+            {
+                return Clients.Client(Context.ConnectionId).send();
             }
         }
 
