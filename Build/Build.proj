@@ -17,7 +17,7 @@
         <JSTestsBridgeFile>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js</JSTestsBridgeFile>
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
-        <ScriptTempPath>$(ProjectRoot)\src\Microsoft.AspNet.SignalR\bin\Scripts</ScriptTempPath>
+        <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR\Scripts</ScriptTempPath>
         <LocalToolsPath></LocalToolsPath>
     </PropertyGroup>
   
@@ -34,15 +34,15 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+        <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
           <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
           <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+        <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
           <Find>AssemblyFileVersion\("\d+\.\d+\.\d+\.\d+"\)</Find>
           <ReplaceWith>AssemblyFileVersion("$(FileVersion)")</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\Common\CommonVersionInfo.cs">
+        <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
           <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
           <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
         </RegexTransform>
@@ -105,27 +105,27 @@
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.sln"
              Targets="Build"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WP7.sln"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Silverlight.sln"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')) Or (Exists('$(LocalToolsPath)\Silverlight'))"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
              
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WinRT.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
              
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR45.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
   </Target>
   
   <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">    
