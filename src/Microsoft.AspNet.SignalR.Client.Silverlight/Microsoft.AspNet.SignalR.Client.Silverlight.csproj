@@ -191,7 +191,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\SignalR.Client.Silverlight.nuspec">
+    <None Include="Properties\Microsoft.AspNet.SignalR.Client.Silverlight.nuspec">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>

@@ -197,7 +197,7 @@
     </None>
   </ItemGroup>
 
-  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\Microsoft.AspNet.SignalR.Silverlight.targets"
+  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\SignalR.Silverlight.targets"
           Condition="'$(LocalToolsPath)'!=''" />
 
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets"
