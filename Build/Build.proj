@@ -74,7 +74,7 @@
   <Target Name="CI" DependsOnTargets="Build; RunTests; RunInstaller; BuildPackages;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="Build; RunTests; RunInstaller;">
+  <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests; RunInstaller;">
   </Target>
   
   <Target Name="RunInstaller">
@@ -126,6 +126,44 @@
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
              Properties="Configuration=$(Configuration)" />
+  </Target>
+  
+  <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">    
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+    
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"
+             Targets="Rebuild"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
   </Target>
   
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
