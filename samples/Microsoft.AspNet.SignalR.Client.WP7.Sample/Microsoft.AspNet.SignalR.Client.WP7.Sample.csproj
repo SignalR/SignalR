@@ -124,7 +124,7 @@
     <CompileTimeSolutionDir Condition="'$(MissingExternalDependenciesBlendDesignTimehack)'!='true'">$(SolutionDir)</CompileTimeSolutionDir>
     <CompileTimeSolutionDir Condition="'$(MissingExternalDependenciesBlendDesignTimehack)'=='true'">$(SolutionDir)..\</CompileTimeSolutionDir>
   </PropertyGroup>
-  <Import Project="$(LocalToolsPath)\WP7\Microsoft.AspNet.SignalR.WP7.targets"
+  <Import Project="$(LocalToolsPath)\WP7\SignalR.WP7.targets"
           Condition="'$(LocalToolsPath)'!=''" />
   
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets"
