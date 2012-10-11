@@ -275,6 +275,7 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
@@ -317,6 +318,6 @@
     <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Target Name="AfterBuild">
-    <Exec Command="..\..\..\src\Microsoft.AspNet.SignalR.ProxyGenerator\bin\$(Configuration)\hubify.exe /o:..\Scripts\hubs.js" Condition=" '$(OS)' == 'Windows_NT'" WorkingDirectory="$(OutputPath)" />
+    <Exec Command="$(SolutionDir)\src\Microsoft.AspNet.SignalR.ProxyGenerator\bin\$(Configuration)\hubify.exe /o:$(SolutionDir)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js" Condition=" '$(OS)' == 'Windows_NT'" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>

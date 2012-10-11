@@ -123,6 +123,7 @@
       <Name>Microsoft.AspNet.SignalR</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
