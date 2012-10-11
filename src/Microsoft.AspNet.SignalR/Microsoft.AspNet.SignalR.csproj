@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.AspNet.SignalR</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.SignalR</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PERFCOUNTERS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Microsoft.AspNet.SignalR.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;PERFCOUNTERS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Microsoft.AspNet.SignalR.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StreamExtensions.cs">
+      <Link>Infrastructure\StreamExtensions.cs</Link>
+    </Compile>
+    <Compile Include="AckHandler.cs" />
+    <Compile Include="Configuration\DefaultConfigurationManager.cs" />
+    <Compile Include="ConnectionManager.cs" />
+    <Compile Include="ConnectionMessage.cs" />
+    <Compile Include="Hosting\HostConstants.cs" />
+    <Compile Include="Hosting\HostContext.cs" />
+    <Compile Include="Hosting\HostContextExtensions.cs" />
+    <Compile Include="Hosting\Cookie.cs" />
+    <Compile Include="Hosting\IRequestCookieCollection.cs" />
+    <Compile Include="Hosting\IRequest.cs" />
+    <Compile Include="Hosting\IResponse.cs" />
+    <Compile Include="CommandType.cs" />
+    <Compile Include="Hosting\IWebSocket.cs" />
+    <Compile Include="Hosting\ResponseExtensions.cs" />
+    <Compile Include="Hubs\HubConnectionContext.cs" />
+    <Compile Include="Hubs\NullClientProxy.cs" />
+    <Compile Include="Hubs\Pipeline\Auth\AuthorizeMode.cs" />
+    <Compile Include="Hubs\Pipeline\Auth\AuthorizeModule.cs" />
+    <Compile Include="Hubs\Pipeline\Auth\AuthorizeAttribute.cs" />
+    <Compile Include="Hubs\Pipeline\AutoRejoiningGroupsModule.cs" />
+    <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />
+    <Compile Include="Hubs\ClientHubInvocation.cs" />
+    <Compile Include="Hubs\HubContext.cs" />
+    <Compile Include="Hubs\Pipeline\HubPipelineExtensions.cs" />
+    <Compile Include="Hubs\Pipeline\HubPipelineModule.cs" />
+    <Compile Include="Hubs\Pipeline\Auth\IAuthorizeHubConnection.cs" />
+    <Compile Include="Hubs\Pipeline\Auth\IAuthorizeHubMethodInvocation.cs" />
+    <Compile Include="Hubs\Pipeline\IHubOutgoingInvokerContext.cs" />
+    <Compile Include="Hubs\Pipeline\IHubPipelineInvoker.cs" />
+    <Compile Include="Hubs\Pipeline\HubInvokerContext.cs" />
+    <Compile Include="Hubs\HubRequest.cs" />
+    <Compile Include="Hubs\HubRequestParser.cs" />
+    <Compile Include="Hubs\HubResponse.cs" />
+    <Compile Include="Hubs\IClientProxy.cs" />
+    <Compile Include="Hubs\IHubContext.cs" />
+    <Compile Include="Hubs\IHubRequestParser.cs" />
+    <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
+    <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />
+    <Compile Include="IAckHandler.cs" />
+    <Compile Include="Hubs\Pipeline\HubPipeline.cs" />
+    <Compile Include="Hubs\Pipeline\IHubIncomingInvokerContext.cs" />
+    <Compile Include="Hubs\Pipeline\IHubPipeline.cs" />
+    <Compile Include="Hubs\Pipeline\IHubPipelineModule.cs" />
+    <Compile Include="IConnectionGroupManager.cs" />
+    <Compile Include="Infrastructure\DisposableAction.cs" />
+    <Compile Include="Infrastructure\IPerformanceCounter.cs" />
+    <Compile Include="Infrastructure\IPerformanceCounterManager.cs" />
+    <Compile Include="Infrastructure\NoOpPerformanceCounter.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterAttribute.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterManager.cs" />
+    <Compile Include="Infrastructure\Disposer.cs" />
+    <Compile Include="Infrastructure\PerformanceCounterWrapper.cs" />
+    <Compile Include="Json\IJsonValue.cs" />
+    <Compile Include="Json\IJsonWritable.cs" />
+    <Compile Include="Json\JTokenValue.cs" />
+    <Compile Include="Hubs\StatefulSignalProxy.cs" />
+    <Compile Include="Infrastructure\ConnectionExtensions.cs" />
+    <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
+    <Compile Include="Hubs\Extensions\HubManagerExtensions.cs" />
+    <Compile Include="Hubs\Lookup\DefaultParameterResolver.cs" />
+    <Compile Include="Hubs\Lookup\IParameterResolver.cs" />
+    <Compile Include="Hubs\DefaultAssemblyLocator.cs" />
+    <Compile Include="Hubs\Extensions\MethodExtensions.cs" />
+    <Compile Include="Hubs\Lookup\Descriptors\ParameterDescriptor.cs" />
+    <Compile Include="Hubs\IAssemblyLocator.cs" />
+    <Compile Include="Hubs\Lookup\ReflectedMethodDescriptorProvider.cs" />
+    <Compile Include="Hubs\Lookup\Descriptors\HubDescriptor.cs" />
+    <Compile Include="Hubs\Lookup\IMethodDescriptorProvider.cs" />
+    <Compile Include="Hubs\Lookup\DefaultHubManager.cs" />
+    <Compile Include="Hubs\Lookup\IHubManager.cs" />
+    <Compile Include="IConnectionManager.cs" />
+    <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="Infrastructure\IServerIdManager.cs" />
+    <Compile Include="Infrastructure\ServerIdManager.cs" />
+    <Compile Include="IPersistentConnectionContext.cs" />
+    <Compile Include="Infrastructure\IServerCommandHandler.cs" />
+    <Compile Include="Json\JsonSerializerExtensions.cs" />
+    <Compile Include="MessageBus\Cursor.cs" />
+    <Compile Include="MessageBus\ISubscription.cs" />
+    <Compile Include="MessageBus\Linktionary.cs" />
+    <Compile Include="MessageBus\LocalEventKeyInfo.cs" />
+    <Compile Include="MessageBus\MessageBroker.cs" />
+    <Compile Include="MessageBus\ScaleoutMapping.cs" />
+    <Compile Include="MessageBus\ScaleoutMessageBus.cs" />
+    <Compile Include="MessageBus\IMessageBus.cs" />
+    <Compile Include="MessageBus\ISubscriber.cs" />
+    <Compile Include="MessageBus\MessageBus.cs" />
+    <Compile Include="MessageBus\IIdGenerator.cs" />
+    <Compile Include="MessageBus\MessageBusExtensions.cs" />
+    <Compile Include="MessageBus\MessageResult.cs" />
+    <Compile Include="MessageBus\MessageStore.cs" />
+    <Compile Include="MessageBus\MessageStoreResult.cs" />
+    <Compile Include="MessageBus\ScaleoutSubscription.cs" />
+    <Compile Include="MessageBus\DefaultSubscription.cs" />
+    <Compile Include="MessageBus\Subscription.cs" />
+    <Compile Include="MessageBus\Topic.cs" />
+    <Compile Include="MessageBus\Volatile.cs" />
+    <Compile Include="PersistentConnectionContext.cs" />
+    <Compile Include="PersistentConnectionFactory.cs" />
+    <Compile Include="EmptyConnectionIdPrefixGenerator.cs" />
+    <Compile Include="Hubs\Lookup\Descriptors\MethodDescriptor.cs" />
+    <Compile Include="Hubs\HubMethodNameAttribute.cs" />
+    <Compile Include="Hubs\DefaultHubActivator.cs" />
+    <Compile Include="Hubs\HubNameAttribute.cs" />
+    <Compile Include="Hubs\IHub.cs" />
+    <Compile Include="IConnectionIdPrefixGenerator.cs" />
+    <Compile Include="Json\IJsonSerializer.cs" />
+    <Compile Include="Infrastructure\ITraceManager.cs" />
+    <Compile Include="Infrastructure\LockedList.cs" />
+    <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
+    <Compile Include="Hubs\ReflectionHelper.cs" />
+    <Compile Include="Hosting\RequestExtensions.cs" />
+    <Compile Include="Infrastructure\TraceManager.cs" />
+    <Compile Include="IGroupManager.cs" />
+    <Compile Include="Hubs\IHubActivator.cs" />
+    <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
+    <Compile Include="Hubs\Lookup\ReflectedHubDescriptorProvider.cs" />
+    <Compile Include="Hubs\Hub.cs" />
+    <Compile Include="Hubs\ClientProxy.cs" />
+    <Compile Include="Hubs\HubCallerContext.cs" />
+    <Compile Include="Hubs\HubDispatcher.cs" />
+    <Compile Include="Hubs\Lookup\IHubDescriptorProvider.cs" />
+    <Compile Include="Hubs\SignalProxy.cs" />
+    <Compile Include="Hubs\NullJavaScriptMinifier.cs" />
+    <Compile Include="Infrastructure\IDependencyResolver.cs" />
+    <Compile Include="Hubs\IJavaScriptMinifier.cs" />
+    <Compile Include="Infrastructure\SafeSet.cs" />
+    <Compile Include="ITransportConnection.cs" />
+    <Compile Include="Json\JsonNetSerializer.cs" />
+    <Compile Include="Json\Json.cs" />
+    <Compile Include="GroupManager.cs" />
+    <Compile Include="Infrastructure\ServerCommand.cs" />
+    <Compile Include="Infrastructure\ServerCommandType.cs" />
+    <Compile Include="Infrastructure\ServerCommandHandler.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Transports\ForeverFrameTransport.cs" />
+    <Compile Include="Transports\ForeverTransport.cs" />
+    <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Transports\ITrackingConnection.cs" />
+    <Compile Include="Transports\ITransport.cs" />
+    <Compile Include="Transports\ITransportHeartBeat.cs" />
+    <Compile Include="Transports\ITransportManager.cs" />
+    <Compile Include="Transports\ServerSentEventsTransport.cs" />
+    <Compile Include="Transports\TransportDisconnectBase.cs" />
+    <Compile Include="Transports\TransportHeartBeat.cs" />
+    <Compile Include="Transports\LongPollingTransport.cs" />
+    <Compile Include="PersistentConnection.cs" />
+    <Compile Include="PersistentResponse.cs" />
+    <Compile Include="TaskAsyncHelper.cs" />
+    <Compile Include="Hubs\TrackingDictionary.cs" />
+    <Compile Include="Connection.cs" />
+    <Compile Include="IConnection.cs" />
+    <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
+    <Compile Include="MessageBus\Message.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transports\TransportManager.cs" />
+    <Compile Include="Infrastructure\ExceptionsExtensions.cs" />
+    <Compile Include="Transports\WebSocketTransport.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Properties\Microsoft.AspNet.SignalR.nuspec">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\hubs.js" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
+  <Target Name="AfterBuild">
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>  
+  -->
+</Project>
