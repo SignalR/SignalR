@@ -126,7 +126,7 @@
 
   <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
     <ItemGroup>
-      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></Projects>
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></Projects>
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></Projects>
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj"></Projects>
