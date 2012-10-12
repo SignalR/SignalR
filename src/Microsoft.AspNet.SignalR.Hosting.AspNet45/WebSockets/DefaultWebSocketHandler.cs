@@ -65,8 +65,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         Task IWebSocket.Send(string value)
         {
-            Send(value);
-            return TaskAsyncHelper.Empty;
+            return Send(value);
         }
 
         public void CleanClose()

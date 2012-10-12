@@ -82,14 +82,11 @@ namespace Microsoft.AspNet.SignalR.Server
 
         public Task Send(string value)
         {
-            // REVIEW: Should we return this task?
-            _sendQueue.Enqueue(() =>
+            return _sendQueue.Enqueue(() =>
             {
                 var data = Encoding.UTF8.GetBytes(value);
                 return _sendAsync(new ArraySegment<byte>(data), (int)WebSocketMessageType.Text, true, CancellationToken.None);
             });
-
-            return TaskAsyncHelper.Empty;
         }
 
         private void StartReceiving()

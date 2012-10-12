@@ -40,14 +40,14 @@ namespace Microsoft.AspNet.SignalR.WebSockets
          */
 
         // Sends a text message to the client
-        public void Send(string message)
+        public Task Send(string message)
         {
             if (message == null)
             {
                 throw new ArgumentNullException("message");
             }
 
-            SendAsync(message);
+            return SendAsync(message);
         }
 
         // Sends a binary message to the client
