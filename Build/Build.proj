@@ -68,7 +68,7 @@
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
   <ItemGroup>
-    <TestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\bin\$(Configuration)\Microsoft.AspNet.SignalR.Tests.dll" />
+    <TestProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" />
   </ItemGroup>
 
   <Target Name="CI" DependsOnTargets="Build; RunTests; RunInstaller; BuildPackages;">
