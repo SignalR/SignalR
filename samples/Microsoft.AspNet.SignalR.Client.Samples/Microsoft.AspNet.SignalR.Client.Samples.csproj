@@ -61,9 +61,9 @@
       <Project>{055F2118-FE29-4219-A28A-3D6F0889652E}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
-      <Name>Microsoft.AspNet.SignalR</Name>
+      <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

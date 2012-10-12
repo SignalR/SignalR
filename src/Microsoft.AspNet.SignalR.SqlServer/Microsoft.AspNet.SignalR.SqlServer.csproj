@@ -49,7 +49,7 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR\TaskAsyncHelper.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="DependencyResolverExtensions.cs" />
@@ -61,9 +61,9 @@
     <Compile Include="SqlSender.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj">
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
-      <Name>Microsoft.AspNet.SignalR</Name>
+      <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

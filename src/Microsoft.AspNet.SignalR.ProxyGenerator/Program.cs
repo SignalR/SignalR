@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
                 }
 
                 var signalrAssembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
-                                       where a.GetName().Name.Equals("Microsoft.AspNet.SignalR", StringComparison.OrdinalIgnoreCase)
+                                       where a.GetName().Name.Equals("Microsoft.AspNet.SignalR.Core", StringComparison.OrdinalIgnoreCase)
                                        select a).FirstOrDefault();
 
                 if (signalrAssembly == null)

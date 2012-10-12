@@ -68,9 +68,9 @@
       <Project>{2B8C6DAD-4D85-41B1-83FD-248D9F347522}</Project>
       <Name>Microsoft.AspNet.SignalR.Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj">
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
-      <Name>Microsoft.AspNet.SignalR</Name>
+      <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

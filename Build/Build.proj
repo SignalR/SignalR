@@ -54,7 +54,7 @@
             <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Scripts\hubs.js">
+        <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Scripts\hubs.js">
             <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
             <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
         </RegexTransform>
@@ -120,7 +120,7 @@
   
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
-      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.dll" />
+      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" />
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.dll" />
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.dll" />
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.dll" />
@@ -135,8 +135,8 @@
 
     <ItemGroup>
       <JsPackage Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Properties\Microsoft.AspNet.SignalR.Js.nuspec" />
-      <MetaPackage Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Properties\Microsoft.AspNet.SignalR.All.nuspec" />
-      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj" />
+      <MetaPackage Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Properties\Microsoft.AspNet.SignalR.All.nuspec" />
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj" />

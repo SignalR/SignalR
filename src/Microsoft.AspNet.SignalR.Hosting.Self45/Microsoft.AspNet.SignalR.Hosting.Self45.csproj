@@ -84,7 +84,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.Self\Server.cs">
       <Link>Server.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR\TaskAsyncHelper.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="Infrastructure\DisconnectHandler.cs" />
@@ -95,9 +95,9 @@
       <Project>{3b71f0ae-d4b6-4f47-bf62-333d45615673}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj">
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
-      <Name>Microsoft.AspNet.SignalR</Name>
+      <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />

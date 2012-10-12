@@ -9,7 +9,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>$description$</description>
         <dependencies>
-            <dependency id="Microsoft.AspNet.SignalR.Server" version="$version$" />
+            <dependency id="Microsoft.AspNet.SignalR.Core" version="$version$" />
         </dependencies>
     </metadata>
 </package>
