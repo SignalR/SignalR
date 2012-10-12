@@ -170,11 +170,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return hub.OnDisconnected();
         }
 
-        internal static IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
-        {
-            return hub.RejoiningGroups(groups);
-        }
-
         internal static Task<object> Incoming(IHubIncomingInvokerContext context)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -248,14 +243,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
         {
-            return GetHubs(request, connectionId)
-                   .Select(hub =>
+            return _hubs.Select(hub =>
                    {
-                       string groupPrefix = hub.GetType().Name + ".";
-                       IEnumerable<string> groupsToRejoin = _pipelineInvoker.RejoiningGroups(hub, groups.Where(g => g.StartsWith(groupPrefix))
+                       string groupPrefix = hub.Type.Name + ".";
+                       IEnumerable<string> groupsToRejoin = _pipelineInvoker.RejoiningGroups(hub, request, groups.Where(g => g.StartsWith(groupPrefix))
                                                                                                          .Select(g => g.Substring(groupPrefix.Length)))
                                                                              .Select(g => groupPrefix + g).ToList();
-                       hub.Dispose();
                        return groupsToRejoin;
                    })
                    .SelectMany(groupsToRejoin => groupsToRejoin);

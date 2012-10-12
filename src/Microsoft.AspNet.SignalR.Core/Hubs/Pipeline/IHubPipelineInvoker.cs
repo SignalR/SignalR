@@ -54,9 +54,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="hub"></param>
+        /// <param name="hubDescriptor"></param>
+        /// <param name="request"></param>
         /// <param name="groups"></param>
         /// <returns></returns>
-        IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups);
+        IEnumerable<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IEnumerable<string> groups);
     }
 }

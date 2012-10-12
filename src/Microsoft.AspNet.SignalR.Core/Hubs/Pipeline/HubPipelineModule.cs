@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             };
         }
 
-        public virtual Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+        public virtual Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
         {
             return rejoiningGroups;
         }
