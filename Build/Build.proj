@@ -82,7 +82,6 @@
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests; ">
   </Target>
-    </ItemGroup>
 
   <Target Name="RunTests">
     <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
