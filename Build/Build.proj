@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
-    <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />
+  <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
+  <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />
 
     <PropertyGroup>
         <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
@@ -82,12 +82,13 @@
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests; ">
   </Target>
+    </ItemGroup>
 
   <Target Name="RunTests">
     <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
     <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
     <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
-    
+
     <xunit Assembly="%(TestProjects.FullPath)" Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" Verbose="true" />
   </Target>
 
@@ -112,56 +113,36 @@
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')) Or (Exists('$(LocalToolsPath)\Silverlight'))"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
-             
+
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WinRT.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
-             
+
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR45.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
   </Target>
-  
-  <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">    
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-    
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
 
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+  <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
+    <ItemGroup>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></Projects>
+      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></Projects>
+    </ItemGroup>   
 
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"
-             Targets="Rebuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"
+    <MSBuild Projects="%(Projects.Identity)"
              Targets="Rebuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
   </Target>
-  
+
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" />
@@ -173,9 +154,9 @@
     <Exec Command="&quot;$(DocuExePath)&quot; @(DocProjects, ' ')" WorkingDirectory="$(DocsPath)" />
     <Exec Command="&quot;$(ZipExe)&quot; a ..\..\docs.v$(PackageVersion).zip" WorkingDirectory="$(DocsPath)\output" />
   </Target>
-  
+
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
-    <Message Importance="high" Text="Using build resources from local tools path $(LocalToolsPath)"  /> 
+    <Message Importance="high" Text="Using build resources from local tools path $(LocalToolsPath)"  />
 
     <ItemGroup>
       <JsPackage Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Properties\Microsoft.AspNet.SignalR.Js.nuspec" />
@@ -187,15 +168,15 @@
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj" />
       <WinRTClient Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.*"></WinRTClient>
     </ItemGroup>
-    
+
     <!-- To workaround a bug in nuget -->
     <MakeDir Directories="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\winrt" />
     <Copy SourceFiles="%(WinRTClient.Identity)" DestinationFolder="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\winrt" />
-    
+
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
-    
+
     <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
     <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP7\Microsoft.AspNet.SignalR.Client.WP7.csproj"
              Targets="Build"
@@ -214,7 +195,7 @@
 
     <RemoveDir Directories="$(ScriptTempPath)" />
     <MakeDir Directories="$(ScriptTempPath)" />
-    
+
     <Copy SourceFiles="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js"
           DestinationFiles="$(ScriptTempPath)\jquery.signalR-$(PackageVersion).js" />
     <Copy SourceFiles="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js"
@@ -222,7 +203,7 @@
 
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(JsPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -basePath &quot;$(ScriptTempPath)&quot;"
             LogStandardErrorAsError="true" />
-            
+
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(MetaPackage.Identity)&quot; -o &quot;$(ArtifactsDir)&quot; -p Version=$(PackageVersion) -exclude **\*.cs"
           LogStandardErrorAsError="true" />
   </Target>
