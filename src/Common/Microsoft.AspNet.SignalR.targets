@@ -3,4 +3,9 @@
   <PropertyGroup Condition="'$(ArtifactsDir)' != ''">
 	<OutputPath>$(ArtifactsDir)\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(_SignAssembly)' == 'true' And '$(DisableSigning)' != 'true'">
+    <DefineConstants>$(DefineConstants);SIGNED</DefineConstants>
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
 </Project>

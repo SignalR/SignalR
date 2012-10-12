@@ -1,1 +1,1 @@
-﻿<%@ Application Codebehind="Global.asax.cs" Inherits="SignalR.Hosting.AspNet.Samples.Global" Language="C#" %>
+﻿<%@ Application Codebehind="Global.asax.cs" Inherits="Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Global" Language="C#" %>

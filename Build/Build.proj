@@ -19,8 +19,14 @@
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
         <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\Scripts</ScriptTempPath>
         <LocalToolsPath></LocalToolsPath>
+        <KeyFile>$(ProjectRoot)\35MSSharedLib1024.snk</KeyFile>
     </PropertyGroup>
-  
+    
+    <!-- Add extra properties to the build for signing -->
+    <PropertyGroup Condition="Exists('$(KeyFile)')">
+      <ExtraProperties>_SignAssembly=true;_DelaySign=true;AssemblyOriginatorKeyFile=$(KeyFile)</ExtraProperties>
+    </PropertyGroup>
+    
     <PropertyGroup>
         <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
         <BuildDate>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</BuildDate>
@@ -91,31 +97,31 @@
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
     <MakeDir Directories="$(DocsPath)" Condition="!Exists('$(DocsPath)')" />
   </Target>
-
+  
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.sln"
              Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WP7.sln"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Silverlight.sln"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')) Or (Exists('$(LocalToolsPath)\Silverlight'))"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
              
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WinRT.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
              
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR45.sln"
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
   </Target>
   
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
