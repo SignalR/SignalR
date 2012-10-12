@@ -74,8 +74,7 @@
   <Target Name="CI" DependsOnTargets="Build; RunTests; RunInstaller; BuildPackages;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="RunCodeAnalysis; ">
-    <!--Build; RunTests; RunInstaller;"> -->
+  <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests; RunInstaller;">
   </Target>
 
   <Target Name="RunInstaller">
