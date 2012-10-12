@@ -36,8 +36,17 @@ namespace Microsoft.AspNet.SignalR
             var disposer = new Disposer();
             int resultSet = 0;
             var result = default(T);
+            var registration = default(CancellationTokenRegistration);
 
-            CancellationTokenRegistration registration = cancel.Register(disposer.Dispose);
+            try
+            {
+                registration = cancel.Register(disposer.Dispose);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Dispose immediately
+                disposer.Dispose();
+            }
 
             subscription = bus.Subscribe(subscriber, cursor, messageResult =>
             {

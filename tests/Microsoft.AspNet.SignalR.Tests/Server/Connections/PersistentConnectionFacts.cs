@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -13,6 +14,51 @@ namespace Microsoft.AspNet.SignalR.Tests
     {
         public class OnConnectedAsync : IDisposable
         {
+            [Fact]
+            public void ConnectionsWithTheSameConnectionIdSSECloseGracefully()
+            {
+                var host = new MemoryHost();
+                host.MapConnection<MyConnection>("/echo");
+
+                var tasks = new List<Task>();
+                
+                for (int i = 0; i < 1000; i++)
+                {
+                    tasks.Add(ProcessRequest(host, "serverSentEvents", "1"));
+                }
+
+                ProcessRequest(host, "serverSentEvents", "1");
+
+                Task.WaitAll(tasks.ToArray());
+
+                Assert.True(tasks.All(t => !t.IsFaulted));
+            }
+
+            [Fact]
+            public void ConnectionsWithTheSameConnectionIdLongPollingCloseGracefully()
+            {
+                var host = new MemoryHost();
+                host.MapConnection<MyConnection>("/echo");
+
+                var tasks = new List<Task>();
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    tasks.Add(ProcessRequest(host, "longPolling", "1"));
+                }
+
+                ProcessRequest(host, "longPolling", "1");
+
+                Task.WaitAll(tasks.ToArray());
+
+                Assert.True(tasks.All(t => !t.IsFaulted));
+            }
+
+            private static Task ProcessRequest(MemoryHost host, string transport, string connectionId)
+            {
+                return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionId=" + connectionId, request => { }, null);
+            }
+
             [Fact]
             public void GroupsAreNotReadOnConnectedAsync()
             {

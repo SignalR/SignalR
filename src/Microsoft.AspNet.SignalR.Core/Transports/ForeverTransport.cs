@@ -230,13 +230,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
+            var registration = default(CancellationTokenRegistration);
+            bool disposeSubscriptionImmediately = false;
 
-            // End the request if the connection end token is triggered
-            CancellationTokenRegistration registration = ConnectionEndToken.Register(() =>
+            try
             {
-                wh.Wait();
-                subscription.Dispose();
-            });
+                // End the request if the connection end token is triggered
+                registration = ConnectionEndToken.Register(() =>
+                {
+                    wh.Wait();
+                    subscription.Dispose();
+                });
+            }
+            catch (ObjectDisposedException)
+            {
+                // If we've ended the connection before we got a chance to register the connection
+                // then dispose the subscription immediately
+                disposeSubscriptionImmediately = true;
+            }
 
             subscription = connection.Receive(LastMessageId, response =>
             {
@@ -296,6 +307,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             else
             {
                 wh.Set();
+            }
+
+            if (disposeSubscriptionImmediately)
+            {
+                subscription.Dispose();
             }
         }
     }
