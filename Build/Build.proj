@@ -17,7 +17,7 @@
         <JSTestsBridgeFile>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js</JSTestsBridgeFile>
         <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
         <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
-        <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR\Scripts</ScriptTempPath>
+        <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\Scripts</ScriptTempPath>
         <LocalToolsPath></LocalToolsPath>
     </PropertyGroup>
   
