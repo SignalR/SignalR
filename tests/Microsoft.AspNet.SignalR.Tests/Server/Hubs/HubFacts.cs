@@ -394,59 +394,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void HubGroupsRejoinWhenRejoiningGroupsOverridden()
-        {
-            var host = new MemoryHost();
-            host.Configuration.KeepAlive = null;
-            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
-            host.MapHubs();
-            int max = 10;
-
-            var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
-            var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
-            var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("RejoinMultGroupHub");
-
-            proxy.On<User>("onRoomJoin", u =>
-            {
-                if (u.Index < max)
-                {
-                    Assert.True(countDown.Mark(u.Index));
-                }
-                else
-                {
-                    Assert.True(countDownAfterReconnect.Mark(u.Index));
-                }
-            });
-
-            connection.Start(host).Wait();
-
-            var user = new User { Name = "tester" };
-            proxy.Invoke("login", user).Wait();
-
-            for (int i = 0; i < max; i++)
-            {
-                user.Index = i;
-                proxy.Invoke("joinRoom", user).Wait();
-            }
-
-            // Force Reconnect
-            Thread.Sleep(TimeSpan.FromSeconds(3));
-
-            for (int i = max; i < 2 * max; i++)
-            {
-                user.Index = i;
-                proxy.Invoke("joinRoom", user).Wait();
-            }
-
-            Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-            Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
-
-            connection.Stop();
-        }
-
-        [Fact]
         public void HubGroupsRejoinWhenAutoRejoiningGroupsEnabled()
         {
             var host = new MemoryHost();
@@ -503,19 +450,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void RejoiningGroupsOnlyReceivesGroupsBelongingToHub()
         {
+            var logRejoiningGroups = new LogRejoiningGroupsModule();
             var host = new MemoryHost();
-            var groupsRequestedToBeRejoined = new List<string>();
-            var groupsRequestedToBeRejoined2 = new List<string>();
-            host.DependencyResolver.Register(typeof(RejoinMultGroupHub), () => new RejoinMultGroupHub(groupsRequestedToBeRejoined));
-            host.DependencyResolver.Register(typeof(RejoinMultGroupHub2), () => new RejoinMultGroupHub2(groupsRequestedToBeRejoined2));
+            host.HubPipeline.AddModule(logRejoiningGroups);
+
             host.Configuration.KeepAlive = null;
             host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
             host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
             host.MapHubs();
 
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("RejoinMultGroupHub");
-            var proxy2 = connection.CreateProxy("RejoinMultGroupHub2");
+            var proxy = connection.CreateProxy("MultGroupHub");
+            var proxy2 = connection.CreateProxy("MultGroupHub2");
 
             connection.Start(host).Wait();
 
@@ -531,14 +477,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             Thread.Sleep(TimeSpan.FromSeconds(3));
 
-            Assert.True(groupsRequestedToBeRejoined.Contains("foo"));
-            Assert.True(groupsRequestedToBeRejoined.Contains("tester"));
-            Assert.False(groupsRequestedToBeRejoined.Contains("foo2"));
-            Assert.False(groupsRequestedToBeRejoined.Contains("tester2"));
-            Assert.True(groupsRequestedToBeRejoined2.Contains("foo2"));
-            Assert.True(groupsRequestedToBeRejoined2.Contains("tester2"));
-            Assert.False(groupsRequestedToBeRejoined2.Contains("foo"));
-            Assert.False(groupsRequestedToBeRejoined2.Contains("tester"));
+            Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("foo"));
+            Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("tester"));
+            Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("foo2"));
+            Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("tester2"));
+            Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("foo2"));
+            Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("tester2"));
+            Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("foo"));
+            Assert.False(logRejoiningGroups.GroupsRejoined["MultGroupHub2"].Contains("tester"));
 
             connection.Stop();
         }
@@ -865,30 +811,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        public class RejoinMultGroupHub : MultGroupHub
+        public class MultGroupHub2 : MultGroupHub
         {
-            private List<string> _groupsRequestedToBeRejoined;
-
-            public RejoinMultGroupHub() : this(new List<string>()) { }
-
-            public RejoinMultGroupHub(List<string> groupsRequestedToBeRejoined)
-            {
-                _groupsRequestedToBeRejoined = groupsRequestedToBeRejoined;
-            }
-
-            public override IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-            {
-                _groupsRequestedToBeRejoined.AddRange(groups);
-                return groups;
-            }
-        }
-
-        public class RejoinMultGroupHub2 : RejoinMultGroupHub
-        {
-            public RejoinMultGroupHub2() : this(new List<string>()) { }
-
-            public RejoinMultGroupHub2(List<string> groupsRequestedToBeRejoined) : base(groupsRequestedToBeRejoined) { }
-
             public override Task Login(User user)
             {
                 return Task.Factory.StartNew(
@@ -900,6 +824,27 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Groups.Remove(Context.ConnectionId, user.Name + "2").Wait();
                         Groups.Add(Context.ConnectionId, user.Name + "2").Wait();
                     });
+            }
+        }
+
+        public class LogRejoiningGroupsModule : HubPipelineModule
+        {
+            public Dictionary<string, List<string>> GroupsRejoined = new Dictionary<string,List<string>>();
+
+            public override Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+            {
+                return (hubDescriptor, request, groups) =>
+                {
+                    if (!GroupsRejoined.ContainsKey(hubDescriptor.Name))
+                    {
+                        GroupsRejoined[hubDescriptor.Name] = new List<string>(groups);
+                    }
+                    else
+                    {
+                        GroupsRejoined[hubDescriptor.Name].AddRange(groups);
+                    }
+                    return groups;
+                };
             }
         }
 

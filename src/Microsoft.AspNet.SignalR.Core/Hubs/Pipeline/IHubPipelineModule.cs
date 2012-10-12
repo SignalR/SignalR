@@ -56,6 +56,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="rejoiningGroups"></param>
         /// <returns></returns>
-        Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups);
+        Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups);
     }
 }

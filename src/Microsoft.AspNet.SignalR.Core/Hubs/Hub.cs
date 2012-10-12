@@ -60,16 +60,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return TaskAsyncHelper.Empty;
         }
 
-        /// <summary>
-        /// Called before a connection completes reconnecting to this <see cref="IHub"/> instance.
-        /// </summary>
-        /// <param name="groups">The groups the reconnecting client claims to be a member of.</param>
-        /// <returns>The groups the client will actually join.</returns>
-        public virtual IEnumerable<string> RejoiningGroups(IEnumerable<string> groups)
-        {
-            return Enumerable.Empty<string>();
-        }
-
         public virtual void Dispose()
         {
         }

@@ -8,9 +8,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// </summary>
     public class AutoRejoiningGroupsModule : HubPipelineModule
     {
-        public override Func<IHub, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<IHub, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+        public override Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
         {
-            return (hub, groups) => groups;
+            return (hubDescriptor, request, groups) => groups;
         }
     }
 }
