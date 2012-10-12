@@ -120,11 +120,11 @@
   
   <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
     <ItemGroup>
-      <DocProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR\bin\$(Configuration)\Microsoft.AspNet.SignalR.dll" />
-      <DocProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\bin\$(Configuration)\Microsoft.AspNet.SignalR.Client.dll" />
-      <DocProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\bin\$(Configuration)\Microsoft.AspNet.SignalR.Hosting.AspNet.dll" />
-      <DocProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\bin\$(Configuration)\Microsoft.AspNet.SignalR.Hosting.Self.dll" />
-      <DocProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\bin\$(Configuration)\Microsoft.AspNet.SignalR.Hosting.Common.dll" />
+      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR\Microsoft.AspNet.SignalR.dll" />
+      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.dll" />
+      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.dll" />
+      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.dll" />
+      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.dll" />
     </ItemGroup>
     <Exec Command="&quot;$(DocuExePath)&quot; @(DocProjects, ' ')" WorkingDirectory="$(DocsPath)" />
     <Exec Command="&quot;$(ZipExe)&quot; a ..\..\docs.v$(PackageVersion).zip" WorkingDirectory="$(DocsPath)\output" />
@@ -141,12 +141,12 @@
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj" />
-      <WinRTClient Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\bin\$(Configuration)\Microsoft.AspNet.SignalR.Client.*"></WinRTClient>
+      <WinRTClient Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.*"></WinRTClient>
     </ItemGroup>
     
     <!-- To workaround a bug in nuget -->
-    <MakeDir Directories="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\bin\$(Configuration)\winrt" />
-    <Copy SourceFiles="%(WinRTClient.Identity)" DestinationFolder="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\bin\$(Configuration)\winrt" />
+    <MakeDir Directories="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\winrt" />
+    <Copy SourceFiles="%(WinRTClient.Identity)" DestinationFolder="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\winrt" />
     
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Build"
