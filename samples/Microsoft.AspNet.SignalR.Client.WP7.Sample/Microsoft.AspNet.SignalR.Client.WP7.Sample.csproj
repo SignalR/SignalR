@@ -127,7 +127,7 @@
   </PropertyGroup>
   <Import Project="$(LocalToolsPath)\WP7\SignalR.WP7.targets"
           Condition="'$(LocalToolsPath)'!=''" />
-  <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
+
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets"
           Condition="'$(LocalToolsPath)'==''" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets"
