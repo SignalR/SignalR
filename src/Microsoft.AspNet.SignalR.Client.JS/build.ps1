@@ -25,12 +25,12 @@ foreach ($file in $files) {
 
 # Combine all files into jquery.signalR.js
 if (!(Test-Path -path "bin")) {
-	New-Item "bin" -Type Directory
+	New-Item "bin" -Type Directory | Out-Null
 }
 
 Write-Host "Building bin\jquery.signalR.js... " -NoNewline -ForegroundColor Yellow
 $filePath = "bin\jquery.signalR.js"
-Remove-Item $filePath -Force
+Remove-Item $filePath -Force -ErrorAction SilentlyContinue
 foreach ($file in $files) {
     Add-Content -Path $filePath -Value "/* $file */"
     Get-Content -Path $file | Add-Content -Path $filePath
