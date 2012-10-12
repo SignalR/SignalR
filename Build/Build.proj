@@ -3,73 +3,73 @@
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
   <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />
 
-    <PropertyGroup>
-        <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
-        <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
-        <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
-        <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
-        <DocsPath>$(ArtifactsDir)\docs</DocsPath>
-        <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
-        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
-        <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
-        <XunitPath>$(ToolsPath)xunit\</XunitPath>
-        <ChutzpahExePath>$(ProjectRoot)\tools\chutzpah\chutzpah.console.exe</ChutzpahExePath>
-        <JSTestsBridgeFile>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js</JSTestsBridgeFile>
-        <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
-        <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
-        <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\Scripts</ScriptTempPath>
-        <LocalToolsPath></LocalToolsPath>
-        <KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\35MSSharedLib1024.snk</KeyFile>
-    </PropertyGroup>
-    
-    <!-- Add extra properties to the build for signing -->
-    <PropertyGroup Condition="Exists('$(KeyFile)')">
-      <ExtraProperties>_SignAssembly=true;_DelaySign=true;AssemblyOriginatorKeyFile=$(KeyFile)</ExtraProperties>
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
-        <BuildDate>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</BuildDate>
-        <Revision Condition="$(BUILD_NUMBER) != ''">$(BUILD_NUMBER)</Revision>
-        <Revision Condition="$(BUILD_NUMBER) == ''">0</Revision>
-        <PrereleaseTag Condition="$(PRERELEASE) != ''">$(BuildQuality)-$([System.DateTime]::Now.ToString("yyMMdd"))</PrereleaseTag>
-        <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
-        <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
-        <FileVersion>$(MajorVersion).$(MinorVersion).$(BuildDate).$(Revision)</FileVersion>
-        <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
-          <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
-          <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
-        </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
-          <Find>AssemblyFileVersion\("\d+\.\d+\.\d+\.\d+"\)</Find>
-          <ReplaceWith>AssemblyFileVersion("$(FileVersion)")</ReplaceWith>
-        </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
-          <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
-          <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
-        </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Connection.cs">
-          <Find>_assemblyVersion = new Version\("\d+\.\d+\.\d+"\)</Find>
-          <ReplaceWith>_assemblyVersion = new Version("$(Version)")</ReplaceWith>
-        </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.core.js">
-            <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
-            <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
-        </RegexTransform>
-        <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Scripts\hubs.js">
-            <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
-            <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
-        </RegexTransform>
-    </ItemGroup>
-    
-    <Target Name="UpdateVersion">
-        <RegexTransform Items="@(RegexTransform)" />
-    </Target>
-  
+  <PropertyGroup>
+    <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+    <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
+    <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+    <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
+    <DocsPath>$(ArtifactsDir)\docs</DocsPath>
+    <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
+    <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+    <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
+    <XunitPath>$(ToolsPath)xunit\</XunitPath>
+    <ChutzpahExePath>$(ProjectRoot)\tools\chutzpah\chutzpah.console.exe</ChutzpahExePath>
+    <JSTestsBridgeFile>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js</JSTestsBridgeFile>
+    <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
+    <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
+    <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\Scripts</ScriptTempPath>
+    <LocalToolsPath></LocalToolsPath>
+    <KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\35MSSharedLib1024.snk</KeyFile>
+  </PropertyGroup>
+
+  <!-- Add extra properties to the build for signing -->
+  <PropertyGroup Condition="Exists('$(KeyFile)')">
+    <ExtraProperties>_SignAssembly=true;_DelaySign=true;AssemblyOriginatorKeyFile=$(KeyFile)</ExtraProperties>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
+    <BuildDate>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</BuildDate>
+    <Revision Condition="$(BUILD_NUMBER) != ''">$(BUILD_NUMBER)</Revision>
+    <Revision Condition="$(BUILD_NUMBER) == ''">0</Revision>
+    <PrereleaseTag Condition="$(PRERELEASE) != ''">$(BuildQuality)-$([System.DateTime]::Now.ToString("yyMMdd"))</PrereleaseTag>
+    <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
+    <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
+    <FileVersion>$(MajorVersion).$(MinorVersion).$(BuildDate).$(Revision)</FileVersion>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
+      <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
+      <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
+      <Find>AssemblyFileVersion\("\d+\.\d+\.\d+\.\d+"\)</Find>
+      <ReplaceWith>AssemblyFileVersion("$(FileVersion)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
+      <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
+      <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Connection.cs">
+      <Find>_assemblyVersion = new Version\("\d+\.\d+\.\d+"\)</Find>
+      <ReplaceWith>_assemblyVersion = new Version("$(Version)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.core.js">
+      <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
+      <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Scripts\hubs.js">
+      <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
+      <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
+    </RegexTransform>
+  </ItemGroup>
+
+  <Target Name="UpdateVersion">
+    <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
@@ -97,7 +97,7 @@
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
     <MakeDir Directories="$(DocsPath)" Condition="!Exists('$(DocsPath)')" />
   </Target>
-  
+
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.sln"
              Targets="Build"
@@ -135,7 +135,7 @@
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj"></Projects>
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></Projects>
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></Projects>
-    </ItemGroup>   
+    </ItemGroup>
 
     <MSBuild Projects="%(Projects.Identity)"
              Targets="Rebuild"
