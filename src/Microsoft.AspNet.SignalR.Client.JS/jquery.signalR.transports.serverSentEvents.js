@@ -78,7 +78,13 @@
                     }
 
                     if (reconnecting) {
+                        // If we're reconnecting and the event source is attempting to connect,
+                        // don't keep retrying. This causes duplicate connections to spawn.
+                        if (connection.eventSource.readyState !== window.EventSource.CONNECTING &&
+                            connection.eventSource.readyState !== window.EventSource.OPEN) {
+                            // If we were reconnecting, rather than doing initial connect, then try reconnect again
                             that.reconnect(connection);
+                        }
                     } else if (onFailed) {
                         onFailed();
                     }
