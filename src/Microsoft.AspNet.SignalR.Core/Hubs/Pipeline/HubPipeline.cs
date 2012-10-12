@@ -56,9 +56,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return Pipeline.AuthorizeConnect(hubDescriptor, request);
         }
 
-        public IEnumerable<string> RejoiningGroups(IHub hub, IEnumerable<string> groups)
+        public IEnumerable<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IEnumerable<string> groups)
         {
-            return Pipeline.RejoiningGroups(hub, groups);
+            return Pipeline.RejoiningGroups(hubDescriptor, request, groups);
         }
 
         public Task Send(IHubOutgoingInvokerContext context)
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             public Func<IHub, Task> Reconnect;
             public Func<IHub, Task> Disconnect;
             public Func<HubDescriptor, IRequest, bool> AuthorizeConnect;
-            public Func<IHub, IEnumerable<string>, IEnumerable<string>> RejoiningGroups;
+            public Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> RejoiningGroups;
             public Func<IHubOutgoingInvokerContext, Task> Send;
 
             public ComposedPipeline(Stack<IHubPipelineModule> modules)
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Reconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildReconnect(f))(HubDispatcher.Reconnect);
                 Disconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
                 AuthorizeConnect = Compose<Func<HubDescriptor, IRequest, bool>>(modules, (m, f) => m.BuildAuthorizeConnect(f))((h, r) => true);
-                RejoiningGroups = Compose<Func<IHub, IEnumerable<string>, IEnumerable<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))(HubDispatcher.RejoiningGroups);
+                RejoiningGroups = Compose<Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))((h, r, g) => Enumerable.Empty<string>());
                 Send = Compose<Func<IHubOutgoingInvokerContext, Task>>(modules, (m, f) => m.BuildOutgoing(f))(HubDispatcher.Outgoing);
             }
 

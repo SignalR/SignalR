@@ -22,13 +22,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         IGroupManager Groups { get; set; }
 
         /// <summary>
-        /// Called before a connection completes reconnecting to the <see cref="IHub"/> after a timeout.
-        /// </summary>
-        /// <param name="groups">The groups the reconnecting client claims to be a member of.</param>
-        /// <returns>The groups the client will actually join.</returns>
-        IEnumerable<string> RejoiningGroups(IEnumerable<string> groups);
-
-        /// <summary>
         /// Called when a new connection is made to the <see cref="IHub"/>.
         /// </summary>
         Task OnConnected();
