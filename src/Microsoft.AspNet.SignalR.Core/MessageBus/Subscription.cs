@@ -14,9 +14,7 @@ namespace Microsoft.AspNet.SignalR
         private readonly IPerformanceCounterManager _counters;
 
         private int _disposed;
-
-        private int _queued;
-        private int _working;
+        private int _state;
 
         private bool Alive
         {
@@ -53,52 +51,37 @@ namespace Microsoft.AspNet.SignalR
 
         public Task WorkAsync()
         {
-            if (SetWorking())
+            // Set the state to working
+            Interlocked.Exchange(ref _state, State.Working);
+
+            var tcs = new TaskCompletionSource<object>();
+
+            WorkImpl(tcs);
+
+            // Fast Path
+            if (tcs.Task.IsCompleted)
             {
-                var tcs = new TaskCompletionSource<object>();
-
-
-                WorkImpl(tcs);
-
-                // Fast Path
-                if (tcs.Task.IsCompleted)
-                {
-                    UnsetWorking();
-                    return tcs.Task;
-                }
-
-                return FinishAsync(tcs);
+                return tcs.Task;
             }
 
-            return TaskAsyncHelper.Empty;
+            return FinishAsync(tcs);
         }
 
         public bool SetQueued()
         {
-            return Interlocked.Exchange(ref _queued, 1) == 0;
+            return Interlocked.Increment(ref _state) == State.Working;
         }
 
         public bool UnsetQueued()
         {
-            return Interlocked.Exchange(ref _queued, 0) == 1;
-        }
-
-        private bool SetWorking()
-        {
-            return Interlocked.Exchange(ref _working, 1) == 0;
-        }
-
-        private bool UnsetWorking()
-        {
-            return Interlocked.Exchange(ref _working, 0) == 1;
+            // If we try to set the state to idle and we were not already in the working state then keep going
+            return Interlocked.CompareExchange(ref _state, State.Idle, State.Working) != State.Working;
         }
 
         private Task FinishAsync(TaskCompletionSource<object> tcs)
         {
             return tcs.Task.ContinueWith(task =>
             {
-                UnsetWorking();
-
                 if (task.IsFaulted)
                 {
                     return TaskAsyncHelper.FromError(task.Exception);
@@ -244,6 +227,12 @@ namespace Microsoft.AspNet.SignalR
         public override bool Equals(object obj)
         {
             return Identity.Equals(((Subscription)obj).Identity);
+        }
+
+        private static class State
+        {
+            public static int Idle = 0;
+            public static int Working = 1;
         }
     }
 }

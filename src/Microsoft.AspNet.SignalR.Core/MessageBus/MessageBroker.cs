@@ -35,16 +35,10 @@ namespace Microsoft.AspNet.SignalR
         // The interval at which to check if there's work to be done
         private static readonly TimeSpan CheckWorkInterval = TimeSpan.FromSeconds(5);
 
-        private Timer _timer;
-
-        private int _checkingWork;
-
         public MessageBroker(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterManager performanceCounterManager)
         {
             _topics = topics;
             _counters = performanceCounterManager;
-
-            _timer = new Timer(_ => OnTimer(), state: null, dueTime: CheckWorkInterval, period: CheckWorkInterval);
         }
 
         public TraceSource Trace
@@ -67,34 +61,6 @@ namespace Microsoft.AspNet.SignalR
             {
                 return _busyWorkers;
             }
-        }
-
-        private void OnTimer()
-        {
-            if (Interlocked.Exchange(ref _checkingWork, 1) == 1)
-            {
-                return;
-            }
-
-            foreach (var topic in _topics.Values)
-            {
-                try
-                {
-                    topic.SubscriptionLock.EnterReadLock();
-
-                    for (int i = 0; i < topic.Subscriptions.Count; i++)
-                    {
-                        ISubscription subscription = topic.Subscriptions[i];
-                        Schedule(subscription);
-                    }
-                }
-                finally
-                {
-                    topic.SubscriptionLock.ExitReadLock();
-                }
-            }
-
-            Interlocked.Exchange(ref _checkingWork, 0);
         }
 
         public void Schedule(ISubscription subscription)
@@ -176,7 +142,7 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
-        public void PumpImpl(TaskCompletionSource<object> taskCompletionSource)
+        public void PumpImpl(TaskCompletionSource<object> taskCompletionSource, ISubscription subscription = null)
         {
 
         Process:
@@ -185,18 +151,21 @@ namespace Microsoft.AspNet.SignalR
 
             // If we're withing the acceptable limit of idleness, just keep running
             int idleWorkers = _allocatedWorkers - _busyWorkers;
+
             if (idleWorkers <= MaxIdleWorkers)
             {
-                ISubscription subscription;
-
-                lock (_queue)
+                // We already have a subscription doing work so skip the queue
+                if (subscription == null)
                 {
-                    while (_queue.Count == 0)
+                    lock (_queue)
                     {
-                        Monitor.Wait(_queue);
-                    }
+                        while (_queue.Count == 0)
+                        {
+                            Monitor.Wait(_queue);
+                        }
 
-                    subscription = _queue.Dequeue();
+                        subscription = _queue.Dequeue();
+                    }
                 }
 
                 _counters.MessageBusBusyWorkers.RawValue = Interlocked.Increment(ref _busyWorkers);
@@ -216,7 +185,12 @@ namespace Microsoft.AspNet.SignalR
                     }
                     finally
                     {
-                        subscription.UnsetQueued();
+                        if (!subscription.UnsetQueued())
+                        {
+                            // If we don't have more work to do just make the subscription null
+                            subscription = null;
+                        }
+
                         _counters.MessageBusBusyWorkers.RawValue = Interlocked.Decrement(ref _busyWorkers);
 
                         Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
@@ -238,7 +212,8 @@ namespace Microsoft.AspNet.SignalR
             // Async path
             workTask.ContinueWith(task =>
             {
-                subscription.UnsetQueued();
+                bool moreWork = subscription.UnsetQueued();
+
                 _counters.MessageBusBusyWorkers.RawValue = Interlocked.Decrement(ref _busyWorkers);
 
                 Debug.Assert(_busyWorkers >= 0, "The number of busy workers has somehow gone negative");
@@ -249,14 +224,21 @@ namespace Microsoft.AspNet.SignalR
                 }
                 else
                 {
-                    PumpImpl(taskCompletionSource);
+                    if (moreWork)
+                    {
+                        PumpImpl(taskCompletionSource, subscription);
+                    }
+                    else
+                    {
+                        PumpImpl(taskCompletionSource);
+                    }
                 }
             });
         }
 
         public void Dispose()
         {
-            _timer.Dispose();
+
         }
     }
 }
