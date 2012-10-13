@@ -32,5 +32,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return new SignalProxy(_send, connectionId, _hubName);
         }
+
+        public dynamic AllExcept(params string[] exclude)
+        {
+            // REVIEW: Should this method be params array?
+            return new ClientProxy(_send, _hubName, exclude);
+        }
     }
 }

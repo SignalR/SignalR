@@ -31,5 +31,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="connectionId">The connection id</param>
         /// <returns>A dynamic representation of the connection with the specified connectionid.</returns>
         dynamic Client(string connectionId);
+
+        /// <summary>
+        /// Returns a dynamic representation of all clients except the calling client ones specified.
+        /// </summary>
+        /// <param name="exclude">A list of connection ids to exclude.</param>
+        /// <returns>A dynamic representation of all clients except the calling client ones specified.</returns>
+        dynamic AllExcept(params string[] exclude);
     }
 }
