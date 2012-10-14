@@ -737,6 +737,83 @@ namespace Microsoft.AspNet.SignalR.Tests
             connection2.Stop();
         }
 
+        [Fact]
+        public void SendToGroupFromOutsideOfHub()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection1 = new Client.Hubs.HubConnection("http://foo/");
+            var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
+
+            var wh1 = new ManualResetEventSlim(initialState: false);
+
+            var hub1 = connection1.CreateProxy("SendToSome");
+
+            connection1.Start(host).Wait();
+
+            hub1.On("send", wh1.Set);
+
+            hubContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+            hubContext.Group("Foo").send();
+
+            Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+            connection1.Stop();
+        }
+
+        [Fact]
+        public void SendToSpecificClientFromOutsideOfHub()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection1 = new Client.Hubs.HubConnection("http://foo/");
+            var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
+
+            var wh1 = new ManualResetEventSlim(initialState: false);
+
+            var hub1 = connection1.CreateProxy("SendToSome");
+
+            connection1.Start(host).Wait();
+
+            hub1.On("send", wh1.Set);
+
+            hubContext.Client(connection1.ConnectionId).send();
+
+            Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+            connection1.Stop();
+        }
+
+        [Fact]
+        public void SendToSpecificAllFromOutsideOfHub()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            var connection1 = new Client.Hubs.HubConnection("http://foo/");
+            var connection2 = new Client.Hubs.HubConnection("http://foo/");
+            var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
+
+            var wh1 = new ManualResetEventSlim(initialState: false);
+            var wh2 = new ManualResetEventSlim(initialState: false);
+
+            var hub1 = connection1.CreateProxy("SendToSome");
+            var hub2 = connection2.CreateProxy("SendToSome");
+
+            connection1.Start(host).Wait();
+            connection2.Start(host).Wait();
+
+            hub1.On("send", wh1.Set);
+            hub2.On("send", wh2.Set);
+
+            hubContext.Clients.send();
+
+            Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+            Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+
+            connection1.Stop();
+            connection2.Stop();
+        }
+
         public class SendToSome : Hub
         {
             public Task SendToAllButCaller()

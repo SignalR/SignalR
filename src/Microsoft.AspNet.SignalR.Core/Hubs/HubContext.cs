@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _connection = connection;
 
             Clients = new ClientProxy(send, hubName);
+            Groups = new GroupManager(connection, _hubName);
         }
 
         public dynamic Clients { get; private set; }
