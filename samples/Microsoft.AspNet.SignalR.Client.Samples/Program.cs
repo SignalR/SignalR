@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private static void RunDemoHub(HubConnection hubConnection)
         {
-            var demo = hubConnection.CreateProxy("demo");
+            var demo = hubConnection.CreateHubProxy("demo");
 
             hubConnection.StateChanged += change =>
             {

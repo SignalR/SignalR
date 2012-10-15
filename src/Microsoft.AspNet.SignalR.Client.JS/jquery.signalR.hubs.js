@@ -254,7 +254,7 @@
         });
     };
 
-    hubConnection.fn.createProxy = function (hubName) {
+    hubConnection.fn.createHubProxy = function (hubName) {
         /// <summary>
         ///     Creates a new proxy object for the given hub connection that can be used to invoke
         ///     methods on server hubs and handle client method invocation requests from the server.

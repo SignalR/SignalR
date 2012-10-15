@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.HubPipeline.RequireAuthentication();
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.HubPipeline.RequireAuthentication();
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.HubPipeline.RequireAuthentication();
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.HubPipeline.RequireAuthentication();
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("NoAuthHub");
+            var hub = connection.CreateHubProxy("NoAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("AuthHub");
+            var hub = connection.CreateHubProxy("AuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("AuthHub");
+            var hub = connection.CreateHubProxy("AuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("AuthHub");
+            var hub = connection.CreateHubProxy("AuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("AuthHub");
+            var hub = connection.CreateHubProxy("AuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("InheritAuthHub");
+            var hub = connection.CreateHubProxy("InheritAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("InheritAuthHub");
+            var hub = connection.CreateHubProxy("InheritAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
 
-            var hub = connection.CreateProxy("InheritAuthHub");
+            var hub = connection.CreateHubProxy("InheritAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
 
-            var hub = connection.CreateProxy("InheritAuthHub");
+            var hub = connection.CreateHubProxy("InheritAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -407,7 +407,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" });
 
-            var hub = connection.CreateProxy("AdminAuthHub");
+            var hub = connection.CreateHubProxy("AdminAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -430,7 +430,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" });
 
-            var hub = connection.CreateProxy("AdminAuthHub");
+            var hub = connection.CreateHubProxy("AdminAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("AdminAuthHub");
+            var hub = connection.CreateHubProxy("AdminAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -478,7 +478,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("AdminAuthHub");
+            var hub = connection.CreateHubProxy("AdminAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -503,7 +503,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" });
 
-            var hub = connection.CreateProxy("AdminAuthHub");
+            var hub = connection.CreateHubProxy("AdminAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -526,7 +526,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "Admin" });
 
-            var hub = connection.CreateProxy("AdminAuthHub");
+            var hub = connection.CreateHubProxy("AdminAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -551,7 +551,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("UserAndRoleAuthHub");
+            var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -574,7 +574,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" });
 
-            var hub = connection.CreateProxy("UserAndRoleAuthHub");
+            var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -599,7 +599,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "test", "Admin" });
 
-            var hub = connection.CreateProxy("UserAndRoleAuthHub");
+            var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -622,7 +622,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" });
 
-            var hub = connection.CreateProxy("UserAndRoleAuthHub");
+            var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -647,7 +647,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("IncomingAuthHub");
+            var hub = connection.CreateHubProxy("IncomingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -670,7 +670,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("IncomingAuthHub");
+            var hub = connection.CreateHubProxy("IncomingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("Admin"), new string[] { });
 
-            var hub = connection.CreateProxy("IncomingAuthHub");
+            var hub = connection.CreateHubProxy("IncomingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -718,7 +718,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" });
 
-            var hub = connection.CreateProxy("IncomingAuthHub");
+            var hub = connection.CreateHubProxy("IncomingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -743,7 +743,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("OutgoingAuthHub");
+            var hub = connection.CreateHubProxy("OutgoingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -766,7 +766,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("OutgoingAuthHub");
+            var hub = connection.CreateHubProxy("OutgoingAuthHub");
 
             connection.Start(host).Wait();
 
@@ -784,7 +784,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("Admin"), new string[] { });
 
-            var hub = connection.CreateProxy("OutgoingAuthHub");
+            var hub = connection.CreateHubProxy("OutgoingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string, object>("joined", (id, time, authInfo) =>
             {
@@ -807,7 +807,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" });
 
-            var hub = connection.CreateProxy("OutgoingAuthHub");
+            var hub = connection.CreateHubProxy("OutgoingAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -832,7 +832,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin", "Invoker" });
 
-            var hub = connection.CreateProxy("InvokeAuthHub");
+            var hub = connection.CreateHubProxy("InvokeAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -857,7 +857,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" });
 
-            var hub = connection.CreateProxy("InvokeAuthHub");
+            var hub = connection.CreateHubProxy("InvokeAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {
@@ -882,7 +882,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" });
 
-            var hub = connection.CreateProxy("InvokeAuthHub");
+            var hub = connection.CreateHubProxy("InvokeAuthHub");
             var wh = new ManualResetEvent(false);
             hub.On<string, string>("invoked", (id, time) =>
             {

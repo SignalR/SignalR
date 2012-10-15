@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             hub["name"] = "test";
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
             connection.Start(host).Wait();
 
             var result = hub.Invoke<string>("SetStateValue", "test").Result;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs("/foo");
             var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             var wh = new ManualResetEvent(false);
 
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://site/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             var wh = new ManualResetEvent(false);
 
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://site/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             var wh = new ManualResetEvent(false);
 
@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var connection = new Client.Hubs.HubConnection("http://site/");
             string callback = @"!!!|\CallMeBack,,,!!!";
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             var wh = new ManualResetEvent(false);
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             try
             {
                 connection.Start(host).Wait();
-                Assert.Throws<InvalidOperationException>(() => connection.CreateProxy("demo"));
+                Assert.Throws<InvalidOperationException>(() => connection.CreateHubProxy("demo"));
             }
             finally
             {
@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("MultGroupHub");
+            var proxy = connection.CreateHubProxy("MultGroupHub");
 
             proxy.On<User>("onRoomJoin", user =>
             {
@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("MultGroupHub");
+            var proxy = connection.CreateHubProxy("MultGroupHub");
 
             proxy.On<User>("onRoomJoin", u =>
             {
@@ -407,7 +407,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("MultGroupHub");
+            var proxy = connection.CreateHubProxy("MultGroupHub");
 
             proxy.On<User>("onRoomJoin", u =>
             {
@@ -460,8 +460,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
 
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("MultGroupHub");
-            var proxy2 = connection.CreateProxy("MultGroupHub2");
+            var proxy = connection.CreateHubProxy("MultGroupHub");
+            var proxy2 = connection.CreateHubProxy("MultGroupHub2");
 
             connection.Start(host).Wait();
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/", "a=b");
 
-            var hub = connection.CreateProxy("CustomQueryHub");
+            var hub = connection.CreateHubProxy("CustomQueryHub");
 
             connection.Start(host).Wait();
 
@@ -516,7 +516,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             qs["a"] = "b";
             var connection = new Client.Hubs.HubConnection("http://foo/", qs);
 
-            var hub = connection.CreateProxy("CustomQueryHub");
+            var hub = connection.CreateHubProxy("CustomQueryHub");
 
             connection.Start(host).Wait();
 
@@ -542,7 +542,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo");
 
-            var hub = connection.CreateProxy("SomeHub");
+            var hub = connection.CreateHubProxy("SomeHub");
             connection.Start(host).Wait();
 
             connection.Stop();
@@ -566,7 +566,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo");
 
-            var hub = connection.CreateProxy("SomeHub");
+            var hub = connection.CreateHubProxy("SomeHub");
             connection.Start(host).Wait();
 
             // Force Reconnect
@@ -604,7 +604,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
             var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            var hub = connection.CreateProxy("demo");
+            var hub = connection.CreateHubProxy("demo");
 
             connection.Start(host).Wait();
 
@@ -629,8 +629,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var wh1 = new ManualResetEventSlim(initialState: false);
             var wh2 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
-            var hub2 = connection2.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
+            var hub2 = connection2.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
             connection2.Start(host).Wait();
@@ -658,8 +658,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var wh1 = new ManualResetEventSlim(initialState: false);
             var wh2 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
-            var hub2 = connection2.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
+            var hub2 = connection2.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
             connection2.Start(host).Wait();
@@ -690,8 +690,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var wh1 = new ManualResetEventSlim(initialState: false);
             var wh2 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
-            var hub2 = connection2.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
+            var hub2 = connection2.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
             connection2.Start(host).Wait();
@@ -719,8 +719,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var wh1 = new ManualResetEventSlim(initialState: false);
             var wh2 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
-            var hub2 = connection2.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
+            var hub2 = connection2.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
             connection2.Start(host).Wait();
@@ -747,7 +747,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var wh1 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
 
@@ -771,7 +771,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var wh1 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
 
@@ -796,8 +796,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var wh1 = new ManualResetEventSlim(initialState: false);
             var wh2 = new ManualResetEventSlim(initialState: false);
 
-            var hub1 = connection1.CreateProxy("SendToSome");
-            var hub2 = connection2.CreateProxy("SendToSome");
+            var hub1 = connection1.CreateHubProxy("SendToSome");
+            var hub2 = connection2.CreateHubProxy("SendToSome");
 
             connection1.Start(host).Wait();
             connection2.Start(host).Wait();

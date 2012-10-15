@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
 
             var hubConnection = new HubConnection("http://fake");
-            IHubProxy proxy = hubConnection.CreateProxy("ChatHub");
+            IHubProxy proxy = hubConnection.CreateHubProxy("ChatHub");
             var wh = new ManualResetEvent(false);
 
             proxy.On("addMessage", data =>
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
 
             var hubConnection = new HubConnection("http://fake");
-            IHubProxy proxy = hubConnection.CreateProxy("chatHub");
+            IHubProxy proxy = hubConnection.CreateHubProxy("chatHub");
             var wh = new ManualResetEvent(false);
 
             proxy.On("addMessage", data =>
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             host.MapHubs();
 
             var hubConnection = new HubConnection("http://fake");
-            IHubProxy proxy = hubConnection.CreateProxy("MyHub2");
+            IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
 
             hubConnection.Start(host).Wait();
             Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());

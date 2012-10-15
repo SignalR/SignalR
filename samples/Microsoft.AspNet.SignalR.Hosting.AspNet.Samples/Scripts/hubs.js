@@ -62,7 +62,7 @@
             createHubProxies(signalR, this);
         });
 
-    signalR.adminAuthHub = signalR.hub.createProxy('adminAuthHub'); 
+    signalR.adminAuthHub = signalR.hub.createHubProxy('adminAuthHub'); 
     signalR.adminAuthHub.client = { };
     signalR.adminAuthHub.server = {
         invokedFromClient: function () {
@@ -71,7 +71,7 @@
          }
     };
 
-    signalR.authHub = signalR.hub.createProxy('authHub'); 
+    signalR.authHub = signalR.hub.createHubProxy('authHub'); 
     signalR.authHub.client = { };
     signalR.authHub.server = {
         invokedFromClient: function () {
@@ -80,7 +80,7 @@
          }
     };
 
-    signalR.chat = signalR.hub.createProxy('chat'); 
+    signalR.chat = signalR.hub.createHubProxy('chat'); 
     signalR.chat.client = { };
     signalR.chat.server = {
         join: function () {
@@ -100,7 +100,7 @@
          }
     };
 
-    signalR.demo = signalR.hub.createProxy('demo'); 
+    signalR.demo = signalR.hub.createHubProxy('demo'); 
     signalR.demo.client = { };
     signalR.demo.server = {
         getValue: function () {
@@ -211,7 +211,7 @@
          }
     };
 
-    signalR.DrawingPad = signalR.hub.createProxy('DrawingPad'); 
+    signalR.DrawingPad = signalR.hub.createHubProxy('DrawingPad'); 
     signalR.DrawingPad.client = { };
     signalR.DrawingPad.server = {
         join: function () {
@@ -226,7 +226,7 @@
          }
     };
 
-    signalR.hubBench = signalR.hub.createProxy('hubBench'); 
+    signalR.hubBench = signalR.hub.createHubProxy('hubBench'); 
     signalR.hubBench.client = { };
     signalR.hubBench.server = {
         hitMe: function (start, clientCalls, connectionId) {
@@ -245,7 +245,7 @@
          }
     };
 
-    signalR.incomingAuthHub = signalR.hub.createProxy('incomingAuthHub'); 
+    signalR.incomingAuthHub = signalR.hub.createHubProxy('incomingAuthHub'); 
     signalR.incomingAuthHub.client = { };
     signalR.incomingAuthHub.server = {
         invokedFromClient: function () {
@@ -254,7 +254,7 @@
          }
     };
 
-    signalR.inheritAuthHub = signalR.hub.createProxy('inheritAuthHub'); 
+    signalR.inheritAuthHub = signalR.hub.createHubProxy('inheritAuthHub'); 
     signalR.inheritAuthHub.client = { };
     signalR.inheritAuthHub.server = {
         invokedFromClient: function () {
@@ -263,7 +263,7 @@
          }
     };
 
-    signalR.invokeAuthHub = signalR.hub.createProxy('invokeAuthHub'); 
+    signalR.invokeAuthHub = signalR.hub.createHubProxy('invokeAuthHub'); 
     signalR.invokeAuthHub.client = { };
     signalR.invokeAuthHub.server = {
         invokedFromClient: function () {
@@ -272,7 +272,7 @@
          }
     };
 
-    signalR.mouseTracking = signalR.hub.createProxy('mouseTracking'); 
+    signalR.mouseTracking = signalR.hub.createHubProxy('mouseTracking'); 
     signalR.mouseTracking.client = { };
     signalR.mouseTracking.server = {
         join: function () {
@@ -288,7 +288,7 @@
          }
     };
 
-    signalR.noAuthHub = signalR.hub.createProxy('noAuthHub'); 
+    signalR.noAuthHub = signalR.hub.createHubProxy('noAuthHub'); 
     signalR.noAuthHub.client = { };
     signalR.noAuthHub.server = {
         invokedFromClient: function () {
@@ -297,7 +297,7 @@
          }
     };
 
-    signalR.outgoingAuthHub = signalR.hub.createProxy('outgoingAuthHub'); 
+    signalR.outgoingAuthHub = signalR.hub.createHubProxy('outgoingAuthHub'); 
     signalR.outgoingAuthHub.client = { };
     signalR.outgoingAuthHub.server = {
         invokedFromClient: function () {
@@ -306,7 +306,7 @@
          }
     };
 
-    signalR.shapeShare = signalR.hub.createProxy('shapeShare'); 
+    signalR.shapeShare = signalR.hub.createHubProxy('shapeShare'); 
     signalR.shapeShare.client = { };
     signalR.shapeShare.server = {
         getShapes: function () {
@@ -355,12 +355,12 @@
          }
     };
 
-    signalR.StatusHub = signalR.hub.createProxy('StatusHub'); 
+    signalR.StatusHub = signalR.hub.createHubProxy('StatusHub'); 
     signalR.StatusHub.client = { };
     signalR.StatusHub.server = {
     };
 
-    signalR.userAndRoleAuthHub = signalR.hub.createProxy('userAndRoleAuthHub'); 
+    signalR.userAndRoleAuthHub = signalR.hub.createHubProxy('userAndRoleAuthHub'); 
     signalR.userAndRoleAuthHub.client = { };
     signalR.userAndRoleAuthHub.server = {
         invokedFromClient: function () {

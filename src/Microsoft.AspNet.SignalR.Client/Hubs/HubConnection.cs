@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// </summary>
         /// <param name="hubName">The name of the hub.</param>
         /// <returns>A <see cref="IHubProxy"/></returns>
-        public IHubProxy CreateProxy(string hubName)
+        public IHubProxy CreateHubProxy(string hubName)
         {
             if (State != ConnectionState.Disconnected)
             {

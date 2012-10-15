@@ -3,7 +3,7 @@
 
 $(function () {
     var hubConnection = $.hubConnection('/signalr', { qs: 'test=1', logging: false, useDefaultPath: false }),
-        hub = hubConnection.createProxy('mouseTracking');
+        hub = hubConnection.createHubProxy('mouseTracking');
 
     hub.on('move', updateCursor);
 
