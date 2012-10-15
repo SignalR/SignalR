@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -10,6 +11,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// 
         /// </summary>
+        [JsonIgnore]
         public string Target { get; set; }
 
         /// <summary>
