@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             var countDown = new CountDown(max);
             var list = Enumerable.Range(0, max).ToList();
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateProxy("MultGroupHub");
+            var proxy = connection.CreateHubProxy("MultGroupHub");
 
             var bus = (MessageBus)host.DependencyResolver.Resolve<IMessageBus>();
 
