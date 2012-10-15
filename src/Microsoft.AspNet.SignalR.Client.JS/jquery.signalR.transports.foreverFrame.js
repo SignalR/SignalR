@@ -38,6 +38,9 @@
             url = transportLogic.getUrl(connection, this.name);
             url += "&frameId=" + frameId;
 
+            // Set body prior to setting URL to avoid caching issues.
+            $("body").append(frame);
+
             frame.prop("src", url);
             transportLogic.foreverFrame.connections[frameId] = connection;
 
@@ -56,8 +59,6 @@
             if (onSuccess) {
                 connection.onSuccess = onSuccess;
             }
-
-            $("body").append(frame);
 
             // After connecting, if after the specified timeout there's no response stop the connection
             // and raise on failed
