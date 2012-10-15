@@ -72,9 +72,8 @@
 
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
-                // REVIEW: Should event fire before or after the state change actually occurs?
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: newState }]);
                 connection.state = newState;
+                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: newState }]);
                 return true;
             }
 
