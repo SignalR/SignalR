@@ -162,10 +162,11 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     if (_state != value)
                     {
+                        var stateChange = new StateChange(oldState: _state, newState: value);
                         _state = value;
                         if (StateChanged != null)
                         {
-                            StateChanged(new StateChange(_state, value));
+                            StateChanged(stateChange);
                         }
                     }
                 }
