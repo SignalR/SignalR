@@ -10,12 +10,13 @@
     signalR.transports = {};
 
     function checkIfAlive(connection) {
-        var keepAliveData = connection.keepAliveData;
+        var keepAliveData = connection.keepAliveData,
+            diff,
+            timeElapsed;
 
         // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            var diff = new Date(),
-                timeElapsed;
+            diff = new Date();
 
             diff.setTime(diff - keepAliveData.lastKeepAlive);
             timeElapsed = diff.getTime();
@@ -37,10 +38,12 @@
             }
             else {
                 keepAliveData.userNotified = false;
-            }
+            }            
         }
 
         // Verify we're monitoring the keep alive
+        // We don't want this as a part of the inner if statement above because we want keep alives to continue to be checked
+        // in the event that the server comes back online (if it goes offline).
         if (keepAliveData.monitoring) {
             window.setTimeout(function () {
                 checkIfAlive(connection);
@@ -192,14 +195,23 @@
         },
 
         monitorKeepAlive: function (connection) {
-            var keepAliveData = connection.keepAliveData;
+            var keepAliveData = connection.keepAliveData,
+                that = this;
 
             // If we haven't initiated the keep alive timeouts then we need to
             if (!keepAliveData.monitoring) {
                 keepAliveData.monitoring = true;
 
                 // Initialize the keep alive time stamp ping
-                this.updateKeepAlive(connection);
+                that.updateKeepAlive(connection);
+                
+                // Save the function so we can unbind it on stop
+                connection.keepAliveData.reconnectKeepAliveUpdate = function () {
+                    that.updateKeepAlive(connection);
+                };
+
+                // Update Keep alive on reconnect
+                $(connection).bind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
 
                 connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout);
                 // Start the monitoring of the keep alive
@@ -217,6 +229,9 @@
             if (keepAliveData.monitoring) {
                 // Stop monitoring
                 keepAliveData.monitoring = false;
+
+                // Remove the updateKeepAlive function from the reconnect event
+                $(connection).unbind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
 
                 // Clear all the keep alive data
                 keepAliveData = {};
