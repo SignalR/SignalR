@@ -158,14 +158,16 @@ namespace Microsoft.AspNet.SignalR.Client
             }
             private set
             {
-                if (_state != value)
+                lock (_stateLock)
                 {
-                    if (StateChanged != null)
+                    if (_state != value)
                     {
-                        StateChanged(new StateChange(_state, value));
+                        _state = value;
+                        if (StateChanged != null)
+                        {
+                            StateChanged(new StateChange(_state, value));
+                        }
                     }
-
-                    _state = value;
                 }
             }
         }
@@ -274,18 +276,15 @@ namespace Microsoft.AspNet.SignalR.Client
 
         bool IConnection.ChangeState(ConnectionState oldState, ConnectionState newState)
         {
-            lock (_stateLock)
+            // If we're in the expected old state then change state and return true
+            if (_state == oldState)
             {
-                // If we're in the expected old state then change state and return true
-                if (_state == oldState)
-                {
-                    State = newState;
-                    return true;
-                }
-
-                // Invalid transition
-                return false;
+                State = newState;
+                return true;
             }
+
+            // Invalid transition
+            return false;
         }
 
         private static void VerifyProtocolVersion(string versionString)

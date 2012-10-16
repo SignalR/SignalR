@@ -129,6 +129,38 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.Equal("OnReceivedAsync2", results[3]);
             }
 
+            [Fact]
+            public void SendCanBeCalledAfterStateChangedEvent()
+            {
+                var host = new MemoryHost();
+                host.MapConnection<MySendingConnection>("/multisend");
+
+                var connection = new Client.Connection("http://foo/multisend");
+                var results = new List<string>();
+                connection.Received += data =>
+                {
+                    results.Add(data);
+                };
+
+                connection.StateChanged += stateChange =>
+                {
+                    if (stateChange.NewState == Client.ConnectionState.Connected)
+                    {
+                        connection.Send("").Wait();
+                    }
+                };
+
+                connection.Start(host).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                connection.Stop();
+
+                Debug.WriteLine(String.Join(", ", results));
+
+                Assert.Equal(4, results.Count);
+            }
+
             public void Dispose()
             {
                 GC.Collect();
