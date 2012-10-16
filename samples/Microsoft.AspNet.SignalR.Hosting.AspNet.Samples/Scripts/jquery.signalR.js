@@ -490,6 +490,7 @@
             }
 
             try {
+
                 if (connection.transport) {
                     if (notifyServer !== false) {
                         connection.transport.abort(connection, async);
@@ -508,6 +509,10 @@
 
                 delete connection.messageId;
                 delete connection.groups;
+
+                // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
+                delete connection.id;
+                delete connection.deferral;
             }
             finally {
                 changeState(connection, connection.state, signalR.connectionState.disconnected);
