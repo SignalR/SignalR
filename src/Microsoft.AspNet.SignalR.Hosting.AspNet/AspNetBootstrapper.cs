@@ -26,8 +26,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet
                 {
                     if (!_initialized)
                     {
-                        RouteTable.Routes.MapHubs();
-                     
                         _detector.Initialize();
 
                         _initialized = true;
