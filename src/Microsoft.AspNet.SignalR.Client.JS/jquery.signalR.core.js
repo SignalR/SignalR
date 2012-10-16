@@ -73,7 +73,7 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
-                $(connection).trigger(events.onStateChanged, [{ oldState: connection.state, newState: newState }]);
+                $(connection).trigger(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }
 
