@@ -42,8 +42,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples
                 }
             });
 
-            RouteTable.Routes.MapHubs();
-
             RouteTable.Routes.MapConnection<SendingConnection>("sending-connection", "sending-connection/{*operation}");
             RouteTable.Routes.MapConnection<TestConnection>("test-connection", "test-connection/{*operation}");
             RouteTable.Routes.MapConnection<Raw>("raw", "raw/{*operation}");
