@@ -41,7 +41,7 @@
                 return;
             }
 
-            $connection.trigger(events.onSending);
+            $connection.triggerHandler(events.onSending);
 
             url = transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -57,7 +57,7 @@
                     onFailed();
                 }
                 else {
-                    $connection.trigger(events.onError, [e]);
+                    $connection.triggerHandler(events.onError, [e]);
                     if (reconnecting) {
                         // If we were reconnecting, rather than doing initial connect, then try reconnect again
                         that.reconnect(connection);
@@ -114,7 +114,7 @@
                         if (changeState(connection,
                                         signalR.connectionState.reconnecting,
                                         signalR.connectionState.connected) === true) {
-                            $connection.trigger(events.onReconnect);
+                            $connection.triggerHandler(events.onReconnect);
                         }
                     }
                 }
@@ -154,7 +154,7 @@
                     } else {
                         // connection error
                         connection.log("EventSource error");
-                        $connection.trigger(events.onError);
+                        $connection.triggerHandler(events.onError);
                     }
                 }
             }, false);

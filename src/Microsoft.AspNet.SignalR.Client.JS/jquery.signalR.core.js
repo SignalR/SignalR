@@ -73,7 +73,7 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
-                $(connection).trigger(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
+                $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }
 
@@ -245,7 +245,7 @@
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
-                        $(connection).trigger(events.onError, "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                        $(connection).triggerHandler(events.onError, "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         // Stop the connection if it has connected and move it into the disconnected state
                         connection.stop();
@@ -273,7 +273,7 @@
                                 signalR.connectionState.connecting,
                                 signalR.connectionState.connected);
 
-                    $(connection).trigger(events.onStart);
+                    $(connection).triggerHandler(events.onStart);
 
                     _pageWindow.unload(function () { // failure
                         connection.stop(false /* async */);
@@ -294,7 +294,7 @@
                 data: {},
                 dataType: connection.ajaxDataType,
                 error: function (error) {
-                    $(connection).trigger(events.onError, [error.responseText]);
+                    $(connection).triggerHandler(events.onError, [error.responseText]);
                     deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
                     // Stop the connection if negotiate failed
                     connection.stop();
@@ -322,12 +322,12 @@
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
-                        $(connection).trigger(events.onError, "SignalR: Incompatible protocol version.");
+                        $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
                         deferred.reject("SignalR: Incompatible protocol version.");
                         return;
                     }
 
-                    $(connection).trigger(events.onStarting);
+                    $(connection).triggerHandler(events.onStarting);
 
                     var transports = [],
                         supportedTransports = [];
@@ -503,7 +503,7 @@
                 }
 
                 // Trigger the disconnect event
-                $(connection).trigger(events.onDisconnect);
+                $(connection).triggerHandler(events.onDisconnect);
 
                 delete connection.messageId;
                 delete connection.groups;

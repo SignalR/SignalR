@@ -110,7 +110,7 @@
                 },
                 success: function (result) {
                     if (result) {
-                        $(connection).trigger(events.onReceived, [result]);
+                        $(connection).triggerHandler(events.onReceived, [result]);
                     }
                 },
                 error: function (errData, textStatus) {
@@ -121,7 +121,7 @@
                         // so just hack around it on the client for now.
                         return;
                     }
-                    $(connection).trigger(events.onError, [errData]);
+                    $(connection).triggerHandler(events.onError, [errData]);
                 }
             });
         },
@@ -175,11 +175,11 @@
                 if (data.Messages) {
                     $.each(data.Messages, function () {
                         try {
-                            $connection.trigger(events.onReceived, [this]);
+                            $connection.triggerHandler(events.onReceived, [this]);
                         }
                         catch (e) {
                             connection.log("Error raising received " + e);
-                            $(connection).trigger(events.onError, [e]);
+                            $(connection).triggerHandler(events.onError, [e]);
                         }
                     });
                 }

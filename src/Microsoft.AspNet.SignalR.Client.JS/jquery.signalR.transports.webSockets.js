@@ -47,7 +47,7 @@
                 }
 
                 // Build the url
-                $(connection).trigger(events.onSending);
+                $(connection).triggerHandler(events.onSending);
 
                 url += transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -69,7 +69,7 @@
                         if (changeState(connection,
                                         signalR.connectionState.reconnecting,
                                         signalR.connectionState.connected) === true) {
-                            $connection.trigger(events.onReconnect);
+                            $connection.triggerHandler(events.onReconnect);
                         }
                     }
                 };
@@ -91,7 +91,7 @@
                         else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).trigger(events.onError, [event.reason]);
+                            $(connection).triggerHandler(events.onError, [event.reason]);
                             connection.log("Unclean disconnect from websocket." + event.reason);
                         }
                         else {
@@ -112,7 +112,7 @@
                         } else {
                             // For websockets we need to trigger onReceived
                             // for callbacks to outgoing hub calls.
-                            $connection.trigger(events.onReceived, [data]);
+                            $connection.triggerHandler(events.onReceived, [data]);
                         }
                     }
                 };

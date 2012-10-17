@@ -32,7 +32,7 @@
 
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
-                    $(instance).trigger(events.onSending);
+                    $(instance).triggerHandler(events.onSending);
 
                     var messageId = instance.messageId,
                         connect = (messageId === null),
@@ -75,7 +75,7 @@
                                                     signalR.connectionState.reconnecting,
                                                     signalR.connectionState.connected) === true) {
 
-                                        $(instance).trigger(events.onReconnect);
+                                        $(instance).triggerHandler(events.onReconnect);
                                         reconnectFired = true;
                                     }
                                 }
@@ -123,7 +123,7 @@
                                 window.clearTimeout(reconnectTimeOut);
                             }
 
-                            $(instance).trigger(events.onError, [data.responseText]);
+                            $(instance).triggerHandler(events.onError, [data.responseText]);
 
                             window.setTimeout(function () {
                                 if (isDisconnecting(instance) === false) {
@@ -140,7 +140,7 @@
                                                 signalR.connectionState.reconnecting,
                                                 signalR.connectionState.connected) === true) {
 
-                                    $(instance).trigger(events.onReconnect);
+                                    $(instance).triggerHandler(events.onReconnect);
                                     reconnectFired = true;
                                 }
                             }

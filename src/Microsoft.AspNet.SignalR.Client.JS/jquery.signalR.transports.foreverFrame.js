@@ -32,7 +32,7 @@
                 return;
             }
 
-            $(connection).trigger(events.onSending);
+            $(connection).triggerHandler(events.onSending);
 
             // Build the url
             url = transportLogic.getUrl(connection, this.name);
@@ -159,7 +159,7 @@
                                 signalR.connectionState.reconnecting,
                                 signalR.connectionState.connected) === true) {
                     // If there's no onSuccess handler we assume this is a reconnect
-                    $(connection).trigger(events.onReconnect);
+                    $(connection).triggerHandler(events.onReconnect);
                 }
             }
         }
