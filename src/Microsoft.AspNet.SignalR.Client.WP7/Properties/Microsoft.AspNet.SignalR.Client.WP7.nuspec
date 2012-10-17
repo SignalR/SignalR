@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
   </metadata>
   <files>
-    <file src="..\..\Microsoft.AspNet.SignalR.Client.WP7\bin\$configuration$\Microsoft.AspNet.SignalR.Client.WP7.dll" target="lib\sl4-wp7" />
-    <file src="..\..\Microsoft.AspNet.SignalR.Client.WP7\bin\$configuration$\Microsoft.AspNet.SignalR.Client.WP7.xml" target="lib\sl4-wp7" />
+    <file src="..\..\..\artifacts\$configuration$\Microsoft.AspNet.SignalR.Client.WP7\Microsoft.AspNet.SignalR.Client.WP7.dll" target="lib\sl4-wp7" />
+    <file src="..\..\..\artifacts\$configuration$\Microsoft.AspNet.SignalR.Client.WP7\Microsoft.AspNet.SignalR.Client.WP7.xml" target="lib\sl4-wp7" />
   </files>
 </package>

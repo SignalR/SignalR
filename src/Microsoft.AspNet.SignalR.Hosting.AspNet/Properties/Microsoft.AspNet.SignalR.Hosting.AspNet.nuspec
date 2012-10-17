@@ -14,8 +14,8 @@
     </dependencies>
   </metadata>
   <files>
-      <file src="..\Properties\RegisterHubs.cs.pp" target="content\App_Start" />
-      <file src="..\..\Microsoft.AspNet.SignalR.Hosting.AspNet45\bin*\$configuration$\Microsoft.AspNet.SignalR.Hosting.AspNet.d*" target="lib\net45" />
-      <file src="..\..\Microsoft.AspNet.SignalR.Hosting.AspNet45\bin*\$configuration$\Microsoft.AspNet.SignalR.Hosting.AspNet.x*" target="lib\net45" />
+      <file src="RegisterHubs.cs.pp" target="content\App_Start" />
+      <file src="..\..\..\artifacts\$configuration$\Microsoft.AspNet.SignalR.Hosting.AspNet45\Microsoft.AspNet.SignalR.Hosting.AspNet.d*" target="lib\net45" />
+      <file src="..\..\..\artifacts\$configuration$\Microsoft.AspNet.SignalR.Hosting.AspNet45\Microsoft.AspNet.SignalR.Hosting.AspNet.x*" target="lib\net45" />
   </files>
 </package>
