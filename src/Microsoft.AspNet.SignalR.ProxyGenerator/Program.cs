@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.Ajax.Utilities;
 
 namespace Microsoft.AspNet.SignalR.ProxyGenerator
 {
@@ -13,13 +12,12 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
     {
         static void Main(string[] args)
         {
-            bool minify = false;
             bool absolute = false;
             string path = null;
             string outputPath = null;
             string url = null;
 
-            ParseArguments(args, out url, out minify, out absolute, out path, out outputPath);
+            ParseArguments(args, out url, out absolute, out path, out outputPath);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -35,15 +33,15 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
 
             if (!String.IsNullOrEmpty(url) && String.IsNullOrEmpty(path))
             {
-                OutputHubsFromUrl(url, outputPath, minify, absolute);
+                OutputHubsFromUrl(url, outputPath, absolute);
             }
             else
             {
-                OutputHubs(path, url, outputPath, minify);
+                OutputHubs(path, url, outputPath);
             }
         }
 
-        private static void OutputHubs(string path, string url, string outputPath, bool minify)
+        private static void OutputHubs(string path, string url, string outputPath)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -70,12 +68,11 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
 
             var domain = AppDomain.CreateDomain("hubs", AppDomain.CurrentDomain.Evidence, setup);
 
-            var minifier = new Minifier();
-            var generator = (JavascriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
-                                                                                typeof(JavascriptGenerator).FullName);
+            var generator = (JavaScriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
+                                                                                typeof(JavaScriptGenerator).FullName);
             var js = generator.GenerateProxy(path, url);
 
-            Generate(outputPath, minify, minifier, js);
+            Generate(outputPath, js);
         }
 
         private static void Copy(string sourcePath, string destinationPath)
@@ -84,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
             File.Copy(sourcePath, target, overwrite: true);
         }
 
-        private static void OutputHubsFromUrl(string url, string outputPath, bool minify, bool absolute)
+        private static void OutputHubsFromUrl(string url, string outputPath, bool absolute)
         {
             string baseUrl = null;
             if (!url.EndsWith("/"))
@@ -105,7 +102,6 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
 
             var uri = new Uri(url);
 
-            var minifier = new Minifier();
             var wc = new WebClient();
             string js = wc.DownloadString(uri);
             if (absolute)
@@ -116,24 +112,16 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
                 });
             }
 
-            Generate(outputPath, minify, minifier, js);
+            Generate(outputPath, js);
         }
 
-        private static void Generate(string outputPath, bool minify, Minifier minifier, string js)
+        private static void Generate(string outputPath, string js)
         {
-            if (minify)
-            {
-                File.WriteAllText(outputPath, minifier.MinifyJavaScript(js));
-            }
-            else
-            {
-                File.WriteAllText(outputPath, js);
-            }
+            File.WriteAllText(outputPath, js);
         }
 
-        private static void ParseArguments(string[] args, out string url, out bool minify, out bool absolute, out string path, out string outputPath)
+        private static void ParseArguments(string[] args, out string url, out bool absolute, out string path, out string outputPath)
         {
-            minify = false;
             absolute = false;
             path = null;
             url = null;
@@ -149,9 +137,6 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
                 KeyValuePair<string, string> arg = ParseArg(a);
                 switch (arg.Key)
                 {
-                    case "minify":
-                        minify = true;
-                        break;
                     case "absolute":
                         absolute = true;
                         break;
@@ -184,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
             return new KeyValuePair<string, string>(arg.Trim(), null);
         }
 
-        public class JavascriptGenerator : MarshalByRefObject
+        public class JavaScriptGenerator : MarshalByRefObject
         {
             public string GenerateProxy(string path, string url)
             {
