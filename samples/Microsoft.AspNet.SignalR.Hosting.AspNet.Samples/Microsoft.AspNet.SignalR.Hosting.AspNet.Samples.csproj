@@ -249,6 +249,9 @@
   <ItemGroup>
     <Content Include="SignalR.Master" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\RegisterHubs.cs" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
