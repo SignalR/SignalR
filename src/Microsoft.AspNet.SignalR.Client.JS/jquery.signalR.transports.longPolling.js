@@ -34,7 +34,6 @@
 
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
-                    $(instance).triggerHandler(events.onSending);
 
                     var messageId = instance.messageId,
                         connect = (messageId === null),

@@ -27,8 +27,8 @@
         };
     }
 
-    function createHubProxies(instance, hubConnection) {
-        var key, hub, memberKey, memberValue, proxy;
+    function createHubProxies(instance) {
+        var key, hub, memberKey, memberValue;
 
         for (key in instance) {
             if (instance.hasOwnProperty(key)) {
@@ -59,7 +59,20 @@
 
     signalR.hub = $.hubConnection("/signalr", { useDefaultPath: false })
         .starting(function () {
-            createHubProxies(signalR, this);
+            // Subscribe and create the hub proxies
+            createHubProxies(signalR);
+
+            // Set the connection's data object with all the hub proxies with active subscriptions.
+            // These proxies will receive notifications from the server.
+            var subscribedHubs = [];
+
+            $.each(this.proxies, function (key) {
+                if (this.hasSubscriptions()) {
+                    subscribedHubs.push({ name: key });
+                }
+            });
+
+            this.data = window.JSON.stringify(subscribedHubs);
         });
 
     signalR.adminAuthHub = signalR.hub.createHubProxy('adminAuthHub'); 
