@@ -46,9 +46,6 @@
                     url = connection.wsProtocol + connection.host;
                 }
 
-                // Build the url
-                $(connection).triggerHandler(events.onSending);
-
                 url += transportLogic.getUrl(connection, this.name, reconnecting);
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");

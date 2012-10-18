@@ -41,8 +41,6 @@
                 return;
             }
 
-            $connection.triggerHandler(events.onSending);
-
             url = transportLogic.getUrl(connection, this.name, reconnecting);
 
             try {
