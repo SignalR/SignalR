@@ -202,21 +202,6 @@
         // Object to store hub proxies for this connection
         connection.proxies = {};
 
-        // Wire up the sending handler
-        connection.sending(function () {
-            // Set the connection's data object with all the hub proxies with active subscriptions.
-            // These proxies will receive notifications from the server.
-            var subscribedHubs = [];
-
-            $.each(this.proxies, function (key) {
-                if (this.hasSubscriptions()) {
-                    subscribedHubs.push({ name: key });
-                }
-            });
-
-            this.data = window.JSON.stringify(subscribedHubs);
-        });
-
         // Wire up the received handler
         connection.received(function (data) {
             var proxy, dataCallbackId, callback, hubName, eventName;
