@@ -155,7 +155,7 @@
                     jsonp: false
                 },
                 initialize,
-                deferred = connection.deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
+                deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
                 parser = window.document.createElement("a");
 
             if ($.type(options) === "function") {
@@ -172,7 +172,7 @@
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
                 _pageWindow.load(function () {
-                    connection.deferral = deferred;
+                    connection._deferral = deferred;
                     connection.start(options, callback);
                 });
                 return deferred.promise();
@@ -510,7 +510,7 @@
 
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;
-                delete connection.deferral;
+                delete connection._deferral;
             }
             finally {
                 changeState(connection, connection.state, signalR.connectionState.disconnected);
