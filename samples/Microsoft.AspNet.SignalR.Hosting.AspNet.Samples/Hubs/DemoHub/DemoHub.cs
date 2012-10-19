@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
 #endif
 
 #if NET45
-        public async Task<int> GenericTaskWithContinueWith() 
+        public async Task<int> GenericTaskWithContinueWith()
         {
             return await Task.Run(() => 2 + 2).ContinueWith(task => task.Result);
         }

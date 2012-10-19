@@ -567,7 +567,7 @@
             }
             else {
                 keepAliveData.userNotified = false;
-            }            
+            }
         }
 
         // Verify we're monitoring the keep alive
@@ -733,7 +733,7 @@
 
                 // Initialize the keep alive time stamp ping
                 that.updateKeepAlive(connection);
-                
+
                 // Save the function so we can unbind it on stop
                 connection.keepAliveData.reconnectKeepAliveUpdate = function () {
                     that.updateKeepAlive(connection);
@@ -795,7 +795,7 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
-        
+
         attemptingReconnect: false,
 
         currentSocketID: 0,
@@ -1762,7 +1762,7 @@
         }
     };
 
-    hubConnection.fn.createProxy = function (hubName) {
+    hubConnection.fn.createHubProxy = function (hubName) {
         /// <summary>
         ///     Creates a new proxy object for the given hub connection that can be used to invoke
         ///     methods on server hubs and handle client method invocation requests from the server.
