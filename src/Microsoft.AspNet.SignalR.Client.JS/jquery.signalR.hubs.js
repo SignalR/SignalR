@@ -164,7 +164,6 @@
 
     hubProxy.fn.init.prototype = hubProxy.fn;
 
-
     // hubConnection
     function hubConnection(url, options) {
         /// <summary>Creates a new hub connection.</summary>
@@ -201,21 +200,6 @@
 
         // Object to store hub proxies for this connection
         connection.proxies = {};
-
-        // Wire up the sending handler
-        connection.sending(function () {
-            // Set the connection's data object with all the hub proxies with active subscriptions.
-            // These proxies will receive notifications from the server.
-            var subscribedHubs = [];
-
-            $.each(this.proxies, function (key) {
-                if (this.hasSubscriptions()) {
-                    subscribedHubs.push({ name: key });
-                }
-            });
-
-            this.data = window.JSON.stringify(subscribedHubs);
-        });
 
         // Wire up the received handler
         connection.received(function (data) {
@@ -254,6 +238,30 @@
         });
     };
 
+    hubConnection.fn.registerSubscribeToHubs = function () {
+        /// <summary>
+        ///     Sets the starting event to loop through the known hubs and register any new hubs 
+        ///     that have been added to the proxy.
+        /// </summary>
+
+        if (!this._subscribedToHubs) {
+            this._subscribedToHubs = true;
+            this.starting(function () {
+                // Set the connection's data object with all the hub proxies with active subscriptions.
+                // These proxies will receive notifications from the server.
+                var subscribedHubs = [];
+
+                $.each(this.proxies, function (key) {
+                    if (this.hasSubscriptions()) {
+                        subscribedHubs.push({ name: key });
+                    }
+                });
+
+                this.data = window.JSON.stringify(subscribedHubs);
+            });
+        }
+    };
+
     hubConnection.fn.createHubProxy = function (hubName) {
         /// <summary>
         ///     Creates a new proxy object for the given hub connection that can be used to invoke
@@ -271,6 +279,9 @@
             proxy = hubProxy(this, hubName);
             this.proxies[hubName] = proxy;
         }
+
+        this.registerSubscribeToHubs();
+
         return proxy;
     };
 

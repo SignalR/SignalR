@@ -32,7 +32,6 @@
                 return;
             }
 
-            $(connection).triggerHandler(events.onSending);
 
             // Build the url
             url = transportLogic.getUrl(connection, this.name);
