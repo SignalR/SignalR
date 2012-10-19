@@ -80,7 +80,7 @@
             data.coords.Y = args.offsetY;
 
             if (args.which == 1) {
-                $this.drawingpad('line', {
+                var line =  {
                     From: {
                         X: data.lastCoords.X,
                         Y: data.lastCoords.Y
@@ -89,7 +89,9 @@
                         Y: data.coords.Y
                     },
                     Color: settings.linecolor
-                });
+                };
+                $this.drawingpad('line', line);
+                $this.triggerHandler('line.drawingpad', line);
             }
 
             data.lastCoords.X = data.coords.X;
@@ -126,7 +128,6 @@
                 x2: data.To.X,
                 y2: data.To.Y
             });
-            $this.trigger('line.drawingpad', data);
         }
     };
 
