@@ -38,7 +38,7 @@
             }
             else {
                 keepAliveData.userNotified = false;
-            }            
+            }
         }
 
         // Verify we're monitoring the keep alive
@@ -204,7 +204,7 @@
 
                 // Initialize the keep alive time stamp ping
                 that.updateKeepAlive(connection);
-                
+
                 // Save the function so we can unbind it on stop
                 connection.keepAliveData.reconnectKeepAliveUpdate = function () {
                     that.updateKeepAlive(connection);
