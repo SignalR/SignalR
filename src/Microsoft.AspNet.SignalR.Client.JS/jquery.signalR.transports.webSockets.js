@@ -15,7 +15,7 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
-        
+
         attemptingReconnect: false,
 
         currentSocketID: 0,

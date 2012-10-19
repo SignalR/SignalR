@@ -361,15 +361,6 @@
     signalR.StatusHub = signalR.hub.createHubProxy('StatusHub'); 
     signalR.StatusHub.client = { };
     signalR.StatusHub.server = {
-        getMessage: function () {
-            /// <summary>Calls the getMessage method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.StatusHub.invoke.apply(signalR.StatusHub, $.merge(["getMessage"], $.makeArray(arguments)));
-         },
-
-        getMessage2: function () {
-            /// <summary>Calls the getMessage2 method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.StatusHub.invoke.apply(signalR.StatusHub, $.merge(["getMessage2"], $.makeArray(arguments)));
-         }
     };
 
     signalR.userAndRoleAuthHub = signalR.hub.createHubProxy('userAndRoleAuthHub'); 
