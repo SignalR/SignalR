@@ -43,7 +43,7 @@
                 for (memberKey in hub.client) {
                     if (hub.client.hasOwnProperty(memberKey)) {
                         memberValue = hub.client[memberKey];
-                        
+
                         if (!$.isFunction(memberValue)) {
                             // Not a client hub function
                             continue;
@@ -60,19 +60,9 @@
     signalR.hub = $.hubConnection("{serviceUrl}", { useDefaultPath: false })
         .starting(function () {
             // Subscribe and create the hub proxies
-            createHubProxies(signalR);
+            createHubProxies(signalR, this);
 
-            // Set the connection's data object with all the hub proxies with active subscriptions.
-            // These proxies will receive notifications from the server.
-            var subscribedHubs = [];
-
-            $.each(this.proxies, function (key) {
-                if (this.hasSubscriptions()) {
-                    subscribedHubs.push({ name: key });
-                }
-            });
-
-            this.data = window.JSON.stringify(subscribedHubs);
+            this.registerSubscribeToHubs();
         });
 
     /*hubs*/

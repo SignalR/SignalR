@@ -43,7 +43,7 @@
                 for (memberKey in hub.client) {
                     if (hub.client.hasOwnProperty(memberKey)) {
                         memberValue = hub.client[memberKey];
-                        
+
                         if (!$.isFunction(memberValue)) {
                             // Not a client hub function
                             continue;
@@ -60,19 +60,9 @@
     signalR.hub = $.hubConnection("/signalr", { useDefaultPath: false })
         .starting(function () {
             // Subscribe and create the hub proxies
-            createHubProxies(signalR);
+            createHubProxies(signalR, this);
 
-            // Set the connection's data object with all the hub proxies with active subscriptions.
-            // These proxies will receive notifications from the server.
-            var subscribedHubs = [];
-
-            $.each(this.proxies, function (key) {
-                if (this.hasSubscriptions()) {
-                    subscribedHubs.push({ name: key });
-                }
-            });
-
-            this.data = window.JSON.stringify(subscribedHubs);
+            this.registerSubscribeToHubs();
         });
 
     signalR.adminAuthHub = signalR.hub.createHubProxy('adminAuthHub'); 
@@ -371,6 +361,15 @@
     signalR.StatusHub = signalR.hub.createHubProxy('StatusHub'); 
     signalR.StatusHub.client = { };
     signalR.StatusHub.server = {
+        getMessage: function () {
+            /// <summary>Calls the getMessage method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.StatusHub.invoke.apply(signalR.StatusHub, $.merge(["getMessage"], $.makeArray(arguments)));
+         },
+
+        getMessage2: function () {
+            /// <summary>Calls the getMessage2 method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.StatusHub.invoke.apply(signalR.StatusHub, $.merge(["getMessage2"], $.makeArray(arguments)));
+         }
     };
 
     signalR.userAndRoleAuthHub = signalR.hub.createHubProxy('userAndRoleAuthHub'); 
