@@ -1,4 +1,6 @@
-﻿/*global window:false */
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+/*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
 (function ($, window) {

@@ -1,4 +1,4 @@
-/*global window:false */
+﻿/*global window:false */
 /*!
  * ASP.NET SignalR JavaScript Library v1.0.0
  * http://signalr.net/
