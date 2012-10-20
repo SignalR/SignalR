@@ -920,25 +920,28 @@
 
         reconnect: function (connection) {
             var that = this;
-            if (!that.attemptingReconnect) {
-                that.attemptingReconnect = true;
+
+            if (connection.state !== signalR.connectionState.disconnected) {
+                if (!that.attemptingReconnect) {
+                    that.attemptingReconnect = true;
+                }
+
+                window.setTimeout(function () {
+                    if (that.attemptingReconnect) {
+                        that.stop(connection);
+                    }
+
+                    if (connection.state === signalR.connectionState.reconnecting ||
+                        changeState(connection,
+                                    signalR.connectionState.connected,
+                                    signalR.connectionState.reconnecting) === true) {
+
+                        connection.log("Websocket reconnecting");
+                        that.start(connection);
+                    }
+                },
+                connection.reconnectDelay);
             }
-
-            window.setTimeout(function () {
-                if (that.attemptingReconnect) {
-                    that.stop(connection);
-                }
-
-                if (connection.state === signalR.connectionState.reconnecting ||
-                    changeState(connection,
-                                signalR.connectionState.connected,
-                                signalR.connectionState.reconnecting) === true) {
-
-                    connection.log("Websocket reconnecting");
-                    that.start(connection);
-                }
-            },
-            connection.reconnectDelay);
         },
 
         lostConnection: function (connection) {
