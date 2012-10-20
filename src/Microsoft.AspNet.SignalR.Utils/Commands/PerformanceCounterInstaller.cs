@@ -3,19 +3,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using SignalRPerfCounterManager = Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Utils
 {
-    /// <summary>
-    /// Manages installation of performance counters for SignalR applications.
-    /// </summary>
-    public class PerformanceCounterInstaller
+    internal class PerformanceCounterInstaller
     {
-        /// <summary>
-        /// Installs SignalR performance counters.
-        /// </summary>
         public IList<string> InstallCounters()
         {
             // Delete any existing counters
@@ -39,9 +32,6 @@ namespace Microsoft.AspNet.SignalR
             return counterCreationData.Select(c => c.CounterName).ToList();
         }
 
-        /// <summary>
-        /// Uninstalls SignalR performance counters.
-        /// </summary>
         public void UninstallCounters()
         {
             if (PerformanceCounterCategory.Exists(SignalRPerfCounterManager.CategoryName))

@@ -18,9 +18,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Stress", "src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj", "{758D93C8-7985-4F55-82DA-8BA5198CF4EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet", "src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7} = {12609D9C-B4C9-4553-B364-D2C297F85CE7}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.Self", "src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj", "{A2BD866D-906A-4742-AB3B-DB8740830400}"
 EndProject
@@ -34,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7E3D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet.Samples", "samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
 	ProjectSection(ProjectDependencies) = postProject
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7} = {12609D9C-B4C9-4553-B364-D2C297F85CE7}
+		{990B347D-F5BF-4F94-9967-D98D24ACEA43} = {990B347D-F5BF-4F94-9967-D98D24ACEA43}
 		{69771AF9-1BEE-48E6-98BC-78864231E239} = {69771AF9-1BEE-48E6-98BC-78864231E239}
 	EndProjectSection
 EndProject
@@ -47,8 +44,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{08B794
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ProxyGenerator", "src\Microsoft.AspNet.SignalR.ProxyGenerator\Microsoft.AspNet.SignalR.ProxyGenerator.csproj", "{12609D9C-B4C9-4553-B364-D2C297F85CE7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Net35", "src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj", "{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}"
 EndProject
@@ -70,7 +65,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Ho
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ServiceBus", "src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj", "{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Server.Installer", "src\Microsoft.AspNet.SignalR.Server.Installer\Microsoft.AspNet.SignalR.Server.Installer.csproj", "{990B347D-F5BF-4F94-9967-D98D24ACEA43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Utils", "src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj", "{990B347D-F5BF-4F94-9967-D98D24ACEA43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -192,16 +187,6 @@ Global
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Release|Mixed Platforms.Build.0 = Release|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Release|x86.ActiveCfg = Release|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Release|x86.Build.0 = Release|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|x86.ActiveCfg = Debug|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Debug|x86.Build.0 = Debug|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|Any CPU.ActiveCfg = Release|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|Mixed Platforms.Build.0 = Release|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|x86.ActiveCfg = Release|x86
-		{12609D9C-B4C9-4553-B364-D2C297F85CE7}.Release|x86.Build.0 = Release|x86
 		{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42DE29B3-67CA-4003-A4F6-CA4F21C8991C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

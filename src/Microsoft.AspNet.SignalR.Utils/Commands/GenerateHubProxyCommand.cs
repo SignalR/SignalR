@@ -8,11 +8,32 @@ using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNet.SignalR.ProxyGenerator
+namespace Microsoft.AspNet.SignalR.Utils
 {
-    class Program
+    internal class GenerateHubProxyCommand : Command
     {
-        static void Main(string[] args)
+        public GenerateHubProxyCommand(Action<string> info, Action<string> success, Action<string> warning, Action<string> error)
+            : base(info, success, warning, error)
+        {
+
+        }
+
+        public override string DisplayName
+        {
+            get { return "Generate Hub Proxy"; }
+        }
+
+        public override string Help
+        {
+            get { return "Generates Hub proxy JavaScript files for server Hub classes."; }
+        }
+
+        public override string[] Names
+        {
+            get { return new[] { "ghp" }; }
+        }
+
+        public override void Execute(string[] args)
         {
             bool absolute = false;
             string path = null;
@@ -43,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
             }
         }
 
-        private static void OutputHubs(string path, string url, string outputPath)
+        private void OutputHubs(string path, string url, string outputPath)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -51,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.ProxyGenerator
             var assemblies = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories);
             var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            Console.WriteLine("Creating temp directory {0}", tempPath);
+            Info(String.Format("Creating temp directory {0}", tempPath));
 
             Directory.CreateDirectory(tempPath);
 
