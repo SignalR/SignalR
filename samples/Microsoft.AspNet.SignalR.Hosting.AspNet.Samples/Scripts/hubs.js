@@ -62,7 +62,7 @@
             // Subscribe and create the hub proxies
             createHubProxies(signalR, this);
 
-            this.registerSubscribeToHubs();
+            this._registerSubscribeToHubs();
         });
 
     signalR.adminAuthHub = signalR.hub.createHubProxy('adminAuthHub'); 
