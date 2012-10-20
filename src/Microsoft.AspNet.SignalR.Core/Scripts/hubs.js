@@ -62,7 +62,7 @@
             // Subscribe and create the hub proxies
             createHubProxies(signalR, this);
 
-            this._registerSubscribeToHubs();
+            this._registerSubscribedHubs();
         });
 
     /*hubs*/

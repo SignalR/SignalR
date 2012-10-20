@@ -240,7 +240,7 @@
         });
     };
 
-    hubConnection.fn._registerSubscribeToHubs = function () {
+    hubConnection.fn._registerSubscribedHubs = function () {
         /// <summary>
         ///     Sets the starting event to loop through the known hubs and register any new hubs 
         ///     that have been added to the proxy.
@@ -282,7 +282,7 @@
             this.proxies[hubName] = proxy;
         }
 
-        this._registerSubscribeToHubs();
+        this._registerSubscribedHubs();
 
         return proxy;
     };
