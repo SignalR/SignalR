@@ -3,8 +3,8 @@
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyCompany("David Fowler, Damian Edwards")]
-[assembly: AssemblyCopyright("Copyright © David Fowler and Damian Edwards 2012")]
+[assembly: AssemblyCompany("Microsoft Open Technologies, Inc.")]
+[assembly: AssemblyCopyright("© Microsoft Open Technologies, Inc. All rights reserved.")]
 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

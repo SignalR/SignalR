@@ -1,9 +1,9 @@
 /*!
- * SignalR JavaScript Library v1.0.0
+ * ASP.NET SignalR JavaScript Library v1.0.0
  * http://signalr.net/
  *
- * Copyright David Fowler and Damian Edwards 2012
- * Licensed under the MIT.
+ * Copyright Microsoft Open Technologies, Inc. All rights reserved.
+ * Licensed under the Apache 2.0
  * https://github.com/SignalR/SignalR/blob/master/LICENSE.md
  *
  */
