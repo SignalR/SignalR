@@ -8,38 +8,48 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     internal class HubContext : IHubContext
     {
-        private Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
-        private readonly string _hubName;
-        private readonly IConnection _connection;
-
         public HubContext(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName, IConnection connection)
         {
-            _send = send;
-            _hubName = hubName;
-            _connection = connection;
-
-            Clients = new ClientProxy(send, hubName);
-            Groups = new GroupManager(connection, _hubName);
+            Clients = new ExternalHubConnectionContext(send, hubName);
+            Groups = new GroupManager(connection, hubName);
         }
 
-        public dynamic Clients { get; private set; }
+        public IHubConnectionContext Clients { get; private set; }
 
         public IGroupManager Groups { get; private set; }
 
-        public dynamic Group(string groupName, params string[] exclude)
+        private class ExternalHubConnectionContext : IHubConnectionContext
         {
-            return new SignalProxy(_send, groupName, _hubName, exclude);
-        }
+            private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
+            private readonly string _hubName;
 
-        public dynamic Client(string connectionId)
-        {
-            return new SignalProxy(_send, connectionId, _hubName);
-        }
+            public ExternalHubConnectionContext(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName)
+            {
+                _send = send;
+                _hubName = hubName;
+                All = AllExcept();
+            }
 
-        public dynamic AllExcept(params string[] exclude)
-        {
-            // REVIEW: Should this method be params array?
-            return new ClientProxy(_send, _hubName, exclude);
+            public dynamic All
+            {
+                get;
+                set;
+            }
+
+            public dynamic AllExcept(params string[] exclude)
+            {
+                return new ClientProxy(_send, _hubName, exclude);
+            }
+
+            public dynamic Group(string groupName, params string[] exclude)
+            {
+                return new SignalProxy(_send, groupName, _hubName, exclude);
+            }
+
+            public dynamic Client(string connectionId)
+            {
+                return new SignalProxy(_send, connectionId, _hubName);
+            }
         }
     }
 }

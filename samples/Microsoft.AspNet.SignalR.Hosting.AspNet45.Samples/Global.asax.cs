@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples
                     try
                     {
                         context.Connection.Broadcast(DateTime.Now.ToString());
-                        hubContext.Clients.fromArbitraryCode(DateTime.Now.ToString());
+                        hubContext.Clients.All.fromArbitraryCode(DateTime.Now.ToString());
                     }
                     catch (Exception ex)
                     {

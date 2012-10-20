@@ -10,35 +10,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public interface IHubContext
     {
         /// <summary>
-        /// Gets a dynamic object that represents all clients connected to the hub.
+        /// Encapsulates all information about a SignalR connection for an <see cref="IHub"/>.
         /// </summary>
-        dynamic Clients { get; }
+        IHubConnectionContext Clients { get; }
 
         /// <summary>
         /// Gets the <see cref="IGroupManager"/> the hub.
         /// </summary>
         IGroupManager Groups { get; }
-
-        /// <summary>
-        /// Returns a dynamic representation of the specified group.
-        /// </summary>
-        /// <param name="groupName">The name of the group</param>
-        /// <param name="exclude">A list of connection ids to exclude.</param>
-        /// <returns>A dynamic representation of the specified group.</returns>
-        dynamic Group(string groupName, params string[] exclude);
-
-        /// <summary>
-        /// Returns a dynamic representation of the connection with the specified connectionid.
-        /// </summary>
-        /// <param name="connectionId">The connection id</param>
-        /// <returns>A dynamic representation of the connection with the specified connectionid.</returns>
-        dynamic Client(string connectionId);
-
-        /// <summary>
-        /// Returns a dynamic representation of all clients except the calling client ones specified.
-        /// </summary>
-        /// <param name="exclude">A list of connection ids to exclude.</param>
-        /// <returns>A dynamic representation of all clients except the calling client ones specified.</returns>
-        dynamic AllExcept(params string[] exclude);
     }
 }

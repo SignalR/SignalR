@@ -754,7 +754,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             hub1.On("send", wh1.Set);
 
             hubContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
-            hubContext.Group("Foo").send();
+            hubContext.Clients.Group("Foo").send();
 
             Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
 
@@ -777,7 +777,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             hub1.On("send", wh1.Set);
 
-            hubContext.Client(connection1.ConnectionId).send();
+            hubContext.Clients.Client(connection1.ConnectionId).send();
 
             Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
 
@@ -785,7 +785,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void SendToSpecificAllFromOutsideOfHub()
+        public void SendToAllFromOutsideOfHub()
         {
             var host = new MemoryHost();
             host.MapHubs();
@@ -805,7 +805,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             hub1.On("send", wh1.Set);
             hub2.On("send", wh2.Set);
 
-            hubContext.Clients.send();
+            hubContext.Clients.All.send();
 
             Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
             Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
