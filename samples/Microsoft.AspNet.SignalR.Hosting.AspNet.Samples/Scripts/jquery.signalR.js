@@ -545,6 +545,8 @@
 
 }(window.jQuery, window));
 /* jquery.signalR.transports.common.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 
@@ -798,6 +800,8 @@
 
 }(window.jQuery, window));
 /* jquery.signalR.transports.webSockets.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
@@ -964,6 +968,8 @@
 
 }(window.jQuery, window));
 /* jquery.signalR.transports.serverSentEvents.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
@@ -1167,6 +1173,8 @@
 
 }(window.jQuery, window));
 /* jquery.signalR.transports.foreverFrame.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
@@ -1336,6 +1344,8 @@
 
 }(window.jQuery, window));
 /* jquery.signalR.transports.longPolling.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
@@ -1526,6 +1536,8 @@
 
 }(window.jQuery, window));
 /* jquery.signalR.hubs.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 
