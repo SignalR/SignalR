@@ -1,4 +1,4 @@
-﻿<%@ Page Title="SignalR Samples" Language="C#" MasterPageFile="~/SignalR.Samples.master" AutoEventWireup="true"
+﻿<%@ Page Title="SignalR Samples" Language="C#" MasterPageFile="~/SignalR.master" AutoEventWireup="true"
     CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples._Default" %>
 
 <asp:Content ID="HeaderContent" runat="server" ContentPlaceHolderID="HeadContent">
