@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNet.SignalR.Hubs;
+﻿using System;
+using System.Linq;
+using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
@@ -29,6 +31,23 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.NotNull(hub);
             Assert.Equal(hub.Name, "NameFromAttribute");
             Assert.Equal(hub.NameSpecified, true);
+        }
+
+        [Fact]
+        public void ShouldResolveHubhWithCustomAttributes()
+        {
+            var resolver = new DefaultDependencyResolver();
+            var hubResolver = new ReflectedHubDescriptorProvider(resolver);
+            HubDescriptor hub;
+
+            Assert.True(hubResolver.TryGetHub("HubWithAttributes", out hub));
+            Assert.NotNull(hub);
+            Assert.NotEmpty(hub.Attributes);
+
+            var attr = hub.Attributes.FirstOrDefault();
+
+            Assert.NotNull(attr);
+            Assert.True(attr.GetType() == typeof(HubAttribute));
         }
 
         [Fact]
@@ -85,6 +104,16 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class HubWithoutAttribute : Hub
         {
+        }
+
+        [HubAttribute]
+        public class HubWithAttributes : Hub
+        {
+            
+        }
+
+        public class HubAttribute : Attribute
+        {   
         }
     }
 }

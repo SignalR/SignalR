@@ -47,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                 {
                                     NameSpecified = (type.GetHubAttributeName() != null),
                                     Name = type.GetHubName(),
+                                    Attributes = type.GetCustomAttributes(typeof(Attribute), inherit: true).Cast<Attribute>(),
                                     Type = type
                                 })
                 .ToDictionary(hub => hub.Name,
