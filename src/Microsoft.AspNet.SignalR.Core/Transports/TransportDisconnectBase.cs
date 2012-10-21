@@ -18,24 +18,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly IJsonSerializer _jsonSerializer;
         private TextWriter _outputWriter;
 
-        protected int _isDisconnected;
+        private int _isDisconnected;
+        private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private string _connectionId;
         private int _ended;
-
-        // Token that represents a timeout
-        private CancellationTokenSource _timeoutTokenSource;
-
+ 
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
         private CancellationTokenSource _connectionEndTokenSource;
-
-        // Token that represents an explocit call to End()
-        private CancellationTokenSource _endTokenSource;
-
-        // Token that represents a call to disconnect
-        private CancellationTokenSource _disconnectedTokenSource;
 
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
@@ -116,19 +108,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected bool IsDisconnected
-        {
-            get
-            {
-                return _isDisconnected == 1;
-            }
-        }
-
         public bool IsTimedOut
         {
             get
             {
-                return _timeoutTokenSource.IsCancellationRequested;
+                return _timedOut == 1;
             }
         }
 
@@ -173,9 +157,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             HeartBeat.RemoveConnection(this);
 
-            if (_disconnectedTokenSource != null)
+            if (_connectionEndTokenSource != null)
             {
-                _disconnectedTokenSource.Cancel();
+                _connectionEndTokenSource.Cancel();
             }
 
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
@@ -193,9 +177,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public void Timeout()
         {
-            if (_timeoutTokenSource != null)
+            if (Interlocked.Exchange(ref _timedOut, 1) == 0)
             {
-                _timeoutTokenSource.Cancel();
+                if (_connectionEndTokenSource != null)
+                {
+                    _connectionEndTokenSource.Cancel();
+                }
             }
         }
 
@@ -208,29 +195,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _ended, 1) == 0)
             {
-                if (_endTokenSource != null)
+                if (_connectionEndTokenSource != null)
                 {
-                    _endTokenSource.Cancel();
+                    _connectionEndTokenSource.Cancel();
                 }
 
                 if (_connectionEndTokenSource != null)
                 {
                     _connectionEndTokenSource.Dispose();
-                }
-
-                if (_timeoutTokenSource != null)
-                {
-                    _timeoutTokenSource.Dispose();
-                }
-
-                if (_disconnectedTokenSource != null)
-                {
-                    _disconnectedTokenSource.Dispose();
-                }
-
-                if (_endTokenSource != null)
-                {
-                    _endTokenSource.Dispose();
                 }
             }
         }
@@ -245,15 +217,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected void InitializePersistentState()
         {
-            _timeoutTokenSource = new CancellationTokenSource();
-            _endTokenSource = new CancellationTokenSource();
-            _disconnectedTokenSource = new CancellationTokenSource();
             _hostShutdownToken = _context.HostShutdownToken();
 
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_timeoutTokenSource.Token, _endTokenSource.Token, _disconnectedTokenSource.Token, _hostShutdownToken);
+            _connectionEndTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_hostShutdownToken);
             _connectionEndToken = _connectionEndTokenSource.Token;
         }
 
