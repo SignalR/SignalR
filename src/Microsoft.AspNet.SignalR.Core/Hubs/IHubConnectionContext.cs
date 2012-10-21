@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// </summary>
     public interface IHubConnectionContext
     {
-        dynamic All { get; set; }
+        dynamic All { get; }
         dynamic AllExcept(params string[] exclude);
         dynamic Client(string connectionId);
         dynamic Group(string groupName, params string[] exclude);

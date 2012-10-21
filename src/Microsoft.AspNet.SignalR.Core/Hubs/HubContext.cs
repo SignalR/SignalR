@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             public dynamic All
             {
                 get;
-                set;
+                private set;
             }
 
             public dynamic AllExcept(params string[] exclude)
