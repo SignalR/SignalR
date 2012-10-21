@@ -112,6 +112,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else
             {
+                InitializePersistentState();
+
                 if (IsConnectRequest)
                 {
                     if (Connected != null)
