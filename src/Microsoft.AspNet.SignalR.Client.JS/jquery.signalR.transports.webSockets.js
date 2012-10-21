@@ -15,7 +15,7 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
-        
+
         attemptingReconnect: false,
 
         currentSocketID: 0,
@@ -47,9 +47,6 @@
                 else {
                     url = connection.wsProtocol + connection.host;
                 }
-
-                // Build the url
-                $(connection).triggerHandler(events.onSending);
 
                 url += transportLogic.getUrl(connection, this.name, reconnecting);
 

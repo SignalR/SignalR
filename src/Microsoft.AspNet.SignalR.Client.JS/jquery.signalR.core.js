@@ -31,7 +31,6 @@
         events = {
             onStart: "onStart",
             onStarting: "onStarting",
-            onSending: "onSending",
             onReceived: "onReceived",
             onError: "onError",
             onConnectionSlow: "onConnectionSlow",
@@ -364,18 +363,13 @@
         },
 
         starting: function (callback) {
-            /// <summary>Adds a callback that will be invoked before the connection is started</summary>
-            /// <param name="callback" type="Function">A callback function to execute when the connection is starting</param>
+            /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
+            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
             /// <returns type="signalR" />
-            var connection = this,
-                $connection = $(connection);
-
-            $connection.bind(events.onStarting, function (e, data) {
+            var connection = this;
+            $(connection).bind(events.onStarting, function (e, data) {
                 callback.call(connection);
-                // Unbind immediately, we don't want to call this callback again
-                $connection.unbind(events.onStarting);
             });
-
             return connection;
         },
 
@@ -397,17 +391,6 @@
 
             connection.transport.send(connection, data);
             // REVIEW: Should we return deferred here?
-            return connection;
-        },
-
-        sending: function (callback) {
-            /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
-            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
-            /// <returns type="signalR" />
-            var connection = this;
-            $(connection).bind(events.onSending, function (e, data) {
-                callback.call(connection);
-            });
             return connection;
         },
 

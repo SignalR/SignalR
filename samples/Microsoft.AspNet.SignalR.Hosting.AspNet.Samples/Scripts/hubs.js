@@ -27,8 +27,8 @@
         };
     }
 
-    function createHubProxies(instance, hubConnection) {
-        var key, hub, memberKey, memberValue, proxy;
+    function createHubProxies(instance) {
+        var key, hub, memberKey, memberValue;
 
         for (key in instance) {
             if (instance.hasOwnProperty(key)) {
@@ -43,7 +43,7 @@
                 for (memberKey in hub.client) {
                     if (hub.client.hasOwnProperty(memberKey)) {
                         memberValue = hub.client[memberKey];
-                        
+
                         if (!$.isFunction(memberValue)) {
                             // Not a client hub function
                             continue;
@@ -59,7 +59,10 @@
 
     signalR.hub = $.hubConnection("/signalr", { useDefaultPath: false })
         .starting(function () {
+            // Subscribe and create the hub proxies
             createHubProxies(signalR, this);
+
+            this._registerSubscribedHubs();
         });
 
     signalR.adminAuthHub = signalR.hub.createHubProxy('adminAuthHub'); 

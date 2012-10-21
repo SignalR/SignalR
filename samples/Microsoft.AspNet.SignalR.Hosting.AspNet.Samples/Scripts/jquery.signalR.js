@@ -32,7 +32,6 @@
         events = {
             onStart: "onStart",
             onStarting: "onStarting",
-            onSending: "onSending",
             onReceived: "onReceived",
             onError: "onError",
             onConnectionSlow: "onConnectionSlow",
@@ -365,18 +364,13 @@
         },
 
         starting: function (callback) {
-            /// <summary>Adds a callback that will be invoked before the connection is started</summary>
-            /// <param name="callback" type="Function">A callback function to execute when the connection is starting</param>
+            /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
+            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
             /// <returns type="signalR" />
-            var connection = this,
-                $connection = $(connection);
-
-            $connection.bind(events.onStarting, function (e, data) {
+            var connection = this;
+            $(connection).bind(events.onStarting, function (e, data) {
                 callback.call(connection);
-                // Unbind immediately, we don't want to call this callback again
-                $connection.unbind(events.onStarting);
             });
-
             return connection;
         },
 
@@ -398,17 +392,6 @@
 
             connection.transport.send(connection, data);
             // REVIEW: Should we return deferred here?
-            return connection;
-        },
-
-        sending: function (callback) {
-            /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
-            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
-            /// <returns type="signalR" />
-            var connection = this;
-            $(connection).bind(events.onSending, function (e, data) {
-                callback.call(connection);
-            });
             return connection;
         },
 
@@ -587,7 +570,7 @@
             }
             else {
                 keepAliveData.userNotified = false;
-            }            
+            }
         }
 
         // Verify we're monitoring the keep alive
@@ -753,7 +736,7 @@
 
                 // Initialize the keep alive time stamp ping
                 that.updateKeepAlive(connection);
-                
+
                 // Save the function so we can unbind it on stop
                 connection.keepAliveData.reconnectKeepAliveUpdate = function () {
                     that.updateKeepAlive(connection);
@@ -817,7 +800,7 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
-        
+
         attemptingReconnect: false,
 
         currentSocketID: 0,
@@ -849,9 +832,6 @@
                 else {
                     url = connection.wsProtocol + connection.host;
                 }
-
-                // Build the url
-                $(connection).triggerHandler(events.onSending);
 
                 url += transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -1012,8 +992,6 @@
                 }
                 return;
             }
-
-            $connection.triggerHandler(events.onSending);
 
             url = transportLogic.getUrl(connection, this.name, reconnecting);
 
@@ -1209,7 +1187,6 @@
                 return;
             }
 
-            $(connection).triggerHandler(events.onSending);
 
             // Build the url
             url = transportLogic.getUrl(connection, this.name);
@@ -1380,7 +1357,6 @@
 
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
-                    $(instance).triggerHandler(events.onSending);
 
                     var messageId = instance.messageId,
                         connect = (messageId === null),
@@ -1704,7 +1680,6 @@
 
     hubProxy.fn.init.prototype = hubProxy.fn;
 
-
     // hubConnection
     function hubConnection(url, options) {
         /// <summary>Creates a new hub connection.</summary>
@@ -1741,21 +1716,6 @@
 
         // Object to store hub proxies for this connection
         connection.proxies = {};
-
-        // Wire up the sending handler
-        connection.sending(function () {
-            // Set the connection's data object with all the hub proxies with active subscriptions.
-            // These proxies will receive notifications from the server.
-            var subscribedHubs = [];
-
-            $.each(this.proxies, function (key) {
-                if (this.hasSubscriptions()) {
-                    subscribedHubs.push({ name: key });
-                }
-            });
-
-            this.data = window.JSON.stringify(subscribedHubs);
-        });
 
         // Wire up the received handler
         connection.received(function (data) {
@@ -1794,6 +1754,30 @@
         });
     };
 
+    hubConnection.fn._registerSubscribedHubs = function () {
+        /// <summary>
+        ///     Sets the starting event to loop through the known hubs and register any new hubs 
+        ///     that have been added to the proxy.
+        /// </summary>
+
+        if (!this._subscribedToHubs) {
+            this._subscribedToHubs = true;
+            this.starting(function () {
+                // Set the connection's data object with all the hub proxies with active subscriptions.
+                // These proxies will receive notifications from the server.
+                var subscribedHubs = [];
+
+                $.each(this.proxies, function (key) {
+                    if (this.hasSubscriptions()) {
+                        subscribedHubs.push({ name: key });
+                    }
+                });
+
+                this.data = window.JSON.stringify(subscribedHubs);
+            });
+        }
+    };
+
     hubConnection.fn.createHubProxy = function (hubName) {
         /// <summary>
         ///     Creates a new proxy object for the given hub connection that can be used to invoke
@@ -1811,6 +1795,9 @@
             proxy = hubProxy(this, hubName);
             this.proxies[hubName] = proxy;
         }
+
+        this._registerSubscribedHubs();
+
         return proxy;
     };
 
