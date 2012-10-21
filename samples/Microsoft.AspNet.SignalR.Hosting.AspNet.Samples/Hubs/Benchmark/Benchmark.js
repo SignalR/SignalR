@@ -10,8 +10,8 @@ $(function () {
     };
 
     var bench = $.connection.hubBench,
-                countOne = 0,
-                countAll = 0;
+        countOne = 0,
+        countAll = 0;
 
     bench.client.stepOne = function (ndx) {
         delete idSet[ndx + ""];
@@ -30,7 +30,6 @@ $(function () {
         else {
             $("#hitme").trigger('click');
         }
-
     };
 
     bench.client.stepAll = function (ndx) {

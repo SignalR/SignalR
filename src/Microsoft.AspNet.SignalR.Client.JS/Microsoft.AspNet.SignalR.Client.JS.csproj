@@ -116,7 +116,7 @@
   <Target Name="AfterBuild">
     <!--<Exec Command="&quot;$(SolutionDir)tools\AjaxMin\AjaxMin.exe&quot; &quot;$(ProjectDir)Scripts\jquery.signalR.js&quot; -out &quot;$(ProjectDir)Scripts\jquery.signalR.min.js&quot; -clobber" LogStandardErrorAsError="true" Condition=" '$(OS)' == 'Windows_NT' " />-->
   </Target>
-  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
+  <PropertyGroup>
     <PostBuildEvent>cd $(ProjectDir)
 powershell -ExecutionPolicy Bypass $(ProjectDir)build.ps1</PostBuildEvent>
   </PropertyGroup>

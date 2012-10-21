@@ -309,6 +309,41 @@
          }
     };
 
+    signalR.realtime = signalR.hub.createHubProxy('realtime'); 
+    signalR.realtime.client = { };
+    signalR.realtime.server = {
+        isEngineRunning: function () {
+            /// <summary>Calls the IsEngineRunning method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["IsEngineRunning"], $.makeArray(arguments)));
+         },
+
+        start: function () {
+            /// <summary>Calls the Start method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["Start"], $.makeArray(arguments)));
+         },
+
+        stop: function () {
+            /// <summary>Calls the Stop method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["Stop"], $.makeArray(arguments)));
+         },
+
+        getInterval: function () {
+            /// <summary>Calls the GetInterval method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetInterval"], $.makeArray(arguments)));
+         },
+
+        setInterval: function (interval) {
+            /// <summary>Calls the SetInterval method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="interval" type="Number">Server side type is System.Int32</param>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["SetInterval"], $.makeArray(arguments)));
+         },
+
+        getTickId: function () {
+            /// <summary>Calls the GetTickId method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetTickId"], $.makeArray(arguments)));
+         }
+    };
+
     signalR.shapeShare = signalR.hub.createHubProxy('shapeShare'); 
     signalR.shapeShare.client = { };
     signalR.shapeShare.server = {

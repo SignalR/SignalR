@@ -1,0 +1,7 @@
+﻿body {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;    
+}
+
+#msgRate li:first-child {
+    font-weight: bold;
+}
