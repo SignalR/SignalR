@@ -263,7 +263,7 @@
                 }
 
                 transport.start(connection, function () { // success
-                    if (transport.supportsKeepAlive) {
+                    if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
                         signalR.transports._logic.monitorKeepAlive(connection);
                     }
 
@@ -311,6 +311,9 @@
                         // Convert to milliseconds
                         res.KeepAlive *= 1000;
 
+                        // Register the keep alive data as activated
+                        keepAliveData.activated = true;
+
                         // Timeout to designate when to force the connection into reconnecting
                         keepAliveData.timeout = res.KeepAlive * connection.keepAliveTimeoutCount;
 
@@ -319,6 +322,9 @@
 
                         // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
                         keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                    }
+                    else {
+                        keepAliveData.activated = false;
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
@@ -478,7 +484,7 @@
                         connection.transport.abort(connection, async);
                     }
 
-                    if (connection.transport.supportsKeepAlive) {
+                    if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
                         signalR.transports._logic.stopMonitoringKeepAlive(connection);
                     }
 

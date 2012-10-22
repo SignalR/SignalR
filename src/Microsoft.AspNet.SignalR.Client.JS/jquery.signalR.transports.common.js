@@ -158,7 +158,7 @@
 
                 // If our transport supports keep alive then we need to update the last keep alive time stamp.
                 // Very rarely the transport can be null.
-                if (connection.transport.supportsKeepAlive) {
+                if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
                     this.updateKeepAlive(connection);
                 }
 
