@@ -7,18 +7,19 @@ $(function () {
 
     var hub = $.connection.realtime,
         $state = $("#state"),
-        $interval = $("#interval"),
+        $fps = $("#fps"),
+        $serverFps = $("#serverFps"),
         $msgRate = $("#msgRate"),
         running = false,
-        interval = 1000 / 25,
-        tickId = -1,
+        fps = 25,
+        frameId = -1,
         msgCount = 0,
         time = new Date();
 
     function measure() {
         var $msgRates,
             msgRate,
-            expected = 1000 / interval,
+            expected = fps,
             diff = msgCount - expected,
             t = new Date() - time;
 
@@ -53,37 +54,41 @@ $(function () {
 
         engineStopped: function () {
             $state.html("Stopped");
-            tickId = 0;
+            frameId = 0;
             running = false;
         },
 
-        intervalChanged: function (newInterval) {
-            interval = newInterval;
-            $interval.val(newInterval);
+        fpsChanged: function (newFps) {
+            fps = newFps;
+            $fps.val(newFps);
         },
 
-        tick: function (id) {
+        serverFps: function (fps) {
+            $serverFps.val(fps);
+        },
+
+        frame: function (id) {
             var $msgRates = $msgRate.children("li");
-            if (tickId >= 0 && id !== tickId + 1) {
+            if (frameId >= 0 && id !== frameId + 1) {
                 if ($msgRates.length === 0) {
                     $msgRate.append("<li>Missed a message!</li>");
                 } else {
                     $msgRates.first().before("<li>Missed a message!</li>");
                 }
             }
-            tickId += 1;
+            frameId += 1;
             msgCount += 1;
         }
     });
 
     $.connection.hub.start().done(function () {
-        hub.server.getTickId().done(function (result) {
-            tickId = result;
+        hub.server.getFrameId().done(function (result) {
+            frameId = result;
         });
         hub.server.isEngineRunning().done(function (result) {
             result ? hub.client.engineStarted() : hub.client.engineStopped();
         });
-        hub.server.getInterval().done(hub.client.intervalChanged);
+        hub.server.getFPS().done(hub.client.fpsChanged);
 
         $("#start").click(function () {
             hub.server.start();
@@ -91,6 +96,10 @@ $(function () {
 
         $("#stop").click(function () {
             hub.server.stop();
+        });
+
+        $fps.change(function () {
+            hub.server.setFPS($fps.val());
         });
     });
 });

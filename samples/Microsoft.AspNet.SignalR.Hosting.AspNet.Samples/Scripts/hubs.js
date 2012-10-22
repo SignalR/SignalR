@@ -327,20 +327,20 @@
             return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["Stop"], $.makeArray(arguments)));
          },
 
-        getInterval: function () {
-            /// <summary>Calls the GetInterval method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetInterval"], $.makeArray(arguments)));
+        getFPS: function () {
+            /// <summary>Calls the GetFPS method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetFPS"], $.makeArray(arguments)));
          },
 
-        setInterval: function (interval) {
-            /// <summary>Calls the SetInterval method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="interval" type="Number">Server side type is System.Int32</param>
-            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["SetInterval"], $.makeArray(arguments)));
+        setFPS: function (fps) {
+            /// <summary>Calls the SetFPS method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name="fps" type="Number">Server side type is System.Int32</param>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["SetFPS"], $.makeArray(arguments)));
          },
 
-        getTickId: function () {
-            /// <summary>Calls the GetTickId method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetTickId"], $.makeArray(arguments)));
+        getFrameId: function () {
+            /// <summary>Calls the GetFrameId method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetFrameId"], $.makeArray(arguments)));
          }
     };
 
