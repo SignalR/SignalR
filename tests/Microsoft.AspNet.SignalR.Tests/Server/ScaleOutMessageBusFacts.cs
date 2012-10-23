@@ -13,49 +13,51 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void NewSubscriptionGetsAllMessages()
         {
             var dr = new DefaultDependencyResolver();
-            var bus = new TestScaleoutBus(dr, topicCount: 5);
-            var subscriber = new TestSubscriber(new[] { "key" });
-            var wh = new ManualResetEventSlim(initialState: false);
-            IDisposable subscription = null;
-
-            try
+            using (var bus = new TestScaleoutBus(dr, topicCount: 5))
             {
-                var firstMessages = new[] { new Message("test1", "key", "1"),
+                var subscriber = new TestSubscriber(new[] { "key" });
+                var wh = new ManualResetEventSlim(initialState: false);
+                IDisposable subscription = null;
+
+                try
+                {
+                    var firstMessages = new[] { new Message("test1", "key", "1"),
                                             new Message("test2", "key", "2") };
 
-                bus.SendMany(firstMessages);
+                    bus.SendMany(firstMessages);
 
-                subscription = bus.Subscribe(subscriber, null, result =>
-                {
-                    if (!result.Terminal)
+                    subscription = bus.Subscribe(subscriber, null, result =>
                     {
-                        var ms = result.GetMessages().ToList();
+                        if (!result.Terminal)
+                        {
+                            var ms = result.GetMessages().ToList();
 
-                        Assert.Equal(2, ms.Count);
-                        Assert.Equal("key", ms[0].Key);
-                        Assert.Equal("x", ms[0].Value);
-                        Assert.Equal("key", ms[1].Key);
-                        Assert.Equal("y", ms[1].Value);
+                            Assert.Equal(2, ms.Count);
+                            Assert.Equal("key", ms[0].Key);
+                            Assert.Equal("x", ms[0].Value);
+                            Assert.Equal("key", ms[1].Key);
+                            Assert.Equal("y", ms[1].Value);
 
-                        wh.Set();
+                            wh.Set();
 
-                        return TaskAsyncHelper.True;
-                    }
+                            return TaskAsyncHelper.True;
+                        }
 
-                    return TaskAsyncHelper.False;
+                        return TaskAsyncHelper.False;
 
-                }, 10);
+                    }, 10);
 
-                bus.SendMany(new[] { new Message("test1", "key", "x"), 
+                    bus.SendMany(new[] { new Message("test1", "key", "x"), 
                                      new Message("test1", "key", "y") });
 
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
-            }
-            finally
-            {
-                if (subscription != null)
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
                 {
-                    subscription.Dispose();
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
                 }
             }
         }
@@ -64,55 +66,57 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SubscriptionWithExistingCursor()
         {
             var dr = new DefaultDependencyResolver();
-            var bus = new TestScaleoutBus(dr, topicCount: 2);
-            var subscriber = new TestSubscriber(new[] { "key" });
-            var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
-            IDisposable subscription = null;
+            using (var bus = new TestScaleoutBus(dr, topicCount: 2))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
+                IDisposable subscription = null;
 
-            // test, test2 = 1
-            // test1, test3 = 0
-            // 
+                // test, test2 = 1
+                // test1, test3 = 0
+                // 
 
-            // Cursor 1, 1
-            bus.SendMany(new[] { 
+                // Cursor 1, 1
+                bus.SendMany(new[] { 
                  new Message("test", "key", "1"),
                  new Message("test", "key", "50")
             });
 
-            // Cursor 0,1|1,1
-            bus.SendMany(new[] {
+                // Cursor 0,1|1,1
+                bus.SendMany(new[] {
                 new Message("test1", "key", "51")
             });
 
-            bus.SendMany(new[]{
+                bus.SendMany(new[]{
                  new Message("test2", "key", "2"),
                  new Message("test3", "key", "3"),
                  new Message("test2", "key", "4"),
             });
 
-            try
-            {
-                subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", result =>
+                try
                 {
-                    foreach (var m in result.GetMessages())
+                    subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", result =>
                     {
-                        int n = Int32.Parse(m.Value);
-                        Assert.True(cd.Mark(n));
-                    }
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.Value);
+                            Assert.True(cd.Mark(n));
+                        }
 
-                    return TaskAsyncHelper.True;
+                        return TaskAsyncHelper.True;
 
-                }, 10);
+                    }, 10);
 
-                bus.SendMany(new[] { new Message("test", "key", "5") });
+                    bus.SendMany(new[] { new Message("test", "key", "5") });
 
-                Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
-            }
-            finally
-            {
-                if (subscription != null)
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
                 {
-                    subscription.Dispose();
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
                 }
             }
         }
@@ -121,52 +125,54 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();
-            var bus = new TestScaleoutBus(dr, topicCount: 5);
-            var subscriber = new TestSubscriber(new[] { "key" });
-            IDisposable subscription = null;
-            var wh = new ManualResetEventSlim();
-
-            // test, test2 = 1
-            // test1, test3 = 0
-            
-            try
+            using (var bus = new TestScaleoutBus(dr, topicCount: 5))
             {
-                subscription = bus.Subscribe(subscriber, null, result =>
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+                var wh = new ManualResetEventSlim();
+
+                // test, test2 = 1
+                // test1, test3 = 0
+
+                try
                 {
-                    if (!result.Terminal)
+                    subscription = bus.Subscribe(subscriber, null, result =>
                     {
-                        var messages = result.GetMessages().ToList();
-                        Assert.Equal(1, messages.Count);
-                        Assert.Equal("connected", messages[0].Value);
-                        wh.Set();
+                        if (!result.Terminal)
+                        {
+                            var messages = result.GetMessages().ToList();
+                            Assert.Equal(1, messages.Count);
+                            Assert.Equal("connected", messages[0].Value);
+                            wh.Set();
 
-                    }
+                        }
 
-                    return TaskAsyncHelper.True;
+                        return TaskAsyncHelper.True;
 
-                }, 10);
+                    }, 10);
 
-                bus.SendMany(new[] { new Message("test", "key", "connected") });
+                    bus.SendMany(new[] { new Message("test", "key", "connected") });
 
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
-            }
-            finally
-            {
-                if (subscription != null)
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
                 {
-                    subscription.Dispose();
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
                 }
             }
         }
 
         private class TestScaleoutBus : ScaleoutMessageBus
         {
-            private long[] _topics;
+            private long[] _topicsIndexes;
 
             public TestScaleoutBus(IDependencyResolver resolver, int topicCount = 1)
                 : base(resolver)
             {
-                _topics = new long[topicCount];
+                _topicsIndexes = new long[topicCount];
             }
 
             public Task SendMany(Message[] messages)
@@ -178,8 +184,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 foreach (var g in messages.GroupBy(m => m.Source))
                 {
-                    int topic = Math.Abs(g.Key.GetHashCode()) % _topics.Length;
-                    OnReceived(topic.ToString(), (ulong)Interlocked.Increment(ref _topics[topic]), g.ToArray()).Wait();
+                    int topic = Math.Abs(g.Key.GetHashCode()) % _topicsIndexes.Length;
+                    OnReceived(topic.ToString(), (ulong)Interlocked.Increment(ref _topicsIndexes[topic]), g.ToArray()).Wait();
                 }
                 return TaskAsyncHelper.Empty;
             }

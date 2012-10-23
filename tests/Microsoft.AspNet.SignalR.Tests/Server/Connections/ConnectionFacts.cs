@@ -68,21 +68,23 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void ThrownWebExceptionShouldBeUnwrapped()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MyBadConnection>("/ErrorsAreFun");
-
-                var connection = new Client.Connection("http://test/ErrorsAreFun");
-
-                // Expecting 404
-                var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
-
-                connection.Stop();
-
-                using (var ser = aggEx.GetError())
+                using (var host = new MemoryHost())
                 {
-                    Assert.Equal(ser.StatusCode, HttpStatusCode.NotFound);
-                    Assert.NotNull(ser.ResponseBody);
-                    Assert.NotNull(ser.Exception);
+                    host.MapConnection<MyBadConnection>("/ErrorsAreFun");
+
+                    var connection = new Client.Connection("http://test/ErrorsAreFun");
+
+                    // Expecting 404
+                    var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+
+                    connection.Stop();
+
+                    using (var ser = aggEx.GetError())
+                    {
+                        Assert.Equal(ser.StatusCode, HttpStatusCode.NotFound);
+                        Assert.NotNull(ser.ResponseBody);
+                        Assert.NotNull(ser.Exception);
+                    }
                 }
             }
 
