@@ -1,4 +1,4 @@
-# SignalR 
+# ASP.NET SignalR 
 Async signaling library for .NET to help build real-time, multi-user interactive web applications
 
 ## What can it be used for?
@@ -14,7 +14,7 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 
 ## Get a sample on NuGet, straight into your app!
 
-	Install-Package SignalR.Sample
+	Install-Package Microsoft.AspNet.SignalR.Sample
 	
 ## LICENSE
 [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
