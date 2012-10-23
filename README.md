@@ -10,11 +10,11 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 
 ## Get it on NuGet!
 
-    Install-Package SignalR
+    Install-Package Microsoft.AspNet.SignalR
 
 ## Get a sample on NuGet, straight into your app!
 
-	Install-Package Microsoft.AspNet.SignalR.Sample
+    Install-Package Microsoft.AspNet.SignalR.Sample
 	
 ## LICENSE
 [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
