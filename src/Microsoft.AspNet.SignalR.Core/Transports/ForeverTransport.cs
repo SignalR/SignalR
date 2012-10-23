@@ -305,8 +305,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (postReceive != null)
             {
-                postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
-                             .ContinueWith(task => wh.Set());
+                try
+                {
+                    postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
+                                 .ContinueWith(task => wh.Set());
+                }
+                catch
+                {
+                    wh.Set();
+                    throw;
+                }
             }
             else
             {
