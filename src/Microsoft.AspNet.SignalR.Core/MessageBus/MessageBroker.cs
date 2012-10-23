@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.SignalR
         // The number of workers that are *actually* doing work
         private int _busyWorkers;
 
-        // The interval at which to check if there's work to be done
-        private static readonly TimeSpan CheckWorkInterval = TimeSpan.FromSeconds(5);
+        // Determines if the broker was disposed and should stop doing all work.
+        private bool _disposed;
 
         public MessageBroker(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterManager performanceCounterManager)
         {
@@ -67,6 +67,12 @@ namespace Microsoft.AspNet.SignalR
 
         public void Schedule(ISubscription subscription)
         {
+            if (_disposed)
+            {
+                // Don't queue up new work if we've disposed the broker
+                return;
+            }
+
             if (subscription.SetQueued())
             {
                 lock (_queue)
@@ -148,6 +154,12 @@ namespace Microsoft.AspNet.SignalR
         {
 
         Process:
+            // If we were doing work before and now we've been disposed just kill this worker early
+            if (_disposed)
+            {
+                taskCompletionSource.TrySetResult(null);
+                return;
+            }
 
             Debug.Assert(_allocatedWorkers <= MaxWorkers, "How did we pass the max?");
 
@@ -164,6 +176,14 @@ namespace Microsoft.AspNet.SignalR
                         while (_queue.Count == 0)
                         {
                             Monitor.Wait(_queue);
+
+                            // When disposing, all workers are pulsed so that they can quit
+                            // if they're waiting for things to do (idle)
+                            if (_disposed)
+                            {
+                                taskCompletionSource.TrySetResult(null);
+                                return;
+                            }
                         }
 
                         subscription = _queue.Dequeue();
@@ -240,7 +260,16 @@ namespace Microsoft.AspNet.SignalR
 
         public void Dispose()
         {
+            if (!_disposed)
+            {
+                lock (_queue)
+                {
+                    _disposed = true;
 
+                    // Tell all workers we're done
+                    Monitor.PulseAll(_queue);
+                }
+            }
         }
     }
 }

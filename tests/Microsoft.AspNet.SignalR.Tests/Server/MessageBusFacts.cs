@@ -189,5 +189,57 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 }
             }
         }
+
+        [Fact]
+        public void DisposingBusShutsWorkersDown()
+        {
+            var dr = new DefaultDependencyResolver();
+            var bus = new MessageBus(dr);
+            var subscriber = new TestSubscriber(new[] { "key" });
+            var wh = new ManualResetEventSlim(initialState: false);
+            IDisposable subscription = null;
+
+            try
+            {
+                subscription = bus.Subscribe(subscriber, null, result =>
+                {
+                    if (!result.Terminal)
+                    {
+                        var m = result.GetMessages().Single();
+
+                        Assert.Equal("key", m.Key);
+                        Assert.Equal("value", m.Value);
+
+                        wh.Set();
+
+                        return TaskAsyncHelper.True;
+                    }
+
+                    return TaskAsyncHelper.False;
+
+                }, 10);
+
+                bus.Publish("test", "key", "value").Wait();
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(5))); 
+            }
+            finally
+            {
+                if (subscription != null)
+                {
+                    subscription.Dispose();
+                }
+
+                bus.Dispose();
+
+                Assert.Equal(bus.AllocatedWorkers, 1);
+                Assert.Equal(bus.BusyWorkers, 0);
+
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                Assert.Equal(bus.AllocatedWorkers, 0);
+                Assert.Equal(bus.BusyWorkers, 0);
+            }
+        }
     }
 }
