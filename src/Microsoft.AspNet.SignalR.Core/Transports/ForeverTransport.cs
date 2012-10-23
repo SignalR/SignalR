@@ -206,7 +206,14 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 if (postReceive != null)
                 {
-                    postReceive();
+                    try
+                    {
+                        postReceive();
+                    }
+                    catch(Exception ex)
+                    {
+                        return TaskAsyncHelper.FromError(ex);
+                    }
                 }
 
                 return InitializeResponse(connection);
@@ -219,9 +226,17 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var tcs = new TaskCompletionSource<object>();
 
-            Action endRequest = () =>
+            Action<Exception> endRequest = (ex) =>
             {
-                tcs.TrySetResult(null);
+                if (ex != null)
+                {
+                    tcs.TrySetException(ex);
+                }
+                else
+                {
+                    tcs.TrySetResult(null);
+                }
+
                 CompleteRequest();
             };
 
@@ -230,7 +245,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return tcs.Task;
         }
 
-        private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action endRequest)
+        private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
@@ -269,7 +284,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         // Remove connection without triggering disconnect
                         HeartBeat.RemoveConnection(this);
 
-                        endRequest();
+                        endRequest(null);
 
                         // Dispose everything
                         registration.Dispose();
@@ -288,7 +303,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         OnDisconnect();
                     }
 
-                    endRequest();
+                    endRequest(null);
 
                     // Dispose everything
                     registration.Dispose();
@@ -305,16 +320,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (postReceive != null)
             {
-                try
-                {
-                    postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
-                                 .ContinueWith(task => wh.Set());
-                }
-                catch
-                {
-                    wh.Set();
-                    throw;
-                }
+                postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
+                             .Catch(ex => endRequest(ex))
+                             .ContinueWith(task => wh.Set());
             }
             else
             {

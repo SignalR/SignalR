@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return Send(value);
         }
 
-        public void CleanClose()
+        public void End()
         {
             _raiseEvent = false;
             Close();

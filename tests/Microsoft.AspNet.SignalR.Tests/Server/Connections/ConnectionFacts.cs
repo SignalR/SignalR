@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     var connection = new Client.Connection("http://test/ErrorsAreFun");
 
                     // Expecting 404
-                    var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var aggEx = Assert.Throws<AggregateException>(() => connection.Start(new ServerSentEventsTransport(host)).Wait());
 
                     connection.Stop();
 
