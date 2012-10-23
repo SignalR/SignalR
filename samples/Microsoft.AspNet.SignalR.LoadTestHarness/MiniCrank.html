@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatibility" content="IE=Edge" />
+    <title>MiniCrank</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, Helvetica; font-size: 24px; }
+        #status.connecting { color: #888; }
+        #status.connected { color: #00c60e; }
+        #status.disconnected { color: #f00; }
+        #disconnect { font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div>
+        Status: <span id="status" class="connecting"></span> <a id="disconnect" href="#"></a>
+    </div>
+
+    <div>
+        <label for="interval">Send every:</label> <input id="interval" value="100" />ms
+        <input id="go" type="button" value="Go" />
+    </div>
+
+    <script src="Scripts/jquery-1.7.2.js"></script>
+    <script src="Scripts/jquery.signalR.js"></script>
+    <script>
+        (function () {
+            var connection = $.connection("shaft"),
+                connected = false,
+                $status = $("#status"),
+                $disconnect = $("#disconnect"),
+                $interval = $("#interval"),
+                $go = $("#go"),
+                payload = "01234567890123456789012345678901", // 32 chars
+                interval = null;
+
+            function connect() {
+                $status
+                    .removeClass("disconnected")
+                    .addClass("connecting")
+                    .text("Connecting...");
+                connection.start(function () {
+                    connected = true;
+                    $status
+                        .removeClass("connecting")
+                        .addClass("connected")
+                        .text("Connected");
+                    $disconnect
+                        .text("(disconnect)")
+                        .css("display", "inline");
+                });
+            }
+
+            function disconnect() {
+                connection.stop();
+                connected = false;
+                $status
+                    .removeClass("connected")
+                    .addClass("disconnected")
+                    .text("Disconnected");
+                $disconnect.text("(connect)");
+            }
+
+            function go() {
+                if (connected) {
+                    var i = parseInt($interval.val());
+                    if (isNaN(interval)) return;
+
+                    $interval.prop("disabled", true);
+                    $go.val("Stop");
+
+                    interval = window.setInterval(function () {
+                        connection.send(payload);
+                    }, i);
+                }
+            }
+
+            function stop() {
+                window.clearInterval(interval);
+                interval = null;
+                $interval.prop("disabled", false);
+                $go.val("Go");
+            }
+
+            $disconnect.click(function (e) {
+                e.preventDefault();
+                if (connected) {
+                    disconnect();
+                } else {
+                    connect();
+                }
+            });
+
+            $go.click(function () {
+                if (interval !== null) {
+                    stop();
+                } else {
+                    go();
+                }
+            });
+
+            connect();
+        } ());
+    </script>
+</body>
+</html>
