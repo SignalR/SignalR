@@ -16,7 +16,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     public class MemoryHost : RoutingHost, IHttpClient, IDisposable
     {
         private readonly CancellationTokenSource _shutDownToken = new CancellationTokenSource();
-        
+        private int _disposed;
+
         public MemoryHost()
             : this(new DefaultDependencyResolver())
         {
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 Response response = null;
                 response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response));
                 var hostContext = new HostContext(request, response);
-                
+
                 hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;
 
                 connection.Initialize(DependencyResolver, hostContext);
@@ -91,7 +92,11 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void Dispose()
         {
-            _shutDownToken.Cancel(throwOnFirstException: false);
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            {
+                _shutDownToken.Cancel(throwOnFirstException: false);
+                DependencyResolver.Dispose();
+            }
         }
     }
 }

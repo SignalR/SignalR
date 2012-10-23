@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.SignalR
     public class DefaultDependencyResolver : IDependencyResolver
     {
         private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
+        private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
 
         public DefaultDependencyResolver()
         {
@@ -105,7 +106,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     throw new InvalidOperationException(String.Format("Multiple activators for type {0} are registered. Please call GetServices instead.", serviceType.FullName));
                 }
-                return activators[0]();
+                return Track(activators[0]);
             }
             return null;
         }
@@ -119,7 +120,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     return null;
                 }
-                return activators.Select(r => r()).ToList();
+                return activators.Select(Track).ToList();
             }
             return null;
         }
@@ -155,6 +156,31 @@ namespace Microsoft.AspNet.SignalR
             {
                 list.Add(a);
             }
+        }
+
+        private object Track(Func<object> creator)
+        {
+            object obj = creator();
+
+            var disposable = obj as IDisposable;
+            if (disposable != null)
+            {
+                lock (_trackedDisposables)
+                {
+                    _trackedDisposables.Add(disposable);
+                }
+            }
+
+            return obj;
+        }
+
+        public void Dispose()
+        {
+            foreach (var d in _trackedDisposables)
+            {
+                d.Dispose();
+            }
+            _trackedDisposables.Clear();
         }
     }
 }

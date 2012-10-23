@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR
 {
-    public interface IDependencyResolver
+    public interface IDependencyResolver : IDisposable
     {
         object GetService(Type serviceType);
         IEnumerable<object> GetServices(Type serviceType);
