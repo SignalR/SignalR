@@ -101,7 +101,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self
             {
                 var handler = new SignalR.WebSockets.DefaultWebSocketHandler();
                 var task = handler.ProcessWebSocketRequestAsync(ws);
-                callback(handler).Then(h => h.CleanClose(), handler);
+                callback(handler).Catch()
+                                 .ContinueWith(t => handler.End());
                 return task;
             });
 #else
