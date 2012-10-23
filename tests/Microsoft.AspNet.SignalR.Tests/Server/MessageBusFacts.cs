@@ -238,12 +238,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     subscription.Dispose();
                 }
 
-                bus.Dispose();
-
                 Assert.Equal(bus.AllocatedWorkers, 1);
                 Assert.Equal(bus.BusyWorkers, 0);
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                bus.Dispose();
 
                 Assert.Equal(bus.AllocatedWorkers, 0);
                 Assert.Equal(bus.BusyWorkers, 0);

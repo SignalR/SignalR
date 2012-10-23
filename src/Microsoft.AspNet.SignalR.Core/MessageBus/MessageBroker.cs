@@ -262,13 +262,24 @@ namespace Microsoft.AspNet.SignalR
         {
             if (!_disposed)
             {
+                _disposed = true;
+
+                // Wait for all threads to stop working
+                WaitForDrain();
+            }
+        }
+
+        private void WaitForDrain()
+        {
+            while (_allocatedWorkers > 0)
+            {
                 lock (_queue)
                 {
-                    _disposed = true;
-
                     // Tell all workers we're done
                     Monitor.PulseAll(_queue);
                 }
+
+                Thread.Sleep(250);
             }
         }
     }
