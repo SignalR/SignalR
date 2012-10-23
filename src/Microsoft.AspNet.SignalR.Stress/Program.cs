@@ -75,10 +75,10 @@ namespace Microsoft.AspNet.SignalR.Stress
             // RunBusTest();
             // RunConnectionTest();
             //RunConnectionReceiveLoopTest();
-            var host = RunMemoryHost();
-
-            Console.ReadLine();
-            host.Dispose();
+            using (var host = RunMemoryHost())
+            {
+                Console.ReadLine();
+            }
         }
 
         private static void Write(Stream stream, string raw)
@@ -89,72 +89,72 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public static void StressGroups()
         {
-            var host = new MemoryHost();
-            host.HubPipeline.EnableAutoRejoiningGroups();
-            host.MapHubs();
-            int max = 15;
-
-            var countDown = new CountDown(max);
-            var list = Enumerable.Range(0, max).ToList();
-            var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateHubProxy("MultGroupHub");
-
-            var bus = (MessageBus)host.DependencyResolver.Resolve<IMessageBus>();
-
-            proxy.On<int>("Do", i =>
+            using (var host = new MemoryHost())
             {
-                lock (list)
+                host.HubPipeline.EnableAutoRejoiningGroups();
+                host.MapHubs();
+                int max = 15;
+
+                var countDown = new CountDown(max);
+                var list = Enumerable.Range(0, max).ToList();
+                var connection = new Client.Hubs.HubConnection("http://foo");
+                var proxy = connection.CreateHubProxy("MultGroupHub");
+
+                var bus = (MessageBus)host.DependencyResolver.Resolve<IMessageBus>();
+
+                proxy.On<int>("Do", i =>
                 {
-                    if (!list.Remove(i))
+                    lock (list)
                     {
+                        if (!list.Remove(i))
+                        {
+                            Debugger.Break();
+                        }
+                    }
+
+                    countDown.Dec();
+                });
+
+                try
+                {
+                    connection.Start(host).Wait();
+
+                    for (int i = 0; i < max; i++)
+                    {
+                        proxy.Invoke("Do", i).Wait();
+                    }
+
+                    int retry = 3;
+                    bool result = false;
+
+                    do
+                    {
+                        result = countDown.Wait(TimeSpan.FromSeconds(10));
+                        if (!result)
+                        {
+                            Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
+                            Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
+                            countDown.Reset();
+                        }
+
+                        retry--;
+
+                    } while (retry > 0);
+
+                    if (!result)
+                    {
+                        Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
                         Debugger.Break();
                     }
                 }
-
-                countDown.Dec();
-            });
-
-            try
-            {
-                connection.Start(host).Wait();
-
-                for (int i = 0; i < max; i++)
+                finally
                 {
-                    proxy.Invoke("Do", i).Wait();
-                }
+                    connection.Stop();
 
-                int retry = 3;
-                bool result = false;
-
-                do
-                {
-                    result = countDown.Wait(TimeSpan.FromSeconds(10));
-                    if (!result)
-                    {
-                        Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
-                        Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
-                        countDown.Reset();
-                    }
-
-                    retry--;
-
-                } while (retry > 0);
-
-                if (!result)
-                {
-                    Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
-                    Debugger.Break();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
                 }
             }
-            finally
-            {
-                connection.Stop();
-                host.Dispose();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-
         }
 
         private static void RunConnectionTest()

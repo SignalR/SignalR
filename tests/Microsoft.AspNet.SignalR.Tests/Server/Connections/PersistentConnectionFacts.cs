@@ -17,41 +17,45 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void ConnectionsWithTheSameConnectionIdSSECloseGracefully()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MyConnection>("/echo");
-
-                var tasks = new List<Task>();
-                
-                for (int i = 0; i < 1000; i++)
+                using (var host = new MemoryHost())
                 {
-                    tasks.Add(ProcessRequest(host, "serverSentEvents", "1"));
+                    host.MapConnection<MyConnection>("/echo");
+
+                    var tasks = new List<Task>();
+
+                    for (int i = 0; i < 1000; i++)
+                    {
+                        tasks.Add(ProcessRequest(host, "serverSentEvents", "1"));
+                    }
+
+                    ProcessRequest(host, "serverSentEvents", "1");
+
+                    Task.WaitAll(tasks.ToArray());
+
+                    Assert.True(tasks.All(t => !t.IsFaulted));
                 }
-
-                ProcessRequest(host, "serverSentEvents", "1");
-
-                Task.WaitAll(tasks.ToArray());
-
-                Assert.True(tasks.All(t => !t.IsFaulted));
             }
 
             [Fact]
             public void ConnectionsWithTheSameConnectionIdLongPollingCloseGracefully()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MyConnection>("/echo");
-
-                var tasks = new List<Task>();
-
-                for (int i = 0; i < 1000; i++)
+                using (var host = new MemoryHost())
                 {
-                    tasks.Add(ProcessRequest(host, "longPolling", "1"));
+                    host.MapConnection<MyConnection>("/echo");
+
+                    var tasks = new List<Task>();
+
+                    for (int i = 0; i < 1000; i++)
+                    {
+                        tasks.Add(ProcessRequest(host, "longPolling", "1"));
+                    }
+
+                    ProcessRequest(host, "longPolling", "1");
+
+                    Task.WaitAll(tasks.ToArray());
+
+                    Assert.True(tasks.All(t => !t.IsFaulted));
                 }
-
-                ProcessRequest(host, "longPolling", "1");
-
-                Task.WaitAll(tasks.ToArray());
-
-                Assert.True(tasks.All(t => !t.IsFaulted));
             }
 
             private static Task ProcessRequest(MemoryHost host, string transport, string connectionId)
@@ -62,103 +66,111 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void GroupsAreNotReadOnConnectedAsync()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MyConnection>("/echo");
-
-                var connection = new Client.Connection("http://foo/echo");
-                connection.Groups = new List<string> { typeof(MyConnection).FullName + ".test" };
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    Assert.False(true, "Unexpectedly received data");
-                };
+                    host.MapConnection<MyConnection>("/echo");
 
-                connection.Start(host).Wait();
+                    var connection = new Client.Connection("http://foo/echo");
+                    connection.Groups = new List<string> { typeof(MyConnection).FullName + ".test" };
+                    connection.Received += data =>
+                    {
+                        Assert.False(true, "Unexpectedly received data");
+                    };
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    connection.Start(host).Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                    connection.Stop();
+                }
             }
 
             [Fact]
             public void GroupsAreNotReadOnConnectedAsyncLongPolling()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MyConnection>("/echo");
-
-                var connection = new Client.Connection("http://foo/echo");
-                connection.Groups = new List<string> { typeof(MyConnection).FullName + ".test" };
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    Assert.False(true, "Unexpectedly received data");
-                };
+                    host.MapConnection<MyConnection>("/echo");
 
-                var transport = new Client.Transports.LongPollingTransport(host);
-                connection.Start(transport).Wait();
+                    var connection = new Client.Connection("http://foo/echo");
+                    connection.Groups = new List<string> { typeof(MyConnection).FullName + ".test" };
+                    connection.Received += data =>
+                    {
+                        Assert.False(true, "Unexpectedly received data");
+                    };
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    var transport = new Client.Transports.LongPollingTransport(host);
+                    connection.Start(transport).Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                    connection.Stop();
+                }
             }
 
             [Fact]
             public void SendRaisesOnReceivedFromAllEvents()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MySendingConnection>("/multisend");
-
-                var connection = new Client.Connection("http://foo/multisend");
-                var results = new List<string>();
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    results.Add(data);
-                };
+                    host.MapConnection<MySendingConnection>("/multisend");
 
-                connection.Start(host).Wait();
-                connection.Send("").Wait();
+                    var connection = new Client.Connection("http://foo/multisend");
+                    var results = new List<string>();
+                    connection.Received += data =>
+                    {
+                        results.Add(data);
+                    };
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    connection.Start(host).Wait();
+                    connection.Send("").Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Debug.WriteLine(String.Join(", ", results));
+                    connection.Stop();
 
-                Assert.Equal(4, results.Count);
-                Assert.Equal("OnConnectedAsync1", results[0]);
-                Assert.Equal("OnConnectedAsync2", results[1]);
-                Assert.Equal("OnReceivedAsync1", results[2]);
-                Assert.Equal("OnReceivedAsync2", results[3]);
+                    Debug.WriteLine(String.Join(", ", results));
+
+                    Assert.Equal(4, results.Count);
+                    Assert.Equal("OnConnectedAsync1", results[0]);
+                    Assert.Equal("OnConnectedAsync2", results[1]);
+                    Assert.Equal("OnReceivedAsync1", results[2]);
+                    Assert.Equal("OnReceivedAsync2", results[3]);
+                }
             }
 
             [Fact]
             public void SendCanBeCalledAfterStateChangedEvent()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MySendingConnection>("/multisend");
-
-                var connection = new Client.Connection("http://foo/multisend");
-                var results = new List<string>();
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    results.Add(data);
-                };
+                    host.MapConnection<MySendingConnection>("/multisend");
 
-                connection.StateChanged += stateChange =>
-                {
-                    if (stateChange.NewState == Client.ConnectionState.Connected)
+                    var connection = new Client.Connection("http://foo/multisend");
+                    var results = new List<string>();
+                    connection.Received += data =>
                     {
-                        connection.Send("").Wait();
-                    }
-                };
+                        results.Add(data);
+                    };
 
-                connection.Start(host).Wait();
+                    connection.StateChanged += stateChange =>
+                    {
+                        if (stateChange.NewState == Client.ConnectionState.Connected)
+                        {
+                            connection.Send("").Wait();
+                        }
+                    };
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    connection.Start(host).Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Debug.WriteLine(String.Join(", ", results));
+                    connection.Stop();
 
-                Assert.Equal(4, results.Count);
+                    Debug.WriteLine(String.Join(", ", results));
+
+                    Assert.Equal(4, results.Count);
+                }
             }
 
             public void Dispose()
@@ -173,63 +185,69 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void ReconnectFiresAfterHostShutDown()
             {
-                var host = new MemoryHost();
-                var conn = new MyReconnect();
-                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
-                host.MapConnection<MyReconnect>("/endpoint");
+                using (var host = new MemoryHost())
+                {
+                    var conn = new MyReconnect();
+                    host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                    host.MapConnection<MyReconnect>("/endpoint");
 
-                var connection = new Client.Connection("http://foo/endpoint");
-                connection.Start(host).Wait();
+                    var connection = new Client.Connection("http://foo/endpoint");
+                    connection.Start(host).Wait();
 
-                host.Dispose();
+                    host.Dispose();
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
+                    Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
 
-                connection.Stop();
+                    connection.Stop();
+                }
             }
 
             [Fact]
             public void ReconnectFiresAfterTimeOutSSE()
             {
-                var host = new MemoryHost();
-                var conn = new MyReconnect();
-                host.Configuration.KeepAlive = null;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
-                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
-                host.MapConnection<MyReconnect>("/endpoint");
+                using (var host = new MemoryHost())
+                {
+                    var conn = new MyReconnect();
+                    host.Configuration.KeepAlive = null;
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                    host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                    host.MapConnection<MyReconnect>("/endpoint");
 
-                var connection = new Client.Connection("http://foo/endpoint");
-                connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
+                    var connection = new Client.Connection("http://foo/endpoint");
+                    connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                    Thread.Sleep(TimeSpan.FromSeconds(15));
 
-                connection.Stop();
+                    connection.Stop();
 
-                Assert.InRange(conn.Reconnects, 1, 4);
+                    Assert.InRange(conn.Reconnects, 1, 4);
+                }
             }
 
             [Fact]
             public void ReconnectFiresAfterTimeOutLongPolling()
             {
-                var host = new MemoryHost();
-                var conn = new MyReconnect();
-                host.Configuration.KeepAlive = null;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
-                host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
-                host.MapConnection<MyReconnect>("/endpoint");
+                using (var host = new MemoryHost())
+                {
+                    var conn = new MyReconnect();
+                    host.Configuration.KeepAlive = null;
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                    host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
+                    host.MapConnection<MyReconnect>("/endpoint");
 
-                var connection = new Client.Connection("http://foo/endpoint");
-                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+                    var connection = new Client.Connection("http://foo/endpoint");
+                    connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                    Thread.Sleep(TimeSpan.FromSeconds(15));
 
-                connection.Stop();
+                    connection.Stop();
 
-                Assert.InRange(conn.Reconnects, 1, 4);
+                    Assert.InRange(conn.Reconnects, 1, 4);
+                }
             }
 
             public void Dispose()
@@ -244,113 +262,119 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void GroupsReceiveMessages()
             {
-                var host = new MemoryHost();
-                host.MapConnection<MyGroupConnection>("/groups");
-
-                var connection = new Client.Connection("http://foo/groups");
-                var list = new List<string>();
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    list.Add(data);
-                };
+                    host.MapConnection<MyGroupConnection>("/groups");
 
-                connection.Start(host).Wait();
+                    var connection = new Client.Connection("http://foo/groups");
+                    var list = new List<string>();
+                    connection.Received += data =>
+                    {
+                        list.Add(data);
+                    };
 
-                // Join the group
-                connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.Start(host).Wait();
 
-                // Sent a message
-                connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+                    // Join the group
+                    connection.Send(new { type = 1, group = "test" }).Wait();
 
-                // Leave the group
-                connection.Send(new { type = 2, group = "test" }).Wait();
+                    // Sent a message
+                    connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
 
-                // Send a message
-                connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+                    // Leave the group
+                    connection.Send(new { type = 2, group = "test" }).Wait();
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    // Send a message
+                    connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Assert.Equal(1, list.Count);
-                Assert.Equal("hello to group test", list[0]);
+                    connection.Stop();
+
+                    Assert.Equal(1, list.Count);
+                    Assert.Equal("hello to group test", list[0]);
+                }
             }
 
             [Fact]
             public void GroupsDontRejoinByDefault()
             {
-                var host = new MemoryHost();
-                host.Configuration.KeepAlive = null;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
-                host.MapConnection<MyGroupConnection>("/groups");
-
-                var connection = new Client.Connection("http://foo/groups");
-                var list = new List<string>();
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    list.Add(data);
-                };
+                    host.Configuration.KeepAlive = null;
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
+                    host.MapConnection<MyGroupConnection>("/groups");
 
-                connection.Start(host).Wait();
+                    var connection = new Client.Connection("http://foo/groups");
+                    var list = new List<string>();
+                    connection.Received += data =>
+                    {
+                        list.Add(data);
+                    };
 
-                // Join the group
-                connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.Start(host).Wait();
 
-                // Sent a message
-                connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+                    // Join the group
+                    connection.Send(new { type = 1, group = "test" }).Wait();
 
-                // Force Reconnect
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    // Sent a message
+                    connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
 
-                // Send a message
-                connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+                    // Force Reconnect
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    // Send a message
+                    connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Assert.Equal(1, list.Count);
-                Assert.Equal("hello to group test", list[0]);
+                    connection.Stop();
+
+                    Assert.Equal(1, list.Count);
+                    Assert.Equal("hello to group test", list[0]);
+                }
             }
 
             [Fact]
             public void GroupsRejoinedWhenOnRejoiningGroupsOverridden()
             {
-                var host = new MemoryHost();
-                host.Configuration.KeepAlive = null;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
-                host.MapConnection<MyRejoinGroupConnection>("/groups");
-
-                var connection = new Client.Connection("http://foo/groups");
-                var list = new List<string>();
-                connection.Received += data =>
+                using (var host = new MemoryHost())
                 {
-                    list.Add(data);
-                };
+                    host.Configuration.KeepAlive = null;
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
+                    host.MapConnection<MyRejoinGroupConnection>("/groups");
 
-                connection.Start(host).Wait();
+                    var connection = new Client.Connection("http://foo/groups");
+                    var list = new List<string>();
+                    connection.Received += data =>
+                    {
+                        list.Add(data);
+                    };
 
-                // Join the group
-                connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.Start(host).Wait();
 
-                // Sent a message
-                connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+                    // Join the group
+                    connection.Send(new { type = 1, group = "test" }).Wait();
 
-                // Force Reconnect
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    // Sent a message
+                    connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
 
-                // Send a message
-                connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+                    // Force Reconnect
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    // Send a message
+                    connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
 
-                connection.Stop();
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                Assert.Equal(2, list.Count);
-                Assert.Equal("hello to group test", list[0]);
-                Assert.Equal("goodbye to group test", list[1]);
+                    connection.Stop();
+
+                    Assert.Equal(2, list.Count);
+                    Assert.Equal("hello to group test", list[0]);
+                    Assert.Equal("goodbye to group test", list[1]);
+                }
             }
 
             public void Dispose()
@@ -365,27 +389,29 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void SendToAllButCaller()
             {
-                var host = new MemoryHost();
-                host.MapConnection<FilteredConnection>("/filter");
-                var connection1 = new Client.Connection("http://foo/filter");
-                var connection2 = new Client.Connection("http://foo/filter");
+                using (var host = new MemoryHost())
+                {
+                    host.MapConnection<FilteredConnection>("/filter");
+                    var connection1 = new Client.Connection("http://foo/filter");
+                    var connection2 = new Client.Connection("http://foo/filter");
 
-                var wh1 = new ManualResetEventSlim(initialState: false);
-                var wh2 = new ManualResetEventSlim(initialState: false);
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+                    var wh2 = new ManualResetEventSlim(initialState: false);
 
-                connection1.Received += data => wh1.Set();
-                connection2.Received += data => wh2.Set();
+                    connection1.Received += data => wh1.Set();
+                    connection2.Received += data => wh2.Set();
 
-                connection1.Start(host).Wait();
-                connection2.Start(host).Wait();
+                    connection1.Start(host).Wait();
+                    connection2.Start(host).Wait();
 
-                connection1.Send("test").Wait();
+                    connection1.Send("test").Wait();
 
-                Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                    Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                    Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
 
-                connection1.Stop();
-                connection2.Stop();
+                    connection1.Stop();
+                    connection2.Stop();
+                }
             }
 
             public void Dispose()

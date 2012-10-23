@@ -20,51 +20,55 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
         {
-            var host = new MemoryHost();
-            host.MapConnection<MyConnection>("/echo");
-            host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
-            var connectWh = new ManualResetEventSlim();
-            var disconnectWh = new ManualResetEventSlim();
-            host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
-            var connection = new Client.Connection("http://foo/echo");
+            using (var host = new MemoryHost())
+            {
+                host.MapConnection<MyConnection>("/echo");
+                host.Configuration.DisconnectTimeout = TimeSpan.Zero;
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                var connectWh = new ManualResetEventSlim();
+                var disconnectWh = new ManualResetEventSlim();
+                host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
+                var connection = new Client.Connection("http://foo/echo");
 
-            // Maximum wait time for disconnect to fire (3 heart beat intervals)
-            var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
+                // Maximum wait time for disconnect to fire (3 heart beat intervals)
+                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
 
-            connection.Start(host).Wait();
+                connection.Start(host).Wait();
 
-            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
+                Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
 
-            connection.Stop();
+                connection.Stop();
 
-            Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+                Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+            }
         }
 
         [Fact]
         public void DisconnectFiresForHubsWhenConnectionGoesAway()
         {
-            var host = new MemoryHost();
-            host.MapHubs();
-            host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-            host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
-            var connectWh = new ManualResetEventSlim();
-            var disconnectWh = new ManualResetEventSlim();
-            host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
-            var connection = new Client.Hubs.HubConnection("http://foo/");
+            using (var host = new MemoryHost())
+            {
+                host.MapHubs();
+                host.Configuration.DisconnectTimeout = TimeSpan.Zero;
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                var connectWh = new ManualResetEventSlim();
+                var disconnectWh = new ManualResetEventSlim();
+                host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
-            connection.CreateHubProxy("MyHub");
+                connection.CreateHubProxy("MyHub");
 
-            // Maximum wait time for disconnect to fire (3 heart beat intervals)
-            var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
+                // Maximum wait time for disconnect to fire (3 heart beat intervals)
+                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
 
-            connection.Start(host).Wait();
+                connection.Start(host).Wait();
 
-            Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
+                Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
 
-            connection.Stop();
+                connection.Stop();
 
-            Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+                Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+            }
         }
 
         [Fact]
@@ -72,40 +76,42 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
-            var bus = new MessageBus(new TraceManager(), counters);
-            var nodeCount = 3;
-            var nodes = new List<ServerNode>();
-            for (int i = 0; i < nodeCount; i++)
+            using (var bus = new MessageBus(new TraceManager(), counters))
             {
-                nodes.Add(new ServerNode(bus));
+                var nodeCount = 3;
+                var nodes = new List<ServerNode>();
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    nodes.Add(new ServerNode(bus));
+                }
+
+                var timeout = TimeSpan.FromSeconds(5);
+                foreach (var node in nodes)
+                {
+                    node.Server.Configuration.HeartBeatInterval = timeout;
+                    node.Server.Configuration.DisconnectTimeout = TimeSpan.Zero;
+                    node.Server.MapConnection<FarmConnection>("/echo");
+                }
+
+                var loadBalancer = new LoadBalancer(nodes.Select(f => f.Server).ToArray());
+                var transport = new Client.Transports.LongPollingTransport(loadBalancer);
+
+                var connection = new Client.Connection("http://goo/echo");
+
+                connection.Start(transport).Wait();
+
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    nodes[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1));
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+
+                connection.Stop();
+
+                Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
+
+                Assert.Equal(1, nodes.Sum(n => n.Connection.DisconnectCount));
             }
-
-            var timeout = TimeSpan.FromSeconds(5);
-            foreach (var node in nodes)
-            {
-                node.Server.Configuration.HeartBeatInterval = timeout;
-                node.Server.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                node.Server.MapConnection<FarmConnection>("/echo");
-            }
-
-            var loadBalancer = new LoadBalancer(nodes.Select(f => f.Server).ToArray());
-            var transport = new Client.Transports.LongPollingTransport(loadBalancer);
-
-            var connection = new Client.Connection("http://goo/echo");
-
-            connection.Start(transport).Wait();
-
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                nodes[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1));
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-            }
-
-            connection.Stop();
-
-            Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
-
-            Assert.Equal(1, nodes.Sum(n => n.Connection.DisconnectCount));
         }
 
         private class ServerNode
