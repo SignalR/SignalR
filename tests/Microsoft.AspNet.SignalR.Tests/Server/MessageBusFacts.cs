@@ -239,12 +239,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 }
 
                 Assert.Equal(bus.AllocatedWorkers, 1);
-                Assert.Equal(bus.BusyWorkers, 0);
-
+                
                 bus.Dispose();
 
                 Assert.Equal(bus.AllocatedWorkers, 0);
-                Assert.Equal(bus.BusyWorkers, 0);
             }
         }
     }
