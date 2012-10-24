@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _resolver = resolver;
         }
 
-        public IHub Create(HubDescriptor descriptor)
+        public HubActivationResult Create(HubDescriptor descriptor)
         {
             if(descriptor.Type == null)
             {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             object hub = _resolver.Resolve(descriptor.Type) ?? Activator.CreateInstance(descriptor.Type);
-            return hub as IHub;
+            return new HubActivationResult(hub as IHub);
         }
     }
 }

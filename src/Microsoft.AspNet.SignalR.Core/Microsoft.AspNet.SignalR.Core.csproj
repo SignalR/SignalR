@@ -67,8 +67,11 @@
     <Compile Include="CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
+    <Compile Include="Hubs\DefaultHubDeactivator.cs" />
+    <Compile Include="Hubs\HubActivationResult.cs" />
     <Compile Include="Hubs\HubConnectionContext.cs" />
     <Compile Include="Hubs\IHubConnectionContext.cs" />
+    <Compile Include="Hubs\IHubDeactivator.cs" />
     <Compile Include="Hubs\NullClientProxy.cs" />
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeMode.cs" />
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeModule.cs" />

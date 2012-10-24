@@ -74,6 +74,9 @@ namespace Microsoft.AspNet.SignalR
             var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));
             Register(typeof(IHubActivator), () => activator.Value);
 
+            var deactivator = new Lazy<DefaultHubDeactivator>(() => new DefaultHubDeactivator());
+            Register(typeof(IHubDeactivator), () => deactivator.Value);
+
             var hubManager = new Lazy<DefaultHubManager>(() => new DefaultHubManager(this));
             Register(typeof(IHubManager), () => hubManager.Value);
 
