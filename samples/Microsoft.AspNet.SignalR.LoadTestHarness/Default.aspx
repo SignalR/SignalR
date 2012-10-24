@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <title>SignalR Flywheel</title>
+    <title>SignalR Load Test Harness</title>
     <style>
         body { font-family: 'Segoe UI'; padding: 0 20px; margin: 0; }
         h1, h2, h3, h4, h5 { font-family: 'Segoe UI'; font-weight: normal; margin: 0 0 5px; }
@@ -27,12 +27,12 @@
     </style>
 </head>
 <body>
-    <h1>SignalR Flywheel</h1>
+    <h1>SignalR Load Test Harness</h1>
     
     <fieldset id="options"><legend>Endpoint Options</legend>
         <div>
-            <label for="onReceive">On receive:</label>
-            <select id="onReceive">
+            <label for="connectionBehavior">Connection behavior:</label>
+            <select id="connectionBehavior">
                 <option value="0">Listen only</option>
                 <option value="1">Echo</option>
                 <option value="2">Broadcast</option>
@@ -41,7 +41,7 @@
 
         <div>
             <label for="rate">Broadcast rate:</label>
-            <input id="rate" value="0" maxlength="5" /> (per second)
+            <input id="rate" value="1" maxlength="5" /> (per second)
         </div>
 
         <div>
@@ -59,6 +59,12 @@
         <div>
             <a id="resetAvg" href="#">Reset average</a>
             <a id="forceGC" href="#">Force GC</a>
+            <a href="LoadGenerator.html" target="_blank">Load Generator</a>
+        </div>
+
+        <div>
+            <button id="start" disabled="disabled">Start Broadcast</button>
+            <button id="stop" disabled="disabled">Stop Broadcast</button>
         </div>
     </fieldset>
 
@@ -73,36 +79,60 @@
         };
 
         (function () {
-            var hub = $.connection.flywheel,
-                $onReceive = $("#onReceive"),
+            var dashboard = $.signalR.dashboard,
+                $start = $("#start"),
+                $stop = $("#stop"),
+                $connectionBehavior = $("#connectionBehavior"),
                 $rate = $("#rate"),
                 $payloadSize = $("#payloadSize");
 
-            hub.client.onReceiveChanged = function (behavior) {
-                $onReceive.val(behavior);
-            };
+            $.extend(dashboard.client, {
+                started: function () {
+                    $start.prop({ disabled: true });
+                    $stop.prop({ disabled: false });
+                },
 
-            hub.client.onRateChanged = function (rate) {
-                $rate.val(rate);
-            };
+                stopped: function () {
+                    $start.prop({ disabled: false });
+                    $stop.prop({ disabled: true });
+                },
 
-            hub.client.onSizeChanged = function (size) {
-                $payloadSize.val(size);
-            };
+                serverFps: function () {
+
+                },
+
+                connectionBehaviorChanged: function (behavior) {
+                    $connectionBehavior.val(behavior);
+                },
+
+                broadcastRateChanged: function (rate) {
+                    $rate.val(rate);
+                },
+
+                broadcastSizeChanged: function (size) {
+                    $payloadSize.val(size);
+                }
+            });
 
             function init() {
-                $onReceive.change(function () {
-                    hub.server.setOnReceive($onReceive.val());
+                $connectionBehavior.change(function () {
+                    dashboard.server.setConnectionBehavior($connectionBehavior.val());
                 });
                 $rate.change(function () {
-                    hub.server.setBroadcastRate($rate.val());
+                    dashboard.server.setBroadcastRate($rate.val());
                 });
                 $payloadSize.change(function () {
-                    hub.server.setBroadcastSize($payloadSize.val());
+                    dashboard.server.setBroadcastSize($payloadSize.val());
+                });
+                $("#start").click(function (e) {
+                    dashboard.server.startBroadcast();
+                });
+                $("#stop").click(function (e) {
+                    dashboard.server.stopBroadcast();
                 });
                 $("#resetAvg").click(function (e) {
                     e.preventDefault();
-                    hub.server.resetAverage();
+                    dashboard.server.resetAverage();
                 });
                 $("#forceGC").click(function (e) {
                     /// <param name="e" type="jQuery.Event">Description</param>
@@ -115,14 +145,19 @@
                     link.text("Collecting...")
                         .prop("href", "");
 
-                    hub.server.forceGC().done(function () {
+                    dashboard.server.forceGC().done(function () {
                         link.text(text)
                             .prop("href", href);
                     });
                 });
+
+                dashboard.server.isBroadcasting().done(function (broadcasting) {
+                    $start.prop({ disabled: broadcasting });
+                    $stop.prop({ disabled: !broadcasting });
+                });
             }
 
-            $.connection.hub.start(init);
+            $.signalR.hub.start(init);
         })();
     </script>
 </body>

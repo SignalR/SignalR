@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Default.aspx" />
-    <Content Include="MiniCrank.html" />
+    <Content Include="LoadGenerator.html" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\jquery-1.7.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
@@ -104,9 +104,10 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Shaft.cs" />
-    <Compile Include="StatsHub.cs" />
+    <Compile Include="TestConnection.cs" />
+    <Compile Include="Dashboard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestHub.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

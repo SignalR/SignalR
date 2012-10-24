@@ -3,30 +3,17 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.LoadTestHarness
 {
-    public class ShaftHub : Hub
+    public class TestConnection : PersistentConnection
     {
-        public Task Echo(string data)
-        {
-            return Clients.Caller.invoke(data);
-        }
-
-        public Task Broadcast(string data)
-        {
-            return Clients.All.invoke(data);
-        }
-    }
-
-    public class Shaft : PersistentConnection
-    {
-        internal static EndpointBehavior Behavior { get; set; }
+        internal static ConnectionBehavior Behavior { get; set; }
 
         protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
-            if (Behavior == EndpointBehavior.Echo)
+            if (Behavior == ConnectionBehavior.Echo)
             {
                 Connection.Send(connectionId, data);
             }
-            else if (Behavior == EndpointBehavior.Broadcast)
+            else if (Behavior == ConnectionBehavior.Broadcast)
             {
                 Connection.Broadcast(data);
             }
@@ -34,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         }
     }
 
-    public enum EndpointBehavior
+    public enum ConnectionBehavior
     {
         ListenOnly,
         Echo,

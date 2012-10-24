@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Routing;
-using System.Web.Security;
-using System.Web.SessionState;
-using Microsoft.AspNet.SignalR.Hosting.AspNet.Routing;
 
 namespace Microsoft.AspNet.SignalR.LoadTestHarness
 {
@@ -15,9 +9,9 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         {
             GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(30);
 
-            RouteTable.Routes.MapConnection<Shaft>("shaft", "shaft/{*operation}");
+            RouteTable.Routes.MapConnection<TestConnection>("TestConnection", "TestConnection/{*operation}");
             RouteTable.Routes.MapHubs();
-            StatsHub.Init();
+            Dashboard.Init();
         }
     }
 }

@@ -26,9 +26,9 @@ namespace Microsoft.AspNet.SignalR
         /// Creates a new instance of a high-resolution FPS timer.
         /// </summary>
         /// <param name="fps">The desired frame rate per second.</param>
-        /// <param name="tick">The callback to be invoked on each frame.</param>
-        public HighFrequencyTimer(int fps, Action<long> tick)
-            : this(fps, tick, null, null, null)
+        /// <param name="callback">The callback to be invoked on each frame.</param>
+        public HighFrequencyTimer(int fps, Action<long> callback)
+            : this(fps, callback, null, null, null)
         {
             
         }
@@ -37,24 +37,24 @@ namespace Microsoft.AspNet.SignalR
         /// Creates a new instance of a high-resolution FPS timer.
         /// </summary>
         /// <param name="fps">The desired frame rate per second.</param>
-        /// <param name="tick">The callback to be invoked on each frame.</param>
+        /// <param name="callback">The callback to be invoked on each frame.</param>
         /// <param name="started">The callback to be invoked when the timer enters the running state.</param>
         /// <param name="stopped">The callback to be invoked when the timer enters the stopped state.</param>
         /// <param name="actualFpsUpdate">The callback to invoked to receive updates of the actual frame rate.</param>
-        public HighFrequencyTimer(int fps, Action<long> tick, Action started, Action stopped, Action<int> actualFpsUpdate)
+        public HighFrequencyTimer(int fps, Action<long> callback, Action started, Action stopped, Action<int> actualFpsUpdate)
         {
             if (fps <= 0)
             {
                 throw new ArgumentException("Value must be greater than zero.", "fps");
             }
 
-            if (tick == null)
+            if (callback == null)
             {
-                throw new ArgumentNullException("tick");
+                throw new ArgumentNullException("callback");
             }
 
             _fps = fps;
-            _tick = tick;
+            _tick = callback;
             _started = started ?? (() => { });
             _stopped = stopped ?? (() => { });
             _actualFpsUpdate = actualFpsUpdate ?? (_ => { });

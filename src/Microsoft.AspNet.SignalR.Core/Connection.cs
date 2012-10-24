@@ -99,9 +99,6 @@ namespace Microsoft.AspNet.SignalR
                 busMessage.Filter = String.Join("|", message.ExcludedSignals);
             }
 
-            _counters.ConnectionMessagesSentTotal.Increment();
-            _counters.ConnectionMessagesSentPerSec.Increment();
-
             if (busMessage.WaitForAck)
             {
                 Task ackTask = _ackHandler.CreateAck(busMessage.CommandId);

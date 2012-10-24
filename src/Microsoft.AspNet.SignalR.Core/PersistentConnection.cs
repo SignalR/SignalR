@@ -153,6 +153,8 @@ namespace Microsoft.AspNet.SignalR
 
             _transport.Received = data =>
             {
+                _counters.ConnectionMessagesSentTotal.Increment();
+                _counters.ConnectionMessagesSentPerSec.Increment();
                 return OnReceivedAsync(context.Request, connectionId, data).OrEmpty();
             };
 
