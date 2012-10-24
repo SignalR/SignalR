@@ -29,13 +29,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="hubName">Name of the hub.</param>
         /// <returns>Hub implementation instance, if found. Null otherwise.</returns>
-        IHub ResolveHub(string hubName);
+        HubActivationResult ResolveHub(string hubName);
 
         /// <summary>
         /// Resolves all available hubs to their concrete objects.
         /// </summary>
         /// <returns>List of hub instances.</returns>
-        IEnumerable<IHub> ResolveHubs();
+        IEnumerable<HubActivationResult> ResolveHubs();
 
         /// <summary>
         /// Retrieves a method with a given name on a given hub.
@@ -53,5 +53,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="predicate">Optional predicate for filtering results.</param>
         /// <returns>List of available methods.</returns>
         IEnumerable<MethodDescriptor> GetHubMethods(string hubName, Func<MethodDescriptor, bool> predicate = null);
+
+        /// <summary>
+        /// Disposes the hub and cleans the activation items if necassery
+        /// </summary>
+        /// <param name="hubActivationResult"></param>
+        void Deactivate(HubActivationResult hubActivationResult);
     }
 }

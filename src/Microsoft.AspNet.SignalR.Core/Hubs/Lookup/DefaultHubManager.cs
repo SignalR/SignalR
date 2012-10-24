@@ -12,12 +12,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private readonly IEnumerable<IMethodDescriptorProvider> _methodProviders;
         private readonly IHubActivator _activator;
         private readonly IEnumerable<IHubDescriptorProvider> _hubProviders;
+        private IHubDeactivator _deactivator;
 
         public DefaultHubManager(IDependencyResolver resolver)
         {
             _hubProviders = resolver.ResolveAll<IHubDescriptorProvider>();
             _methodProviders = resolver.ResolveAll<IMethodDescriptorProvider>();
             _activator = resolver.Resolve<IHubActivator>();
+            _deactivator = resolver.Resolve<IHubDeactivator>();
         }
 
         public HubDescriptor GetHub(string hubName)
@@ -81,13 +83,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     
         }
 
-        public IHub ResolveHub(string hubName)
+        public void Deactivate(HubActivationResult hubActivationResult)
+        {
+            hubActivationResult.Hub.Dispose();
+            _deactivator.Destruct(hubActivationResult);
+        }
+
+        public HubActivationResult ResolveHub(string hubName)
         {
             HubDescriptor hub = GetHub(hubName);
             return hub == null ? null : _activator.Create(hub);
         }
 
-        public IEnumerable<IHub> ResolveHubs()
+        public IEnumerable<HubActivationResult> ResolveHubs()
         {
             return GetHubs().Select(hub => _activator.Create(hub));
         }

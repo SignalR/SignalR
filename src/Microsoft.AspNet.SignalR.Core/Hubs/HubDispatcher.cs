@@ -114,17 +114,17 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             // Resolving the actual state object
             var state = new TrackingDictionary(hubRequest.State);
-            var hub = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
+            var hubActivationResult = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
 
-            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hub)
-                .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hubActivationResult)
+                .ContinueWith(task => _manager.Deactivate(hubActivationResult), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, IHub hub)
+        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, HubActivationResult hubActivationResult)
         {
 
             var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
-            var context = new HubInvokerContext(hub, state, methodDescriptor, args);
+            var context = new HubInvokerContext(hubActivationResult.Hub, hubActivationResult.Items, state, methodDescriptor, args);
 
             // Invoke the pipeline
             return _pipelineInvoker.Invoke(context)
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private Task ExecuteHubEventAsync(IRequest request, string connectionId, Func<IHub, Task> action)
         {
             var hubs = GetHubs(request, connectionId).ToList();
-            var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
+            var operations = hubs.Select(instance => action(instance.Hub).Catch().OrEmpty()).ToArray();
 
             if (operations.Length == 0)
             {
@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return tcs.Task;
         }
 
-        private IHub CreateHub(IRequest request, HubDescriptor descriptor, string connectionId, TrackingDictionary state = null, bool throwIfFailedToCreate = false)
+        private HubActivationResult CreateHub(IRequest request, HubDescriptor descriptor, string connectionId, TrackingDictionary state = null, bool throwIfFailedToCreate = false)
         {
             try
             {
@@ -311,9 +311,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 {
                     state = state ?? new TrackingDictionary();
 
-                    hub.Context = new HubCallerContext(request, connectionId);
-                    hub.Clients = new HubConnectionContext(_pipelineInvoker, Connection, descriptor.Name, connectionId, state);
-                    hub.Groups = new GroupManager(Connection, descriptor.Name);
+                    hub.Hub.Context = new HubCallerContext(request, connectionId);
+                    hub.Hub.Clients = new HubConnectionContext(_pipelineInvoker, Connection, descriptor.Name, connectionId, state);
+                    hub.Hub.Groups = new GroupManager(Connection, descriptor.Name);
                 }
 
                 return hub;
@@ -331,7 +331,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        private IEnumerable<IHub> GetHubs(IRequest request, string connectionId)
+        private IEnumerable<HubActivationResult> GetHubs(IRequest request, string connectionId)
         {
             return from descriptor in _hubs
                    select CreateHub(request, descriptor, connectionId) into hub
@@ -339,11 +339,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
                    select hub;
         }
 
-        private void DisposeHubs(IEnumerable<IHub> hubs)
+        private void DisposeHubs(IEnumerable<HubActivationResult> hubActivationResults)
         {
-            foreach (var hub in hubs)
+            foreach (var hubActivationResult in hubActivationResults)
             {
-                hub.Dispose();
+                _manager.Deactivate(hubActivationResult);
             }
         }
 
