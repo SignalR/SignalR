@@ -205,7 +205,7 @@
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
     <Compile Include="Hubs\MouseTracking\MouseTracking.cs" />
-    <Compile Include="Hubs\RealtimeBroadcast\FpsTimer.cs" />
+    <Compile Include="Hubs\RealtimeBroadcast\HighFrequencyTimer.cs" />
     <Compile Include="Hubs\RealtimeBroadcast\Realtime.cs" />
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

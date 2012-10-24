@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.Threading;
 
-namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.RealtimeBroadcast
+namespace Microsoft.AspNet.SignalR
 {
     /// <summary>
     /// A high-resolution FPS timer.
     /// </summary>
-    public class FpsTimer
+    public class HighFrequencyTimer
     {
         private long _fps;
         private long _frameId;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.RealtimeBroadcast
         /// </summary>
         /// <param name="fps">The desired frame rate per second.</param>
         /// <param name="tick">The callback to be invoked on each frame.</param>
-        public FpsTimer(int fps, Action<long> tick)
+        public HighFrequencyTimer(int fps, Action<long> tick)
             : this(fps, tick, null, null, null)
         {
             
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.RealtimeBroadcast
         /// <param name="started">The callback to be invoked when the timer enters the running state.</param>
         /// <param name="stopped">The callback to be invoked when the timer enters the stopped state.</param>
         /// <param name="actualFpsUpdate">The callback to invoked to receive updates of the actual frame rate.</param>
-        public FpsTimer(int fps, Action<long> tick, Action started, Action stopped, Action<int> actualFpsUpdate)
+        public HighFrequencyTimer(int fps, Action<long> tick, Action started, Action stopped, Action<int> actualFpsUpdate)
         {
             if (fps <= 0)
             {

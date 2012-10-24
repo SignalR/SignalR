@@ -7,10 +7,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.RealtimeBroadcast
 {
     public class Realtime : Hub
     {
-        private static readonly Lazy<FpsTimer> _timerInstance = new Lazy<FpsTimer>(() =>
+        private static readonly Lazy<HighFrequencyTimer> _timerInstance = new Lazy<HighFrequencyTimer>(() =>
             {
                 var clients = GlobalHost.ConnectionManager.GetHubContext<Realtime>().Clients;
-                return new FpsTimer(25,
+                return new HighFrequencyTimer(25,
                     id => clients.All.frame(id),
                     () => clients.All.engineStarted(),
                     () => clients.All.engineStopped(),
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.RealtimeBroadcast
                 );
             });
 
-        private FpsTimer _timer { get { return _timerInstance.Value; } }
+        private HighFrequencyTimer _timer { get { return _timerInstance.Value; } }
 
         public bool IsEngineRunning()
         {

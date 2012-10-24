@@ -82,6 +82,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\src\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
+      <Link>TaskAsyncHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\RealtimeBroadcast\HighFrequencyTimer.cs">
+      <Link>HighFrequencyTimer.cs</Link>
+    </Compile>
     <Compile Include="Basic.ashx.cs">
       <DependentUpon>Basic.ashx</DependentUpon>
     </Compile>
@@ -101,7 +107,6 @@
     <Compile Include="Shaft.cs" />
     <Compile Include="StatsHub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TaskHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

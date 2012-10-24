@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hosting;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.LoadTestHarness
@@ -33,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             {
                 Connection.Broadcast(data);
             }
-            return TaskHelpers.Done;
+            return TaskAsyncHelper.Empty;
         }
     }
 
