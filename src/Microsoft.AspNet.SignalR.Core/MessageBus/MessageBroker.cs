@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.SignalR
             // If we're withing the acceptable limit of idleness, just keep running
             int idleWorkers = _allocatedWorkers - _busyWorkers;
 
-            if (idleWorkers <= MaxIdleWorkers)
+            if (subscription != null || idleWorkers <= MaxIdleWorkers)
             {
                 // We already have a subscription doing work so skip the queue
                 if (subscription == null)
