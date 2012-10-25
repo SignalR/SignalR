@@ -35,30 +35,15 @@
                 interval = null;
 
             function connect() {
-                $status
-                    .removeClass("disconnected")
-                    .addClass("connecting")
-                    .text("Connecting...");
                 connection.start(function () {
                     connected = true;
-                    $status
-                        .removeClass("connecting")
-                        .addClass("connected")
-                        .text("Connected");
-                    $disconnect
-                        .text("(disconnect)")
-                        .css("display", "inline");
                 });
             }
 
             function disconnect() {
                 connection.stop();
                 connected = false;
-                $status
-                    .removeClass("connected")
-                    .addClass("disconnected")
-                    .text("Disconnected");
-                $disconnect.text("(connect)");
+                
             }
 
             function go() {
@@ -96,6 +81,40 @@
                     stop();
                 } else {
                     go();
+                }
+            });
+
+            connection.stateChanged(function (change) {
+                // connecting: 0,
+                // connected: 1,
+                // reconnecting: 2,
+                // disconnected: 4
+
+                switch (change.newState) {
+                    case 0: // connecting
+                        $status.text("Connecting...");
+                        break;
+
+                    case 1: // connected
+                        $status
+                            .removeClass("disconnected")
+                            .addClass("connected")
+                            .text("Connected");
+                        $disconnect.text("(disconnect)")
+                                   .css("display", "inline");
+                        break;
+
+                    case 2: // reconnecting
+                        $status.text("Reconnecting...");
+                        break;
+
+                    case 4: // disconnected
+                        $status
+                            .removeClass("connected")
+                            .addClass("disconnected")
+                            .text("Disconnected");
+                        $disconnect.text("(connect)")
+                        break;
                 }
             });
 

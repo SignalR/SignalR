@@ -63,6 +63,7 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\dashboard.css" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
@@ -127,17 +128,19 @@
     <Content Include="LoadGenerator.html" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
+    <Content Include="Scripts\dashboard.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
     <Content Include="Scripts\jquery-ui-1.9.0.js" />
     <Content Include="Scripts\jquery-ui-1.9.0.min.js" />
     <Content Include="Scripts\jquery.color-2.1.0.js" />
     <Content Include="Scripts\jquery.color-2.1.0.min.js" />
-    <Content Include="Scripts\jquery.color.js" />
     <Content Include="Scripts\jquery.color.svg-names-2.1.0.js" />
     <Content Include="Scripts\jquery.color.svg-names-2.1.0.min.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
+    <Content Include="Scripts\knockout-2.1.0.debug.js" />
+    <Content Include="Scripts\knockout-2.1.0.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -155,10 +158,10 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\RealtimeBroadcast\HighFrequencyTimer.cs">
       <Link>HighFrequencyTimer.cs</Link>
     </Compile>
-    <Compile Include="Basic.ashx.cs">
+    <Compile Include="Baseline\Basic.ashx.cs">
       <DependentUpon>Basic.ashx</DependentUpon>
     </Compile>
-    <Compile Include="QueryString.ashx.cs">
+    <Compile Include="Baseline\QueryString.ashx.cs">
       <DependentUpon>QueryString.ashx</DependentUpon>
     </Compile>
     <Compile Include="Default.aspx.cs">
@@ -178,8 +181,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="Basic.ashx" />
-    <Content Include="QueryString.ashx" />
+    <Content Include="Baseline\Basic.ashx" />
+    <Content Include="Baseline\QueryString.ashx" />
     <None Include="Properties\PublishProfiles\Profile1.pubxml" />
   </ItemGroup>
   <ItemGroup>

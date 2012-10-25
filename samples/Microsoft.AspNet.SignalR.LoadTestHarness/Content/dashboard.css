@@ -1,0 +1,59 @@
+﻿body {
+    font-family: 'Segoe UI';
+    padding: 0 20px;
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Segoe UI Light', 'Segoe UI', Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    margin: 0 0 5px;
+}
+
+select, input[type=text] {
+    margin: 2px 0;
+}
+
+#options {
+    margin-bottom: 5px;
+    width: 440px;
+    padding: 6px 12px;
+    float: left;
+}
+
+    #options label {
+        display: block;
+        float: left;
+        width: 180px;
+    }
+
+    #options span label {
+        display: inline;
+        float: none;
+        width: auto;
+    }
+
+#chart {
+    float: left;
+    clear: right;
+    margin-top: -45px;
+    width: 700px;
+    height: 200px;
+}
+
+#rate {
+    font-size: 1.0em;
+}
+
+#rateCount, #rateSeconds {
+    font-size: 0.8em;
+    width: 2em;
+}
+
+#rateBatching {
+    display: none;
+}
+
+#control {
+    margin-top: 10px;
+}

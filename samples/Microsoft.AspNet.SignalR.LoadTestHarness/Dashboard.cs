@@ -66,13 +66,13 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         public void SetConnectionBehavior(ConnectionBehavior behavior)
         {
             TestConnection.Behavior = behavior;
-            Clients.All.connectionBehaviorChanged(behavior);
+            Clients.Others.connectionBehaviorChanged(((int)behavior).ToString());
         }
 
         public void SetBroadcastBehavior(bool batchingEnabled)
         {
             _batchingEnabled = batchingEnabled;
-            Clients.All.broadcastBehaviorChanged(batchingEnabled);
+            Clients.Others.broadcastBehaviorChanged(batchingEnabled);
         }
 
         public void SetBroadcastRate(int count, int seconds)
@@ -80,15 +80,15 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             // Need to turn the count/seconds into FPS
             _broadcastCount = count;
             _broadcastSeconds = seconds;
-            _timer.FPS = _batchingEnabled ? seconds : 1;
-            Clients.All.broadcastRateChanged(count, seconds);
+            _timer.FPS = _batchingEnabled ? 1 / (double)seconds : count;
+            Clients.Others.broadcastRateChanged(count, seconds);
         }
 
         public void SetBroadcastSize(int size)
         {
             _broadcastSize = size;
             SetBroadcastPayload();
-            Clients.All.broadcastSizeChanged(size);
+            Clients.Others.broadcastSizeChanged(size.ToString());
         }
 
         public void ForceGC()

@@ -213,10 +213,11 @@ namespace Microsoft.AspNet.SignalR
         public void Dispose()
         {
             // REVIEW: Should we make this block if there's pending work
-            Interlocked.Exchange(ref _disposed, 1);
-
-            _counters.MessageBusSubscribersCurrent.Decrement();
-            _counters.MessageBusSubscribersPerSec.Decrement();
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            {
+                _counters.MessageBusSubscribersCurrent.Decrement();
+                _counters.MessageBusSubscribersPerSec.Decrement();
+            }
         }
 
         public abstract string GetCursor();
