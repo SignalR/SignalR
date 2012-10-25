@@ -78,7 +78,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             private event Action _onWrite;
             private event Action _onClosed;
-            private readonly object _lockObj = new object();
+            private readonly object _completedLock = new object();
+            private readonly object _writeLock = new object();
 
             public ResponseStream()
             {
@@ -179,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 Action closedHandler = null;
                 closedHandler = () =>
                 {
-                    lock (_lockObj)
+                    lock (_completedLock)
                     {
                         if (!ar.IsCompleted)
                         {
@@ -199,38 +200,43 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     return ar;
                 }
 
-                int read = Read(buffer, offset, count);
+                // If a write occurs after a synchronous read attempt and before the writeHandler is attached,
+                // the writeHandler could miss a write.
+                lock (_writeLock)
+                {
+                    int read = Read(buffer, offset, count);
 
-                if (read != 0 || CancellationToken.IsCancellationRequested)
-                {
-                    lock (_lockObj)
+                    if (read != 0 || CancellationToken.IsCancellationRequested)
                     {
-                        if (!ar.IsCompleted)
-                        {
-                            ar.SetAsCompleted(read, true);
-                        }
-                    }
-                }
-                else
-                {
-                    Action writeHandler = null;
-                    writeHandler = () =>
-                    {
-                        lock (_lockObj)
+                        lock (_completedLock)
                         {
                             if (!ar.IsCompleted)
                             {
-                                read = Read(buffer, offset, count);
-                                ar.SetAsCompleted(read, false);
+                                ar.SetAsCompleted(read, true);
                             }
-
-                            _onWrite -= writeHandler;
                         }
-                    };
+                    }
+                    else
+                    {
+                        Action writeHandler = null;
+                        writeHandler = () =>
+                        {
+                            lock (_completedLock)
+                            {
+                                if (!ar.IsCompleted)
+                                {
+                                    read = Read(buffer, offset, count);
+                                    ar.SetAsCompleted(read, false);
+                                }
 
-                    _onWrite += writeHandler;
+                                _onWrite -= writeHandler;
+                            }
+                        };
+
+                        _onWrite += writeHandler;
+                    }
+
                 }
-
                 return ar;
             }
 
@@ -263,11 +269,14 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             public override void Write(byte[] buffer, int offset, int count)
             {
-                _currentStream.Write(buffer, offset, count);
-
-                if (_onWrite != null)
+                lock (_writeLock)
                 {
-                    _onWrite();
+                    _currentStream.Write(buffer, offset, count);
+
+                    if (_onWrite != null)
+                    {
+                        _onWrite();
+                    }
                 }
             }
         }
