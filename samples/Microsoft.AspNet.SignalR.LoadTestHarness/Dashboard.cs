@@ -10,16 +10,35 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
     {
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
+        private static int _broadcastCount = 1;
+        private static int _broadcastSeconds = 1;
+        private static bool _batchingEnabled;
+        private static int _actualFps = 0;
 
         private static readonly Lazy<HighFrequencyTimer> _timerInstance = new Lazy<HighFrequencyTimer>(() =>
         {
             var clients = GlobalHost.ConnectionManager.GetHubContext<Dashboard>().Clients;
             var connection = GlobalHost.ConnectionManager.GetConnectionContext<TestConnection>().Connection;
             return new HighFrequencyTimer(1,
-                _ => connection.Broadcast(_broadcastPayload),
+                _ =>
+                    {
+                        if (_batchingEnabled)
+                        {
+                            var count = _broadcastCount;
+                            var payload = _broadcastPayload;
+                            for (var i = 0; i < count; i++)
+                            {
+                                connection.Broadcast(payload);
+                            }
+                        }
+                        else
+                        {
+                            connection.Broadcast(_broadcastPayload);
+                        }
+                    },
                 () => clients.All.started(),
                 () => clients.All.stopped(),
-                fps => clients.All.serverFps(fps)
+                fps => { _actualFps = fps; clients.All.serverFps(fps); }
             );
         });
 
@@ -30,9 +49,18 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             SetBroadcastPayload();
         }
 
-        public bool IsBroadcasting()
+        public dynamic GetStatus()
         {
-            return _timer.IsRunning();
+            return new
+            {
+                ConnectionBehavior = TestConnection.Behavior,
+                BroadcastBatching = _batchingEnabled,
+                BroadcastCount = _broadcastCount,
+                BroadcastSeconds = _broadcastSeconds,
+                BroadcastSize = _broadcastSize,
+                Broadcasting = _timer.IsRunning(),
+                ServerFps = _actualFps
+            };
         }
 
         public void SetConnectionBehavior(ConnectionBehavior behavior)
@@ -41,20 +69,19 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             Clients.All.connectionBehaviorChanged(behavior);
         }
 
-        public void StartBroadcast()
+        public void SetBroadcastBehavior(bool batchingEnabled)
         {
-            _timer.Start();
+            _batchingEnabled = batchingEnabled;
+            Clients.All.broadcastBehaviorChanged(batchingEnabled);
         }
 
-        public void StopBroadcast()
+        public void SetBroadcastRate(int count, int seconds)
         {
-            _timer.Stop();
-        }
-
-        public void SetBroadcastRate(long rate)
-        {
-            _timer.FPS = rate;
-            Clients.All.broadcastRateChanged(rate);
+            // Need to turn the count/seconds into FPS
+            _broadcastCount = count;
+            _broadcastSeconds = seconds;
+            _timer.FPS = _batchingEnabled ? seconds : 1;
+            Clients.All.broadcastRateChanged(count, seconds);
         }
 
         public void SetBroadcastSize(int size)
@@ -68,6 +95,16 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
+        }
+
+        public void StartBroadcast()
+        {
+            _timer.Start();
+        }
+
+        public void StopBroadcast()
+        {
+            _timer.Stop();
         }
 
         private static void SetBroadcastPayload()

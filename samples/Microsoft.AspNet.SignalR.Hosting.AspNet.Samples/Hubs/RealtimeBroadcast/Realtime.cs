@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.RealtimeBroadcast
             _timer.Stop();
         }
 
-        public long GetFPS()
+        public double GetFPS()
         {
             return _timer.FPS;
         }

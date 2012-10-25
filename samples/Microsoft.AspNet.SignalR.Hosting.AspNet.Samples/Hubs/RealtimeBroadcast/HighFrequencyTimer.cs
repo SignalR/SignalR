@@ -9,9 +9,9 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public class HighFrequencyTimer
     {
-        private long _fps;
+        private double _fps;
         private long _frameId;
-        private Action<long> _tick;
+        private Action<long> _callback;
         private Action _started;
         private Action _stopped;
         private Action<int> _actualFpsUpdate;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="fps">The desired frame rate per second.</param>
         /// <param name="callback">The callback to be invoked on each frame.</param>
-        public HighFrequencyTimer(int fps, Action<long> callback)
+        public HighFrequencyTimer(double fps, Action<long> callback)
             : this(fps, callback, null, null, null)
         {
             
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="started">The callback to be invoked when the timer enters the running state.</param>
         /// <param name="stopped">The callback to be invoked when the timer enters the stopped state.</param>
         /// <param name="actualFpsUpdate">The callback to invoked to receive updates of the actual frame rate.</param>
-        public HighFrequencyTimer(int fps, Action<long> callback, Action started, Action stopped, Action<int> actualFpsUpdate)
+        public HighFrequencyTimer(double fps, Action<long> callback, Action started, Action stopped, Action<int> actualFpsUpdate)
         {
             if (fps <= 0)
             {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             _fps = fps;
-            _tick = callback;
+            _callback = callback;
             _started = started ?? (() => { });
             _stopped = stopped ?? (() => { });
             _actualFpsUpdate = actualFpsUpdate ?? (_ => { });
@@ -87,9 +87,9 @@ namespace Microsoft.AspNet.SignalR
             return true;
         }
 
-        public long FPS
+        public double FPS
         {
-            get { return Interlocked.Read(ref _fps); }
+            get { return Interlocked.CompareExchange(ref _fps, 0, 0); }
             set { Interlocked.Exchange(ref _fps, value); }
         }
 
@@ -116,21 +116,23 @@ namespace Microsoft.AspNet.SignalR
 
             while (Interlocked.Read(ref _state) == 2)
             {
-                var frameMs = (int)Math.Round(1000.0 / Interlocked.Read(ref _fps));
+                var frameMs = (int)Math.Round(1000.0 / FPS);
                 long delta = (lastMs + frameMs) - sw.ElapsedMilliseconds;
+                
+                // Actual FPS check, update every second
+                if ((lastFpsCheck + 1000 - sw.ElapsedMilliseconds) <= 0)
+                {
+                    _actualFpsUpdate(actualFps);
+                    lastFpsCheck = sw.ElapsedMilliseconds;
+                    actualFps = 0;
+                }
+
                 if (delta <= 0)
                 {
-                    Interlocked.Increment(ref actualFps);
-                    _tick(Interlocked.Increment(ref _frameId));
+                    // Time to call the callback!
+                    actualFps++;
+                    _callback(Interlocked.Increment(ref _frameId));
                     lastMs = sw.ElapsedMilliseconds;
-
-                    // Actual FPS check, update every second
-                    if ((lastFpsCheck + 1000 - sw.ElapsedMilliseconds) <= 0)
-                    {
-                        _actualFpsUpdate(actualFps);
-                        lastFpsCheck = sw.ElapsedMilliseconds;
-                        Interlocked.Exchange(ref actualFps, 0);
-                    }
                 }
                 else
                 {
