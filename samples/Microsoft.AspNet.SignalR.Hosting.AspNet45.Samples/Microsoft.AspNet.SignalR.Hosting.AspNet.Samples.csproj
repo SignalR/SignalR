@@ -106,6 +106,8 @@
     <Content Include="Content\themes\smoothness\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\themes\smoothness\jquery-ui-1.8.12.css" />
     <Content Include="Global.asax" />
+    <Content Include="Hubs\Auth\Auth.js" />
+    <Content Include="Hubs\Auth\Default.aspx" />
     <Content Include="Hubs\Benchmark\crossdomain.htm" />
     <Content Include="Hubs\Benchmark\Benchmark.js" />
     <Content Include="Hubs\Benchmark\index.htm" />
@@ -124,6 +126,9 @@
     <Content Include="Hubs\MouseTracking\MouseTracking.css" />
     <Content Include="Hubs\MouseTracking\index.htm" />
     <Content Include="Hubs\MouseTracking\MouseTracking.js" />
+    <Content Include="Hubs\RealtimeBroadcast\index.html" />
+    <Content Include="Hubs\RealtimeBroadcast\Realtime.css" />
+    <Content Include="Hubs\RealtimeBroadcast\Realtime.js" />
     <Content Include="Hubs\ShapeShare\ShapeShare.css" />
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
@@ -167,6 +172,33 @@
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\App_Start\RegisterHubs.cs">
+      <Link>App_Start\RegisterHubs.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AdminAuthHub.cs">
+      <Link>Hubs\Auth\AdminAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AuthHub.cs">
+      <Link>Hubs\Auth\AuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\IncomingAuthHub.cs">
+      <Link>Hubs\Auth\IncomingAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\InheritAuthHub.cs">
+      <Link>Hubs\Auth\InheritAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\InvokeAuthHub.cs">
+      <Link>Hubs\Auth\InvokeAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\NoAuthHub.cs">
+      <Link>Hubs\Auth\NoAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\OutgoingAuthHub.cs">
+      <Link>Hubs\Auth\OutgoingAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\UserAndRoleAuthHub.cs">
+      <Link>Hubs\Auth\UserAndRoleAuthHub.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Benchmark\HubBench.cs">
       <Link>Hubs\Benchmark\HubBench.cs</Link>
     </Compile>
@@ -185,6 +217,12 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\MouseTracking\MouseTracking.cs">
       <Link>Hubs\MouseTracking\MouseTracking.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\RealtimeBroadcast\HighFrequencyTimer.cs">
+      <Link>Hubs\RealtimeBroadcast\HighFrequencyTimer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\RealtimeBroadcast\Realtime.cs">
+      <Link>Hubs\RealtimeBroadcast\Realtime.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\ShapeShare\ShapeShare.cs">
       <Link>Hubs\ShapeShare\ShapeShare.cs</Link>
     </Compile>
@@ -199,6 +237,13 @@
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\Auth\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\Auth\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\Chat\ContentProviders\CollegeHumorContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\EmbedContentProvider.cs" />

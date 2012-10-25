@@ -1,0 +1,16 @@
+﻿body {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI Light', 'Segoe UI', Arial, Helvetica, sans-serif;
+}
+
+#msgRate li:first-child {
+    font-weight: bold;
+}
+
+#fps, #serverFps {
+    width: 4em;
+    text-align: right;
+}
