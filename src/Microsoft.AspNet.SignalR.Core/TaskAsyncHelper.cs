@@ -55,6 +55,30 @@ namespace Microsoft.AspNet.SignalR
             return task ?? TaskCache<T>.Empty;
         }
 
+        public static Task FromAsync(Func<AsyncCallback, object, IAsyncResult> beginMethod, Action<IAsyncResult> endMethod, object state)
+        {
+            try
+            {
+                return Task.Factory.FromAsync(beginMethod, endMethod, state);
+            }
+            catch (Exception ex)
+            {
+                return TaskAsyncHelper.FromError(ex);
+            }
+        }
+
+        public static Task<T> FromAsync<T>(Func<AsyncCallback, object, IAsyncResult> beginMethod, Func<IAsyncResult, T> endMethod, object state)
+        {
+            try
+            {
+                return Task.Factory.FromAsync<T>(beginMethod, endMethod, state);
+            }
+            catch (Exception ex)
+            {
+                return TaskAsyncHelper.FromError<T>(ex);
+            }
+        }
+
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
@@ -74,7 +98,7 @@ namespace Microsoft.AspNet.SignalR
 #if PERFCOUNTERS
         public static TTask Catch<TTask>(this TTask task, params IPerformanceCounter[] counters) where TTask : Task
         {
-            return Catch(task, _ => 
+            return Catch(task, _ =>
                 {
                     if (counters == null)
                     {
@@ -829,7 +853,7 @@ namespace Microsoft.AspNet.SignalR
                 return TaskRunners<T, Task<T>>.RunTask(task, t => successor(t, arg1));
             }
         }
-        
+
         private static class TaskCache<T>
         {
             public static Task<T> Empty = MakeTask<T>(default(T));

@@ -29,20 +29,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet
         {
             get
             {
-#if NET45
-                try
-                {
-                    // Return true for websocket requests since connectivity is handled by SignalR's transport
-                    if (_context.IsWebSocketRequest)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // This fails if the request isn't a websocket request or if we're not in integrated mode
-                }
-#endif
                 try
                 {
                     return _context.Response.IsClientConnected;
