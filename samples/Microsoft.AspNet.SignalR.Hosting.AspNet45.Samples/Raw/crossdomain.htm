@@ -79,6 +79,10 @@
                 connection.send(window.JSON.stringify({ type: 1, value: $("#msg").val() }));
             });
 
+            $("#broadcast-exceptme").click(function () {
+                connection.send(window.JSON.stringify({ type: 7, value: $("#msg").val() }));
+            });
+
             $("#join").click(function () {
                 connection.send(window.JSON.stringify({ type: 2, value: $("#msg").val() }));
             });
@@ -120,6 +124,7 @@
     <form>
     <input type="text" id="msg" />
     <input type="button" id="broadcast" value="Broadcast" />
+    <input type="button" id="broadcast-exceptme" value="Broadcast (All Except Me)" />
     <input type="button" id="join" value="Enter Name" />
     <input type="button" id="join-group" value="Join Group" />
     <input type="button" id="leave-group" value="Leave Group" />
