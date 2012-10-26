@@ -154,6 +154,45 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionWithExistingCursorGetsAllMessagesAfterMessageBusRestart()
+        {
+            var dr = new DefaultDependencyResolver();
+            using (var bus = new MessageBus(dr))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                var wh = new ManualResetEvent(false);
+                IDisposable subscription = null;
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "key,00000001", result =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            Assert.Equal("key", m.Key);
+                            Assert.Equal("value", m.Value);
+                            wh.Set();
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 10);
+
+                    bus.Publish("test", "key", "value");
+
+                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void AddingEventAndSendingMessages()
         {
             var dr = new DefaultDependencyResolver();
