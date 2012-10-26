@@ -6,15 +6,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
     public class ServiceBusMessageBus : ScaleoutMessageBus
     {
-        const bool IsAnonymous = false;
-
         readonly TopicMessageBus bus;
-        readonly string topicPrefix;
 
         public ServiceBusMessageBus(string connectionString, int partitionCount, int nodeCount, int nodeId, string topicPrefix, IDependencyResolver resolver)
             : base(resolver)
         {
-            this.bus = new TopicMessageBus(connectionString, partitionCount, nodeCount, nodeId, topicPrefix, IsAnonymous, OnReceived);
+            this.bus = new TopicMessageBus(connectionString, partitionCount, nodeCount, nodeId, topicPrefix, OnReceived);
         }
 
         protected override Task Send(Message[] messages)
