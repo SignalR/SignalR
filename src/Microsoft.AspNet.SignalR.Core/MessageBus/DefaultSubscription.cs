@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR
                     {
                         _cursors.Remove(c);
                     }
-                    else if (topics.TryGetValue(_cursors[i].Key, out topic) && _cursors[i].Id > topic.Store.GetMessageCount())
+                    else if (!topics.TryGetValue(_cursors[i].Key, out topic) || _cursors[i].Id > topic.Store.GetMessageCount())
                     {
                         UpdateCursor(c.Key, 0);
                     }
