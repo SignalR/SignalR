@@ -1,0 +1,33 @@
+scenario
+{
+	name = "signalr_baseline";
+	warmup = 30;
+	duration = 90;
+	cooldown = 30;
+	default 
+	{
+		setheader
+		{
+			name = "Connection";
+			value = "keep-alive";
+		}
+		setheader
+		{
+			name = "Host";
+			value = server();
+		}
+		version = HTTP11;
+		statuscode = 200;
+		close = ka;
+	}
+	transaction
+	{
+		id = "basic";
+		weight = 1000;
+		request
+		{
+			port = 29573;
+			url = "/Baseline/Basic.ashx";
+		}
+	}
+}

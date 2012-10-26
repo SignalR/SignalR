@@ -150,6 +150,12 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
+    <None Include="wcat\basichandler.ubr" />
+    <None Include="wcat\localhost.ubr" />
+    <None Include="wcat\querystringhandler.ubr" />
+    <None Include="wcat\settings.ubr" />
+    <None Include="wcat\testconnection.ubr" />
+    <None Include="wcat\wcat.bat" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">

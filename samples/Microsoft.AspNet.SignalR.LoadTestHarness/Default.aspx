@@ -48,7 +48,7 @@
         </div>
 
         <div>
-            <a id="forceGC" href="#">Force GC</a>
+            <a id="forceGC" href="#" data-bind="text: GCStatus, disable: GCRunning,  click: forceGC">Force GC</a>
             <a href="LoadGenerator.html" target="_blank">Load Generator</a>
         </div>
 

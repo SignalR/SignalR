@@ -1,0 +1,33 @@
+scenario
+{
+name = "localhost_test";
+warmup = 10;
+duration = 20;
+cooldown = 10;
+default 
+{
+setheader
+{
+name = "Connection";
+value = "keep-alive";
+}
+setheader
+{
+name = "Host";
+value = server();
+}
+version = HTTP11;
+statuscode = 200;
+close = ka;
+}
+transaction
+{
+id = "foo";
+weight = 1000;
+request
+{
+url = "/";
+}
+}
+} 
+}

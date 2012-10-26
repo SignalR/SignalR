@@ -1,0 +1,42 @@
+settings
+{
+    server         = "localhost";
+    clients        = 1;
+    virtualclients = 4000;
+
+    counters
+    {
+        interval = 10;
+
+        counter = "Processor(_Total)\\% Processor Time";
+        counter = "Processor(_Total)\\% Privileged Time";
+        counter = "Processor(_Total)\\% User Time";
+        counter = "Processor(_Total)\\Interrupts/sec";
+
+        counter = "Memory\\Available KBytes";
+
+        counter = "Process(w3wp)\\Working Set";
+
+        counter = "System\\Context Switches/sec";
+        counter = "System\\System Calls/sec";
+
+        counter = "Web Service(_Total)\\Bytes Received/sec" ;
+        counter = "Web Service(_Total)\\Bytes Sent/sec" ;
+        counter = "Web Service(_Total)\\Connection Attempts/sec" ;
+        counter = "Web Service(_Total)\\Get Requests/sec" ;
+    }
+
+    registry
+    {
+        path = "System\\CurrentControlSet\\Control\\FileSystem";
+        name = "NtfsDisableLastAccessUpdate";
+        type = REG_DWORD;
+    }
+
+    registry
+    {
+        path = "System\\CurrentControlSet\\Services\\Tcpip\\Parameters";
+        name = "SynAttackProtect";
+        type = REG_DWORD;
+    }
+}

@@ -11,168 +11,171 @@ jQuery.fn.flash = function (color, duration) {
 };
 
 (function ($, ko) {
-    var model = $.signalR.dashboard;
-    
-    $.extend(model, {
 
-        // View model
-        _in: false,
+    function ViewModel(dashboard) {
+        var self = this;
+        
+        this.hub = dashboard;
+        
+        this._in = false;
 
-        incomingNotification: function (value) {
+        this.incomingNotification = function (value) {
             if (value) {
                 // Set the flag
-                model._in = value;
+                self._in = value;
                 return;
             }
-            if (model._in) {
+            if (self._in) {
                 // Pending incoming notification, set flag to false and return
-                model._in = false;
+                self._in = false;
                 return true;
             }
             return false;
-        },
+        };
 
-        connectionBehavior: ko.observable("0"),
+        this.connectionBehavior = ko.observable(0);
 
-        batching: ko.observable(false),
+        this.batching = ko.observable(false);
 
-        notBatching: ko.computed(function () {
-            return !model.batching();
-        }, model, { deferEvaluation: true }),
+        this.notBatching = ko.computed(function () {
+            return !self.batching();
+        });
 
-        broadcastCount: ko.observable(1),
+        this.broadcastCount = ko.observable(1);
 
-        broadcastSeconds: ko.observable(1),
+        this.broadcastSeconds = ko.observable(1);
 
-        broadcastSize: ko.observable(32),
+        this.broadcastSize = ko.observable(32);
 
-        broadcasting: ko.observable(false),
+        this.broadcasting = ko.observable(false);
 
-        status: ko.computed(function () {
-            return model.broadcasting() ? "Running" : "Stopped";
-        }, model, { deferEvaluation: true }),
+        this.status = ko.computed(function () {
+            return self.broadcasting() ? "Running" : "Stopped";
+        });
 
-        serverFps: ko.observable(0),
+        this.serverFps = ko.observable(0);
 
-        start: function() {
-            model.server.startBroadcast();
-        },
+        this.GCStatus = ko.observable("Force GC");
 
-        stop: function() {
-            model.server.stopBroadcast();
-        },
+        this.GCRunning = ko.observable(false);
 
-        init: function() {
+        this.forceGC = function () {
+            self.GCStatus("Collecting...");
+            self.GCRunning(true);
+
+            self.hub.server.forceGC().done(function () {
+                self.GCStatus("Force GC");
+                self.GCRunning(true);
+            });
+        };
+
+        this.start = function() {
+            self.hub.server.startBroadcast();
+        };
+
+        this.stop = function() {
+            self.hub.server.stopBroadcast();
+        };
+
+        this.init = function() {
+
             // Hook up subscriptions to notify server when view model changes
-            model.connectionBehavior.subscribe(function (newValue) {
-                model.incomingNotification() || model.server.setConnectionBehavior(newValue);
+            self.connectionBehavior.subscribe(function (newValue) {
+                self.incomingNotification() || self.hub.server.setConnectionBehavior(newValue);
             });
 
-            model.batching.subscribe(function (newValue) {
-                model.incomingNotification() || model.server.setBroadcastBehavior(newValue);
+            self.batching.subscribe(function (newValue) {
+                self.incomingNotification() || self.hub.server.setBroadcastBehavior(newValue);
             })
 
-            model.broadcastCount.subscribe(function (newValue) {
-                model.incomingNotification() || model.server.setBroadcastRate(newValue, model.broadcastSeconds());
+            self.broadcastCount.subscribe(function (newValue) {
+                self.incomingNotification() || self.hub.server.setBroadcastRate(newValue, self.broadcastSeconds());
             })
 
-            model.broadcastSeconds.subscribe(function (newValue) {
-                model.incomingNotification() || model.server.setBroadcastRate(model.broadcastCount(), newValue);
+            self.broadcastSeconds.subscribe(function (newValue) {
+                self.incomingNotification() || self.hub.server.setBroadcastRate(self.broadcastCount(), newValue);
             })
 
-            model.broadcastSize.subscribe(function (newValue) {
-                model.incomingNotification() || model.server.setBroadcastSize(newValue);
+            self.broadcastSize.subscribe(function (newValue) {
+                self.incomingNotification() || self.hub.server.setBroadcastSize(newValue);
             })
 
             $("#rateCount").spinner({
                 spin: function (e, ui) {
-                    model.broadcastCount(ui.value);
-                    model.server.setBroadcastRate(model.broadcastCount(), model.broadcastSeconds());
+                    self.broadcastCount(ui.value);
                 }
             });
 
             $("#rateSeconds").spinner({
                 spin: function (e, ui) {
-                    model.broadcastSeconds(ui.value);
-                    model.server.setBroadcastRate(model.broadcastCount(), model.broadcastSeconds());
+                    self.broadcastSeconds(ui.value);
                 }
             });
 
-            $("#forceGC").click(function (e) {
-                /// <param name="e" type="jQuery.Event">Description</param>
-                var link = $("#forceGC"),
-                    text = link.text(),
-                    href = link.prop("href");
-
-                e.preventDefault();
-
-                link.text("Collecting...")
-                    .prop("href", "");
-
-                model.server.forceGC().done(function () {
-                    link.text(text)
-                        .prop("href", href);
-                });
-            });
-
             // Get current dashboard status and update the view model
-            model.server.getStatus().done(function (status) {
-                model.incomingNotification(true);
-                model.connectionBehavior(status.ConnectionBehavior);
+            self.hub.server.getStatus().done(function (status) {
+                self.incomingNotification(true);
+                self.connectionBehavior(status.ConnectionBehavior);
 
-                model.incomingNotification(true);
-                model.batching(status.BroadcastBatching);
+                self.incomingNotification(true);
+                self.batching(status.BroadcastBatching);
 
-                model.incomingNotification(true);
-                model.broadcastCount(status.BroadcastCount);
+                self.incomingNotification(true);
+                self.broadcastCount(status.BroadcastCount);
 
-                model.incomingNotification(true);
-                model.broadcastSeconds(status.BroadcastSeconds);
+                self.incomingNotification(true);
+                self.broadcastSeconds(status.BroadcastSeconds);
 
-                model.incomingNotification(true);
-                model.broadcastSize(status.BroadcastSize);
+                self.incomingNotification(true);
+                self.broadcastSize(status.BroadcastSize);
 
-                model.broadcasting(status.Broadcasting);
+                self.broadcasting(status.Broadcasting);
             });
+        }
+    }
+
+    var dashboard = $.signalR.dashboard,
+        model;
+
+    $.extend(dashboard.client, {
+        // Client hub methods
+        started: function () {
+            model.broadcasting(true);
         },
 
-        // Client hub methods
-        client: {
-            started: function () {
-                model.broadcasting(true);
-            },
+        stopped: function () {
+            model.broadcasting(false);
+        },
 
-            stopped: function () {
-                model.broadcasting(false);
-            },
+        serverFps: function (fps) {
+            model.serverFps(fps);
+        },
 
-            serverFps: function (fps) {
-                model.serverFps(fps);
-            },
+        connectionBehaviorChanged: function (behavior) {
+            model.incomingNotification(true);
+            model.connectionBehavior(behavior);
+        },
 
-            connectionBehaviorChanged: function (behavior) {
-                model.incomingNotification(true);
-                model.connectionBehavior(behavior);
-            },
+        broadcastBehaviorChanged: function (batching) {
+            model.incomingNotification(true);
+            model.batching(batching);
+        },
 
-            broadcastBehaviorChanged: function (batching) {
-                model.incomingNotification(true);
-                model.batching(batching);
-            },
+        broadcastRateChanged: function (count, seconds) {
+            model.incomingNotification(true);
+            model.broadcastCount(count);
+            model.incomingNotification(true);
+            model.broadcastSeconds(seconds);
+        },
 
-            broadcastRateChanged: function (count, seconds) {
-                model.incomingNotification(true);
-                model.broadcastCount(count);
-                model.broadcastSeconds(seconds);
-            },
-
-            broadcastSizeChanged: function (size) {
-                model.incomingNotification(true);
-                model.broadcastSize(size);
-            }
+        broadcastSizeChanged: function (size) {
+            model.incomingNotification(true);
+            model.broadcastSize(size);
         }
     });
-
+    
+    model = new ViewModel(dashboard);
+    
     ko.applyBindings(model, document.getElementById("options"));
 
     $.signalR.hub.start(model.init);
