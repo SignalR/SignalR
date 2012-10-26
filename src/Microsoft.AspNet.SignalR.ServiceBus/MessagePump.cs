@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             bool shouldContinuePump;
 
             // Variables reused in the loop.
-            BrokeredMessage brokeredMessage;
+            IEnumerable<BrokeredMessage> brokeredMessages;
 
             public PumpAsyncResult(MessagePump owner, AsyncCallback callback, object state)
                 : base(TimeSpan.MaxValue, callback, state)
@@ -81,12 +81,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 while (this.shouldContinuePump)
                 {
                     // Reset status for the loop
-                    this.brokeredMessage = null;
+                    this.brokeredMessages = null;
 
                     // Receives the message
                     yield return this.CallAsync(
-                        (thisPtr, t, c, s) => thisPtr.owner.receiver.BeginReceive(c, s),
-                        (thisPtr, r) => thisPtr.brokeredMessage = thisPtr.owner.receiver.EndReceive(r),
+                        (thisPtr, t, c, s) => thisPtr.owner.receiver.BeginReceiveBatch(ReceiveBatchSize, c, s),
+                        (thisPtr, r) => thisPtr.brokeredMessages = thisPtr.owner.receiver.EndReceiveBatch(r),
                         ExceptionPolicy.Continue);
 
                     if (this.LastAsyncStepException != null)
@@ -101,40 +101,43 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     }
 
                     // Retry next receive if no message was received.
-                    if (this.brokeredMessage == null)
+                    if (this.brokeredMessages == null)
                     {
                         continue;
                     }
 
                     // Handles the message
-                    InternalMessage internalMessage = null;
+                    foreach (BrokeredMessage brokeredMessage in this.brokeredMessages)
+                    {
+                        InternalMessage internalMessage = null;
 
-                    try
-                    {
-                        ulong sequenceNumber = (ulong)brokeredMessage.SequenceNumber;
-                        Message[] messages = MessageConverter.ToMessages(brokeredMessage);
-                        internalMessage = new InternalMessage(this.owner.id, sequenceNumber, messages);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.MessagePumpDeserializationException(e);
-                    }
-                    finally
-                    {
-                        brokeredMessage.Dispose();
-                    }
-
-                    if (internalMessage != null)
-                    {
-                        if (!this.owner.semaphore.TryEnter())
+                        try
                         {
-                            yield return this.CallAsync(
-                                (thisPtr, t, c, s) => thisPtr.owner.semaphore.BeginEnter(c, s),
-                                (thisPtr, r) => thisPtr.owner.semaphore.EndEnter(r),
-                                ExceptionPolicy.Transfer);
+                            ulong sequenceNumber = (ulong)brokeredMessage.SequenceNumber;
+                            Message[] messages = MessageConverter.ToMessages(brokeredMessage);
+                            internalMessage = new InternalMessage(this.owner.id, sequenceNumber, messages);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.MessagePumpDeserializationException(e);
+                        }
+                        finally
+                        {
+                            brokeredMessage.Dispose();
                         }
 
-                        this.owner.inputQueue.EnqueueAndDispatch(internalMessage, this.owner.exitSemaphore);
+                        if (internalMessage != null)
+                        {
+                            if (!this.owner.semaphore.TryEnter())
+                            {
+                                yield return this.CallAsync(
+                                    (thisPtr, t, c, s) => thisPtr.owner.semaphore.BeginEnter(c, s),
+                                    (thisPtr, r) => thisPtr.owner.semaphore.EndEnter(r),
+                                    ExceptionPolicy.Transfer);
+                            }
+
+                            this.owner.inputQueue.EnqueueAndDispatch(internalMessage, this.owner.exitSemaphore, false);
+                        }
                     }
                 }
             }
@@ -144,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 if (exception is ServerBusyException)
                 {
                     return true;
-                }  
+                }
 
                 return false;
             }
