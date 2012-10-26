@@ -55,19 +55,19 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         static void Main(string[] args)
         {
-            Debug.Listeners.Add(new ConsoleTraceListener());
-            Debug.AutoFlush = true;
+            //Debug.Listeners.Add(new ConsoleTraceListener());
+            //Debug.AutoFlush = true;
 
-            while (true)
-            {
-                Console.WriteLine("==================================");
-                Console.WriteLine("BEGIN RUN");
-                Console.WriteLine("==================================");
-                StressGroups();
-                Console.WriteLine("==================================");
-                Console.WriteLine("END RUN");
-                Console.WriteLine("==================================");
-            }
+            //while (true)
+            //{
+            //    Console.WriteLine("==================================");
+            //    Console.WriteLine("BEGIN RUN");
+            //    Console.WriteLine("==================================");
+            //    StressGroups();
+            //    Console.WriteLine("==================================");
+            //    Console.WriteLine("END RUN");
+            //    Console.WriteLine("==================================");
+            //}
 
             //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
@@ -195,6 +195,8 @@ namespace Microsoft.AspNet.SignalR.Stress
         private static MemoryHost RunMemoryHost()
         {
             var host = new MemoryHost();
+            // Let's not run out of memory everytime
+            host.DisableWrites = true;
             host.MapConnection<StressConnection>("/echo");
 
             string payload = GetPayload();

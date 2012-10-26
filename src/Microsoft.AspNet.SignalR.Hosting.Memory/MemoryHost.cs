@@ -36,6 +36,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public IPrincipal User { get; set; }
 
+        public bool DisableWrites { get; set; }
+
         Task<IClientResponse> IHttpClient.GetAsync(string url, Action<IClientRequest> prepareRequest)
         {
             return ProcessRequest(url, prepareRequest, postData: null);
@@ -59,7 +61,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 prepareRequest(request);
 
                 Response response = null;
-                response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response));
+                response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response))
+                {
+                    DisableWrites = DisableWrites
+                };
                 var hostContext = new HostContext(request, response);
 
                 hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;

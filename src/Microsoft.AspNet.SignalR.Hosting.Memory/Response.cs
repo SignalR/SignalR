@@ -45,11 +45,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
         }
 
-        public string ContentType
-        {
-            get;
-            set;
-        }
+        public string ContentType { get; set; }
+
+        public bool DisableWrites { get; set; }
 
         public Task FlushAsync()
         {
@@ -64,7 +62,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void Write(ArraySegment<byte> data)
         {
-            _stream.Write(data.Array, data.Offset, data.Count);
+            if (!DisableWrites)
+            {
+                _stream.Write(data.Array, data.Offset, data.Count);
+            }
         }
 
         /// <summary>
