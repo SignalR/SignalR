@@ -34,24 +34,30 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            OutputWriter.Write("<script>r(c, {});</script>");
-            OutputWriter.WriteLine();
-            OutputWriter.WriteLine();
-            OutputWriter.Flush();
+            lock (_writeLock)
+            {
+                OutputWriter.Write("<script>r(c, {});</script>");
+                OutputWriter.WriteLine();
+                OutputWriter.WriteLine();
+                OutputWriter.Flush();
 
-            return Context.Response.FlushAsync();
+                return Context.Response.FlushAsync();
+            }
         }
 
         public override Task Send(PersistentResponse response)
         {
             OnSendingResponse(response);
 
-            OutputWriter.Write("<script>r(c, ");
-            JsonSerializer.Serialize(response, OutputWriter);
-            OutputWriter.Write(");</script>\r\n");
-            OutputWriter.Flush();
+            lock (_writeLock)
+            {
+                OutputWriter.Write("<script>r(c, ");
+                JsonSerializer.Serialize(response, OutputWriter);
+                OutputWriter.Write(");</script>\r\n");
+                OutputWriter.Flush();
 
-            return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
+                return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
+            }
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)
@@ -60,10 +66,14 @@ namespace Microsoft.AspNet.SignalR.Transports
                 .Then(initScript =>
                 {
                     Context.Response.ContentType = "text/html";
-                    OutputWriter.Write(initScript);
-                    OutputWriter.Flush();
 
-                    return Context.Response.FlushAsync();
+                    lock (_writeLock)
+                    {
+                        OutputWriter.Write(initScript);
+                        OutputWriter.Flush();
+
+                        return Context.Response.FlushAsync();
+                    }
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }

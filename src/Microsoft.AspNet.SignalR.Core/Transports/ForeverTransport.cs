@@ -156,10 +156,13 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Context.Response.ContentType = Json.MimeType;
 
-            JsonSerializer.Serialize(value, OutputWriter);
-            OutputWriter.Flush();
+            lock (_writeLock)
+            {
+                JsonSerializer.Serialize(value, OutputWriter);
+                OutputWriter.Flush();
 
-            return Context.Response.EndAsync();
+                return Context.Response.EndAsync();
+            }
         }
 
         protected virtual Task InitializeResponse(ITransportConnection connection)

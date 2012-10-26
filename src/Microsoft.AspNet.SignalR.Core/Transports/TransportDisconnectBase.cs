@@ -32,6 +32,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
 
+        // Lock to protect against overlapping writes to the underlying response stream
+        protected readonly object _writeLock = new object();
+
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
         {
             _context = context;
