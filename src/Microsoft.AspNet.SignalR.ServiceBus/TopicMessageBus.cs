@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         const int MaxInputQueueLength = 10000;
 
         readonly string prefix;
-        readonly bool isAnonymous;
         readonly string connectionString;
         readonly int partitionCount;
         readonly int nodeCount;
@@ -40,11 +39,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             int nodeCount,
             int nodeId,
             string prefix,
-            bool isAnonymous,
             Func<string, ulong, Message[], Task> onReceivedAsync)
         {
             this.prefix = prefix;
-            this.isAnonymous = isAnonymous;
             this.connectionString = connectionString;
             this.partitionCount = partitionCount;
             this.nodeCount = nodeCount;
@@ -104,21 +101,22 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         sealed class InitializeAsyncResult : IteratorAsyncResult<InitializeAsyncResult>
         {
-            readonly ServiceBusFactory serviceBusFactory;
             readonly static Action<AsyncResult, Exception> CompletingAction = Finally;
             readonly TopicMessageBus owner;
+            
+            TopicDescription topicDescription;
+            MessagingFactory factory;
 
             public InitializeAsyncResult(TopicMessageBus owner, AsyncCallback callback, object state)
                 : base(TimeSpan.MaxValue, callback, state)
             {
                 this.owner = owner;
-                this.serviceBusFactory = new ServiceBusFactory(this.owner.connectionString);
                 this.OnCompleting += CompletingAction;
             }
 
             protected override IEnumerator<AsyncStep> GetAsyncSteps()
             {
-                this.owner.namespaceManager = this.serviceBusFactory.CreateNamespaceManager();
+                this.owner.namespaceManager = NamespaceManager.CreateFromConnectionString(this.owner.connectionString);
 
                 for (int partitionId = 0; partitionId < this.owner.partitionCount; partitionId++)
                 {
@@ -134,11 +132,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                     if (!topicExist)
                     {
-                        TopicDescription topicDescription = new TopicDescription(topicPath);
+                        this.topicDescription = new TopicDescription(topicPath);
 
                         yield return this.CallAsync(
-                            (thisPtr, t, c, s) => thisPtr.owner.namespaceManager.BeginCreateTopic(topicDescription, c, s),
-                            (thisPtr, r) => topicDescription = thisPtr.owner.namespaceManager.EndCreateTopic(r),
+                            (thisPtr, t, c, s) => thisPtr.owner.namespaceManager.BeginCreateTopic(thisPtr.topicDescription, c, s),
+                            (thisPtr, r) => thisPtr.topicDescription = thisPtr.owner.namespaceManager.EndCreateTopic(r),
                             ExceptionPolicy.Transfer);
                     }
 
@@ -171,14 +169,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 for (int partitionId = 0; partitionId < this.owner.partitionCount; partitionId++)
                 {
-                    MessagingFactory factory = null;
+                    this.factory = MessagingFactory.CreateFromConnectionString(this.owner.connectionString);
 
-                    yield return this.CallAsync(
-                        (thisPtr, t, c, s) => thisPtr.serviceBusFactory.BeginCreateMessagingFactory(c, s),
-                        (thisPtr, r) => factory = thisPtr.serviceBusFactory.EndCreateMessagingFactory(r),
-                        ExceptionPolicy.Transfer);
-
-                    this.owner.factories.Add(partitionId, factory);
+                    this.owner.factories.Add(partitionId, this.factory);
 
                     string topicPath = this.owner.GetTopicPath(partitionId);
                     string subscriptionName = GetSubscriptionName(this.owner.nodeId);
@@ -187,8 +180,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     MessageSender sender = null;
 
                     yield return this.CallAsync(
-                        (thisPtr, t, c, s) => factory.BeginCreateMessageSender(topicPath, c, s),
-                        (thisPtr, r) => sender = factory.EndCreateMessageSender(r),
+                        (thisPtr, t, c, s) => thisPtr.factory.BeginCreateMessageSender(topicPath, c, s),
+                        (thisPtr, r) => sender = thisPtr.factory.EndCreateMessageSender(r),
                         ExceptionPolicy.Transfer);
 
                     this.owner.senders.Add(partitionId, sender);
@@ -221,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         sealed class SendAsyncResult : IteratorAsyncResult<SendAsyncResult>
         {
-            readonly Action<AsyncResult, Exception> CompletingAction = Finally;
+            static readonly Action<AsyncResult, Exception> CompletingAction = Finally;
             readonly TopicMessageBus owner;
             readonly Message[] messages;
             Dictionary<int, List<Message>> partitionedMessages;
