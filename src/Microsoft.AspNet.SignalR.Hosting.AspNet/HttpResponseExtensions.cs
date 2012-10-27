@@ -17,16 +17,25 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet
 #if NET45
             if (response.SupportsAsyncFlush)
             {
-                return TaskAsyncHelper.FromAsync((cb, state) => response.BeginFlush(cb, state), ar => response.EndFlush(ar), null);
-            }      
+                try
+                {
+                    return Task.Factory.FromAsync((cb, state) => response.BeginFlush(cb, state), ar => response.EndFlush(ar), null);
+                }
+                catch (HttpException ex)
+                {
+                    // Only swallow http exceptions since we don't want to hide bugs
+                    return TaskAsyncHelper.FromError(ex);
+                }
+            }
 #endif
             try
             {
                 response.Flush();
                 return TaskAsyncHelper.Empty;
             }
-            catch(Exception ex)
+            catch (HttpException ex)
             {
+                // Only swallow http exceptions since we don't want to hide bugs
                 return TaskAsyncHelper.FromError(ex);
             }
         }

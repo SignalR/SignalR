@@ -48,6 +48,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet45\Infrastructure\TaskQueue.cs">
+      <Link>Infrastructure\TaskQueue.cs</Link>
+    </Compile>
     <Compile Include="AspNetRequest.cs" />
     <Compile Include="AspNetResponse.cs" />
     <Compile Include="AspNetShutDownDetector.cs" />
