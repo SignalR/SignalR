@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Hubs;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class HubProxyFacts : IDisposable
+    public class HubProxyFacts
     {
         [Fact]
         public void InvokeWithErrorInHubResultReturnsFaultedTask()
@@ -105,71 +104,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.True(eventRaised);
         }
 
-        [Fact]
-        public void EndToEndTest()
-        {
-            using (var host = new MemoryHost())
-            {
-                host.MapHubs();
-
-                var hubConnection = new HubConnection("http://fake");
-                IHubProxy proxy = hubConnection.CreateHubProxy("ChatHub");
-                var wh = new ManualResetEvent(false);
-
-                proxy.On("addMessage", data =>
-                {
-                    Assert.Equal("hello", data);
-                    wh.Set();
-                });
-
-                hubConnection.Start(host).Wait();
-
-                proxy.Invoke("Send", "hello").Wait();
-
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
-            }
-        }
-
-        [Fact]
-        public void HubNamesAreNotCaseSensitive()
-        {
-            using (var host = new MemoryHost())
-            {
-                host.MapHubs();
-
-                var hubConnection = new HubConnection("http://fake");
-                IHubProxy proxy = hubConnection.CreateHubProxy("chatHub");
-                var wh = new ManualResetEvent(false);
-
-                proxy.On("addMessage", data =>
-                {
-                    Assert.Equal("hello", data);
-                    wh.Set();
-                });
-
-                hubConnection.Start(host).Wait();
-
-                proxy.Invoke("Send", "hello").Wait();
-
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
-            }
-        }
-
-        [Fact]
-        public void UnableToCreateHubThrowsError()
-        {
-            using (var host = new MemoryHost())
-            {
-                host.MapHubs();
-
-                var hubConnection = new HubConnection("http://fake");
-                IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
-
-                hubConnection.Start(host).Wait();
-                Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());
-            }
-        }
-
         private void AssertAggregateException(Action action, string message)
         {
             try
@@ -179,33 +113,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             catch (AggregateException ex)
             {
                 Assert.Equal(ex.Unwrap().Message, message);
-            }
-        }
-
-        public class MyHub2 : Hub
-        {
-            public MyHub2(int n)
-            {
-
-            }
-
-            public void Send(string value)
-            {
-
-            }
-        }
-
-        public void Dispose()
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
-        public class ChatHub : Hub
-        {
-            public Task Send(string message)
-            {
-                return Clients.All.addMessage(message);
             }
         }
     }

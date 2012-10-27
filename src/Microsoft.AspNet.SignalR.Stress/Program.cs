@@ -55,19 +55,19 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         static void Main(string[] args)
         {
-            //Debug.Listeners.Add(new ConsoleTraceListener());
-            //Debug.AutoFlush = true;
+            Debug.Listeners.Add(new ConsoleTraceListener());
+            Debug.AutoFlush = true;
 
-            //while (true)
-            //{
-            //    Console.WriteLine("==================================");
-            //    Console.WriteLine("BEGIN RUN");
-            //    Console.WriteLine("==================================");
-            //    StressGroups();
-            //    Console.WriteLine("==================================");
-            //    Console.WriteLine("END RUN");
-            //    Console.WriteLine("==================================");
-            //}
+            while (true)
+            {
+                Console.WriteLine("==================================");
+                Console.WriteLine("BEGIN RUN");
+                Console.WriteLine("==================================");
+                StressGroups();
+                Console.WriteLine("==================================");
+                Console.WriteLine("END RUN");
+                Console.WriteLine("==================================");
+            }
 
             //TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             ThreadPool.SetMinThreads(32, 32);
@@ -75,10 +75,12 @@ namespace Microsoft.AspNet.SignalR.Stress
             // RunBusTest();
             // RunConnectionTest();
             //RunConnectionReceiveLoopTest();
-            using (var host = RunMemoryHost())
-            {
-                Console.ReadLine();
-            }
+            //using (var host = RunMemoryHost())
+            //{
+            //    Console.ReadLine();
+            //}
+
+            Console.ReadLine();
         }
 
         private static void Write(Stream stream, string raw)
@@ -93,7 +95,9 @@ namespace Microsoft.AspNet.SignalR.Stress
             {
                 host.HubPipeline.EnableAutoRejoiningGroups();
                 host.MapHubs();
-                int max = 15;
+                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.Configuration.KeepAlive = TimeSpan.FromSeconds(5);
+                int max = 10000000;
 
                 var countDown = new CountDown(max);
                 var list = Enumerable.Range(0, max).ToList();
@@ -503,9 +507,7 @@ namespace Microsoft.AspNet.SignalR.Stress
     {
         public Task Do(int index)
         {
-            // Groups.Add(Context.ConnectionId, "one").Wait();
-            Groups.Add(Context.ConnectionId, "one").Wait();
-            return Clients.Group("one").Do(index);
+            return Clients.All.Do(index);
         }
     }
 

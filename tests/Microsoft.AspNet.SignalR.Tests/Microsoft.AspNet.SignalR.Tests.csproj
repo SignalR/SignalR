@@ -37,9 +37,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -54,51 +51,22 @@
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AdminAuthHub.cs">
-      <Link>Hubs\AdminAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AuthHub.cs">
-      <Link>Hubs\AuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\IncomingAuthHub.cs">
-      <Link>Hubs\IncomingAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\InheritAuthHub.cs">
-      <Link>Hubs\InheritAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\InvokeAuthHub.cs">
-      <Link>Hubs\InvokeAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\NoAuthHub.cs">
-      <Link>Hubs\NoAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\OutgoingAuthHub.cs">
-      <Link>Hubs\OutgoingAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\UserAndRoleAuthHub.cs">
-      <Link>Hubs\UserAndRoleAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
-      <Link>Hubs\DemoHub.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.FunctionalTests\Infrastructure\CountDownRange.cs">
+      <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
-    <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
-    <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />
     <Compile Include="Server\MessageResultExtensions.cs" />
     <Compile Include="Server\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="CursorFacts.cs" />
     <Compile Include="DefaultHubResolverFacts.cs" />
-    <Compile Include="Server\Connections\DisconnectFacts.cs" />
     <Compile Include="EventSourceStreamReaderFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Server\DisposerFacts.cs" />
-    <Compile Include="Server\Hubs\HubFacts.cs" />
     <Compile Include="DefaultActionResolverFacts.cs" />
-    <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
@@ -115,10 +83,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj">
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
-      <Project>{055F2118-FE29-4219-A28A-3D6F0889652E}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>

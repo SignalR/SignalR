@@ -75,6 +75,7 @@
 
   <ItemGroup>
     <TestProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" />
+    <TestProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.dll" />
   </ItemGroup>
 
   <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
