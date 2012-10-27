@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     /// <summary>
     /// Default implementation of <see cref="ITransportHeartBeat"/>.
     /// </summary>
-    public class TransportHeartBeat : ITransportHeartBeat
+    public class TransportHeartBeat : ITransportHeartBeat, IDisposable
     {
         private readonly ConcurrentDictionary<string, ConnectionMetadata> _connections = new ConcurrentDictionary<string, ConnectionMetadata>();
         private readonly Timer _timer;
@@ -285,6 +285,14 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Only raise timeout if we're past the configured connection timeout.
             return elapsed >= _configurationManager.ConnectionTimeout;
+        }
+
+        public void Dispose()
+        {
+            if (_timer != null)
+            {
+                _timer.Dispose();
+            }
         }
 
         private class ConnectionMetadata
