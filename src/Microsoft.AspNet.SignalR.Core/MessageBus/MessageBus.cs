@@ -28,7 +28,8 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="resolver"></param>
         public MessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>(), resolver.Resolve<IPerformanceCounterManager>())
+            : this(resolver.Resolve<ITraceManager>(), 
+                   resolver.Resolve<IPerformanceCounterManager>())
         {
         }
 
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Publishes a new message to the specified event on the bus.
         /// </summary>
-        /// <param name="source">A value representing the source of the data sent.</param>
+        /// <param name="message">The message to publish.</param>
         public virtual Task Publish(Message message)
         {
             Topic topic = GetTopic(message.Key);
