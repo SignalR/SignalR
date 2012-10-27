@@ -20,7 +20,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private readonly static PropertyInfo[] _counterProperties = GetCounterPropertyInfo();
         private readonly static IPerformanceCounter _noOpCounter = new NoOpPerformanceCounter();
-        private object _initDummy;
+        private volatile bool _initialized;
+        private object _initLocker = new object();
 
         /// <summary>
         /// Creates a new instance.
@@ -175,18 +176,54 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <param name="hostShutdownToken">The CancellationToken representing the host shutdown.</param>
         public void Initialize(string instanceName, CancellationToken hostShutdownToken)
         {
-            LazyInitializer.EnsureInitialized(ref _initDummy, () =>
+            if (_initialized)
+            {
+                return;
+            }
+
+            var needToRegisterWithShutdownToken = false;
+            lock (_initLocker)
+            {
+                if (!_initialized)
                 {
                     instanceName = instanceName ?? Guid.NewGuid().ToString();
+                    SetCounterProperties(instanceName);
+                    // The initializer ran, so let's register the shutdown cleanup
                     if (hostShutdownToken != null)
                     {
-                        hostShutdownToken.Register(UnloadCounters);
+                        needToRegisterWithShutdownToken = true;
                     }
+                    _initialized = true;
+                }
+            }
 
-                    SetCounterProperties(instanceName);
+            if (needToRegisterWithShutdownToken)
+            {
+                hostShutdownToken.Register(UnloadCounters);
+            }
+        }
 
-                    return new object();
-                });
+        private void UnloadCounters()
+        {
+            lock (_initLocker)
+            {
+                if (!_initialized)
+                {
+                    // We were never initalized
+                    return;
+                }
+            }
+
+            var counterProperties = this.GetType()
+                .GetProperties()
+                .Where(p => p.PropertyType == typeof(IPerformanceCounter));
+
+            foreach (var property in counterProperties)
+            {
+                var counter = property.GetValue(this, null) as IPerformanceCounter;
+                counter.Close();
+                counter.RemoveInstance();
+            }
         }
 
         private void InitNoOpCounters()
@@ -213,25 +250,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 var counter = LoadCounter(CategoryName, attribute.Name, instanceName);
                 counter.NextSample(); // Initialize the counter sample
                 property.SetValue(this, counter, null);
-            }
-        }
-
-        private void UnloadCounters()
-        {
-            if (_initDummy == null)
-            {
-                return;
-            }
-
-            var counterProperties = this.GetType()
-                .GetProperties()
-                .Where(p => p.PropertyType == typeof(IPerformanceCounter));
-
-            foreach (var property in counterProperties)
-            {
-                var counter = property.GetValue(this, null) as IPerformanceCounter;
-                counter.Close();
-                counter.RemoveInstance();
             }
         }
 
