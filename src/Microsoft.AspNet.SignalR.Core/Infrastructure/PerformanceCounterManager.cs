@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public const string CategoryName = "SignalR";
 
         private readonly static PropertyInfo[] _counterProperties = GetCounterPropertyInfo();
+        private readonly static IPerformanceCounter _noOpCounter = new NoOpPerformanceCounter();
         private object _initDummy;
 
         /// <summary>
@@ -257,10 +258,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 {
                     return new PerformanceCounterWrapper(new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false));
                 }
-                return new NoOpPerformanceCounter();
+                return _noOpCounter;
             }
-            catch (InvalidOperationException) { return new NoOpPerformanceCounter(); }
-            catch (UnauthorizedAccessException) { return new NoOpPerformanceCounter(); }
+            catch (InvalidOperationException) { return _noOpCounter; }
+            catch (UnauthorizedAccessException) { return _noOpCounter; }
         }
     }
 }
