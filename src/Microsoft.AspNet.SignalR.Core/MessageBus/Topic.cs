@@ -45,11 +45,11 @@ namespace Microsoft.AspNet.SignalR
 
         public void AddSubscription(ISubscription subscription)
         {
-            _lastUsed = DateTime.UtcNow;
-
             try
             {
                 SubscriptionLock.EnterWriteLock();
+
+                _lastUsed = DateTime.UtcNow;
 
                 if (_subcriptionIdentities.Add(subscription.Identity))
                 {
@@ -64,11 +64,11 @@ namespace Microsoft.AspNet.SignalR
 
         public void RemoveSubscription(ISubscription subscription)
         {
-            _lastUsed = DateTime.UtcNow;
-
             try
             {
                 SubscriptionLock.EnterWriteLock();
+
+                _lastUsed = DateTime.UtcNow;
 
                 if (_subcriptionIdentities.Remove(subscription.Identity))
                 {
