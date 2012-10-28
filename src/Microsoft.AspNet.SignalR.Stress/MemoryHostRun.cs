@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     while (!cancellationTokenSource.IsCancellationRequested)
                     {
                         string connectionId = i.ToString();
-                        ProcessSendRequest(host, transport, connectionId, payload).Wait();
+                        ProcessSendRequest(host, transport, connectionId, payload);
                     }
 
                     countDown.Signal();

@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     while (!cancellationTokenSource.IsCancellationRequested)
                     {
                         string source = i.ToString();
-                        bus.Publish(source, "a", payload).Wait();
+                        bus.Publish(source, "a", payload);
                     }
 
                     countDown.Signal();
