@@ -10,8 +10,7 @@ using Owin;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hosting.AspNet.Samples;
 using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
-using Microsoft.AspNet.SignalR.Samples.Raw;
-using Microsoft.AspNet.SignalR.Samples.Streaming;
+using Microsoft.AspNet.SignalR.Samples;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Console.Samples
 {
