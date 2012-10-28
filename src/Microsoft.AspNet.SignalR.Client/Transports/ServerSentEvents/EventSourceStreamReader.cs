@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
     {
         private readonly Stream _stream;
         private readonly ChunkBuffer _buffer;
-        private readonly object _lockObj = new object();
+        private readonly object _bufferLock = new object();
         private byte[] _readBuffer;
 
 
@@ -158,9 +158,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void ProcessBuffer(int read)
         {
-            lock (_lockObj)
+            lock (_bufferLock)
             {
-                _buffer.Add(_readBuffer, read);
+                if (_readBuffer != null)
+                {
+                    _buffer.Add(_readBuffer, read);
+                }
 
                 while (_buffer.HasChunks)
                 {
@@ -200,8 +203,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     Closed(exception);
                 }
 
-                // Release the buffer
-                _readBuffer = null;
+                lock (_bufferLock)
+                {
+                    // Release the buffer
+                    _readBuffer = null;
+                }
             }
         }
 
