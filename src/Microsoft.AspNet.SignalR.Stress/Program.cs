@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR.Stress
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             stream.Write(data, 0, data.Length);
         }
 
-        public static void StressGroups()
+        public static void StressGroups(int runs = 100)
         {
             using (var host = new MemoryHost())
             {
@@ -97,56 +97,34 @@ namespace Microsoft.AspNet.SignalR.Stress
                 host.MapHubs();
                 host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
                 host.Configuration.KeepAlive = TimeSpan.FromSeconds(5);
-                int max = 10000000;
 
-                var countDown = new CountDown(max);
-                var list = Enumerable.Range(0, max).ToList();
+                var countDown = new CountDownRange<int>(Enumerable.Range(0, runs)); 
                 var connection = new Client.Hubs.HubConnection("http://foo");
-                var proxy = connection.CreateHubProxy("MultGroupHub");
-
+                var proxy = connection.CreateHubProxy("HubWithGroups");
                 var bus = (MessageBus)host.DependencyResolver.Resolve<IMessageBus>();
 
                 proxy.On<int>("Do", i =>
                 {
-                    lock (list)
+                    if (!countDown.Mark(i))
                     {
-                        if (!list.Remove(i))
-                        {
-                            Debugger.Break();
-                        }
+                        Debugger.Break();
                     }
-
-                    countDown.Dec();
                 });
 
                 try
                 {
                     connection.Start(host).Wait();
 
-                    for (int i = 0; i < max; i++)
+                    proxy.Invoke("Join", "foo").Wait();
+
+                    for (int i = 0; i < runs; i++)
                     {
-                        proxy.Invoke("Do", i).Wait();
+                        proxy.Invoke("Send", "foo", i).Wait();
                     }
 
-                    int retry = 3;
-                    bool result = false;
-
-                    do
+                    if (!countDown.Wait(TimeSpan.FromSeconds(10)))
                     {
-                        result = countDown.Wait(TimeSpan.FromSeconds(10));
-                        if (!result)
-                        {
-                            Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed (" + String.Join(",", list.Select(i => i.ToString())) + ")");
-                            Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
-                            countDown.Reset();
-                        }
-
-                        retry--;
-
-                    } while (retry > 0);
-
-                    if (!result)
-                    {
+                        Console.WriteLine("Didn't receive " + runs + " messages. Got " + (runs - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
                         Console.WriteLine("A=" + bus.AllocatedWorkers + " B=" + bus.BusyWorkers);
                         Debugger.Break();
                     }
@@ -503,55 +481,16 @@ namespace Microsoft.AspNet.SignalR.Stress
         }
     }
 
-    public class MultGroupHub : Hub
+    public class HubWithGroups : Hub
     {
-        public Task Do(int index)
+        public Task Join(string group)
         {
-            return Clients.All.Do(index);
-        }
-    }
-
-    public class User
-    {
-        public int Index { get; set; }
-        public string Name { get; set; }
-        public string Room { get; set; }
-    }
-
-    public class CountDown
-    {
-        private int _count;
-        private ManualResetEventSlim _wh = new ManualResetEventSlim(false);
-
-        public int Count
-        {
-            get
-            {
-                return _count;
-            }
+            return Groups.Add(Context.ConnectionId, group);
         }
 
-        public CountDown(int count)
+        public Task Send(string group, int index)
         {
-            _count = count;
-        }
-
-        public void Dec()
-        {
-            if (Interlocked.Decrement(ref _count) == 0)
-            {
-                _wh.Set();
-            }
-        }
-
-        public bool Wait(TimeSpan timeout)
-        {
-            return _wh.Wait(timeout);
-        }
-
-        internal void Reset()
-        {
-            _wh.Reset();
+            return Clients.Group(group).Do(index);
         }
     }
 }
