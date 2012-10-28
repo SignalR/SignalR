@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -65,6 +66,46 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
 
             return new DisposableAction(() => { });
+        }
+
+        public static IDisposable RunConnectDisconnect(int connections)
+        {
+            var host = new MemoryHost();
+
+            host.MapHubs();
+
+            for (int i = 0; i < connections; i++)
+            {
+                var connection = new Client.Hubs.HubConnection("http://foo");
+                var proxy = connection.CreateHubProxy("EchoHub");
+                var wh = new ManualResetEventSlim(false);
+
+                proxy.On("echo", _ => wh.Set());
+
+                try
+                {
+                    connection.Start(host).Wait();
+
+                    proxy.Invoke("Echo", "foo").Wait();
+
+                    if (!wh.Wait(TimeSpan.FromSeconds(10)))
+                    {
+                        Debugger.Break();
+                    }
+                }
+                finally
+                {
+                    connection.Stop();
+                }
+            }
+
+            Console.WriteLine("Before GC");
+            Console.ReadLine();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            return host;
         }
     }
 }
