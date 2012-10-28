@@ -9,7 +9,7 @@
     <ProjectTypeGuids>{349C5851-65DF-11DA-9384-00065B846F21};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Hosting.AspNet.Samples</RootNamespace>
+    <RootNamespace>Microsoft.AspNet.SignalR.Samples</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Hosting.AspNet.Samples</AssemblyName>
     <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -172,8 +172,14 @@
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\App_Start\RegisterHubs.cs">
-      <Link>App_Start\RegisterHubs.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\App_Start\BackgroundThread.cs">
+      <Link>App_Start\BackgroundThread.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\App_Start\RouteConfig.cs">
+      <Link>App_Start\RouteConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\App_Start\SignalRConfig.cs">
+      <Link>App_Start\SignalRConfig.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AdminAuthHub.cs">
       <Link>Hubs\Auth\AdminAuthHub.cs</Link>

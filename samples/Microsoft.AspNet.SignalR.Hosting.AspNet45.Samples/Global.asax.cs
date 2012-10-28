@@ -9,43 +9,16 @@ using System.Web.Routing;
 using System.Web.Security;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
-using Microsoft.AspNet.SignalR.Samples.Raw;
-using Microsoft.AspNet.SignalR.Samples.Streaming;
 
-namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples
+namespace Microsoft.AspNet.SignalR.Samples
 {
     public class Global : System.Web.HttpApplication
     {
         protected void Application_Start(object sender, EventArgs e)
         {
-            //GlobalHost.DependencyResolver.UseSqlServer(ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
-            GlobalHost.HubPipeline.AddModule(new SamplePipelineModule());
-            GlobalHost.HubPipeline.EnableAutoRejoiningGroups();
-
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();
-                var hubContext = GlobalHost.ConnectionManager.GetHubContext<DemoHub>();
-
-                while (true)
-                {
-                    try
-                    {
-                        context.Connection.Broadcast(DateTime.Now.ToString());
-                        hubContext.Clients.All.fromArbitraryCode(DateTime.Now.ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError("SignalR error thrown in Streaming broadcast: {0}", ex);
-                    }
-                    Thread.Sleep(2000);
-                }
-            });
-
-            RouteTable.Routes.MapConnection<SendingConnection>("sending-connection", "sending-connection/{*operation}");
-            RouteTable.Routes.MapConnection<TestConnection>("test-connection", "test-connection/{*operation}");
-            RouteTable.Routes.MapConnection<Raw>("raw", "raw/{*operation}");
-            RouteTable.Routes.MapConnection<Streaming>("streaming", "streaming/{*operation}");
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            SignalRConfig.ConfigureSignalR(GlobalHost.DependencyResolver, GlobalHost.HubPipeline);
+            BackgroundThread.Start();
         }
 
         protected void Application_AuthenticateRequest(object sender, EventArgs e)
