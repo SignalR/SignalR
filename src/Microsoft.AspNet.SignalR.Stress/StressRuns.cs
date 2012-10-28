@@ -60,9 +60,6 @@ namespace Microsoft.AspNet.SignalR.Stress
                 finally
                 {
                     connection.Stop();
-
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
                 }
             }
 
@@ -159,12 +156,6 @@ namespace Microsoft.AspNet.SignalR.Stress
                     connection.Stop();
                 }
             }
-
-            Console.WriteLine("Before GC");
-            Console.ReadLine();
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
 
             return host;
         }

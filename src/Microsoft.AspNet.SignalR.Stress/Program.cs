@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Stress.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
@@ -10,11 +11,25 @@ namespace Microsoft.AspNet.SignalR.Stress
         static void Main(string[] args)
         {
             IDisposable run = CreateRun(args);
+            long memory = 0;
 
             using (run)
             {
-                Console.ReadLine();
+                memory = GC.GetTotalMemory(forceFullCollection: false);
+
+                Console.WriteLine("Before GC {0}", Utility.FormatBytes(memory));
+                Console.ReadKey();
+
+                memory = GC.GetTotalMemory(forceFullCollection: true);
+
+                Console.WriteLine("After GC and before dispose {0}", Utility.FormatBytes(memory));
+                Console.ReadKey();
             }
+
+            memory = GC.GetTotalMemory(forceFullCollection: true);
+
+            Console.WriteLine("After GC and dispose {0}", Utility.FormatBytes(memory));
+            Console.ReadKey();
         }
 
         private static IDisposable CreateRun(string[] args)
@@ -31,7 +46,8 @@ namespace Microsoft.AspNet.SignalR.Stress
             // return ConnectionRun.LongRunningSubscriptionRun(connections, senders, payload);
             // return ConnectionRun.ReceiveLoopRun(connections, senders, payload);
             // return MemoryHostRun.Run(connections, senders, payload, "serverSentEvents");
-            return StressRuns.ManyUniqueGroups(concurrency: 4);
+            // return StressRuns.RunConnectDisconnect(connections);
+            return StressRuns.ManyUniqueGroups(concurrency: 4);            
         }
 
         private static string GetPayload(int n = 32)
