@@ -46,8 +46,8 @@ namespace Microsoft.AspNet.SignalR.Stress
             // return ConnectionRun.LongRunningSubscriptionRun(connections, senders, payload);
             // return ConnectionRun.ReceiveLoopRun(connections, senders, payload);
             // return MemoryHostRun.Run(connections, senders, payload, "serverSentEvents");
-            // return StressRuns.RunConnectDisconnect(connections);
-            return StressRuns.ManyUniqueGroups(concurrency: 4);            
+            return StressRuns.RunConnectDisconnect(connections);
+            // return StressRuns.ManyUniqueGroups(concurrency: 4);            
         }
 
         private static string GetPayload(int n = 32)
