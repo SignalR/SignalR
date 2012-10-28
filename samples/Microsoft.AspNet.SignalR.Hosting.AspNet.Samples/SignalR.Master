@@ -1,32 +1,76 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="SignalR.Master.cs" Inherits="Microsoft.AspNet.SignalR.Samples.SignalRMaster" %>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" class="no-js">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>SignalR Samples</title>
-    <link href="~/Content/site.css" rel="stylesheet" />
+    <title>ASP.NET SignalR</title>
+    <link href="Content/bootstrap.css" rel="stylesheet" />
+    <link href="Content/bootstrap-responsive.css" rel="stylesheet" />
+    <style>
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+    </style>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <%--<link href="~/Content/site.css" rel="stylesheet" />--%>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
-    <script>document.getElementsByTagName("html")[0].className = "js";</script>
+    <%--<script>document.getElementsByTagName("html")[0].className = "js";</script>--%>
 </head>
 <body>
-    <div id="page">
-        <header class="header">
-            <div class="title">
-                <h1>SignalR</h1>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand logo" href="/">ASP.NET SignalR</a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
+                        <li class="active"><a href="/">Samples</a></li>
+                        <li><a href="/LoadTestHarness">Load Test Harness</a></li>
+                        <li><a href="https://github.com/signalr/signalr">Source Code</a></li>
+                        <%--<li><a href="#contact">Contact</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Action</a></li>
+                                <li><a href="#">Another action</a></li>
+                                <li><a href="#">Something else here</a></li>
+                                <li class="divider"></li>
+                                <li class="nav-header">Nav header</li>
+                                <li><a href="#">Separated link</a></li>
+                                <li><a href="#">One more separated link</a></li>
+                            </ul>
+                        </li>--%>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
             </div>
-        </header>
-        <nav>
-            <ul>
-                <li><asp:HyperLink runat="server" NavigateUrl="~/">home</asp:HyperLink></li>
-                <%--<li><asp:HyperLink runat="server" NavigateUrl="~/SignalRSamples">samples</asp:HyperLink></li>--%>
-            </ul>
-        </nav>
-        <section class="main">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server" />
-        </section>
-        <div class="clear"></div>
-        <footer>
-            SignalR, Copyright © Damian Edwards, David Fowler
-        </footer>
+        </div>
     </div>
+
+    <div class="container">
+        <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+
+        <hr />
+
+        <footer>
+            <p>&copy; Microsoft Open Technologies Inc. All rights reserved.</p>
+        </footer>
+
+    </div>
+    <!-- /container -->
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="<%: ResolveUrl("~/Scripts/jquery-1.6.4.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/bootstrap.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/signalr.samples.js") %>"></script>
+    <asp:ContentPlaceHolder runat="server" ID="Scripts"></asp:ContentPlaceHolder>
 </body>
 </html>

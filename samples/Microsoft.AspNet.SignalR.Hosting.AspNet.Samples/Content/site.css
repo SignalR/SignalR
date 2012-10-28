@@ -7,27 +7,89 @@
 }
 
 h1, h2, h3 {
-    font-family: "Segoe UI Light";
-    color: #616161;
+    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
+    font-weight: normal;
 }
 
 h1 {
-    font-size: 46px;
+    font-size: 1.8em;
+    color: #44525E;
+    line-height: 1;
+    padding-bottom: 15px;
+    margin: 0 21px 16px 0;
+    border-bottom: 1px dotted #999;
 }
+
+h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #44525E;
+}
+
+p {
+    margin: 0 0 8px;
+}
+
+    #items li {
+        border-bottom: 1px solid #d9d9d9;
+    }
 
 a, a:link, a:visited {
     text-decoration: none;
-    color: Blue;
+    color: #267CB2;
 }
 
 a:hover {
     text-decoration: underline;
 }
 
-#page {
+#allcontent {
+    
+}
+
+#header-wrap {
+    background: #262D64 url("bg-body.jpg") no-repeat scroll center -12px;
+}
+
+    #header-wrap header {
+        width: 970px;
+        min-height: 106px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+        #header-wrap header a.title {
+            position: absolute;
+            left: 10px;
+            top: 30px;
+            font-size: 48px;
+            font-family: "Segoe UI Light";
+            color: #fff;
+        }
+
+            #header-wrap header a.title:hover {
+                text-decoration: none;
+            }
+
+            #header-wrap header a.title .logo {
+                background: url("sprite-ui.png") no-repeat scroll 0 0 transparent;
+                display: block;
+                float: left;
+                text-indent: -999em;
+                height: 44px;
+                width: 153px;
+                margin: 8px 4px 0 0;
+            }
+
+        #header-wrap header {
+
+        }
+
+.content {
+    padding: 20px 10px 34px 10px;
+    width: 950px;
     margin: 0 auto;
-    padding: 10px 20px;
-    width: 800px;
 }
 
 footer {
@@ -49,44 +111,4 @@ footer {
     
 }
 
-    #home li {
-        width: 180px;
-        height: 180px;
-        background: #ccc;
-        float: left;
-        margin: 0 15px 15px 0;
-        position: relative;
-        overflow: hidden;
-    }
     
-        .no-js #home li:hover {
-            -ms-transform: rotate(3deg) scale(1.025);
-            background: #b3d9ff;
-        }
-        
-        #home li img {
-            z-index: 1;
-            position: absolute;
-        }
-        
-        #home li a {
-            height: 100%;
-            width: 100%;
-            display: block;
-            position: absolute;
-            z-index: 10;
-        }
-        #home li a:hover {
-            text-decoration: none;
-        }
-        
-        #home li .title {
-            
-            font-size: 22px;
-            margin: 0 8px 8px 8px; padding: 0;
-            
-        }
-        
-        #home li.raw {
-            background-image: url(bg.jpg);
-        }

@@ -1,41 +1,86 @@
-﻿<%@ Page Title="SignalR Samples" Language="C#" MasterPageFile="~/SignalR.master" AutoEventWireup="true"
-    CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples._Default" %>
+﻿<%@ Page Title="SignalR Samples" Language="C#" MasterPageFile="~/SignalR.master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples._Default" %>
 
-<asp:Content ID="HeaderContent" runat="server" ContentPlaceHolderID="HeadContent">
+<asp:Content ID="HeadContent" runat="server" ContentPlaceHolderID="HeadContent">
 </asp:Content>
+
 <asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
     
-    <div id="home">
-        <ul>
-            <li class="raw"><a href="Raw/"><p class="title">Raw Connection</p></a></li>
-            <li class="streaming"><a href="Streaming/"><p class="title">Streaming</p></a></li>
-            <li class="demo-hub"><a href="Hubs/DemoHub/"><p class="title">Demo Hub</p></a></li>
-            <li class="status"><a href="Hubs/ConnectDisconnect/"><p class="title">Connection Status</p></a></li>
-            <li class="chat"><a href="Hubs/Chat/"><p class="title">Chat</p></a></li>
-            <li class="mouse-tracking"><a href="Hubs/MouseTracking/"><p class="title">Mouse Tracking</p></a></li>
-            <li class="drawing-pad"><a href="Hubs/DrawingPad"><p class="title">Drawing pad</p></a></li>
-            <li class="shape-share"><a href="Hubs/ShapeShare/"><p class="title">Shape Share</p></a></li>
-            <li class="hub-bench"><a href="Hubs/Benchmark/"><p class="title">Hub Ping</p></a></li>
-            <li class="hub-auth"><a href="Hubs/Auth/"><p class="title">Hub Auth</p></a></li>
-        </ul>
+    <div class="hero-unit">
+        <h1>ASP.NET SignalR</h1>
+        <p>Real-time web library for ASP.NET with a simple API, broad reaching client support and incredible performance.</p>
+        <p><a class="btn btn-primary btn-large" href="http://www.asp.net/signalr">Learn more &raquo;</a></p>
     </div>
+
+    <h2>Samples</h2>
+
+    <!-- Samples -->
+    <div class="row">
+        <div class="span4">
+            <h3>Connection API</h3>
+            <p>Demonstrates all features of the lower-level connection API including starting and stopping, sending and
+               receiving messages, and managing groups.</p>
+            <p><a class="btn" href="Raw/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Simple Streaming</h3>
+            <p>A simple example of a background thread that broadcasts the server time to all connected clients each second.</p>
+            <p><a class="btn" href="Streaming/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Connection Status</h3>
+            <p>Demonstrates how to handle the events that are raised when connections connect, reconnect and disconnect from the Hub API.</p>
+            <p><a class="btn" href="Hubs/ConnectDisconnect/">View sample &raquo;</a></p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="span4">
+            <h3>Hub Authorization</h3>
+            <p>Demonstrates how to use the authorization features of the Hub API to restrict certain Hubs and methods to specific users.</p>
+            <p><a class="btn" href="Hubs/Auth/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Demo Hub</h3>
+            <p>A contrived example that exploits every feature of the Hub API.</p>
+            <p><a class="btn" href="Hubs/DemoHub/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Chat</h3>
+            <p>The canonical real-time web example: a chat application. Features user management, multiple rooms and rich content integration.</p>
+            <p><a class="btn" href="Hubs/Chat/">View sample &raquo;</a></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4">
+            <h3>Mouse Tracking</h3>
+            <p>An example that displays a live cursor on all users' screens for all other users' mouse movements.</p>
+            <p><a class="btn" href="Hubs/MouseTracking/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Drawing Pad</h3>
+            <p>An example of a collaborative drawing pad using the HTML5 canvas API.</p>
+            <p><a class="btn" href="Hubs/DrawingPad/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Shape Share</h3>
+            <p>Demonstrates a shared canvas onto which users can place various shapes and move them around in real-time.</p>
+            <p><a class="btn" href="Hubs/ShapeShare/">View sample &raquo;</a></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span4">
+            <h3>Hub Ping</h3>
+            <p>A sample that's used for measuring the full roundtrip time for invocations of Hub methods from client to server and back again.</p>
+            <p><a class="btn" href="Hubs/Benchmark/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Real-time Broadcast</h3>
+            <p>A sample that uses a high-frequency timer to deliver updates at a high rate (e.g. 25 Hz) as might be typical in a real-time, multi-user HTML5 game.</p>
+            <p><a class="btn" href="Hubs/RealtimeBroadcast/">View sample &raquo;</a></p>
+        </div>
+    </div>
+    
     <div class="clear"></div>
-    <script src="Scripts/jquery-1.6.2.min.js" type="text/javascript"></script>
-    <script src="Scripts/jquery.color.js" type="text/javascript"></script>
-    <script src="Scripts/jquery.transform.js" type="text/javascript"></script>
-    <script src="Scripts/jquery.easing.1.3.js" type="text/javascript"></script>
-    <script src="Scripts/jquery.hoverMorph.js" type="text/javascript"></script>
-    <script>
-        $(function () {
-            $("#home li").hoverMorph()
-                .click(function (e) {
-                    if (e.target.tagName.toLowerCase() !== "a") {
-                        document.location = $(this).find("a").attr("href");
-                    }
-                })
-                .css({
-                    cursor: "pointer"
-                });
-        });
-    </script>
 </asp:Content>
