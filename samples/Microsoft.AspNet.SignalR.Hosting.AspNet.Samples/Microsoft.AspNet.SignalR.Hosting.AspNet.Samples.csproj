@@ -9,7 +9,7 @@
     <ProjectTypeGuids>{349C5851-65DF-11DA-9384-00065B846F21};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Hosting.AspNet.Samples</RootNamespace>
+    <RootNamespace>Microsoft.AspNet.SignalR.Samples</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Hosting.AspNet.Samples</AssemblyName>
     <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -48,11 +48,14 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bg-body.jpg" />
@@ -76,19 +79,6 @@
     <Content Include="Content\jquery.mobile.theme-1.2.0.min.css" />
     <Content Include="Content\site.css" />
     <Content Include="Content\sprite-ui.png" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
-    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\themes\base\jquery.ui.accordion.css" />
     <Content Include="Content\themes\base\jquery.ui.all.css" />
     <Content Include="Content\themes\base\jquery.ui.autocomplete.css" />
@@ -145,10 +135,10 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.css" />
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
+    <Content Include="Raw\Default.aspx" />
     <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
-    <Content Include="Raw\index.htm" />
     <Content Include="Raw\test\connect-reconnect.htm" />
     <Content Include="Raw\test\sending.htm" />
     <Content Include="Scripts\bootstrap.js" />
@@ -159,6 +149,9 @@
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />
+    <None Include="Scripts\jquery-1.8.2.intellisense.js" />
+    <Content Include="Scripts\jquery-1.8.2.js" />
+    <Content Include="Scripts\jquery-1.8.2.min.js" />
     <Content Include="Scripts\jquery.color-2.1.0.js" />
     <Content Include="Scripts\jquery.color-2.1.0.min.js" />
     <Content Include="Scripts\jquery.color.svg-names-2.1.0.js" />
@@ -192,6 +185,9 @@
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="App_Start\BackgroundThread.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SignalRConfig.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -232,6 +228,13 @@
     <Compile Include="Hubs\RealtimeBroadcast\Realtime.cs" />
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Raw\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Raw\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Raw\Raw.cs" />
     <Compile Include="Raw\SendingConnection.cs" />
     <Compile Include="Raw\TestConnection.cs" />
@@ -268,9 +271,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="SignalR.Master" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App_Start\RegisterHubs.cs" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

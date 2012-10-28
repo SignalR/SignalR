@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Microsoft.AspNet.SignalR.Samples.Streaming
+namespace Microsoft.AspNet.SignalR.Samples
 {
     public class Streaming : PersistentConnection
     {

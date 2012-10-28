@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="SignalR Auth Sample" Language="C#" AutoEventWireup="true"
-    CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Auth._Default" %>
+    CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples.Hubs.Auth._Default" %>
 <!DOCTYPE html>
 <html>
 <head>

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples
+namespace Microsoft.AspNet.SignalR.Samples
 {
     public class TestConnection : PersistentConnection
     {

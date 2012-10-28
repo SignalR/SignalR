@@ -1,17 +1,19 @@
-﻿<%@ Page Title="SignalR Samples" Language="C#" MasterPageFile="~/SignalR.master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples._Default" %>
+﻿<%@ Page Title="ASP.NET SignalR" Language="C#" MasterPageFile="~/SignalR.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples._Default" %>
 
-<asp:Content ID="HeadContent" runat="server" ContentPlaceHolderID="HeadContent">
+<asp:Content runat="server" ContentPlaceHolderID="HeadContent">
 </asp:Content>
 
-<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="MainContent">
+<asp:Content runat="server" ContentPlaceHolderID="MainContent">
     
     <div class="hero-unit">
         <h1>ASP.NET SignalR</h1>
         <p>Real-time web library for ASP.NET with a simple API, broad reaching client support and incredible performance.</p>
-        <p><a class="btn btn-primary btn-large" href="http://www.asp.net/signalr">Learn more &raquo;</a></p>
+        <p><a class="btn btn-success btn-large" href="http://www.asp.net/signalr">Learn more &raquo;</a></p>
     </div>
 
-    <h2>Samples</h2>
+    <div class="page-header">
+      <h2>Samples</h2>
+    </div>
 
     <!-- Samples -->
     <div class="row">
@@ -23,7 +25,7 @@
         </div>
         <div class="span4">
             <h3>Simple Streaming</h3>
-            <p>A simple example of a background thread that broadcasts the server time to all connected clients each second.</p>
+            <p>A simple example of a background thread that broadcasts the server time to all connected clients every two seconds.</p>
             <p><a class="btn" href="Streaming/">View sample &raquo;</a></p>
         </div>
         <div class="span4">

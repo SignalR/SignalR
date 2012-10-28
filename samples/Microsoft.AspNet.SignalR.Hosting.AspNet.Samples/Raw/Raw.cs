@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.Samples.Raw
+namespace Microsoft.AspNet.SignalR.Samples
 {
     public class Raw : PersistentConnection
     {

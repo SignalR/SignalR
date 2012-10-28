@@ -1,114 +1,38 @@
-﻿body {
-    font-family: "Segoe UI", Arial, Helvetica, Sans-Serif;
-    font-size: 18px;
-    color: #353535;
-    padding: 0;
-    margin: 0;
-}
-
-h1, h2, h3 {
-    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
+﻿h1 {
     font-weight: normal;
 }
 
-h1 {
-    font-size: 1.8em;
-    color: #44525E;
-    line-height: 1;
-    padding-bottom: 15px;
-    margin: 0 21px 16px 0;
-    border-bottom: 1px dotted #999;
-}
-
-h3 {
-    margin: 0 0 8px 0;
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #44525E;
-}
-
-p {
-    margin: 0 0 8px;
-}
-
-    #items li {
-        border-bottom: 1px solid #d9d9d9;
-    }
-
-a, a:link, a:visited {
-    text-decoration: none;
-    color: #267CB2;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-#allcontent {
-    
-}
-
-#header-wrap {
+.navbar-inverse .navbar-inner {
     background: #262D64 url("bg-body.jpg") no-repeat scroll center -12px;
 }
 
-    #header-wrap header {
-        width: 970px;
-        min-height: 106px;
-        margin: 0 auto;
-        position: relative;
+.navbar-inverse .brand, .navbar-inverse .nav > li > a {
+    color: #fff;
+}
+
+.navbar-inverse .nav > li.active > a {
+    background-color: rgba(0, 0, 0, 0.30);
+}
+
+    .navbar-inverse .nav > li.active > a:hover {
+        background-color: rgba(0, 0, 0, 0.45);
     }
 
-        #header-wrap header a.title {
-            position: absolute;
-            left: 10px;
-            top: 30px;
-            font-size: 48px;
-            font-family: "Segoe UI Light";
-            color: #fff;
-        }
-
-            #header-wrap header a.title:hover {
-                text-decoration: none;
-            }
-
-            #header-wrap header a.title .logo {
-                background: url("sprite-ui.png") no-repeat scroll 0 0 transparent;
-                display: block;
-                float: left;
-                text-indent: -999em;
-                height: 44px;
-                width: 153px;
-                margin: 8px 4px 0 0;
-            }
-
-        #header-wrap header {
-
-        }
-
-.content {
-    padding: 20px 10px 34px 10px;
-    width: 950px;
-    margin: 0 auto;
+.navbar-inverse .nav > li > a:hover {
+    background-color: rgba(0, 0, 0, 0.20);
 }
 
-footer {
-    margin-top: 50px;
-    font-size: 14px;   
-    text-align: center;
+.navbar-inverse .brand {
+    background: url("sprite-ui.png") no-repeat scroll 0 0 transparent;
+    display: block;
+    float: left;
+    text-indent: -999em;
+    height: 44px;
+    width: 153px;
+    margin: 8px 16px 8px 0;
+    padding: 0;
 }
 
-.clear {
-    height: 0;
-    line-height: 0;
-    font-size: 0;
-    clear: both;
+.navbar .nav {
+    margin-top: 20px;
 }
-    
-#home ul {
-    list-style-type: none;
-    margin: 0; padding: 0;
-    
-}
-
-    
