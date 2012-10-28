@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -23,13 +24,20 @@ namespace Microsoft.AspNet.SignalR
 
         protected readonly IPerformanceCounterManager _counters;
 
+        private Timer _gcTimer;
+        private int _gcRunning;
+        private static readonly TimeSpan _gcInterval = TimeSpan.FromSeconds(15);
+
+        private readonly TimeSpan _topicTtl;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="resolver"></param>
         public MessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>(), 
-                   resolver.Resolve<IPerformanceCounterManager>())
+            : this(resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IPerformanceCounterManager>(),
+                   resolver.Resolve<IConfigurationManager>())
         {
         }
 
@@ -37,15 +45,22 @@ namespace Microsoft.AspNet.SignalR
         /// 
         /// </summary>
         /// <param name="traceManager"></param>
-        public MessageBus(ITraceManager traceManager, IPerformanceCounterManager performanceCounterManager)
+        /// <param name="performanceCounterManager"></param>
+        public MessageBus(ITraceManager traceManager, IPerformanceCounterManager performanceCounterManager, IConfigurationManager configurationManager)
         {
             _trace = traceManager;
             _counters = performanceCounterManager;
+
+            _gcTimer = new Timer(_ => CheckTopics(), state: null, dueTime: _gcInterval, period: _gcInterval);
 
             _broker = new MessageBroker(_topics, _counters)
             {
                 Trace = Trace
             };
+
+            // Keep topics alive for as long as we let connections wait until they are disconnected.
+            // This should be a good enough estimate for how long until we should consider a topic dead.
+            _topicTtl = configurationManager.DisconnectTimeout;
         }
 
         private TraceSource Trace
@@ -89,7 +104,7 @@ namespace Microsoft.AspNet.SignalR
 
             return TaskAsyncHelper.Empty;
         }
-        
+
         protected ulong Save(Message message)
         {
             Topic topic = GetTopic(message.Key);
@@ -205,15 +220,48 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        
         public virtual void Dispose()
         {
+            // Stop the broker from doing any work
             _broker.Dispose();
+
+            // Spin while we wait for the timer to finish if it's currently running
+            while (Interlocked.Exchange(ref _gcRunning, 1) == 1)
+            {
+                Thread.Sleep(250);
+            }
+
+            // Remove all topics
+            _topics.Clear();
+
+            if (_gcTimer != null)
+            {
+                _gcTimer.Dispose();
+            }
+        }
+
+        private void CheckTopics()
+        {
+            if (Interlocked.Exchange(ref _gcRunning, 1) == 1)
+            {
+                return;
+            }
+
+            foreach (var pair in _topics)
+            {
+                if (pair.Value.IsExpired)
+                {
+                    Topic topic;
+                    _topics.TryRemove(pair.Key, out topic);
+                }
+            }
+
+            Interlocked.Exchange(ref _gcRunning, 0);
         }
 
         private Topic GetTopic(string key)
         {
-            return _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize));
+            return _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize, _topicTtl));
         }
 
         private void RemoveEvent(Subscription subscription, string eventKey)
