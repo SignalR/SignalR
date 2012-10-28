@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR
         public DefaultConfigurationManager()
         {
             ConnectionTimeout = TimeSpan.FromSeconds(110);
-            DisconnectTimeout = TimeSpan.FromSeconds(20);
+            DisconnectTimeout = TimeSpan.FromSeconds(40);
             HeartBeatInterval = TimeSpan.FromSeconds(10);
             KeepAlive = TimeSpan.FromSeconds(30);
         }

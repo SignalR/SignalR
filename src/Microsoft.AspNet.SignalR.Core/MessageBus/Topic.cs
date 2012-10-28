@@ -8,14 +8,36 @@ namespace Microsoft.AspNet.SignalR
 {
     public class Topic
     {
-        private HashSet<string> _subcriptionIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _subcriptionIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly TimeSpan _ttl;
+
+        // Keeps track of the last time this subscription was used
+        private DateTime _lastUsed = DateTime.UtcNow;
 
         public IList<ISubscription> Subscriptions { get; private set; }
         public MessageStore<Message> Store { get; private set; }
         public ReaderWriterLockSlim SubscriptionLock { get; private set; }
 
-        public Topic(uint storeSize)
+        public bool IsExpired
         {
+            get
+            {
+                try
+                {
+                    SubscriptionLock.EnterReadLock();
+
+                    return Subscriptions.Count == 0 && (DateTime.UtcNow - _lastUsed) > _ttl;
+                }
+                finally
+                {
+                    SubscriptionLock.ExitReadLock();
+                }
+            }
+        }
+
+        public Topic(uint storeSize, TimeSpan ttl)
+        {
+            _ttl = ttl;
             Subscriptions = new List<ISubscription>();
             Store = new MessageStore<Message>(storeSize);
             SubscriptionLock = new ReaderWriterLockSlim();
@@ -23,6 +45,8 @@ namespace Microsoft.AspNet.SignalR
 
         public void AddSubscription(ISubscription subscription)
         {
+            _lastUsed = DateTime.UtcNow;
+
             try
             {
                 SubscriptionLock.EnterWriteLock();
@@ -40,6 +64,8 @@ namespace Microsoft.AspNet.SignalR
 
         public void RemoveSubscription(ISubscription subscription)
         {
+            _lastUsed = DateTime.UtcNow;
+
             try
             {
                 SubscriptionLock.EnterWriteLock();
