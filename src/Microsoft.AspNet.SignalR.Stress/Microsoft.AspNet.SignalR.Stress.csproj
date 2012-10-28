@@ -52,11 +52,21 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="ConnectionRun.cs" />
+    <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="Hubs\HubWithGroups.cs" />
+    <Compile Include="Infrastructure\Utility.cs" />
+    <Compile Include="MemoryHostRun.cs" />
+    <Compile Include="MessageBusRun.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StressRuns.cs" />
     <Compile Include="Subscriber.cs" />
   </ItemGroup>
   <ItemGroup>

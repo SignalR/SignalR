@@ -36,8 +36,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public IPrincipal User { get; set; }
 
-        public bool DisableWrites { get; set; }
-
         Task<IClientResponse> IHttpClient.GetAsync(string url, Action<IClientRequest> prepareRequest)
         {
             return ProcessRequest(url, prepareRequest, postData: null);
@@ -48,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return ProcessRequest(url, prepareRequest, postData);
         }
 
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData, bool disableWrites = false)
         {
             var uri = new Uri(url);
             PersistentConnection connection;
@@ -63,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 Response response = null;
                 response = new Response(clientTokenSource.Token, () => tcs.TrySetResult(response))
                 {
-                    DisableWrites = DisableWrites
+                    DisableWrites = disableWrites
                 };
                 var hostContext = new HostContext(request, response);
 
