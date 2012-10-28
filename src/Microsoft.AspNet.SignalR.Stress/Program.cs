@@ -83,12 +83,6 @@ namespace Microsoft.AspNet.SignalR.Stress
             Console.ReadLine();
         }
 
-        private static void Write(Stream stream, string raw)
-        {
-            var data = Encoding.Default.GetBytes(raw);
-            stream.Write(data, 0, data.Length);
-        }
-
         public static void StressGroups(int runs = 100)
         {
             using (var host = new MemoryHost())
@@ -98,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
                 host.Configuration.KeepAlive = TimeSpan.FromSeconds(5);
 
-                var countDown = new CountDownRange<int>(Enumerable.Range(0, runs)); 
+                var countDown = new CountDownRange<int>(Enumerable.Range(0, runs));
                 var connection = new Client.Hubs.HubConnection("http://foo");
                 var proxy = connection.CreateHubProxy("HubWithGroups");
                 var bus = (MessageBus)host.DependencyResolver.Resolve<IMessageBus>();
@@ -118,6 +112,13 @@ namespace Microsoft.AspNet.SignalR.Stress
                     proxy.Invoke("Join", "foo").Wait();
 
                     for (int i = 0; i < runs; i++)
+                    {
+                        proxy.Invoke("Send", "foo", i).Wait();
+                    }
+
+                    proxy.Invoke("Leave", "foo").Wait();
+
+                    for (int i = runs + 1; i < runs + 50; i++)
                     {
                         proxy.Invoke("Send", "foo", i).Wait();
                     }
@@ -491,6 +492,11 @@ namespace Microsoft.AspNet.SignalR.Stress
         public Task Send(string group, int index)
         {
             return Clients.Group(group).Do(index);
+        }
+
+        public Task Leave(string group)
+        {
+            return Groups.Remove(Context.ConnectionId, group);
         }
     }
 }
