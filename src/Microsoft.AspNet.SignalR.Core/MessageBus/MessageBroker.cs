@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.SignalR
     internal class MessageBroker : IDisposable
     {
         private readonly Queue<ISubscription> _queue = new Queue<ISubscription>();
-        private readonly ConcurrentDictionary<string, Topic> _topics = new ConcurrentDictionary<string, Topic>(StringComparer.OrdinalIgnoreCase);
 
         private readonly IPerformanceCounterManager _counters;
 
@@ -37,9 +36,8 @@ namespace Microsoft.AspNet.SignalR
         // Determines if the broker was disposed and should stop doing all work.
         private bool _disposed;
 
-        public MessageBroker(ConcurrentDictionary<string, Topic> topics, IPerformanceCounterManager performanceCounterManager)
+        public MessageBroker(IPerformanceCounterManager performanceCounterManager)
         {
-            _topics = topics;
             _counters = performanceCounterManager;
         }
 

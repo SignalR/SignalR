@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR
 
             _gcTimer = new Timer(_ => CheckTopics(), state: null, dueTime: _gcInterval, period: _gcInterval);
 
-            _broker = new MessageBroker(_topics, _counters)
+            _broker = new MessageBroker(_counters)
             {
                 Trace = Trace
             };
