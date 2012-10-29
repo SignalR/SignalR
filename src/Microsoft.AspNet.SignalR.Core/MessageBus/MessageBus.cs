@@ -251,8 +251,14 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (pair.Value.IsExpired)
                 {
-                    Topic topic;
-                    _topics.TryRemove(pair.Key, out topic);
+                    // Only remove the topic if it's expired and we changed the state to dead
+                    if (Interlocked.CompareExchange(ref pair.Value.State,
+                                                    Topic.TopicState.Dead,
+                                                    Topic.TopicState.NoSubscriptions) == Topic.TopicState.NoSubscriptions)
+                    {
+                        Topic topic;
+                        _topics.TryRemove(pair.Key, out topic);
+                    }
                 }
             }
 
@@ -261,7 +267,18 @@ namespace Microsoft.AspNet.SignalR
 
         private Topic GetTopic(string key)
         {
-            return _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize, _topicTtl));
+            while (true)
+            {
+                Topic topic = _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize, _topicTtl));
+
+                // If we sucessfully marked it as active then bail
+                if (Interlocked.CompareExchange(ref topic.State, 
+                                                Topic.TopicState.Active,
+                                                Topic.TopicState.NoSubscriptions) != Topic.TopicState.Dead)
+                {
+                    return topic;
+                }
+            }
         }
 
         private void RemoveEvent(Subscription subscription, string eventKey)
