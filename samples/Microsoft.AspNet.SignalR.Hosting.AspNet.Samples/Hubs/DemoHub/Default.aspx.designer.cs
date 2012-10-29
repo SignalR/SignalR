@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.SignalR.Samples.Streaming
+namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
 {
 
 

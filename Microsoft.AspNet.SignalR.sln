@@ -74,6 +74,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Lo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.FunctionalTests", "tests\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.csproj", "{819038AC-6770-48DB-B9FA-F1245C87C341}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet45", "src\Microsoft.AspNet.SignalR.Hosting.AspNet45\Microsoft.AspNet.SignalR.Hosting.AspNet45.csproj", "{6F53F576-0E35-4E89-8D4D-B6B40084A16C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.Self45", "src\Microsoft.AspNet.SignalR.Hosting.Self45\Microsoft.AspNet.SignalR.Hosting.Self45.csproj", "{1617158B-2CFD-4354-A33F-9937E508D69A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -324,6 +328,26 @@ Global
 		{819038AC-6770-48DB-B9FA-F1245C87C341}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{819038AC-6770-48DB-B9FA-F1245C87C341}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{819038AC-6770-48DB-B9FA-F1245C87C341}.Release|x86.ActiveCfg = Release|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6F53F576-0E35-4E89-8D4D-B6B40084A16C}.Release|x86.ActiveCfg = Release|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{1617158B-2CFD-4354-A33F-9937E508D69A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

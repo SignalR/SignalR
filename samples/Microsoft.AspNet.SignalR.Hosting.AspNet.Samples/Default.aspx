@@ -37,14 +37,14 @@
     
     <div class="row">
         <div class="span4">
-            <h3>Hub Authorization</h3>
-            <p>Demonstrates how to use the authorization features of the Hub API to restrict certain Hubs and methods to specific users.</p>
-            <p><a class="btn" href="Hubs/Auth/">View sample &raquo;</a></p>
-        </div>
-        <div class="span4">
             <h3>Demo Hub</h3>
             <p>A contrived example that exploits every feature of the Hub API.</p>
             <p><a class="btn" href="Hubs/DemoHub/">View sample &raquo;</a></p>
+        </div>
+        <div class="span4">
+            <h3>Hub Authorization</h3>
+            <p>Demonstrates how to use the authorization features of the Hub API to restrict certain Hubs and methods to specific users.</p>
+            <p><a class="btn" href="Hubs/Auth/">View sample &raquo;</a></p>
         </div>
         <div class="span4">
             <h3>Chat</h3>

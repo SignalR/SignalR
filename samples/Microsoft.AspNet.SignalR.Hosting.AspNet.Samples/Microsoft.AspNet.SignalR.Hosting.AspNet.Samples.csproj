@@ -19,6 +19,8 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <ProductVersion>10.0.0</ProductVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -32,6 +34,7 @@
       <AspNet DisableCodeBehindGeneration="True" />
     </AspNet>
     <StartupObject />
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,21 +44,34 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <StartupObject />
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlSanitizationLibrary">
       <HintPath>..\..\packages\AntiXSS.4.0.1\lib\net35\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.10\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-      <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bg-body.jpg" />
@@ -119,7 +135,7 @@
     <Content Include="Hubs\ConnectDisconnect\Default.aspx" />
     <Content Include="Hubs\ConnectDisconnect\Status.js" />
     <Content Include="Hubs\DemoHub\crossdomain.htm" />
-    <Content Include="Hubs\DemoHub\index.htm" />
+    <Content Include="Hubs\DemoHub\Default.aspx" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
     <Content Include="Hubs\Chat\Chat.css" />
     <Content Include="Hubs\Chat\Chat.js" />
@@ -217,6 +233,13 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
+    <Compile Include="Hubs\DemoHub\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\DemoHub\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Hubs\DemoHub\DemoHub.cs" />
     <Compile Include="Hubs\Chat\Chat.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\CollegeHumorContentProvider.cs" />
@@ -265,9 +288,9 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj">
-      <Project>{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.AspNet</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.AspNet45\Microsoft.AspNet.SignalR.Hosting.AspNet45.csproj">
+      <Project>{6f53f576-0e35-4e89-8d4d-b6b40084a16c}</Project>
+      <Name>Microsoft.AspNet.SignalR.Hosting.AspNet45</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj">
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>

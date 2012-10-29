@@ -36,3 +36,7 @@
 .navbar .nav {
     margin-top: 20px;
 }
+
+.dl-expanded dt {
+    margin-top: 1em;
+}

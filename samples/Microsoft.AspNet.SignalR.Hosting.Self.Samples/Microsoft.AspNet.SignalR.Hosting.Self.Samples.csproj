@@ -13,6 +13,8 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -23,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,6 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -62,13 +66,13 @@
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj">
-      <Project>{A2BD866D-906A-4742-AB3B-DB8740830400}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.Self</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Self45\Microsoft.AspNet.SignalR.Hosting.Self45.csproj">
+      <Project>{1617158b-2cfd-4354-a33f-9937e508d69a}</Project>
+      <Name>Microsoft.AspNet.SignalR.Hosting.Self45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
