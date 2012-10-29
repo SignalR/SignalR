@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>ASP.NET SignalR</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="~/Content/bootstrap.css" rel="stylesheet" />
     <link href="~/Content/bootstrap-responsive.css" rel="stylesheet" />
@@ -17,10 +18,7 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-
-    <%--<link href="~/Content/site.css" rel="stylesheet" />--%>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
-    <%--<script>document.getElementsByTagName("html")[0].className = "js";</script>--%>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">

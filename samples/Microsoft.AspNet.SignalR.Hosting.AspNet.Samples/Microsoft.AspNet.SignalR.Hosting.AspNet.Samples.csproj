@@ -116,8 +116,8 @@
     <Content Include="Hubs\Benchmark\index.htm" />
     <Content Include="Hubs\Chat\Mobile.css" />
     <Content Include="Hubs\Chat\mobile.htm" />
+    <Content Include="Hubs\ConnectDisconnect\Default.aspx" />
     <Content Include="Hubs\ConnectDisconnect\Status.js" />
-    <Content Include="Hubs\ConnectDisconnect\index.htm" />
     <Content Include="Hubs\DemoHub\crossdomain.htm" />
     <Content Include="Hubs\DemoHub\index.htm" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
@@ -165,7 +165,7 @@
     <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
-    <Content Include="Streaming\index.html" />
+    <Content Include="Streaming\Default.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -209,6 +209,13 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\Benchmark\HubBench.cs" />
+    <Compile Include="Hubs\ConnectDisconnect\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\ConnectDisconnect\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
     <Compile Include="Hubs\DemoHub\DemoHub.cs" />
     <Compile Include="Hubs\Chat\Chat.cs" />
@@ -230,7 +237,7 @@
     <Compile Include="Raw\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Raw\Raw.cs" />
+    <Compile Include="Raw\RawConnection.cs" />
     <Compile Include="Raw\SendingConnection.cs" />
     <Compile Include="Raw\TestConnection.cs" />
     <Compile Include="SignalR.Master.cs">
@@ -240,7 +247,14 @@
     <Compile Include="SignalR.Master.designer.cs">
       <DependentUpon>SignalR.Master</DependentUpon>
     </Compile>
-    <Compile Include="Streaming\Streaming.cs" />
+    <Compile Include="Streaming\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Streaming\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Streaming\StreamingConnection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">

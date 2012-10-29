@@ -1,4 +1,4 @@
-﻿<%@ Page Title="ASP.NET SignalR: Connection API" Language="C#" MasterPageFile="~/SignalR.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples.Default" %>
+﻿<%@ Page Title="ASP.NET SignalR: Connection API" Language="C#" MasterPageFile="~/SignalR.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples.Raw.Default" %>
 
 <asp:Content runat="server" ContentPlaceHolderID="MainContent">
     <ul class="breadcrumb">
@@ -58,7 +58,7 @@
         $(function () {
             "use strict";
 
-            var connection = $.connection("Raw");
+            var connection = $.connection("/raw-connection");
             connection.logging = true;
 
             connection.received(function (data) {

@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Microsoft.AspNet.SignalR.Samples.Raw
+namespace Microsoft.AspNet.SignalR.Samples.Streaming
 {
     public partial class Default : System.Web.UI.Page
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
+using Microsoft.AspNet.SignalR.Samples.Streaming;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
@@ -10,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Samples
         {
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();
+                var context = GlobalHost.ConnectionManager.GetConnectionContext<StreamingConnection>();
                 var hubContext = GlobalHost.ConnectionManager.GetHubContext<DemoHub>();
 
                 while (true)

@@ -4,9 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.Samples
+namespace Microsoft.AspNet.SignalR.Samples.Raw
 {
-    public class Raw : PersistentConnection
+    public class RawConnection : PersistentConnection
     {
         private static readonly ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
         private static readonly ConcurrentDictionary<string, string> _clients = new ConcurrentDictionary<string, string>();
