@@ -314,6 +314,10 @@
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Server.Routing\Microsoft.AspNet.SignalR.Server.Routing.csproj">
+      <Project>{37c04b69-0989-458a-b80c-a1ed574adbe4}</Project>
+      <Name>Microsoft.AspNet.SignalR.Server.Routing</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="SignalR.Master" />
