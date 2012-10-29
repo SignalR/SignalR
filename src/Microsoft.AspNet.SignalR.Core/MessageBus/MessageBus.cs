@@ -267,12 +267,14 @@ namespace Microsoft.AspNet.SignalR
 
         private Topic GetTopic(string key)
         {
+            Func<string, Topic> factory = _ => new Topic(DefaultMessageStoreSize, _topicTtl);
+
             while (true)
             {
-                Topic topic = _topics.GetOrAdd(key, _ => new Topic(DefaultMessageStoreSize, _topicTtl));
+                Topic topic = _topics.GetOrAdd(key, factory);
 
                 // If we sucessfully marked it as active then bail
-                if (Interlocked.CompareExchange(ref topic.State, 
+                if (Interlocked.CompareExchange(ref topic.State,
                                                 Topic.TopicState.Active,
                                                 Topic.TopicState.NoSubscriptions) != Topic.TopicState.Dead)
                 {

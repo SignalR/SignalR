@@ -92,9 +92,9 @@ namespace Microsoft.AspNet.SignalR
 
         internal class TopicState
         {
-            public static int NoSubscriptions = 0;
-            public static int Active = 1;
-            public static int Dead = 2;
+            public const int NoSubscriptions = 0;
+            public const int Active = 1;
+            public const int Dead = 2;
         }
     }
 }
