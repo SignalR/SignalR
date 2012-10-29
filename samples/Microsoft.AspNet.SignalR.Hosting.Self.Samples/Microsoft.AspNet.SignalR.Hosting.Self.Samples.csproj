@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -51,8 +51,8 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
       <Link>Hubs\DemoHub\DemoHub.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\Raw.cs">
-      <Link>Raw.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\RawConnection.cs">
+      <Link>RawConnection.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

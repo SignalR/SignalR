@@ -6,11 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gate;
 using Gate.Middleware;
-using Owin;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hosting.AspNet.Samples;
-using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
 using Microsoft.AspNet.SignalR.Samples;
+using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
+using Microsoft.AspNet.SignalR.Samples.Raw;
+using Microsoft.AspNet.SignalR.Samples.Streaming;
+using Owin;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Console.Samples
 {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Console.Samples
 
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                var context = GlobalHost.ConnectionManager.GetConnectionContext<Streaming>();
+                var context = GlobalHost.ConnectionManager.GetConnectionContext<StreamingConnection>();
                 var hubContext = GlobalHost.ConnectionManager.GetHubContext<DemoHub>();
 
                 while (true)
@@ -48,8 +48,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Console.Samples
 
             app.MapConnection<SendingConnection>("/sending-connection");
             app.MapConnection<TestConnection>("/test-connection");
-            app.MapConnection<Raw>("/raw/raw");
-            app.MapConnection<Streaming>("/streaming/streaming");
+            app.MapConnection<RawConnection>("/raw/raw");
+            app.MapConnection<StreamingConnection>("/streaming/streaming");
 
             app.UseType<RedirectFoldersWithoutSlashes>();
             app.UseType<DefaultStaticFileName>("index.htm");

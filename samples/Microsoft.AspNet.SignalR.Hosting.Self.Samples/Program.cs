@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Samples;
+using Microsoft.AspNet.SignalR.Samples.Raw;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Self.Samples
 {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self.Samples
 
             // Map connections
             server.MapConnection<MyConnection>("/echo")
-                  .MapConnection<Raw>("/raw")
+                  .MapConnection<RawConnection>("/raw")
                   .MapHubs();
 
             server.Start();

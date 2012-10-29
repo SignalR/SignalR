@@ -261,6 +261,7 @@
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
     <Compile Include="Hubs\ConnectDisconnect\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -268,6 +269,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Streaming\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Streaming\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
