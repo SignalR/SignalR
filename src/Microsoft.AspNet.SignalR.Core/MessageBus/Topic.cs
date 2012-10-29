@@ -18,6 +18,9 @@ namespace Microsoft.AspNet.SignalR
         public MessageStore<Message> Store { get; private set; }
         public ReaderWriterLockSlim SubscriptionLock { get; private set; }
 
+        // State of the topic
+        internal int State;
+
         public bool IsExpired
         {
             get
@@ -74,6 +77,12 @@ namespace Microsoft.AspNet.SignalR
                 {
                     Subscriptions.Remove(subscription);
                 }
+
+                if (Subscriptions.Count == 0)
+                {
+                    // Change the state from active -> no subs
+                    Interlocked.CompareExchange(ref State, TopicState.NoSubscriptions, TopicState.Active);
+                }
             }
             finally
             {
@@ -81,5 +90,11 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        internal class TopicState
+        {
+            public static int NoSubscriptions = 0;
+            public static int Active = 1;
+            public static int Dead = 2;
+        }
     }
 }
