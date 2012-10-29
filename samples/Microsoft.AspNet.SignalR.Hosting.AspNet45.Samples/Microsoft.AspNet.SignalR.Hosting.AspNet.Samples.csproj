@@ -113,8 +113,8 @@
     <Content Include="Hubs\Benchmark\index.htm" />
     <Content Include="Hubs\Chat\Mobile.css" />
     <Content Include="Hubs\Chat\mobile.htm" />
+    <Content Include="Hubs\ConnectDisconnect\Default.aspx" />
     <Content Include="Hubs\ConnectDisconnect\Status.js" />
-    <Content Include="Hubs\ConnectDisconnect\index.htm" />
     <Content Include="Hubs\DemoHub\crossdomain.htm" />
     <Content Include="Hubs\DemoHub\index.htm" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
@@ -157,7 +157,7 @@
     <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
-    <Content Include="Streaming\index.html" />
+    <Content Include="Streaming\Default.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -232,14 +232,17 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\ShapeShare\ShapeShare.cs">
       <Link>Hubs\ShapeShare\ShapeShare.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\Raw.cs">
-      <Link>Raw\Raw.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\RawConnection.cs">
+      <Link>Raw\RawConnection.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\SendingConnection.cs">
       <Link>Raw\SendingConnection.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\TestConnection.cs">
       <Link>Raw\TestConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Streaming\StreamingConnection.cs">
+      <Link>Streaming\StreamingConnection.cs</Link>
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -256,8 +259,19 @@
     <Compile Include="Hubs\Chat\ContentProviders\IContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\ImageContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
+    <Compile Include="Hubs\ConnectDisconnect\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\ConnectDisconnect\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Streaming\Streaming.cs" />
+    <Compile Include="Streaming\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Streaming\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">
