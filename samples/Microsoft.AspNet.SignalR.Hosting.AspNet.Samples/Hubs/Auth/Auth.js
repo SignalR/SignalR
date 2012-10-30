@@ -11,30 +11,30 @@ $(function () {
     };
 
     $.each(hubs, function (title, hub) {
-        var list = $('<ul>').appendTo($('body').append('<h2>' + title + '</h2>'));
-        var addMessage = function (value, color) {
-            list.append('<li style="background-color:' + color + ';color:white">' + value + '</li>');
-        };
+        var list = $('<ul>').appendTo($('#messages').append('<h4>' + title + '</h4>')),
+            addMessage = function (value, className) {
+                list.append('<li class="' + className + '">' + value + '</li>');
+            };
 
         $.extend(hub.client, {
             joined: function (id, when, authInfo) {
+                var info = [];
                 if ($.connection.hub.id === id) {
                     addMessage(id, 'blue');
                 }
-                var info = [];
                 $.each(authInfo, function (k, v) {
-                    info.push("<b>" + k + ":</b> " + v);
+                    info.push("<strong>" + k + ":</strong> " + v);
                 });
-                addMessage(id + ' joined at ' + when + '<br />' + info.join('; '), 'green');
+                addMessage(id + ' joined at ' + when + '<br />' + info.join('; '), 'text-success');
             },
             rejoined: function (id, when) {
-                addMessage(id + ' reconnected at ' + when, 'purple');
+                addMessage(id + ' reconnected at ' + when, 'text-warning');
             },
             left: function (id, when) {
-                addMessage(id + ' left at ' + when, 'red');
+                addMessage(id + ' left at ' + when, 'text-error');
             },
             invoked: function (id, when) {
-                addMessage(id + ' invoked hub method at' + when, 'orange');
+                addMessage(id + ' invoked hub method at' + when, 'text-info');
             }
         });
     });

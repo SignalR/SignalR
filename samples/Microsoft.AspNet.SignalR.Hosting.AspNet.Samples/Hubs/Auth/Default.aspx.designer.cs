@@ -7,19 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Auth {
+namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth {
     
     
     public partial class _Default {
-        
-        /// <summary>
-        /// userNameLabel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label userNameLabel;
         
         /// <summary>
         /// userName control.
@@ -29,15 +20,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Auth {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox userName;
-        
-        /// <summary>
-        /// rolesLabel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label rolesLabel;
         
         /// <summary>
         /// roles control.

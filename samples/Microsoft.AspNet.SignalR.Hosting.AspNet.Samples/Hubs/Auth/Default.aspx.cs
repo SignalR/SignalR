@@ -4,7 +4,7 @@ using System.Security.Principal;
 using System.Web.Security;
 using System.Web.UI;
 
-namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Auth
+namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
 {
     public partial class _Default : Page
     {
@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Auth
                         let trimmed = piece.Trim()
                         where !String.IsNullOrEmpty(trimmed)
                         select trimmed;
+
             return split.ToArray();
         }
     }
