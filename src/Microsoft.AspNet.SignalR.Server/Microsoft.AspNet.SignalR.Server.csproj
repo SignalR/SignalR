@@ -53,9 +53,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.5\StartupExtensions.cs" />
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.5\StartupExtensions.Func.cs" />
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.5\StartupExtensions.Type.cs" />
     <Compile Include="Infrastructure\Headers.cs" />
     <Compile Include="Infrastructure\OwinConstants.cs" />
     <Compile Include="Infrastructure\ParamDictionary.cs" />

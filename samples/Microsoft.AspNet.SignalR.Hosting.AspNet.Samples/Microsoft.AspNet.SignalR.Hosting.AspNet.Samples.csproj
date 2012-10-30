@@ -302,9 +302,9 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.AspNet45\Microsoft.AspNet.SignalR.Hosting.AspNet45.csproj">
-      <Project>{6f53f576-0e35-4e89-8d4d-b6b40084a16c}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.AspNet45</Name>
+    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb.csproj">
+      <Project>{e31826e6-c29a-4f08-bd4f-e17aca793bbc}</Project>
+      <Name>Microsoft.Owin.Host.SystemWeb</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj">
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>

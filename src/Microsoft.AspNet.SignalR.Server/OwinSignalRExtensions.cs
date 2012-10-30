@@ -47,5 +47,10 @@ namespace Owin
         {
             return builder.UseType<PersistentConnectionHandler>(url, connectionType, resolver);
         }
+
+        private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
+        {
+            return builder.Use(typeof (T), args);
+        }
     }
 }

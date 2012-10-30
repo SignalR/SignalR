@@ -61,8 +61,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SqlServer", "src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj", "{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.Console.Samples", "samples\Microsoft.AspNet.SignalR.Hosting.Console.Samples\Microsoft.AspNet.SignalR.Hosting.Console.Samples.csproj", "{3F79472C-5EA7-4260-B124-BBD209B329FF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ServiceBus", "src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj", "{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Utils", "src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj", "{990B347D-F5BF-4F94-9967-D98D24ACEA43}"
@@ -77,6 +75,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet45", "src\Microsoft.AspNet.SignalR.Hosting.AspNet45\Microsoft.AspNet.SignalR.Hosting.AspNet45.csproj", "{6F53F576-0E35-4E89-8D4D-B6B40084A16C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.Self45", "src\Microsoft.AspNet.SignalR.Hosting.Self45\Microsoft.AspNet.SignalR.Hosting.Self45.csproj", "{1617158B-2CFD-4354-A33F-9937E508D69A}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "katana", "katana", "{4DFA135C-CB60-497D-8868-A81AEB84D30B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Host.SystemWeb", "katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb.csproj", "{E31826E6-C29A-4F08-BD4F-E17ACA793BBC}"
@@ -281,16 +280,6 @@ Global
 		{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}.Release|x86.ActiveCfg = Release|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3F79472C-5EA7-4260-B124-BBD209B329FF}.Release|x86.ActiveCfg = Release|Any CPU
 		{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -373,7 +362,6 @@ Global
 		{8FD9E25A-2268-4F6E-85F3-B83DC018ECE9} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{9A64F050-8F95-46B2-906C-0BFCA7A27E94} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
-		{3F79472C-5EA7-4260-B124-BBD209B329FF} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{B94E0027-2664-4DAC-BA32-7AA12BFCEE10} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{E31826E6-C29A-4F08-BD4F-E17ACA793BBC} = {4DFA135C-CB60-497D-8868-A81AEB84D30B}
 	EndGlobalSection
