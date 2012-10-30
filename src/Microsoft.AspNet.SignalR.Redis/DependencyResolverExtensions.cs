@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Redis;
 
-namespace Microsoft.AspNet.SignalR.Redis
+namespace Microsoft.AspNet.SignalR
 {
     public static class DependencyResolverExtensions
     {

@@ -2,8 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.SqlServer;
 
-namespace Microsoft.AspNet.SignalR.SqlServer
+namespace Microsoft.AspNet.SignalR
 {
     public static class DependencyResolverExtensions
     {

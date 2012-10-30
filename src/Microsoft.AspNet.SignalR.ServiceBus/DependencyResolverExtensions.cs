@@ -2,8 +2,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNet.SignalR.ServiceBus;
 
-namespace Microsoft.AspNet.SignalR.ServiceBus
+namespace Microsoft.AspNet.SignalR
 {
     public static class DependencyResolverExtensions
     {
