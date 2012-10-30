@@ -1,18 +1,19 @@
-﻿body
-{
+﻿body {
     font-family: Trebuchet MS;
     font-size: 13px;
 }
 
-.icon
-{
+.icon {
     background-repeat: no-repeat;
     background-position: 0 50%;
     padding-left: 20px;
     line-height: 20px;
 }
 
-.icon-wand
-{
+.icon-wand {
     background-image: url('images/wand.png');
+}
+
+.page-header {
+    min-height: 500px;
 }

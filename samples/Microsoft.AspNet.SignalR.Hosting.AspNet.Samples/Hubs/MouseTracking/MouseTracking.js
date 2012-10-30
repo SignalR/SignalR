@@ -1,4 +1,4 @@
-﻿/// <reference path="../../Scripts/jquery-1.6.4.js" />
+﻿/// <reference path="../../Scripts/jquery-1.8.2.js" />
 /// <reference path="../../Scripts/jquery.signalR.js" />
 
 $(function () {
@@ -10,13 +10,13 @@ $(function () {
     function updateCursor(id, x, y) {
         var e = document.getElementById(id);
         if (!e) {
-            e = $('<div id="' + id + '" class="icon icon-wand">' + id + '</div>').appendTo(document.body);
+            e = $('<div id="' + id + '"><i class="icon-screenshot"></i>' + id + '</div>').appendTo(document.body);
             e.css('position', 'absolute');
         }
         else {
             e = $(e);
         }
-        e.css({ left: x, top: y });
+        e.css({ left: x + 15, top: y + 15 });
     }
 
     hubConnection.logging = true;
