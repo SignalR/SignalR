@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         postReceive();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         return TaskAsyncHelper.FromError(ex);
                     }
@@ -261,7 +261,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                 registration = ConnectionEndToken.Register(() =>
                 {
                     wh.Wait();
-                    subscription.Dispose();
+
+                    // This is only null if we failed to create the subscription
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
                 });
             }
             catch (ObjectDisposedException)
@@ -271,21 +276,42 @@ namespace Microsoft.AspNet.SignalR.Transports
                 disposeSubscriptionImmediately = true;
             }
 
-            subscription = connection.Receive(LastMessageId, response =>
+            try
             {
-                // We need to wait until post receive has been called
-                wh.Wait();
-
-                response.TimedOut = IsTimedOut;
-
-                // If we're telling the client to disconnect then clean up the instantiated connection.
-                if (response.Disconnect)
+                subscription = connection.Receive(LastMessageId, response =>
                 {
-                    // Send the response before removing any connection data
-                    return Send(response).Then(() =>
+                    // We need to wait until post receive has been called
+                    wh.Wait();
+
+                    response.TimedOut = IsTimedOut;
+
+                    // If we're telling the client to disconnect then clean up the instantiated connection.
+                    if (response.Disconnect)
                     {
-                        // Remove connection without triggering disconnect
-                        HeartBeat.RemoveConnection(this);
+                        // Send the response before removing any connection data
+                        return Send(response).Then(() =>
+                        {
+                            // Remove connection without triggering disconnect
+                            HeartBeat.RemoveConnection(this);
+
+                            endRequest(null);
+
+                            // Dispose everything
+                            registration.Dispose();
+                            subscription.Dispose();
+
+                            return TaskAsyncHelper.False;
+                        });
+                    }
+                    else if (response.TimedOut ||
+                             response.Aborted ||
+                             ConnectionEndToken.IsCancellationRequested)
+                    {
+                        if (response.Aborted)
+                        {
+                            // If this was a clean disconnect raise the event.
+                            OnDisconnect();
+                        }
 
                         endRequest(null);
 
@@ -294,32 +320,24 @@ namespace Microsoft.AspNet.SignalR.Transports
                         subscription.Dispose();
 
                         return TaskAsyncHelper.False;
-                    });
-                }
-                else if (response.TimedOut ||
-                         response.Aborted ||
-                         ConnectionEndToken.IsCancellationRequested)
-                {
-                    if (response.Aborted)
-                    {
-                        // If this was a clean disconnect raise the event.
-                        OnDisconnect();
                     }
+                    else
+                    {
+                        return Send(response).Then(() => TaskAsyncHelper.True);
+                    }
+                },
+                MaxMessages);
+            }
+            catch(Exception ex)
+            {
+                endRequest(ex);
 
-                    endRequest(null);
+                wh.Set();
 
-                    // Dispose everything
-                    registration.Dispose();
-                    subscription.Dispose();
+                registration.Dispose();
 
-                    return TaskAsyncHelper.False;
-                }
-                else
-                {
-                    return Send(response).Then(() => TaskAsyncHelper.True);
-                }
-            },
-            MaxMessages);
+                return;
+            }
 
             if (postReceive != null)
             {

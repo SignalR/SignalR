@@ -50,34 +50,45 @@ namespace Microsoft.AspNet.SignalR
                 disposer.Dispose();
             }
 
-            subscription = bus.Subscribe(subscriber, cursor, messageResult =>
+            try
             {
-                // Mark the flag as set so we only set the result once
-                if (Interlocked.Exchange(ref resultSet, 1) == 0)
+                subscription = bus.Subscribe(subscriber, cursor, messageResult =>
                 {
-                    result = map(messageResult);
+                    // Mark the flag as set so we only set the result once
+                    if (Interlocked.Exchange(ref resultSet, 1) == 0)
+                    {
+                        result = map(messageResult);
 
-                    // Dispose of the cancellation token subscription
-                    registration.Dispose();
+                        // Dispose of the cancellation token subscription
+                        registration.Dispose();
 
-                    // Dispose the subscription
-                    disposer.Dispose();
-                }
+                        // Dispose the subscription
+                        disposer.Dispose();
+                    }
 
-                if (messageResult.Terminal)
-                {
-                    Interlocked.CompareExchange(ref result, map(messageResult), null);
+                    if (messageResult.Terminal)
+                    {
+                        Interlocked.CompareExchange(ref result, map(messageResult), null);
 
-                    // Fire a callback before the result is set
-                    end(messageResult, result);
+                        // Fire a callback before the result is set
+                        end(messageResult, result);
 
-                    // Set the result
-                    tcs.TrySetResult(result);
-                }
+                        // Set the result
+                        tcs.TrySetResult(result);
+                    }
 
-                return TaskAsyncHelper.False;
-            },
-            maxMessages);
+                    return TaskAsyncHelper.False;
+                },
+                maxMessages);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+
+                registration.Dispose();
+
+                return tcs.Task;
+            }
 
             // Set the disposable
             disposer.Set(subscription);
