@@ -1,0 +1,3 @@
+[submodule "katana"]
+	path = katana
+	url = https://git01.codeplex.com/katanaproject
