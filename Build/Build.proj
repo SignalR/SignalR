@@ -118,11 +118,6 @@
              Targets="Build"
              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
-
-    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR45.sln"
-             Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v11.0\Web')"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
   </Target>
 
   <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
