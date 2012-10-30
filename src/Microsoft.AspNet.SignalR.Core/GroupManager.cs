@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -20,6 +21,11 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="groupPrefix">The prefix for this group. Either a <see cref="IHub"/> name or <see cref="PersistentConnection"/> type name.</param>
         public GroupManager(IConnection connection, string groupPrefix)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             _connection = connection;
             _groupPrefix = groupPrefix;
         }
@@ -32,6 +38,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents when send is complete.</returns>
         public Task Send(string groupName, object value, params string[] exclude)
         {
+            if (groupName == null)
+            {
+                throw new ArgumentNullException("groupName");
+            }
+
             var qualifiedName = CreateQualifiedName(groupName);
             var message = new ConnectionMessage(qualifiedName, value)
             {
@@ -49,6 +60,16 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents the connection id being added to the group.</returns>
         public Task Add(string connectionId, string groupName)
         {
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException("connectionId");
+            }
+
+            if (groupName == null)
+            {
+                throw new ArgumentNullException("groupName");
+            }
+
             var command = new Command
             {
                 Type = CommandType.AddToGroup,
@@ -67,6 +88,16 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents the connection id being removed from the group.</returns>
         public Task Remove(string connectionId, string groupName)
         {
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException("connectionId");
+            }
+
+            if (groupName == null)
+            {
+                throw new ArgumentNullException("groupName");
+            }
+
             var command = new Command
             {
                 Type = CommandType.RemoveFromGroup,

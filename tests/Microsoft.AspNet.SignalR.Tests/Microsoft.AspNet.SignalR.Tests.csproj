@@ -57,10 +57,15 @@
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="ConfigurationManagerFacts.cs" />
+    <Compile Include="GroupManagerFacts.cs" />
     <Compile Include="Hosting\CookieFacts.cs" />
     <Compile Include="Hosting\HostContextExtensionsFacts.cs" />
     <Compile Include="Hosting\RequestExtensionsFacts.cs" />
     <Compile Include="Hosting\ResponseExtensionsFacts.cs" />
+    <Compile Include="Json\JsonFacts.cs" />
+    <Compile Include="Json\JsonNetSerializerFacts.cs" />
+    <Compile Include="PersistentConnectionFactoryFacts.cs" />
+    <Compile Include="PersistentResponseFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />
     <Compile Include="Server\MessageResultExtensions.cs" />
