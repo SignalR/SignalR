@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 azureRole = GetRoleInfo();
             }
-            catch (TypeLoadException ex)
+            catch (Exception ex)
             {
                 throw new InvalidOperationException("Unable to resolve the instance index of this role. Make sure Microsoft.WindowsAzure.ServiceRuntime.dll is deployed with your application.", ex);
             }
