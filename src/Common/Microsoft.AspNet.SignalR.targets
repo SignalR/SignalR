@@ -15,4 +15,7 @@
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
   </PropertyGroup>
+  <PropertyGroup>
+      <ReferencePath>$(LocalToolsPath)</ReferencePath>
+  </PropertyGroup>
 </Project>
