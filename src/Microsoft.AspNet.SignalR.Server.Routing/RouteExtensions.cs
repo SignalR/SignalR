@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
-using Microsoft.AspNet.Owin;
+using Microsoft.Owin.Host.SystemWeb;
 using Owin;
 using Microsoft.AspNet.SignalR.Server;
 
