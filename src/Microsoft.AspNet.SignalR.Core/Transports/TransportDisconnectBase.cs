@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
 
-        // Lock to protect against overlapping writes to the underlying response stream
-        protected readonly object _writeLock = new object();
+        // Queue to protect against overlapping writes to the underlying response stream
+        private readonly TaskQueue _writeQueue = new TaskQueue();
 
         public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
         {
@@ -216,6 +216,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 Completed.TrySetResult(null);
             }
+        }
+
+        protected Task EnqueueOperation(Func<Task> writeAsync)
+        {
+            return _writeQueue.Enqueue(writeAsync);
         }
 
         protected void InitializePersistentState()

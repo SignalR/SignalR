@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            lock (_writeLock)
+            return EnqueueOperation(() =>
             {
                 OutputWriter.Write("data: {}");
                 OutputWriter.WriteLine();
@@ -23,14 +23,14 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.Flush();
 
                 return Context.Response.FlushAsync();
-            }
+            });
         }
 
         public override Task Send(PersistentResponse response)
         {
             OnSendingResponse(response);
 
-            lock (_writeLock)
+            return EnqueueOperation(() =>
             {
                 OutputWriter.Write("id: ");
                 OutputWriter.Write(response.MessageId);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.Flush();
 
                 return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
-            }
+            });
         }
 
         protected override Task InitializeResponse(ITransportConnection connection)
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                        {
                            Context.Response.ContentType = "text/event-stream";
 
-                           lock (_writeLock)
+                           return EnqueueOperation(() =>
                            {
                                // "data: initialized\n\n"
                                OutputWriter.Write("data: initialized");
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                OutputWriter.Flush();
 
                                return Context.Response.FlushAsync();
-                           }
+                           });
                        });
         }
     }
