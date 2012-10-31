@@ -250,6 +250,9 @@ namespace Microsoft.AspNet.SignalR
                     }
                     else
                     {
+                        // Don't reference the subscription anymore
+                        subscription = null;
+
                         PumpImpl(taskCompletionSource);
                     }
                 }

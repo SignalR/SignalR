@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly IPerformanceCounterManager _counters;
         private string _connectionId;
         private int _ended;
- 
+
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
+        private CancellationTokenRegistration _hostRegistration;
 
         // Queue to protect against overlapping writes to the underlying response stream
         private readonly TaskQueue _writeQueue = new TaskQueue();
@@ -207,6 +208,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     _connectionEndTokenSource.Dispose();
                 }
+
+                _hostRegistration.Dispose();
             }
         }
 
@@ -230,8 +233,24 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_hostShutdownToken);
+            _connectionEndTokenSource = new CancellationTokenSource();
             _connectionEndToken = _connectionEndTokenSource.Token;
+
+            // Handle the shutdown token's callback so we can end our token if it trips
+            _hostRegistration = _hostShutdownToken.Register(state =>
+            {
+                try
+                {
+                    ((CancellationTokenSource)state).Cancel();
+                }
+                catch(ObjectDisposedException)
+                {
+                    // We've already disposed the token and we don't need to do any clean up
+                    // or triggering so just swallow the exception
+                }
+            },
+            _connectionEndTokenSource, 
+            useSynchronizationContext: false);
         }
 
         protected ITransportConnection Connection { get; set; }
