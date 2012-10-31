@@ -79,6 +79,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Owin", "src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj", "{2B8C6DAD-4D85-41B1-83FD-248D9F347522}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SystemWeb", "src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj", "{37C04B69-0989-458A-B80C-A1ED574ADBE4}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Host.SystemWeb45", "katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj", "{9F0C72D8-E43F-4F01-9DEB-9E8FE0AE179E}"
 EndProject
 Global
