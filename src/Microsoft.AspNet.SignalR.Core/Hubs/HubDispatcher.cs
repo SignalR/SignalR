@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         protected override IEnumerable<string> GetSignals(string connectionId)
         {
             return _hubs.SelectMany(info => new[] { info.Name, info.CreateQualifiedName(connectionId) })
-                        .Concat(base.GetSignals(connectionId));
+                        .Concat(new[] { connectionId, "ACK_" + connectionId });
         }
 
         private Task ExecuteHubEventAsync(IRequest request, string connectionId, Func<IHub, Task> action)
