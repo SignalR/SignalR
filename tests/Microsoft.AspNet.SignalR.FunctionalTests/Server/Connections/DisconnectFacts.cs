@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
-            using (var bus = new MessageBus(new TraceManager(), counters, configurationManager))
+            using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager))
             {
                 var nodeCount = 3;
                 var nodes = new List<ServerNode>();

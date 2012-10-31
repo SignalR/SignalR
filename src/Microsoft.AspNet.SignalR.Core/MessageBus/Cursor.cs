@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Text;
 
 namespace Microsoft.AspNet.SignalR
@@ -21,11 +22,8 @@ namespace Microsoft.AspNet.SignalR
             set
             {
                 _key = value;
-                EscapedKey = Escape(value);
             }
         }
-
-        private string EscapedKey { get; set; }
 
         public ulong Id { get; set; }
 
@@ -40,21 +38,26 @@ namespace Microsoft.AspNet.SignalR
 
         public static string MakeCursor(IList<Cursor> cursors)
         {
-            return MakeCursorFast(cursors) ?? MakeCursorSlow(cursors);
+            return MakeCursor(cursors, s => s);
         }
 
-        private static string MakeCursorSlow(IList<Cursor> cursors)
+        public static string MakeCursor(IList<Cursor> cursors, Func<string, string> keyMap)
+        {
+            return MakeCursorFast(cursors, keyMap) ?? MakeCursorSlow(cursors, keyMap);
+        }
+
+        private static string MakeCursorSlow(IList<Cursor> cursors, Func<string, string> keyMap)
         {
             var serialized = new string[cursors.Count];
             for (int i = 0; i < cursors.Count; i++)
             {
-                serialized[i] = cursors[i].EscapedKey + ',' + cursors[i].Id;
+                serialized[i] = Escape(keyMap(cursors[i].Key)) + ',' + cursors[i].Id.ToString("X");
             }
 
             return String.Join("|", serialized);
         }
 
-        private static string MakeCursorFast(IList<Cursor> cursors)
+        private static string MakeCursorFast(IList<Cursor> cursors, Func<string, string> keyMap)
         {
             const int MAX_CHARS = 8 * 1024;
             char* pChars = stackalloc char[MAX_CHARS];
@@ -65,12 +68,10 @@ namespace Microsoft.AspNet.SignalR
             for (int i = 0; i < cursors.Count; i++)
             {
                 Cursor cursor = cursors[i];
-                string escapedKey = cursor.EscapedKey;
+                string escapedKey = Escape(keyMap(cursor.Key));
 
-                checked
-                {
-                    numCharsInBuffer += escapedKey.Length + 18; // comma + 16-char hex Id + pipe
-                }
+                // comma + up to 16-char hex Id + pipe
+                numCharsInBuffer += escapedKey.Length + 18;
 
                 if (numCharsInBuffer > MAX_CHARS)
                 {
@@ -82,24 +83,48 @@ namespace Microsoft.AspNet.SignalR
                     *pNextChar++ = escapedKey[j];
                 }
 
-                *pNextChar = ',';
-                pNextChar++;
-                WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
-                pNextChar += 16;
-                *pNextChar = '|';
-                pNextChar++;
+                *pNextChar++ = ',';
+                int hexLength = WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
+
+                // Since we reserved 16 chars for the hex value, update numCharsInBuffer to reflect the actual number of
+                // characters written by WriteUlongAsHexToBuffer.
+                numCharsInBuffer += hexLength - 16;
+                pNextChar += hexLength;
+                *pNextChar++ = '|';
             }
 
             return (numCharsInBuffer == 0) ? String.Empty : new String(pChars, 0, numCharsInBuffer - 1); // -1 for final pipe
         }
 
-        private static void WriteUlongAsHexToBuffer(ulong value, char* pBuffer)
+        private static int WriteUlongAsHexToBuffer(ulong value, char* pBuffer)
         {
-            for (int i = 15; i >= 0; i--)
+            // This tracks the length of the output and serves as the index for the next character to be written into the pBuffer.
+            // The length could reach up to 16 characters, so at least that much space should remain in the pBuffer.
+            int length = 0;
+
+            // Write the hex value from left to right into the buffer without zero padding.
+            for (int i = 0; i < 16; i++)
             {
-                pBuffer[i] = Int32ToHex((int)value & 0xf); // don't care about overflows here
-                value >>= 4;
+                // Convert the first 4 bits of the value to a valid hex character.
+                pBuffer[length] = Int32ToHex((int)((value & 0xf000000000000000) >> 60)); // take first 4 bits and shift 60 bits
+                value <<= 4;
+
+                // Don't increment length if it would just add zero padding
+                if (length != 0 || pBuffer[length] != '0')
+                {
+                    length++;
+                }
             }
+
+            // The final length will be 0 iff the original value was 0. In this case we want to add 1 character, '0', to pBuffer
+            // '0' will have already been written to pBuffer[0] 16 times, so it is safe to simply return that 1 character was
+            // written to the output.
+            if (length == 0)
+            {
+                return 1;
+            }
+
+            return length;
         }
 
         private static char Int32ToHex(int value)
@@ -143,6 +168,11 @@ namespace Microsoft.AspNet.SignalR
 
         public static Cursor[] GetCursors(string cursor)
         {
+            return GetCursors(cursor, s => s);
+        }
+
+        public static Cursor[] GetCursors(string cursor, Func<string, string> keyMap)
+        {
             var cursors = new List<Cursor>();
             var current = new Cursor();
             bool escape = false;
@@ -163,7 +193,12 @@ namespace Microsoft.AspNet.SignalR
                     }
                     else if (ch == ',')
                     {
-                        current.Key = sb.ToString();
+                        current.Key = keyMap(sb.ToString());
+                        // If the keyMap cannot find a key, we cannot create an array of cursors.
+                        if (current.Key == null)
+                        {
+                            return null;
+                        }
                         sb.Clear();
                     }
                     else if (ch == '|')

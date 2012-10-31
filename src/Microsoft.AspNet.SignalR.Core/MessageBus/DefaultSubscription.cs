@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR
         private List<Cursor> _cursors;
         private List<Topic> _cursorTopics;
 
+        private readonly IStringMinifier _stringMinifier;
         private readonly object _lockObj = new object();
 
         public DefaultSubscription(string identity,
@@ -21,23 +22,20 @@ namespace Microsoft.AspNet.SignalR
                                    string cursor,
                                    Func<MessageResult, Task<bool>> callback,
                                    int maxMessages,
+                                   IStringMinifier stringMinifier,
                                    IPerformanceCounterManager counters) :
             base(identity, eventKeys, callback, maxMessages, counters)
         {
+            _stringMinifier = stringMinifier;
 
-            IEnumerable<Cursor> cursors = null;
+            IEnumerable<Cursor> cursors;
             if (cursor == null)
             {
-                cursors = from key in eventKeys
-                          select new Cursor
-                          {
-                              Key = key,
-                              Id = GetMessageId(topics, key)
-                          };
+                cursors = GetCursorsFromEventKeys(EventKeys, topics);
             }
             else
             {
-               cursors = Cursor.GetCursors(cursor);
+                cursors = Cursor.GetCursors(cursor, stringMinifier.Unminify) ?? GetCursorsFromEventKeys(EventKeys, topics);
             }
 
             _cursors = new List<Cursor>(cursors);
@@ -50,7 +48,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     Cursor c = _cursors[i];
                     Topic topic;
-                    if (!eventKeys.Contains(c.Key))
+                    if (!EventKeys.Contains(c.Key))
                     {
                         _cursors.Remove(c);
                     }
@@ -119,7 +117,7 @@ namespace Microsoft.AspNet.SignalR
 
         public override string GetCursor()
         {
-            return Cursor.MakeCursor(_cursors);
+            return Cursor.MakeCursor(_cursors, _stringMinifier.Minify);
         }
 
         protected override void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state)
@@ -146,7 +144,7 @@ namespace Microsoft.AspNet.SignalR
                     }
                 }
 
-                nextCursor = Cursor.MakeCursor(cursors);
+                nextCursor = Cursor.MakeCursor(cursors, _stringMinifier.Minify);
 
                 // Return the state as a list of cursors
                 state = cursors;
@@ -176,6 +174,16 @@ namespace Microsoft.AspNet.SignalR
 
                 return false;
             }
+        }
+
+        private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, IDictionary<string, Topic> topics)
+        {
+            return from key in eventKeys
+                   select new Cursor
+                   {
+                       Key = key,
+                       Id = GetMessageId(topics, key)
+                   };
         }
 
         private ulong GetMessageId(IDictionary<string, Topic> topics, string key)
