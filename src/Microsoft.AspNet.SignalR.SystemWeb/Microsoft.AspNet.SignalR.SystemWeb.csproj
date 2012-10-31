@@ -7,8 +7,8 @@
     <ProjectGuid>{37C04B69-0989-458A-B80C-A1ED574ADBE4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Server.Routing</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Server.Routing</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.SignalR.SystemWeb</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.SignalR.SystemWeb</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -60,9 +60,9 @@
       <Project>{3b71f0ae-d4b6-4f47-bf62-333d45615673}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Server\Microsoft.AspNet.SignalR.Server.csproj">
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj">
       <Project>{2B8C6DAD-4D85-41B1-83FD-248D9F347522}</Project>
-      <Name>Microsoft.AspNet.SignalR.Server</Name>
+      <Name>Microsoft.AspNet.SignalR.Owin</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>

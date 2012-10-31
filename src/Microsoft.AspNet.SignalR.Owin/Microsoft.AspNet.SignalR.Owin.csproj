@@ -7,8 +7,8 @@
     <ProjectGuid>{2B8C6DAD-4D85-41B1-83FD-248D9F347522}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Server</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Server</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.SignalR.Owin</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.SignalR.Owin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
