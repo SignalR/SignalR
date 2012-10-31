@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet
         private static readonly Lazy<RemoveHeaderDel> IIS7RemoveHeader = new Lazy<RemoveHeaderDel>(GetRemoveHeaderDelegate);
         private readonly HttpContextBase _context;
         private bool _bufferingDisabled;
-        private readonly TaskQueue _queue = new TaskQueue();
 
         public AspNetResponse(HttpContextBase context)
         {
@@ -117,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet
 
         public Task FlushAsync()
         {
-            return _queue.Enqueue(() => _context.Response.FlushAsync());
+            return _context.Response.FlushAsync();
         }
 
         public Task EndAsync()

@@ -156,13 +156,13 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Context.Response.ContentType = Json.MimeType;
 
-            lock (_writeLock)
+            return EnqueueOperation(() =>
             {
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();
 
                 return Context.Response.EndAsync();
-            }
+            });
         }
 
         protected virtual Task InitializeResponse(ITransportConnection connection)
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 },
                 MaxMessages);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 endRequest(ex);
 

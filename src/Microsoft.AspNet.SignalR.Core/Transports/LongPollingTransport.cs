@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -171,21 +170,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
 
-            if (IsJsonp)
+            return EnqueueOperation(() =>
             {
-                OutputWriter.Write(JsonpCallback);
-                OutputWriter.Write("(");
-            }
+                if (IsJsonp)
+                {
+                    OutputWriter.Write(JsonpCallback);
+                    OutputWriter.Write("(");
+                }
 
-            _jsonSerializer.Serialize(value, OutputWriter);
+                _jsonSerializer.Serialize(value, OutputWriter);
 
-            if (IsJsonp)
-            {
-                OutputWriter.Write(");");
-            }
+                if (IsJsonp)
+                {
+                    OutputWriter.Write(");");
+                }
 
-            OutputWriter.Flush();
-            return Context.Response.EndAsync();
+                OutputWriter.Flush();
+                return Context.Response.EndAsync();
+            });
         }
 
         private Task ProcessSendRequest()
