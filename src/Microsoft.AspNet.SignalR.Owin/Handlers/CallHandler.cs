@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Server.Infrastructure;
 
@@ -14,6 +15,10 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
         private readonly PersistentConnection _connection;
 
         private static readonly string[] AllowCredentialsTrue = new[] { "true" };
+
+        private static bool _supportWebSockets;
+        private static bool _supportWebSocketsInitialized;
+        private static Object _supportWebSocketsLock = new Object();
 
         public CallHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -34,7 +39,11 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
                 serverResponse.ResponseHeaders["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
             }
 
-            hostContext.Items[HostConstants.SupportsWebSockets] = env.ContainsKey(OwinConstants.WebSocketSupport);
+            hostContext.Items[HostConstants.SupportsWebSockets] = LazyInitializer.EnsureInitialized(
+                ref _supportWebSockets, 
+                ref _supportWebSocketsInitialized,
+                ref _supportWebSocketsLock,
+                () => SupportsWebSockets(env));
 
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
@@ -42,6 +51,17 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
             _connection.Initialize(_resolver, hostContext);
 
             return _connection.ProcessRequestAsync(hostContext);
+        }
+
+        private bool SupportsWebSockets(IDictionary<string, object> env)
+        {
+            object value;
+            if (env.TryGetValue(OwinConstants.ServerCapabilities, out value) && value is IDictionary<string,object>)
+            {
+                var capabilities = (IDictionary<string, object>) value;
+                return capabilities.ContainsKey(OwinConstants.WebSocketVersion);
+            }
+            return false;
         }
     }
 }

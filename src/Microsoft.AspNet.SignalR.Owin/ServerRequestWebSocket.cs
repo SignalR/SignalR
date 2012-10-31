@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Server.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Server
 {
@@ -20,21 +21,19 @@ namespace Microsoft.AspNet.SignalR.Server
                 <
                     int /* messageType */,
                     bool /* endOfMessage */,
-                    int? /* count */,
-                    int? /* closeStatus */,
-                    string /* closeStatusDescription */
+                    int /* count */
                 >
             >
         >;
+
     using WebSocketReceiveTuple =
             Tuple
             <
                 int /* messageType */,
                 bool /* endOfMessage */,
-                int? /* count */,
-                int? /* closeStatus */,
-                string /* closeStatusDescription */
+                int /* count */
             >;
+
     using WebSocketSendAsync =
            Func
            <
@@ -65,8 +64,8 @@ namespace Microsoft.AspNet.SignalR.Server
 
         public Task Invoke(IDictionary<string, object> context)
         {
-            _sendAsync = (WebSocketSendAsync)context["websocket.SendAsyncFunc"];
-            _receiveAsync = (WebSocketReceiveAsync)context["websocket.ReceiveAsyncFunc"];
+            _sendAsync = (WebSocketSendAsync)context[OwinConstants.WebSocketSendAsync];
+            _receiveAsync = (WebSocketReceiveAsync)context[OwinConstants.WebSocketReceiveAsync];
 
             // Invoke the call back as we're ready to start receiving
             Task task = _callback(this)

@@ -33,8 +33,10 @@ namespace Microsoft.AspNet.SignalR.Server.Infrastructure
         public const string DisableRequestBuffering = "server.DisableRequestBuffering";
         public const string DisableResponseBuffering = "server.DisableResponseBuffering";
 
-        public const string WebSocketSupport = "websocket.Support";
+        public const string ServerCapabilities = "server.Capabilities";
+        public const string WebSocketVersion = "websocket.Version";
         public const string WebSocketAccept = "websocket.Accept";
-        public const string WebSocketFunc = "websocket.Func";
+        public const string WebSocketSendAsync = "websocket.SendAsync";
+        public const string WebSocketReceiveAsync = "websocket.ReceiveAsync";
     }
 }
