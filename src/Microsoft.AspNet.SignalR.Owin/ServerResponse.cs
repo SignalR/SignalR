@@ -29,15 +29,7 @@ namespace Microsoft.AspNet.SignalR.Server
 
         public Task FlushAsync()
         {
-            try
-            {
-                ResponseBody.Flush();
-            }
-            catch
-            {
-            }
-
-            return TaskAsyncHelper.Empty;
+            return TaskAsyncHelper.FromMethod(() => ResponseBody.Flush());
         }
 
         public Task EndAsync()
