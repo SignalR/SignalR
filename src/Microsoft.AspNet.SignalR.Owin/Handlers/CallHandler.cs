@@ -45,12 +45,23 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
                 ref _supportWebSocketsLock,
                 () => SupportsWebSockets(env));
 
+            hostContext.Items[HostConstants.ShutdownToken] = GetShutdownToken(env);
+
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
 
             _connection.Initialize(_resolver, hostContext);
 
             return _connection.ProcessRequestAsync(hostContext);
+        }
+
+        private CancellationToken GetShutdownToken(IDictionary<string, object> env)
+        {
+            object value;
+            return env.TryGetValue(OwinConstants.HostOnAppDisposing, out value)
+                && value is CancellationToken
+                ? (CancellationToken)value
+                : default(CancellationToken);
         }
 
         private bool SupportsWebSockets(IDictionary<string, object> env)

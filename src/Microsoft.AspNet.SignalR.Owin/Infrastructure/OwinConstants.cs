@@ -38,5 +38,7 @@ namespace Microsoft.AspNet.SignalR.Server.Infrastructure
         public const string WebSocketAccept = "websocket.Accept";
         public const string WebSocketSendAsync = "websocket.SendAsync";
         public const string WebSocketReceiveAsync = "websocket.ReceiveAsync";
+
+        public const string HostOnAppDisposing = "host.OnAppDisposing";
     }
 }
