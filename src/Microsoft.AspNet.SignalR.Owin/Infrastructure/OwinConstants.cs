@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-namespace Microsoft.AspNet.SignalR.Server.Infrastructure
+namespace Microsoft.AspNet.SignalR.Owin
 {
     internal static class OwinConstants
     {
@@ -40,5 +40,6 @@ namespace Microsoft.AspNet.SignalR.Server.Infrastructure
         public const string WebSocketReceiveAsync = "websocket.ReceiveAsync";
 
         public const string HostOnAppDisposing = "host.OnAppDisposing";
+        public const string HostAppNameKey = "host.AppName";
     }
 }

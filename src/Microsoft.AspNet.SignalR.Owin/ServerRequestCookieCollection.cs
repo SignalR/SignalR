@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.SignalR.Server
+namespace Microsoft.AspNet.SignalR.Owin
 {
     public class ServerRequestCookieCollection : IRequestCookieCollection
     {

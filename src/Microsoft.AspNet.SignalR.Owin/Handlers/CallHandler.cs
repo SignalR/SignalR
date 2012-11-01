@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Server.Infrastructure;
+using Microsoft.AspNet.SignalR.Owin;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Server.Handlers
+namespace Microsoft.AspNet.SignalR.Owin
 {
     public class CallHandler
     {
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
             return _connection.ProcessRequestAsync(hostContext);
         }
 
-        private CancellationToken GetShutdownToken(IDictionary<string, object> env)
+        internal static CancellationToken GetShutdownToken(IDictionary<string, object> env)
         {
             object value;
             return env.TryGetValue(OwinConstants.HostOnAppDisposing, out value)

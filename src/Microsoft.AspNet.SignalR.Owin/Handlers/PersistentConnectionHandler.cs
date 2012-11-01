@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Server.Infrastructure;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Server.Handlers
+namespace Microsoft.AspNet.SignalR.Owin.Handlers
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
@@ -14,29 +14,14 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
         readonly AppFunc _app;
         readonly string _path;
         readonly Type _connectionType;
-        Func<IDependencyResolver> _resolver;
-
-        public PersistentConnectionHandler(AppFunc app, string path, Type connectionType)
-        {
-            _app = app;
-            _path = path;
-            _connectionType = connectionType;
-            _resolver = DeferredGlobalHostResolver;
-        }
+        IDependencyResolver _resolver;
 
         public PersistentConnectionHandler(AppFunc app, string path, Type connectionType, IDependencyResolver resolver)
         {
             _app = app;
             _path = path;
             _connectionType = connectionType;
-            _resolver = () => resolver;
-        }
-
-        IDependencyResolver DeferredGlobalHostResolver()
-        {
-            var resolver = GlobalHost.DependencyResolver;
-            _resolver = () => resolver;
-            return resolver;
+            _resolver = resolver;
         }
 
         private static T Get<T>(IDictionary<string, object> env, string key)
@@ -53,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
                 return _app.Invoke(env);
             }
 
-            var resolver = _resolver.Invoke();
+            var resolver = _resolver;
             var connectionFactory = new PersistentConnectionFactory(resolver);
             var connection = connectionFactory.CreateInstance(_connectionType);
 

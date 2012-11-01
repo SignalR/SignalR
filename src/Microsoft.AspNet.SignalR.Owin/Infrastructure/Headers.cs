@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.SignalR.Server.Infrastructure
+namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
     // Helper methods for creating and consuming CallParameters.Headers and ResultParameters.Headers.
     internal static class Headers

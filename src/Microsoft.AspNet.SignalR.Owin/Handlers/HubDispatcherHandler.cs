@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Server.Infrastructure;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Server.Handlers
+namespace Microsoft.AspNet.SignalR.Owin.Handlers
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
@@ -14,45 +14,19 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
     {
         readonly AppFunc _app;
         readonly string _path;
-        Func<IDependencyResolver> _resolver;
-
-        public HubDispatcherHandler(AppFunc app)
-        {
-            _app = app;
-            _path = "";
-
-            // defer access to GlobalHost property to end-user to change resolver before first call
-            _resolver = DeferredGlobalHostResolver;
-        }
+        IDependencyResolver _resolver;
 
         public HubDispatcherHandler(AppFunc app, IDependencyResolver resolver)
+            : this(app, "", resolver)
         {
-            _app = app;
-            _path = "";
-            _resolver = () => resolver;
-        }
-
-        public HubDispatcherHandler(AppFunc app, string path)
-        {
-            _app = app;
-            _path = path;
-
-            // defer access to GlobalHost property to end-user to change resolver before first call
-            _resolver = DeferredGlobalHostResolver;
+            
         }
 
         public HubDispatcherHandler(AppFunc app, string path, IDependencyResolver resolver)
         {
             _app = app;
             _path = path;
-            _resolver = () => resolver;
-        }
-
-        IDependencyResolver DeferredGlobalHostResolver()
-        {
-            var resolver = GlobalHost.DependencyResolver;
-            _resolver = () => resolver;
-            return resolver;
+            _resolver = resolver;
         }
 
         private static T Get<T>(IDictionary<string, object> env, string key)
@@ -72,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Server.Handlers
             var pathBase = Get<string>(env, OwinConstants.RequestPathBase);
             var dispatcher = new HubDispatcher(pathBase + _path);
 
-            var handler = new CallHandler(_resolver.Invoke(), dispatcher);
+            var handler = new CallHandler(_resolver, dispatcher);
             return handler.Invoke(env);
         }
     }

@@ -6,9 +6,9 @@ using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Server.Infrastructure;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Server
+namespace Microsoft.AspNet.SignalR.Owin
 {
     using WebSocketFunc = Func<IDictionary<string, object>, Task>;
     public partial class ServerRequest : IRequest

@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Microsoft.AspNet.SignalR.Server.Infrastructure;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Server
+namespace Microsoft.AspNet.SignalR.Owin
 {
     public partial class ServerResponse
     {

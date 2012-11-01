@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="Infrastructure\Headers.cs" />
     <Compile Include="Infrastructure\OwinConstants.cs" />
+    <Compile Include="Infrastructure\OwinEnvironmentExtensions.cs" />
     <Compile Include="Infrastructure\ParamDictionary.cs" />
     <Compile Include="Handlers\CallHandler.cs" />
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />

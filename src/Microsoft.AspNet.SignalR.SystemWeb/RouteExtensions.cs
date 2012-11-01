@@ -8,7 +8,7 @@ using System.Web;
 using System.Web.Routing;
 using Microsoft.Owin.Host.SystemWeb;
 using Owin;
-using Microsoft.AspNet.SignalR.Server;
+using Microsoft.AspNet.SignalR.Owin;
 
 namespace Microsoft.AspNet.SignalR
 {

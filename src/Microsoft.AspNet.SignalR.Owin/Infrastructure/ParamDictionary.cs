@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.SignalR.Server.Infrastructure
+namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
     internal class ParamDictionary : IDictionary<string, string>
     {

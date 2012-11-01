@@ -2,5 +2,5 @@
 
 using System.Reflection;
 
-[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Server")]
+[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Owin")]
 [assembly: AssemblyDescription("Assembly containing default SignalR host.")]
