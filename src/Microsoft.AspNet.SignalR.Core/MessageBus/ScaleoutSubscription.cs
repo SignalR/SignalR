@@ -30,11 +30,7 @@ namespace Microsoft.AspNet.SignalR
             if (cursor == null)
             {
                 cursors = from key in _streams.Keys
-                          select new Cursor
-                          {
-                              Key = key,
-                              Id = GetCursorId(key)
-                          };
+                          select new Cursor(key, GetCursorId(key));
             }
             else
             {
@@ -86,11 +82,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     // Create a cursor and add it to the list.
                     // Point the Id to the first value
-                    cursor = new Cursor
-                    {
-                        Id = stream.Value.MinKey,
-                        Key = stream.Key
-                    };
+                    cursor = new Cursor(key: stream.Key, id: stream.Value.MinKey);
 
                     consumed = false;
                 }

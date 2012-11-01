@@ -36,6 +36,9 @@ namespace Microsoft.AspNet.SignalR
             var newMessageBus = new Lazy<IMessageBus>(() => new MessageBus(this));
             Register(typeof(IMessageBus), () => newMessageBus.Value);
 
+            var stringMinifier = new Lazy<IStringMinifier>(() => new StringMinifier());
+            Register(typeof(IStringMinifier), () => stringMinifier.Value);
+
             var serializer = new Lazy<JsonNetSerializer>();
             Register(typeof(IJsonSerializer), () => serializer.Value);
 
