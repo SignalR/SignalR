@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR
             for (int i = 0; i < 16; i++)
             {
                 // Convert the first 4 bits of the value to a valid hex character.
-                pBuffer[length] = Int32ToHex((int)((value & 0xf000000000000000) >> 60)); // take first 4 bits and shift 60 bits
+                pBuffer[length] = Int32ToHex((int)(value >> 60));
                 value <<= 4;
 
                 // Don't increment length if it would just add zero padding
