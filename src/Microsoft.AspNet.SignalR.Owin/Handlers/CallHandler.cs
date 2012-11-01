@@ -47,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 () => SupportsWebSockets(env));
 
             hostContext.Items[HostConstants.ShutdownToken] = GetShutdownToken(env);
+            hostContext.Items[HostConstants.DebugMode] = GetIsDebugEnabled(env);
 
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
@@ -74,6 +75,14 @@ namespace Microsoft.AspNet.SignalR.Owin
                 return capabilities.ContainsKey(OwinConstants.WebSocketVersion);
             }
             return false;
+        }
+
+        private object GetIsDebugEnabled(IDictionary<string, object> env)
+        {
+            object value;
+            return env.TryGetValue(OwinConstants.HostAppModeKey, out value)
+                && value is string && !string.IsNullOrWhiteSpace(value as string)
+                && OwinConstants.AppModeDevelopment.Equals(value as string, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -41,5 +41,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public const string HostOnAppDisposing = "host.OnAppDisposing";
         public const string HostAppNameKey = "host.AppName";
+        public const string HostAppModeKey = "host.AppMode";
+        public const string AppModeDevelopment = "development";
     }
 }
