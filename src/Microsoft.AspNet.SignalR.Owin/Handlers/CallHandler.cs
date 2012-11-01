@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             object value;
             return env.TryGetValue(OwinConstants.HostAppModeKey, out value)
-                && value is string && !string.IsNullOrWhiteSpace(value as string)
+                && value is string && !String.IsNullOrWhiteSpace(value as string)
                 && OwinConstants.AppModeDevelopment.Equals(value as string, StringComparison.OrdinalIgnoreCase);
         }
     }
