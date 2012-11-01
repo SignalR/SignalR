@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void UnminifyReturnsNullIfNotMinifiedValue()
         {
             var stringMinifer = new StringMinifier();
-            Assert.Equal(stringMinifer.Unminify("invalidValue"), null);
+            Assert.Null(stringMinifer.Unminify("invalidValue"));
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             foreach (var pair in unminifiedTracker)
             {
                 // There is a memory leak if this does not return null
-                Assert.Equal(null, stringMinifer.Unminify(pair.Key));
+                Assert.Null(stringMinifer.Unminify(pair.Key));
             }
             Assert.Equal("test", stringMinifer.Unminify(minificationToKeep));
         }
@@ -133,14 +133,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             foreach (var pair in unminifiedTracker1)
             {
                 // There is a memory leak if this does not return null
-                Assert.Equal(null, stringMinifer.Unminify(pair.Key));
+                Assert.Null(stringMinifer.Unminify(pair.Key));
             }
 
             Assert.Equal("test", stringMinifer.Unminify(minificationToKeep));
         }
 
         [Fact]
-        public void UpTo64UniqueStringsMinifyToOnChar()
+        public void UpTo64UniqueStringsMinifyTo1Char()
         {
             var stringMinifer = new StringMinifier();
             var minifiedStrings = new List<string>();
@@ -155,6 +155,26 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 Assert.Equal(1, minifiedString.Length);
             }
+        }
+
+        [Fact]
+        public void The4097thUniqueStringMinifiesTo3Chars()
+        {
+            var stringMinifer = new StringMinifier();
+            var minifiedStrings = new List<string>();
+
+            for (var i = 0; i < 4096; i++)
+            {
+                minifiedStrings.Add(stringMinifer.Minify(Guid.NewGuid().ToString()));
+            }
+
+            Assert.Equal(4096, minifiedStrings.Count);
+            foreach (var minifiedString in minifiedStrings)
+            {
+                Assert.True(minifiedString.Length <= 2);
+            }
+
+            Assert.Equal(3, stringMinifer.Minify(Guid.NewGuid().ToString()).Length);
         }
     }
 }

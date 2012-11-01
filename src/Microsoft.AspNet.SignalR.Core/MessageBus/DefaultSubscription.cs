@@ -74,11 +74,7 @@ namespace Microsoft.AspNet.SignalR
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
                 if (index == -1)
                 {
-                    _cursors.Add(new Cursor
-                    {
-                        Key = eventKey,
-                        Id = GetMessageId(topic)
-                    });
+                    _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
 
                     _cursorTopics.Add(topic);
 
@@ -117,7 +113,7 @@ namespace Microsoft.AspNet.SignalR
 
         public override string GetCursor()
         {
-            return Cursor.MakeCursor(_cursors, _stringMinifier.Minify);
+            return Cursor.MakeCursor(_cursors);
         }
 
         protected override void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state)
@@ -144,7 +140,7 @@ namespace Microsoft.AspNet.SignalR
                     }
                 }
 
-                nextCursor = Cursor.MakeCursor(cursors, _stringMinifier.Minify);
+                nextCursor = Cursor.MakeCursor(cursors);
 
                 // Return the state as a list of cursors
                 state = cursors;
@@ -179,11 +175,7 @@ namespace Microsoft.AspNet.SignalR
         private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, IDictionary<string, Topic> topics)
         {
             return from key in eventKeys
-                   select new Cursor
-                   {
-                       Key = key,
-                       Id = GetMessageId(topics, key)
-                   };
+                   select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
         }
 
         private ulong GetMessageId(IDictionary<string, Topic> topics, string key)

@@ -11,53 +11,46 @@ namespace Microsoft.AspNet.SignalR
     internal unsafe class Cursor
     {
         private static char[] _escapeChars = new[] { '\\', '|', ',' };
+        private string _escapedKey;
 
-        private string _key;
-        public string Key
-        {
-            get
-            {
-                return _key;
-            }
-            set
-            {
-                _key = value;
-            }
-        }
+        public string Key { get; private set; }
 
         public ulong Id { get; set; }
 
         public static Cursor Clone(Cursor cursor)
         {
-            return new Cursor
-            {
-                Id = cursor.Id,
-                Key = cursor.Key
-            };
+            return new Cursor(cursor.Key, cursor.Id, cursor._escapedKey);
+        }
+
+        public Cursor(string key, ulong id)
+            : this(key, id, Escape(key))
+        {
+        }
+        
+        public Cursor(string key, ulong id, string minifiedKey)
+        {
+            Key = key;
+            Id = id;
+            _escapedKey = minifiedKey;
         }
 
         public static string MakeCursor(IList<Cursor> cursors)
         {
-            return MakeCursor(cursors, s => s);
+            return MakeCursorFast(cursors) ?? MakeCursorSlow(cursors);
         }
 
-        public static string MakeCursor(IList<Cursor> cursors, Func<string, string> keyMap)
-        {
-            return MakeCursorFast(cursors, keyMap) ?? MakeCursorSlow(cursors, keyMap);
-        }
-
-        private static string MakeCursorSlow(IList<Cursor> cursors, Func<string, string> keyMap)
+        private static string MakeCursorSlow(IList<Cursor> cursors)
         {
             var serialized = new string[cursors.Count];
             for (int i = 0; i < cursors.Count; i++)
             {
-                serialized[i] = Escape(keyMap(cursors[i].Key)) + ',' + cursors[i].Id.ToString("X");
+                serialized[i] = cursors[i]._escapedKey + ',' + cursors[i].Id.ToString("X");
             }
 
             return String.Join("|", serialized);
         }
 
-        private static string MakeCursorFast(IList<Cursor> cursors, Func<string, string> keyMap)
+        private static string MakeCursorFast(IList<Cursor> cursors)
         {
             const int MAX_CHARS = 8 * 1024;
             char* pChars = stackalloc char[MAX_CHARS];
@@ -68,7 +61,7 @@ namespace Microsoft.AspNet.SignalR
             for (int i = 0; i < cursors.Count; i++)
             {
                 Cursor cursor = cursors[i];
-                string escapedKey = Escape(keyMap(cursor.Key));
+                string escapedKey = cursor._escapedKey;
 
                 // comma + up to 16-char hex Id + pipe
                 numCharsInBuffer += escapedKey.Length + 18;
@@ -171,54 +164,73 @@ namespace Microsoft.AspNet.SignalR
             return GetCursors(cursor, s => s);
         }
 
-        public static Cursor[] GetCursors(string cursor, Func<string, string> keyMap)
+        public static Cursor[] GetCursors(string cursor, Func<string, string> keyMaximizer)
         {
             var cursors = new List<Cursor>();
-            var current = new Cursor();
+            string currentKey = null;
+            string currentEscapedKey = null;
+            ulong currentId;
             bool escape = false;
+            bool consumingKey = true;
             var sb = new StringBuilder();
+            var sbEscaped = new StringBuilder();
 
             foreach (var ch in cursor)
             {
                 if (escape)
                 {
                     sb.Append(ch);
+                    if (consumingKey)
+                    {
+                        sbEscaped.Append(ch);
+                    }
                     escape = false;
                 }
                 else
                 {
                     if (ch == '\\')
                     {
+                        if (consumingKey)
+                        {
+                            sbEscaped.Append('\\');
+                        }
                         escape = true;
                     }
                     else if (ch == ',')
                     {
-                        current.Key = keyMap(sb.ToString());
+                        currentEscapedKey = sbEscaped.ToString();
+                        currentKey = keyMaximizer(sb.ToString());
                         // If the keyMap cannot find a key, we cannot create an array of cursors.
-                        if (current.Key == null)
+                        if (currentKey == null)
                         {
                             return null;
                         }
                         sb.Clear();
+                        sbEscaped.Clear();
+                        consumingKey = false;
                     }
                     else if (ch == '|')
                     {
-                        current.Id = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
-                        cursors.Add(current);
-                        current = new Cursor();
+                        currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
+                        cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
                         sb.Clear();
+                        consumingKey = true;
                     }
                     else
                     {
                         sb.Append(ch);
+                        if (consumingKey)
+                        {
+                            sbEscaped.Append(ch);
+                        }
                     }
                 }
             }
 
             if (sb.Length > 0)
             {
-                current.Id = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
-                cursors.Add(current);
+                currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
+                cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
             }
 
             return cursors.ToArray();

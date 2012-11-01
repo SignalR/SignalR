@@ -6,7 +6,7 @@
         /// Minifies a string in a way that can be reversed by this instance of <see cref="IStringMinifier"/>.
         /// </summary>
         /// <param name="fullString">The string to be minified</param>
-        /// <returns>A minified representation of the <see cref="fullString"/>.</returns>
+        /// <returns>A minified representation of the <see cref="fullString"/> without the following characters:,|\</returns>
         string Minify(string fullString);
 
         /// <summary>
