@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -14,12 +15,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture,Resources.Error_Connection));
             }
 
             if (convert == null)
             {
-                throw new ArgumentNullException("converter");
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_Converter));
             }
 
             _convert = convert;

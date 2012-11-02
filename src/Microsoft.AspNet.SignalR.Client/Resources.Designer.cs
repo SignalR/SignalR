@@ -61,11 +61,92 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to read response: {0}.
+        ///   Looks up a localized string similar to connection.
         /// </summary>
-        internal static string DebugError_FailedToReadResponse {
+        internal static string Error_Connection {
             get {
-                return ResourceManager.GetString("DebugError_FailedToReadResponse", resourceCulture);
+                return ResourceManager.GetString("Error_Connection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The connection has not been established..
+        /// </summary>
+        internal static string Error_ConnectionHasNotBeenEstablished {
+            get {
+                return ResourceManager.GetString("Error_ConnectionHasNotBeenEstablished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to converter.
+        /// </summary>
+        internal static string Error_Converter {
+            get {
+                return ResourceManager.GetString("Error_Converter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to eventName.
+        /// </summary>
+        internal static string Error_EventName {
+            get {
+                return ResourceManager.GetString("Error_EventName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Incompatible protocol version..
+        /// </summary>
+        internal static string Error_IncompatibleProtocolVersion {
+            get {
+                return ResourceManager.GetString("Error_IncompatibleProtocolVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to method.
+        /// </summary>
+        internal static string Error_Method {
+            get {
+                return ResourceManager.GetString("Error_Method", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Proxies cannot be added after the connection has been started..
+        /// </summary>
+        internal static string Error_ProxiesCannotBeAddedConnectionStarted {
+            get {
+                return ResourceManager.GetString("Error_ProxiesCannotBeAddedConnectionStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server negotiation failed..
+        /// </summary>
+        internal static string Error_ServerNegotiationFailed {
+            get {
+                return ResourceManager.GetString("Error_ServerNegotiationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start must be called before data can be sent..
+        /// </summary>
+        internal static string Error_StartMustBeCalledBeforeDataCanBeSent {
+            get {
+                return ResourceManager.GetString("Error_StartMustBeCalledBeforeDataCanBeSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url cannot contain QueryString directly. Pass QueryString values in using available overload..
+        /// </summary>
+        internal static string Error_UrlCantContainQueryStringDirectly {
+            get {
+                return ResourceManager.GetString("Error_UrlCantContainQueryStringDirectly", resourceCulture);
             }
         }
     }

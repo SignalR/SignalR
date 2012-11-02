@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 if (raw == null)
                 {
-                    throw new InvalidOperationException("Server negotiation failed.");
+                    throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                 }
 
                 return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
