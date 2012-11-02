@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (resolver == null)
             {
-                throw new ArgumentNullException("resolver");
+                throw new ArgumentNullException(Resources.Error_Resolver);
             }
 
             _resolver = resolver;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionType == null)
             {
-                throw new ArgumentNullException("connectionType");
+                throw new ArgumentNullException(Resources.Error_ConnectionType);
             }
 
             var connection = (_resolver.Resolve(connectionType) ??
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (connection == null)
             {
-                throw new InvalidOperationException(String.Format("'{0}' is not a {1}.", connectionType.FullName, typeof(PersistentConnection).FullName));
+                throw new InvalidOperationException(String.Format(Resources.Error_IsNotA, connectionType.FullName, typeof(PersistentConnection).FullName));
             }
 
             return connection;

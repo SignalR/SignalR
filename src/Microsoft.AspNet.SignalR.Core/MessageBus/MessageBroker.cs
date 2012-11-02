@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("Failed to process work - " + ex.GetBaseException());
+                Trace.TraceInformation(Resources.Trace_FailedProcessWork + ex.GetBaseException());
             }
             finally
             {
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.SignalR
 
                 if (task.IsFaulted)
                 {
-                    Trace.TraceInformation("Failed to process work - " + task.Exception.GetBaseException());
+                    Trace.TraceInformation(Resources.Trace_FailedProcessWork + task.Exception.GetBaseException());
                 }
             });
         }

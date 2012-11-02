@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (!_initialized)
             {
-                throw new InvalidOperationException("Connection not initialized.");
+                throw new InvalidOperationException(Resources.Error_ConnectionNotInitialized);
             }
 
             if (IsNegotiationRequest(context.Request))
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (_transport == null)
             {
-                throw new InvalidOperationException("Protocol error: Unknown transport.");
+                throw new InvalidOperationException(Resources.Error_ProtocolErrorUnknownTransport);
             }
 
             string connectionId = _transport.ConnectionId;
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.SignalR
             // If there's no connection id then this is a bad request
             if (String.IsNullOrEmpty(connectionId))
             {
-                throw new InvalidOperationException("Protocol error: Missing connection id.");
+                throw new InvalidOperationException(Resources.Error_ProtocolErrorMissingConnectionId);
             }
 
             IEnumerable<string> signals = GetSignals(connectionId);
