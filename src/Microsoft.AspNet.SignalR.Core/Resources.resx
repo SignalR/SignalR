@@ -126,11 +126,29 @@
   <data name="Error_CallerNotAuthorizedToInvokeMethodOn" xml:space="preserve">
     <value>Caller is not authorized to invoke the {0} method on {1}.</value>
   </data>
+  <data name="Error_Connection" xml:space="preserve">
+    <value>connection</value>
+  </data>
+  <data name="Error_ConnectionId" xml:space="preserve">
+    <value>connectionId</value>
+  </data>
+  <data name="Error_ConnectionNotInitialized" xml:space="preserve">
+    <value>Connection not initialized.</value>
+  </data>
+  <data name="Error_ConnectionType" xml:space="preserve">
+    <value>connectionType</value>
+  </data>
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating hub {0}. </value>
   </data>
+  <data name="Error_GroupName" xml:space="preserve">
+    <value>groupName</value>
+  </data>
   <data name="Error_HubName" xml:space="preserve">
     <value>hubName</value>
+  </data>
+  <data name="Error_IsNotA" xml:space="preserve">
+    <value>'{0}' is not a {1}.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
@@ -141,6 +159,15 @@
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
   </data>
+  <data name="Error_ProtocolErrorMissingConnectionId" xml:space="preserve">
+    <value>Protocol error: Missing connection id.</value>
+  </data>
+  <data name="Error_ProtocolErrorUnknownTransport" xml:space="preserve">
+    <value>Protocol error: Unknown transport.</value>
+  </data>
+  <data name="Error_Resolver" xml:space="preserve">
+    <value>resolver</value>
+  </data>
   <data name="Error_UnableToAddModulePiplineAlreadyInvoked" xml:space="preserve">
     <value>Unable to add module. The HubPipeline has already been invoked.</value>
   </data>
@@ -150,7 +177,31 @@
   <data name="Errror_HubCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' hub could not be resolved.</value>
   </data>
+  <data name="TraceError_SignalRExceptionThrownByTask" xml:space="preserve">
+    <value>SignalR exception thrown by Task: {0}</value>
+  </data>
+  <data name="Trace_ConnectionExistsClosingPreviousConnection" xml:space="preserve">
+    <value>Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})</value>
+  </data>
+  <data name="Trace_ConnectionIsNew" xml:space="preserve">
+    <value>Connection is New=({0}).</value>
+  </data>
   <data name="Trace_CreatingWorkerAllocatedBusy" xml:space="preserve">
     <value>Creating a worker, allocated={0}, busy={1}</value>
+  </data>
+  <data name="Trace_FailedProcessWork" xml:space="preserve">
+    <value>Failed to process work -</value>
+  </data>
+  <data name="Trace_RaisingDisconnectFailed" xml:space="preserve">
+    <value>Raising Disconnect failed: {0}</value>
+  </data>
+  <data name="Trace_RemovingConnection" xml:space="preserve">
+    <value>Removing connection {0}</value>
+  </data>
+  <data name="Trace_SignalRErrorDuringHeartBeatOnBGThread" xml:space="preserve">
+    <value>SignalR error during transport heart beat on background thread: {0}</value>
+  </data>
+  <data name="Trace_TimerHandlerLongerCurrentInterval" xml:space="preserve">
+    <value>timer handler took longer than current interval</value>
   </data>
 </root>
