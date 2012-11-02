@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
 
-                Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                Trace.TraceInformation(Resources.Trace_CreatingWorkerAllocatedBusy, _allocatedWorkers, _busyWorkers);
 
                 ThreadPool.QueueUserWorkItem(ProcessWork);
             }

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (String.IsNullOrEmpty(methodName))
             {
-                throw new ArgumentNullException("methodName");
+                throw new ArgumentNullException(Resources.Error_MethodName);
             }
             MethodName = methodName;
         }
