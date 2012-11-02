@@ -32,9 +32,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             return EnqueueOperation(() =>
             {
-                OutputWriter.Write("id: ");
-                OutputWriter.Write(response.MessageId);
-                OutputWriter.WriteLine();
                 OutputWriter.Write("data: ");
                 JsonSerializer.Serialize(response, OutputWriter);
                 OutputWriter.WriteLine();

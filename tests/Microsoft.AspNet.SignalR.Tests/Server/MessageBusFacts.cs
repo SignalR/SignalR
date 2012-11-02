@@ -59,6 +59,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SubscriptionWithExistingCursor()
         {
             var dr = new DefaultDependencyResolver();
+            var passThroughMinfier = new PassThroughStringMinifier();
+            dr.Register(typeof(IStringMinifier), () => passThroughMinfier);
             using (var bus = new MessageBus(dr))
             {
                 var subscriber = new TestSubscriber(new[] { "key" });
@@ -102,6 +104,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SubscriptionWithMultipleExistingCursors()
         {
             var dr = new DefaultDependencyResolver();
+            var passThroughMinfier = new PassThroughStringMinifier();
+            dr.Register(typeof(IStringMinifier), () => passThroughMinfier);
             using (var bus = new MessageBus(dr))
             {
                 var subscriber = new TestSubscriber(new[] { "key", "key2" });
@@ -282,6 +286,23 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 bus.Dispose();
 
                 Assert.Equal(bus.AllocatedWorkers, 0);
+            }
+        }
+
+        private class PassThroughStringMinifier : IStringMinifier
+        {
+            public string Minify(string s)
+            {
+                return s;
+            }
+
+            public string Unminify(string s)
+            {
+                return s;
+            }
+
+            public void RemoveUnminified(string s)
+            {
             }
         }
     }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNet.SignalR
 
         private const int DefaultMessageStoreSize = 5000;
 
+        private readonly IStringMinifier _stringMinifier;
+
         private readonly ITraceManager _trace;
 
         protected readonly IPerformanceCounterManager _counters;
@@ -35,7 +38,8 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="resolver"></param>
         public MessageBus(IDependencyResolver resolver)
-            : this(resolver.Resolve<ITraceManager>(),
+            : this(resolver.Resolve<IStringMinifier>(),
+                   resolver.Resolve<ITraceManager>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<IConfigurationManager>())
         {
@@ -46,8 +50,9 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="traceManager"></param>
         /// <param name="performanceCounterManager"></param>
-        public MessageBus(ITraceManager traceManager, IPerformanceCounterManager performanceCounterManager, IConfigurationManager configurationManager)
+        public MessageBus(IStringMinifier stringMinifier, ITraceManager traceManager, IPerformanceCounterManager performanceCounterManager, IConfigurationManager configurationManager)
         {
+            _stringMinifier = stringMinifier;
             _trace = traceManager;
             _counters = performanceCounterManager;
 
@@ -190,7 +195,7 @@ namespace Microsoft.AspNet.SignalR
 
         protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
-            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, _topics, cursor, callback, messageBufferSize, _counters);
+            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, _topics, cursor, callback, messageBufferSize, _stringMinifier, _counters);
         }
 
         protected void ScheduleEvent(string eventKey)
@@ -258,6 +263,7 @@ namespace Microsoft.AspNet.SignalR
                     {
                         Topic topic;
                         _topics.TryRemove(pair.Key, out topic);
+                        _stringMinifier.RemoveUnminified(pair.Key);
                     }
                 }
             }

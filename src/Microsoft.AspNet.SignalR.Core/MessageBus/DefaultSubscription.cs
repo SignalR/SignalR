@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR
         private List<Cursor> _cursors;
         private List<Topic> _cursorTopics;
 
+        private readonly IStringMinifier _stringMinifier;
         private readonly object _lockObj = new object();
 
         public DefaultSubscription(string identity,
@@ -21,23 +22,20 @@ namespace Microsoft.AspNet.SignalR
                                    string cursor,
                                    Func<MessageResult, Task<bool>> callback,
                                    int maxMessages,
+                                   IStringMinifier stringMinifier,
                                    IPerformanceCounterManager counters) :
             base(identity, eventKeys, callback, maxMessages, counters)
         {
+            _stringMinifier = stringMinifier;
 
-            IEnumerable<Cursor> cursors = null;
+            IEnumerable<Cursor> cursors;
             if (cursor == null)
             {
-                cursors = from key in eventKeys
-                          select new Cursor
-                          {
-                              Key = key,
-                              Id = GetMessageId(topics, key)
-                          };
+                cursors = GetCursorsFromEventKeys(EventKeys, topics);
             }
             else
             {
-               cursors = Cursor.GetCursors(cursor);
+                cursors = Cursor.GetCursors(cursor, stringMinifier.Unminify) ?? GetCursorsFromEventKeys(EventKeys, topics);
             }
 
             _cursors = new List<Cursor>(cursors);
@@ -50,7 +48,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     Cursor c = _cursors[i];
                     Topic topic;
-                    if (!eventKeys.Contains(c.Key))
+                    if (!EventKeys.Contains(c.Key))
                     {
                         _cursors.Remove(c);
                     }
@@ -76,11 +74,7 @@ namespace Microsoft.AspNet.SignalR
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
                 if (index == -1)
                 {
-                    _cursors.Add(new Cursor
-                    {
-                        Key = eventKey,
-                        Id = GetMessageId(topic)
-                    });
+                    _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
 
                     _cursorTopics.Add(topic);
 
@@ -176,6 +170,12 @@ namespace Microsoft.AspNet.SignalR
 
                 return false;
             }
+        }
+
+        private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, IDictionary<string, Topic> topics)
+        {
+            return from key in eventKeys
+                   select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
         }
 
         private ulong GetMessageId(IDictionary<string, Topic> topics, string key)
