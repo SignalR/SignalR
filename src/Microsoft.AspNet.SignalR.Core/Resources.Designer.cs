@@ -214,6 +214,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to settings.
+        /// </summary>
+        internal static string Error_Settings {
+            get {
+                return ResourceManager.GetString("Error_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to add module. The HubPipeline has already been invoked..
         /// </summary>
         internal static string Error_UnableToAddModulePiplineAlreadyInvoked {
@@ -232,92 +241,20 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to value.
+        /// </summary>
+        internal static string Error_Value {
+            get {
+                return ResourceManager.GetString("Error_Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; hub could not be resolved..
         /// </summary>
         internal static string Errror_HubCouldNotBeResolved {
             get {
                 return ResourceManager.GetString("Errror_HubCouldNotBeResolved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Connection exists. Closing previous connection. Old=({0}, {1}) New=({2}).
-        /// </summary>
-        internal static string Trace_ConnectionExistsClosingPreviousConnection {
-            get {
-                return ResourceManager.GetString("Trace_ConnectionExistsClosingPreviousConnection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Connection is New=({0})..
-        /// </summary>
-        internal static string Trace_ConnectionIsNew {
-            get {
-                return ResourceManager.GetString("Trace_ConnectionIsNew", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Creating a worker, allocated={0}, busy={1}.
-        /// </summary>
-        internal static string Trace_CreatingWorkerAllocatedBusy {
-            get {
-                return ResourceManager.GetString("Trace_CreatingWorkerAllocatedBusy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to process work -.
-        /// </summary>
-        internal static string Trace_FailedProcessWork {
-            get {
-                return ResourceManager.GetString("Trace_FailedProcessWork", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Raising Disconnect failed: {0}.
-        /// </summary>
-        internal static string Trace_RaisingDisconnectFailed {
-            get {
-                return ResourceManager.GetString("Trace_RaisingDisconnectFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Removing connection {0}.
-        /// </summary>
-        internal static string Trace_RemovingConnection {
-            get {
-                return ResourceManager.GetString("Trace_RemovingConnection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SignalR error during transport heart beat on background thread: {0}.
-        /// </summary>
-        internal static string Trace_SignalRErrorDuringHeartBeatOnBGThread {
-            get {
-                return ResourceManager.GetString("Trace_SignalRErrorDuringHeartBeatOnBGThread", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to timer handler took longer than current interval.
-        /// </summary>
-        internal static string Trace_TimerHandlerLongerCurrentInterval {
-            get {
-                return ResourceManager.GetString("Trace_TimerHandlerLongerCurrentInterval", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SignalR exception thrown by Task: {0}.
-        /// </summary>
-        internal static string TraceError_SignalRExceptionThrownByTask {
-            get {
-                return ResourceManager.GetString("TraceError_SignalRExceptionThrownByTask", resourceCulture);
             }
         }
     }

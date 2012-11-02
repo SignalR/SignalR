@@ -323,7 +323,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation(Resources.Error_ErrorCreatingHub + ex.Message, descriptor.Name);
+                Trace.TraceInformation(String.Format(CultureInfo.CurrentCulture, Resources.Error_ErrorCreatingHub + ex.Message, descriptor.Name));
 
                 if (throwIfFailedToCreate)
                 {

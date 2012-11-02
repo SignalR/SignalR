@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (resolver == null)
             {
-                throw new ArgumentNullException(Resources.Error_Resolver);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_Resolver));
             }
 
             _resolver = resolver;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionType == null)
             {
-                throw new ArgumentNullException(Resources.Error_ConnectionType);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionType));
             }
 
             var connection = (_resolver.Resolve(connectionType) ??
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (connection == null)
             {
-                throw new InvalidOperationException(String.Format(Resources.Error_IsNotA, connectionType.FullName, typeof(PersistentConnection).FullName));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IsNotA, connectionType.FullName, typeof(PersistentConnection).FullName));
             }
 
             return connection;
