@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -88,7 +89,7 @@ namespace Microsoft.AspNet.SignalR
                     var ex = innerTask.Exception;
                     // observe Exception
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
-                    Trace.TraceError(Resources.TraceError_SignalRExceptionThrownByTask, ex);
+                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
@@ -121,7 +122,7 @@ namespace Microsoft.AspNet.SignalR
                     var ex = innerTask.Exception;
                     // observe Exception
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
-                    Trace.TraceError(Resources.TraceError_SignalRExceptionThrownByTask, ex);
+                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
                     handler(ex);
                 }, TaskContinuationOptions.OnlyOnFaulted);

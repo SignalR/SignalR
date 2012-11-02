@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connection == null)
             {
-                throw new ArgumentNullException(Resources.Error_Connection);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_Connection));
             }
 
             _connection = connection;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (groupName == null)
             {
-                throw new ArgumentNullException(Resources.Error_GroupName);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_GroupName));
             }
 
             var qualifiedName = CreateQualifiedName(groupName);
@@ -62,12 +63,12 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionId == null)
             {
-                throw new ArgumentNullException(Resources.Error_ConnectionId);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionId));
             }
 
             if (groupName == null)
             {
-                throw new ArgumentNullException(Resources.Error_GroupName);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_GroupName));
             }
 
             var command = new Command
@@ -90,12 +91,12 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionId == null)
             {
-                throw new ArgumentNullException(Resources.Error_ConnectionId);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionId));
             }
 
             if (groupName == null)
             {
-                throw new ArgumentNullException(Resources.Error_GroupName);
+                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_GroupName));
             }
 
             var command = new Command

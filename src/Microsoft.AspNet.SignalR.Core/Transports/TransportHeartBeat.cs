@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (oldMetadata != null)
             {
-                Trace.TraceInformation(Resources.Trace_ConnectionExistsClosingPreviousConnection, oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
+                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else
             {
-                Trace.TraceInformation(Resources.Trace_ConnectionIsNew, connection.Url);
+                Trace.TraceInformation("Connection is New=({0}).", connection.Url);
             }
 
             lock (_counterLock)
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     _counters.ConnectionsCurrent.RawValue = _connections.Count;
                 }
-                Trace.TraceInformation(Resources.Trace_RemovingConnection, connectionId);
+                Trace.TraceInformation("Removing connection {0}", connectionId);
             }
         }
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
             {
-                Trace.TraceInformation(Resources.Trace_TimerHandlerLongerCurrentInterval);
+                Trace.TraceInformation("Timer handler took longer than current interval");
                 return;
             }
 
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation(Resources.Trace_SignalRErrorDuringHeartBeatOnBGThread, ex);
+                Trace.TraceInformation("SignalR error during transport heart beat on background thread: {0}", ex);
             }
             finally
             {
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             catch (Exception ex)
             {
                 // Swallow exceptions that might happen during disconnect
-                Trace.TraceInformation(Resources.Trace_RaisingDisconnectFailed, ex);
+                Trace.TraceInformation("Raising Disconnect failed: {0}", ex);
             }
         }
 

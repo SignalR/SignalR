@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
 
-                Trace.TraceInformation(Resources.Trace_CreatingWorkerAllocatedBusy, _allocatedWorkers, _busyWorkers);
+                Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
                 ThreadPool.QueueUserWorkItem(ProcessWork);
             }
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation(Resources.Trace_FailedProcessWork + ex.GetBaseException());
+                Trace.TraceInformation("Failed to process work - " + ex.GetBaseException());
             }
             finally
             {
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.SignalR
 
                 if (task.IsFaulted)
                 {
-                    Trace.TraceInformation(Resources.Trace_FailedProcessWork + task.Exception.GetBaseException());
+                    Trace.TraceInformation("Failed to process work - " + task.Exception.GetBaseException());
                 }
             });
         }

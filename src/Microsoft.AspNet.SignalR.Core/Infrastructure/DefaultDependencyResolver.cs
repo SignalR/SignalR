@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR
                 }
                 if (activators.Count > 1)
                 {
-                    throw new InvalidOperationException(String.Format(Resources.Error_MultipleActivatorsAreaRegisteredCallGetServices, serviceType.FullName));
+                    throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_MultipleActivatorsAreaRegisteredCallGetServices, serviceType.FullName));
                 }
                 return Track(activators[0]);
             }

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (_pipeline.IsValueCreated)
             {
-                throw new InvalidOperationException(Resources.Error_UnableToAddModulePiplineAlreadyInvoked);
+                throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_UnableToAddModulePiplineAlreadyInvoked));
             }
             _modules.Push(builder);
             return this;
