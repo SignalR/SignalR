@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR
                 }
                 if (activators.Count > 1)
                 {
-                    throw new InvalidOperationException(String.Format("Multiple activators for type {0} are registered. Please call GetServices instead.", serviceType.FullName));
+                    throw new InvalidOperationException(String.Format(Resources.Error_MultipleActivatorsAreaRegisteredCallGetServices, serviceType.FullName));
                 }
                 return Track(activators[0]);
             }

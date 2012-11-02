@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     internal class NullClientProxy : DynamicObject
     {
-        private const string InvalidHubUsageMessage = "Using a hub instance not created by the hub pipeline is unsupported.";
+        private const string InvalidHubUsageMessage = Resources.Error_UsingHubInstanceNotCreatedUnsupported;
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {

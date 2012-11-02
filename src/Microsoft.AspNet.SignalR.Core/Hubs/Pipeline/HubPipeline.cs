@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (_pipeline.IsValueCreated)
             {
-                throw new InvalidOperationException("Unable to add module. The HubPipeline has already been invoked.");
+                throw new InvalidOperationException(Resources.Error_UnableToAddModulePiplineAlreadyInvoked);
             }
             _modules.Push(builder);
             return this;

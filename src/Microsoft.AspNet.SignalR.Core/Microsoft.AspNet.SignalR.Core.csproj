@@ -192,6 +192,11 @@
     <Compile Include="Infrastructure\ServerCommandType.cs" />
     <Compile Include="Infrastructure\ServerCommandHandler.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
@@ -223,6 +228,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Scripts\hubs.js" />
   </ItemGroup>
   <ItemGroup />

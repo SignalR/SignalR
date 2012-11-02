@@ -135,8 +135,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
             sb.AppendFormat("        {0}: function ({1}) {{", GetDescriptorName(method), Commas(parameterNames)).AppendLine();
             if (includeDocComments)
             {
-                sb.AppendFormat("            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
-                var parameterDoc = method.Parameters.Select(p => String.Format("            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
+                sb.AppendFormat(Resources.DynamicComment_CallsMethodOnServerSideDeferredPromise, method.Name, method.Hub.Name).AppendLine();
+                var parameterDoc = method.Parameters.Select(p => String.Format(Resources.DynamicComment_ServerSideTypeIs, p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
                 if (parameterDoc.Any())
                 {
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));

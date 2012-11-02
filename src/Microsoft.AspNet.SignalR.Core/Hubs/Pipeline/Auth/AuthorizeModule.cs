@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 
                 // Send error back to the client
                 return TaskAsyncHelper.FromError<object>(
-                    new NotAuthorizedException(String.Format("Caller is not authorized to invoke the {0} method on {1}.",
+                    new NotAuthorizedException(String.Format(Resources.Error_CallerNotAuthorizedToInvokeMethodOn,
                                                              context.MethodDescriptor.Name,
                                                              context.MethodDescriptor.Hub.Name)));
             });
