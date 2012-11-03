@@ -316,9 +316,9 @@
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj">
-      <Project>{37c04b69-0989-458a-b80c-a1ed574adbe4}</Project>
-      <Name>Microsoft.AspNet.SignalR.SystemWeb</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
+      <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
+      <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

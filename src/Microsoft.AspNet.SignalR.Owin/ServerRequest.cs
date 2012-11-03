@@ -146,6 +146,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
+#if NET45
             var accept = Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
             {
@@ -153,9 +154,12 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             var options = new Dictionary<string, object>();
-            var worker = new ServerRequestWebSocket(callback);
-            accept(options, worker.Invoke);
+            var handler = new OwinWebSocketHandler(callback);
+            accept(options, handler.ProcessRequestAsync);
             return TaskAsyncHelper.Empty;
+#else
+            throw new NotImplementedException();
+#endif
         }
     }
 }

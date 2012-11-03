@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2B8C6DAD-4D85-41B1-83FD-248D9F347522}</ProjectGuid>
+    <ProjectGuid>{45892477-EF4E-4F45-A431-822755A38EA0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.AspNet.SignalR.Owin</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Owin</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <AssemblyName>Microsoft.AspNet.SignalR.Owin45</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -21,19 +21,21 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\Microsoft.AspNet.SignalR.Owin45.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Microsoft.AspNet.SignalR.Owin45.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f585506a2da1fef4, processorArchitecture=MSIL">
@@ -51,24 +53,59 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\TaskQueue.cs">
+      <Link>Infrastructure\TaskQueue.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="Infrastructure\Headers.cs" />
-    <Compile Include="Infrastructure\OwinConstants.cs" />
-    <Compile Include="Infrastructure\OwinEnvironmentExtensions.cs" />
-    <Compile Include="Infrastructure\ParamDictionary.cs" />
-    <Compile Include="Handlers\CallHandler.cs" />
-    <Compile Include="Handlers\PersistentConnectionHandler.cs" />
-    <Compile Include="Handlers\HubDispatcherHandler.cs" />
-    <Compile Include="Infrastructure\TaskQueue.cs" />
-    <Compile Include="ServerRequest.Owin.cs" />
-    <Compile Include="ServerRequestCookieCollection.cs" />
-    <Compile Include="ServerRequest.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\CallHandler.cs">
+      <Link>Handlers\CallHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\HubDispatcherHandler.cs">
+      <Link>Handlers\HubDispatcherHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\PersistentConnectionHandler.cs">
+      <Link>Handlers\PersistentConnectionHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\Headers.cs">
+      <Link>Infrastructure\Headers.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\OwinConstants.cs">
+      <Link>Infrastructure\OwinConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\OwinEnvironmentExtensions.cs">
+      <Link>Infrastructure\OwinEnvironmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\ParamDictionary.cs">
+      <Link>Infrastructure\ParamDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinSignalRExtensions.cs">
+      <Link>OwinSignalRExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.cs">
+      <Link>ServerRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.Owin.cs">
+      <Link>ServerRequest.Owin.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequestCookieCollection.cs">
+      <Link>ServerRequestCookieCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerResponse.cs">
+      <Link>ServerResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerResponse.Owin.cs">
+      <Link>ServerResponse.Owin.cs</Link>
+    </Compile>
+    <Compile Include="Infrastructure\ByteBuffer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerResponse.cs" />
-    <Compile Include="OwinSignalRExtensions.cs" />
-    <Compile Include="ServerResponse.Owin.cs" />
+    <Compile Include="OwinWebSocketHandler.cs" />
+    <Compile Include="WebSocketConstants.cs" />
+    <Compile Include="WebSockets\DefaultWebSocketHandler.cs" />
+    <Compile Include="WebSockets\WebSocketHandler.cs" />
+    <Compile Include="WebSockets\WebSocketMessage.cs" />
+    <Compile Include="WebSockets\WebSocketMessageReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj">

@@ -82,6 +82,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Sy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Host.SystemWeb45", "katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj", "{9F0C72D8-E43F-4F01-9DEB-9E8FE0AE179E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Owin45", "src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj", "{45892477-EF4E-4F45-A431-822755A38EA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SystemWeb45", "src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj", "{202FA02D-CC05-40D2-A574-4BD34E47F575}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -362,6 +366,26 @@ Global
 		{9F0C72D8-E43F-4F01-9DEB-9E8FE0AE179E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{9F0C72D8-E43F-4F01-9DEB-9E8FE0AE179E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9F0C72D8-E43F-4F01-9DEB-9E8FE0AE179E}.Release|x86.ActiveCfg = Release|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{45892477-EF4E-4F45-A431-822755A38EA0}.Release|x86.ActiveCfg = Release|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|Any CPU.Build.0 = Release|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -36,8 +36,6 @@ namespace Microsoft.AspNet.SignalR.Owin
         public const string ServerCapabilities = "server.Capabilities";
         public const string WebSocketVersion = "websocket.Version";
         public const string WebSocketAccept = "websocket.Accept";
-        public const string WebSocketSendAsync = "websocket.SendAsync";
-        public const string WebSocketReceiveAsync = "websocket.ReceiveAsync";
 
         public const string HostOnAppDisposing = "host.OnAppDisposing";
         public const string HostAppNameKey = "host.AppName";
