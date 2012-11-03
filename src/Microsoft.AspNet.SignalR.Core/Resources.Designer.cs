@@ -88,24 +88,6 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to connection.
-        /// </summary>
-        internal static string Error_Connection {
-            get {
-                return ResourceManager.GetString("Error_Connection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to connectionId.
-        /// </summary>
-        internal static string Error_ConnectionId {
-            get {
-                return ResourceManager.GetString("Error_ConnectionId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Connection not initialized..
         /// </summary>
         internal static string Error_ConnectionNotInitialized {
@@ -115,38 +97,11 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to connectionType.
-        /// </summary>
-        internal static string Error_ConnectionType {
-            get {
-                return ResourceManager.GetString("Error_ConnectionType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Error creating hub {0}. .
         /// </summary>
         internal static string Error_ErrorCreatingHub {
             get {
                 return ResourceManager.GetString("Error_ErrorCreatingHub", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to groupName.
-        /// </summary>
-        internal static string Error_GroupName {
-            get {
-                return ResourceManager.GetString("Error_GroupName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to hubName.
-        /// </summary>
-        internal static string Error_HubName {
-            get {
-                return ResourceManager.GetString("Error_HubName", resourceCulture);
             }
         }
         
@@ -165,15 +120,6 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_MethodCouldNotBeResolved {
             get {
                 return ResourceManager.GetString("Error_MethodCouldNotBeResolved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to methodName.
-        /// </summary>
-        internal static string Error_MethodName {
-            get {
-                return ResourceManager.GetString("Error_MethodName", resourceCulture);
             }
         }
         
@@ -205,24 +151,6 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to resolver.
-        /// </summary>
-        internal static string Error_Resolver {
-            get {
-                return ResourceManager.GetString("Error_Resolver", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to settings.
-        /// </summary>
-        internal static string Error_Settings {
-            get {
-                return ResourceManager.GetString("Error_Settings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to add module. The HubPipeline has already been invoked..
         /// </summary>
         internal static string Error_UnableToAddModulePiplineAlreadyInvoked {
@@ -237,15 +165,6 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_UsingHubInstanceNotCreatedUnsupported {
             get {
                 return ResourceManager.GetString("Error_UsingHubInstanceNotCreatedUnsupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to value.
-        /// </summary>
-        internal static string Error_Value {
-            get {
-                return ResourceManager.GetString("Error_Value", resourceCulture);
             }
         }
         

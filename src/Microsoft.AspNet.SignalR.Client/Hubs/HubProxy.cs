@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (eventName == null)
             {
-                throw new ArgumentNullException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_EventName));
+                throw new ArgumentNullException("eventName");
             }
 
             Subscription subscription;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (method == null)
             {
-                throw new ArgumentNullException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_Method));
+                throw new ArgumentNullException("method");
             }
 
             var tokenifiedArguments = new JToken[args.Length];

@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (settings == null)
             {
-                throw new ArgumentNullException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_Settings));
+                throw new ArgumentNullException("settings");
             }
 
             _serializer = JsonSerializer.Create(settings);

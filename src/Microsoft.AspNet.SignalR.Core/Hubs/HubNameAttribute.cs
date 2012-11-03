@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (String.IsNullOrEmpty(hubName))
             {
-                throw new ArgumentNullException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_HubName));
+                throw new ArgumentNullException("hubName");
             }
             HubName = hubName;
         }

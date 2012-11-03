@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (resolver == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_Resolver));
+                throw new ArgumentNullException("resolver");
             }
 
             _resolver = resolver;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionType == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionType));
+                throw new ArgumentNullException("connectionType");
             }
 
             var connection = (_resolver.Resolve(connectionType) ??
