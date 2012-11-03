@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 {
                     counters[i].Increment();
                 }
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' hub could not be resolved.", hubName));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Errror_HubCouldNotBeResolved, hubName));
             }
 
             return descriptor;

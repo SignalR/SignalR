@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 _counters.ErrorsHubInvocationTotal.Increment();
                 _counters.ErrorsHubInvocationPerSec.Increment();
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, "'{0}' method could not be resolved.", hubRequest.Method));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MethodCouldNotBeResolved, hubRequest.Method));
             }
 
             // Resolving the actual state object
@@ -323,7 +323,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("Error creating hub {0}. " + ex.Message, descriptor.Name);
+                Trace.TraceInformation(String.Format(CultureInfo.CurrentCulture, Resources.Error_ErrorCreatingHub + ex.Message, descriptor.Name));
 
                 if (throwIfFailedToCreate)
                 {

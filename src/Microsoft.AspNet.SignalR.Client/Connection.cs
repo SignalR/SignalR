@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (url.Contains("?"))
             {
-                throw new ArgumentException("Url cannot contain QueryString directly. Pass QueryString values in using available overload.", "url");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UrlCantContainQueryStringDirectly), "url");
             }
 
             if (!url.EndsWith("/"))
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 !TryParseVersion(versionString, out version) ||
                 !(version.Major == 1 && version.Minor == 0))
             {
-                throw new InvalidOperationException("Incompatible protocol version.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IncompatibleProtocolVersion));
             }
         }
 
@@ -351,12 +351,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (State == ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException("Start must be called before data can be sent.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
             }
 
             if (State == ConnectionState.Connecting)
             {
-                throw new InvalidOperationException("The connection has not been established.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
             }
 
             return _transport.Send<T>(this, data);

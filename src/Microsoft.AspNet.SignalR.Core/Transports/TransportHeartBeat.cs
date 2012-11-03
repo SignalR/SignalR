@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
             {
-                Trace.TraceInformation("timer handler took longer than current interval");
+                Trace.TraceInformation("Timer handler took longer than current interval");
                 return;
             }
 

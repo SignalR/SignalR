@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (State != ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException("Proxies cannot be added after the connection has been started.");
+                throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_ProxiesCannotBeAddedConnectionStarted));
             }
 
             HubProxy hubProxy;
