@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Owin.Handlers
 {
@@ -12,14 +11,13 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
 
     public class HubDispatcherHandler
     {
-        readonly AppFunc _app;
-        readonly string _path;
-        IDependencyResolver _resolver;
+        private readonly AppFunc _app;
+        private readonly string _path;
+        private readonly IDependencyResolver _resolver;
 
         public HubDispatcherHandler(AppFunc app, IDependencyResolver resolver)
-            : this(app, "", resolver)
+            : this(app, String.Empty, resolver)
         {
-            
         }
 
         public HubDispatcherHandler(AppFunc app, string path, IDependencyResolver resolver)

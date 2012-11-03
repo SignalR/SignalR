@@ -6,7 +6,6 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.WebSockets;
-using Microsoft.Owin.Host.SystemWeb.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Owin
 {
@@ -104,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
             {
-                return _closeAsync((int)closeStatus, statusDescription, cancellationToken);
+                return CloseAsync(closeStatus, statusDescription, cancellationToken);
             }
 
             public override WebSocketCloseStatus? CloseStatus

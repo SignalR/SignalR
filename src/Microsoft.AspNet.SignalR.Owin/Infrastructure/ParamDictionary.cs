@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
         private static readonly char[] ParamKeyValueSeparator = new[] { '=' };
         private static readonly char[] LeadingWhitespaceChars = new[] { ' ' };
 
+        // TODO: Un-uglify this code
         public static IEnumerable<KeyValuePair<string, string>> ParseToEnumerable(string queryString, char[] delimiters)
         {
             var items = (queryString ?? "").Split(delimiters ?? DefaultParamSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -23,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
             return pairs;
         }
 
+        // TODO: Un-uglify this code
         public static IDictionary<string, string> Parse(string queryString, char[] delimiters = null)
         {
             var d = ParseToEnumerable(queryString, delimiters)

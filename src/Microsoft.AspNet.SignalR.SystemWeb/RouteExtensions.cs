@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Routing;
 using Microsoft.Owin.Host.SystemWeb;
 using Owin;
-using Microsoft.AspNet.SignalR.Owin;
 
 namespace Microsoft.AspNet.SignalR
 {

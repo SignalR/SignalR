@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Owin.Handlers
 {
@@ -11,10 +10,10 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
 
     public class PersistentConnectionHandler
     {
-        readonly AppFunc _app;
-        readonly string _path;
-        readonly Type _connectionType;
-        IDependencyResolver _resolver;
+        private readonly AppFunc _app;
+        private readonly string _path;
+        private readonly Type _connectionType;
+        private readonly IDependencyResolver _resolver;
 
         public PersistentConnectionHandler(AppFunc app, string path, Type connectionType, IDependencyResolver resolver)
         {

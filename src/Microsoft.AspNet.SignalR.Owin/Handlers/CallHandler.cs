@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Owin
@@ -19,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         private static bool _supportWebSockets;
         private static bool _supportWebSocketsInitialized;
-        private static Object _supportWebSocketsLock = new Object();
+        private static object _supportWebSocketsLock = new object();
 
         public CallHandler(IDependencyResolver resolver, PersistentConnection connection)
         {
@@ -33,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             var serverResponse = new ServerResponse(env);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
+            // Add CORS support
             var origins = serverRequest.RequestHeaders.GetHeaders("Origin");
             if (origins != null && origins.Any(origin => !String.IsNullOrEmpty(origin)))
             {
