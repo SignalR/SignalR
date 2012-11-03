@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (name == null)
             {
-                throw new ArgumentNullException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_Value));
+                throw new ArgumentNullException("value");
             }
             return String.Join(".", name.Split('.').Select(n => Char.ToLower(n[0]) + n.Substring(1)));
         }

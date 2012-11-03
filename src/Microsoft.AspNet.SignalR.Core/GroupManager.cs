@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connection == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_Connection));
+                throw new ArgumentNullException("connection");
             }
 
             _connection = connection;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (groupName == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_GroupName));
+                throw new ArgumentNullException("groupName");
             }
 
             var qualifiedName = CreateQualifiedName(groupName);
@@ -63,12 +63,12 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionId == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionId));
+                throw new ArgumentNullException("connectionId");
             }
 
             if (groupName == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_GroupName));
+                throw new ArgumentNullException("groupName");
             }
 
             var command = new Command
@@ -91,12 +91,12 @@ namespace Microsoft.AspNet.SignalR
         {
             if (connectionId == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionId));
+                throw new ArgumentNullException("connectionId");
             }
 
             if (groupName == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_GroupName));
+                throw new ArgumentNullException("groupName");
             }
 
             var command = new Command

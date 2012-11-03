@@ -126,35 +126,17 @@
   <data name="Error_CallerNotAuthorizedToInvokeMethodOn" xml:space="preserve">
     <value>Caller is not authorized to invoke the {0} method on {1}.</value>
   </data>
-  <data name="Error_Connection" xml:space="preserve">
-    <value>connection</value>
-  </data>
-  <data name="Error_ConnectionId" xml:space="preserve">
-    <value>connectionId</value>
-  </data>
   <data name="Error_ConnectionNotInitialized" xml:space="preserve">
     <value>Connection not initialized.</value>
   </data>
-  <data name="Error_ConnectionType" xml:space="preserve">
-    <value>connectionType</value>
-  </data>
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating hub {0}. </value>
-  </data>
-  <data name="Error_GroupName" xml:space="preserve">
-    <value>groupName</value>
-  </data>
-  <data name="Error_HubName" xml:space="preserve">
-    <value>hubName</value>
   </data>
   <data name="Error_IsNotA" xml:space="preserve">
     <value>'{0}' is not a {1}.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
-  </data>
-  <data name="Error_MethodName" xml:space="preserve">
-    <value>methodName</value>
   </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
@@ -165,20 +147,11 @@
   <data name="Error_ProtocolErrorUnknownTransport" xml:space="preserve">
     <value>Protocol error: Unknown transport.</value>
   </data>
-  <data name="Error_Resolver" xml:space="preserve">
-    <value>resolver</value>
-  </data>
-  <data name="Error_Settings" xml:space="preserve">
-    <value>settings</value>
-  </data>
   <data name="Error_UnableToAddModulePiplineAlreadyInvoked" xml:space="preserve">
     <value>Unable to add module. The HubPipeline has already been invoked.</value>
   </data>
   <data name="Error_UsingHubInstanceNotCreatedUnsupported" xml:space="preserve">
     <value>Using a hub instance not created by the hub pipeline is unsupported.</value>
-  </data>
-  <data name="Error_Value" xml:space="preserve">
-    <value>value</value>
   </data>
   <data name="Errror_HubCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' hub could not be resolved.</value>

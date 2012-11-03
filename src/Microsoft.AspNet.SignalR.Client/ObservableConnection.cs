@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture,Resources.Error_Connection));
+                throw new ArgumentNullException("connection");
             }
 
             if (convert == null)
             {
-                throw new ArgumentNullException(String.Format(CultureInfo.CurrentCulture, Resources.Error_Converter));
+                throw new ArgumentNullException("converter");
             }
 
             _convert = convert;

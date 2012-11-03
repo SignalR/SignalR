@@ -61,15 +61,6 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to connection.
-        /// </summary>
-        internal static string Error_Connection {
-            get {
-                return ResourceManager.GetString("Error_Connection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The connection has not been established..
         /// </summary>
         internal static string Error_ConnectionHasNotBeenEstablished {
@@ -79,38 +70,11 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to converter.
-        /// </summary>
-        internal static string Error_Converter {
-            get {
-                return ResourceManager.GetString("Error_Converter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to eventName.
-        /// </summary>
-        internal static string Error_EventName {
-            get {
-                return ResourceManager.GetString("Error_EventName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Incompatible protocol version..
         /// </summary>
         internal static string Error_IncompatibleProtocolVersion {
             get {
                 return ResourceManager.GetString("Error_IncompatibleProtocolVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to method.
-        /// </summary>
-        internal static string Error_Method {
-            get {
-                return ResourceManager.GetString("Error_Method", resourceCulture);
             }
         }
         

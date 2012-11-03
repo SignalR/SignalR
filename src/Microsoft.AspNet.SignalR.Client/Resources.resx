@@ -117,23 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Error_Connection" xml:space="preserve">
-    <value>connection</value>
-  </data>
   <data name="Error_ConnectionHasNotBeenEstablished" xml:space="preserve">
     <value>The connection has not been established.</value>
   </data>
-  <data name="Error_Converter" xml:space="preserve">
-    <value>converter</value>
-  </data>
-  <data name="Error_EventName" xml:space="preserve">
-    <value>eventName</value>
-  </data>
   <data name="Error_IncompatibleProtocolVersion" xml:space="preserve">
     <value>Incompatible protocol version.</value>
-  </data>
-  <data name="Error_Method" xml:space="preserve">
-    <value>method</value>
   </data>
   <data name="Error_ProxiesCannotBeAddedConnectionStarted" xml:space="preserve">
     <value>Proxies cannot be added after the connection has been started.</value>
