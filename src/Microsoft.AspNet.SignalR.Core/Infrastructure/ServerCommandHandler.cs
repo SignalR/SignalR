@@ -9,11 +9,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// <summary>
     /// Default <see cref="IServerCommandHandler"/> implementation.
     /// </summary>
-    public class ServerCommandHandler : IServerCommandHandler, ISubscriber
+    public class ServerCommandHandler : IServerCommandHandler, ISubscriber, IDisposable
     {
         private readonly IMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;
         private readonly IJsonSerializer _serializer;
+        private IDisposable _subscription;
+
         private const int MaxMessages = 10;
 
         // The signal for all signalr servers
@@ -73,10 +75,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return _messageBus.Publish(_serverIdManager.ServerId, ServerSignal, _serializer.Stringify(command));
         }
 
+        public void Dispose()
+        {
+            if (_subscription != null)
+            {
+                _subscription.Dispose();
+            }
+        }
+
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages);
+            _subscription = _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages);
         }
 
         private Task<bool> HandleServerCommands(MessageResult result)
