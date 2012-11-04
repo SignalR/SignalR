@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, IDependencyResolver resolver)
         {
-            var routeUrl = url ?? "";
+            var routeUrl = url ?? String.Empty;
             var catchAllIndex = routeUrl.LastIndexOf("/{*", StringComparison.Ordinal);
             if (routeUrl.EndsWith("}") && catchAllIndex != -1)
             {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR
             }
             routeUrl = routeUrl.TrimStart('~').TrimStart('/');
 
-            return routes.MapOwinRoute(name, routeUrl, map => map.MapConnection("", type, resolver));
+            return routes.MapOwinRoute(name, routeUrl, map => map.MapConnection(String.Empty, type, resolver));
         }
     }
 }
