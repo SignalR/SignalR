@@ -295,12 +295,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Kill all connections
-            foreach (var metadata in _connections.Values)
+            foreach (var pair in _connections)
             {
-                metadata.Connection.End();
+                ConnectionMetadata metadata;
+                if (_connections.TryGetValue(pair.Key, out metadata))
+                {
+                    metadata.Connection.End();
+                }
             }
-
-            _connections.Clear();
         }
 
         private class ConnectionMetadata
