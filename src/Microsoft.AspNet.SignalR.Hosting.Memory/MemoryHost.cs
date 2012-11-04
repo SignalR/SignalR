@@ -15,7 +15,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
     public class MemoryHost : RoutingHost, IHttpClient, IDisposable
     {
-        private readonly CancellationTokenSource _shutDownToken = new CancellationTokenSource();
+        private readonly CancellationTokenSource _shutDownTokenSource = new CancellationTokenSource();
+        private readonly CancellationToken _shutDownToken;
         private int _disposed;
 
         public MemoryHost()
@@ -27,7 +28,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         public MemoryHost(IDependencyResolver resolver)
             : base(resolver)
         {
-            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken.Token), _shutDownToken.Token);
+            _shutDownToken = _shutDownTokenSource.Token;
+
+            resolver.Initialize(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken), _shutDownToken);
 
             User = Thread.CurrentPrincipal;
         }
@@ -51,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             var uri = new Uri(url);
             PersistentConnection connection;
 
-            if (!_shutDownToken.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
+            if (!_shutDownTokenSource.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
                 var clientTokenSource = new CancellationTokenSource();
@@ -65,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 };
                 var hostContext = new HostContext(request, response);
 
-                hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;
+                hostContext.Items[HostConstants.ShutdownToken] = _shutDownTokenSource.Token;
 
                 connection.Initialize(DependencyResolver, hostContext);
 
@@ -97,8 +100,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 0)
             {
-                _shutDownToken.Cancel(throwOnFirstException: false);
-                DependencyResolver.Dispose();
+                _shutDownTokenSource.Cancel(throwOnFirstException: false);
             }
         }
     }

@@ -37,7 +37,7 @@ namespace Owin
 
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, IDependencyResolver resolver)
         {
-            return builder.UseType<PersistentConnectionHandler>(url, typeof (T), resolver);
+            return builder.UseType<PersistentConnectionHandler>(url, typeof(T), resolver);
         }
 
         public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType)
@@ -54,12 +54,18 @@ namespace Owin
         {
             if (args.Length > 0)
             {
-                // Init perf counters
                 var resolver = args[args.Length - 1] as IDependencyResolver;
-                var env = builder.Properties;
-                resolver.InitializePerformanceCounters(env.GetAppInstanceName(), env.GetShutdownToken());
+                if (resolver != null)
+                {
+                    var env = builder.Properties;
+                    CancellationToken token = env.GetShutdownToken();
+                    string instanceName = env.GetAppInstanceName();
+
+                    resolver.Initialize(instanceName, token);
+                }
             }
-            return builder.Use(typeof (T), args);
+
+            return builder.Use(typeof(T), args);
         }
     }
 }

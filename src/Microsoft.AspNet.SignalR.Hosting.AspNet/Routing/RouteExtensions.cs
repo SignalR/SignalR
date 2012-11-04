@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)
         {
-            resolver.InitializePerformanceCounters(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
+            resolver.Initialize(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
 
             var existing = routes["signalr.hubs"];
             if (existing != null)
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, IDependencyResolver resolver)
         {
-            resolver.InitializePerformanceCounters(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
+            resolver.Initialize(GetInstanceName(), AspNetHandler.AppDomainTokenSource.Token);
             var route = new Route(url, new PersistentRouteHandler(type, resolver));
             route.Constraints = new RouteValueDictionary();
             route.Constraints.Add("Incoming", new IncomingOnlyRouteConstraint());

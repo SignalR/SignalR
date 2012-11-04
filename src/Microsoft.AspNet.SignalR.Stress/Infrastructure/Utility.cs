@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Infrastructure
     {
         public static void InitializePerformanceCounters(IDependencyResolver resolver, CancellationToken cancellationToken)
         {
-            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(cancellationToken), cancellationToken);
+            resolver.Initialize(Process.GetCurrentProcess().GetUniqueInstanceName(cancellationToken), cancellationToken);
         }
 
         public static string FormatBytes(long bytes)

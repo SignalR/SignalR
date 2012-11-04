@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using Microsoft.AspNet.SignalR.Hosting.Common;
-using Microsoft.AspNet.SignalR.Hosting.Self.Infrastructure;
 using System;
 using System.Diagnostics;
 using System.Net;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting.Common;
+using Microsoft.AspNet.SignalR.Hosting.Self.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Self
 {
@@ -17,7 +16,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self
     {
         private readonly string _url;
         private readonly HttpListener _listener;
-        private CriticalHandle _requestQueueHandle;
         private DisconnectHandler _disconnectHandler;
         private readonly CancellationTokenSource _shutdownToken = new CancellationTokenSource();
 
@@ -44,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
             _disconnectHandler = new DisconnectHandler(_listener);
-            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutdownToken.Token), _shutdownToken.Token);
+            resolver.Initialize(Process.GetCurrentProcess().GetUniqueInstanceName(_shutdownToken.Token), _shutdownToken.Token);
         }
 
         public AuthenticationSchemes AuthenticationSchemes
