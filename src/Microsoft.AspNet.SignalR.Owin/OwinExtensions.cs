@@ -61,7 +61,7 @@ namespace Owin
                     CancellationToken token = env.GetShutdownToken();
                     string instanceName = env.GetAppInstanceName();
 
-                    resolver.Initialize(instanceName, token);
+                    resolver.InitializeHost(instanceName, token);
                 }
             }
 

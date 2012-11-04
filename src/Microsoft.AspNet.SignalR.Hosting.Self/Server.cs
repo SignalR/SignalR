@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self
             _listener = new HttpListener();
             _listener.Prefixes.Add(url);
             _disconnectHandler = new DisconnectHandler(_listener);
-            resolver.Initialize(Process.GetCurrentProcess().GetUniqueInstanceName(_shutdownToken.Token), _shutdownToken.Token);
+            resolver.InitializeHost(Process.GetCurrentProcess().GetUniqueInstanceName(_shutdownToken.Token), _shutdownToken.Token);
         }
 
         public AuthenticationSchemes AuthenticationSchemes

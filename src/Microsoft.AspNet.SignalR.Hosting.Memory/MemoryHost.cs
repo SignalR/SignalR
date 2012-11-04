@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         {
             _shutDownToken = _shutDownTokenSource.Token;
 
-            resolver.Initialize(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken), _shutDownToken);
+            resolver.InitializeHost(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken), _shutDownToken);
 
             User = Thread.CurrentPrincipal;
         }

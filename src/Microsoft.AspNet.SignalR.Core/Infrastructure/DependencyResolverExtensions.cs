@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR
             return resolver.GetServices(type);
         }
 
-        public static void Initialize(this IDependencyResolver resolver, string instanceName, CancellationToken hostShutdownToken)
+        public static void InitializeHost(this IDependencyResolver resolver, string instanceName, CancellationToken hostShutdownToken)
         {
             // Initialize the performance counters
             resolver.InitializePerformanceCounters(instanceName, hostShutdownToken);
