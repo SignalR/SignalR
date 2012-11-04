@@ -293,6 +293,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 _timer.Dispose();
             }
+
+            // Kill all connections
+            foreach (var metadata in _connections.Values)
+            {
+                metadata.Connection.End();
+            }
+
+            _connections.Clear();
         }
 
         private class ConnectionMetadata
