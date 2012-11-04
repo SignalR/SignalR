@@ -51,6 +51,9 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\Infrastructure\BuildManagerAssemblyLocator.cs">
+      <Link>Infrastructure\BuildManagerAssemblyLocator.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\RouteExtensions.cs">
       <Link>RouteExtensions.cs</Link>
     </Compile>

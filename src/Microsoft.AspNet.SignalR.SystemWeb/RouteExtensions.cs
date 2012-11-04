@@ -2,6 +2,8 @@
 
 using System;
 using System.Web.Routing;
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.SystemWeb.Infrastructure;
 using Microsoft.Owin.Host.SystemWeb;
 using Owin;
 
@@ -103,6 +105,9 @@ namespace Microsoft.AspNet.SignalR
             }
 
             var routeUrl = url.TrimStart('~').TrimStart('/');
+
+            var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
+            resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
             return routes.MapOwinRoute("signalr.hubs", routeUrl, map => map.MapHubs(resolver));
         }

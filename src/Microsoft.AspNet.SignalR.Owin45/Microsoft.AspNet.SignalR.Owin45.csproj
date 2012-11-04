@@ -80,8 +80,8 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\ParamDictionary.cs">
       <Link>Infrastructure\ParamDictionary.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinSignalRExtensions.cs">
-      <Link>OwinSignalRExtensions.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinExtensions.cs">
+      <Link>OwinExtensions.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.cs">
       <Link>ServerRequest.cs</Link>

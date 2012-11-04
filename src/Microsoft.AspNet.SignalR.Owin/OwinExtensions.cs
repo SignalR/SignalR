@@ -8,7 +8,7 @@ using Microsoft.AspNet.SignalR.Owin.Handlers;
 
 namespace Owin
 {
-    public static class OwinSignalRExtensions
+    public static class OwinExtensions
     {
         public static IAppBuilder MapHubs(this IAppBuilder builder)
         {
