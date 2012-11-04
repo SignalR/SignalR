@@ -234,8 +234,8 @@ namespace Microsoft.AspNet.SignalR
 
         private static class State
         {
-            public static int Idle = 0;
-            public static int Working = 1;
+            public const int Idle = 0;
+            public const int Working = 1;
         }
     }
 }
