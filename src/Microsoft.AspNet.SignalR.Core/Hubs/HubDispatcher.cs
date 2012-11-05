@@ -112,12 +112,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 _counters.ErrorsHubInvocationTotal.Increment();
                 _counters.ErrorsHubInvocationPerSec.Increment();
 
-                // Empty method descriptor
+                // Empty (noop) method descriptor
                 // Use: Forces the hub pipeline module to throw an error.  This error is encapsulated in the HubDispatcher.
                 //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
                 //      Specifically this allows us to return a faulted task (call .fail on client) and to not cause the
                 //      transport to unintentionally fail.
-                methodDescriptor = new MethodDescriptor();
+                methodDescriptor = new NoopMethodDescriptor() 
+                {
+                    NoopException = new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MethodCouldNotBeResolved, hubRequest.Method))
+                };
             }
 
             // Resolving the actual state object
@@ -142,6 +145,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
+                // IF we have no invoker then we are a no op
+                if (methodDescriptor is NoopMethodDescriptor)
+                {
+                    // Only reset the exception if we have a noop exception
+                    ex = (methodDescriptor as NoopMethodDescriptor).NoopException ?? ex;
+                }
+
                 piplineInvocation = TaskAsyncHelper.FromError<object>(ex);
             }
 
