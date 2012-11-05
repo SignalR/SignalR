@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             {
                 host.HubPipeline.EnableAutoRejoiningGroups();
                 host.MapHubs();
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 host.Configuration.KeepAlive = TimeSpan.FromSeconds(5);
 
                 var countDown = new CountDownRange<int>(Enumerable.Range(0, max));

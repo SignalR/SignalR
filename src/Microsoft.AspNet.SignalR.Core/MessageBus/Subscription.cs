@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -12,7 +13,6 @@ namespace Microsoft.AspNet.SignalR
     public abstract class Subscription : ISubscription, IDisposable
     {
         private readonly Func<MessageResult, Task<bool>> _callback;
-        private readonly int _maxMessages;
         private readonly IPerformanceCounterManager _counters;
 
         private int _disposed;
@@ -30,13 +30,12 @@ namespace Microsoft.AspNet.SignalR
 
         public HashSet<string> EventKeys { get; private set; }
 
-        public int MaxMessages { get; set; }
+        public int MaxMessages { get; private set; }
 
         public Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
         {
             Identity = identity;
             _callback = callback;
-            _maxMessages = maxMessages;
             EventKeys = new HashSet<string>(eventKeys);
             MaxMessages = maxMessages;
             _counters = counters;
@@ -220,6 +219,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "")]
         public abstract string GetCursor();
 
         public override int GetHashCode()

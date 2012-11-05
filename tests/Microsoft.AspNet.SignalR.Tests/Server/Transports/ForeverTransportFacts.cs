@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Form).Returns(form);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/send"));
             var counters = new Mock<IPerformanceCounterManager>();
-            var heartBeat = new Mock<ITransportHeartBeat>();
+            var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/abort"));
             string abortedConnectionId = null;
             var counters = new Mock<IPerformanceCounterManager>();
-            var heartBeat = new Mock<ITransportHeartBeat>();
+            var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                    abortedConnectionId = m.Signal;
                                    var command = m.Value as Command;
                                    Assert.NotNull(command);
-                                   Assert.Equal(CommandType.Abort, command.Type);
+                                   Assert.Equal(CommandType.Abort, command.CommandType);
                                })
                                .Returns(TaskAsyncHelper.Empty);
 

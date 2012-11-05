@@ -71,7 +71,8 @@ namespace Microsoft.AspNet.SignalR
             var connection = GetConnection(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
             var pipelineInvoker = _resolver.Resolve<IHubPipelineInvoker>();
-            HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName,
+
+            hubManager.EnsureHub(hubName,
                 _counters.ErrorsHubResolutionTotal,
                 _counters.ErrorsHubResolutionPerSec,
                 _counters.ErrorsAllTotal,

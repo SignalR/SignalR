@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var command = new Command
             {
-                Type = CommandType.Disconnect
+                CommandType = CommandType.Disconnect
             };
 
             return connection.Send(new ConnectionMessage(connectionId, command));
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var command = new Command
             {
-                Type = CommandType.Abort
+                CommandType = CommandType.Abort
             };
 
             return connection.Send(new ConnectionMessage(connectionId, command));

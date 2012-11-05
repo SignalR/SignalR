@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.SignalR
 
         private void ProcessCommand(Command command)
         {
-            switch (command.Type)
+            switch (command.CommandType)
             {
                 case CommandType.AddToGroup:
                     {

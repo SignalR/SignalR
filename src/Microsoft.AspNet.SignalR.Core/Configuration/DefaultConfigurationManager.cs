@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR
         {
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(40);
-            HeartBeatInterval = TimeSpan.FromSeconds(10);
+            HeartbeatInterval = TimeSpan.FromSeconds(10);
             KeepAlive = TimeSpan.FromSeconds(30);
         }
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR
             set;
         }
 
-        public TimeSpan HeartBeatInterval
+        public TimeSpan HeartbeatInterval
         {
             get;
             set;

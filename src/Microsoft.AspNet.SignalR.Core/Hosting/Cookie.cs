@@ -1,10 +1,18 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNet.SignalR
 {
     public class Cookie
     {
-        public Cookie(string name, string value, string domain = "", string path = "")
+        public Cookie(string name, string value)
+            : this(name, value, String.Empty, String.Empty)
+        {
+
+        }
+
+        public Cookie(string name, string value, string domain, string path)
         {
             Name = name;
             Value = value;

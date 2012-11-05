@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     public abstract class TransportDisconnectBase : ITrackingConnection
     {
         private readonly HostContext _context;
-        private readonly ITransportHeartBeat _heartBeat;
+        private readonly ITransportHeartbeat _heartbeat;
         private readonly IJsonSerializer _jsonSerializer;
         private TextWriter _outputWriter;
 
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Queue to protect against overlapping writes to the underlying response stream
         private readonly TaskQueue _writeQueue = new TaskQueue();
 
-        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
+        protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;
-            _heartBeat = heartBeat;
+            _heartbeat = heartbeat;
             _counters = performanceCounterManager;
         }
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // When a connection is aborted (graceful disconnect) we send a command to it
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
-            HeartBeat.RemoveConnection(this);
+            Heartbeat.RemoveConnection(this);
 
             if (_connectionEndTokenSource != null)
             {
@@ -260,9 +260,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context; }
         }
 
-        protected ITransportHeartBeat HeartBeat
+        protected ITransportHeartbeat Heartbeat
         {
-            get { return _heartBeat; }
+            get { return _heartbeat; }
         }
 
         public Uri Url

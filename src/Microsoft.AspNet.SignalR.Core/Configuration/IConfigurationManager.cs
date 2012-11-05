@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing the interval for checking the state of a connection. 
         /// </summary>
-        TimeSpan HeartBeatInterval { get; set; }
+        TimeSpan HeartbeatInterval { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time to wait before sending a keep alive packet over an idle connection. Set to null to disable keep alive.

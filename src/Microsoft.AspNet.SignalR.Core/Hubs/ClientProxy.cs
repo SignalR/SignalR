@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
 
@@ -19,7 +20,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _hubName = hubName;
             _exclude = exclude;
         }
- 
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Binder is passed in by the DLR")]
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             result = Invoke(binder.Name, args);

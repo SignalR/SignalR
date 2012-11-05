@@ -19,14 +19,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>(),
+                   resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>())
         {
 
         }
 
-        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
-            : base(context, jsonSerializer, heartBeat, performanceCounterManager)
+        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager)
+            : base(context, jsonSerializer, heartbeat, performanceCounterManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(PersistentResponse response)
         {
-            HeartBeat.MarkConnection(this);
+            Heartbeat.MarkConnection(this);
 
             if (SendingResponse != null)
             {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Connected != null)
             {
-                bool newConnection = HeartBeat.AddConnection(this);
+                bool newConnection = Heartbeat.AddConnection(this);
 
                 // Return a task that completes when the connected event task & the receive loop task are both finished
                 return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
-            HeartBeat.AddConnection(this);
+            Heartbeat.AddConnection(this);
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 

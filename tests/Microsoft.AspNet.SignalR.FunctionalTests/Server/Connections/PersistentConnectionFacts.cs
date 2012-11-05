@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var conn = new MyReconnect();
                     host.Configuration.KeepAlive = null;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                     host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                     host.MapConnection<MyReconnect>("/endpoint");
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var conn = new MyReconnect();
                     host.Configuration.KeepAlive = null;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                     host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
                     host.MapConnection<MyReconnect>("/endpoint");
 
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Configuration.KeepAlive = null;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
-                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
+                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
                     host.MapConnection<MyGroupConnection>("/groups");
 
                     var connection = new Client.Connection("http://foo/groups");
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Configuration.KeepAlive = null;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
-                    host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(2);
+                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
                     host.MapConnection<MyRejoinGroupConnection>("/groups");
 
                     var connection = new Client.Connection("http://foo/groups");

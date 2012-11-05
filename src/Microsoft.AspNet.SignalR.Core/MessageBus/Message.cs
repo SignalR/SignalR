@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.SignalR
         public string Value { get; set; }
 
         public string CommandId { get; set; }
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is a well known networking term.")]
         public bool WaitForAck { get; set; }
         public bool IsAck { get; set; }
         public string Filter { get; set; }
@@ -28,7 +30,7 @@ namespace Microsoft.AspNet.SignalR
         public Message()
         {
         }
-        
+
         public Message(string source, string key, string value)
         {
             Source = source;

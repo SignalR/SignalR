@@ -18,14 +18,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         public ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>(),
+                   resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>())
         {
         }
 
         public ForeverTransport(HostContext context,
                                 IJsonSerializer jsonSerializer,
-                                ITransportHeartBeat heartBeat,
+                                ITransportHeartbeat heartBeat,
                                 IPerformanceCounterManager performanceCounterWriter)
             : base(context, jsonSerializer, heartBeat, performanceCounterWriter)
         {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void OnSending(string payload)
         {
-            HeartBeat.MarkConnection(this);
+            Heartbeat.MarkConnection(this);
 
             if (Sending != null)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void OnSendingResponse(PersistentResponse response)
         {
-            HeartBeat.MarkConnection(this);
+            Heartbeat.MarkConnection(this);
 
             if (SendingResponse != null)
             {
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     if (Connected != null)
                     {
                         // Return a task that completes when the connected event task & the receive loop task are both finished
-                        bool newConnection = HeartBeat.AddConnection(this);
+                        bool newConnection = Heartbeat.AddConnection(this);
                         return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
                         {
                             if (newConnection)
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
         {
-            HeartBeat.AddConnection(this);
+            Heartbeat.AddConnection(this);
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         return Send(response).Then(() =>
                         {
                             // Remove connection without triggering disconnect
-                            HeartBeat.RemoveConnection(this);
+                            Heartbeat.RemoveConnection(this);
 
                             endRequest(null);
 

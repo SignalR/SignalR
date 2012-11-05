@@ -24,14 +24,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.MapConnection<MyConnection>("/echo");
                 host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
                 host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
                 var connection = new Client.Connection("http://foo/echo");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.MapHubs();
                 host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
                 host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.CreateHubProxy("MyHub");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var timeout = TimeSpan.FromSeconds(5);
                 foreach (var node in nodes)
                 {
-                    node.Server.Configuration.HeartBeatInterval = timeout;
+                    node.Server.Configuration.HeartbeatInterval = timeout;
                     node.Server.Configuration.DisconnectTimeout = TimeSpan.Zero;
                     node.Server.MapConnection<FarmConnection>("/echo");
                 }

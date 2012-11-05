@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     /// <summary>
     /// Manages tracking the state of connections.
     /// </summary>
-    public interface ITransportHeartBeat
+    public interface ITransportHeartbeat
     {
         /// <summary>
         /// Adds a new connection to the list of tracked connections.

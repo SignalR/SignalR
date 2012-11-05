@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNet.SignalR
             RegisterHubExtensions();
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private void RegisterDefaultServices()
         {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
@@ -54,8 +56,8 @@ namespace Microsoft.AspNet.SignalR
             var configurationManager = new DefaultConfigurationManager();
             Register(typeof(IConfigurationManager), () => configurationManager);
 
-            var transportHeartbeat = new Lazy<TransportHeartBeat>(() => new TransportHeartBeat(this));
-            Register(typeof(ITransportHeartBeat), () => transportHeartbeat.Value);
+            var transportHeartbeat = new Lazy<TransportHeartbeat>(() => new TransportHeartbeat(this));
+            Register(typeof(ITransportHeartbeat), () => transportHeartbeat.Value);
 
             var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
             Register(typeof(IConnectionManager), () => connectionManager.Value);

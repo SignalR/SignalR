@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.SignalR.Transports
 {
     /// <summary>
-    /// Represents a connection that can be tracked by an <see cref="ITransportHeartBeat"/>.
+    /// Represents a connection that can be tracked by an <see cref="ITransportHeartbeat"/>.
     /// </summary>
     public interface ITrackingConnection
     {

@@ -2,10 +2,12 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
     // TODO: This structure grows infinitely so we need to bound it
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Linktionary", Justification = "The name is fine.")]
     public class Linktionary<TKey, TValue>
     {
         private readonly ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _lookup = new ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        private TKey GetKey(LinkedListNode<KeyValuePair<TKey, TValue>> node)
+        private static TKey GetKey(LinkedListNode<KeyValuePair<TKey, TValue>> node)
         {
             if (node == null)
             {

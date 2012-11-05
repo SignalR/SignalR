@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR
 
             var command = new Command
             {
-                Type = CommandType.AddToGroup,
+                CommandType = CommandType.AddToGroup,
                 Value = CreateQualifiedName(groupName),
                 WaitForAck = true
             };
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.SignalR
 
             var command = new Command
             {
-                Type = CommandType.RemoveFromGroup,
+                CommandType = CommandType.RemoveFromGroup,
                 Value = CreateQualifiedName(groupName),
                 WaitForAck = true
             };

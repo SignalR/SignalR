@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNet.SignalR
@@ -9,6 +10,7 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// 
     /// </summary>
+    [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes", Justification = "Messages are never compared")]
     public struct MessageResult
     {
         private static readonly List<ArraySegment<Message>> _emptyList = new List<ArraySegment<Message>>();
@@ -16,6 +18,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Gets an <see cref="IList{Message}"/> associated with the result.
         /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "This is an optimization to avoid allocations.")]
         public IList<ArraySegment<Message>> Messages { get; private set; }
 
         public int TotalCount { get; private set; }

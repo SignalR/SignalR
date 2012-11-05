@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -34,6 +35,8 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// The list of messages to be sent to the receiving connection.
         /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "This is an optimization and this type is only used for serialization.")]
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This type is only used for serialization")]
         public IList<ArraySegment<Message>> Messages { get; set; }
 
         /// <summary>

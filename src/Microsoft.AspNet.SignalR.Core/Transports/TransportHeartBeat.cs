@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -11,9 +12,9 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 namespace Microsoft.AspNet.SignalR.Transports
 {
     /// <summary>
-    /// Default implementation of <see cref="ITransportHeartBeat"/>.
+    /// Default implementation of <see cref="ITransportHeartbeat"/>.
     /// </summary>
-    public class TransportHeartBeat : ITransportHeartBeat, IDisposable
+    public class TransportHeartbeat : ITransportHeartbeat, IDisposable
     {
         private readonly ConcurrentDictionary<string, ConnectionMetadata> _connections = new ConcurrentDictionary<string, ConnectionMetadata>();
         private readonly Timer _timer;
@@ -27,24 +28,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _running;
 
         /// <summary>
-        /// Initializes and instance of the <see cref="TransportHeartBeat"/> class.
+        /// Initializes and instance of the <see cref="TransportHeartbeat"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/>.</param>
-        public TransportHeartBeat(IDependencyResolver resolver)
+        public TransportHeartbeat(IDependencyResolver resolver)
         {
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
             _trace = resolver.Resolve<ITraceManager>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
-            
+
             _serverCommandHandler.Command = ProcessServerCommand;
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
                                null,
-                               _configurationManager.HeartBeatInterval,
-                               _configurationManager.HeartBeatInterval);
+                               _configurationManager.HeartbeatInterval,
+                               _configurationManager.HeartbeatInterval);
         }
 
         private TraceSource Trace
@@ -159,6 +160,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return _connections.Values.Select(metadata => metadata.Connection).ToList();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're tracing exceptions and don't want to crash the process.")]
         private void Beat(object state)
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
@@ -216,6 +218,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're tracing exceptions and don't want to crash the process.")]
         private void CheckDisconnect(ConnectionMetadata metadata)
         {
             try

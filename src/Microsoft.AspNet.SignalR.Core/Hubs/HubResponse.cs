@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -12,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// The changes made the the round tripped state.
         /// </summary>
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Type is used for serializaton")]
         public IDictionary<string, object> State { get; set; }
 
         /// <summary>

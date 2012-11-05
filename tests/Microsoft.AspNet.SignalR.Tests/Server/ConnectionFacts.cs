@@ -35,14 +35,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             connection.Send("a", new Command
             {
-                Type = CommandType.AddToGroup,
+                CommandType = CommandType.AddToGroup,
                 Value = "foo"
             });
 
             Assert.NotNull(message);
             Assert.True(message.IsCommand);
             var command = serializer.Parse<Command>(message.Value);
-            Assert.Equal(CommandType.AddToGroup, command.Type);
+            Assert.Equal(CommandType.AddToGroup, command.CommandType);
             Assert.Equal("foo", command.Value);
         }
     }

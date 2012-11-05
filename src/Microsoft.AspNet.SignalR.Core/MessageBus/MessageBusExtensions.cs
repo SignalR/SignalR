@@ -122,30 +122,5 @@ namespace Microsoft.AspNet.SignalR
         {
             return "ACK_" + eventKey;
         }
-
-        private class Subscriber : ISubscriber
-        {
-            public IEnumerable<string> EventKeys
-            {
-                get;
-                private set;
-            }
-
-            public string Identity
-            {
-                get;
-                private set;
-            }
-
-            public event Action<string> EventAdded;
-
-            public event Action<string> EventRemoved;
-
-            public Subscriber(IEnumerable<string> eventKeys, string source)
-            {
-                EventKeys = eventKeys;
-                Identity = source;
-            }
-        }
     }
 }

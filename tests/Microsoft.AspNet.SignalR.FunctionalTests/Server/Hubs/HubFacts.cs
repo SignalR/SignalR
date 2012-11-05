@@ -375,7 +375,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                 host.MapHubs();
                 int max = 10;
 
@@ -431,7 +431,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.HubPipeline.EnableAutoRejoiningGroups();
                 host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                 host.MapHubs();
                 int max = 10;
 
@@ -489,7 +489,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                 host.MapHubs();
 
                 var connection = new Client.Hubs.HubConnection("http://foo");
@@ -576,7 +576,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.HubPipeline.EnableAutoRejoiningGroups();
                 host.Configuration.KeepAlive = null;
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                 host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
                 host.MapHubs();
                 var connection = new Client.Hubs.HubConnection("http://foo");
@@ -602,7 +602,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.HubPipeline.EnableAutoRejoiningGroups();
                 host.Configuration.KeepAlive = null;
                 host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(1);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                 host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
                 host.MapHubs();
                 var connection = new Client.Hubs.HubConnection("http://foo");

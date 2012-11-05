@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.SignalR
             return context.Response.EndAsync(data);
         }
 
-        private bool IsNegotiationRequest(IRequest request)
+        private static bool IsNegotiationRequest(IRequest request)
         {
             return request.Url.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
         }
