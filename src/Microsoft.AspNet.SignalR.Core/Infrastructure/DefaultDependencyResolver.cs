@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.SignalR
     {
         private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
         private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
+        private int _disposed;
 
         public DefaultDependencyResolver()
         {
@@ -165,12 +167,18 @@ namespace Microsoft.AspNet.SignalR
         {
             object obj = creator();
 
-            var disposable = obj as IDisposable;
-            if (disposable != null)
+            if (_disposed == 0)
             {
-                lock (_trackedDisposables)
+                var disposable = obj as IDisposable;
+                if (disposable != null)
                 {
-                    _trackedDisposables.Add(disposable);
+                    lock (_trackedDisposables)
+                    {
+                        if (_disposed == 0)
+                        {
+                            _trackedDisposables.Add(disposable);
+                        }
+                    }
                 }
             }
 
@@ -179,11 +187,18 @@ namespace Microsoft.AspNet.SignalR
 
         public void Dispose()
         {
-            foreach (var d in _trackedDisposables)
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
             {
-                d.Dispose();
+                lock (_trackedDisposables)
+                {
+                    foreach (var d in _trackedDisposables)
+                    {
+                        d.Dispose();
+                    }
+
+                    _trackedDisposables.Clear();
+                }
             }
-            _trackedDisposables.Clear();
         }
     }
 }
