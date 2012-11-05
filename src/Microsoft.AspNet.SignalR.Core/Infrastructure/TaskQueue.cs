@@ -19,7 +19,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             lock (_lockObj)
             {
+#if NET45
                 Task newTask = _lastQueuedTask.ContinueWith(_ => taskFunc(), TaskContinuationOptions.OnlyOnRanToCompletion).Unwrap();
+#else
+                Task newTask = _lastQueuedTask.ContinueWith(_ => taskFunc(), TaskContinuationOptions.OnlyOnRanToCompletion).FastUnwrap();
+#endif
                 _lastQueuedTask = newTask;
                 return newTask;
             }
