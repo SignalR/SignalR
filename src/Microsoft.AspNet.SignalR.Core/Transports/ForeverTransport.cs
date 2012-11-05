@@ -253,28 +253,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
             var registration = default(CancellationTokenRegistration);
-            bool disposeSubscriptionImmediately = false;
-
-            try
-            {
-                // End the request if the connection end token is triggered
-                registration = ConnectionEndToken.Register(() =>
-                {
-                    wh.Wait();
-
-                    // This is only null if we failed to create the subscription
-                    if (subscription != null)
-                    {
-                        subscription.Dispose();
-                    }
-                });
-            }
-            catch (ObjectDisposedException)
-            {
-                // If we've ended the connection before we got a chance to register the connection
-                // then dispose the subscription immediately
-                disposeSubscriptionImmediately = true;
-            }
 
             try
             {
@@ -334,8 +312,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 wh.Set();
 
-                registration.Dispose();
-
                 return;
             }
 
@@ -350,8 +326,20 @@ namespace Microsoft.AspNet.SignalR.Transports
                 wh.Set();
             }
 
-            if (disposeSubscriptionImmediately)
+            try
             {
+                // End the request if the connection end token is triggered
+                registration = ConnectionEndToken.Register(state =>
+                {
+                    // This is only null if we failed to create the subscription
+                    ((IDisposable)state).Dispose();
+                },
+                subscription);
+            }
+            catch (ObjectDisposedException)
+            {
+                // If we've ended the connection before we got a chance to register the connection
+                // then dispose the subscription immediately
                 subscription.Dispose();
             }
         }
