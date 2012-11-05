@@ -37,11 +37,10 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
                 return _app.Invoke(env);
             }
 
-            var resolver = _resolver;
-            var connectionFactory = new PersistentConnectionFactory(resolver);
+            var connectionFactory = new PersistentConnectionFactory(_resolver);
             var connection = connectionFactory.CreateInstance(_connectionType);
 
-            var handler = new CallHandler(resolver, connection);
+            var handler = new CallHandler(_resolver, connection);
             return handler.Invoke(env);
         }
     }
