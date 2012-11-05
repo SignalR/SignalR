@@ -106,11 +106,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             // Resolve the method
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
+
             if (methodDescriptor == null)
             {
                 _counters.ErrorsHubInvocationTotal.Increment();
                 _counters.ErrorsHubInvocationPerSec.Increment();
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MethodCouldNotBeResolved, hubRequest.Method));
+
+                // Empty method descriptor
+                // Use: Forces the hub pipeline module to throw an error.  This error is encapsulated in the HubDispatcher.
+                //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
+                //      Specifically this allows us to return a faulted task (call .fail on client) and to not cause the
+                //      transport to unintentionally fail.
+                methodDescriptor = new MethodDescriptor();
             }
 
             // Resolving the actual state object
@@ -123,25 +130,34 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, IHub hub)
         {
+            Task<object> piplineInvocation;
 
-            var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
-            var context = new HubInvokerContext(hub, state, methodDescriptor, args);
+            try
+            {
+                var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+                var context = new HubInvokerContext(hub, state, methodDescriptor, args);
 
-            // Invoke the pipeline
-            return _pipelineInvoker.Invoke(context)
-                                   .ContinueWith(task =>
-                                   {
-                                       if (task.IsFaulted)
-                                       {
-                                           return ProcessResponse(state, null, hubRequest, task.Exception);
-                                       }
-                                       else
-                                       {
-                                           return ProcessResponse(state, task.Result, hubRequest, null);
-                                       }
-                                   })
-                                   .FastUnwrap();
+                // Invoke the pipeline and save the task
+                piplineInvocation = _pipelineInvoker.Invoke(context);
+            }
+            catch (Exception ex)
+            {
+                piplineInvocation = TaskAsyncHelper.FromError<object>(ex);
+            }
 
+            // Determine if we have a faulted task or not and handle it appropriately.
+            return piplineInvocation.ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    return ProcessResponse(state, null, hubRequest, task.Exception);
+                }
+                else
+                {
+                    return ProcessResponse(state, task.Result, hubRequest, null);
+                }
+            })
+            .FastUnwrap();
         }
 
         public override Task ProcessRequestAsync(HostContext context)
