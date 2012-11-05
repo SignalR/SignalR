@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -91,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             catch (Exception ex)
             {
 #if NET35
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to read response: {0}", ex));
+                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to read response: {0}", ex));
 #else
                 Debug.WriteLine("Failed to read response: {0}", ex);
 #endif

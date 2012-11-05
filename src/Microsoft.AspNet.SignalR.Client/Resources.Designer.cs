@@ -8,10 +8,14 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.SignalR.Client {
+namespace Microsoft.AspNet.SignalR.Client
+{
     using System;
-    
-    
+
+#if NETFX_CORE
+    using System.Reflection;
+#endif
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,16 +26,19 @@ namespace Microsoft.AspNet.SignalR.Client {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
-        
+    internal class Resources
+    {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        internal Resources()
+        {
         }
-        
+
+#if !NETFX_CORE
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,71 +52,104 @@ namespace Microsoft.AspNet.SignalR.Client {
                 return resourceMan;
             }
         }
-        
+#else
+        /// <summary>
+        ///   Returns the cached ResourceManager instance used by this class.
+        /// </summary>
+        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.SignalR.Client.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    resourceMan = temp;
+                }
+                return resourceMan;
+            }
+        }
+#endif
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
-            get {
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
                 return resourceCulture;
             }
-            set {
+            set
+            {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The connection has not been established..
         /// </summary>
-        internal static string Error_ConnectionHasNotBeenEstablished {
-            get {
+        internal static string Error_ConnectionHasNotBeenEstablished
+        {
+            get
+            {
                 return ResourceManager.GetString("Error_ConnectionHasNotBeenEstablished", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Incompatible protocol version..
         /// </summary>
-        internal static string Error_IncompatibleProtocolVersion {
-            get {
+        internal static string Error_IncompatibleProtocolVersion
+        {
+            get
+            {
                 return ResourceManager.GetString("Error_IncompatibleProtocolVersion", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Proxies cannot be added after the connection has been started..
         /// </summary>
-        internal static string Error_ProxiesCannotBeAddedConnectionStarted {
-            get {
+        internal static string Error_ProxiesCannotBeAddedConnectionStarted
+        {
+            get
+            {
                 return ResourceManager.GetString("Error_ProxiesCannotBeAddedConnectionStarted", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Server negotiation failed..
         /// </summary>
-        internal static string Error_ServerNegotiationFailed {
-            get {
+        internal static string Error_ServerNegotiationFailed
+        {
+            get
+            {
                 return ResourceManager.GetString("Error_ServerNegotiationFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Start must be called before data can be sent..
         /// </summary>
-        internal static string Error_StartMustBeCalledBeforeDataCanBeSent {
-            get {
+        internal static string Error_StartMustBeCalledBeforeDataCanBeSent
+        {
+            get
+            {
                 return ResourceManager.GetString("Error_StartMustBeCalledBeforeDataCanBeSent", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Url cannot contain QueryString directly. Pass QueryString values in using available overload..
         /// </summary>
-        internal static string Error_UrlCantContainQueryStringDirectly {
-            get {
+        internal static string Error_UrlCantContainQueryStringDirectly
+        {
+            get
+            {
                 return ResourceManager.GetString("Error_UrlCantContainQueryStringDirectly", resourceCulture);
             }
         }

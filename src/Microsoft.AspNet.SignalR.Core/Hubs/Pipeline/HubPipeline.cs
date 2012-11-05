@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (_pipeline.IsValueCreated)
             {
-                throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_UnableToAddModulePiplineAlreadyInvoked));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToAddModulePiplineAlreadyInvoked));
             }
             _modules.Push(builder);
             return this;

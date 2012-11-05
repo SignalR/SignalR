@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Action<IRequest> prepareRequest = PrepareRequest(connection);
 
 #if NET35
-            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "SSE: GET {0}", (object)url));
+            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "SSE: GET {0}", (object)url));
 #else
             Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif

@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
@@ -69,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += GetReceiveQueryString(connection, data);
 
 #if NET35
-            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", (object)url));
+            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP: {0}", (object)url));
 #else
             Debug.WriteLine("LP: {0}", (object)url);
 #endif
@@ -104,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         var raw = task.Result.ReadAsString();
 
 #if NET35
-                        Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
+                        Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
 #else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
 #endif

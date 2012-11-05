@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
@@ -117,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (State != ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_ProxiesCannotBeAddedConnectionStarted));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProxiesCannotBeAddedConnectionStarted));
             }
 
             HubProxy hubProxy;

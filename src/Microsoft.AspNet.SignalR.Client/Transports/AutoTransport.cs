@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
 #if NET35
-                    Debug.WriteLine(System.String.Format(System.Globalization.CultureInfo.InvariantCulture, "Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name));
+                    Debug.WriteLine(System.String.Format(CultureInfo.InvariantCulture, "Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name));
 #else
                     Debug.WriteLine("Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name);
 #endif

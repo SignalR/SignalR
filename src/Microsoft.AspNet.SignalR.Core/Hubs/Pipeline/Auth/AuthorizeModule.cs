@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -108,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 
                 // Send error back to the client
                 return TaskAsyncHelper.FromError<object>(
-                    new NotAuthorizedException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_CallerNotAuthorizedToInvokeMethodOn,
+                    new NotAuthorizedException(String.Format(CultureInfo.CurrentCulture, Resources.Error_CallerNotAuthorizedToInvokeMethodOn,
                                                              context.MethodDescriptor.Name,
                                                              context.MethodDescriptor.Hub.Name)));
             });

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 if (raw == null)
                 {
-                    throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                 }
 
                 return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
@@ -228,7 +229,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         catch (Exception ex)
                         {
 #if NET35
-                            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+                            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
 #else
                             Debug.WriteLine("Failed to process message: {0}", ex);
 #endif
@@ -254,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             catch (Exception ex)
             {
 #if NET35
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
+                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
 #else
                 Debug.WriteLine("Failed to response: {0}", ex);
 #endif
