@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Moq;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
@@ -167,9 +168,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                var ex = Assert.Throws<InvalidOperationException>(() => hub.Invoke("UnsupportedOverload", 13177).Wait());
+                TestUtilities.AssertAggregateException<InvalidOperationException>(() => hub.Invoke("UnsupportedOverload", 13177).Wait(), "'UnsupportedOverload' method could not be resolved.");                
 
-                Assert.Equal("'UnsupportedOverload' method could not be resolved.", ex.GetBaseException().Message);
                 connection.Stop();
             }
         }

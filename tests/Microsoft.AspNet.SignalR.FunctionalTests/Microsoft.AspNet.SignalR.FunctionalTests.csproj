@@ -82,7 +82,6 @@
     <Compile Include="Core\Hubs\Extensions\HubManagerExtensionsFacts.cs" />
     <Compile Include="Core\Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Core\Hubs\Extensions\MethodExtensionsFacts.cs" />
-    <Compile Include="Core\Hubs\HubDispatcherFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
@@ -113,6 +112,10 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
       <Project>{055f2118-fe29-4219-a28a-3d6f0889652e}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj">
+      <Project>{fba09237-84cc-4383-bd12-cdf58e4020e8}</Project>
+      <Name>Microsoft.AspNet.SignalR.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
