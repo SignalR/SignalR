@@ -27,8 +27,8 @@
         };
     }
 
-    function createHubProxies(instance) {
-        var key, hub, memberKey, memberValue;
+    function registerHubProxies(instance, shouldSubscribe) {
+        var key, hub, memberKey, memberValue, subscriptionMethod;
 
         for (key in instance) {
             if (instance.hasOwnProperty(key)) {
@@ -39,7 +39,16 @@
                     continue;
                 }
 
-                // Loop through all members on the hub and find client hub functions to subscribe to
+                if (shouldSubscribe) {
+                    // We want to subscribe to the hub events
+                    subscriptionMethod = hub.on;
+                }
+                else {
+                    // We want to unsubscribe from the hub events
+                    subscriptionMethod = hub.off;
+                }
+
+                // Loop through all members on the hub and find client hub functions to subscribe/unsubscribe
                 for (memberKey in hub.client) {
                     if (hub.client.hasOwnProperty(memberKey)) {
                         memberValue = hub.client[memberKey];
@@ -48,9 +57,8 @@
                             // Not a client hub function
                             continue;
                         }
-
-                        // Subscribe to the hub event for this method
-                        hub.on(memberKey, makeProxyCallback(hub, memberValue));
+                        
+                        subscriptionMethod.call(hub, memberKey, makeProxyCallback(hub, memberValue));
                     }
                 }
             }
@@ -59,10 +67,16 @@
 
     signalR.hub = $.hubConnection("/signalr", { useDefaultPath: false })
         .starting(function () {
-            // Subscribe and create the hub proxies
-            createHubProxies(signalR, this);
+            // Register the hub proxies as subscribed
+            // (instance, shouldSubscribe)
+            registerHubProxies(signalR, true);
 
             this._registerSubscribedHubs();
+        }).disconnected(function () {
+            // Unregister all hub proxies when we "disconnect".  This is to ensure that we
+            // do not re-add functional call backs.
+            // (instance, shouldSubscribe)
+            registerHubProxies(signalR, false);
         });
 
     signalR.adminAuthHub = signalR.hub.createHubProxy('adminAuthHub'); 
