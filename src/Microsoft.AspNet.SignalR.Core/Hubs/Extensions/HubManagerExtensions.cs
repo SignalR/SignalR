@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -23,6 +24,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             return descriptor;
+        }
+
+        public static IEnumerable<HubDescriptor> GetHubs(this IHubManager hubManager)
+        {
+            return hubManager.GetHubs(d => true);
+        }
+
+        public static IEnumerable<MethodDescriptor> GetHubMethods(this IHubManager hubManager, string hubName)
+        {
+            return hubManager.GetHubMethods(hubName, m => true);
         }
     }
 }

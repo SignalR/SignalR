@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private void ProcessServerCommand(ServerCommand command)
         {
-            switch (command.Type)
+            switch (command.ServerCommandType)
             {
                 case ServerCommandType.RemoveConnection:
                     // Only remove connections if this command didn't originate from the owner

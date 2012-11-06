@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// <summary>
     /// A server to server command.
     /// </summary>
-    public class ServerCommand
+    internal class ServerCommand
     {
         /// <summary>
         /// Gets or sets the id of the command where this message originated from.
@@ -15,14 +15,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets of sets the command type.
         /// </summary>
-        public ServerCommandType Type { get; set; }
+        public ServerCommandType ServerCommandType { get; set; }
 
         /// <summary>
         /// Gets or sets the value for this command.
         /// </summary>
         public object Value { get; set; }
 
-        public bool IsFromSelf(string serverId)
+        internal bool IsFromSelf(string serverId)
         {
             return serverId.Equals(ServerId);
         }

@@ -8,8 +8,8 @@ namespace Microsoft.AspNet.SignalR
 {
     public class Topic
     {
-        private readonly HashSet<string> _subcriptionIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly TimeSpan _ttl;
+        private readonly HashSet<string> _subscriptionIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly TimeSpan _lifespan;
 
         // Keeps track of the last time this subscription was used
         private DateTime _lastUsed = DateTime.UtcNow;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     SubscriptionLock.EnterReadLock();
 
-                    return Subscriptions.Count == 0 && (DateTime.UtcNow - _lastUsed) > _ttl;
+                    return Subscriptions.Count == 0 && (DateTime.UtcNow - _lastUsed) > _lifespan;
                 }
                 finally
                 {
@@ -38,9 +38,9 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        public Topic(uint storeSize, TimeSpan ttl)
+        public Topic(uint storeSize, TimeSpan lifespan)
         {
-            _ttl = ttl;
+            _lifespan = lifespan;
             Subscriptions = new List<ISubscription>();
             Store = new MessageStore<Message>(storeSize);
             SubscriptionLock = new ReaderWriterLockSlim();
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR
 
                 _lastUsed = DateTime.UtcNow;
 
-                if (_subcriptionIdentities.Add(subscription.Identity))
+                if (_subscriptionIdentities.Add(subscription.Identity))
                 {
                     Subscriptions.Add(subscription);
                 }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR
 
                 _lastUsed = DateTime.UtcNow;
 
-                if (_subcriptionIdentities.Remove(subscription.Identity))
+                if (_subscriptionIdentities.Remove(subscription.Identity))
                 {
                     Subscriptions.Remove(subscription);
                 }

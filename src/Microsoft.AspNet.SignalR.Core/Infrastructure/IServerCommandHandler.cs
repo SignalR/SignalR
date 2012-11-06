@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// <summary>
     /// Handles commands from server to server.
     /// </summary>
-    public interface IServerCommandHandler
+    internal interface IServerCommandHandler
     {
         /// <summary>
         /// Sends a command to all connected servers.

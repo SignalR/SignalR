@@ -145,7 +145,6 @@
     <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="MessageBus\ISubscriber.cs" />
     <Compile Include="MessageBus\MessageBus.cs" />
-    <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\MessageBusExtensions.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
     <Compile Include="MessageBus\MessageStore.cs" />

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.SignalR
         protected IMessageBus _newMessageBus;
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdPrefixGenerator _connectionIdPrefixGenerator;
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ack", Justification = "ACK is a well know networking term.")]
         protected IAckHandler _ackHandler;
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
@@ -135,7 +137,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 var command = new ServerCommand
                 {
-                    Type = ServerCommandType.RemoveConnection,
+                    ServerCommandType = ServerCommandType.RemoveConnection,
                     Value = connectionId
                 };
 

@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Connection = connection;
 
-            if (Context.Request.Url.LocalPath.EndsWith("/send"))
+            if (Context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase))
             {
                 return ProcessSendRequest();
             }

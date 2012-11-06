@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="hub">Hub to build cache for</param>
         /// <returns>Dictionary of available methods</returns>
-        private IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
+        private static IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
         {
-            return ReflectionHelper.GetExportedHubMethods(hub.Type)
+            return ReflectionHelper.GetExportedHubMethods(hub.HubType)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
                               group => group.Select(oload =>
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                           .Select(p => new ParameterDescriptor
                                               {
                                                   Name = p.Name,
-                                                  Type = p.ParameterType,
+                                                  ParameterType = p.ParameterType,
                                               })
                                           .ToList()
                                   }),

@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public bool IsDebuggingEnabled { get; set; }
 
-        public string GenerateProxy(string serviceUrl, bool includeDocComments = false)
+        public string GenerateProxy(string serviceUrl, bool includeDocComments)
         {
             string script;
             if (_scriptCache.TryGetValue(serviceUrl, out script))
@@ -83,9 +84,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             // Get only actions with minimum number of parameters.
             var methods = GetMethods(descriptor);
-
-            var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
             var hubName = GetDescriptorName(descriptor);
+
             sb.AppendFormat("signalR.{0} = signalR.hub.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.server = {{", hubName);
@@ -125,6 +125,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                    let oload = (from overload in overloads
                                 orderby overload.Parameters.Count
                                 select overload).FirstOrDefault()
+                   orderby oload.Name
                    select oload;
         }
 
@@ -136,7 +137,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             if (includeDocComments)
             {
                 sb.AppendFormat(Resources.DynamicComment_CallsMethodOnServerSideDeferredPromise, method.Name, method.Hub.Name).AppendLine();
-                var parameterDoc = method.Parameters.Select(p => String.Format(Resources.DynamicComment_ServerSideTypeIs, p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
+                var parameterDoc = method.Parameters.Select(p => String.Format(CultureInfo.CurrentCulture, Resources.DynamicComment_ServerSideTypeIs, p.Name, MapToJavaScriptType(p.ParameterType), p.ParameterType)).ToList();
                 if (parameterDoc.Any())
                 {
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));

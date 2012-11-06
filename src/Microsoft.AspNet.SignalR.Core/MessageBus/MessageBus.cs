@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,11 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="traceManager"></param>
         /// <param name="performanceCounterManager"></param>
-        public MessageBus(IStringMinifier stringMinifier, ITraceManager traceManager, IPerformanceCounterManager performanceCounterManager, IConfigurationManager configurationManager)
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The message broker is disposed when the bus is disposed.")]
+        public MessageBus(IStringMinifier stringMinifier, 
+                          ITraceManager traceManager, 
+                          IPerformanceCounterManager performanceCounterManager, 
+                          IConfigurationManager configurationManager)
         {
             _stringMinifier = stringMinifier;
             _trace = traceManager;

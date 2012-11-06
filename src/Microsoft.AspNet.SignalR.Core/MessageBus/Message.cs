@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.SignalR
         public string CommandId { get; set; }
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is a well known networking term.")]
         public bool WaitForAck { get; set; }
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is a well known networking term.")]
         public bool IsAck { get; set; }
         public string Filter { get; set; }
 

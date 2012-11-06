@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR
 
         public int MaxMessages { get; private set; }
 
-        public Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
+        protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
         {
             Identity = identity;
             _callback = callback;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR
             return Interlocked.CompareExchange(ref _state, State.Idle, State.Working) != State.Working;
         }
 
-        private Task FinishAsync(TaskCompletionSource<object> tcs)
+        private static Task FinishAsync(TaskCompletionSource<object> tcs)
         {
             return tcs.Task.ContinueWith(task =>
             {

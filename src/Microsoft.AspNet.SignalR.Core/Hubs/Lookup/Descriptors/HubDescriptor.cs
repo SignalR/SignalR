@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Hub type.
         /// </summary>
-        public virtual Type Type { get; set; }
+        public virtual Type HubType { get; set; }
 
         public string CreateQualifiedName(string unqualifiedName)
         {

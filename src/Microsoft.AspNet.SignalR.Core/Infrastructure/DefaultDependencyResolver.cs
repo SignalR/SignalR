@@ -26,7 +26,8 @@ namespace Microsoft.AspNet.SignalR
             RegisterHubExtensions();
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "The resolver is the class that does the most coupling by design.")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The resolver disposes dependencies on Dispose.")]
         private void RegisterDefaultServices()
         {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());

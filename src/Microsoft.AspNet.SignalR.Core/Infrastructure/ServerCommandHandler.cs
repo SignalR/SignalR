@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// <summary>
     /// Default <see cref="IServerCommandHandler"/> implementation.
     /// </summary>
-    public class ServerCommandHandler : IServerCommandHandler, ISubscriber, IDisposable
+    internal class ServerCommandHandler : IServerCommandHandler, ISubscriber, IDisposable
     {
         private readonly IMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;

@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// Represents a response to a connection.
     /// </summary>
-    public class PersistentResponse : IJsonWritable
+    public sealed class PersistentResponse : IJsonWritable
     {
         /// <summary>
         /// Creates a new instance of <see cref="PersistentResponse"/>.

@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="module"></param>
+        /// <param name="pipelineModule"></param>
         /// <returns></returns>
-        IHubPipeline AddModule(IHubPipelineModule module);
+        IHubPipeline AddModule(IHubPipelineModule pipelineModule);
     }
 }

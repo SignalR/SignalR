@@ -2,6 +2,7 @@
 
 using System;
 using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -15,3 +16,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: ComVisible(false)]
 [assembly: CLSCompliant(false)]
+
+[assembly: NeutralResourcesLanguage("en-US")]

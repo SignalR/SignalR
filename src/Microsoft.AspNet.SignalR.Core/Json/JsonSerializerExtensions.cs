@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Globalization;
 using System.IO;
 
 namespace Microsoft.AspNet.SignalR
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A JSON string representation of the object.</returns>
         public static string Stringify(this IJsonSerializer serializer, object value)
         {
-            using (var writer = new StringWriter())
+            using (var writer = new StringWriter(CultureInfo.InvariantCulture))
             {
                 serializer.Serialize(value, writer);
                 return writer.ToString();

@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>The parameter value.</returns>
         public virtual object ResolveParameter(ParameterDescriptor descriptor, IJsonValue value)
         {
-            if (value.GetType() == descriptor.Type)
+            if (value.GetType() == descriptor.ParameterType)
             {
                 return value;
             }
 
-            return value.ConvertTo(descriptor.Type);
+            return value.ConvertTo(descriptor.ParameterType);
         }
 
         /// <summary>

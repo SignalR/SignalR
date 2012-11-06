@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR
@@ -9,11 +10,12 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// 
     /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Scaleout", Justification = "Scaleout is a SignalR term")]
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>>();
 
-        public ScaleoutMessageBus(IDependencyResolver resolver)
+        protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
         }
@@ -56,7 +58,7 @@ namespace Microsoft.AspNet.SignalR
             var mapping = new ScaleoutMapping(dictionary);
 
             // Get the stream for this payload
-            var stream = _streams.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>()); 
+            var stream = _streams.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>());
 
             // Publish only after we've setup the mapping fully
             stream.Add(id, mapping);

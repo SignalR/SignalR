@@ -132,18 +132,22 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var tracker = new StateChangeTracker(hubRequest.State);
             var hub = CreateHub(request, descriptor, connectionId, tracker, throwIfFailedToCreate: true);
 
-            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, tracker, hub)
+            return InvokeHubPipeline(hub, parameterValues, methodDescriptor, hubRequest, tracker)
                 .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, StateChangeTracker state, IHub hub)
+        private Task InvokeHubPipeline(IHub hub,
+                                       IJsonValue[] parameterValues,
+                                       MethodDescriptor methodDescriptor,
+                                       HubRequest hubRequest,
+                                       StateChangeTracker tracker)
         {
             Task<object> piplineInvocation;
 
             try
             {
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
-                var context = new HubInvokerContext(hub, state, methodDescriptor, args);
+                var context = new HubInvokerContext(hub, tracker, methodDescriptor, args);
 
                 // Invoke the pipeline and save the task
                 piplineInvocation = _pipelineInvoker.Invoke(context);
@@ -158,11 +162,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 if (task.IsFaulted)
                 {
-                    return ProcessResponse(state, null, hubRequest, task.Exception);
+                    return ProcessResponse(tracker, null, hubRequest, task.Exception);
                 }
                 else
                 {
-                    return ProcessResponse(state, task.Result, hubRequest, null);
+                    return ProcessResponse(tracker, task.Result, hubRequest, null);
                 }
             })
             .FastUnwrap();
@@ -177,7 +181,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url));
+                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();
@@ -275,10 +279,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return _hubs.Select(hubDescriptor =>
             {
-                string groupPrefix = hubDescriptor.Type.Name + ".";
+                string groupPrefix = hubDescriptor.HubType.Name + ".";
                 IEnumerable<string> groupsToRejoin = _pipelineInvoker.RejoiningGroups(hubDescriptor,
                                                                                       request,
-                                                                                      groups.Where(g => g.StartsWith(groupPrefix))
+                                                                                      groups.Where(g => g.StartsWith(groupPrefix, StringComparison.OrdinalIgnoreCase))
                                                                                             .Select(g => g.Substring(groupPrefix.Length)))
                                                                      .Select(g => groupPrefix + g);
                 return groupsToRejoin;
@@ -367,7 +371,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                    select hub;
         }
 
-        private void DisposeHubs(IEnumerable<IHub> hubs)
+        private static void DisposeHubs(IEnumerable<IHub> hubs)
         {
             foreach (var hub in hubs)
             {

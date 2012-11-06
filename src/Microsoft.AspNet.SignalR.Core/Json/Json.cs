@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -20,9 +22,10 @@ namespace Microsoft.AspNet.SignalR
         {
             if (name == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException("name");
             }
-            return String.Join(".", name.Split('.').Select(n => Char.ToLower(n[0]) + n.Substring(1)));
+
+            return String.Join(".", name.Split('.').Select(n => Char.ToLower(n[0], CultureInfo.InvariantCulture) + n.Substring(1)));
         }
 
         /// <summary>
@@ -41,6 +44,7 @@ namespace Microsoft.AspNet.SignalR
             get { return "text/javascript"; }
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Jsonp", Justification = "Jsonp is a term.")]
         public static string CreateJsonpCallback(string callback, string payload)
         {
             var sb = new StringBuilder();

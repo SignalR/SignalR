@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             });
         }
 
-        private void AddTransportData(PersistentResponse response)
+        private static void AddTransportData(PersistentResponse response)
         {
             if (LongPollDelay > 0)
             {

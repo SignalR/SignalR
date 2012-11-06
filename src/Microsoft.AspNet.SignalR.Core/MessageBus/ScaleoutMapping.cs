@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
+    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Scaleout", Justification = "Scaleout is a SignalR term")]
     public class ScaleoutMapping
     {
         public ConcurrentDictionary<string, LocalEventKeyInfo> EventKeyMappings { get; private set; }
