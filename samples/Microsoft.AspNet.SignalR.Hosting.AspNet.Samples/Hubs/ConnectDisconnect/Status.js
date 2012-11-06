@@ -2,12 +2,19 @@
 $(function () {
     'use strict';
 
+    var status = $.connection.StatusHub,
+        startButton = $("#connectionStart"),
+        stopButton = $("#connectionStop"),
+        messagesHolder = $("#messages");
+
     function addMessage(value, className) {
         var html = $('<li>' + value + '</li>').addClass(className);
-        $('#messages').append(html);
+        messagesHolder.append(html);
     }
 
-    var status = $.connection.StatusHub;
+    function clearMessages() {
+        messagesHolder.html("");
+    }
 
     status.client.joined = function (id, when) {
         if ($.connection.hub.id === id) {
@@ -25,5 +32,22 @@ $(function () {
         addMessage(id + ' left at ' + when, 'text-error');
     };
 
-    $.connection.hub.start({ transport: activeTransport });
+    stopButton.click(function () {
+        $.connection.hub.stop();
+
+        clearMessages();
+
+        $(stopButton).attr('disabled', 'disabled');
+        $(startButton).removeAttr('disabled');
+    });
+
+    startButton.click(function () {
+        $.connection.hub.start({ transport: activeTransport });
+
+        $(startButton).attr('disabled', 'disabled');
+        $(stopButton).removeAttr('disabled');
+    });
+
+    // Start Connection
+    startButton.click();
 });
