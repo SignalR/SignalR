@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.Write(");</script>\r\n");
                 OutputWriter.Flush();
 
-                return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
+                return Context.Response.FlushAsync();
             });
         }
 

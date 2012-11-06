@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.WriteLine();
                 OutputWriter.Flush();
 
-                return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
+                return Context.Response.FlushAsync();
             });
         }
 

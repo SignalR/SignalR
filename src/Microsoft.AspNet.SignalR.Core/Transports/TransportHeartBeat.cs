@@ -210,7 +210,15 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
-                    metadata.Connection.KeepAlive().Catch();
+                    // If the keep alive send fails then kill the connection
+                    metadata.Connection.KeepAlive()
+                                       .Catch(ex =>
+                                       {
+                                           RemoveConnection(metadata.Connection);
+
+                                           metadata.Connection.End();
+                                       });
+
                     metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
                 }
 
