@@ -26,6 +26,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// 
         /// </summary>
-        TrackingDictionary State { get; }
+        StateChangeTracker StateTracker { get; }
     }
 }

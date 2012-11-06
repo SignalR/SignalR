@@ -93,6 +93,7 @@
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />
+    <Compile Include="Hubs\StateChangeTracker.cs" />
     <Compile Include="IAckHandler.cs" />
     <Compile Include="Hubs\Pipeline\HubPipeline.cs" />
     <Compile Include="Hubs\Pipeline\IHubIncomingInvokerContext.cs" />
@@ -212,7 +213,6 @@
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
-    <Compile Include="Hubs\TrackingDictionary.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />

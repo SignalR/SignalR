@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// </summary>
         /// <param name="hostContext">The <see cref="HostContext"/> for the current request.</param>
         /// <returns>The <see cref="ITransport"/> for the specified <see cref="HostContext"/>.</returns>
-        public ITransport GetTransport(HostContext context)
+        public ITransport GetTransport(HostContext hostContext)
         {
-            string transportName = context.Request.QueryString["transport"];
+            string transportName = hostContext.Request.QueryString["transport"];
 
             if (String.IsNullOrEmpty(transportName))
             {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Func<HostContext, ITransport> factory;
             if (_transports.TryGetValue(transportName, out factory))
             {
-                return factory(context);
+                return factory(hostContext);
             }
 
             return null;

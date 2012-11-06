@@ -24,12 +24,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
-        private readonly bool _isDebug;
-
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
-            _isDebug = context.IsDebuggingEnabled();
         }
 
         public override Task KeepAlive()

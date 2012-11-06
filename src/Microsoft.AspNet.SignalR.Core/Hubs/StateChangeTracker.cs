@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -9,18 +10,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// <summary>
     /// A change tracking dictionary.
     /// </summary>
-    public class TrackingDictionary
+    public class StateChangeTracker
     {
         private readonly IDictionary<string, object> _values;
         // Keep track of everyting that changed since creation
         private readonly IDictionary<string, object> _oldValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
-        public TrackingDictionary()
+        public StateChangeTracker()
         {
             _values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public TrackingDictionary(IDictionary<string, object> values)
+        public StateChangeTracker(IDictionary<string, object> values)
         {
             _values = values;
         }
@@ -46,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This might be expensive")]
         public IDictionary<string, object> GetChanges()
         {
             var changes = (from key in _oldValues.Keys

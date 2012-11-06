@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private const int MaxMessages = 10;
 
-        public ForeverTransport(HostContext context, IDependencyResolver resolver)
+        protected ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
@@ -23,11 +23,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
         }
 
-        public ForeverTransport(HostContext context,
-                                IJsonSerializer jsonSerializer,
-                                ITransportHeartbeat heartBeat,
-                                IPerformanceCounterManager performanceCounterWriter)
-            : base(context, jsonSerializer, heartBeat, performanceCounterWriter)
+        protected ForeverTransport(HostContext context,
+                                   IJsonSerializer jsonSerializer,
+                                   ITransportHeartbeat heartbeat,
+                                   IPerformanceCounterManager performanceCounterWriter)
+            : base(context, jsonSerializer, heartbeat, performanceCounterWriter)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;

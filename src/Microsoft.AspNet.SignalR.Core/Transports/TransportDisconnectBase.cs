@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable fields are disposed from a different method")]
     public abstract class TransportDisconnectBase : ITrackingConnection
     {
         private readonly HostContext _context;
@@ -243,13 +245,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     ((CancellationTokenSource)state).Cancel();
                 }
-                catch(ObjectDisposedException)
+                catch (ObjectDisposedException)
                 {
                     // We've already disposed the token and we don't need to do any clean up
                     // or triggering so just swallow the exception
                 }
             },
-            _connectionEndTokenSource, 
+            _connectionEndTokenSource,
             useSynchronizationContext: false);
         }
 

@@ -9,23 +9,23 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class StatefulSignalProxy : SignalProxy
     {
-        private readonly TrackingDictionary _state;
+        private readonly StateChangeTracker _tracker;
 
-        public StatefulSignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, TrackingDictionary state)
+        public StatefulSignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, StateChangeTracker tracker)
             : base(send, signal, hubName)
         {
-            _state = state;
+            _tracker = tracker;
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            _state[binder.Name] = value;
+            _tracker[binder.Name] = value;
             return true;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = _state[binder.Name];
+            result = _tracker[binder.Name];
             return true;
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Method = method,
                 Args = args,
                 Target = _signal,
-                State = _state.GetChanges()
+                State = _tracker.GetChanges()
             };
         }
     }

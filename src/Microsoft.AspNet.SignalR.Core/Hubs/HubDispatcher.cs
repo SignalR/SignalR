@@ -129,14 +129,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             // Resolving the actual state object
-            var state = new TrackingDictionary(hubRequest.State);
-            var hub = CreateHub(request, descriptor, connectionId, state, throwIfFailedToCreate: true);
+            var tracker = new StateChangeTracker(hubRequest.State);
+            var hub = CreateHub(request, descriptor, connectionId, tracker, throwIfFailedToCreate: true);
 
-            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, state, hub)
+            return InvokeHubPipeline(request, connectionId, data, hubRequest, parameterValues, methodDescriptor, tracker, hub)
                 .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, TrackingDictionary state, IHub hub)
+        private Task InvokeHubPipeline(IRequest request, string connectionId, string data, HubRequest hubRequest, IJsonValue[] parameterValues, MethodDescriptor methodDescriptor, StateChangeTracker state, IHub hub)
         {
             Task<object> piplineInvocation;
 
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return tcs.Task;
         }
 
-        private IHub CreateHub(IRequest request, HubDescriptor descriptor, string connectionId, TrackingDictionary state = null, bool throwIfFailedToCreate = false)
+        private IHub CreateHub(IRequest request, HubDescriptor descriptor, string connectionId, StateChangeTracker tracker = null, bool throwIfFailedToCreate = false)
         {
             try
             {
@@ -337,10 +337,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                 if (hub != null)
                 {
-                    state = state ?? new TrackingDictionary();
+                    tracker = tracker ?? new StateChangeTracker();
 
                     hub.Context = new HubCallerContext(request, connectionId);
-                    hub.Clients = new HubConnectionContext(_pipelineInvoker, Connection, descriptor.Name, connectionId, state);
+                    hub.Clients = new HubConnectionContext(_pipelineInvoker, Connection, descriptor.Name, connectionId, tracker);
                     hub.Groups = new GroupManager(Connection, descriptor.Name);
                 }
 
@@ -375,17 +375,17 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        private Task ProcessTaskResult<T>(TrackingDictionary state, HubRequest request, Task<T> task)
+        private Task ProcessTaskResult<T>(StateChangeTracker tracker, HubRequest request, Task<T> task)
         {
             if (task.IsFaulted)
             {
-                return ProcessResponse(state, null, request, task.Exception);
+                return ProcessResponse(tracker, null, request, task.Exception);
             }
 
-            return ProcessResponse(state, task.Result, request, null);
+            return ProcessResponse(tracker, task.Result, request, null);
         }
 
-        private Task ProcessResponse(TrackingDictionary state, object result, HubRequest request, Exception error)
+        private Task ProcessResponse(StateChangeTracker tracker, object result, HubRequest request, Exception error)
         {
             var exception = error.Unwrap();
             string stackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;
@@ -401,7 +401,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             var hubResult = new HubResponse
             {
-                State = state.GetChanges(),
+                State = tracker.GetChanges(),
                 Result = result,
                 Id = request.Id,
                 Error = errorMessage,
