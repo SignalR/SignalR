@@ -117,9 +117,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
                 //      Specifically this allows us to return a faulted task (call .fail on client) and to not cause the
                 //      transport to unintentionally fail.
-                methodDescriptor = new NoopMethodDescriptor() 
+                methodDescriptor = new MethodDescriptor()
                 {
-                    NoopException = new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MethodCouldNotBeResolved, hubRequest.Method))
+                    Invoker = (emptyHub, emptyParameters) =>
+                    {
+                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MethodCouldNotBeResolved, hubRequest.Method));
+                    },
+                    Attributes = new List<Attribute>(),
+                    Parameters = new List<ParameterDescriptor>()
                 };
             }
 
@@ -145,15 +150,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                // If our method descriptor is a noop then we need to fix our exception.  This is handled
-                // in the catch statement and not pre-checked in the try in order to save computational
-                // time.  Majority of cases will not cause throw.
-                if (methodDescriptor is NoopMethodDescriptor)
-                {
-                    // Only reset the exception if we have a noop exception
-                    ex = (methodDescriptor as NoopMethodDescriptor).NoopException ?? ex;
-                }
-
                 piplineInvocation = TaskAsyncHelper.FromError<object>(ex);
             }
 
