@@ -83,6 +83,7 @@
     <Compile Include="Server\TestSubscriber.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
     <Compile Include="StringMinifierFacts.cs" />
+    <Compile Include="TestUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
