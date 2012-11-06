@@ -145,7 +145,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                // IF we have no invoker then we are a no op
+                // If our method descriptor is a noop then we need to fix our exception.  This is handled
+                // in the catch statement and not pre-checked in the try in order to save computational
+                // time.  Majority of cases will not cause throw.
                 if (methodDescriptor is NoopMethodDescriptor)
                 {
                     // Only reset the exception if we have a noop exception
