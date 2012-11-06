@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();
 
-                return Context.Response.EndAsync();
+                return Context.Response.EndAsync().Catch(IncrementErrorCounters);
             });
         }
 
@@ -301,7 +301,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                     }
                     else
                     {
-                        return Send(response).Then(() => TaskAsyncHelper.True);
+                        return Send(response).Then(() => TaskAsyncHelper.True)
+                                             .Catch(IncrementErrorCounters)
+                                             .Catch(ex => End());
                     }
                 },
                 MaxMessages);

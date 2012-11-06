@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #if NET45
                 Task newTask = _lastQueuedTask.ContinueWith(_ => taskFunc(), TaskContinuationOptions.OnlyOnRanToCompletion).Unwrap();
 #else
-                Task newTask = _lastQueuedTask.ContinueWith(_ => taskFunc(), TaskContinuationOptions.OnlyOnRanToCompletion).FastUnwrap();
+                Task newTask = _lastQueuedTask.Then(next => next(), taskFunc);
 #endif
                 _lastQueuedTask = newTask;
                 return newTask;
