@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR
                 }
                 else
                 {
-                    Trace.TraceInformation("Failed to add a worker because all allocated workers are not busy, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                    Trace.TraceInformation("No need to add a worker because all allocated workers are not busy, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
                 }
             }
             else
