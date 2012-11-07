@@ -48,21 +48,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\TaskQueue.cs">
       <Link>Infrastructure\TaskQueue.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet45\Infrastructure\ByteBuffer.cs">
-      <Link>Infrastructure\ByteBuffer.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet45\WebSockets\DefaultWebSocketHandler.cs">
-      <Link>WebSockets\DefaultWebSocketHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet45\WebSockets\WebSocketHandler.cs">
-      <Link>WebSockets\WebSocketHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet45\WebSockets\WebSocketMessage.cs">
-      <Link>WebSockets\WebSocketMessage.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.AspNet45\WebSockets\WebSocketMessageReader.cs">
-      <Link>WebSockets\WebSocketMessageReader.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.Self\CookieCollectionWrapper.cs">
       <Link>CookieCollectionWrapper.cs</Link>
     </Compile>
@@ -86,6 +71,21 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\Infrastructure\ByteBuffer.cs">
+      <Link>Infrastructure\ByteBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\DefaultWebSocketHandler.cs">
+      <Link>WebSockets\DefaultWebSocketHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketHandler.cs">
+      <Link>WebSockets\WebSocketHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketMessage.cs">
+      <Link>WebSockets\WebSocketMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketMessageReader.cs">
+      <Link>WebSockets\WebSocketMessageReader.cs</Link>
     </Compile>
     <Compile Include="Infrastructure\DisconnectHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

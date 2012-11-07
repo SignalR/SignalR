@@ -126,7 +126,6 @@
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></AnalysisProjects>
@@ -142,7 +141,6 @@
     <ItemGroup>
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" />
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.dll" />
-      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.dll" />
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.dll" />
       <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.dll" />
     </ItemGroup>
@@ -157,7 +155,6 @@
       <JsPackage Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Properties\Microsoft.AspNet.SignalR.Js.nuspec" />
       <MetaPackage Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Properties\Microsoft.AspNet.SignalR.All.nuspec" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
-      <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj" />
       <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj" />

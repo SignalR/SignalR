@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self
             return _httpListenerContext.AcceptWebSocketAsync(subProtocol: null).Then(ws =>
             {
                 var handler = new SignalR.WebSockets.DefaultWebSocketHandler();
-                var task = handler.ProcessWebSocketRequestAsync(ws);
+                var task = handler.ProcessWebSocketRequestAsync(ws.WebSocket);
                 callback(handler).Catch()
                                  .ContinueWith(t => handler.End());
                 return task;
