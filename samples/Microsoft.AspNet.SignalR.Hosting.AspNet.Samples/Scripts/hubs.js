@@ -73,8 +73,7 @@
 
             this._registerSubscribedHubs();
         }).disconnected(function () {
-            // Unregister all hub proxies when we "disconnect".  This is to ensure that we
-            // do not re-add functional call backs.
+            // Unsubscribe all hub proxies when we "disconnect".  This is to ensure that we do not re-add functional call backs.
             // (instance, shouldSubscribe)
             registerHubProxies(signalR, false);
         });
