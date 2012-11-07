@@ -200,6 +200,7 @@ namespace Microsoft.AspNet.SignalR
                 }
 
                 _counters.MessageBusBusyWorkers.RawValue = Interlocked.Increment(ref _busyWorkers);
+                Trace.TraceInformation("Work(" + subscription.Identity + ")");
                 Task workTask = subscription.WorkAsync();
 
                 if (workTask.IsCompleted)
@@ -276,8 +277,12 @@ namespace Microsoft.AspNet.SignalR
             {
                 _disposed = true;
 
+                Trace.TraceInformation("Dispoing the broker");
+
                 // Wait for all threads to stop working
                 WaitForDrain();
+
+                Trace.TraceInformation("Disposed the broker");
             }
         }
 

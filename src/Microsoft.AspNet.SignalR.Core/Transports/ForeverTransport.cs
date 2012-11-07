@@ -237,8 +237,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 if (ex != null)
                 {
-                    Trace.TraceInformation(ex.GetBaseException().ToString());
-
                     tcs.TrySetException(ex);
                 }
                 else
@@ -347,6 +345,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // End the request if the connection end token is triggered
                 registration = ConnectionEndToken.Register(state =>
                 {
+                    Trace.TraceInformation("Cancel(" + ConnectionId + ")");
+
                     // This is only null if we failed to create the subscription
                     ((IDisposable)state).Dispose();
                 },

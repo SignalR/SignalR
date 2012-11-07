@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -24,7 +23,8 @@ namespace Microsoft.AspNet.SignalR
 
         private readonly IStringMinifier _stringMinifier;
 
-        private readonly ITraceManager _trace;
+        private readonly ITraceManager _traceManager;
+        private readonly TraceSource _trace;
 
         protected readonly IPerformanceCounterManager _counters;
 
@@ -58,8 +58,9 @@ namespace Microsoft.AspNet.SignalR
                           IConfigurationManager configurationManager)
         {
             _stringMinifier = stringMinifier;
-            _trace = traceManager;
+            _traceManager = traceManager;
             _counters = performanceCounterManager;
+            _trace = _traceManager["SignalR.MessageBus"];
 
             _gcTimer = new Timer(_ => CheckTopics(), state: null, dueTime: _gcInterval, period: _gcInterval);
 
@@ -77,7 +78,7 @@ namespace Microsoft.AspNet.SignalR
         {
             get
             {
-                return _trace["SignalR.MessageBus"];
+                return _trace;
             }
         }
 
@@ -269,6 +270,8 @@ namespace Microsoft.AspNet.SignalR
                         Topic topic;
                         _topics.TryRemove(pair.Key, out topic);
                         _stringMinifier.RemoveUnminified(pair.Key);
+
+                        Trace.TraceInformation("RemoveTopic(" + pair.Key + ")");
                     }
                 }
             }
