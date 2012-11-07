@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(40);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
-            KeepAlive = TimeSpan.FromSeconds(30);
+            KeepAlive = TimeSpan.FromSeconds(15);
         }
 
         public TimeSpan ConnectionTimeout
