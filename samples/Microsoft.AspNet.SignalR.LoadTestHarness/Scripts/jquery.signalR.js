@@ -74,6 +74,13 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
+
+                if (newState === signalR.connectionState.connected) {
+                    // Clear the currently joined groups every time a new connection is established.
+                    // If the client gets resubscribed to groups, it will be notified.
+                    connection.groups = { };
+                }
+
                 $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }
@@ -610,7 +617,8 @@
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
-                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
+                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id),
+                groups = [];
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
@@ -626,7 +634,11 @@
                     qs += "&messageId=" + window.escape(connection.messageId);
                 }
                 if (connection.groups) {
-                    qs += "&groups=" + window.escape(JSON.stringify(connection.groups));
+                    $.each(connection.groups, function (group, _) {
+                        // Add keys from connection.groups without the # prefix
+                        groups.push(group.substr(1));
+                    });
+                    qs += "&groups=" + window.escape(JSON.stringify(groups));
                 }
             }
             url += "?" + qs;
@@ -687,7 +699,8 @@
             connection.log("Fired ajax abort async = " + async);
         },
 
-        processMessages: function (connection, data) {
+        processMessages: function (connection, minData) {
+            var data;
             // Transport can be null if we've just closed the connection
             if (connection.transport) {
                 var $connection = $(connection);
@@ -698,9 +711,18 @@
                     this.updateKeepAlive(connection);
                 }
 
-                if (!data) {
+                if (!minData) {
                     return;
                 }
+
+                data = {
+                    MessageId: minData.C,
+                    Messages: minData.M,
+                    Disconnect: typeof (minData.D) !== "undefined" ? true : false,
+                    TimedOut: typeof (minData.T) !== "undefined" ? true : false,
+                    AddedGroups: minData.G,
+                    RemovedGroups: minData.g
+                };
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server");
@@ -726,8 +748,17 @@
                     connection.messageId = data.MessageId;
                 }
 
-                if (data.TransportData) {
-                    connection.groups = data.TransportData.Groups;
+                // Use the keys in connection.groups object as a set of groups.
+                // Prefix all group names with # so we don't conflict with the object's prototype or __proto__.
+                if (data.AddedGroups) {
+                    $.each(data.AddedGroups, function(_, group) {
+                        connection.groups['#' + group] = true;
+                    });
+                }
+                if (data.RemovedGroups) {
+                    $.each(data.AddedGroups, function (_, group) {
+                        delete connection.groups['# ' + group];
+                    });
                 }
             }
         },
@@ -897,7 +928,8 @@
                         $connection = $(connection);
 
                     if (data) {
-                        if ($.isEmptyObject(data) || data.Messages) {
+                        // data.M is PersistentResponse.Messages
+                        if ($.isEmptyObject(data) || data.M) {
                             transportLogic.processMessages(connection, data);
                         } else {
                             // For websockets we need to trigger onReceived
@@ -1387,9 +1419,19 @@
                         cache: false,
                         type: "GET",
                         dataType: connection.ajaxDataType,
-                        success: function (data) {
+                        success: function (minData) {
                             var delay = 0,
-                                timedOutReceived = false;
+                                timedOutReceived = false,
+                                data;
+
+                            if (minData) {
+                                data = {
+                                    // data.L is PersistentResponse.TransportData.LongPollDelay
+                                    LongPollDelay: minData.L,
+                                    TimedOut: typeof (minData.T) != "undefined" ? true : false,
+                                    Disconnect: typeof (minData.D) != "undefined" ? true : false
+                                };
+                            }
 
                             if (initialConnectFired === false) {
                                 onSuccess();
@@ -1411,11 +1453,10 @@
                                 }
                             }
 
-                            transportLogic.processMessages(instance, data);
+                            transportLogic.processMessages(instance, minData);
                             if (data &&
-                                data.TransportData &&
-                                $.type(data.TransportData.LongPollDelay) === "number") {
-                                delay = data.TransportData.LongPollDelay;
+                                $.type(data.LongPollDelay) === "number") {
+                                delay = data.LongPollDelay;
                             }
 
                             if (data && data.TimedOut) {
@@ -1724,13 +1765,14 @@
         connection.proxies = {};
 
         // Wire up the received handler
-        connection.received(function (data) {
-            var proxy, dataCallbackId, callback, hubName, eventName;
-            if (!data) {
+        connection.received(function (minData) {
+            var data, proxy, dataCallbackId, callback, hubName, eventName;
+            if (!minData) {
                 return;
             }
 
-            if (typeof (data.Id) !== "undefined") {
+            if (typeof (minData.Id) !== "undefined") {
+                data = minData;
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = data.Id.toString();
                 callback = callbacks[dataCallbackId];
@@ -1743,6 +1785,13 @@
                     callback.method.call(callback.scope, data);
                 }
             } else {
+                data = {
+                    Hub: minData.H,
+                    Method: minData.M,
+                    Args: minData.A,
+                    State: minData.S
+                };
+
                 // We received a client invocation request, i.e. broadcast from server hub
                 connection.log("Triggering client hub event '" + data.Method + "' on hub '" + data.Hub + "'.");
 

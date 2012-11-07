@@ -209,15 +209,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
-                timedOut = result.Value<bool>("TimedOut");
-                disconnected = result.Value<bool>("Disconnect");
+                timedOut = result.Value<int>("T") == 1;
+                disconnected = result.Value<int>("D") == 1;
 
                 if (disconnected)
                 {
                     return;
                 }
 
-                var messages = result["Messages"] as JArray;
+                var messages = result["M"] as JArray;
                 if (messages != null)
                 {
                     foreach (JToken message in messages)
@@ -238,16 +238,24 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                     }
 
-                    connection.MessageId = result["MessageId"].Value<string>();
+                    connection.MessageId = result["C"].Value<string>();
 
-                    var transportData = result["TransportData"] as JObject;
+                    var addedGroups = result["G"];
+                    var removedGroups = result["g"];
 
-                    if (transportData != null)
+                    if (addedGroups != null)
                     {
-                        var groups = (JArray)transportData["Groups"];
-                        if (groups != null)
+                        foreach (var group in addedGroups)
                         {
-                            connection.Groups = groups.Select(token => token.Value<string>());
+                            connection.Groups.Add(group.ToString());
+                        }
+                    }
+
+                    if (removedGroups != null)
+                    {
+                        foreach (var group in removedGroups)
+                        {
+                            connection.Groups.Remove(group.ToString());
                         }
                     }
                 }

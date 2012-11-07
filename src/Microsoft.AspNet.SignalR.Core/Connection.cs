@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -17,7 +18,8 @@ namespace Microsoft.AspNet.SignalR
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
-        private readonly SafeSet<string> _groups;
+        private readonly DiffSet<string> _groups;
+        private ICollection<string> _lastGroups;
         private readonly IPerformanceCounterManager _counters;
 
         private bool _disconnected;
@@ -40,7 +42,8 @@ namespace Microsoft.AspNet.SignalR
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals, StringComparer.OrdinalIgnoreCase);
-            _groups = new SafeSet<string>(groups);
+            _groups = new DiffSet<string>(groups);
+            _lastGroups = new Collection<string>();
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
@@ -245,15 +248,16 @@ namespace Microsoft.AspNet.SignalR
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            // Set the groups on the outgoing transport data
-            if (_groups.Count > 0)
-            {
-                if (response.TransportData == null)
-                {
-                    response.TransportData = new Dictionary<string, object>();
-                }
+            var groupDiff = _groups.GetDiff();
 
-                response.TransportData["Groups"] = _groups.GetSnapshot();
+            // Set the groups on the outgoing transport data
+            if (groupDiff.Added.Count > 0)
+            {
+                response.AddedGroups = groupDiff.Added;
+            }
+            if (groupDiff.Removed.Count > 0)
+            {
+                response.RemovedGroups = groupDiff.Removed;
             }
         }
     }
