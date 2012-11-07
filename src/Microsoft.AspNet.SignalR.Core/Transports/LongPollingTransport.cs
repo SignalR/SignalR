@@ -274,11 +274,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (LongPollDelay > 0)
             {
-                if (response.TransportData == null)
-                {
-                    response.TransportData = new Dictionary<string, object>();
-                }
-                response.TransportData["LongPollDelay"] = LongPollDelay;
+                response.LongPollDelay = LongPollDelay;
             }
         }
     }

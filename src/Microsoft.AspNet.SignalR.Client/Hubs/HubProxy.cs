@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 tokenifiedArguments[i] = JToken.FromObject(args[i]);
             }
 
-            var hubData = new HubInvocation
+            var hubData = new ServerHubInvocation
             {
                 Hub = _hubName,
                 Method = method,

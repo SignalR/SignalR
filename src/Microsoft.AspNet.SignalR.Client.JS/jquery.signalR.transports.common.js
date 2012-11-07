@@ -74,7 +74,8 @@
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
-                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
+                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id),
+                groups = [];
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
@@ -90,7 +91,11 @@
                     qs += "&messageId=" + window.escape(connection.messageId);
                 }
                 if (connection.groups) {
-                    qs += "&groups=" + window.escape(JSON.stringify(connection.groups));
+                    $.each(connection.groups, function (group, _) {
+                        // Add keys from connection.groups without the # prefix
+                        groups.push(group.substr(1));
+                    });
+                    qs += "&groups=" + window.escape(JSON.stringify(groups));
                 }
             }
             url += "?" + qs;
@@ -151,7 +156,8 @@
             connection.log("Fired ajax abort async = " + async);
         },
 
-        processMessages: function (connection, data) {
+        processMessages: function (connection, minData) {
+            var data;
             // Transport can be null if we've just closed the connection
             if (connection.transport) {
                 var $connection = $(connection);
@@ -162,9 +168,18 @@
                     this.updateKeepAlive(connection);
                 }
 
-                if (!data) {
+                if (!minData) {
                     return;
                 }
+
+                data = {
+                    MessageId: minData.C,
+                    Messages: minData.M,
+                    Disconnect: typeof (minData.D) !== "undefined" ? true : false,
+                    TimedOut: typeof (minData.T) !== "undefined" ? true : false,
+                    AddedGroups: minData.G,
+                    RemovedGroups: minData.g
+                };
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server");
@@ -190,8 +205,17 @@
                     connection.messageId = data.MessageId;
                 }
 
-                if (data.TransportData) {
-                    connection.groups = data.TransportData.Groups;
+                // Use the keys in connection.groups object as a set of groups.
+                // Prefix all group names with # so we don't conflict with the object's prototype or __proto__.
+                if (data.AddedGroups) {
+                    $.each(data.AddedGroups, function(_, group) {
+                        connection.groups['#' + group] = true;
+                    });
+                }
+                if (data.RemovedGroups) {
+                    $.each(data.AddedGroups, function (_, group) {
+                        delete connection.groups['# ' + group];
+                    });
                 }
             }
         },

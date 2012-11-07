@@ -106,7 +106,8 @@
                         $connection = $(connection);
 
                     if (data) {
-                        if ($.isEmptyObject(data) || data.Messages) {
+                        // data.M is PersistentResponse.Messages
+                        if ($.isEmptyObject(data) || data.M) {
                             transportLogic.processMessages(connection, data);
                         } else {
                             // For websockets we need to trigger onReceived

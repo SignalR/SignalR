@@ -58,9 +58,19 @@
                         cache: false,
                         type: "GET",
                         dataType: connection.ajaxDataType,
-                        success: function (data) {
+                        success: function (minData) {
                             var delay = 0,
-                                timedOutReceived = false;
+                                timedOutReceived = false,
+                                data;
+
+                            if (minData) {
+                                data = {
+                                    // data.L is PersistentResponse.TransportData.LongPollDelay
+                                    LongPollDelay: minData.L,
+                                    TimedOut: typeof (minData.T) != "undefined" ? true : false,
+                                    Disconnect: typeof (minData.D) != "undefined" ? true : false
+                                };
+                            }
 
                             if (initialConnectFired === false) {
                                 onSuccess();
@@ -82,11 +92,10 @@
                                 }
                             }
 
-                            transportLogic.processMessages(instance, data);
+                            transportLogic.processMessages(instance, minData);
                             if (data &&
-                                data.TransportData &&
-                                $.type(data.TransportData.LongPollDelay) === "number") {
-                                delay = data.TransportData.LongPollDelay;
+                                $.type(data.LongPollDelay) === "number") {
+                                delay = data.LongPollDelay;
                             }
 
                             if (data && data.TimedOut) {

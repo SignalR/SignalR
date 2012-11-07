@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.MapConnection<MyConnection>("/echo");
 
                     var connection = new Client.Connection("http://foo/echo");
-                    connection.Groups = new List<string> { typeof(MyConnection).FullName + ".test" };
+                    ((Client.IConnection)connection).Groups.Add(typeof(MyConnection).FullName + ".test");
                     connection.Received += data =>
                     {
                         Assert.False(true, "Unexpectedly received data");
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.MapConnection<MyConnection>("/echo");
 
                     var connection = new Client.Connection("http://foo/echo");
-                    connection.Groups = new List<string> { typeof(MyConnection).FullName + ".test" };
+                    ((Client.IConnection)connection).Groups.Add(typeof(MyConnection).FullName + ".test");
                     connection.Received += data =>
                     {
                         Assert.False(true, "Unexpectedly received data");

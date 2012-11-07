@@ -73,6 +73,13 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
+
+                if (newState === signalR.connectionState.connected) {
+                    // Clear the currently joined groups every time a new connection is established.
+                    // If the client gets resubscribed to groups, it will be notified.
+                    connection.groups = { };
+                }
+
                 $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }

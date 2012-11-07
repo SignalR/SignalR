@@ -24,10 +24,13 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private IClientTransport _transport;
 
+        // The groups the connection is currently subscribed to
+        private HashSet<string> _groups;
+
         // The default connection state is disconnected
         private ConnectionState _state = ConnectionState.Disconnected;
 
-        // Used to synchornize state changes
+        // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
         /// <summary>
@@ -94,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
             Url = url;
             QueryString = queryString;
-            Groups = Enumerable.Empty<string>();
+            _groups = new HashSet<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
         }
@@ -119,7 +122,10 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets or sets the groups for the connection.
         /// </summary>
-        public IEnumerable<string> Groups { get; set; }
+        public IEnumerable<string> Groups
+        {
+            get { return _groups; }
+        }
 
         /// <summary>
         /// Gets the url for the connection.
@@ -282,6 +288,12 @@ namespace Microsoft.AspNet.SignalR.Client
             // If we're in the expected old state then change state and return true
             if (_state == oldState)
             {
+                if (newState == ConnectionState.Connected)
+                {
+                    // Clear the currently joined groups every time a new connection is established.
+                    // If the client gets resubscribed to groups, it will be notified.
+                    ((IConnection)this).Groups.Clear();
+                }
                 State = newState;
                 return true;
             }
@@ -345,6 +357,11 @@ namespace Microsoft.AspNet.SignalR.Client
         public Task Send(object value)
         {
             return Send(JsonConvert.SerializeObject(value));
+        }
+
+        ICollection<string> IConnection.Groups
+        {
+            get { return _groups; }
         }
 
         Task<T> IConnection.Send<T>(string data)

@@ -204,13 +204,14 @@
         connection.proxies = {};
 
         // Wire up the received handler
-        connection.received(function (data) {
-            var proxy, dataCallbackId, callback, hubName, eventName;
-            if (!data) {
+        connection.received(function (minData) {
+            var data, proxy, dataCallbackId, callback, hubName, eventName;
+            if (!minData) {
                 return;
             }
 
-            if (typeof (data.Id) !== "undefined") {
+            if (typeof (minData.Id) !== "undefined") {
+                data = minData;
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = data.Id.toString();
                 callback = callbacks[dataCallbackId];
@@ -223,6 +224,13 @@
                     callback.method.call(callback.scope, data);
                 }
             } else {
+                data = {
+                    Hub: minData.H,
+                    Method: minData.M,
+                    Args: minData.A,
+                    State: minData.S
+                };
+
                 // We received a client invocation request, i.e. broadcast from server hub
                 connection.log("Triggering client hub event '" + data.Method + "' on hub '" + data.Hub + "'.");
 

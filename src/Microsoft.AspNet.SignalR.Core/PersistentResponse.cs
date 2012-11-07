@@ -60,9 +60,19 @@ namespace Microsoft.AspNet.SignalR
         public bool TimedOut { get; set; }
 
         /// <summary>
-        /// Transport specific configurtion information.
+        /// Groups added to the connection since the last PersistentResponse.
         /// </summary>
-        public IDictionary<string, object> TransportData { get; set; }
+        public IEnumerable<string> AddedGroups  { get; set; }
+
+        /// <summary>
+        /// Groups removed from the connection since the last PersistentResponse.
+        /// </summary>
+        public IEnumerable<string> RemovedGroups { get; set; }
+
+        /// <summary>
+        /// The time the long polling client should wait before reestablishing a connection if no data is received.
+        /// </summary>
+        public long? LongPollDelay { get; set; }
 
         /// <summary>
         /// Serializes only the necessary components of the <see cref="PersistentResponse"/> to JSON
@@ -74,36 +84,40 @@ namespace Microsoft.AspNet.SignalR
             var jsonWriter = new JsonTextWriter(writer);
             jsonWriter.WriteStartObject();
 
-            jsonWriter.WritePropertyName("MessageId");
+            jsonWriter.WritePropertyName("C");
             jsonWriter.WriteValue(MessageId);
 
-            jsonWriter.WritePropertyName("Disconnect");
-            jsonWriter.WriteValue(Disconnect);
-
-            jsonWriter.WritePropertyName("TimedOut");
-            jsonWriter.WriteValue(TimedOut);
-
-            if (TransportData != null)
+            if (Disconnect)
             {
-                jsonWriter.WritePropertyName("TransportData");
-                jsonWriter.WriteStartObject();
-
-                object value;
-                if (TransportData.TryGetValue("Groups", out value))
-                {
-                    jsonWriter.WritePropertyName("Groups");
-                    jsonWriter.WriteStartArray();
-                    foreach (var group in (IEnumerable<string>)value)
-                    {
-                        jsonWriter.WriteValue(group);
-                    }
-                    jsonWriter.WriteEndArray();
-                }
-
-                jsonWriter.WriteEndObject();
+                jsonWriter.WritePropertyName("D");
+                jsonWriter.WriteValue(1);
             }
 
-            jsonWriter.WritePropertyName("Messages");
+            if (TimedOut)
+            {
+                jsonWriter.WritePropertyName("T");
+                jsonWriter.WriteValue(1);
+            }
+
+            if (AddedGroups != null)
+            {
+                jsonWriter.WritePropertyName("G");
+                WriteJsonArray(jsonWriter, AddedGroups);
+            }
+            
+            if (RemovedGroups != null)
+            {
+                jsonWriter.WritePropertyName("g");
+                WriteJsonArray(jsonWriter, RemovedGroups);
+            }
+
+            if (LongPollDelay.HasValue)
+            {
+                jsonWriter.WritePropertyName("L");
+                jsonWriter.WriteValue(LongPollDelay.Value);
+            }
+
+            jsonWriter.WritePropertyName("M");
             jsonWriter.WriteStartArray();
 
             Messages.Enumerate(m => !m.IsCommand && !ExcludeFilter(m),
@@ -111,6 +125,16 @@ namespace Microsoft.AspNet.SignalR
 
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
+        }
+
+        private static void WriteJsonArray<T>(JsonTextWriter writer, IEnumerable<T> items)
+        {
+            writer.WriteStartArray();
+            foreach (var item in items)
+            {
+                writer.WriteValue(item);
+            }
+            writer.WriteEndArray();
         }
     }
 }
