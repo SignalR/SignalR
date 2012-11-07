@@ -27,7 +27,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var json = new JsonNetSerializer();
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object)
+            var traceManager = new Mock<ITraceManager>();
+            traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
                 CallBase = true
             };
@@ -57,6 +59,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var json = new JsonNetSerializer();
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
+            var traceManager = new Mock<ITraceManager>();
+            traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
             transportConnection.Setup(m => m.Send(It.IsAny<ConnectionMessage>()))
                                .Callback<ConnectionMessage>(m =>
                                {
@@ -67,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                })
                                .Returns(TaskAsyncHelper.Empty);
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
                 CallBase = true
             };

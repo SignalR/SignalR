@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
         private readonly IServerCommandHandler _serverCommandHandler;
-        private readonly ITraceManager _trace;
+        private readonly TraceSource _trace;
         private readonly string _serverId;
         private readonly IPerformanceCounterManager _counters;
         private readonly object _counterLock = new object();
@@ -36,8 +36,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
-            _trace = resolver.Resolve<ITraceManager>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
+
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR.Transports.TransportHeartBeat"];
 
             _serverCommandHandler.Command = ProcessServerCommand;
 
@@ -52,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return _trace["SignalR.Transports.TransportHeartBeat"];
+                return _trace;
             }
         }
 
@@ -210,10 +212,14 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
+                    Trace.TraceInformation("Sending keep alive to connection " + metadata.Connection.ConnectionId);
+
                     // If the keep alive send fails then kill the connection
                     metadata.Connection.KeepAlive()
                                        .Catch(ex =>
                                        {
+                                           Trace.TraceInformation("Failed to send keep alive: " + ex.GetBaseException());
+
                                            RemoveConnection(metadata.Connection);
 
                                            metadata.Connection.End();

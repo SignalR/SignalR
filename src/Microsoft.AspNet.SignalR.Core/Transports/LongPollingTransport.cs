@@ -20,13 +20,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
-                   resolver.Resolve<IPerformanceCounterManager>())
+                   resolver.Resolve<IPerformanceCounterManager>(),
+                   resolver.Resolve<ITraceManager>())
         {
 
         }
 
-        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterManager)
+        public LongPollingTransport(HostContext context, 
+                                    IJsonSerializer jsonSerializer, 
+                                    ITransportHeartbeat heartbeat, 
+                                    IPerformanceCounterManager performanceCounterManager, 
+                                    ITraceManager traceManager)
+            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;

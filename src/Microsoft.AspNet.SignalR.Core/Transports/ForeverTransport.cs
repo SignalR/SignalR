@@ -19,15 +19,17 @@ namespace Microsoft.AspNet.SignalR.Transports
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
-                   resolver.Resolve<IPerformanceCounterManager>())
+                   resolver.Resolve<IPerformanceCounterManager>(),
+                   resolver.Resolve<ITraceManager>())
         {
         }
 
         protected ForeverTransport(HostContext context,
                                    IJsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
-                                   IPerformanceCounterManager performanceCounterWriter)
-            : base(context, jsonSerializer, heartbeat, performanceCounterWriter)
+                                   IPerformanceCounterManager performanceCounterWriter,
+                                   ITraceManager traceManager)
+            : base(context, jsonSerializer, heartbeat, performanceCounterWriter, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
@@ -231,8 +233,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             Action<Exception> endRequest = (ex) =>
             {
+                Trace.TraceInformation("EndRequest(" + ConnectionId + ")");
+
                 if (ex != null)
                 {
+                    Trace.TraceInformation(ex.GetBaseException().ToString());
+
                     tcs.TrySetException(ex);
                 }
                 else
@@ -303,6 +309,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         return Send(response).Then(() => TaskAsyncHelper.True)
                                              .Catch(IncrementErrorCounters)
+                                             .Catch(ex =>
+                                             {
+                                                 Trace.TraceInformation("Send failed with: " + ex.GetBaseException());
+                                             })
                                              .Catch(ex => End());
                     }
                 },
@@ -321,6 +331,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
                              .Catch(ex => endRequest(ex))
+                             .Catch(ex =>
+                             {
+                                 Trace.TraceInformation("Failed post receive with:" + ex.GetBaseException());
+                             })
                              .ContinueWith(task => wh.Set());
             }
             else

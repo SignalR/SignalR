@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly ITransportHeartbeat _heartbeat;
         private readonly IJsonSerializer _jsonSerializer;
         private TextWriter _outputWriter;
+
+        private TraceSource _trace;
 
         private int _isDisconnected;
         private int _timedOut;
@@ -38,12 +41,22 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Queue to protect against overlapping writes to the underlying response stream
         private readonly TaskQueue _writeQueue = new TaskQueue();
 
-        protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager)
+        protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
             _context = context;
             _jsonSerializer = jsonSerializer;
             _heartbeat = heartbeat;
             _counters = performanceCounterManager;
+
+            _trace = traceManager["SignalR.Transports." + GetType().Name];
+        }
+
+        protected TraceSource Trace
+        {
+            get
+            {
+                return _trace;
+            }
         }
 
         public string ConnectionId
@@ -173,8 +186,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 var disconnected = Disconnected; // copy before invoking event to avoid race
                 if (disconnected != null)
                 {
-                    return disconnected().Catch()
-                        .Then(() => _counters.ConnectionsDisconnected.Increment());
+                    return disconnected().Catch(ex =>
+                    {
+                        Trace.TraceInformation("Failed to raise disconnect: " + ex.GetBaseException());
+                    })
+                    .Then(() => _counters.ConnectionsDisconnected.Increment());
                 }
             }
 
@@ -189,6 +205,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     _connectionEndTokenSource.Cancel();
                 }
+
+                Trace.TraceInformation("Timeout(" + _connectionId + ")");
             }
         }
 
@@ -201,6 +219,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _ended, 1) == 0)
             {
+                Trace.TraceInformation("End(" + _connectionId + ")");
+
                 if (_connectionEndTokenSource != null)
                 {
                     _connectionEndTokenSource.Cancel();
