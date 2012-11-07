@@ -623,7 +623,7 @@
                     url = url + "/reconnect";
                 }
                 if (connection.messageId) {
-                    qs += "&messageId=" + connection.messageId;
+                    qs += "&messageId=" + window.escape(connection.messageId);
                 }
                 if (connection.groups) {
                     qs += "&groups=" + window.escape(JSON.stringify(connection.groups));
