@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
-                    Trace.TraceInformation("Sending keep alive to connection " + metadata.Connection.ConnectionId);
+                    Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
                     // If the keep alive send fails then kill the connection
                     metadata.Connection.KeepAlive()

@@ -85,13 +85,24 @@ namespace Microsoft.AspNet.SignalR
         public void AddWorker()
         {
             // Only create a new worker if everyone is busy (up to the max)
-            if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
+            if (_allocatedWorkers < MaxWorkers)
             {
-                _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
+                if (_allocatedWorkers == _busyWorkers)
+                {
+                    _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
 
-                Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                    Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
-                ThreadPool.QueueUserWorkItem(ProcessWork);
+                    ThreadPool.QueueUserWorkItem(ProcessWork);
+                }
+                else
+                {
+                    Trace.TraceInformation("Failed to add a worker because all allocated workers are not busy, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                }
+            }
+            else
+            {
+                Trace.TraceInformation("Already at max workers, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
             }
         }
 
