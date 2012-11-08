@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Core
+namespace Microsoft.AspNet.SignalR.Tests.Core
 {
     public class HubDescriptorFacts
     {

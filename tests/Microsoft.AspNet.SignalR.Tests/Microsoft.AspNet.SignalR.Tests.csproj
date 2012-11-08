@@ -57,6 +57,12 @@
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="ConfigurationManagerFacts.cs" />
+    <Compile Include="Core\Hubs\Extensions\HubManagerExtensionsFacts.cs" />
+    <Compile Include="Core\Hubs\Extensions\HubTypeExtensions.cs" />
+    <Compile Include="Core\Hubs\Extensions\MethodExtensionsFacts.cs" />
+    <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
+    <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
+    <Compile Include="Core\Hubs\TestHubs.cs" />
     <Compile Include="GroupManagerFacts.cs" />
     <Compile Include="Hosting\CookieFacts.cs" />
     <Compile Include="Hosting\HostContextExtensionsFacts.cs" />

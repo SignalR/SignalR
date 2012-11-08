@@ -79,12 +79,6 @@
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
     <Compile Include="Client\HubProxyFacts.cs" />
-    <Compile Include="Core\Hubs\Extensions\HubManagerExtensionsFacts.cs" />
-    <Compile Include="Core\Hubs\Extensions\HubTypeExtensions.cs" />
-    <Compile Include="Core\Hubs\Extensions\MethodExtensionsFacts.cs" />
-    <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
-    <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
-    <Compile Include="Core\Hubs\TestHubs.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.SignalR.Hubs;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Core.Hubs
+namespace Microsoft.AspNet.SignalR.Tests.Core.Hubs
 {
     // These classes are used by the Core/Hubs XUnit tests.
 
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Core.Hubs
     {
     }
 
-    [HubName("HubWithAttribute")]
+    [HubName("CoreHubWithAttribute")]
     public class CoreTestHubWithAttribute : Hub
     {
     }

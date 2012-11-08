@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNet.SignalR.FunctionalTests.Core.Hubs;
+﻿using Microsoft.AspNet.SignalR.Tests.Core.Hubs;
 using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Core
+namespace Microsoft.AspNet.SignalR.Tests.Core
 {
     public class HubTypeExtensions
     {
@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Core
         {
             var hubName = typeof(CoreTestHubWithAttribute).GetHubName();
 
-            Assert.Equal(hubName, "HubWithAttribute");
+            Assert.Equal(hubName, "CoreHubWithAttribute");
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Core
         {
             var hubName = typeof(CoreTestHubWithAttribute).GetHubAttributeName();
 
-            Assert.Equal(hubName, "HubWithAttribute");
+            Assert.Equal(hubName, "CoreHubWithAttribute");
         }
 
         [Fact]
