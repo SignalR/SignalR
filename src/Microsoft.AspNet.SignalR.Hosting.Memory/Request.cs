@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             Headers = new NameValueCollection();
             ServerVariables = new NameValueCollection();
             QueryString = HttpUtility.ParseDelimited(Url.Query.TrimStart('?'));
+            Cookies = new RequestCookieCollection();
 
             if (postData != null)
             {
@@ -116,6 +117,19 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         {
             // TODO: Add support
             throw new NotSupportedException();
+        }
+
+        private class RequestCookieCollection : IRequestCookieCollection
+        {
+            public Cookie this[string name]
+            {
+                get { return null; }
+            }
+
+            public int Count
+            {
+                get { return 0; }
+            }
         }
     }
 }
