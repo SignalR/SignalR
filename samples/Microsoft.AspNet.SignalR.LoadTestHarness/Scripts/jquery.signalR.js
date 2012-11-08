@@ -75,12 +75,6 @@
             if (expectedState === connection.state) {
                 connection.state = newState;
 
-                if (newState === signalR.connectionState.connected) {
-                    // Clear the currently joined groups every time a new connection is established.
-                    // If the client gets resubscribed to groups, it will be notified.
-                    connection.groups = { };
-                }
-
                 $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }
@@ -134,7 +128,6 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
-            this.keepAliveData = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
@@ -145,6 +138,10 @@
         logging: false,
 
         state: signalR.connectionState.disconnected,
+
+        groups: {},
+
+        keepAliveData: {},
 
         reconnectDelay: 2000,
 
@@ -618,7 +615,7 @@
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id),
-                groups = [];
+                groups = this.getGroups(connection);
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
@@ -633,11 +630,7 @@
                 if (connection.messageId) {
                     qs += "&messageId=" + window.escape(connection.messageId);
                 }
-                if (connection.groups) {
-                    $.each(connection.groups, function (group, _) {
-                        // Add keys from connection.groups without the # prefix
-                        groups.push(group.substr(1));
-                    });
+                if (groups.length !== 0) {
                     qs += "&groups=" + window.escape(JSON.stringify(groups));
                 }
             }
@@ -645,6 +638,54 @@
             url = this.addQs(url, connection);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
+        },
+
+        maximizePersistentResponse: function (minPersistentResponse) {
+            return {
+                MessageId: minPersistentResponse.C,
+                Messages: minPersistentResponse.M,
+                Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
+                TimedOut: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
+                LongPollDelay: minPersistentResponse.L,
+                ResetGroups: minPersistentResponse.R,
+                AddedGroups: minPersistentResponse.G,
+                RemovedGroups: minPersistentResponse.g
+            };
+        },
+
+        updateGroups: function (connection, resetGroups, addedGroups, removedGroups) {
+            // Use the keys in connection.groups object as a set of groups.
+            // Prefix all group names with # so we don't conflict with the object's prototype or __proto__.
+            function addGroups(groups) {
+                $.each(groups, function (_, group) {
+                    connection.groups['#' + group] = true;
+                });
+            }
+
+            if (resetGroups) {
+                connection.groups = {};
+                addGroups(resetGroups);
+            } else {
+                if (addedGroups) {
+                    addGroups(addedGroups);
+                }
+                if (removedGroups) {
+                    $.each(removedGroups, function (_, group) {
+                        delete connection.groups['# ' + group];
+                    });
+                }
+            }
+        },
+
+        getGroups: function (connection) {
+            var groups = [];
+            if (connection.groups) {
+                $.each(connection.groups, function (group, _) {
+                    // Add keys from connection.groups without the # prefix
+                    groups.push(group.substr(1));
+                });
+            }
+            return groups;
         },
 
         ajaxSend: function (connection, data) {
@@ -715,14 +756,7 @@
                     return;
                 }
 
-                data = {
-                    MessageId: minData.C,
-                    Messages: minData.M,
-                    Disconnect: typeof (minData.D) !== "undefined" ? true : false,
-                    TimedOut: typeof (minData.T) !== "undefined" ? true : false,
-                    AddedGroups: minData.G,
-                    RemovedGroups: minData.g
-                };
+                data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server");
@@ -731,6 +765,8 @@
                     connection.stop(false, false);
                     return;
                 }
+
+                this.updateGroups(connection, data.ResetGroups, data.AddedGroups, data.RemovedGroups);
 
                 if (data.Messages) {
                     $.each(data.Messages, function () {
@@ -746,19 +782,6 @@
 
                 if (data.MessageId) {
                     connection.messageId = data.MessageId;
-                }
-
-                // Use the keys in connection.groups object as a set of groups.
-                // Prefix all group names with # so we don't conflict with the object's prototype or __proto__.
-                if (data.AddedGroups) {
-                    $.each(data.AddedGroups, function(_, group) {
-                        connection.groups['#' + group] = true;
-                    });
-                }
-                if (data.RemovedGroups) {
-                    $.each(data.AddedGroups, function (_, group) {
-                        delete connection.groups['# ' + group];
-                    });
                 }
             }
         },
@@ -1425,12 +1448,7 @@
                                 data;
 
                             if (minData) {
-                                data = {
-                                    // data.L is PersistentResponse.TransportData.LongPollDelay
-                                    LongPollDelay: minData.L,
-                                    TimedOut: typeof (minData.T) != "undefined" ? true : false,
-                                    Disconnect: typeof (minData.D) != "undefined" ? true : false
-                                };
+                                data = transportLogic.maximizePersistentResponse(minData);
                             }
 
                             if (initialConnectFired === false) {
@@ -1785,12 +1803,7 @@
                     callback.method.call(callback.scope, data);
                 }
             } else {
-                data = {
-                    Hub: minData.H,
-                    Method: minData.M,
-                    Args: minData.A,
-                    State: minData.S
-                };
+                data = this._maximizeClientHubInvocation(minData);
 
                 // We received a client invocation request, i.e. broadcast from server hub
                 connection.log("Triggering client hub event '" + data.Method + "' on hub '" + data.Hub + "'.");
@@ -1807,6 +1820,15 @@
                 $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
             }
         });
+    };
+
+    hubConnection.fn._maximizeClientHubInvocation = function (minClientHubInvocation) {
+        return {
+            Hub: minClientHubInvocation.H,
+            Method: minClientHubInvocation.M,
+            Args: minClientHubInvocation.A,
+            State: minClientHubInvocation.S
+        };
     };
 
     hubConnection.fn._registerSubscribedHubs = function () {

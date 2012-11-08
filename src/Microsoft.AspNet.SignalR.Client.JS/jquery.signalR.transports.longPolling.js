@@ -64,12 +64,7 @@
                                 data;
 
                             if (minData) {
-                                data = {
-                                    // data.L is PersistentResponse.TransportData.LongPollDelay
-                                    LongPollDelay: minData.L,
-                                    TimedOut: typeof (minData.T) != "undefined" ? true : false,
-                                    Disconnect: typeof (minData.D) != "undefined" ? true : false
-                                };
+                                data = transportLogic.maximizePersistentResponse(minData);
                             }
 
                             if (initialConnectFired === false) {

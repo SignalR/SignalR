@@ -224,12 +224,7 @@
                     callback.method.call(callback.scope, data);
                 }
             } else {
-                data = {
-                    Hub: minData.H,
-                    Method: minData.M,
-                    Args: minData.A,
-                    State: minData.S
-                };
+                data = this._maximizeClientHubInvocation(minData);
 
                 // We received a client invocation request, i.e. broadcast from server hub
                 connection.log("Triggering client hub event '" + data.Method + "' on hub '" + data.Hub + "'.");
@@ -246,6 +241,15 @@
                 $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
             }
         });
+    };
+
+    hubConnection.fn._maximizeClientHubInvocation = function (minClientHubInvocation) {
+        return {
+            Hub: minClientHubInvocation.H,
+            Method: minClientHubInvocation.M,
+            Args: minClientHubInvocation.A,
+            State: minClientHubInvocation.S
+        };
     };
 
     hubConnection.fn._registerSubscribedHubs = function () {

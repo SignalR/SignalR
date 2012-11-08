@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.Configuration.KeepAlive = null;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                     host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
-                    host.MapConnection<MyRejoinGroupConnection>("/groups");
+                    host.MapConnection<MyRejoinGroupsConnection>("/groups");
 
                     var connection = new Client.Connection("http://foo/groups");
                     var list = new List<string>();
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.Configuration.KeepAlive = null;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                     host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
-                    host.MapConnection<MyRejoinGroupConnection>("/groups");
+                    host.MapConnection<MyRejoinGroupsConnection>("/groups");
 
                     var connection = new Client.Connection("http://foo/groups");
                     var inGroupOnReconnect = new List<bool>();
@@ -399,20 +399,20 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Reconnected += () =>
                     {
-                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyRejoinGroupConnection).FullName + ".test"));
+                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyRejoinGroupsConnection).FullName + ".test"));
 
                         connection.Send(new { type = 3, group = "test", message = "Reconnected" }).Wait();
                     };
 
                     connection.Start(host).Wait();
 
-                    // Join the group 
+                    // Join the group
                     connection.Send(new { type = 1, group = "test" }).Wait();
 
+                    // Force reconnect
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
                     Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
-
                     Assert.True(inGroupOnReconnect.Count > 0);
                     Assert.True(inGroupOnReconnect.All(b => b));
 
@@ -498,7 +498,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
     }
 
-    public class MyRejoinGroupConnection : MyGroupConnection
+    public class MyRejoinGroupsConnection : MyGroupConnection
     {
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
         {
