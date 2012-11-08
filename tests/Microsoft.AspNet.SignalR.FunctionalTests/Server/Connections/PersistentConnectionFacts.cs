@@ -377,6 +377,49 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
+            [Fact(Skip = "Issue #938")]
+            public void ClientGroupsSyncWithServerGroupsOnReconnect()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configuration.KeepAlive = null;
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
+                    host.MapConnection<MyRejoinGroupConnection>("/groups");
+
+                    var connection = new Client.Connection("http://foo/groups");
+                    var inGroupOnReconnect = new List<bool>();
+                    var wh = new ManualResetEventSlim();
+
+                    connection.Received += message =>
+                    {
+                        Assert.Equal("Reconnected", message);
+                        wh.Set();
+                    };
+
+                    connection.Reconnected += () =>
+                    {
+                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyRejoinGroupConnection).FullName + ".test"));
+
+                        connection.Send(new { type = 3, group = "test", message = "Reconnected" }).Wait();
+                    };
+
+                    connection.Start(host).Wait();
+
+                    // Join the group 
+                    connection.Send(new { type = 1, group = "test" }).Wait();
+
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
+
+                    Assert.True(inGroupOnReconnect.Count > 0);
+                    Assert.True(inGroupOnReconnect.All(b => b));
+
+                    connection.Stop();
+                }
+            }
+
             public void Dispose()
             {
                 GC.Collect();
