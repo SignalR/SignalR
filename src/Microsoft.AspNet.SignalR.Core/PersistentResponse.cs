@@ -60,6 +60,11 @@ namespace Microsoft.AspNet.SignalR
         public bool TimedOut { get; set; }
 
         /// <summary>
+        /// True if the AddedGroups should be diffed against an empty set of groups, i.e. client groups should equal AddedGroups.
+        /// </summary>
+        public bool ResetGroups { get; set; } 
+
+        /// <summary>
         /// Groups added to the connection since the last PersistentResponse.
         /// </summary>
         public IEnumerable<string> AddedGroups  { get; set; }
@@ -101,7 +106,8 @@ namespace Microsoft.AspNet.SignalR
 
             if (AddedGroups != null)
             {
-                jsonWriter.WritePropertyName("G");
+                if (ResetGroups) jsonWriter.WritePropertyName("R");
+                else             jsonWriter.WritePropertyName("G");
                 WriteJsonArray(jsonWriter, AddedGroups);
             }
             

@@ -217,6 +217,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
+                UpdateGroups(connection, resetGroups: result["R"], addedGroups: result["G"], removedGroups: result["g"]);
+
                 var messages = result["M"] as JArray;
                 if (messages != null)
                 {
@@ -239,25 +241,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     }
 
                     connection.MessageId = result["C"].Value<string>();
-
-                    var addedGroups = result["G"];
-                    var removedGroups = result["g"];
-
-                    if (addedGroups != null)
-                    {
-                        foreach (var group in addedGroups)
-                        {
-                            connection.Groups.Add(group.ToString());
-                        }
-                    }
-
-                    if (removedGroups != null)
-                    {
-                        foreach (var group in removedGroups)
-                        {
-                            connection.Groups.Remove(group.ToString());
-                        }
-                    }
                 }
             }
             catch (Exception ex)
@@ -268,6 +251,31 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 Debug.WriteLine("Failed to response: {0}", ex);
 #endif
                 connection.OnError(ex);
+            }
+        }
+
+        private static void UpdateGroups(IConnection connection, IEnumerable<JToken> resetGroups, IEnumerable<JToken> addedGroups, IEnumerable<JToken> removedGroups)
+        {
+            if (resetGroups != null)
+            {
+                connection.Groups.Clear();
+                EnumerateJTokens(resetGroups, connection.Groups.Add);
+            }
+            else
+            {
+                EnumerateJTokens(addedGroups, connection.Groups.Add);
+                EnumerateJTokens(removedGroups, g => connection.Groups.Remove(g));
+            }
+        }
+
+        private static void EnumerateJTokens(IEnumerable<JToken> items, Action<string> process)
+        {
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    process(item.ToString());
+                }
             }
         }
 

@@ -24,14 +24,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private IClientTransport _transport;
 
-        // The groups the connection is currently subscribed to
-        private HashSet<string> _groups;
-
         // The default connection state is disconnected
         private ConnectionState _state = ConnectionState.Disconnected;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
+
+        // The groups the connection is currently subscribed to
+        private readonly HashSet<string> _groups;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -288,12 +288,6 @@ namespace Microsoft.AspNet.SignalR.Client
             // If we're in the expected old state then change state and return true
             if (_state == oldState)
             {
-                if (newState == ConnectionState.Connected)
-                {
-                    // Clear the currently joined groups every time a new connection is established.
-                    // If the client gets resubscribed to groups, it will be notified.
-                    ((IConnection)this).Groups.Clear();
-                }
                 State = newState;
                 return true;
             }

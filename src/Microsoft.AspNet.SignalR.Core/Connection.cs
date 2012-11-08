@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -19,7 +18,6 @@ namespace Microsoft.AspNet.SignalR
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
         private readonly DiffSet<string> _groups;
-        private ICollection<string> _lastGroups;
         private readonly IPerformanceCounterManager _counters;
 
         private bool _disconnected;
@@ -43,7 +41,6 @@ namespace Microsoft.AspNet.SignalR
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals, StringComparer.OrdinalIgnoreCase);
             _groups = new DiffSet<string>(groups);
-            _lastGroups = new Collection<string>();
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
