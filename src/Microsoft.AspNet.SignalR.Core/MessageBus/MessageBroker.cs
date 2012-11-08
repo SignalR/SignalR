@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.SignalR
         private readonly IPerformanceCounterManager _counters;
 
         // The maximum number of workers (threads) allowed to process all incoming messages
-        private static readonly int MaxWorkers = 3 * Environment.ProcessorCount;
+        private readonly int _maxWorkers;
 
         // The maximum number of workers that can be left to idle (not busy but allocated)
-        private static readonly int MaxIdleWorkers = Environment.ProcessorCount;
+        private readonly int _maxIdleWorkers;
 
         // The number of allocated workers (currently running)
         private int _allocatedWorkers;
@@ -37,8 +37,15 @@ namespace Microsoft.AspNet.SignalR
         private bool _disposed;
 
         public MessageBroker(IPerformanceCounterManager performanceCounterManager)
+            : this(performanceCounterManager, 3 * Environment.ProcessorCount, Environment.ProcessorCount)
+        {
+        }
+
+        public MessageBroker(IPerformanceCounterManager performanceCounterManager, int maxWorkers, int maxIdleWorkers)
         {
             _counters = performanceCounterManager;
+            _maxWorkers = maxWorkers;
+            _maxIdleWorkers = maxIdleWorkers;
         }
 
         public TraceSource Trace
@@ -85,7 +92,7 @@ namespace Microsoft.AspNet.SignalR
         public void AddWorker()
         {
             // Only create a new worker if everyone is busy (up to the max)
-            if (_allocatedWorkers < MaxWorkers)
+            if (_allocatedWorkers < _maxWorkers)
             {
                 if (_allocatedWorkers == _busyWorkers)
                 {
@@ -170,12 +177,12 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
-            Debug.Assert(_allocatedWorkers <= MaxWorkers, "How did we pass the max?");
+            Debug.Assert(_allocatedWorkers <= _maxWorkers, "How did we pass the max?");
 
             // If we're withing the acceptable limit of idleness, just keep running
             int idleWorkers = _allocatedWorkers - _busyWorkers;
 
-            if (subscription != null || idleWorkers <= MaxIdleWorkers)
+            if (subscription != null || idleWorkers <= _maxIdleWorkers)
             {
                 // We already have a subscription doing work so skip the queue
                 if (subscription == null)
