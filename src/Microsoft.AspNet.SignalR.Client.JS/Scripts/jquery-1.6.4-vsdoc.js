@@ -4,11 +4,11 @@
 * intended to be used only for design-time IntelliSense.  Please use the
 * standard jQuery library for all production use.
 *
-* Comment version: 1.6.2
+* Comment version: 1.6.4
 */
 
 /*!
-* jQuery JavaScript Library v1.6.2
+* jQuery JavaScript Library v1.6.4
 * http://jquery.com/
 *
 * Distributed in whole under the terms of the MIT
@@ -99,7 +99,7 @@ jQuery.Deferred = function( func ) {
 								if ( returned && jQuery.isFunction( returned.promise ) ) {
 									returned.promise().then( newDefer.resolve, newDefer.reject );
 								} else {
-									newDefer[ action ]( returned );
+									newDefer[ action + "With" ]( this === deferred ? newDefer : this, [ returned ] );
 								}
 							});
 						} else {
@@ -435,7 +435,7 @@ jQuery.ajax = function( url, options ) {
 		// Callback for when everything is done
 		// It is defined here because jslint complains if it is declared
 		// at the end of the function (which would be more logical and readable)
-		function done( status, statusText, responses, headers ) {
+		function done( status, nativeStatusText, responses, headers ) {
 
 			// Called once
 			if ( state === 2 ) {
@@ -458,11 +458,12 @@ jQuery.ajax = function( url, options ) {
 			responseHeadersString = headers || "";
 
 			// Set readyState
-			jqXHR.readyState = status ? 4 : 0;
+			jqXHR.readyState = status > 0 ? 4 : 0;
 
 			var isSuccess,
 				success,
 				error,
+				statusText = nativeStatusText,
 				response = responses ? ajaxHandleResponses( s, jqXHR, responses ) : undefined,
 				lastModified,
 				etag;
@@ -514,7 +515,7 @@ jQuery.ajax = function( url, options ) {
 
 			// Set data for the fake xhr object
 			jqXHR.status = status;
-			jqXHR.statusText = statusText;
+			jqXHR.statusText = "" + ( nativeStatusText || statusText );
 
 			// Success/Error
 			if ( isSuccess ) {
@@ -536,7 +537,7 @@ jQuery.ajax = function( url, options ) {
 			completeDeferred.resolveWith( callbackContext, [ jqXHR, statusText ] );
 
 			if ( fireGlobals ) {
-				globalEventContext.trigger( "ajaxComplete", [ jqXHR, s] );
+				globalEventContext.trigger( "ajaxComplete", [ jqXHR, s ] );
 				// Handle the global AJAX counter
 				if ( !( --jQuery.active ) ) {
 					jQuery.event.trigger( "ajaxStop" );
@@ -617,6 +618,8 @@ jQuery.ajax = function( url, options ) {
 			// If data is available, append data to url
 			if ( s.data ) {
 				s.url += ( rquery.test( s.url ) ? "&" : "?" ) + s.data;
+				// #9682: remove data so that it's not used in an eventual retry
+				delete s.data;
 			}
 
 			// Get ifModifiedKey before adding the anti-cache parameter
@@ -654,7 +657,7 @@ jQuery.ajax = function( url, options ) {
 		jqXHR.setRequestHeader(
 			"Accept",
 			s.dataTypes[ 0 ] && s.accepts[ s.dataTypes[0] ] ?
-				s.accepts[ s.dataTypes[0] ] + ( s.dataTypes[ 0 ] !== "*" ? ", */*; q=0.01" : "" ) :
+				s.accepts[ s.dataTypes[0] ] + ( s.dataTypes[ 0 ] !== "*" ? ", " + allTypes + "; q=0.01" : "" ) :
 				s.accepts[ "*" ]
 		);
 
@@ -700,7 +703,7 @@ jQuery.ajax = function( url, options ) {
 				transport.send( requestHeaders, done );
 			} catch (e) {
 				// Propagate exception as error if not done
-				if ( status < 2 ) {
+				if ( state < 2 ) {
 					done( -1, e );
 				// Simply rethrow otherwise
 				} else {
@@ -763,8 +766,9 @@ jQuery.ajaxSettings = { "url": 'http://localhost:25813/',
 "contents": {},
 "responseFields": {},
 "converters": {},
+"flatOptions": {},
 "jsonp": 'callback' };
-jQuery.ajaxSetup = function ( target, settings ) {
+jQuery.ajaxSetup = function( target, settings ) {
 /// <summary>
 ///     Set default values for future Ajax requests.
 /// </summary>
@@ -772,22 +776,15 @@ jQuery.ajaxSetup = function ( target, settings ) {
 ///     A set of key/value pairs that configure the default Ajax request. All options are optional.
 /// </param>
 
-		if ( !settings ) {
-			// Only one parameter, we extend ajaxSettings
-			settings = target;
-			target = jQuery.extend( true, jQuery.ajaxSettings, settings );
+		if ( settings ) {
+			// Building a settings object
+			ajaxExtend( target, jQuery.ajaxSettings );
 		} else {
-			// target was provided, we extend into it
-			jQuery.extend( true, target, jQuery.ajaxSettings, settings );
+			// Extending ajaxSettings
+			settings = target;
+			target = jQuery.ajaxSettings;
 		}
-		// Flatten fields we don't want deep extended
-		for( var field in { context: 1, url: 1 } ) {
-			if ( field in settings ) {
-				target[ field ] = settings[ field ];
-			} else if( field in jQuery.ajaxSettings ) {
-				target[ field ] = jQuery.ajaxSettings[ field ];
-			}
-		}
+		ajaxExtend( target, settings );
 		return target;
 	};
 jQuery.ajaxTransport = function( dataTypeExpression, func ) {
@@ -851,14 +848,11 @@ jQuery.attr = function( elem, name, value, pass ) {
 			if ( !hooks ) {
 				// Use boolHook for boolean attributes
 				if ( rboolean.test( name ) ) {
-
 					hooks = boolHook;
 
-				// Use formHook for forms and if the name contains certain characters
-				} else if ( formHook && name !== "className" &&
-					(jQuery.nodeName( elem, "form" ) || rinvalidChar.test( name )) ) {
-
-					hooks = formHook;
+				// Use nodeHook if available( IE6/7 )
+				} else if ( nodeHook ) {
+					hooks = nodeHook;
 				}
 			}
 		}
@@ -924,8 +918,8 @@ jQuery.attrFn = { "val": true,
 "keyup": true,
 "error": true };
 jQuery.attrHooks = { "type": {},
-"tabIndex": {},
-"value": {} };
+"value": {},
+"tabIndex": {} };
 jQuery.bindReady = function() {
 
 		if ( readyList ) {
@@ -1021,7 +1015,7 @@ jQuery.buildFragment = function( args, nodes, scripts ) {
 jQuery.cache = {};
 jQuery.camelCase = function( string ) {
 
-		return string.replace( rdashAlpha, fcamelCase );
+		return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
 	};
 jQuery.clean = function( elems, context, fragment, scripts ) {
 
@@ -1206,7 +1200,10 @@ jQuery.clone = function( elem, dataAndEvents, deepDataAndEvents ) {
 			// with an element if you are cloning the body and one of the
 			// elements on the page has a name or id of "length"
 			for ( i = 0; srcElements[i]; ++i ) {
-				cloneFixAttributes( srcElements[i], destElements[i] );
+				// Ensure that the destination node is not null; Fixes #9587
+				if ( destElements[i] ) {
+					cloneFixAttributes( srcElements[i], destElements[i] );
+				}
 			}
 		}
 
@@ -1231,13 +1228,13 @@ jQuery.clone = function( elem, dataAndEvents, deepDataAndEvents ) {
 	};
 jQuery.contains = function( a, b ) {
 /// <summary>
-///     Check to see if a DOM node is within another DOM node.
+///     Check to see if a DOM element is within another DOM element.
 /// </summary>
 /// <param name="a" domElement="true">
 ///     The DOM element that may contain the other element.
 /// </param>
 /// <param name="b" domElement="true">
-///     The DOM node that may be contained by the other element.
+///     The DOM element that may be contained by the other element.
 /// </param>
 /// <returns type="Boolean" />
 
@@ -1324,7 +1321,9 @@ jQuery.data = function( elem, name, data, pvt /* Internal Use Only */ ) {
 			return;
 		}
 
-		var internalKey = jQuery.expando, getByName = typeof name === "string", thisCache,
+		var thisCache, ret,
+			internalKey = jQuery.expando,
+			getByName = typeof name === "string",
 
 			// We have to handle DOM nodes and JS objects differently because IE6-7
 			// can't GC object references properly across the DOM-JS boundary
@@ -1340,7 +1339,7 @@ jQuery.data = function( elem, name, data, pvt /* Internal Use Only */ ) {
 
 		// Avoid doing any more work than we need to when trying to get data on an
 		// object that has no data at all
-		if ( (!id || (pvt && id && !cache[ id ][ internalKey ])) && getByName && data === undefined ) {
+		if ( (!id || (pvt && id && (cache[ id ] && !cache[ id ][ internalKey ]))) && getByName && data === undefined ) {
 			return;
 		}
 
@@ -1399,10 +1398,24 @@ jQuery.data = function( elem, name, data, pvt /* Internal Use Only */ ) {
 			return thisCache[ internalKey ] && thisCache[ internalKey ].events;
 		}
 
-		return getByName ? 
-			// Check for both converted-to-camel and non-converted data property names
-			thisCache[ jQuery.camelCase( name ) ] || thisCache[ name ] :
-			thisCache;
+		// Check for both converted-to-camel and non-converted data property names
+		// If a data property was specified
+		if ( getByName ) {
+
+			// First Try to find as-is property data
+			ret = thisCache[ name ];
+
+			// Test for null|undefined property data
+			if ( ret == null ) {
+
+				// Try to find the camelCased property
+				ret = thisCache[ jQuery.camelCase( name ) ];
+			}
+		} else {
+			ret = thisCache;
+		}
+
+		return ret;
 	};
 jQuery.dequeue = function( elem, type ) {
 /// <summary>
@@ -1524,7 +1537,7 @@ jQuery.event = { "global": {},
 "props": ['altKey','attrChange','attrName','bubbles','button','cancelable','charCode','clientX','clientY','ctrlKey','currentTarget','data','detail','eventPhase','fromElement','handler','keyCode','layerX','layerY','metaKey','newValue','offsetX','offsetY','pageX','pageY','prevValue','relatedNode','relatedTarget','screenX','screenY','shiftKey','srcElement','target','toElement','view','wheelDelta','which'],
 "guid": 100000000,
 "special": {},
-"triggered":  };
+"triggered":  false};
 jQuery.expr = { "order": ['ID','CLASS','NAME','TAG'],
 "match": {},
 "leftMatch": {},
@@ -1715,7 +1728,7 @@ jQuery.find = function( query, context, extra, seed ) {
 			return oldSizzle(query, context, extra, seed);
 		};
 jQuery.fn = { "selector": '',
-"jquery": '1.6.2',
+"jquery": '1.6.4',
 "length": 0 };
 jQuery.fragments = {};
 jQuery.fx = function( elem, options, prop ) {
@@ -1784,7 +1797,6 @@ jQuery.getScript = function( url, callback ) {
 /// <param name="callback" type="Function">
 ///     A callback function that is executed if the request succeeds.
 /// </param>
-/// <returns type="XMLHttpRequest" />
 
 		return jQuery.get( url, undefined, callback, "script" );
 	};
@@ -1855,7 +1867,7 @@ jQuery.holdReady = function( hold ) {
 /// <param name="hold" type="Boolean">
 ///     Indicates whether the ready hold is being requested or released
 /// </param>
-/// <returns type="Boolean" />
+/// <returns type="undefined" />
 
 		if ( hold ) {
 			jQuery.readyWait++;
@@ -1875,6 +1887,9 @@ jQuery.inArray = function( elem, array ) {
 /// </param>
 /// <returns type="Number" />
 
+		if ( !array ) {
+			return -1;
+		}
 
 		if ( indexOf ) {
 			return indexOf.call( array, elem );
@@ -1933,10 +1948,15 @@ jQuery.isPlainObject = function( obj ) {
 			return false;
 		}
 
-		// Not own constructor property must be Object
-		if ( obj.constructor &&
-			!hasOwn.call(obj, "constructor") &&
-			!hasOwn.call(obj.constructor.prototype, "isPrototypeOf") ) {
+		try {
+			// Not own constructor property must be Object
+			if ( obj.constructor &&
+				!hasOwn.call(obj, "constructor") &&
+				!hasOwn.call(obj.constructor.prototype, "isPrototypeOf") ) {
+				return false;
+			}
+		} catch ( e ) {
+			// IE8,9 Will throw exceptions on certain host objects #9897
 			return false;
 		}
 
@@ -2207,7 +2227,7 @@ jQuery.parseJSON = function( data ) {
 		}
 		jQuery.error( "Invalid JSON: " + data );
 	};
-jQuery.parseXML = function( data , xml , tmp ) {
+jQuery.parseXML = function( data ) {
 /// <summary>
 ///     Parses a string into an XML document.
 /// </summary>
@@ -2216,22 +2236,22 @@ jQuery.parseXML = function( data , xml , tmp ) {
 /// </param>
 /// <returns type="XMLDocument" />
 
-
-		if ( window.DOMParser ) { // Standard
-			tmp = new DOMParser();
-			xml = tmp.parseFromString( data , "text/xml" );
-		} else { // IE
-			xml = new ActiveXObject( "Microsoft.XMLDOM" );
-			xml.async = "false";
-			xml.loadXML( data );
+		var xml, tmp;
+		try {
+			if ( window.DOMParser ) { // Standard
+				tmp = new DOMParser();
+				xml = tmp.parseFromString( data , "text/xml" );
+			} else { // IE
+				xml = new ActiveXObject( "Microsoft.XMLDOM" );
+				xml.async = "false";
+				xml.loadXML( data );
+			}
+		} catch( e ) {
+			xml = undefined;
 		}
-
-		tmp = xml.documentElement;
-
-		if ( ! tmp || ! tmp.nodeName || tmp.nodeName === "parsererror" ) {
+		if ( !xml || !xml.documentElement || xml.getElementsByTagName( "parsererror" ).length ) {
 			jQuery.error( "Invalid XML: " + data );
 		}
-
 		return xml;
 	};
 jQuery.post = function( url, data, callback, type ) {
@@ -2293,7 +2313,7 @@ jQuery.prop = function( elem, name, value ) {
 			}
 
 		} else {
-			if ( hooks && "get" in hooks && (ret = hooks.get( elem, name )) !== undefined ) {
+			if ( hooks && "get" in hooks && (ret = hooks.get( elem, name )) !== null ) {
 				return ret;
 
 			} else {
@@ -2313,7 +2333,8 @@ jQuery.propFix = { "tabindex": 'tabIndex',
 "usemap": 'useMap',
 "frameborder": 'frameBorder',
 "contenteditable": 'contentEditable' };
-jQuery.propHooks = { "selected": {} };
+jQuery.propHooks = { "tabIndex": {},
+"selected": {} };
 jQuery.proxy = function( fn, context ) {
 /// <summary>
 ///     Takes a function and returns a new one that will always have a particular context.
@@ -2416,14 +2437,9 @@ jQuery.removeAttr = function( elem, name ) {
 		var propName;
 		if ( elem.nodeType === 1 ) {
 			name = jQuery.attrFix[ name ] || name;
-		
-			if ( jQuery.support.getSetAttribute ) {
-				// Use removeAttribute in browsers that support it
-				elem.removeAttribute( name );
-			} else {
-				jQuery.attr( elem, name, "" );
-				elem.removeAttributeNode( elem.getAttributeNode( name ) );
-			}
+
+			jQuery.attr( elem, name, "" );
+			elem.removeAttribute( name );
 
 			// Set corresponding property to false for boolean attributes
 			if ( rboolean.test( name ) && (propName = jQuery.propFix[ name ] || name) in elem ) {
@@ -2447,7 +2463,12 @@ jQuery.removeData = function( elem, name, pvt /* Internal Use Only */ ) {
 			return;
 		}
 
-		var internalKey = jQuery.expando, isNode = elem.nodeType,
+		var thisCache,
+
+			// Reference to internal data cache key
+			internalKey = jQuery.expando,
+
+			isNode = elem.nodeType,
 
 			// See jQuery.data for more information
 			cache = isNode ? jQuery.cache : elem,
@@ -2462,9 +2483,16 @@ jQuery.removeData = function( elem, name, pvt /* Internal Use Only */ ) {
 		}
 
 		if ( name ) {
-			var thisCache = pvt ? cache[ id ][ internalKey ] : cache[ id ];
+
+			thisCache = pvt ? cache[ id ][ internalKey ] : cache[ id ];
 
 			if ( thisCache ) {
+
+				// Support interoperable removal of hyphenated or camelcased keys
+				if ( !thisCache[ name ] ) {
+					name = jQuery.camelCase( name );
+				}
+
 				delete thisCache[ name ];
 
 				// If there is no data left in the cache, we want to continue
@@ -2491,7 +2519,8 @@ jQuery.removeData = function( elem, name, pvt /* Internal Use Only */ ) {
 		// Browsers that fail expando deletion also refuse to delete expandos on
 		// the window, but it will allow it on all other JS objects; other browsers
 		// don't care
-		if ( jQuery.support.deleteExpando || cache != window ) {
+		// Ensure that `cache` is not a window object #10080
+		if ( jQuery.support.deleteExpando || !cache.setInterval ) {
 			delete cache[ id ];
 		} else {
 			cache[ id ] = null;
@@ -2589,16 +2618,16 @@ jQuery.style = function( elem, name, value, extra ) {
 		if ( value !== undefined ) {
 			type = typeof value;
 
-			// Make sure that NaN and null values aren't set. See: #7116
-			if ( type === "number" && isNaN( value ) || value == null ) {
-				return;
-			}
-
 			// convert relative number strings (+= or -=) to relative numbers. #7345
-			if ( type === "string" && rrelNum.test( value ) ) {
-				value = +value.replace( rrelNumFilter, "" ) + parseFloat( jQuery.css( elem, name ) );
+			if ( type === "string" && (ret = rrelNum.exec( value )) ) {
+				value = ( +( ret[1] + 1) * +ret[2] ) + parseFloat( jQuery.css( elem, name ) );
 				// Fixes bug #9237
 				type = "number";
+			}
+
+			// Make sure that NaN and null values aren't set. See: #7116
+			if ( value == null || type === "number" && isNaN( value ) ) {
+				return;
 			}
 
 			// If a number was passed in, add 'px' to the (except for certain CSS properties)
@@ -2671,7 +2700,7 @@ jQuery.support = { "leadingWhitespace": true,
 "noCloneChecked": false,
 "optDisabled": true,
 "radioValue": false,
-"checkClone": ,
+"checkClone": false,
 "appendChecked": true,
 "boxModel": true,
 "reliableHiddenOffsets": true,
@@ -3330,7 +3359,7 @@ jQuery.prototype.bind = function( type, data, fn ) {
 /// <summary>
 ///     Attach a handler to an event for the elements.
 ///     &#10;1 - bind(eventType, eventData, handler(eventObject)) 
-///     &#10;2 - bind(eventType, eventData, false) 
+///     &#10;2 - bind(eventType, eventData, preventBubble) 
 ///     &#10;3 - bind(events)
 /// </summary>
 /// <param name="type" type="String">
@@ -3502,7 +3531,7 @@ jQuery.prototype.clone = function( dataAndEvents, deepDataAndEvents ) {
 ///     &#10;2 - clone(withDataAndEvents, deepWithDataAndEvents)
 /// </summary>
 /// <param name="dataAndEvents" type="Boolean">
-///     A Boolean indicating whether event handlers and data should be copied along with the elements. The default value is false. *For 1.5.0 the default value is incorrectly true. This will be changed back to false in 1.5.1 and up.
+///     A Boolean indicating whether event handlers and data should be copied along with the elements. The default value is false. *In jQuery 1.5.0 the default value was incorrectly true; it was changed back to false in 1.5.1 and up.
 /// </param>
 /// <param name="deepDataAndEvents" type="Boolean">
 ///     A Boolean indicating whether event handlers and data for all children of the cloned element should be copied. By default its value matches the first argument's value (which defaults to false).
@@ -4381,7 +4410,7 @@ jQuery.prototype.hasClass = function( selector ) {
 
 		var className = " " + selector + " ";
 		for ( var i = 0, l = this.length; i < l; i++ ) {
-			if ( (" " + this[i].className + " ").replace(rclass, " ").indexOf( className ) > -1 ) {
+			if ( this[i].nodeType === 1 && (" " + this[i].className + " ").replace(rclass, " ").indexOf( className ) > -1 ) {
 				return true;
 			}
 		}
@@ -4417,9 +4446,10 @@ jQuery.prototype.height = function( size ) {
 		if ( jQuery.isWindow( elem ) ) {
 			// Everyone else use document.documentElement or document.body depending on Quirks vs Standards mode
 			// 3rd condition allows Nokia support, as it supports the docElem prop but not CSS1Compat
-			var docElemProp = elem.document.documentElement[ "client" + name ];
+			var docElemProp = elem.document.documentElement[ "client" + name ],
+				body = elem.document.body;
 			return elem.document.compatMode === "CSS1Compat" && docElemProp ||
-				elem.document.body[ "client" + name ] || docElemProp;
+				body && body[ "client" + name ] || docElemProp;
 
 		// Get document width or height
 		} else if ( elem.nodeType === 9 ) {
@@ -4566,12 +4596,17 @@ jQuery.prototype.index = function( elem ) {
 /// </param>
 /// <returns type="Number" />
 
-		if ( !elem || typeof elem === "string" ) {
-			return jQuery.inArray( this[0],
-				// If it receives a string, the selector is used
-				// If it receives nothing, the siblings are used
-				elem ? jQuery( elem ) : this.parent().children() );
+
+		// No argument, return index in parent
+		if ( !elem ) {
+			return ( this[0] && this[0].parentNode ) ? this.prevAll().length : -1;
 		}
+
+		// index in selector
+		if ( typeof elem === "string" ) {
+			return jQuery.inArray( this[0], jQuery( elem ) );
+		}
+
 		// Locate the position of the desired element
 		return jQuery.inArray(
 			// If it receives a jQuery object, the first element is used
@@ -6607,7 +6642,8 @@ jQuery.prototype.toggleClass = function( value, stateVal ) {
 ///     Add or remove one or more classes from each element in the set of matched elements, depending on either the class's presence or the value of the switch argument.
 ///     &#10;1 - toggleClass(className) 
 ///     &#10;2 - toggleClass(className, switch) 
-///     &#10;3 - toggleClass(function(index, class, switch), switch)
+///     &#10;3 - toggleClass(switch) 
+///     &#10;4 - toggleClass(function(index, class, switch), switch)
 /// </summary>
 /// <param name="value" type="String">
 ///     One or more class names (separated by spaces) to be toggled for each element in the matched set.
@@ -6876,9 +6912,10 @@ jQuery.prototype.width = function( size ) {
 		if ( jQuery.isWindow( elem ) ) {
 			// Everyone else use document.documentElement or document.body depending on Quirks vs Standards mode
 			// 3rd condition allows Nokia support, as it supports the docElem prop but not CSS1Compat
-			var docElemProp = elem.document.documentElement[ "client" + name ];
+			var docElemProp = elem.document.documentElement[ "client" + name ],
+				body = elem.document.body;
 			return elem.document.compatMode === "CSS1Compat" && docElemProp ||
-				elem.document.body[ "client" + name ] || docElemProp;
+				body && body[ "client" + name ] || docElemProp;
 
 		// Get document width or height
 		} else if ( elem.nodeType === 9 ) {
@@ -6956,7 +6993,7 @@ jQuery.prototype.wrapInner = function( html ) {
 /// <summary>
 ///     Wrap an HTML structure around the content of each element in the set of matched elements.
 ///     &#10;1 - wrapInner(wrappingElement) 
-///     &#10;2 - wrapInner(wrappingFunction)
+///     &#10;2 - wrapInner(function(index))
 /// </summary>
 /// <param name="html" type="String">
 ///     An HTML snippet, selector expression, jQuery object, or DOM element specifying the structure to wrap around the content of the matched elements.

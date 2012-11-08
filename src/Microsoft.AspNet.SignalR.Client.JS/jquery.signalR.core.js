@@ -9,7 +9,7 @@
  *
  */
 
-/// <reference path="Scripts/jquery-1.6.2.js" />
+/// <reference path="Scripts/jquery-1.6.4.js" />
 (function ($, window) {
     "use strict";
 

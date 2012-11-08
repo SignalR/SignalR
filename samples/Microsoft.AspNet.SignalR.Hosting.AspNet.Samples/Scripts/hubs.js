@@ -8,7 +8,7 @@
  *
  */
 
-/// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.2.js" />
+/// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />
 /// <reference path="jquery.signalR.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
