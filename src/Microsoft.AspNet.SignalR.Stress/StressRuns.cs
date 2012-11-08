@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Stress
@@ -158,6 +161,89 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
 
             return host;
+        }
+
+        public static IDisposable Connect_Broadcast5msg_AndDisconnect(int concurrency)
+        {
+            var host = new MemoryHost();
+            var threads = new List<Thread>();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            host.MapConnection<RawConnection>("/Raw-connection");
+
+            for (int i = 0; i < concurrency; i++)
+            {
+                var thread = new Thread(_ =>
+                {
+                    while (!cancellationTokenSource.IsCancellationRequested)
+                    {
+                        BroadcastFive(host);
+                    }
+                });
+
+                threads.Add(thread);
+                thread.Start();
+            }
+
+            return new DisposableAction(() =>
+            {
+                cancellationTokenSource.Cancel();
+
+                threads.ForEach(t => t.Join());
+
+                host.Dispose();
+            });
+        }
+
+        private static void BroadcastFive(MemoryHost host)
+        {
+            var connection = new Client.Connection("http://samples/Raw-connection");
+
+            connection.Error += e =>
+            {
+                Console.Error.WriteLine("========ERROR==========");
+                Console.Error.WriteLine(e.GetBaseException().ToString());
+                Console.Error.WriteLine("=======================");
+            };
+
+            connection.Start(new Client.Transports.ServerSentEventsTransport(host)).Wait();
+
+            try
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    var payload = new
+                    {
+                        type = MessageType.Broadcast,
+                        value = "message " + i.ToString()
+                    };
+
+                    connection.Send(payload).Wait();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("========ERROR==========");
+                Console.Error.WriteLine(ex.GetBaseException().ToString());
+                Console.Error.WriteLine("=======================");
+            }
+            finally
+            {
+                connection.Stop();
+            }
+        }
+
+        enum MessageType
+        {
+            Send,
+            Broadcast,
+            Join,
+            PrivateMessage,
+            AddToGroup,
+            RemoveFromGroup,
+            SendToGroup,
+            BroadcastExceptMe,
         }
     }
 }
