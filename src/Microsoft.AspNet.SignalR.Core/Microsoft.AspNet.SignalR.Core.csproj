@@ -58,6 +58,8 @@
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="DiffPair.cs" />
+    <Compile Include="DiffSet.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />

@@ -27,8 +27,11 @@ namespace Microsoft.AspNet.SignalR.Client
         // The default connection state is disconnected
         private ConnectionState _state = ConnectionState.Disconnected;
 
-        // Used to synchornize state changes
+        // Used to synchronize state changes
         private readonly object _stateLock = new object();
+
+        // The groups the connection is currently subscribed to
+        private readonly HashSet<string> _groups;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -94,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
             Url = url;
             QueryString = queryString;
-            Groups = Enumerable.Empty<string>();
+            _groups = new HashSet<string>();
             Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
         }
@@ -119,7 +122,10 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets or sets the groups for the connection.
         /// </summary>
-        public IEnumerable<string> Groups { get; set; }
+        public IEnumerable<string> Groups
+        {
+            get { return _groups; }
+        }
 
         /// <summary>
         /// Gets the url for the connection.
@@ -295,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Version version;
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                !(version.Major == 1 && version.Minor == 0))
+                !(version.Major == 1 && version.Minor == 1))
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IncompatibleProtocolVersion));
             }
@@ -345,6 +351,11 @@ namespace Microsoft.AspNet.SignalR.Client
         public Task Send(object value)
         {
             return Send(JsonConvert.SerializeObject(value));
+        }
+
+        ICollection<string> IConnection.Groups
+        {
+            get { return _groups; }
         }
 
         Task<T> IConnection.Send<T>(string data)

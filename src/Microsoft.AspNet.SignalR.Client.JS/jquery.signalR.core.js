@@ -73,6 +73,7 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
+
                 $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }
@@ -126,7 +127,6 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
-            this.keepAliveData = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
@@ -137,6 +137,10 @@
         logging: false,
 
         state: signalR.connectionState.disconnected,
+
+        groups: {},
+
+        keepAliveData: {},
 
         reconnectDelay: 2000,
 
@@ -327,7 +331,7 @@
                         keepAliveData.activated = false;
                     }
 
-                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.1") {
                         $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
                         deferred.reject("SignalR: Incompatible protocol version.");
                         return;

@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return _items.ContainsKey(item);
         }
 
-        public void Add(T item)
+        public bool Add(T item)
         {
-            _items.TryAdd(item, null);
+            return _items.TryAdd(item, null);
         }
 
         public bool Remove(T item)

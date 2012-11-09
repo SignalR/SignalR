@@ -138,11 +138,13 @@
             var self = this,
                 args = $.makeArray(arguments).slice(1),
                 argValues = args.map(getArgValue),
-                data = { hub: self.hubName, method: methodName, args: argValues, state: self.state, id: callbackId },
+                data = { H: self.hubName, M: methodName, A: argValues, I: callbackId },
                 d = $.Deferred(),
-                callback = function (result) {
+                callback = function (minResult) {
+                    var result = self._maximizeHubResponse(minResult);
+
                     // Update the hub state
-                    $.extend(this.state, result.State);
+                    $.extend(self.state, result.State);
 
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
@@ -158,9 +160,24 @@
 
             callbacks[callbackId.toString()] = { scope: self, method: callback };
             callbackId += 1;
+
+            if (!$.isPlainObject(self.state)) {
+                data.S = self.state;
+            }
+            
             self.connection.send(window.JSON.stringify(data));
 
             return d.promise();
+        },
+
+        _maximizeHubResponse: function (minHubResponse) {
+            return {
+                State: minHubResponse.S,
+                Result: minHubResponse.R,
+                Id: minHubResponse.I,
+                Error: minHubResponse.E,
+                StackTrace: minHubResponse.T
+            };
         }
     };
 
@@ -204,15 +221,15 @@
         connection.proxies = {};
 
         // Wire up the received handler
-        connection.received(function (data) {
-            var proxy, dataCallbackId, callback, hubName, eventName;
-            if (!data) {
+        connection.received(function (minData) {
+            var data, proxy, dataCallbackId, callback, hubName, eventName;
+            if (!minData) {
                 return;
             }
 
-            if (typeof (data.Id) !== "undefined") {
+            if (typeof (minData.I) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
-                dataCallbackId = data.Id.toString();
+                dataCallbackId = minData.I.toString();
                 callback = callbacks[dataCallbackId];
                 if (callback) {
                     // Delete the callback from the proxy
@@ -220,9 +237,11 @@
                     delete callbacks[dataCallbackId];
 
                     // Invoke the callback
-                    callback.method.call(callback.scope, data);
+                    callback.method.call(callback.scope, minData);
                 }
             } else {
+                data = this._maximizeClientHubInvocation(minData);
+
                 // We received a client invocation request, i.e. broadcast from server hub
                 connection.log("Triggering client hub event '" + data.Method + "' on hub '" + data.Hub + "'.");
 
@@ -238,6 +257,15 @@
                 $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
             }
         });
+    };
+
+    hubConnection.fn._maximizeClientHubInvocation = function (minClientHubInvocation) {
+        return {
+            Hub: minClientHubInvocation.H,
+            Method: minClientHubInvocation.M,
+            Args: minClientHubInvocation.A,
+            State: minClientHubInvocation.S
+        };
     };
 
     hubConnection.fn._registerSubscribedHubs = function () {

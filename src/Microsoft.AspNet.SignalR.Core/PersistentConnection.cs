@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.SignalR
                 KeepAlive = (keepAlive != null) ? keepAlive.Value.TotalSeconds : (double?)null,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.0"
+                ProtocolVersion = "1.1"
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))

@@ -209,15 +209,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
-                timedOut = result.Value<bool>("TimedOut");
-                disconnected = result.Value<bool>("Disconnect");
+                timedOut = result.Value<int>("T") == 1;
+                disconnected = result.Value<int>("D") == 1;
 
                 if (disconnected)
                 {
                     return;
                 }
 
-                var messages = result["Messages"] as JArray;
+                UpdateGroups(connection,
+                             resetGroups: result["R"],
+                             addedGroups: result["G"],
+                             removedGroups: result["g"]);
+
+                var messages = result["M"] as JArray;
                 if (messages != null)
                 {
                     foreach (JToken message in messages)
@@ -238,18 +243,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                     }
 
-                    connection.MessageId = result["MessageId"].Value<string>();
-
-                    var transportData = result["TransportData"] as JObject;
-
-                    if (transportData != null)
-                    {
-                        var groups = (JArray)transportData["Groups"];
-                        if (groups != null)
-                        {
-                            connection.Groups = groups.Select(token => token.Value<string>());
-                        }
-                    }
+                    connection.MessageId = result["C"].Value<string>();
                 }
             }
             catch (Exception ex)
@@ -260,6 +254,34 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 Debug.WriteLine("Failed to response: {0}", ex);
 #endif
                 connection.OnError(ex);
+            }
+        }
+
+        private static void UpdateGroups(IConnection connection,
+                                         IEnumerable<JToken> resetGroups,
+                                         IEnumerable<JToken> addedGroups,
+                                         IEnumerable<JToken> removedGroups)
+        {
+            if (resetGroups != null)
+            {
+                connection.Groups.Clear();
+                EnumerateJTokens(resetGroups, connection.Groups.Add);
+            }
+            else
+            {
+                EnumerateJTokens(addedGroups, connection.Groups.Add);
+                EnumerateJTokens(removedGroups, g => connection.Groups.Remove(g));
+            }
+        }
+
+        private static void EnumerateJTokens(IEnumerable<JToken> items, Action<string> process)
+        {
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    process(item.ToString());
+                }
             }
         }
 
