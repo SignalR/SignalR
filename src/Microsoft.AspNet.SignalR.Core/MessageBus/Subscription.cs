@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR
 
         private Task<bool> Invoke(MessageResult result, Action beforeInvoke)
         {
-            // Change the state from idle to working
+            // Change the state from idle to invoking callback
             var state = Interlocked.CompareExchange(ref _subscriptionState,
                                                     SubscriptionState.InvokingCallback,
                                                     SubscriptionState.Idle);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR
 
             return _callback.Invoke(result).ContinueWith(task =>
             {
-                // Go from idle to working
+                // Go from invoking callback to idle
                 Interlocked.CompareExchange(ref _subscriptionState,
                                             SubscriptionState.Idle,
                                             SubscriptionState.InvokingCallback);
