@@ -217,7 +217,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
-                UpdateGroups(connection, resetGroups: result["R"], addedGroups: result["G"], removedGroups: result["g"]);
+                UpdateGroups(connection,
+                             resetGroups: result["R"],
+                             addedGroups: result["G"],
+                             removedGroups: result["g"]);
 
                 var messages = result["M"] as JArray;
                 if (messages != null)
@@ -254,7 +257,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        private static void UpdateGroups(IConnection connection, IEnumerable<JToken> resetGroups, IEnumerable<JToken> addedGroups, IEnumerable<JToken> removedGroups)
+        private static void UpdateGroups(IConnection connection,
+                                         IEnumerable<JToken> resetGroups,
+                                         IEnumerable<JToken> addedGroups,
+                                         IEnumerable<JToken> removedGroups)
         {
             if (resetGroups != null)
             {

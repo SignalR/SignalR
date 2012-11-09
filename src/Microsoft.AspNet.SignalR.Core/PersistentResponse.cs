@@ -106,8 +106,14 @@ namespace Microsoft.AspNet.SignalR
 
             if (AddedGroups != null)
             {
-                if (ResetGroups) jsonWriter.WritePropertyName("R");
-                else             jsonWriter.WritePropertyName("G");
+                if (ResetGroups)
+                {
+                    jsonWriter.WritePropertyName("R");
+                }
+                else
+                {
+                    jsonWriter.WritePropertyName("G");
+                }
                 WriteJsonArray(jsonWriter, AddedGroups);
             }
             

@@ -433,6 +433,50 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
+            [Fact]
+            public void ClientGroupsSyncWithServerGroupsOnReconnectWhenNotRejoiningGroups()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configuration.KeepAlive = null;
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
+                    host.MapConnection<MyGroupConnection>("/groups");
+
+                    var connection = new Client.Connection("http://foo/groups");
+                    var inGroupOnReconnect = new List<bool>();
+                    var wh = new ManualResetEventSlim();
+
+                    connection.Received += message =>
+                    {
+                        Assert.Equal("Reconnected", message);
+                        inGroupOnReconnect.Add(!connection.Groups.Contains(typeof(MyGroupConnection).FullName + ".test"));
+                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyGroupConnection).FullName + ".test2"));
+                        wh.Set();
+                    };
+
+                    connection.Reconnected += () =>
+                    {
+                        connection.Send(new { type = 1, group = "test2" }).Wait();
+                        connection.Send(new { type = 3, group = "test2", message = "Reconnected" }).Wait();
+                    };
+
+                    connection.Start(host).Wait();
+
+                    // Join the group
+                    connection.Send(new { type = 1, group = "test" }).Wait();
+
+                    // Force reconnect
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
+                    Assert.True(inGroupOnReconnect.Count > 0);
+                    Assert.True(inGroupOnReconnect.All(b => b));
+
+                    connection.Stop();
+                }
+            }
+
             public void Dispose()
             {
                 GC.Collect();
