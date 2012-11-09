@@ -40,10 +40,17 @@ namespace Microsoft.AspNet.SignalR
             int resultSet = 0;
             var result = default(T);
             var registration = default(CancellationTokenRegistration);
+            var callbackState = 0;
 
             try
             {
-                registration = cancel.Register(disposer.Dispose);
+                registration = cancel.Register(() =>
+                {
+                    if (Interlocked.Exchange(ref callbackState, 1) == 0)
+                    {
+                        disposer.Dispose();
+                    }
+                });
             }
             catch (ObjectDisposedException)
             {
@@ -60,8 +67,11 @@ namespace Microsoft.AspNet.SignalR
                     {
                         result = map(messageResult);
 
-                        // Dispose of the cancellation token subscription
-                        registration.Dispose();
+                        if (Interlocked.CompareExchange(ref callbackState, 1, 0) == 0)
+                        {
+                            // Dispose of the cancellation token subscription
+                            registration.Dispose();
+                        }
                     }
 
                     if (messageResult.Terminal)

@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
@@ -378,7 +380,18 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
-            public void ClientGroupsSyncWithServerGroupsOnReconnect()
+            public void ClientGroupsSyncWithServerGroupsOnReconnectSSE()
+            {
+                ClientGroupsSyncWithServerGroupsOnReconnect(client => new Client.Transports.ServerSentEventsTransport(client));
+            }
+
+            [Fact]
+            public void ClientGroupsSyncWithServerGroupsOnReconnectLongPolling()
+            {
+                ClientGroupsSyncWithServerGroupsOnReconnect(client => new Client.Transports.LongPollingTransport(client));
+            }
+
+            private static void ClientGroupsSyncWithServerGroupsOnReconnect(Func<IHttpClient, IClientTransport> getTransport)
             {
                 using (var host = new MemoryHost())
                 {
@@ -404,7 +417,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.Send(new { type = 3, group = "test", message = "Reconnected" }).Wait();
                     };
 
-                    connection.Start(host).Wait();
+                    connection.Start(getTransport(host)).Wait();
 
                     // Join the group 
                     connection.Send(new { type = 1, group = "test" }).Wait();

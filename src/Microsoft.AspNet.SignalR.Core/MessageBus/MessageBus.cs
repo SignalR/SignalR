@@ -175,12 +175,6 @@ namespace Microsoft.AspNet.SignalR
                 topic.AddSubscription(subscription);
             }
 
-            // If there's a cursor then schedule work for this subscription
-            if (!String.IsNullOrEmpty(cursor))
-            {
-                _broker.Schedule(subscription);
-            }
-
             var disposable = new DisposableAction(() =>
             {
                 // This will stop work from continuting to happen
@@ -201,6 +195,12 @@ namespace Microsoft.AspNet.SignalR
 
             // When the subscription itself is disposed then dispose it
             subscription.Disposed = disposable.Dispose;
+
+            // If there's a cursor then schedule work for this subscription
+            if (!String.IsNullOrEmpty(cursor))
+            {
+                _broker.Schedule(subscription);
+            }
 
             return disposable;
         }
