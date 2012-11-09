@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.SignalR
             // if the client is very slow then this invoke call might not end quickly and this will make the CPU
             // hot waiting for the task to return.
 
-            var spinWait = default(SpinWait);
+            var spinWait = new SpinWait();
 
             while (true)
             {
