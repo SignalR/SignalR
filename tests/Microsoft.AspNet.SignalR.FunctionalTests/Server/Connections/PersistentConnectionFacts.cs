@@ -396,7 +396,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = new MemoryHost())
                 {
                     host.Configuration.KeepAlive = null;
-                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
                     host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
                     host.MapConnection<MyRejoinGroupConnection>("/groups");
 
@@ -422,7 +422,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     // Join the group 
                     connection.Send(new { type = 1, group = "test" }).Wait();
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
 
                     Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
 
