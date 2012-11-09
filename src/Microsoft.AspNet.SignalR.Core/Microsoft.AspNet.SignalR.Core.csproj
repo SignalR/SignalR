@@ -57,7 +57,6 @@
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="DiffPair.cs" />
     <Compile Include="DiffSet.cs" />
     <Compile Include="Hosting\HostConstants.cs" />

@@ -15,4 +15,10 @@
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
   </PropertyGroup>
+
+  <ItemGroup Condition="Exists('..\Common\GlobalSuppressions.cs')">
+    <Compile Include="..\Common\GlobalSuppressions.cs">
+        <Link>GlobalSuppressions.cs</Link>
+    </Compile>
+  </ItemGroup>
 </Project>
