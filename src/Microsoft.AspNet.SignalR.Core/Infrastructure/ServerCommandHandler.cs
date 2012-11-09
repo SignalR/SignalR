@@ -58,6 +58,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public event Action<string> EventRemoved;
 
+        public Func<string> GetCursor { get; set; }
+
         public string Identity
         {
             get

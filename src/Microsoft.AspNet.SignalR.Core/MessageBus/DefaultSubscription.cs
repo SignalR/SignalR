@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR
             return Cursor.MakeCursor(_cursors);
         }
 
-        protected override void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state)
+        protected override void PerformWork(ref List<ArraySegment<Message>> items, ref int totalCount, out object state)
         {
             var cursors = new List<Cursor>();
 
@@ -139,8 +139,6 @@ namespace Microsoft.AspNet.SignalR
                         totalCount += storeResult.Messages.Count;
                     }
                 }
-
-                nextCursor = Cursor.MakeCursor(cursors);
 
                 // Return the state as a list of cursors
                 state = cursors;

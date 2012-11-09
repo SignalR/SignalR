@@ -377,7 +377,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            [Fact(Skip = "Issue #938")]
+            [Fact]
             public void ClientGroupsSyncWithServerGroupsOnReconnect()
             {
                 using (var host = new MemoryHost())

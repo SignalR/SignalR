@@ -52,9 +52,9 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="traceManager"></param>
         /// <param name="performanceCounterManager"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The message broker is disposed when the bus is disposed.")]
-        public MessageBus(IStringMinifier stringMinifier, 
-                          ITraceManager traceManager, 
-                          IPerformanceCounterManager performanceCounterManager, 
+        public MessageBus(IStringMinifier stringMinifier,
+                          ITraceManager traceManager,
+                          IPerformanceCounterManager performanceCounterManager,
                           IConfigurationManager configurationManager)
         {
             _stringMinifier = stringMinifier;
@@ -166,6 +166,7 @@ namespace Microsoft.AspNet.SignalR
 
             subscriber.EventAdded += eventAdded;
             subscriber.EventRemoved += eventRemoved;
+            subscriber.GetCursor += subscription.GetCursor;
 
             // Add the subscription when it's all set and can be scheduled
             // for work
@@ -180,23 +181,28 @@ namespace Microsoft.AspNet.SignalR
                 _broker.Schedule(subscription);
             }
 
-            return new DisposableAction(() =>
+            var disposable = new DisposableAction(() =>
             {
                 // This will stop work from continuting to happen
                 subscription.Dispose();
 
+                // Invoke the terminal callback
+                subscription.Invoke(MessageResult.TerminalMessage).Wait();
+
                 subscriber.EventAdded -= eventAdded;
                 subscriber.EventRemoved -= eventRemoved;
-
-                string currentCursor = subscription.GetCursor();
+                subscriber.GetCursor -= subscription.GetCursor;
 
                 foreach (var eventKey in subscriber.EventKeys)
                 {
                     RemoveEvent(subscription, eventKey);
                 }
-
-                subscription.Invoke(new MessageResult(currentCursor));
             });
+
+            // When the subscription itself is disposed then dispose it
+            subscription.Disposed = disposable.Dispose;
+
+            return disposable;
         }
 
         protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)

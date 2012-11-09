@@ -31,8 +31,7 @@ namespace Microsoft.AspNet.SignalR
                                               string cursor,
                                               CancellationToken cancel,
                                               int maxMessages,
-                                              Func<MessageResult, T> map,
-                                              Action<MessageResult, T> end) where T : class
+                                              Func<MessageResult, T> map) where T : class
         {
             var tcs = new TaskCompletionSource<T>();
             IDisposable subscription = null;
@@ -63,17 +62,11 @@ namespace Microsoft.AspNet.SignalR
 
                         // Dispose of the cancellation token subscription
                         registration.Dispose();
-
-                        // Dispose the subscription
-                        disposer.Dispose();
                     }
 
                     if (messageResult.Terminal)
                     {
                         Interlocked.CompareExchange(ref result, map(messageResult), null);
-
-                        // Fire a callback before the result is set
-                        end(messageResult, result);
 
                         // Set the result
                         tcs.TrySetResult(result);

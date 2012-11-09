@@ -257,6 +257,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             IDisposable subscription = null;
             var wh = new ManualResetEventSlim(initialState: false);
             var registration = default(CancellationTokenRegistration);
+            var callbackState = 0;
 
             try
             {
@@ -273,14 +274,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                         // Send the response before removing any connection data
                         return Send(response).Then(() =>
                         {
+                            if (Interlocked.CompareExchange(ref callbackState, 1, 0) == 0)
+                            {
+                                // Remove registrations so the callback doesn't fire again
+                                registration.Dispose();
+                            }
+
                             // Remove connection without triggering disconnect
                             Heartbeat.RemoveConnection(this);
 
                             endRequest(null);
-
-                            // Dispose everything
-                            registration.Dispose();
-                            subscription.Dispose();
 
                             return TaskAsyncHelper.False;
                         });
@@ -289,6 +292,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                              response.Aborted ||
                              ConnectionEndToken.IsCancellationRequested)
                     {
+                        if (Interlocked.CompareExchange(ref callbackState, 1, 0) == 0)
+                        {
+                            // Remove registrations so the callback doesn't fire again
+                            registration.Dispose();
+                        }
+
                         if (response.Aborted)
                         {
                             // If this was a clean disconnect raise the event.
@@ -296,10 +305,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                         }
 
                         endRequest(null);
-
-                        // Dispose everything
-                        registration.Dispose();
-                        subscription.Dispose();
 
                         return TaskAsyncHelper.False;
                     }
@@ -347,8 +352,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     Trace.TraceInformation("Cancel(" + ConnectionId + ")");
 
-                    // This is only null if we failed to create the subscription
-                    ((IDisposable)state).Dispose();
+                    if (Interlocked.Exchange(ref callbackState, 1) == 0)
+                    {
+                        ((IDisposable)state).Dispose();
+                    }
                 },
                 subscription);
             }

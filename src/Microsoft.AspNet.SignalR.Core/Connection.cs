@@ -66,6 +66,8 @@ namespace Microsoft.AspNet.SignalR
 
         public event Action<string> EventRemoved;
 
+        public Func<string> GetCursor { get; set; }
+
         public string Identity
         {
             get
@@ -125,21 +127,14 @@ namespace Microsoft.AspNet.SignalR
 
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int maxMessages)
         {
-            return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse, (result, response) =>
-            {
-                response.MessageId = result.LastMessageId;
-            });
+            return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
         }
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
         {
             return _bus.Subscribe(this, messageId, result =>
             {
-                Task<bool> keepGoing = callback(GetResponse(result));
-                if (result.Terminal)
-                {
-                    keepGoing = TaskAsyncHelper.False;
-                }
-                return keepGoing;
+                PersistentResponse response = GetResponse(result);
+                return callback(response);
             },
             maxMessages);
         }
@@ -149,9 +144,14 @@ namespace Microsoft.AspNet.SignalR
             // Do a single sweep through the results to process commands and extract values
             ProcessResults(result);
 
+            Debug.Assert(GetCursor != null, "Unable to resolve the cursor since the method is null");
+
+            // Resolve the cursor
+            string id = GetCursor();
+
             var response = new PersistentResponse(ExcludeMessage)
             {
-                MessageId = result.LastMessageId,
+                MessageId = id,
                 Messages = result.Messages,
                 Disconnect = _disconnected,
                 Aborted = _aborted,

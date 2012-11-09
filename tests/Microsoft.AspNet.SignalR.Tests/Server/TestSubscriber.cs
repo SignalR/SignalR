@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {
@@ -20,6 +18,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public event Action<string> EventAdded;
 
         public event Action<string> EventRemoved;
+
+        public Func<string> GetCursor { get; set; }
 
         public void AddEvent(string eventName)
         {
