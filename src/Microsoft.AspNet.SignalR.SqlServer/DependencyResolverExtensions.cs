@@ -8,11 +8,24 @@ namespace Microsoft.AspNet.SignalR
 {
     public static class DependencyResolverExtensions
     {
+        /// <summary>
+        /// Use SqlServer as the backplane for SignalR.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver</param>
+        /// <param name="connectionString">The Sql Server connection string</param>
+        /// <returns>The dependency resolver</returns>
         public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString)
         {
             return UseSqlServer(resolver, connectionString, 1);
         }
 
+        /// <summary>
+        /// Use SqlServer as the backplane for SignalR.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver</param>
+        /// <param name="connectionString">The Sql Server connection string</param>
+        /// <param name="tableCount">The number of tables to use as "message tables"</param>
+        /// <returns>The dependency resolver</returns>
         public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString, int tableCount)
         {
             var bus = new Lazy<SqlMessageBus>(() => new SqlMessageBus(connectionString, tableCount, resolver));
