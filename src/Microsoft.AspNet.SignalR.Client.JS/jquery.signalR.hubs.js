@@ -161,7 +161,7 @@
             callbacks[callbackId.toString()] = { scope: self, method: callback };
             callbackId += 1;
 
-            if (!$.isPlainObject(self.state)) {
+            if (!$.isEmptyObject(self.state)) {
                 data.S = self.state;
             }
             
