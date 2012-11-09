@@ -49,6 +49,11 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual Task<bool> Invoke(MessageResult result)
         {
+            return Invoke(result, () => { });
+        }
+
+        private Task<bool> Invoke(MessageResult result, Action beforeInvoke)
+        {
             // Change the state from idle to working
             var state = Interlocked.CompareExchange(ref _subscriptionState,
                                                     SubscriptionState.InvokingCallback,
@@ -63,11 +68,13 @@ namespace Microsoft.AspNet.SignalR
                 }
             }
 
+            beforeInvoke();
+
             return _callback.Invoke(result).ContinueWith(task =>
             {
                 // Go from idle to working
-                Interlocked.CompareExchange(ref _subscriptionState, 
-                                            SubscriptionState.Idle, 
+                Interlocked.CompareExchange(ref _subscriptionState,
+                                            SubscriptionState.Idle,
                                             SubscriptionState.InvokingCallback);
 
                 if (task.IsFaulted)
@@ -76,7 +83,7 @@ namespace Microsoft.AspNet.SignalR
                 }
 
                 return TaskAsyncHelper.FromResult(task.Result);
-            }, 
+            },
             TaskContinuationOptions.ExecuteSynchronously).FastUnwrap();
         }
 
@@ -138,12 +145,12 @@ namespace Microsoft.AspNet.SignalR
 
             PerformWork(ref items, ref totalCount, out state);
 
-            if (Alive && items.Count > 0)
+            if (items.Count > 0)
             {
                 BeforeInvoke(state);
 
                 var messageResult = new MessageResult(items, totalCount);
-                Task<bool> callbackTask = Invoke(messageResult);
+                Task<bool> callbackTask = Invoke(messageResult, () => BeforeInvoke(state));
 
                 if (callbackTask.IsCompleted)
                 {
