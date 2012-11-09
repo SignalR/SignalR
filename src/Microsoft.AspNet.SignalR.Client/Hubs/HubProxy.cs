@@ -88,8 +88,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 Hub = _hubName,
                 Method = method,
                 Args = tokenifiedArguments,
-                State = _state
             };
+
+            if (_state.Count != 0)
+            {
+                hubData.State = _state;
+            }
 
             var value = JsonConvert.SerializeObject(hubData);
 
