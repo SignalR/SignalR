@@ -16,16 +16,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var rawRequest = JObject.Parse(data);
             var request = new HubRequest();
 
-            // TODO: Figure out case insensitivity in JObject.Parse, this should cover our clients for now
-            request.Hub = rawRequest.Value<string>("hub") ?? rawRequest.Value<string>("Hub");
-            request.Method = rawRequest.Value<string>("method") ?? rawRequest.Value<string>("Method");
-            request.Id = rawRequest.Value<string>("id") ?? rawRequest.Value<string>("Id");
+            request.Hub = rawRequest.Value<string>("H");
+            request.Method = rawRequest.Value<string>("M");
+            request.Id = rawRequest.Value<string>("I");
 
-            var rawState = rawRequest["state"] ?? rawRequest["State"];
+            var rawState = rawRequest["S"];
             request.State = rawState == null ? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) :
                                        rawState.ToObject<IDictionary<string, object>>();
 
-            var rawArgs = rawRequest["args"] ?? rawRequest["Args"];
+            var rawArgs = rawRequest["A"];
             request.ParameterValues = rawArgs == null ? _emptyArgs :
                                                 rawArgs.Children().Select(value => new JTokenValue(value)).ToArray();
 

@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                Value = newValue
                            }).ToDictionary(p => p.Key, p => p.Value);
 
-            return changes;
+            return changes.Count > 0 ? changes : null;
         }
     }
 }

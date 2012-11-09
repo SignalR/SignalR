@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var groupDiff = _groups.GetDiff();
 
-            // Set the groups on the outgoing transport data
+            response.ResetGroups = groupDiff.Reset;
             if (groupDiff.Added.Count > 0)
             {
                 response.AddedGroups = groupDiff.Added;

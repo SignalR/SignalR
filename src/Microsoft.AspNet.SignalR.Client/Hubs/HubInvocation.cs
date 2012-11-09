@@ -20,12 +20,4 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         [JsonProperty("S", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, JToken> State { get; set; }
     }
-
-    public class ServerHubInvocation
-    {
-        public string Hub { get; set; }
-        public string Method { get; set; }
-        public JToken[] Args { get; set; }
-        public Dictionary<string, JToken> State { get; set; }
-    }
 }
