@@ -249,10 +249,12 @@ namespace Microsoft.AspNet.SignalR
             var groupDiff = _groups.GetDiff();
 
             response.ResetGroups = groupDiff.Reset;
+
             if (groupDiff.Added.Count > 0)
             {
                 response.AddedGroups = groupDiff.Added;
             }
+
             if (groupDiff.Removed.Count > 0)
             {
                 response.RemovedGroups = groupDiff.Removed;
