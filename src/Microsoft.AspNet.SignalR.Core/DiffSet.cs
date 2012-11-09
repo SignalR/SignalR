@@ -20,31 +20,35 @@ namespace Microsoft.AspNet.SignalR
             _items = new SafeSet<T>(_addedItems);
         }
 
-        public void Add(T item)
+        public bool Add(T item)
         {
-            if (_items.Add(item))
+            lock (_lock)
             {
-                lock (_lock)
+                if (_items.Add(item))
                 {
                     if (!_removedItems.Remove(item))
                     {
                         _addedItems.Add(item);
                     }
+                    return true;
                 }
+                return false;
             }
         }
 
-        public void Remove(T item)
+        public bool Remove(T item)
         {
-            if (_items.Remove(item))
+            lock (_lock)
             {
-                lock (_lock)
+                if (_items.Remove(item))
                 {
                     if (!_addedItems.Remove(item))
                     {
                         _removedItems.Add(item);
                     }
+                    return true;
                 }
+                return false;
             }
         }
 

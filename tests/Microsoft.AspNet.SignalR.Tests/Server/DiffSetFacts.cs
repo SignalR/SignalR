@@ -37,10 +37,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void InitialValueCombineWithChangesInFirstDiff()
         {
             var diffSet = new DiffSet<int>(Enumerable.Range(0, 100));
-            diffSet.Add(-1);
-            diffSet.Add(100);
-            diffSet.Remove(0);
-            diffSet.Remove(-1);
+            Assert.True(diffSet.Add(-1));
+            Assert.True(diffSet.Add(100));
+            Assert.True(diffSet.Remove(0));
+            Assert.True(diffSet.Remove(-1));
 
             Assert.Equal(100, diffSet.GetSnapshot().Count);
 
@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var diffSet = new DiffSet<int>(Enumerable.Range(0, 100));
 
-            diffSet.Add(0); // no-op
-            diffSet.Remove(99);
-            diffSet.Remove(99); // no-op
+            Assert.False(diffSet.Add(0)); // no-op
+            Assert.True(diffSet.Remove(99));
+            Assert.False(diffSet.Remove(99)); // no-op
 
             Assert.Equal(99, diffSet.GetSnapshot().Count);
 
@@ -76,12 +76,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 Assert.True(diffSet.Contains(i));
             }
 
-            diffSet.Add(1); // no-op
-            diffSet.Add(99);
-            diffSet.Add(99); // no-op
-            diffSet.Remove(101); // no-op
-            diffSet.Remove(0);
-            diffSet.Remove(0); // no-op
+            Assert.False(diffSet.Add(1)); // no-op
+            Assert.True(diffSet.Add(99));
+            Assert.False(diffSet.Add(99)); // no-op
+            Assert.False(diffSet.Remove(101)); // no-op
+            Assert.True(diffSet.Remove(0));
+            Assert.False(diffSet.Remove(0)); // no-op
 
 
             Assert.Equal(99, diffSet.GetSnapshot().Count);
@@ -103,12 +103,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var diffSet = new DiffSet<int>(Enumerable.Range(0, 100));
 
-            diffSet.Add(100);
-            diffSet.Remove(98);
-            diffSet.Remove(99);
-            diffSet.Remove(100);
-            diffSet.Add(99);
-            diffSet.Add(98);
+            Assert.True(diffSet.Add(100));
+            Assert.True(diffSet.Remove(98));
+            Assert.True(diffSet.Remove(99));
+            Assert.True(diffSet.Remove(100));
+            Assert.True(diffSet.Add(99));
+            Assert.True(diffSet.Add(98));
 
             Assert.Equal(100, diffSet.GetSnapshot().Count);
 
@@ -122,12 +122,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 Assert.True(diffSet.Contains(i));
             }
 
-            diffSet.Add(150);
-            diffSet.Add(200);
-            diffSet.Remove(50);
-            diffSet.Remove(200);
-            diffSet.Remove(150);
-            diffSet.Add(50);
+            Assert.True(diffSet.Add(150));
+            Assert.True(diffSet.Add(200));
+            Assert.True(diffSet.Remove(50));
+            Assert.True(diffSet.Remove(200));
+            Assert.True(diffSet.Remove(150));
+            Assert.True(diffSet.Add(50));
 
             Assert.Equal(100, diffSet.GetSnapshot().Count);
 
@@ -157,14 +157,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 {
                     for (int i = 0; i < 50; i++)
                     {
-                        diffSet.Remove(i);
+                        Assert.True(diffSet.Remove(i));
                     }
                 }),
                 Task.Factory.StartNew(() =>
                 {
                     for (int i = 100; i < 150; i++)
                     {
-                        diffSet.Add(i);
+                        Assert.True(diffSet.Add(i));
                     }
                 })
             };
@@ -199,6 +199,54 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 Assert.True(diffSet.Contains(i));
                 Assert.True(diffPair.Added.Contains(i));
                 Assert.False(diffPair.Removed.Contains(i));
+            }
+        }
+
+        [Fact]
+        public void DiffPairMatchesSnapshotAfterConcurrentChanges()
+        {
+            var random = new Random();
+            var diffSet = new DiffSet<int>(Enumerable.Range(0, 5));
+            var localSet = new HashSet<int>(Enumerable.Range(0, 5));
+            Action updateSet = () =>
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    if (random.Next(2) == 1)
+                    {
+                        diffSet.Remove(random.Next(5));
+                    }
+                    else
+                    {
+                        diffSet.Add(random.Next(5));
+                    }
+                }
+            };
+
+            // Flush initial changes
+            var diffPair = diffSet.GetDiff();
+            Assert.Equal(5, diffPair.Added.Count);
+            Assert.Equal(0, diffPair.Removed.Count);
+            Assert.True(diffPair.Reset);
+
+            for (int i = 0; i < 10; i++)
+            {
+                Task.WaitAll(Enumerable.Repeat(updateSet, 10).Select(Task.Factory.StartNew).ToArray());
+                var snapShot = diffSet.GetSnapshot();
+                diffPair = diffSet.GetDiff();
+                Assert.False(diffPair.Reset);
+                Assert.Equal(0, diffPair.Added.Intersect(diffPair.Removed).Count());
+                foreach (var addedItem in diffPair.Added)
+                {
+                    Assert.True(localSet.Add(addedItem));
+                }
+                foreach (var removedItem in diffPair.Removed)
+                {
+                    Assert.True(localSet.Remove(removedItem));
+                }
+                int numSharedItems = localSet.Intersect(snapShot).Count();
+                Assert.Equal(numSharedItems, snapShot.Count);
+                Assert.Equal(numSharedItems, localSet.Count);
             }
         }
 
