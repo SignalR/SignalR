@@ -129,6 +129,7 @@ namespace Microsoft.AspNet.SignalR
         {
             return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
         }
+
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
         {
             return _bus.Subscribe(this, messageId, result =>
