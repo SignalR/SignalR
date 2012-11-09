@@ -15,14 +15,14 @@ namespace Microsoft.AspNet.SignalR
         private readonly Func<MessageResult, Task<bool>> _callback;
         private readonly IPerformanceCounterManager _counters;
 
-        private int _disposed;
         private int _state;
+        private int _subscriptionState;
 
         private bool Alive
         {
             get
             {
-                return _disposed == 0;
+                return _subscriptionState != SubscriptionState.Disposed;
             }
         }
 
@@ -31,6 +31,8 @@ namespace Microsoft.AspNet.SignalR
         public HashSet<string> EventKeys { get; private set; }
 
         public int MaxMessages { get; private set; }
+
+        public Action Disposed { get; set; }
 
         protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
         {
@@ -47,7 +49,35 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual Task<bool> Invoke(MessageResult result)
         {
-            return _callback.Invoke(result);
+            // Change the state from idle to working
+            var state = Interlocked.CompareExchange(ref _subscriptionState,
+                                                    SubscriptionState.InvokingCallback,
+                                                    SubscriptionState.Idle);
+
+            if (state == SubscriptionState.Disposed)
+            {
+                // Only allow terminal messages after dispose
+                if (!result.Terminal)
+                {
+                    return TaskAsyncHelper.False;
+                }
+            }
+
+            return _callback.Invoke(result).ContinueWith(task =>
+            {
+                // Go from idle to working
+                Interlocked.CompareExchange(ref _subscriptionState, 
+                                            SubscriptionState.Idle, 
+                                            SubscriptionState.InvokingCallback);
+
+                if (task.IsFaulted)
+                {
+                    return TaskAsyncHelper.FromError<bool>(task.Exception);
+                }
+
+                return TaskAsyncHelper.FromResult(task.Result);
+            }, 
+            TaskContinuationOptions.ExecuteSynchronously).FastUnwrap();
         }
 
         public Task WorkAsync()
@@ -103,17 +133,16 @@ namespace Microsoft.AspNet.SignalR
             }
 
             int totalCount = 0;
-            string nextCursor = null;
             var items = new List<ArraySegment<Message>>();
             object state = null;
 
-            PerformWork(ref items, out nextCursor, ref totalCount, out state);
+            PerformWork(ref items, ref totalCount, out state);
 
             if (Alive && items.Count > 0)
             {
                 BeforeInvoke(state);
 
-                var messageResult = new MessageResult(items, nextCursor, totalCount);
+                var messageResult = new MessageResult(items, totalCount);
                 Task<bool> callbackTask = Invoke(messageResult);
 
                 if (callbackTask.IsCompleted)
@@ -158,7 +187,7 @@ namespace Microsoft.AspNet.SignalR
         {
         }
 
-        protected abstract void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state);
+        protected abstract void PerformWork(ref List<ArraySegment<Message>> items, ref int totalCount, out object state);
 
         private void WorkImplAsync(Task<bool> callbackTask, TaskCompletionSource<object> taskCompletionSource)
         {
@@ -211,11 +240,39 @@ namespace Microsoft.AspNet.SignalR
 
         public void Dispose()
         {
-            // REVIEW: Should we make this block if there's pending work
-            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            // REIVIEW: Consider sleeping instead of using a tight loop, or maybe timing out after some interval
+            // if the client is very slow then this invoke call might not end quickly and this will make the CPU
+            // hot waiting for the task to return.
+
+            var spinWait = default(SpinWait);
+
+            while (true)
             {
-                _counters.MessageBusSubscribersCurrent.Decrement();
-                _counters.MessageBusSubscribersPerSec.Decrement();
+                // Wait until the subscription isn't working anymore
+                var state = Interlocked.CompareExchange(ref _subscriptionState,
+                                                        SubscriptionState.Disposed,
+                                                        SubscriptionState.Idle);
+
+                // If we're not working then stop
+                if (state != SubscriptionState.InvokingCallback)
+                {
+                    if (state != SubscriptionState.Disposed)
+                    {
+                        // Only decrement if we're not disposed already
+                        _counters.MessageBusSubscribersCurrent.Decrement();
+                        _counters.MessageBusSubscribersPerSec.Decrement();
+                    }
+
+                    // Raise the disposed callback
+                    if (Disposed != null)
+                    {
+                        Disposed();
+                    }
+
+                    break;
+                }
+
+                spinWait.SpinOnce();
             }
         }
 
@@ -236,6 +293,13 @@ namespace Microsoft.AspNet.SignalR
         {
             public const int Idle = 0;
             public const int Working = 1;
+        }
+
+        private static class SubscriptionState
+        {
+            public const int Idle = 0;
+            public const int InvokingCallback = 1;
+            public const int Disposed = 2;
         }
     }
 }
