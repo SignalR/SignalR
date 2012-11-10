@@ -13,10 +13,25 @@ namespace Microsoft.AspNet.SignalR
     {
         public static Task Publish(this IMessageBus bus, string source, string key, string value)
         {
+            if (bus == null)
+            {
+                throw new ArgumentNullException("bus");
+            }
+
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+
             return bus.Publish(new Message(source, key, value));
         }
 
-        public static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
+        internal static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
         {
             // Prepare the ack
             var message = new Message(source, AckPrefix(eventKey), null);
@@ -25,12 +40,13 @@ namespace Microsoft.AspNet.SignalR
             return bus.Publish(message);
         }
 
-        public static Task<T> ReceiveAsync<T>(this IMessageBus bus,
-                                              ISubscriber subscriber,
-                                              string cursor,
-                                              CancellationToken cancel,
-                                              int maxMessages,
-                                              Func<MessageResult, T> map) where T : class
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
+        internal static Task<T> ReceiveAsync<T>(this IMessageBus bus,
+                                                ISubscriber subscriber,
+                                                string cursor,
+                                                CancellationToken cancel,
+                                                int maxMessages,
+                                                Func<MessageResult, T> map) where T : class
         {
             var tcs = new TaskCompletionSource<T>();
             IDisposable subscription = null;

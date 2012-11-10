@@ -57,6 +57,26 @@ namespace Microsoft.AspNet.SignalR
                           IPerformanceCounterManager performanceCounterManager,
                           IConfigurationManager configurationManager)
         {
+            if (stringMinifier == null)
+            {
+                throw new ArgumentNullException("stringMinifier");
+            }
+
+            if (traceManager == null)
+            {
+                throw new ArgumentNullException("traceManager");
+            }
+
+            if (performanceCounterManager == null)
+            {
+                throw new ArgumentNullException("performanceCounterManager");
+            }
+
+            if (configurationManager == null)
+            {
+                throw new ArgumentNullException("configurationManager");
+            }
+
             _stringMinifier = stringMinifier;
             _traceManager = traceManager;
             _counters = performanceCounterManager;
@@ -104,6 +124,11 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="message">The message to publish.</param>
         public virtual Task Publish(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
             Topic topic = GetTopic(message.Key);
 
             topic.Store.Add(message);
@@ -118,6 +143,11 @@ namespace Microsoft.AspNet.SignalR
 
         protected ulong Save(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
             Topic topic = GetTopic(message.Key);
 
             ulong id = topic.Store.Add(message);
@@ -135,9 +165,10 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable object is returned to the caller")]
+        public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages)
         {
-            Subscription subscription = CreateSubscription(subscriber, cursor, callback, messageBufferSize);
+            Subscription subscription = CreateSubscription(subscriber, cursor, callback, maxMessages);
 
             var topics = new HashSet<Topic>();
 
@@ -205,6 +236,7 @@ namespace Microsoft.AspNet.SignalR
             return disposable;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
             return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, _topics, cursor, callback, messageBufferSize, _stringMinifier, _counters);

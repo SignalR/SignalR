@@ -22,6 +22,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("hubName");
             }
 
+            if (counters == null)
+            {
+                throw new ArgumentNullException("counters");
+            }
+
             var descriptor = hubManager.GetHub(hubName);
 
             if (descriptor == null)

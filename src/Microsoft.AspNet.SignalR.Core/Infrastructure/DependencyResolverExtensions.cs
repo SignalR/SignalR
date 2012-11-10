@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (resolver == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException("resolver");
             }
 
             return resolver.GetServices(typeof(T)).Cast<T>();

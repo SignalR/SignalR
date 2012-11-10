@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 IDisposable subscription = bus.Subscribe(subscriber,
                                                          cursor: null,
                                                          callback: _ => TaskAsyncHelper.True,
-                                                         messageBufferSize: messageBufferSize);
+                                                         maxMessages: messageBufferSize);
 
                 subscriptions.Add(subscription);
             }

@@ -74,40 +74,5 @@ namespace Microsoft.AspNet.SignalR.Transports
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }
-
-        private class TextWriterWrapper : TextWriter
-        {
-            private readonly TextWriter _writer;
-
-            public TextWriterWrapper(TextWriter writer)
-            {
-                _writer = writer;
-            }
-
-            public override Encoding Encoding
-            {
-                get { return _writer.Encoding; }
-            }
-
-            public override void Write(string value)
-            {
-                _writer.Write(EscapeAnyInlineScriptTags(value));
-            }
-
-            public override void WriteLine(string value)
-            {
-                _writer.Write(EscapeAnyInlineScriptTags(value));
-            }
-
-            public override void WriteLine()
-            {
-                _writer.WriteLine();
-            }
-
-            private static string EscapeAnyInlineScriptTags(string input)
-            {
-                return input.Replace("</script>", "</\"+\"script>");
-            }
-        }
     }
 }

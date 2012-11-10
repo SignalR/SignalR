@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR
                    select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
         }
 
-        private ulong GetMessageId(IDictionary<string, Topic> topics, string key)
+        private static ulong GetMessageId(IDictionary<string, Topic> topics, string key)
         {
             Topic topic;
             if (topics.TryGetValue(key, out topic))
