@@ -11,57 +11,51 @@ namespace Microsoft.AspNet.SignalR.Owin
 {
     public partial class ServerRequest
     {
-        private readonly IDictionary<string, object> _env;
+        private readonly IDictionary<string, object> _environment;
 
-        public ServerRequest(IDictionary<string, object> env)
+        public ServerRequest(IDictionary<string, object> environment)
         {
-            _env = env;
+            _environment = environment;
         }
-
-        private T Get<T>(string key)
-        {
-            object value;
-            return _env.TryGetValue(key, out value) ? (T)value : default(T);
-        }
-
+        
         private string RequestMethod
         {
-            get { return Get<string>(OwinConstants.RequestMethod); }
+            get { return _environment.Get<string>(OwinConstants.RequestMethod); }
         }
 
         public IDictionary<string, string[]> RequestHeaders
         {
-            get { return Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
+            get { return _environment.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
         }
 
         private Stream RequestBody
         {
-            get { return Get<Stream>(OwinConstants.RequestBody); }
+            get { return _environment.Get<Stream>(OwinConstants.RequestBody); }
         }
 
         private string RequestScheme
         {
-            get { return Get<string>(OwinConstants.RequestScheme); }
+            get { return _environment.Get<string>(OwinConstants.RequestScheme); }
         }
 
         private string RequestPathBase
         {
-            get { return Get<string>(OwinConstants.RequestPathBase); }
+            get { return _environment.Get<string>(OwinConstants.RequestPathBase); }
         }
 
         private string RequestPath
         {
-            get { return Get<string>(OwinConstants.RequestPath); }
+            get { return _environment.Get<string>(OwinConstants.RequestPath); }
         }
 
         private string RequestQueryString
         {
-            get { return Get<string>(OwinConstants.RequestQueryString); }
+            get { return _environment.Get<string>(OwinConstants.RequestQueryString); }
         }
 
         public Action DisableRequestBuffering
         {
-            get { return Get<Action>(OwinConstants.DisableRequestBuffering) ?? (() => { }); }
+            get { return _environment.Get<Action>(OwinConstants.DisableRequestBuffering) ?? (() => { }); }
         }
 
         private bool TryParseHostHeader(out IPAddress address, out string host, out int port)
@@ -131,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 {
                     return host ?? address.ToString();
                 }
-                return Get<string>(OwinConstants.LocalIpAddress) ?? IPAddress.Loopback.ToString();
+                return _environment.Get<string>(OwinConstants.LocalIpAddress) ?? IPAddress.Loopback.ToString();
             }
         }
 
@@ -146,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 {
                     return port;
                 }
-                var portString = Get<string>(OwinConstants.LocalPort);
+                var portString = _environment.Get<string>(OwinConstants.LocalPort);
                 if (int.TryParse(portString, out port) && port != 0)
                 {
                     return port;

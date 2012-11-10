@@ -59,6 +59,7 @@ namespace Microsoft.AspNet.SignalR
             return task ?? TaskCache<T>.Empty;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromAsync(Func<AsyncCallback, object, IAsyncResult> beginMethod, Action<IAsyncResult> endMethod, object state)
         {
             try
@@ -71,6 +72,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<T> FromAsync<T>(Func<AsyncCallback, object, IAsyncResult> beginMethod, Func<IAsyncResult, T> endMethod, object state)
         {
             try
@@ -553,6 +555,7 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod(Action func)
         {
             try
@@ -566,6 +569,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod<T1>(Action<T1> func, T1 arg)
         {
             try
@@ -579,6 +583,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod<T1, T2>(Action<T1, T2> func, T1 arg1, T2 arg2)
         {
             try
@@ -592,6 +597,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<TResult>(Func<TResult> func)
         {
             try
@@ -604,6 +610,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<T1, TResult>(Func<T1, TResult> func, T1 arg)
         {
             try
@@ -616,6 +623,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<T1, T2, TResult>(Func<T1, T2, TResult> func, T1 arg1, T2 arg2)
         {
             try
@@ -689,6 +697,7 @@ namespace Microsoft.AspNet.SignalR
             public Type Type { get; set; }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         private static Task RunTask(Task task, Action successor)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -721,6 +730,7 @@ namespace Microsoft.AspNet.SignalR
 
         private static class TaskRunners<T, TResult>
         {
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
             internal static Task RunTask(Task<T> task, Action<T> successor)
             {
                 var tcs = new TaskCompletionSource<object>();
@@ -751,6 +761,7 @@ namespace Microsoft.AspNet.SignalR
                 return tcs.Task;
             }
 
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
             internal static Task<TResult> RunTask(Task task, Func<TResult> successor)
             {
                 var tcs = new TaskCompletionSource<TResult>();
@@ -780,6 +791,7 @@ namespace Microsoft.AspNet.SignalR
                 return tcs.Task;
             }
 
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
             internal static Task<TResult> RunTask(Task<T> task, Func<Task<T>, TResult> successor)
             {
                 var tcs = new TaskCompletionSource<TResult>();

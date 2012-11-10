@@ -32,12 +32,12 @@ namespace Owin
             return builder.UseType<HubDispatcherHandler>(path, resolver);
         }
 
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url)
+        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url) where T : PersistentConnection
         {
             return builder.UseType<PersistentConnectionHandler>(url, typeof(T), GlobalHost.DependencyResolver);
         }
 
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, IDependencyResolver resolver)
+        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, IDependencyResolver resolver) where T : PersistentConnection
         {
             return builder.UseType<PersistentConnectionHandler>(url, typeof(T), resolver);
         }

@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _serverVariables, () =>
                     {
                         var collection = new NameValueCollection();
-                        var remoteIpAddress = Get<string>(OwinConstants.RemoteIpAddress);
+                        var remoteIpAddress = _environment.Get<string>(OwinConstants.RemoteIpAddress);
                         if (!String.IsNullOrEmpty(remoteIpAddress))
                         {
                             collection["REMOTE_ADDR"] = remoteIpAddress;
@@ -141,13 +141,13 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public IPrincipal User
         {
-            get { return Get<IPrincipal>(OwinConstants.User); }
+            get { return _environment.Get<IPrincipal>(OwinConstants.User); }
         }
 
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
 #if NET45
-            var accept = Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
+            var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
             {
                 return TaskAsyncHelper.FromError(new InvalidOperationException("Not a web socket request"));

@@ -12,13 +12,13 @@ namespace Microsoft.AspNet.SignalR.Owin
     public partial class ServerResponse : IResponse
     {
         private readonly CancellationToken _callCancelled;
-        private readonly IDictionary<string, object> _env;
+        private readonly IDictionary<string, object> _environment;
         private Stream _responseBody;
 
-        public ServerResponse(IDictionary<string, object> env)
+        public ServerResponse(IDictionary<string, object> environment)
         {
-            _env = env;
-            _callCancelled = Get<CancellationToken>(OwinConstants.CallCancelled);
+            _environment = environment;
+            _callCancelled = _environment.Get<CancellationToken>(OwinConstants.CallCancelled);
         }
 
         public bool IsClientConnected
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public IDictionary<string, string[]> ResponseHeaders
         {
-            get { return Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
+            get { return _environment.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
         }
 
         public Stream ResponseBody
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             {
                 if (_responseBody == null)
                 {
-                    _responseBody = Get<Stream>(OwinConstants.ResponseBody);
+                    _responseBody = _environment.Get<Stream>(OwinConstants.ResponseBody);
                 }
 
                 return _responseBody;
@@ -71,13 +71,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public Action DisableResponseBuffering
         {
-            get { return Get<Action>(OwinConstants.DisableResponseBuffering) ?? (() => { }); }
-        }
-
-        private T Get<T>(string key)
-        {
-            object value;
-            return _env.TryGetValue(key, out value) ? (T)value : default(T);
+            get { return _environment.Get<Action>(OwinConstants.DisableResponseBuffering) ?? (() => { }); }
         }
     }
 }
