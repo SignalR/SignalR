@@ -6,68 +6,15 @@ using System.Linq;
 
 namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
-    // Helper methods for creating and consuming CallParameters.Headers and ResultParameters.Headers.
+    /// <summary>
+    /// Helper methods for creating and consuming CallParameters.Headers and ResultParameters.Headers.
+    /// </summary>
     internal static class Headers
     {
-        public static IDictionary<string, string[]> New()
-        {
-            return new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        public static IDictionary<string, string[]> New(IDictionary<string, string[]> headers)
-        {
-            if (headers == null)
-            {
-                return New();
-            }
-
-            return new Dictionary<string, string[]>(headers, StringComparer.OrdinalIgnoreCase);
-        }
-
-        public static bool HasHeader(this IDictionary<string, string[]> headers,
-            string name)
-        {
-            string[] values;
-            if (!headers.TryGetValue(name, out values) || values == null)
-            {
-                return false;
-            }
-
-            return values.Any(value => !String.IsNullOrWhiteSpace(value));
-        }
-
         public static IDictionary<string, string[]> SetHeader(this IDictionary<string, string[]> headers,
             string name, string value)
         {
             headers[name] = new[] { value };
-            return headers;
-        }
-
-        public static IDictionary<string, string[]> SetHeader(this IDictionary<string, string[]> headers,
-            string name, string[] values)
-        {
-            headers[name] = values;
-            return headers;
-        }
-
-        public static IDictionary<string, string[]> AddHeader(this IDictionary<string, string[]> headers,
-            string name, string value)
-        {
-            return AddHeader(headers, name, new[] { value });
-        }
-
-        public static IDictionary<string, string[]> AddHeader(this IDictionary<string, string[]> headers,
-            string name, string[] value)
-        {
-            string[] values;
-            if (headers.TryGetValue(name, out values))
-            {
-                headers[name] = values.Concat(value).ToArray();
-            }
-            else
-            {
-                headers[name] = value;
-            }
             return headers;
         }
 

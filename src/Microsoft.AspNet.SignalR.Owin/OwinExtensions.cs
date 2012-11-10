@@ -32,11 +32,13 @@ namespace Owin
             return builder.UseType<HubDispatcherHandler>(path, resolver);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url) where T : PersistentConnection
         {
             return builder.UseType<PersistentConnectionHandler>(url, typeof(T), GlobalHost.DependencyResolver);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, IDependencyResolver resolver) where T : PersistentConnection
         {
             return builder.UseType<PersistentConnectionHandler>(url, typeof(T), resolver);

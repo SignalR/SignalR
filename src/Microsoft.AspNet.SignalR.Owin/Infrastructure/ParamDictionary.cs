@@ -3,10 +3,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
+    [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "It is instantiated in the static Parse method")]
     internal class ParamDictionary : IDictionary<string, string>
     {
         private static readonly char[] DefaultParamSeparators = new[] { '&', ';' };
@@ -20,18 +22,8 @@ namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
             var rawPairs = items.Select(item => item.Split(ParamKeyValueSeparator, 2, StringSplitOptions.None));
             var pairs = rawPairs.Select(pair => new KeyValuePair<string, string>(
                 Uri.UnescapeDataString(pair[0]).Replace('+', ' ').TrimStart(LeadingWhitespaceChars),
-                pair.Length < 2 ? "" : Uri.UnescapeDataString(pair[1]).Replace('+',' ')));
+                pair.Length < 2 ? "" : Uri.UnescapeDataString(pair[1]).Replace('+', ' ')));
             return pairs;
-        }
-
-        // TODO: Un-uglify this code
-        public static IDictionary<string, string> Parse(string queryString, char[] delimiters = null)
-        {
-            var d = ParseToEnumerable(queryString, delimiters)
-                .GroupBy(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => String.Join(",", g.ToArray()), StringComparer.OrdinalIgnoreCase);
-
-            return new ParamDictionary(d);
         }
 
         readonly IDictionary<string, string> _impl;
