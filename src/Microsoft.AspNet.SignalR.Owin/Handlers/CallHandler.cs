@@ -26,10 +26,10 @@ namespace Microsoft.AspNet.SignalR.Owin
             _connection = connection;
         }
 
-        public Task Invoke(IDictionary<string, object> env)
+        public Task Invoke(IDictionary<string, object> environment)
         {
-            var serverRequest = new ServerRequest(env);
-            var serverResponse = new ServerResponse(env);
+            var serverRequest = new ServerRequest(environment);
+            var serverResponse = new ServerResponse(environment);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
             // Add CORS support
@@ -41,13 +41,13 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             hostContext.Items[HostConstants.SupportsWebSockets] = LazyInitializer.EnsureInitialized(
-                ref _supportWebSockets, 
+                ref _supportWebSockets,
                 ref _supportWebSocketsInitialized,
                 ref _supportWebSocketsLock,
-                () => SupportsWebSockets(env));
+                () => environment.SupportsWebSockets());
 
-            hostContext.Items[HostConstants.ShutdownToken] = GetShutdownToken(env);
-            hostContext.Items[HostConstants.DebugMode] = GetIsDebugEnabled(env);
+            hostContext.Items[HostConstants.ShutdownToken] = environment.GetShutdownToken();
+            hostContext.Items[HostConstants.DebugMode] = environment.GetIsDebugEnabled();
 
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
@@ -55,34 +55,6 @@ namespace Microsoft.AspNet.SignalR.Owin
             _connection.Initialize(_resolver, hostContext);
 
             return _connection.ProcessRequestAsync(hostContext);
-        }
-
-        internal static CancellationToken GetShutdownToken(IDictionary<string, object> env)
-        {
-            object value;
-            return env.TryGetValue(OwinConstants.HostOnAppDisposing, out value)
-                && value is CancellationToken
-                ? (CancellationToken)value
-                : default(CancellationToken);
-        }
-
-        private bool SupportsWebSockets(IDictionary<string, object> env)
-        {
-            object value;
-            if (env.TryGetValue(OwinConstants.ServerCapabilities, out value) && value is IDictionary<string,object>)
-            {
-                var capabilities = (IDictionary<string, object>) value;
-                return capabilities.ContainsKey(OwinConstants.WebSocketVersion);
-            }
-            return false;
-        }
-
-        private object GetIsDebugEnabled(IDictionary<string, object> env)
-        {
-            object value;
-            return env.TryGetValue(OwinConstants.HostAppModeKey, out value)
-                && value is string && !String.IsNullOrWhiteSpace(value as string)
-                && OwinConstants.AppModeDevelopment.Equals(value as string, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
