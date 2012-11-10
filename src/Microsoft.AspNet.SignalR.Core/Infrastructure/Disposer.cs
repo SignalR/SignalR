@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR
@@ -10,34 +11,42 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     internal class Disposer : IDisposable
     {
-        private const int NeedDispose = 1;
+        private static readonly object _disposedSentinel = new object();
 
-        private int _state;
-        private IDisposable _disposable;
+        private object _disposable;
 
         public void Set(IDisposable disposable)
         {
-            _disposable = disposable;
-
-            // Change the state to the need dispose state and dispose 
-            if (Interlocked.Exchange(ref _state, NeedDispose) == NeedDispose)
+            if (disposable == null)
             {
+                throw new ArgumentNullException();
+            }
+
+            object originalFieldValue = Interlocked.CompareExchange(ref _disposable, disposable, null);
+            if (originalFieldValue == null)
+            {
+                // this is the first call to Set() and Dispose() hasn't yet been called; do nothing
+            }
+            else if (originalFieldValue == _disposedSentinel)
+            {
+                // Dispose() has already been called, so we need to dispose of the object that was just added
                 disposable.Dispose();
+            }
+            else
+            {
+                // Set has been called multiple times, fail
+                Debug.Fail("Multiple calls to Disposer.Set(IDisposable) without calling Disposer.Dispose() in between.");
             }
         }
 
         public void Dispose()
         {
-            // If it's set, dispose it
-            if (_disposable != null)
+            var disposable = Interlocked.Exchange(ref _disposable, _disposedSentinel) as IDisposable;
+            if (disposable != null)
             {
-                _disposable.Dispose();
+                disposable.Dispose();
             }
-            else
-            {
-                // Change it to the should state
-                Interlocked.Exchange(ref _state, NeedDispose);
-            }
+
         }
     }
 }
