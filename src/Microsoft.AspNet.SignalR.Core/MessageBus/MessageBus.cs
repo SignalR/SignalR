@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.SignalR
             });
 
             // When the subscription itself is disposed then dispose it
-            subscription.Disposed = disposable.Dispose;
+            subscription.DisposedCallback = disposable.Dispose;
 
             // If there's a cursor then schedule work for this subscription
             if (!String.IsNullOrEmpty(cursor))
