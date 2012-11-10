@@ -21,4 +21,8 @@
         <Link>GlobalSuppressions.cs</Link>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+  <CodeAnalysisDictionary Include="..\Common\CodeAnalysisDictionary.xml" />
+  </ItemGroup>
 </Project>

@@ -104,6 +104,11 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual object GetService(Type serviceType)
         {
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException("serviceType");
+            }
+
             IList<Func<object>> activators;
             if (_resolvers.TryGetValue(serviceType, out activators))
             {
@@ -151,6 +156,11 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual void Register(Type serviceType, IEnumerable<Func<object>> activators)
         {
+            if (activators == null)
+            {
+                throw new ArgumentNullException("activators");
+            }
+
             IList<Func<object>> list;
             if (!_resolvers.TryGetValue(serviceType, out list))
             {
@@ -189,20 +199,28 @@ namespace Microsoft.AspNet.SignalR
             return obj;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            if (disposing)
             {
-                lock (_trackedDisposables)
+                if (Interlocked.Exchange(ref _disposed, 1) == 0)
                 {
-                    foreach (var d in _trackedDisposables)
+                    lock (_trackedDisposables)
                     {
-                        d.Dispose();
-                    }
+                        foreach (var d in _trackedDisposables)
+                        {
+                            d.Dispose();
+                        }
 
-                    _trackedDisposables.Clear();
+                        _trackedDisposables.Clear();
+                    }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

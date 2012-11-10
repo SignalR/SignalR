@@ -44,7 +44,6 @@ namespace Microsoft.AspNet.SignalR
             get { return "text/javascript"; }
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Jsonp", Justification = "Jsonp is a term.")]
         public static string CreateJsonpCallback(string callback, string payload)
         {
             var sb = new StringBuilder();

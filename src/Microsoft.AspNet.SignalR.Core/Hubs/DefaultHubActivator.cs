@@ -15,6 +15,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public IHub Create(HubDescriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException("descriptor");
+            }
+
             if(descriptor.HubType == null)
             {
                 return null;

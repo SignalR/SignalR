@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.SignalR
         {
             Id = Guid.NewGuid().ToString();
         }
-
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is a well known networking term.")]
+        
         public bool WaitForAck { get; set; }
         public string Id { get; private set; }
         public CommandType CommandType { get; set; }

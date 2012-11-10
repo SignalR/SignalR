@@ -5,7 +5,6 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Minifier", Justification = "Minifier is a valid name.")]
     public class NullJavaScriptMinifier : IJavaScriptMinifier
     {
         [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "This is a singleton")]

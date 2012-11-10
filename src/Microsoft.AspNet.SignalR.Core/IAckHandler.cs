@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR
 {
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is an accepted networking term.")]
     public interface IAckHandler
     {
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is an accepted networking term.")]
         Task CreateAck(string id);
 
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ack", Justification = "ACK is an accepted networking term.")]
         bool TriggerAck(string id);
     }
 }

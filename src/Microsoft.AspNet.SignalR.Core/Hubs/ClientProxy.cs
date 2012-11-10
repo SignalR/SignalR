@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
         private readonly string _hubName;
         private readonly string[] _exclude;
-
+        
         public ClientProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName, params string[] exclude)
         {
             _send = send;

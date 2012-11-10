@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.SignalR
         protected IMessageBus _newMessageBus;
         protected IJsonSerializer _jsonSerializer;
         protected IConnectionIdPrefixGenerator _connectionIdPrefixGenerator;
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ack", Justification = "ACK is a well know networking term.")]
         protected IAckHandler _ackHandler;
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private const string ScriptResource = "Microsoft.AspNet.SignalR.Scripts.hubs.js";
 
         private readonly IHubManager _manager;
-        private readonly IJavaScriptMinifier _javascriptMinifier;
+        private readonly IJavaScriptMinifier _javaScriptMinifier;
 
         public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
             this(resolver.Resolve<IHubManager>(),
@@ -30,10 +30,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
         }
 
-        public DefaultJavaScriptProxyGenerator(IHubManager manager, IJavaScriptMinifier javascriptMinifier)
+        public DefaultJavaScriptProxyGenerator(IHubManager manager, IJavaScriptMinifier javaScriptMinifier)
         {
             _manager = manager;
-            _javascriptMinifier = javascriptMinifier ?? NullJavaScriptMinifier.Instance;
+            _javaScriptMinifier = javaScriptMinifier ?? NullJavaScriptMinifier.Instance;
         }
 
         public bool IsDebuggingEnabled { get; set; }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             if (!IsDebuggingEnabled)
             {
-                script = _javascriptMinifier.Minify(script);
+                script = _javaScriptMinifier.Minify(script);
             }
 
             _scriptCache.TryAdd(serviceUrl, script);
@@ -107,6 +107,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         protected virtual string GetDescriptorName(Descriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException("descriptor");
+            }
+
             string name = descriptor.Name;
 
             // If the name was not specified then do not camel case
@@ -147,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             sb.Append("         }");
         }
 
-        private string MapToJavaScriptType(Type type)
+        private static string MapToJavaScriptType(Type type)
         {
             if (!type.IsPrimitive && !(type == typeof(string)))
             {

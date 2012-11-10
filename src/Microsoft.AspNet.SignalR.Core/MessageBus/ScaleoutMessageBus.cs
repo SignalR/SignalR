@@ -10,7 +10,6 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// 
     /// </summary>
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Scaleout", Justification = "Scaleout is a SignalR term")]
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>>();

@@ -45,6 +45,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A <see cref="IPersistentConnectionContext"/> for the <see cref="PersistentConnection"/>.</returns>
         public IPersistentConnectionContext GetConnection(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
             string connectionName = type.FullName;
             IConnection connection = GetConnection(connectionName);
 

@@ -84,6 +84,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Used for debugging purposes.")]
         private TraceSource Trace
         {
             get
