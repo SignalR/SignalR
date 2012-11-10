@@ -62,9 +62,9 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        public event Action<string> EventAdded;
+        public event Action<string> EventKeyAdded;
 
-        public event Action<string> EventRemoved;
+        public event Action<string> EventKeyRemoved;
 
         public Func<string> GetCursor { get; set; }
 
@@ -218,10 +218,10 @@ namespace Microsoft.AspNet.SignalR
                     {
                         var name = command.Value;
 
-                        if (EventAdded != null)
+                        if (EventKeyAdded != null)
                         {
                             _groups.Add(name);
-                            EventAdded(name);
+                            EventKeyAdded(name);
                         }
                     }
                     break;
@@ -229,10 +229,10 @@ namespace Microsoft.AspNet.SignalR
                     {
                         var name = command.Value;
 
-                        if (EventRemoved != null)
+                        if (EventKeyRemoved != null)
                         {
                             _groups.Remove(name);
-                            EventRemoved(name);
+                            EventKeyRemoved(name);
                         }
                     }
                     break;

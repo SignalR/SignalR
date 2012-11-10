@@ -164,8 +164,8 @@ namespace Microsoft.AspNet.SignalR
 
             Action<string> eventRemoved = eventKey => RemoveEvent(subscription, eventKey);
 
-            subscriber.EventAdded += eventAdded;
-            subscriber.EventRemoved += eventRemoved;
+            subscriber.EventKeyAdded += eventAdded;
+            subscriber.EventKeyRemoved += eventRemoved;
             subscriber.GetCursor += subscription.GetCursor;
 
             // Add the subscription when it's all set and can be scheduled
@@ -183,8 +183,8 @@ namespace Microsoft.AspNet.SignalR
                 // Invoke the terminal callback
                 subscription.Invoke(MessageResult.TerminalMessage).Wait();
 
-                subscriber.EventAdded -= eventAdded;
-                subscriber.EventRemoved -= eventRemoved;
+                subscriber.EventKeyAdded -= eventAdded;
+                subscriber.EventKeyRemoved -= eventRemoved;
                 subscriber.GetCursor -= subscription.GetCursor;
 
                 foreach (var eventKey in subscriber.EventKeys)

@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.SignalR.Stress
             set;
         }
 
-        public event Action<string> EventAdded;
+        public event Action<string> EventKeyAdded;
 
-        public event Action<string> EventRemoved;
+        public event Action<string> EventKeyRemoved;
 
         public Func<string> GetCursor { get; set; }
 

@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.SignalR
 
         string Identity { get; }
 
-        event Action<string> EventAdded;
+        event Action<string> EventKeyAdded;
 
-        event Action<string> EventRemoved;
+        event Action<string> EventKeyRemoved;
     }
 }

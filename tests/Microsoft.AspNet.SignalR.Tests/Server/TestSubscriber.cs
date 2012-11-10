@@ -15,25 +15,25 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
         public string Identity { get; private set; }
 
-        public event Action<string> EventAdded;
+        public event Action<string> EventKeyAdded;
 
-        public event Action<string> EventRemoved;
+        public event Action<string> EventKeyRemoved;
 
         public Func<string> GetCursor { get; set; }
 
         public void AddEvent(string eventName)
         {
-            if (EventAdded != null)
+            if (EventKeyAdded != null)
             {
-                EventAdded(eventName);
+                EventKeyAdded(eventName);
             }
         }
 
         public void RemoveEvent(string eventName)
         {
-            if (EventRemoved != null)
+            if (EventKeyRemoved != null)
             {
-                EventRemoved(eventName);
+                EventKeyRemoved(eventName);
             }
         }
     }
