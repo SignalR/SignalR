@@ -123,6 +123,8 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 _connection.Close(abort: true);
             }
+
+            base.Dispose();
         }
     }
 }

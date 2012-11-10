@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C-4977-40AA-B297-3A2CB9990ABF}"
 	ProjectSection(SolutionItems) = preProject
 		Build\Build.proj = Build\Build.proj
+		src\Common\CodeAnalysisDictionary.xml = src\Common\CodeAnalysisDictionary.xml
 		src\Common\Microsoft.AspNet.SignalR.ruleset = src\Common\Microsoft.AspNet.SignalR.ruleset
 		src\Common\Microsoft.AspNet.SignalR.targets = src\Common\Microsoft.AspNet.SignalR.targets
 		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
