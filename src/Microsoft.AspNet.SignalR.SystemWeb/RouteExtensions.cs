@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Web.Routing;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.SystemWeb.Infrastructure;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.SignalR
         /// <example>
         /// routes.MapConnection{MyConnection}("echo", "echo/{*operation}");
         /// </example>
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url) where T : PersistentConnection
         {
             return MapConnection(routes, name, url, typeof(T), GlobalHost.DependencyResolver);
@@ -36,9 +38,10 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="url">path pattern of the route. Should end with catch-all parameter.</param>
         /// <param name="resolver">The dependency resolver to use for this connection</param>
         /// <returns>The registered route</returns>
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url, IDependencyResolver resolver) where T : PersistentConnection
         {
-            return MapConnection(routes, name, url, typeof(T));
+            return MapConnection(routes, name, url, typeof(T), resolver);
         }
 
         /// <summary>
@@ -98,6 +101,21 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)
         {
+            if (routes == null)
+            {
+                throw new ArgumentNullException("routes");
+            }
+
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
             var existing = routes["signalr.hubs"];
             if (existing != null)
             {
@@ -126,7 +144,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var routeUrl = url ?? String.Empty;
             var catchAllIndex = routeUrl.LastIndexOf("/{*", StringComparison.Ordinal);
-            if (routeUrl.EndsWith("}") && catchAllIndex != -1)
+            if (routeUrl.EndsWith("}", StringComparison.OrdinalIgnoreCase) && catchAllIndex != -1)
             {
                 routeUrl = routeUrl.Substring(0, catchAllIndex);
             }
