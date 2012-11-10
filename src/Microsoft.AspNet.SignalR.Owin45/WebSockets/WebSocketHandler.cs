@@ -51,18 +51,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             return SendAsync(message);
         }
-
-        // Sends a binary message to the client
-        public void Send(byte[] message)
-        {
-            if (message == null)
-            {
-                throw new ArgumentNullException("message");
-            }
-
-            SendAsync(message, WebSocketMessageType.Binary);
-        }
-
+        
         internal Task SendAsync(string message)
         {
             return SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text);
@@ -93,14 +82,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             get
             {
                 return _maxIncomingMessageSize;
-            }
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                _maxIncomingMessageSize = value;
             }
         }
 

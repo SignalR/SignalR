@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,39 +11,37 @@ using Microsoft.AspNet.SignalR.WebSockets;
 namespace Microsoft.AspNet.SignalR.Owin
 {
     using WebSocketCloseAsync =
-            Func
-            <
-                int /* closeStatus */,
-                string /* closeDescription */,
-                CancellationToken /* cancel */,
-                Task
-            >;
-
+                Func
+                <
+                    int /* closeStatus */,
+                    string /* closeDescription */,
+                    CancellationToken /* cancel */,
+                    Task
+                >;
     using WebSocketReceiveAsync =
-                    Func
-                    <
-                        ArraySegment<byte> /* data */,
-                        CancellationToken /* cancel */,
-                        Task
+                        Func
                         <
-                            Tuple
+                            ArraySegment<byte> /* data */,
+                            CancellationToken /* cancel */,
+                            Task
                             <
-                                int /* messageType */,
-                                bool /* endOfMessage */,
-                                int /* count */
+                                Tuple
+                                <
+                                    int /* messageType */,
+                                    bool /* endOfMessage */,
+                                    int /* count */
+                                >
                             >
-                        >
-                    >;
-
+                        >;
     using WebSocketSendAsync =
-                       Func
-                       <
-                           ArraySegment<byte> /* data */,
-                           int /* messageType */,
-                           bool /* endOfMessage */,
-                           CancellationToken /* cancel */,
-                           Task
-                       >;
+                           Func
+                           <
+                               ArraySegment<byte> /* data */,
+                               int /* messageType */,
+                               bool /* endOfMessage */,
+                               CancellationToken /* cancel */,
+                               Task
+                           >;
 
     internal class OwinWebSocketHandler
     {
@@ -53,6 +52,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             _callback = callback;
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The websocket handler disposes the socket when the receive loop is over.")]
         public Task ProcessRequestAsync(IDictionary<string, object> env)
         {
             object value;
@@ -81,19 +81,17 @@ namespace Microsoft.AspNet.SignalR.Owin
             private readonly WebSocketSendAsync _sendAsync;
             private readonly WebSocketReceiveAsync _receiveAsync;
             private readonly WebSocketCloseAsync _closeAsync;
-            private readonly CancellationToken _cancellationToken;
 
             public OwinWebSocket(IDictionary<string, object> env)
             {
                 _sendAsync = (WebSocketSendAsync)env[WebSocketConstants.WebSocketSendAsyncKey];
                 _receiveAsync = (WebSocketReceiveAsync)env[WebSocketConstants.WebSocketReceiveAyncKey];
                 _closeAsync = (WebSocketCloseAsync)env[WebSocketConstants.WebSocketCloseAsyncKey];
-                _cancellationToken = (CancellationToken)env[WebSocketConstants.WebSocketCallCancelledKey];
             }
 
             public override void Abort()
             {
-                
+
             }
 
             public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
@@ -118,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             public override void Dispose()
             {
-                
+
             }
 
             public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
@@ -147,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 get { throw new NotImplementedException(); }
             }
 
-            private WebSocketMessageType OpCodeToEnum(int messageType)
+            private static WebSocketMessageType OpCodeToEnum(int messageType)
             {
                 switch (messageType)
                 {
@@ -162,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 }
             }
 
-            private int EnumToOpCode(WebSocketMessageType webSocketMessageType)
+            private static int EnumToOpCode(WebSocketMessageType webSocketMessageType)
             {
                 switch (webSocketMessageType)
                 {
