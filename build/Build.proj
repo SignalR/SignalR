@@ -24,7 +24,7 @@
 
   <!-- Add extra properties to the build for signing -->
   <PropertyGroup Condition="Exists('$(KeyFile)')">
-    <ExtraProperties>_SignAssembly=true;_DelaySign=true;AssemblyOriginatorKeyFile=$(KeyFile)</ExtraProperties>
+    <ExtraProperties>_SignAssembly=true;_DelaySign=true;AssemblyOriginatorKeyFile=$(KeyFile);KeyFile=$(KeyFile)</ExtraProperties>
   </PropertyGroup>
 
   <PropertyGroup>
