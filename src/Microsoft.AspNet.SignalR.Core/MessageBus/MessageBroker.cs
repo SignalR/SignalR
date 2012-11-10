@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -89,7 +90,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        public void AddWorker()
+        private void AddWorker()
         {
             // Only create a new worker if everyone is busy (up to the max)
             if (_allocatedWorkers < _maxWorkers)
@@ -128,6 +129,7 @@ namespace Microsoft.AspNet.SignalR
 
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
         private void ProcessWorkSync(Task pumpTask)
         {
             try
@@ -159,14 +161,15 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
-        public Task PumpAsync()
+        private Task PumpAsync()
         {
             var tcs = new TaskCompletionSource<object>();
             PumpImpl(tcs);
             return tcs.Task;
         }
 
-        public void PumpImpl(TaskCompletionSource<object> taskCompletionSource, ISubscription subscription = null)
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
+        private void PumpImpl(TaskCompletionSource<object> taskCompletionSource, ISubscription subscription = null)
         {
 
         Process:

@@ -46,6 +46,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
         public static TResult GetAttributeValue<TAttribute, TResult>(ICustomAttributeProvider source, Func<TAttribute, TResult> valueGetter)
             where TAttribute : Attribute
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (valueGetter == null)
+            {
+                throw new ArgumentNullException("valueGetter");
+            }
+
             var attributes = source.GetCustomAttributes(typeof(TAttribute), false)
                 .Cast<TAttribute>()
                 .ToList();

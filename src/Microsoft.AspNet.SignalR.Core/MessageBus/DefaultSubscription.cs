@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.SignalR
             return 0;
         }
 
-        private ulong GetMessageId(Topic topic)
+        private static ulong GetMessageId(Topic topic)
         {
             if (topic == null)
             {

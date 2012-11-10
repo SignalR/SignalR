@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR
@@ -8,6 +9,11 @@ namespace Microsoft.AspNet.SignalR
     {
         public static T GetValue<T>(this HostContext context, string key)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             object value;
             if (context.Items.TryGetValue(key, out value))
             {

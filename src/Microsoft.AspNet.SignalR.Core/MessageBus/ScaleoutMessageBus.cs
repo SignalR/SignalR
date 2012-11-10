@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="id">id of the payload within that stream</param>
         /// <param name="messages">List of messages associated</param>
         /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected Task OnReceived(string streamId, ulong id, Message[] messages)
         {
             // Create a local dictionary for this payload
@@ -77,6 +78,7 @@ namespace Microsoft.AspNet.SignalR
             return Send(new[] { message });
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
         {
             return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streams, callback, messageBufferSize, _counters);

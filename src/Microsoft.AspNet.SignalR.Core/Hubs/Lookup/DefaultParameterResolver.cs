@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -14,6 +15,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>The parameter value.</returns>
         public virtual object ResolveParameter(ParameterDescriptor descriptor, IJsonValue value)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException("descriptor");
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
             if (value.GetType() == descriptor.ParameterType)
             {
                 return value;
@@ -30,6 +41,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>Array of parameter values.</returns>
         public virtual object[] ResolveMethodParameters(MethodDescriptor method, params IJsonValue[] values)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException("method");
+            }
+
             return method.Parameters.Zip(values, ResolveParameter).ToArray();
         }
     }

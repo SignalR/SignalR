@@ -48,6 +48,11 @@ namespace Microsoft.AspNet.SignalR
 
         public void AddSubscription(ISubscription subscription)
         {
+            if (subscription == null)
+            {
+                throw new ArgumentNullException("subscription");
+            }
+
             try
             {
                 SubscriptionLock.EnterWriteLock();
@@ -67,6 +72,11 @@ namespace Microsoft.AspNet.SignalR
 
         public void RemoveSubscription(ISubscription subscription)
         {
+            if (subscription == null)
+            {
+                throw new ArgumentNullException("subscription");
+            }
+
             try
             {
                 SubscriptionLock.EnterWriteLock();

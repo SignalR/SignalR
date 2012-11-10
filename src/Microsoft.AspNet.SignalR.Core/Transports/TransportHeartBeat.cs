@@ -80,6 +80,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="connection">The connection to be added.</param>
         public bool AddConnection(ITrackingConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             var newMetadata = new ConnectionMetadata(connection);
             ConnectionMetadata oldMetadata = null;
             bool isNewConnection = true;
@@ -140,6 +145,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="connection">The connection to remove.</param>
         public void RemoveConnection(ITrackingConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             // Remove the connection and associated metadata
             RemoveConnection(connection.ConnectionId);
         }
@@ -150,6 +160,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="connection">The connection to mark.</param>
         public void MarkConnection(ITrackingConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             ConnectionMetadata metadata;
             if (_connections.TryGetValue(connection.ConnectionId, out metadata))
             {

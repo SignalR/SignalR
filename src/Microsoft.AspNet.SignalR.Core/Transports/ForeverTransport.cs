@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -45,10 +46,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 return _lastMessageId;
-            }
-            private set
-            {
-                _lastMessageId = value;
             }
         }
 
@@ -200,6 +197,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
         private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
         {
             Func<Task> afterReceive = () =>
@@ -252,6 +250,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return tcs.Task;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;

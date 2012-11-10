@@ -35,6 +35,16 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual void Initialize(IDependencyResolver resolver, HostContext context)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             if (_initialized)
             {
                 return;
@@ -99,6 +109,11 @@ namespace Microsoft.AspNet.SignalR
         /// </exception>
         public virtual Task ProcessRequestAsync(HostContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             if (!_initialized)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionNotInitialized));

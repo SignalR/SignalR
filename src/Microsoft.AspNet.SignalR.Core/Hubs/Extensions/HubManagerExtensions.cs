@@ -12,6 +12,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         public static HubDescriptor EnsureHub(this IHubManager hubManager, string hubName, params IPerformanceCounter[] counters)
         {
+            if (hubManager == null)
+            {
+                throw new ArgumentNullException("hubManager");
+            }
+
+            if (String.IsNullOrEmpty(hubName))
+            {
+                throw new ArgumentNullException("hubName");
+            }
+
             var descriptor = hubManager.GetHub(hubName);
 
             if (descriptor == null)
@@ -28,11 +38,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public static IEnumerable<HubDescriptor> GetHubs(this IHubManager hubManager)
         {
+            if (hubManager == null)
+            {
+                throw new ArgumentNullException("hubManager");
+            }
+
             return hubManager.GetHubs(d => true);
         }
 
         public static IEnumerable<MethodDescriptor> GetHubMethods(this IHubManager hubManager, string hubName)
         {
+            if (hubManager == null)
+            {
+                throw new ArgumentNullException("hubManager");
+            }
+
             return hubManager.GetHubMethods(hubName, m => true);
         }
     }

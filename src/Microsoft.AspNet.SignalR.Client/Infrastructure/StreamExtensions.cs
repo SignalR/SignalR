@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal static class StreamExtensions
     {
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<int> ReadAsync(this Stream stream, byte[] buffer)
         {
 #if NETFX_CORE
@@ -24,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #endif
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task WriteAsync(this Stream stream, byte[] buffer)
         {
 #if NETFX_CORE

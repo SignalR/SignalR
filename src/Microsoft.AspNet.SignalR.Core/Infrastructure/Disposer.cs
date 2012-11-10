@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (disposable == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("disposable");
             }
 
             object originalFieldValue = Interlocked.CompareExchange(ref _disposable, disposable, null);

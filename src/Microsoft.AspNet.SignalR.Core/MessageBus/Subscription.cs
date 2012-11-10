@@ -36,6 +36,31 @@ namespace Microsoft.AspNet.SignalR
 
         protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
         {
+            if (String.IsNullOrEmpty(identity))
+            {
+                throw new ArgumentNullException("identity");
+            }
+
+            if (eventKeys == null)
+            {
+                throw new ArgumentNullException("eventKeys");
+            }
+
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
+            if (maxMessages < 0)
+            {
+                throw new ArgumentOutOfRangeException("maxMessages");
+            }
+
+            if (counters == null)
+            {
+                throw new ArgumentNullException("counters");
+            }
+
             Identity = identity;
             _callback = callback;
             EventKeys = new HashSet<string>(eventKeys);
@@ -129,6 +154,7 @@ namespace Microsoft.AspNet.SignalR
             }).FastUnwrap();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
         private void WorkImpl(TaskCompletionSource<object> taskCompletionSource)
         {
         Process:

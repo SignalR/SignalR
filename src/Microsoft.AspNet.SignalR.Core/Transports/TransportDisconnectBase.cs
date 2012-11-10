@@ -43,6 +43,31 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            if (heartbeat == null)
+            {
+                throw new ArgumentNullException("heartbeat");
+            }
+
+            if (performanceCounterManager == null)
+            {
+                throw new ArgumentNullException("performanceCounterManager");
+            }
+
+            if (traceManager == null)
+            {
+                throw new ArgumentNullException("traceManager");
+            }
+
             _context = context;
             _jsonSerializer = jsonSerializer;
             _heartbeat = heartbeat;

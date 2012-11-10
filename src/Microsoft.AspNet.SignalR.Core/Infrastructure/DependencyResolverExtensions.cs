@@ -12,26 +12,66 @@ namespace Microsoft.AspNet.SignalR
     {
         public static T Resolve<T>(this IDependencyResolver resolver)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
             return (T)resolver.GetService(typeof(T));
         }
 
         public static object Resolve(this IDependencyResolver resolver, Type type)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
             return resolver.GetService(type);
         }
 
         public static IEnumerable<T> ResolveAll<T>(this IDependencyResolver resolver)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
             return resolver.GetServices(typeof(T)).Cast<T>();
         }
 
         public static IEnumerable<object> ResolveAll(this IDependencyResolver resolver, Type type)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
             return resolver.GetServices(type);
         }
 
         public static void InitializeHost(this IDependencyResolver resolver, string instanceName, CancellationToken hostShutdownToken)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            if (String.IsNullOrEmpty(instanceName))
+            {
+                throw new ArgumentNullException("instanceName");
+            }
+
             // Initialize the performance counters
             resolver.InitializePerformanceCounters(instanceName, hostShutdownToken);
 

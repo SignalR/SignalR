@@ -24,6 +24,11 @@ namespace Microsoft.AspNet.SignalR
                                     IPerformanceCounterManager counters)
             : base(identity, eventKeys, callback, maxMessages, counters)
         {
+            if (streamMappings == null)
+            {
+                throw new ArgumentNullException("streamMappings");
+            }
+
             _streams = streamMappings;
 
             IEnumerable<Cursor> cursors = null;

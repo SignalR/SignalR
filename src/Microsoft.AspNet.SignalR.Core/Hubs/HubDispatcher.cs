@@ -50,6 +50,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public override void Initialize(IDependencyResolver resolver, HostContext context)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
@@ -136,6 +146,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller.")]
         private Task InvokeHubPipeline(IHub hub,
                                        IJsonValue[] parameterValues,
                                        MethodDescriptor methodDescriptor,
@@ -174,6 +185,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public override Task ProcessRequestAsync(HostContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             // Trim any trailing slashes
             string normalized = context.Request.Url.LocalPath.TrimEnd('/');
 
@@ -204,6 +220,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return hub.OnDisconnected();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "A faulted task is returned.")]
         internal static Task<object> Incoming(IHubIncomingInvokerContext context)
         {
             var tcs = new TaskCompletionSource<object>();

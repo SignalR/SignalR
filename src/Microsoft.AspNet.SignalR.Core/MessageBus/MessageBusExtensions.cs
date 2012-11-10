@@ -102,11 +102,36 @@ namespace Microsoft.AspNet.SignalR
 
         public static void Enumerate(this IList<ArraySegment<Message>> messages, Action<Message> onMessage)
         {
+            if (messages == null)
+            {
+                throw new ArgumentNullException("messages");
+            }
+
+            if (onMessage == null)
+            {
+                throw new ArgumentNullException("onMessage");
+            }
+
             Enumerate(messages, message => true, onMessage);
         }
 
         public static void Enumerate(this IList<ArraySegment<Message>> messages, Func<Message, bool> filter, Action<Message> onMessage)
         {
+            if (messages == null)
+            {
+                throw new ArgumentNullException("messages");
+            }
+
+            if (filter == null)
+            {
+                throw new ArgumentNullException("filter");
+            }
+
+            if (onMessage == null)
+            {
+                throw new ArgumentNullException("onMessage");
+            }
+
             for (int i = 0; i < messages.Count; i++)
             {
                 ArraySegment<Message> segment = messages[i];
