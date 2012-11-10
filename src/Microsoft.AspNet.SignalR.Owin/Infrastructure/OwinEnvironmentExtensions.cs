@@ -6,6 +6,12 @@ namespace Microsoft.AspNet.SignalR.Owin
 {
     internal static class OwinEnvironmentExtensions
     {
+        internal static T Get<T>(this IDictionary<string, object> environment, string key)
+        {
+            object value;
+            return environment.TryGetValue(key, out value) ? (T)value : default(T);
+        }
+
         internal static CancellationToken GetShutdownToken(this IDictionary<string, object> env)
         {
             object value;
@@ -15,10 +21,10 @@ namespace Microsoft.AspNet.SignalR.Owin
                 : default(CancellationToken);
         }
 
-        internal static string GetAppInstanceName(this IDictionary<string, object> env)
+        internal static string GetAppInstanceName(this IDictionary<string, object> environment)
         {
             object value;
-            if (env.TryGetValue(OwinConstants.HostAppNameKey, out value))
+            if (environment.TryGetValue(OwinConstants.HostAppNameKey, out value))
             {
                 var stringVal = value as string;
 
@@ -31,10 +37,10 @@ namespace Microsoft.AspNet.SignalR.Owin
             return null;
         }
 
-        internal static bool SupportsWebSockets(this IDictionary<string, object> env)
+        internal static bool SupportsWebSockets(this IDictionary<string, object> environment)
         {
             object value;
-            if (env.TryGetValue(OwinConstants.ServerCapabilities, out value))
+            if (environment.TryGetValue(OwinConstants.ServerCapabilities, out value))
             {
                 var capabilities = value as IDictionary<string, object>;
                 if (capabilities != null)
@@ -45,10 +51,10 @@ namespace Microsoft.AspNet.SignalR.Owin
             return false;
         }
 
-        internal static bool GetIsDebugEnabled(this IDictionary<string, object> env)
+        internal static bool GetIsDebugEnabled(this IDictionary<string, object> environment)
         {
             object value;
-            if (env.TryGetValue(OwinConstants.HostAppModeKey, out value))
+            if (environment.TryGetValue(OwinConstants.HostAppModeKey, out value))
             {
                 var stringVal = value as string;
                 return !String.IsNullOrWhiteSpace(stringVal) &&

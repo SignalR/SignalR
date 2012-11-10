@@ -27,25 +27,19 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
             _resolver = resolver;
         }
 
-        private static T Get<T>(IDictionary<string, object> env, string key)
+        public Task Invoke(IDictionary<string, object> environment)
         {
-            object value;
-            return env.TryGetValue(key, out value) ? (T)value : default(T);
-        }
-
-        public Task Invoke(IDictionary<string, object> env)
-        {
-            var path = Get<string>(env, OwinConstants.RequestPath);
+            var path = environment.Get<string>(OwinConstants.RequestPath);
             if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
-                return _app.Invoke(env);
+                return _app.Invoke(environment);
             }
 
-            var pathBase = Get<string>(env, OwinConstants.RequestPathBase);
+            var pathBase = environment.Get<string>(OwinConstants.RequestPathBase);
             var dispatcher = new HubDispatcher(pathBase + _path);
 
             var handler = new CallHandler(_resolver, dispatcher);
-            return handler.Invoke(env);
+            return handler.Invoke(environment);
         }
     }
 }
