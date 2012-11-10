@@ -49,16 +49,19 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task OrEmpty(this Task task)
         {
             return task ?? Empty;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<T> OrEmpty<T>(this Task<T> task)
         {
             return task ?? TaskCache<T>.Empty;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromAsync(Func<AsyncCallback, object, IAsyncResult> beginMethod, Action<IAsyncResult> endMethod, object state)
         {
@@ -72,6 +75,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<T> FromAsync<T>(Func<AsyncCallback, object, IAsyncResult> beginMethod, Func<IAsyncResult, T> endMethod, object state)
         {
@@ -85,6 +89,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
@@ -117,7 +122,7 @@ namespace Microsoft.AspNet.SignalR
                 });
         }
 #endif
-
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
@@ -135,6 +140,7 @@ namespace Microsoft.AspNet.SignalR
             return task;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static void ContinueWithNotComplete(this Task task, TaskCompletionSource<object> tcs)
         {
             task.ContinueWith(t =>
@@ -151,6 +157,7 @@ namespace Microsoft.AspNet.SignalR
             TaskContinuationOptions.NotOnRanToCompletion);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static void ContinueWith(this Task task, TaskCompletionSource<object> tcs)
         {
             task.ContinueWith(t =>
@@ -170,6 +177,7 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static void ContinueWith<T>(this Task<T> task, TaskCompletionSource<T> tcs)
         {
             task.ContinueWith(t =>
@@ -193,6 +201,7 @@ namespace Microsoft.AspNet.SignalR
         /// Passes a task returning function into another task returning function so that
         /// it can decide when it starts and returns a task that completes when all are finished
         /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Interleave<T>(Func<T, Action, Task> before, Func<Task> after, T arg, TaskCompletionSource<object> tcs)
         {
             var tasks = new[] {
@@ -203,12 +212,14 @@ namespace Microsoft.AspNet.SignalR
             return tasks.Return();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Return(this Task[] tasks)
         {
             return Then(tasks, () => { });
         }
 
         // Then extesions
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then(this Task task, Action successor)
         {
             switch (task.Status)
@@ -227,6 +238,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<TResult> Then<TResult>(this Task task, Func<TResult> successor)
         {
             switch (task.Status)
@@ -245,6 +257,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then(this Task[] tasks, Action successor)
         {
             if (tasks.Length == 0)
@@ -275,6 +288,7 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then<T1>(this Task task, Action<T1> successor, T1 arg1)
         {
             switch (task.Status)
@@ -293,6 +307,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then<T1, T2>(this Task task, Action<T1, T2> successor, T1 arg1, T2 arg2)
         {
             switch (task.Status)
@@ -311,6 +326,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then<T1>(this Task task, Func<T1, Task> successor, T1 arg1)
         {
             switch (task.Status)
@@ -330,6 +346,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then<T1, T2>(this Task task, Func<T1, T2, Task> successor, T1 arg1, T2 arg2)
         {
             switch (task.Status)
@@ -349,6 +366,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, Task<TResult>> successor)
         {
             switch (task.Status)
@@ -368,6 +386,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<TResult> Then<T, TResult>(this Task<T> task, Func<T, TResult> successor)
         {
             switch (task.Status)
@@ -386,6 +405,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<TResult> Then<T, T1, TResult>(this Task<T> task, Func<T, T1, TResult> successor, T1 arg1)
         {
             switch (task.Status)
@@ -404,6 +424,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then(this Task task, Func<Task> successor)
         {
             switch (task.Status)
@@ -423,6 +444,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<TResult> Then<TResult>(this Task task, Func<Task<TResult>> successor)
         {
             switch (task.Status)
@@ -442,6 +464,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then<TResult>(this Task<TResult> task, Action<TResult> successor)
         {
             switch (task.Status)
@@ -460,6 +483,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then<TResult>(this Task<TResult> task, Func<TResult, Task> successor)
         {
             switch (task.Status)
@@ -479,6 +503,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<TResult> Then<TResult, T1>(this Task<TResult> task, Func<Task<TResult>, T1, Task<TResult>> successor, T1 arg1)
         {
             switch (task.Status)
@@ -498,18 +523,21 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task FastUnwrap(this Task<Task> task)
         {
             var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
             return innerTask ?? task.Unwrap();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<T> FastUnwrap<T>(this Task<Task<T>> task)
         {
             var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
             return innerTask ?? task.Unwrap();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Delay(TimeSpan timeOut)
         {
 #if NETFX_CORE
@@ -530,11 +558,13 @@ namespace Microsoft.AspNet.SignalR
 #endif
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task AllSucceeded(this Task[] tasks, Action continuation)
         {
             return AllSucceeded(tasks, _ => continuation());
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task AllSucceeded(this Task[] tasks, Action<Task[]> continuation)
         {
             return Task.Factory.ContinueWhenAll(tasks, _ =>
@@ -555,6 +585,7 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod(Action func)
         {
@@ -569,6 +600,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod<T1>(Action<T1> func, T1 arg)
         {
@@ -583,6 +615,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod<T1, T2>(Action<T1, T2> func, T1 arg1, T2 arg2)
         {
@@ -597,6 +630,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<TResult>(Func<TResult> func)
         {
@@ -610,6 +644,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<T1, TResult>(Func<T1, TResult> func, T1 arg)
         {
@@ -623,6 +658,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<T1, T2, TResult>(Func<T1, T2, TResult> func, T1 arg1, T2 arg2)
         {
@@ -636,6 +672,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<T> FromResult<T>(T value)
         {
             var tcs = new TaskCompletionSource<T>();
@@ -643,26 +680,7 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
-#if !NETFX_CORE
-        public static TaskContinueWithMethod GetContinueWith(Type taskType)
-        {
-            var continueWith = (from m in taskType.GetMethods()
-                                let methodParameters = m.GetParameters()
-                                where m.Name.Equals("ContinueWith", StringComparison.OrdinalIgnoreCase) &&
-                                    methodParameters.Length == 1
-                                let parameter = methodParameters[0]
-                                where parameter.ParameterType.IsGenericType &&
-                                typeof(Func<,>) == parameter.ParameterType.GetGenericTypeDefinition()
-                                select new TaskContinueWithMethod
-                                {
-                                    Method = m.MakeGenericMethod(typeof(Task)),
-                                    Type = parameter.ParameterType.GetGenericArguments()[0]
-                                })
-                .FirstOrDefault();
-            return continueWith;
-        }
-#endif
-
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         internal static Task FromError(Exception e)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -670,6 +688,7 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         internal static Task<T> FromError<T>(Exception e)
         {
             var tcs = new TaskCompletionSource<T>();
@@ -677,6 +696,7 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         private static Task Canceled()
         {
             var tcs = new TaskCompletionSource<object>();
@@ -684,17 +704,12 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         private static Task<T> Canceled<T>()
         {
             var tcs = new TaskCompletionSource<T>();
             tcs.SetCanceled();
             return tcs.Task;
-        }
-
-        internal class TaskContinueWithMethod
-        {
-            public MethodInfo Method { get; set; }
-            public Type Type { get; set; }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
