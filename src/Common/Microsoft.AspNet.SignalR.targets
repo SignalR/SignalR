@@ -10,10 +10,11 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(_SignAssembly)' == 'true' And '$(DisableSigning)' != 'true'">
+  <PropertyGroup Condition="'$(KeyFile)' != '' And '$(DisableSigning)' != 'true'">
     <DefineConstants>$(DefineConstants);SIGNED</DefineConstants>
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
+    <AssemblyOriginatorKeyFile>$(KeyFile)</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('..\Common\GlobalSuppressions.cs')">
