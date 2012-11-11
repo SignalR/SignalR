@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -223,11 +222,13 @@ namespace Microsoft.AspNet.SignalR
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.TrySetException(ex);
+                        Trace.TraceInformation("Work failed for " + subscription.Identity + ": " + ex.GetBaseException());
+
+                        goto Process;
                     }
                     finally
                     {
-                        if (!subscription.UnsetQueued())
+                        if (!subscription.UnsetQueued() || workTask.IsFaulted)
                         {
                             // If we don't have more work to do just make the subscription null
                             subscription = null;
@@ -262,21 +263,19 @@ namespace Microsoft.AspNet.SignalR
 
                 if (task.IsFaulted)
                 {
-                    taskCompletionSource.TrySetException(task.Exception);
+                    Trace.TraceInformation("Work failed for " + subscription.Identity + ": " + task.Exception.GetBaseException());
+                }
+
+                if (moreWork && !task.IsFaulted)
+                {
+                    PumpImpl(taskCompletionSource, subscription);
                 }
                 else
                 {
-                    if (moreWork)
-                    {
-                        PumpImpl(taskCompletionSource, subscription);
-                    }
-                    else
-                    {
-                        // Don't reference the subscription anymore
-                        subscription = null;
+                    // Don't reference the subscription anymore
+                    subscription = null;
 
-                        PumpImpl(taskCompletionSource);
-                    }
+                    PumpImpl(taskCompletionSource);
                 }
             });
         }
