@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.SignalR
             return bus.Publish(message);
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's disposed in an async manner.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         internal static Task<T> ReceiveAsync<T>(this IMessageBus bus,
                                                 ISubscriber subscriber,
@@ -55,7 +56,6 @@ namespace Microsoft.AspNet.SignalR
             int resultSet = 0;
             var result = default(T);
             IDisposable registration = null;
-            var callbackState = 0;
 
             registration = cancel.SafeRegister(state =>
             {
@@ -72,11 +72,8 @@ namespace Microsoft.AspNet.SignalR
                     {
                         result = map(messageResult);
 
-                        if (Interlocked.CompareExchange(ref callbackState, 1, 0) == 0)
-                        {
-                            // Dispose of the cancellation token subscription
-                            registration.Dispose();
-                        }
+                        // Dispose of the cancellation token subscription
+                        registration.Dispose();
                     }
 
                     if (messageResult.Terminal)

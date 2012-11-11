@@ -41,15 +41,16 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
-            NewMessageBus = resolver.Resolve<IMessageBus>();
-            _configurationManager = resolver.Resolve<IConfigurationManager>();
+            MessageBus = resolver.Resolve<IMessageBus>();
             ConnectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
             JsonSerializer = resolver.Resolve<IJsonSerializer>();
-            _transportManager = resolver.Resolve<ITransportManager>();
             TraceManager = resolver.Resolve<ITraceManager>();
-            _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
             Counters = resolver.Resolve<IPerformanceCounterManager>();
             AckHandler = resolver.Resolve<IAckHandler>();
+
+            _configurationManager = resolver.Resolve<IConfigurationManager>();
+            _transportManager = resolver.Resolve<ITransportManager>();
+            _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
 
             _initialized = true;
         }
@@ -62,12 +63,18 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        protected IMessageBus NewMessageBus { get; private set; }
+        protected IMessageBus MessageBus { get; private set; }
+
         protected IJsonSerializer JsonSerializer { get; private set; }
+
         protected IConnectionIdPrefixGenerator ConnectionIdPrefixGenerator { get; private set; }
+
         protected IAckHandler AckHandler { get; private set; }
+
         protected ITraceManager TraceManager { get; private set; }
+
         protected IPerformanceCounterManager Counters { get; private set; }
+
         protected ITransport Transport { get; private set; }
 
         /// <summary>
@@ -184,7 +191,7 @@ namespace Microsoft.AspNet.SignalR
 
         protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
         {
-            return new Connection(NewMessageBus,
+            return new Connection(MessageBus,
                                   JsonSerializer,
                                   DefaultSignal,
                                   connectionId,
