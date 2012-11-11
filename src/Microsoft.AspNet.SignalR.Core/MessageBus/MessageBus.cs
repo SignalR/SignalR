@@ -101,17 +101,8 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        protected ConcurrentDictionary<string, Topic> Topics
-        {
-            get;
-            private set;            
-        }
-
-        protected IPerformanceCounterManager Counters
-        {
-            get;
-            private set;
-        }
+        protected ConcurrentDictionary<string, Topic> Topics { get; private set; }
+        protected IPerformanceCounterManager Counters { get; private set; }
 
         public int AllocatedWorkers
         {

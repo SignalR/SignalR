@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         public MessageStore(uint capacity)
-            : this(capacity, 0)
+            : this(capacity, offset: 0)
         {
         }
 

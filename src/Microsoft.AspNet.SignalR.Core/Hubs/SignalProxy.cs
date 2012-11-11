@@ -20,23 +20,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _exclude = exclude;
         }
 
-        protected Func<string, ClientHubInvocation, IEnumerable<string>, Task> Send
-        {
-            get;
-            private set;
-        }
-
-        protected string Signal
-        {
-            get;
-            private set;
-        }
-
-        protected string HubName
-        {
-            get;
-            private set;
-        }
+        protected Func<string, ClientHubInvocation, IEnumerable<string>, Task> Send { get; private set; }
+        protected string Signal { get; private set; }
+        protected string HubName { get; private set; }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {

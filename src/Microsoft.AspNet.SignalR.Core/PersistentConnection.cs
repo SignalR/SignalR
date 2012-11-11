@@ -62,47 +62,13 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        protected IMessageBus NewMessageBus
-        {
-            get;
-            private set;
-        }
-
-        protected IJsonSerializer JsonSerializer
-        {
-            get;
-            private set;
-        }
-
-        protected IConnectionIdPrefixGenerator ConnectionIdPrefixGenerator
-        {
-            get;
-            private set;
-        }
-
-        protected IAckHandler AckHandler
-        {
-            get;
-            private set;
-        }
-
-        protected ITraceManager TraceManager
-        {
-            get;
-            private set;
-        }
-
-        protected IPerformanceCounterManager Counters
-        {
-            get;
-            private set;
-        }
-
-        protected ITransport Transport
-        {
-            get;
-            private set;
-        }
+        protected IMessageBus NewMessageBus { get; private set; }
+        protected IJsonSerializer JsonSerializer { get; private set; }
+        protected IConnectionIdPrefixGenerator ConnectionIdPrefixGenerator { get; private set; }
+        protected IAckHandler AckHandler { get; private set; }
+        protected ITraceManager TraceManager { get; private set; }
+        protected IPerformanceCounterManager Counters { get; private set; }
+        protected ITransport Transport { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
