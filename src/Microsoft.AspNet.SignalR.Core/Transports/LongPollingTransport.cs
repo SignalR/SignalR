@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -26,10 +27,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         }
 
-        public LongPollingTransport(HostContext context, 
-                                    IJsonSerializer jsonSerializer, 
-                                    ITransportHeartbeat heartbeat, 
-                                    IPerformanceCounterManager performanceCounterManager, 
+        public LongPollingTransport(HostContext context,
+                                    IJsonSerializer jsonSerializer,
+                                    ITransportHeartbeat heartbeat,
+                                    IPerformanceCounterManager performanceCounterManager,
                                     ITraceManager traceManager)
             : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
         {
@@ -46,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// The number of milliseconds to tell the browser to wait before restablishing a
         /// long poll connection after data is sent from the server. Defaults to 0.
         /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long", Justification = "Longpolling is a well known term")]
         public static long LongPollDelay
         {
             get;

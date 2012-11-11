@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
     // Represents the result of a call to MessageStore<T>.GetMessages.
+    [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes", Justification = "This is never compared")]
     public struct MessageStoreResult<T> where T : class
     {
         // The first message ID in the result set. Messages in the result set have sequentually increasing IDs.

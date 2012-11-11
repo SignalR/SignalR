@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -25,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="descriptor">Descriptor of the method, if found. Null otherwise.</param>
         /// <param name="parameters">Method parameters to match.</param>
         /// <returns>True, if a method has been found.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "This is a well known pattern for efficient lookup")]
         bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, params IJsonValue[] parameters);
     }
 }

@@ -165,16 +165,14 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
-            int totalCount = 0;
             var items = new List<ArraySegment<Message>>();
-            object state = null;
+            int totalCount;
+            object state;
 
-            PerformWork(ref items, ref totalCount, out state);
+            PerformWork(items, out totalCount, out state);
 
             if (items.Count > 0)
             {
-                BeforeInvoke(state);
-
                 var messageResult = new MessageResult(items, totalCount);
                 Task<bool> callbackTask = Invoke(messageResult, () => BeforeInvoke(state));
 
@@ -220,7 +218,11 @@ namespace Microsoft.AspNet.SignalR
         {
         }
 
-        protected abstract void PerformWork(ref List<ArraySegment<Message>> items, ref int totalCount, out object state);
+        [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The list needs to be populated")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "The caller wouldn't be able to specify what the generic type argument is")]
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "The count needs to be returned")]
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "The state needs to be set by the callee")]
+        protected abstract void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state);
 
         private void WorkImplAsync(Task<bool> callbackTask, TaskCompletionSource<object> taskCompletionSource)
         {

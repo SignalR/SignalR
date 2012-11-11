@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -116,13 +117,14 @@ namespace Microsoft.AspNet.SignalR
             return Cursor.MakeCursor(_cursors);
         }
 
-        protected override void PerformWork(ref List<ArraySegment<Message>> items, ref int totalCount, out object state)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
+        protected override void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             var cursors = new List<Cursor>();
+            totalCount = 0;
 
             lock (_lockObj)
             {
-                items = new List<ArraySegment<Message>>(_cursors.Count);
                 for (int i = 0; i < _cursors.Count; i++)
                 {
                     Cursor cursor = Cursor.Clone(_cursors[i]);
