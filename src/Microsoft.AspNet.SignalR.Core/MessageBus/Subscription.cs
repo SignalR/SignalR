@@ -279,42 +279,50 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // REIVIEW: Consider sleeping instead of using a tight loop, or maybe timing out after some interval
+                // if the client is very slow then this invoke call might not end quickly and this will make the CPU
+                // hot waiting for the task to return.
+
+                var spinWait = new SpinWait();
+
+                while (true)
+                {
+                    // Wait until the subscription isn't working anymore
+                    var state = Interlocked.CompareExchange(ref _subscriptionState,
+                                                            SubscriptionState.Disposed,
+                                                            SubscriptionState.Idle);
+
+                    // If we're not working then stop
+                    if (state != SubscriptionState.InvokingCallback)
+                    {
+                        if (state != SubscriptionState.Disposed)
+                        {
+                            // Only decrement if we're not disposed already
+                            _counters.MessageBusSubscribersCurrent.Decrement();
+                            _counters.MessageBusSubscribersPerSec.Decrement();
+                        }
+
+                        // Raise the disposed callback
+                        if (DisposedCallback != null)
+                        {
+                            DisposedCallback();
+                        }
+
+                        break;
+                    }
+
+                    spinWait.SpinOnce();
+                }
+            }
+        }
+
         public void Dispose()
         {
-            // REIVIEW: Consider sleeping instead of using a tight loop, or maybe timing out after some interval
-            // if the client is very slow then this invoke call might not end quickly and this will make the CPU
-            // hot waiting for the task to return.
-
-            var spinWait = new SpinWait();
-
-            while (true)
-            {
-                // Wait until the subscription isn't working anymore
-                var state = Interlocked.CompareExchange(ref _subscriptionState,
-                                                        SubscriptionState.Disposed,
-                                                        SubscriptionState.Idle);
-
-                // If we're not working then stop
-                if (state != SubscriptionState.InvokingCallback)
-                {
-                    if (state != SubscriptionState.Disposed)
-                    {
-                        // Only decrement if we're not disposed already
-                        _counters.MessageBusSubscribersCurrent.Decrement();
-                        _counters.MessageBusSubscribersPerSec.Decrement();
-                    }
-
-                    // Raise the disposed callback
-                    if (DisposedCallback != null)
-                    {
-                        DisposedCallback();
-                    }
-
-                    break;
-                }
-
-                spinWait.SpinOnce();
-            }
+            Dispose(true);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "")]

@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             get
             {
-                return _trace["SignalR.HubDispatcher"];
+                return TraceManager["SignalR.HubDispatcher"];
             }
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             if (!String.IsNullOrEmpty(data))
             {
-                var clientHubInfo = _jsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
+                var clientHubInfo = JsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
                 if (clientHubInfo != null)
                 {
                     foreach (var hubInfo in clientHubInfo)
@@ -429,7 +429,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 StackTrace = stackTrace
             };
 
-            return _transport.Send(hubResult);
+            return Transport.Send(hubResult);
         }
 
         private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)

@@ -36,10 +36,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return new ClientHubInvocation
             {
-                Hub = _hubName,
+                Hub = HubName,
                 Method = method,
                 Args = args,
-                Target = _signal,
+                Target = Signal,
                 State = _tracker.GetChanges()
             };
         }

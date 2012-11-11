@@ -94,13 +94,10 @@
     <Rule Id="CA1700" Action="Warning" />
     <Rule Id="CA1701" Action="Warning" />
     <Rule Id="CA1702" Action="Warning" />
-    <Rule Id="CA1703" Action="Warning" />
     <Rule Id="CA1704" Action="Warning" />
     <Rule Id="CA1707" Action="Warning" />
     <Rule Id="CA1708" Action="Warning" />
     <Rule Id="CA1709" Action="Warning" />
-    <Rule Id="CA1710" Action="Warning" />
-    <Rule Id="CA1711" Action="Warning" />
     <Rule Id="CA1712" Action="Warning" />
     <Rule Id="CA1713" Action="Warning" />
     <Rule Id="CA1714" Action="Warning" />

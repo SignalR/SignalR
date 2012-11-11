@@ -169,7 +169,6 @@
     <Compile Include="IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
-    <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
