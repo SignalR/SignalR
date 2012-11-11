@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips
-            _hostRegistration = _connectionEndToken.SafeRegister(state =>
+            _hostRegistration = _hostShutdownToken.SafeRegister(state =>
             {
                 state.Cancel();
             },
