@@ -3,15 +3,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -85,12 +86,17 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="queryString">The query string data to pass to the server.</param>
         public Connection(string url, string queryString)
         {
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+
             if (url.Contains("?"))
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UrlCantContainQueryStringDirectly), "url");
             }
 
-            if (!url.EndsWith("/"))
+            if (!url.EndsWith("/", StringComparison.Ordinal))
             {
                 url += "/";
             }
@@ -223,6 +229,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return null;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is flowed back to the caller via the tcs.")]
         private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
@@ -373,6 +380,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return _transport.Send<T>(this, data);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
         {
             OnReceived(message);

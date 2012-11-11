@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     eventSource.Message = sseEvent =>
                     {
-                        if (sseEvent.Type == EventType.Data)
+                        if (sseEvent.EventType == EventType.Data)
                         {
                             if (sseEvent.Data.Equals("initialized", StringComparison.OrdinalIgnoreCase))
                             {

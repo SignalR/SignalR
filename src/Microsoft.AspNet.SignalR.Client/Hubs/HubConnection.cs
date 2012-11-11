@@ -2,12 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
@@ -79,6 +78,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "")]
         protected override void OnReceived(JToken message)
         {
             var invocation = message.ToObject<HubInvocation>();
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
         private static string GetUrl(string url, bool useDefaultUrl)
         {
-            if (!url.EndsWith("/"))
+            if (!url.EndsWith("/", StringComparison.Ordinal))
             {
                 url += "/";
             }

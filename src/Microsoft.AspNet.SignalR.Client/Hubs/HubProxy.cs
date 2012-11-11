@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 #if !WINDOWS_PHONE && !NET35
 using System.Dynamic;
 #endif
@@ -77,6 +78,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 throw new ArgumentNullException("method");
             }
 
+            if (args == null)
+            {
+                throw new ArgumentNullException("args");
+            }
+
             var tokenifiedArguments = new JToken[args.Length];
             for (int i = 0; i < tokenifiedArguments.Length; i++)
             {
@@ -121,18 +127,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         }
 
 #if !WINDOWS_PHONE && !NET35
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             this[binder.Name] = value as JToken ?? JToken.FromObject(value);
             return true;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = this[binder.Name];
             return true;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             result = Invoke(binder.Name, args);

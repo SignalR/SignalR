@@ -3,14 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Client.Http;
-using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -72,6 +72,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<T> Send<T>(IConnection connection, string data)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             string url = connection.Url + "send";
             string customQueryString = GetCustomQueryString(connection);
 
@@ -94,6 +99,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
         protected string GetReceiveQueryString(IConnection connection, string data)
         {
             // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
@@ -190,6 +196,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally")]
         protected static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
             timedOut = false;

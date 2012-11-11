@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
             if (convert == null)
             {
-                throw new ArgumentNullException("converter");
+                throw new ArgumentNullException("convert");
             }
 
             _convert = convert;

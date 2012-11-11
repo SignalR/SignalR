@@ -9,6 +9,16 @@ namespace Microsoft.AspNet.SignalR.Client
     {
         public static T GetValue<T>(this IConnection connection, string key)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+
             object value;
             if (connection.Items.TryGetValue(key, out value))
             {
