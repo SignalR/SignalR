@@ -165,6 +165,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Failure to invoke the callback should be ignored")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable object is returned to the caller")]
         public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages)
         {
@@ -211,8 +212,16 @@ namespace Microsoft.AspNet.SignalR
                 // This will stop work from continuting to happen
                 subscription.Dispose();
 
-                // Invoke the terminal callback
-                subscription.Invoke(MessageResult.TerminalMessage).Wait();
+                try
+                {
+                    // Invoke the terminal callback
+                    subscription.Invoke(MessageResult.TerminalMessage).Wait();
+                }
+                catch
+                {
+                    // We failed to talk to the subscriber because they are already gone
+                    // so the terminal message isn't required.
+                }
 
                 subscriber.EventKeyAdded -= eventAdded;
                 subscriber.EventKeyRemoved -= eventRemoved;
