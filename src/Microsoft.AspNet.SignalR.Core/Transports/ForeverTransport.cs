@@ -315,8 +315,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                              .Catch(ex =>
                                              {
                                                  Trace.TraceInformation("Send failed with: " + ex.GetBaseException());
-                                             })
-                                             .Catch(ex => End());
+                                             });
                     }
                 },
                 MaxMessages);
