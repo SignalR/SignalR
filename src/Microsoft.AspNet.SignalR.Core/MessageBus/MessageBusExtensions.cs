@@ -54,24 +54,14 @@ namespace Microsoft.AspNet.SignalR
             var disposer = new Disposer();
             int resultSet = 0;
             var result = default(T);
-            var registration = default(CancellationTokenRegistration);
+            IDisposable registration = null;
             var callbackState = 0;
 
-            try
+            registration = cancel.SafeRegister(state =>
             {
-                registration = cancel.Register(() =>
-                {
-                    if (Interlocked.Exchange(ref callbackState, 1) == 0)
-                    {
-                        disposer.Dispose();
-                    }
-                });
-            }
-            catch (ObjectDisposedException)
-            {
-                // Dispose immediately
-                disposer.Dispose();
-            }
+                state.Dispose();
+            },
+            disposer);
 
             try
             {

@@ -109,6 +109,7 @@
     <Compile Include="Infrastructure\PerformanceCounterManager.cs" />
     <Compile Include="Infrastructure\Disposer.cs" />
     <Compile Include="Infrastructure\PerformanceCounterWrapper.cs" />
+    <Compile Include="Infrastructure\CancellationTokenExtensions.cs" />
     <Compile Include="Infrastructure\SafeCancellationTokenSource.cs" />
     <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Json\IJsonValue.cs" />

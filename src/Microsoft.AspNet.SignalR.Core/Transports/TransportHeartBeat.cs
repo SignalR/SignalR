@@ -215,10 +215,13 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (RaiseTimeout(metadata))
             {
+                RemoveConnection(metadata.Connection);
+
                 // If we're past the expiration time then just timeout the connection                            
                 metadata.Connection.Timeout();
 
-                RemoveConnection(metadata.Connection);
+                // End the connection
+                metadata.Connection.End();
             }
             else
             {
@@ -259,9 +262,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                     // Fire disconnect on the connection
                     metadata.Connection.Disconnect();
-
-                    // End the connection
-                    metadata.Connection.End();
                 }
             }
             catch (Exception ex)

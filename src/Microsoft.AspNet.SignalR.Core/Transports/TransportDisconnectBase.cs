@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
-        private CancellationTokenRegistration _hostRegistration;
+        private IDisposable _hostRegistration;
 
         // Queue to protect against overlapping writes to the underlying response stream
         private readonly TaskQueue _writeQueue = new TaskQueue();
@@ -189,6 +189,23 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        protected ITransportConnection Connection { get; set; }
+
+        protected HostContext Context
+        {
+            get { return _context; }
+        }
+
+        protected ITransportHeartbeat Heartbeat
+        {
+            get { return _heartbeat; }
+        }
+
+        public Uri Url
+        {
+            get { return _context.Request.Url; }
+        }
+
         public Task Disconnect()
         {
             return OnDisconnect().Then(() => Connection.Close(ConnectionId));
@@ -196,6 +213,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task OnDisconnect()
         {
+            Trace.TraceInformation("OnDisconnect(" + ConnectionId + ")");
+
             // When a connection is aborted (graceful disconnect) we send a command to it
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
@@ -203,10 +222,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
-                if (_connectionEndTokenSource != null)
-                {
-                    _connectionEndTokenSource.Cancel();
-                }
+                // End the connection
+                End();
 
                 var disconnected = Disconnected; // copy before invoking event to avoid race
                 if (disconnected != null)
@@ -226,12 +243,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _timedOut, 1) == 0)
             {
-                if (_connectionEndTokenSource != null)
-                {
-                    _connectionEndTokenSource.Cancel();
-                }
-
-                Trace.TraceInformation("Timeout(" + _connectionId + ")");
+                Trace.TraceInformation("Timeout(" + ConnectionId + ")");
             }
         }
 
@@ -244,7 +256,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _ended, 1) == 0)
             {
-                Trace.TraceInformation("End(" + _connectionId + ")");
+                Trace.TraceInformation("End(" + ConnectionId + ")");
 
                 if (_connectionEndTokenSource != null)
                 {
@@ -262,6 +274,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public void CompleteRequest()
         {
+            // REVIEW: We can get rid of this when we clean up the Interleave code.
             if (Completed != null)
             {
                 Completed.TrySetResult(null);
@@ -280,41 +293,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = new SafeCancellationTokenSource();
+            _connectionEndTokenSource = new SafeCancellationTokenSource();            
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips
-            _hostRegistration = _hostShutdownToken.Register(state =>
+            _hostRegistration = _connectionEndToken.SafeRegister(state =>
             {
-                try
-                {
-                    ((CancellationTokenSource)state).Cancel();
-                }
-                catch (ObjectDisposedException)
-                {
-                    // We've already disposed the token and we don't need to do any clean up
-                    // or triggering so just swallow the exception
-                }
+                state.Cancel();
             },
-            _connectionEndTokenSource,
-            useSynchronizationContext: false);
-        }
-
-        protected ITransportConnection Connection { get; set; }
-
-        protected HostContext Context
-        {
-            get { return _context; }
-        }
-
-        protected ITransportHeartbeat Heartbeat
-        {
-            get { return _heartbeat; }
-        }
-
-        public Uri Url
-        {
-            get { return _context.Request.Url; }
+            _connectionEndTokenSource);
         }
     }
 }
