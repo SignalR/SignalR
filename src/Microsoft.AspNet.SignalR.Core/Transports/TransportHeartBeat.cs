@@ -321,22 +321,30 @@ namespace Microsoft.AspNet.SignalR.Transports
             return elapsed >= _configurationManager.ConnectionTimeout;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            if (_timer != null)
+            if (disposing)
             {
-                _timer.Dispose();
-            }
-
-            // Kill all connections
-            foreach (var pair in _connections)
-            {
-                ConnectionMetadata metadata;
-                if (_connections.TryGetValue(pair.Key, out metadata))
+                if (_timer != null)
                 {
-                    metadata.Connection.End();
+                    _timer.Dispose();
+                }
+
+                // Kill all connections
+                foreach (var pair in _connections)
+                {
+                    ConnectionMetadata metadata;
+                    if (_connections.TryGetValue(pair.Key, out metadata))
+                    {
+                        metadata.Connection.End();
+                    }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
 
         private class ConnectionMetadata

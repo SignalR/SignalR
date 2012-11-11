@@ -10,6 +10,9 @@
       <Word>Redis</Word>
       <Word>Owin</Word>
       <Word>Stringify</Word>
+      <Word>Unminify</Word>
+      <Word>Unminified</Word>
+      <Word>Stateful</Word>
     </Recognized>
   </Words>
 </Dictionary>

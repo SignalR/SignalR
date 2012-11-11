@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return cacheEntries;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "If we throw then it's not a hub type")]
         private static bool IsHubType(Type type)
         {
             try
@@ -71,6 +72,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "If we throw then we have an empty type")]
         private static IEnumerable<Type> GetTypesSafe(Assembly a)
         {
             try
