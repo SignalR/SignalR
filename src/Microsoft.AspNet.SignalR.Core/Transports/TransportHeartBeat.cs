@@ -196,6 +196,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                     }
                     else
                     {
+                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+
                         // Check if we need to disconnect this connection
                         CheckDisconnect(metadata);
                     }
