@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
-        private CancellationTokenSource _connectionEndTokenSource;
+        private SafeCancellationTokenSource _connectionEndTokenSource;
 
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
@@ -200,14 +200,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             Heartbeat.RemoveConnection(this);
-
-            if (_connectionEndTokenSource != null)
-            {
-                _connectionEndTokenSource.Cancel();
-            }
-
+            
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
+                if (_connectionEndTokenSource != null)
+                {
+                    _connectionEndTokenSource.Cancel();
+                }
+
                 var disconnected = Disconnected; // copy before invoking event to avoid race
                 if (disconnected != null)
                 {
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = new CancellationTokenSource();
+            _connectionEndTokenSource = new SafeCancellationTokenSource();
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips
