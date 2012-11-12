@@ -20,16 +20,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private const string _sendQueryString = "?transport={0}&connectionId={1}{2}";
 
         // The transport name
-        protected readonly string _transport;
+        private readonly string _transport;
 
         protected const string HttpRequestKey = "http.Request";
 
-        protected readonly IHttpClient _httpClient;
+        private readonly IHttpClient _httpClient;
 
-        public HttpBasedTransport(IHttpClient httpClient, string transport)
+        protected HttpBasedTransport(IHttpClient httpClient, string transport)
         {
             _httpClient = httpClient;
             _transport = transport;
+        }
+
+        protected IHttpClient HttpClient
+        {
+            get { return _httpClient; }
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
@@ -80,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             string url = connection.Url + "send";
             string customQueryString = GetCustomQueryString(connection);
 
-            url += String.Format(_sendQueryString, _transport, connection.ConnectionId, customQueryString);
+            url += String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, customQueryString);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }
@@ -136,6 +141,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return qsBuilder.ToString();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is used on Silverlight and Windows Phone")]
         private static string GetNoCacheUrlParam()
         {
             return "noCache=" + Guid.NewGuid().ToString();
@@ -174,9 +180,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
         private void AbortConnection(IConnection connection)
         {
-            string url = connection.Url + "abort" + String.Format(_sendQueryString, _transport, connection.ConnectionId, null);
+            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
 
             try
             {
@@ -196,7 +203,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally")]
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
         protected static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
             timedOut = false;

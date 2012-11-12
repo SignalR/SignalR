@@ -55,6 +55,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return PostInternal(url, requestPreparer, postData);
         }
 
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Callers check for null return.")]
         public static string ReadAsString(this HttpWebResponse response)
         {
             try

@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             Close(exception: null);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the Close callback.")]
         private void Process()
         {
         Read:

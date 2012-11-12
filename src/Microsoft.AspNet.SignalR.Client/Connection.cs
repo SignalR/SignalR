@@ -386,6 +386,7 @@ namespace Microsoft.AspNet.SignalR.Client
             OnReceived(message);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         protected virtual void OnReceived(JToken message)
         {
             if (Received != null)
@@ -410,6 +411,7 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
 #if WINDOWS_PHONE

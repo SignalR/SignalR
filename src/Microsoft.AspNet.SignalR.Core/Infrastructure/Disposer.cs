@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR
             else
             {
                 // Set has been called multiple times, fail
-                Debug.Fail("Multiple calls to Disposer.Set(IDisposable) without calling Disposer.Dispose() in between.");
+                Debug.Fail("Multiple calls to Disposer.Set(IDisposable) without calling Disposer.Dispose()");
             }
         }
 

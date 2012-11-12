@@ -18,7 +18,6 @@
     <Rule Id="CA1017" Action="Warning" />
     <Rule Id="CA1018" Action="Warning" />
     <Rule Id="CA1019" Action="Warning" />
-    <Rule Id="CA1020" Action="Warning" />
     <Rule Id="CA1021" Action="Warning" />
     <Rule Id="CA1023" Action="Warning" />
     <Rule Id="CA1024" Action="Warning" />
@@ -29,7 +28,6 @@
     <Rule Id="CA1030" Action="Warning" />
     <Rule Id="CA1031" Action="Warning" />
     <Rule Id="CA1032" Action="Warning" />
-    <Rule Id="CA1033" Action="Warning" />
     <Rule Id="CA1034" Action="Warning" />
     <Rule Id="CA1035" Action="Warning" />
     <Rule Id="CA1036" Action="Warning" />

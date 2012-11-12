@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("LP: {0}", (object)url);
 #endif
 
-            _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
+            HttpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
             {
                 // Clear the pending request
                 connection.Items.Remove(HttpRequestKey);
