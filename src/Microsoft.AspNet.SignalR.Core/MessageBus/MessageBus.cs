@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             Dispose(true);
         }
