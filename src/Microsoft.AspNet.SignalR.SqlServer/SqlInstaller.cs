@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private const string CreateSchemaTableSql = "CREATE TABLE " + SchemaTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
         private const string InsertSchemaTableSql = "INSERT INTO " + SchemaTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
         private const string UpdateSchemaTableSql = "UPDATE " + SchemaTableName + " SET [SchemaVersion] = @SchemaVersion";
-        
+
         private readonly string _connectionString;
         private readonly string _messagesTableNamePrefix;
         private readonly int _tableCount;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _connectionString = connectionString;
             _messagesTableNamePrefix = tableNamePrefix;
             _tableCount = tableCount;
-            _exstingTablesSql = String.Format(_exstingTablesSql, _messagesTableNamePrefix);
+            _exstingTablesSql = String.Format(CultureInfo.InvariantCulture, _exstingTablesSql, _messagesTableNamePrefix);
         }
 
         public void EnsureInstalled()
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     var schemaTableExists = false;
                     var schemaRowExists = false;
                     object objectId = null;
-                    
+
                     using (var cmd = new SqlCommand(CheckSchemaTableExistsSql, connection))
                     {
                         cmd.Parameters.AddWithValue("TableName", SchemaTableName);
@@ -88,11 +88,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         else if ((int)schemaVersion > SchemaVersion)
                         {
                             // Schema is newer than we expect, not good
-                            throw new InvalidOperationException("SignalR SQL scale out schema is newer than the currently executing version.");
+                            throw new InvalidOperationException(Resources.Error_SignalRSQLScaleOutNewerThanCurrentVersion);
                         }
-                        
+
                     }
-                    
+
 
                     if (!schemaTableExists)
                     {
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Drop the existing tables
             foreach (var table in existingTables)
             {
-                var dropTableSql = String.Format(_dropTableSql, table);
+                var dropTableSql = String.Format(CultureInfo.CurrentCulture, _dropTableSql, table);
                 using (var cmd = new SqlCommand(dropTableSql, connection))
                 {
                     cmd.ExecuteNonQuery();
@@ -155,8 +155,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             for (var i = 0; i < _tableCount; i++)
             {
                 var createTableSql = _tableCount == 1
-                    ? String.Format(_createMessagesTableSql, _messagesTableNamePrefix)
-                    : String.Format(_createMessagesTableSql, _messagesTableNamePrefix + "_" + i.ToString(CultureInfo.InvariantCulture));
+                    ? String.Format(CultureInfo.CurrentCulture, _createMessagesTableSql, _messagesTableNamePrefix)
+                    : String.Format(CultureInfo.CurrentCulture, _createMessagesTableSql, _messagesTableNamePrefix + "_" + i.ToString(CultureInfo.InvariantCulture));
                 using (var cmd = new SqlCommand(createTableSql, connection))
                 {
                     cmd.ExecuteNonQuery();
