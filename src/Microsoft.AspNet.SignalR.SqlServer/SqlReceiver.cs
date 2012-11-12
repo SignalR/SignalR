@@ -42,6 +42,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         private void GetStartingId()
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -75,6 +76,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 .Catch(_ => connection.Close());
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         private SqlCommand BuildQueryCommand(SqlConnection connection)
         {
             var command = connection.CreateCommand();

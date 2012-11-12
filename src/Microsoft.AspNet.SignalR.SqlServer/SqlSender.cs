@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _insertSql = String.Format(CultureInfo.CurrentCulture, _insertSql, _tableName);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         public Task Send(Message[] messages)
         {
             if (messages == null || messages.Length == 0)

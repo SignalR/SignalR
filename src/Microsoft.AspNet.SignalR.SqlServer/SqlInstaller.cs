@@ -122,6 +122,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return new object();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         private void EnsureMessagesTables(SqlConnection connection)
         {
             var existingTables = new List<string>();
