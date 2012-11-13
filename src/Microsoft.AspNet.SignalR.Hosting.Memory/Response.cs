@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
@@ -42,8 +43,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         {
             get
             {
-                return !_stream.CancellationToken.IsCancellationRequested &&
-                       !_clientToken.IsCancellationRequested;
+                return !_clientToken.IsCancellationRequested;
             }
         }
 
@@ -77,18 +77,17 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         {
             private MemoryStream _currentStream;
             private int _readPos;
-            private readonly CancellationTokenSource _cancellationTokenSource;
+            private readonly SafeCancellationTokenSource _cancellationTokenSource;
             private readonly CancellationToken _cancellationToken;
 
             private event Action _onWrite;
-            private event Action _onClosed;
             private readonly object _completedLock = new object();
             private readonly object _writeLock = new object();
 
             public ResponseStream()
             {
                 _currentStream = new MemoryStream();
-                _cancellationTokenSource = new CancellationTokenSource();
+                _cancellationTokenSource = new SafeCancellationTokenSource();
                 _cancellationToken = _cancellationTokenSource.Token;
             }
 
@@ -182,28 +181,20 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 var ar = new AsyncResult<int>(callback, state);
 
-                Action closedHandler = null;
-                closedHandler = () =>
+                CancellationTokenRegistration registration = CancellationToken.Register(result =>
                 {
+                    var asyncResult = (AsyncResult<int>)result;
+
                     lock (_completedLock)
                     {
-                        if (!ar.IsCompleted)
+                        if (!asyncResult.IsCompleted)
                         {
-                            // Set the response to 0 if we've closed
-                            ar.SetAsCompleted(0, false);
+                            asyncResult.SetAsCompleted(0, false);
                         }
-
-                        _onClosed -= closedHandler;
                     }
-                };
-
-                _onClosed += closedHandler;
-
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    ar.SetAsCompleted(0, true);
-                    return ar;
-                }
+                },
+                ar,
+                useSynchronizationContext: false);
 
                 // If a write occurs after a synchronous read attempt and before the writeHandler is attached,
                 // the writeHandler could miss a write.
@@ -211,13 +202,15 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 {
                     int read = Read(buffer, offset, count);
 
-                    if (read != 0 || CancellationToken.IsCancellationRequested)
+                    if (read != 0)
                     {
                         lock (_completedLock)
                         {
                             if (!ar.IsCompleted)
                             {
                                 ar.SetAsCompleted(read, true);
+
+                                registration.Dispose();
                             }
                         }
                     }
@@ -232,6 +225,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                                 {
                                     read = Read(buffer, offset, count);
                                     ar.SetAsCompleted(read, false);
+
+                                    registration.Dispose();
                                 }
 
                                 _onWrite -= writeHandler;
@@ -252,12 +247,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             public override void Close()
             {
-                _cancellationTokenSource.Cancel(throwOnFirstException: false);
+                _cancellationTokenSource.Cancel();
 
-                if (_onClosed != null)
-                {
-                    _onClosed();
-                }
+                _cancellationTokenSource.Dispose();
 
                 base.Close();
             }

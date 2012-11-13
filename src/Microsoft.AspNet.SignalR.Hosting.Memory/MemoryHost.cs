@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Hosting.Common;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
@@ -75,8 +76,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             if (!_shutDownToken.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
-                var clientTokenSource = new CancellationTokenSource();
-                var request = new Request(uri, clientTokenSource, postData, User);
+                var clientTokenSource = new SafeCancellationTokenSource();
+                var request = new Request(uri, clientTokenSource.Cancel, postData, User);
                 prepareRequest(request);
 
                 Response response = null;
@@ -106,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     }
 
                     response.Close();
+                    clientTokenSource.Dispose();
                 });
 
                 return tcs.Task;
