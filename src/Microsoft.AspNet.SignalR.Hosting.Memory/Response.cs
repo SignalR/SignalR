@@ -181,10 +181,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 var ar = new AsyncResult<int>(callback, state);
 
-                CancellationTokenRegistration registration = CancellationToken.Register(result =>
+                IDisposable registration = CancellationToken.SafeRegister(asyncResult =>
                 {
-                    var asyncResult = (AsyncResult<int>)result;
-
                     lock (_completedLock)
                     {
                         if (!asyncResult.IsCompleted)
@@ -193,8 +191,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                         }
                     }
                 },
-                ar,
-                useSynchronizationContext: false);
+                ar);
 
                 // If a write occurs after a synchronous read attempt and before the writeHandler is attached,
                 // the writeHandler could miss a write.
