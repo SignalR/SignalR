@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,12 +21,12 @@ namespace Microsoft.AspNet.SignalR.Utils
 
         public override string DisplayName
         {
-            get { return "Generate Hub Proxy"; }
+            get { return String.Format(CultureInfo.CurrentCulture, Resources.Notify_GenerateHubProxy); }
         }
 
         public override string Help
         {
-            get { return "Generates Hub proxy JavaScript files for server Hub classes."; }
+            get { return String.Format(CultureInfo.CurrentCulture, Resources.Notify_GeneratesHubProxyJSFilesForHub); }
         }
 
         public override string[] Names
@@ -72,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             var assemblies = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories);
             var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            Info(String.Format("Creating temp directory {0}", tempPath));
+            Info(String.Format(CultureInfo.CurrentCulture, Resources.Notify_CreatingTempDirectory, tempPath));
 
             Directory.CreateDirectory(tempPath);
 
@@ -104,6 +105,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             File.Copy(sourcePath, target, overwrite: true);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.EndsWith(System.String)", Justification = "All ends with methods are SignalR/networking terms.  Will not change via localization.")]
         private static void OutputHubsFromUrl(string url, string outputPath, bool absolute)
         {
             string baseUrl = null;
@@ -124,9 +126,13 @@ namespace Microsoft.AspNet.SignalR.Utils
             }
 
             var uri = new Uri(url);
+            string js;
 
-            var wc = new WebClient();
-            string js = wc.DownloadString(uri);
+            using (var wc = new WebClient())
+            {
+                js = wc.DownloadString(uri);
+            }
+
             if (absolute)
             {
                 js = Regex.Replace(js, @"=(\w+)\(""(.*?/signalr)""\)", m =>
@@ -143,6 +149,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             File.WriteAllText(outputPath, js);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "All starts with methods are SignalR/networking terms.  Will not change via localization.")]
         private static void ParseArguments(string[] args, out string url, out bool absolute, out string path, out string outputPath)
         {
             absolute = false;
@@ -194,6 +201,7 @@ namespace Microsoft.AspNet.SignalR.Utils
 
         public class JavaScriptGenerator : MarshalByRefObject
         {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Called from non-static.")]
             public string GenerateProxy(string path, string url)
             {
                 foreach (var assemblyPath in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))

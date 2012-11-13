@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             if (command == null)
             {
                 // Unrecognized command
-                PrintError("Unrecognized command '" + args[0] + "'");
+                PrintError(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnrecognizedCommand, args[0]));
                 PrintHelp();
                 Environment.Exit(1); // non-zero is all we need for error
                 return;
@@ -63,26 +64,16 @@ namespace Microsoft.AspNet.SignalR.Utils
 
         private static void PrintBanner()
         {
-            var banner = "SignalR Utility Version: {0}";
-            Console.WriteLine(String.Format(banner, Assembly.GetExecutingAssembly().GetName().Version));
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Resources.Notify_SignalRUtilityVersion, Assembly.GetExecutingAssembly().GetName().Version));
         }
 
         private static void PrintHelp(string error = null)
         {
             PrintError(error);
 
-            var help =
-@"usage: signalr <command> [args]
-
-Available commands:
-
-  {0}
-
-For more information, visit https://github.com/SignalR/SignalR/wiki";
-
             var commands = String.Join(Environment.NewLine + "  ", _commands.Select(c => String.Join(", ", c.Names.Select(n => n)) + "    " + c.Help));
 
-            Console.WriteLine(String.Format(help, commands));
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Resources.Notify_Help, commands));
             Console.WriteLine();
         }
 
@@ -100,7 +91,7 @@ For more information, visit https://github.com/SignalR/SignalR/wiki";
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine();
-                Console.WriteLine("Warning: " + info);
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Resources.Notify_Warning + info));
                 Console.WriteLine();
                 Console.ResetColor();
             }
@@ -112,7 +103,7 @@ For more information, visit https://github.com/SignalR/SignalR/wiki";
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine();
-                Console.WriteLine("Error: " + error);
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Resources.Notify_Error + error));
                 Console.WriteLine();
                 Console.ResetColor();
             }
