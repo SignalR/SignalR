@@ -73,23 +73,28 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
-  <ItemGroup>
-    <TestProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" />
-    <TestProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.dll" />
-  </ItemGroup>
-
   <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
-  <Target Name="RunTests">
+  <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
+  </Target>
+
+  <Target Name="RunUnitTests">
     <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
     <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
     <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
 
-    <xunit Assembly="%(TestProjects.FullPath)" Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" Verbose="true" />
+    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" Verbose="true" />
+  </Target>
+
+  <Target Name="RunFunctionalTests">
+    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.dll" Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" Verbose="true" />
+  </Target>
+          
+  <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
   </Target>
 
   <Target Name="CreateOutputDir">
