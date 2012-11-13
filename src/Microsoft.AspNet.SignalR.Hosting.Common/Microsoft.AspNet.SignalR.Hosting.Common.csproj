@@ -47,7 +47,7 @@
     <Compile Include="GlobalHost.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
-    <Compile Include="Infrastructure\UriQueryUtility.cs" />
+    <Compile Include="Infrastructure\UrlDecoder.cs" />
     <Compile Include="RoutingHost.cs" />
     <Compile Include="HttpUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

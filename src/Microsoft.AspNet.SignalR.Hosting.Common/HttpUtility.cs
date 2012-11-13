@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
                     continue;
                 }
                 string value = kvp.Length > 1 ? kvp[1].Trim() : null;
-                nvc[key] = UriQueryUtility.UrlDecode(value);
+                nvc[key] = UrlDecoder.UrlDecode(value);
             }
 
             return nvc;
