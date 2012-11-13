@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.SignalR
         private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
         private int _disposed;
 
-        public void Initialize()
+        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "It's easiest")]
+        public DefaultDependencyResolver()
         {
             RegisterDefaultServices();
 

@@ -7,7 +7,6 @@ namespace Microsoft.AspNet.SignalR
 {
     public interface IDependencyResolver : IDisposable
     {
-        void Initialize();
         object GetService(Type serviceType);
         IEnumerable<object> GetServices(Type serviceType);
         void Register(Type serviceType, Func<object> activator);
