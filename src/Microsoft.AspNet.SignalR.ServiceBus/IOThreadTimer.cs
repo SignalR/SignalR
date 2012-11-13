@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             if (timeFromNow == TimeSpan.MaxValue)
             {
-                throw new ArgumentException("IOThreadTimer cannot accept Timespan.MaxValue.", "timeFromNow");
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_IOThreadTimerCannotAcceptTimeSpanMaxVal), "timeFromNow");
             }
 
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 string errorMessage = string.Format(
                     CultureInfo.CurrentCulture,
-                    "The value supplied must be between {0} and {1}.",
+                    Resources.Error_ValueSuppliedMustBeBetween,
                     0,
                     TimeSpan.MaxValue.Ticks - 1);
 

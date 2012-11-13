@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNet.SignalR.ServiceBus;
 
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.SignalR
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Unable to resolve the instance index of this role. Make sure Microsoft.WindowsAzure.ServiceRuntime.dll is deployed with your application.", ex);
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToResolveIncaseIndexOfRole), ex);
             }
 
             return UseServiceBus(resolver, connectionString, topicCount, instanceCount, azureRole.Index, azureRole.Name);

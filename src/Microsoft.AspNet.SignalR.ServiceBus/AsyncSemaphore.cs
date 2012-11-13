@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
 
     sealed class AsyncSemaphore
     {
@@ -68,8 +69,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 if (this.count == 0)
                 {
-                    throw new InvalidOperationException(
-                        "Semaphore's count has already reached zero before this operaiton. Make sure Exit() is called only after successfully entered the semaphore");
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_SemaphoreCountAlreadyReachedZero));
                 }
 
                 this.count--;

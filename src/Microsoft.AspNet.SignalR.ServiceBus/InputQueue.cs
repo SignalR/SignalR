@@ -5,7 +5,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Runtime.ExceptionServices;
     using System.Threading;
 
     sealed class InputQueue<T> : IDisposable where T : class
@@ -157,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 string errorMessage = string.Format(
                     CultureInfo.CurrentCulture,
-                    "A Dequeue operation timed out after {0}. The time allotted to this operation may have been a portion of a longer timeout.",
+                    Resources.Error_DequeueOperationTimedOut,
                     timeout);
 
                 throw new TimeoutException(errorMessage);
@@ -441,7 +440,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 return itemAvailable;
             }
         }
-        
+
         // We do not have a protected Dispose method because this is a sealed class
         public void Dispose()
         {

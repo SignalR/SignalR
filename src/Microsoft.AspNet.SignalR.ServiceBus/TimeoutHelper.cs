@@ -165,12 +165,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (timeout < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    argumentName, 
-                    timeout, 
+                    argumentName,
+                    timeout,
                     string.Format(
-                        CultureInfo.CurrentCulture, 
-                        "Argument {0} must be a non-negative timeout value. The provided value was {1}.", 
-                        argumentName, 
+                        CultureInfo.CurrentCulture,
+                        Resources.Error_ArgumentMustBeNonNegativeTimeoutVal,
+                        argumentName,
                         timeout));
             }
         }
@@ -185,11 +185,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (timeout <= TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    argumentName, 
+                    argumentName,
                     timeout,
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        "Argument {0} must be a positive timeout value. The provided value was {1}",
+                        Resources.Error_ArgumentMustBePositiveTimeoutVal,
                         argumentName,
                         timeout));
             }

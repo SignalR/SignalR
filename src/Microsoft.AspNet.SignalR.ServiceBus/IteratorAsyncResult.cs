@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 get { return this.beginCall; }
             }
 
-            public EndCall  EndCall
+            public EndCall EndCall
             {
                 get { return this.endCall; }
             }

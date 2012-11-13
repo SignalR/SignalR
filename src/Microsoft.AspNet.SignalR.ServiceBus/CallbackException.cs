@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
         }
 
-        protected CallbackException(SerializationInfo  info, StreamingContext context)
+        protected CallbackException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

@@ -3,6 +3,7 @@
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System;
+    using System.Globalization;
     using System.Threading;
 
     class IOThreadScheduler
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (Bits.Count(slot) == -1)
             {
-                throw new InvalidOperationException("Head/Tail overflow!");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_HeadTailOverflow));
             }
 
             bool wrapped;
@@ -152,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (Bits.CountNoIdle(slot) == 0)
             {
-                throw new InvalidOperationException("Low-priority Head/Tail overflow!");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_LowPriorityHeadTailOverflow));
             }
 
             bool wrapped;
@@ -428,7 +429,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 if (this.scheduler != null)
                 {
-                    throw new InvalidOperationException("Cleanup called on an overlapped that is in-flight.");
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_CleanupCalledOnAnOverlappedThatsInFlight));
                 }
 
                 Overlapped.Free(this.nativeOverlapped);

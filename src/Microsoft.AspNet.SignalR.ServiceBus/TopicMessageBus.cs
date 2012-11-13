@@ -2,12 +2,12 @@
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    using Microsoft.ServiceBus;
-    using Microsoft.ServiceBus.Messaging;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using Microsoft.ServiceBus;
+    using Microsoft.ServiceBus.Messaging;
 
     public sealed class TopicMessageBus
     {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             readonly static Action<AsyncResult, Exception> CompletingAction = Finally;
             readonly TopicMessageBus owner;
-            
+
             TopicDescription topicDescription;
             MessagingFactory factory;
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     string topicPath = this.owner.GetTopicPath(partitionId);
                     string subscriptionName = GetSubscriptionName(this.owner.nodeId);
                     string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicPath, subscriptionName);
-                    
+
                     MessageSender sender = null;
 
                     yield return this.CallAsync(
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     this.owner.senders.Add(partitionId, sender);
 
                     MessageReceiver receiver = null;
-                    
+
                     yield return this.CallAsync(
                         (thisPtr, t, c, s) => factory.BeginCreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete, c, s),
                         (thisPtr, r) => receiver = factory.EndCreateMessageReceiver(r),

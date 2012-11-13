@@ -5,11 +5,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System;
     using System.Diagnostics;
     using System.Globalization;
-    using System.Runtime.ExceptionServices;
     using System.Threading;
     using System.Threading.Tasks;
 
-    [DebuggerStepThrough]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "This will never be disposed."), DebuggerStepThrough]
     abstract class AsyncResult : IAsyncResult
     {
         static AsyncCallback asyncCompletionWrapperCallback;
@@ -69,6 +68,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in future.")]
         public bool HasCallback
         {
             get
@@ -110,10 +110,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new InvalidOperationException(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        "The IAsyncResult implementation '{0}' tried to complete a single operation multiple times. " + 
-                        "This could be caused by an incorrect application IAsyncResult implementation or " + 
-                        "other extensibility code, such as an IAsyncResult that returns incorrect CompletedSynchronously " + 
-                        "values or invokes the AsyncCallback multiple times.",
+                        Resources.Error_MultipleOperationException,
                         this.GetType()));
             }
 
@@ -165,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     // Throw in a different thread so that it becomes unhandled exception.
                     Task task = Task.Factory.StartNew(() =>
                     {
-                        throw new CallbackException("An AsyncCallback threw an exception.", e);
+                        throw new CallbackException(String.Format(CultureInfo.CurrentCulture, Resources.Error_AsyncCallbackThrewException), e);
                     });
 
                     task.Wait();
@@ -262,7 +259,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             callback = GetNextCompletion();
             if (callback == null)
             {
-                ThrowInvalidAsyncResult("Only call Check/SyncContinue once per async operation (once per PrepareAsyncCompletion).");
+                ThrowInvalidAsyncResult(string.Format(CultureInfo.CurrentCulture, Resources.Error_OnlyOnceChecOrSyncPerOperation));
             }
             return true;
         }
@@ -279,14 +276,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             throw new InvalidOperationException(
                 string.Format(
                     CultureInfo.CurrentCulture,
-                    "An incorrect implementation of the IAsyncResult interface ({0}) may be returning incorrect values " +
-                    "from the CompletedSynchronously property or calling the AsyncCallback more than once.",
+                    Resources.Error_IncorrectImplOfIAsyncResultReturningBadValues,
                     result.GetType()));
         }
 
         protected static void ThrowInvalidAsyncResult(string debugText)
         {
-            string message = string.Format(CultureInfo.CurrentCulture, "An incorrect implementation of the IAsyncResult interface. {0}", debugText);
+            string message = string.Format(CultureInfo.CurrentCulture, Resources.Error_IncorrectImplOfIAsyncResult, debugText);
             throw new InvalidOperationException(message);
         }
 
@@ -303,13 +299,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (thisPtr == null)
             {
                 throw new ArgumentException(
-                    "An incorrect IAsyncResult was provided to an 'End' method. The IAsyncResult object passed to 'End' must be the one returned from the matching 'Begin' or passed to the callback provided to 'Begin'.", 
+                    string.Format(CultureInfo.CurrentCulture, Resources.Error_IncorrectIAsyncResultProvidedToEndMethod),
                     "result");
             }
 
             if (thisPtr.endCalled)
             {
-                throw new InvalidOperationException("End cannot be called twice on the same AsyncResult.");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_EndCannotBeCalledTwiceOnSameAsyncResult));
             }
 
             thisPtr.endCalled = true;
