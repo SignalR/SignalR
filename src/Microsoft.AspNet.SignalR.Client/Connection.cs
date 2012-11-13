@@ -9,6 +9,9 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+#if WINDOWS_PHONE
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
+#endif
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
@@ -126,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
 
         /// <summary>
-        /// Gets or sets the groups for the connection.
+        /// Gets the groups for the connection.
         /// </summary>
         public IEnumerable<string> Groups
         {
