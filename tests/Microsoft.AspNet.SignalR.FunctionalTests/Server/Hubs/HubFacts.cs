@@ -634,15 +634,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void CreatedHubsGetDisposed()
         {
-            var mockDemoHubs = new List<Mock<SignalR.Samples.Hubs.DemoHub.DemoHub>>();
+            var mockHubs = new List<Mock<IHub>>();
 
             using (var host = new MemoryHost())
             {
-                host.DependencyResolver.Register(typeof(SignalR.Samples.Hubs.DemoHub.DemoHub), () =>
+                host.DependencyResolver.Register(typeof(IHub), () =>
                 {
-                    var mockDemoHub = new Mock<SignalR.Samples.Hubs.DemoHub.DemoHub>() { CallBase = true };
-                    mockDemoHubs.Add(mockDemoHub);
-                    return mockDemoHub.Object;
+                    var mockHub = new Mock<IHub>() { CallBase = true };
+
+                    mockHubs.Add(mockHub);
+                    return mockHub.Object;
                 });
                 host.MapHubs();
                 var connection = new Client.Hubs.HubConnection("http://foo/");
@@ -653,7 +654,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var result = hub.Invoke<string>("ReadStateValue").Result;
 
-                foreach (var mockDemoHub in mockDemoHubs)
+                foreach (var mockDemoHub in mockHubs)
                 {
                     mockDemoHub.Verify(d => d.Dispose(), Times.Once());
                 }
@@ -990,10 +991,18 @@ namespace Microsoft.AspNet.SignalR.Tests
             public string Room { get; set; }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public void Dispose()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            Dispose(true);
         }
     }
 }
