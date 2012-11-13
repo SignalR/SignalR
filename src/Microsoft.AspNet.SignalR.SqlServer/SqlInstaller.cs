@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -51,78 +52,71 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 connection.Open();
 
-                try
+                var schemaTableExists = false;
+                var schemaRowExists = false;
+                object objectId = null;
+
+                using (var cmd = new SqlCommand(CheckSchemaTableExistsSql, connection))
                 {
-                    var schemaTableExists = false;
-                    var schemaRowExists = false;
-                    object objectId = null;
+                    cmd.Parameters.AddWithValue("TableName", SchemaTableName);
+                    objectId = cmd.ExecuteScalar();
+                }
 
-                    using (var cmd = new SqlCommand(CheckSchemaTableExistsSql, connection))
+                if (objectId != null && objectId != DBNull.Value)
+                {
+                    // Schema table already exists, check schema version
+                    schemaTableExists = true;
+                    object schemaVersion = null;
+                    using (var cmd = new SqlCommand(CheckSchemaTableVersionSql, connection))
                     {
-                        cmd.Parameters.AddWithValue("TableName", SchemaTableName);
-                        objectId = cmd.ExecuteScalar();
+                        schemaVersion = cmd.ExecuteScalar();
                     }
 
-                    if (objectId != null && objectId != DBNull.Value)
+                    if (schemaVersion == null || schemaVersion == DBNull.Value || (int)schemaVersion < SchemaVersion)
                     {
-                        // Schema table already exists, check schema version
-                        schemaTableExists = true;
-                        object schemaVersion = null;
-                        using (var cmd = new SqlCommand(CheckSchemaTableVersionSql, connection))
-                        {
-                            schemaVersion = cmd.ExecuteScalar();
-                        }
-
-                        if (schemaVersion == null || schemaVersion == DBNull.Value || (int)schemaVersion < SchemaVersion)
-                        {
-                            // No schema row or older schema, just continue and we'll update it
-                            schemaRowExists = !(schemaVersion == null || schemaVersion == DBNull.Value);
-                        }
-                        else if ((int)schemaVersion == SchemaVersion)
-                        {
-                            // Schema up to date!
-                            // Ensure all messages tables are created
-                            EnsureMessagesTables(connection);
-                            return new object();
-                        }
-                        else if ((int)schemaVersion > SchemaVersion)
-                        {
-                            // Schema is newer than we expect, not good
-                            throw new InvalidOperationException(Resources.Error_SignalRSQLScaleOutNewerThanCurrentVersion);
-                        }
-
+                        // No schema row or older schema, just continue and we'll update it
+                        schemaRowExists = !(schemaVersion == null || schemaVersion == DBNull.Value);
+                    }
+                    else if ((int)schemaVersion == SchemaVersion)
+                    {
+                        // Schema up to date!
+                        // Ensure all messages tables are created
+                        EnsureMessagesTables(connection);
+                        return new object();
+                    }
+                    else if ((int)schemaVersion > SchemaVersion)
+                    {
+                        // Schema is newer than we expect, not good
+                        throw new InvalidOperationException(Resources.Error_SignalRSQLScaleOutNewerThanCurrentVersion);
                     }
 
+                }
 
-                    if (!schemaTableExists)
+
+                if (!schemaTableExists)
+                {
+                    // Create schema table
+                    using (var cmd = new SqlCommand(CreateSchemaTableSql, connection))
                     {
-                        // Create schema table
-                        using (var cmd = new SqlCommand(CreateSchemaTableSql, connection))
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-
-                    // Ensure all messages tables are created
-                    EnsureMessagesTables(connection);
-
-                    // Update or Insert the schema row
-                    using (var cmd = new SqlCommand(schemaRowExists ? UpdateSchemaTableSql : InsertSchemaTableSql, connection))
-                    {
-                        cmd.Parameters.AddWithValue("SchemaVersion", SchemaVersion);
                         cmd.ExecuteNonQuery();
                     }
                 }
-                finally
+
+                // Ensure all messages tables are created
+                EnsureMessagesTables(connection);
+
+                // Update or Insert the schema row
+                using (var cmd = new SqlCommand(schemaRowExists ? UpdateSchemaTableSql : InsertSchemaTableSql, connection))
                 {
-                    connection.Close();
+                    cmd.Parameters.AddWithValue("SchemaVersion", SchemaVersion);
+                    cmd.ExecuteNonQuery();
                 }
             }
 
             return new object();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
+        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         private void EnsureMessagesTables(SqlConnection connection)
         {
             var existingTables = new List<string>();
