@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    class HashSet<T> : ICollection<T>
+    internal class HashSet<T> : ICollection<T>
     {
         private readonly Dictionary<T, object> _set = new Dictionary<T, object>();
 
