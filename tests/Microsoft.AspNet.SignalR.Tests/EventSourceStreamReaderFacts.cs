@@ -43,11 +43,19 @@ namespace Microsoft.AspNet.SignalR.Tests
             Thread.Sleep(TimeSpan.FromSeconds(5));
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Force any finalizers to run so we can see unhandled task errors
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public void Dispose()
         {
-            // Force any finalizers to run so we can see unhandled task errors
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            Dispose(true);
         }
 
         private MemoryStream MemoryStream(string data)

@@ -331,11 +331,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.stableTimerGroup.Dispose();
+                    this.volatileTimerGroup.Dispose();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.stableTimerGroup.Dispose();
-                this.volatileTimerGroup.Dispose();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
 
@@ -366,10 +374,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.waitableTimer.Dispose();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.waitableTimer.Dispose();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
 

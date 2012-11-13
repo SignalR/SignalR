@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             Dispose(true);
         }

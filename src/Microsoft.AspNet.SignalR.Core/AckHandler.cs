@@ -69,18 +69,26 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_timer != null)
+                {
+                    _timer.Dispose();
+                }
+
+                // Trip all pending acks
+                foreach (var ackInfo in _acks.Values)
+                {
+                    ackInfo.Tcs.TrySetCanceled();
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (_timer != null)
-            {
-                _timer.Dispose();
-            }
-
-            // Trip all pending acks
-            foreach (var ackInfo in _acks.Values)
-            {
-                ackInfo.Tcs.TrySetCanceled();
-            }
+            Dispose(true);
         }
 
         private class AckInfo

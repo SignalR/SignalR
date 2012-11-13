@@ -96,12 +96,20 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return TaskAsyncHelper.FromError<IClientResponse>(new InvalidOperationException("Not a valid end point"));
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                {
+                    _shutDownTokenSource.Cancel(throwOnFirstException: false);
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0)
-            {
-                _shutDownTokenSource.Cancel(throwOnFirstException: false);
-            }
+            Dispose(true);
         }
     }
 }

@@ -20,10 +20,18 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.True(((Client.IConnection)connection).ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting));
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public void Dispose()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            Dispose(true);
         }
     }
 }

@@ -32,15 +32,23 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                var value = Interlocked.Exchange(ref _state, State.Disposed);
+
+                // Only dispose if not already disposed
+                if (value != State.Disposed)
+                {
+                    _cts.Dispose();
+                }
+            }
+        }
+
         public void Dispose()
         {
-            var value = Interlocked.Exchange(ref _state, State.Disposed);
-
-            // Only dispose if not already disposed
-            if (value != State.Disposed)
-            {
-                _cts.Dispose();
-            }
+            Dispose(true);
         }
 
         private static class State

@@ -116,7 +116,6 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             public override void Dispose()
             {
-
             }
 
             public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)

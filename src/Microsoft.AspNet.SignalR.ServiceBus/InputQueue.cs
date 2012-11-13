@@ -441,7 +441,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 return itemAvailable;
             }
         }
-
+        
+        // We do not have a protected Dispose method because this is a sealed class
         public void Dispose()
         {
             bool dispose = false;
@@ -1042,10 +1043,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 return true;
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.waitEvent.Dispose();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.waitEvent.Dispose();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
 
@@ -1079,10 +1088,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 return this.itemAvailable;
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.waitEvent.Close();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.waitEvent.Close();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
     }

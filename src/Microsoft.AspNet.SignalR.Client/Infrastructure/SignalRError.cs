@@ -50,15 +50,23 @@ namespace Microsoft.AspNet.SignalR.Client
             return Exception.ToString();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_response != null)
+                {
+                    _response.Close();
+                }
+            }
+        }
+
         /// <summary>
         /// Dispose of the response
         /// </summary>
         public void Dispose()
         {
-            if (_response != null)
-            {
-                _response.Close();
-            }
+            Dispose(true);
         }
     }
 }

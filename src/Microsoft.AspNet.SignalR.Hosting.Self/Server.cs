@@ -181,9 +181,17 @@ namespace Microsoft.AspNet.SignalR.Hosting.Self
             return path;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _shutdownToken.Cancel(throwOnFirstException: false);
+            }
+        }
+
         public void Dispose()
         {
-            _shutdownToken.Cancel(throwOnFirstException: false);
+            Dispose(true);
         }
     }
 }

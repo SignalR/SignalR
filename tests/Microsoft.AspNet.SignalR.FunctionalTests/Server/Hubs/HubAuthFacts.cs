@@ -972,10 +972,18 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public void Dispose()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            Dispose(true);
         }
     }
 }

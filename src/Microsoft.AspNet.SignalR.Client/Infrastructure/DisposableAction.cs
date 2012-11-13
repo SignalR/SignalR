@@ -14,9 +14,17 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _action = action;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Interlocked.Exchange(ref _action, () => { }).Invoke();
+            }
+        }
+
         public void Dispose()
         {
-            Interlocked.Exchange(ref _action, () => { }).Invoke();
+            Dispose(true);
         }
     }
 }

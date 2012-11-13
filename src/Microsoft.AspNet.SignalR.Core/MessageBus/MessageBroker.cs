@@ -280,19 +280,27 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (!_disposed)
+                {
+                    _disposed = true;
+
+                    Trace.TraceInformation("Dispoing the broker");
+
+                    // Wait for all threads to stop working
+                    WaitForDrain();
+
+                    Trace.TraceInformation("Disposed the broker");
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-
-                Trace.TraceInformation("Dispoing the broker");
-
-                // Wait for all threads to stop working
-                WaitForDrain();
-
-                Trace.TraceInformation("Disposed the broker");
-            }
+            Dispose(true);
         }
 
         private void WaitForDrain()

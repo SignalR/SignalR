@@ -39,14 +39,21 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                var disposable = Interlocked.Exchange(ref _disposable, _disposedSentinel) as IDisposable;
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+        }
+
         public void Dispose()
         {
-            var disposable = Interlocked.Exchange(ref _disposable, _disposedSentinel) as IDisposable;
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
-
+            Dispose(true);
         }
     }
 }

@@ -34,12 +34,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             ListenForMessages();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_sqlDependencyInit != null)
+                {
+                    SqlDependency.Stop(_connectionString);
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (_sqlDependencyInit != null)
-            {
-                SqlDependency.Stop(_connectionString);
-            }
+            Dispose(true);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
