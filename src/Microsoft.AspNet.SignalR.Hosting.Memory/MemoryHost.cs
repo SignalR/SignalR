@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         private readonly CancellationToken _shutDownToken;
         private int _disposed;
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The resolver is disposed when the shutdown token triggers")]
         public MemoryHost()
             : this(new DefaultDependencyResolver())
         {
@@ -49,8 +51,24 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return ProcessRequest(url, prepareRequest, postData);
         }
 
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData, bool disableWrites = false)
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
         {
+            return ProcessRequest(url, prepareRequest, postData, disableWrites: false);
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The cancellation token is disposed when the request ends")]
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData, bool disableWrites)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+
+            if (prepareRequest == null)
+            {
+                throw new ArgumentNullException("prepareRequest");
+            }
+
             var uri = new Uri(url);
             PersistentConnection connection;
 
