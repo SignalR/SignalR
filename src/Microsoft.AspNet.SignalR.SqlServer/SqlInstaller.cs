@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                                       [PayloadId] BIGINT NOT NULL PRIMARY KEY IDENTITY,
 	                                                  [Payload] NVARCHAR(MAX) NOT NULL
                                                   )";
-        private object _initDummy = null;
+        private readonly Lazy<object> _initDummy;
 
         public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount)
         {
@@ -39,11 +39,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _messagesTableNamePrefix = tableNamePrefix;
             _tableCount = tableCount;
             _exstingTablesSql = String.Format(CultureInfo.InvariantCulture, _exstingTablesSql, _messagesTableNamePrefix);
+            _initDummy = new Lazy<object>(Install);
         }
 
         public void EnsureInstalled()
         {
-            LazyInitializer.EnsureInitialized(ref _initDummy, Install);
+            var dummy = _initDummy.Value;
         }
 
         private object Install()
