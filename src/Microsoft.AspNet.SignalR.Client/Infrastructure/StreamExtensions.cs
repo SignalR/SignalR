@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #endif
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared class.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task WriteAsync(this Stream stream, byte[] buffer)
         {

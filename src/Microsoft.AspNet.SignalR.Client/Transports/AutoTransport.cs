@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     // Make sure we observe the exception
                     var ex = task.Exception;
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
 #if NET35
