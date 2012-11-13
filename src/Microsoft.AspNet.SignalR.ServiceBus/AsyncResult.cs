@@ -103,6 +103,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             set;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         protected void Complete(bool didCompleteSynchronously)
         {
             if (this.isCompleted)
@@ -176,6 +177,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             Complete(didCompleteSynchronously);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         static void AsyncCompletionWrapperCallback(IAsyncResult result)
         {
             if (result == null)
@@ -213,9 +215,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
-        protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion callback)
+        protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion completionCallback)
         {
-            this.nextAsyncCompletion = callback;
+            this.nextAsyncCompletion = completionCallback;
             if (AsyncResult.asyncCompletionWrapperCallback == null)
             {
                 AsyncResult.asyncCompletionWrapperCallback = new AsyncCallback(AsyncCompletionWrapperCallback);
@@ -229,12 +231,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return TryContinueHelper(result, out dummy);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         protected bool SyncContinue(IAsyncResult result)
         {
-            AsyncCompletion callback;
-            if (TryContinueHelper(result, out callback))
+            AsyncCompletion continueCallback;
+            if (TryContinueHelper(result, out continueCallback))
             {
-                return callback(result);
+                return continueCallback(result);
             }
             else
             {
@@ -242,22 +245,22 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
-        bool TryContinueHelper(IAsyncResult result, out AsyncCompletion callback)
+        bool TryContinueHelper(IAsyncResult result, out AsyncCompletion continueCallback)
         {
             if (result == null)
             {
                 throw new ArgumentNullException("result");
             }
 
-            callback = null;
+            continueCallback = null;
 
             if (!result.CompletedSynchronously)
             {
                 return false;
             }
 
-            callback = GetNextCompletion();
-            if (callback == null)
+            continueCallback = GetNextCompletion();
+            if (continueCallback == null)
             {
                 ThrowInvalidAsyncResult(string.Format(CultureInfo.CurrentCulture, Resources.Error_OnlyOnceChecOrSyncPerOperation));
             }

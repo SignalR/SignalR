@@ -9,6 +9,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using Microsoft.ServiceBus;
     using Microsoft.ServiceBus.Messaging;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Do not want to alter functionality.")]
     public sealed class TopicMessageBus
     {
         const int MaxInputQueueLength = 10000;
@@ -61,6 +62,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 null);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         public void Start()
         {
         }
@@ -75,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return nodeId.ToString(NumberFormatInfo.InvariantInfo);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         public Task SendAsync(Message[] messages)
         {
             try

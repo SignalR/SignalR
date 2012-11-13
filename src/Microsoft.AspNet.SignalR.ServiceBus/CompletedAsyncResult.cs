@@ -5,6 +5,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System;
     using System.Threading;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Do not want to alter functionality.")]
     sealed class CompletedAsyncResult<TResult> : IAsyncResult
     {
         readonly ManualResetEvent asyncWaitHandle;

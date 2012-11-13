@@ -165,6 +165,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Do not want to alter functionality.")]
         public bool Dequeue(TimeSpan timeout, out T value)
         {
             WaitQueueReader reader = null;
@@ -276,6 +277,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         public bool EndDequeue(IAsyncResult result, out T value)
         {
             CompletedAsyncResult<T> typedResult = result as CompletedAsyncResult<T>;
@@ -301,6 +303,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         public bool EndWaitForItem(IAsyncResult result)
         {
             CompletedAsyncResult<bool> typedResult = result as CompletedAsyncResult<bool>;

@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 (isTypicallyCanceledShortlyAfterBeingSet ? TimerManager.Value.VolatileTimerGroup : TimerManager.Value.StableTimerGroup);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public static long SystemTimeResolutionTicks
         {
             get
@@ -46,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         static long GetSystemTimeResolution()
         {
             int dummyAdjustment;
@@ -76,6 +78,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public void Set(int millisecondsFromNow)
         {
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromMilliseconds(millisecondsFromNow)));
@@ -622,6 +625,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             static class TimerHelper
             {
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Do not want to alter functionality.")]
                 public static SafeWaitHandle CreateWaitableTimer()
                 {
                     SafeWaitHandle handle = UnsafeNativeMethods.CreateWaitableTimer(IntPtr.Zero, false, null);

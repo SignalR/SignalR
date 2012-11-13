@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return checked(milliseconds * TimeSpan.TicksPerMillisecond);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static int ToMilliseconds(long ticks)
         {
             return checked((int)(ticks / TimeSpan.TicksPerMillisecond));
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return duration.Ticks;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static TimeSpan ToTimeSpan(long ticks)
         {
             return new TimeSpan(ticks);

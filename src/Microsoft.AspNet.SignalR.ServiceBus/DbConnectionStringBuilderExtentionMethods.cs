@@ -6,6 +6,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
     static class DbConnectionStringBuilderExtentionMethods
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public static bool TryGetStringValue(this DbConnectionStringBuilder builder, string key, out string value)
         {
             object objectValue;

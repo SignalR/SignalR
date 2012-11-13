@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR
             return resolver;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.LastIndexOf(System.String)", Justification = "Comparing non alpha numeric characters."), MethodImpl(MethodImplOptions.NoInlining)]
         private static AzureRoleInfo GetRoleInfo()
         {
             var roleInstance = Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment.CurrentRoleInstance;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR
 
             return new AzureRoleInfo
             {
-                Index = Int32.Parse(roleInstanceNo),
+                Index = Int32.Parse(roleInstanceNo, CultureInfo.CurrentCulture),
                 Name = roleInstance.Role.Name
             };
         }

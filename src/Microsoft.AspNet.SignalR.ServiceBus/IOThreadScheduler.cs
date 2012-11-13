@@ -81,6 +81,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public static void ScheduleCallbackLowPriNoFlow(Action<object> callback, object state)
         {
             if (callback == null)
@@ -132,6 +133,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return queued;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         bool ScheduleCallbackLowPriHelper(Action<object> callback, object state)
         {
             int slot = Interlocked.Add(ref this.headTailLowPri, Bits.HiOne);

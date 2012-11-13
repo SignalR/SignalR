@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return new MessagesStreamReader(stream).ReadToEnd();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Do not want to alter functionality.")]
         sealed class MessagesStreamReader
         {
             readonly BufferedStream stream;

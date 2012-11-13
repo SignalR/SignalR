@@ -50,6 +50,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to modify functionality.")]
         public bool EndEnter(IAsyncResult asyncResult)
         {
             AsyncWaiter asyncWaiter = asyncResult as AsyncWaiter;
