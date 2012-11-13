@@ -17,13 +17,13 @@
     <AssemblyOriginatorKeyFile>$(KeyFile)</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-  <ItemGroup Condition="Exists('..\Common\GlobalSuppressions.cs')">
-    <Compile Include="..\Common\GlobalSuppressions.cs">
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)GlobalSuppressions.cs')">
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs">
         <Link>GlobalSuppressions.cs</Link>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-  <CodeAnalysisDictionary Include="..\Common\CodeAnalysisDictionary.xml" />
+  <CodeAnalysisDictionary Include="$(MSBuildThisFileDirectory)CodeAnalysisDictionary.xml" />
   </ItemGroup>
 </Project>
