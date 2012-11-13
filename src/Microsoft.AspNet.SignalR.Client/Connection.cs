@@ -9,13 +9,15 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-#if WINDOWS_PHONE
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
-#endif
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+// Include HashSet implementation for WP7.
+#if WINDOWS_PHONE
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
