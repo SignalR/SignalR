@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Reflection;
-using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
@@ -42,6 +39,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _initDummy = new Lazy<object>(Install);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Need dummy variable to call _initDummy.Value.")]
         public void EnsureInstalled()
         {
             var dummy = _initDummy.Value;
