@@ -459,6 +459,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]
         private static bool TryParseVersion(string versionString, out Version version)
         {
 #if WINDOWS_PHONE || NET35

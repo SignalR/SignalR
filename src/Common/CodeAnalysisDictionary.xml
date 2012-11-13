@@ -14,6 +14,8 @@
       <Word>Unminified</Word>
       <Word>Stateful</Word>
       <Word>SignalR</Word>
+      <Word>Hubservable</Word>
+      <Word>Sse</Word>
     </Recognized>
   </Words>
 </Dictionary>

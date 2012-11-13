@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -45,6 +46,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             PollingLoop(connection, data, initializeCallback, errorCallback);
         }
 
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         private void PollingLoop(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
         {
             string url = connection.Url;
