@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Common
@@ -10,6 +11,11 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
     {
         public static string GetUniqueInstanceName(this Process process, CancellationToken release)
         {
+            if (process == null)
+            {
+                throw new ArgumentNullException("process");
+            }
+
             Mutex mutex = null;
             
             var instanceId = 0;
@@ -39,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
                 instanceId++;
             }
             
-            return process.ProcessName + " (" + instanceId.ToString() + ")";
+            return process.ProcessName + " (" + instanceId.ToString(CultureInfo.InvariantCulture) + ")";
         }
     }
 }

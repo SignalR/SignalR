@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Common.Routing
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common.Routing
             _resolver = resolver;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public void MapConnection<T>(string path) where T : PersistentConnection
         {
             if (!_connectionMapping.ContainsKey(path))
@@ -30,13 +32,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common.Routing
             _hubPath = path;
         }
 
-        public bool TryGetConnection(Uri uri, out PersistentConnection connection)
-        {
-            return TryGetConnection(uri.LocalPath, out connection);
-        }
-
         public bool TryGetConnection(string path, out PersistentConnection connection)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
             connection = null;
 
             if (!String.IsNullOrEmpty(_hubPath) &&

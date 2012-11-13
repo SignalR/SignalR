@@ -8,15 +8,15 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
 {
     public static class HttpUtility
     {
-        public static NameValueCollection ParseDelimited(string s)
+        public static NameValueCollection ParseDelimited(string delimited)
         {
             var nvc = new NameValueCollection();
-            if (s == null)
+            if (delimited == null)
             {
                 return nvc;
             }
 
-            foreach (var pair in s.Split('&'))
+            foreach (var pair in delimited.Split('&'))
             {
                 var kvp = pair.Split(new[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
                 if (kvp.Length == 0)

@@ -154,6 +154,7 @@ namespace Microsoft.AspNet.SignalR
             }).FastUnwrap();
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "We have a sync and async code path.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
         private void WorkImpl(TaskCompletionSource<object> taskCompletionSource)
         {

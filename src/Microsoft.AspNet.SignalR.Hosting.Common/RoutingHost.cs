@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.SignalR.Hosting.Common.Routing;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Common
@@ -43,6 +44,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
         /// </summary>
         /// <typeparam name="TConnection">The type of <see cref="PersistentConnection"/></typeparam>
         /// <param name="path">The path of <see cref="PersistentConnection"/></param>
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public RoutingHost MapConnection<TConnection>(string path) where TConnection : PersistentConnection
         {
             _routeManager.MapConnection<TConnection>(path);
