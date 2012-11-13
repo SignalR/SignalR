@@ -230,7 +230,8 @@ namespace Microsoft.AspNet.SignalR.Utils
                     return null;
                 }
 
-                object resolver = Activator.CreateInstance(resolverType);
+                dynamic resolver = Activator.CreateInstance(resolverType);
+                resolver.Initialize();
                 dynamic proxyGenerator = Activator.CreateInstance(proxyGeneratorType, resolver);
 
                 return proxyGenerator.GenerateProxy(url, true);

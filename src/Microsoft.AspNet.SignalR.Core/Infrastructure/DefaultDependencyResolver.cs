@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR
         private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
         private int _disposed;
 
-        public DefaultDependencyResolver()
+        public void Initialize()
         {
             RegisterDefaultServices();
 

@@ -72,6 +72,8 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("instanceName");
             }
 
+            resolver.Initialize();
+
             // Initialize the performance counters
             resolver.InitializePerformanceCounters(instanceName, hostShutdownToken);
 

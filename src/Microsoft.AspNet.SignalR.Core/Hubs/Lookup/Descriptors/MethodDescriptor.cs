@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -23,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Available method parameters.
         /// </summary>
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This is supposed to be mutable")]
         public virtual IList<ParameterDescriptor> Parameters { get; set; }
 
         /// <summary>
