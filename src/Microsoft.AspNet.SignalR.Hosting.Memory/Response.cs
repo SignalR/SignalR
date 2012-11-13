@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Calls to close with dispose the stream")]
     public class Response : IClientResponse, IResponse
     {
         private readonly CancellationToken _clientToken;
@@ -76,6 +78,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             private MemoryStream _currentStream;
             private int _readPos;
             private readonly CancellationTokenSource _cancellationTokenSource;
+            private readonly CancellationToken _cancellationToken;
 
             private event Action _onWrite;
             private event Action _onClosed;
@@ -86,6 +89,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 _currentStream = new MemoryStream();
                 _cancellationTokenSource = new CancellationTokenSource();
+                _cancellationToken = _cancellationTokenSource.Token;
             }
 
             public override bool CanRead
@@ -116,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 get
                 {
-                    return _cancellationTokenSource.Token;
+                    return _cancellationToken;
                 }
             }
 

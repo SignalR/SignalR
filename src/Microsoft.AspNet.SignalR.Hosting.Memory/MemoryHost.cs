@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             var uri = new Uri(url);
             PersistentConnection connection;
 
-            if (!_shutDownTokenSource.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
+            if (!_shutDownToken.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
                 var clientTokenSource = new CancellationTokenSource();
@@ -121,6 +121,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 if (Interlocked.Exchange(ref _disposed, 1) == 0)
                 {
                     _shutDownTokenSource.Cancel(throwOnFirstException: false);
+
+                    _shutDownTokenSource.Dispose();
                 }
             }
         }
