@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.WP7.Sample", "samples\Microsoft.AspNet.SignalR.Client.WP7.Sample\Microsoft.AspNet.SignalR.Client.WP7.Sample.csproj", "{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet", "src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet.Samples", "samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
 EndProject
 Global
@@ -88,16 +86,6 @@ Global
 		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 		{E059F6F3-E9D5-4113-AF2B-C2D19CE7FAFF}.Release|x86.ActiveCfg = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|x86.ActiveCfg = Release|Any CPU
 		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
