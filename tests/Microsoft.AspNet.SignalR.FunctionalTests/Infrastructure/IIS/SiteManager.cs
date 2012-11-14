@@ -8,7 +8,7 @@ using IISServer = Microsoft.Web.Administration;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 {
-    public class SiteManager : ISiteManager
+    public class SiteManager
     {
         private static Random portNumberGenRnd = new Random((int)DateTime.Now.Ticks);
 
@@ -72,8 +72,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             iis.CommitChanges();
 
-            string appPath = _pathResolver.GetApplicationPath(applicationName);
-
             // Remove the app pool and commit changes
             iis.ApplicationPools.Remove(iis.ApplicationPools[appPoolName]);
             iis.CommitChanges();
@@ -87,6 +85,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             {
                 iis.ApplicationPools.Add(appPoolName);
                 iis.CommitChanges();
+
                 appPool = iis.ApplicationPools[appPoolName];
                 appPool.ManagedPipelineMode = IISServer.ManagedPipelineMode.Integrated;
                 appPool.ManagedRuntimeVersion = "v4.0";
@@ -172,29 +171,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
 
             return true;
-        }
-
-        private string GetSiteUrl(IISServer.Site site)
-        {
-            if (site == null)
-            {
-                return null;
-            }
-
-            IISServer.Binding binding = site.Bindings.Last();
-            var builder = new UriBuilder
-            {
-                Host = String.IsNullOrEmpty(binding.Host) ? "localhost" : binding.Host,
-                Scheme = binding.Protocol,
-                Port = binding.EndPoint.Port
-            };
-
-            if (builder.Port == 80)
-            {
-                builder.Port = -1;
-            }
-
-            return builder.ToString();
         }
 
         private int CreateSite(IISServer.ServerManager iis, string applicationName, string siteName, string siteRoot)

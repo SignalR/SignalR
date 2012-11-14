@@ -9,6 +9,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         IClientTransport Transport { get; set; }
 
-        void Initialize();
+        void Initialize(int? keepAlive = 15,
+                        int? connectonTimeOut = 120,
+                        int? hearbeatInterval = 10,
+                        bool enableAutoRejoiningGroups = false);
     }
 }

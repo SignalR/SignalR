@@ -7,8 +7,27 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
     public class IISTestHost : ITestHost
     {
-        private ISiteManager _siteManager;
-        private string _applicationName;
+        private readonly SiteManager _siteManager;
+        private readonly string _applicationName;
+        private readonly string _path;
+        private readonly string _webConfigPath;
+
+        private const string WebConfigTemplate = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <appSettings>
+    <add key=""keepAlive"" value=""{0}"" />
+    <add key=""connectionTimeout"" value=""{1}"" />
+    <add key=""heartbeatInterval"" value=""{2}"" />
+    <add key=""enableRejoiningGroups"" value=""{3}"" />
+  </appSettings>
+  <system.web>
+    <compilation debug=""true"" targetFramework=""4.5"" />
+    <httpRuntime targetFramework=""4.5"" />
+  </system.web>
+  <system.webServer>
+    <modules runAllManagedModulesForAllRequests=""true"" />
+  </system.webServer>
+</configuration>";
 
         public IISTestHost()
         {
@@ -16,24 +35,37 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _applicationName = Guid.NewGuid().ToString().Substring(0, 8);
 
             // The path to the site is the test path
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "..");
+            _path = Path.Combine(Directory.GetCurrentDirectory(), "..");
+
+            // Set the web.config path for this app
+            _webConfigPath = Path.Combine(_path, "web.config");
 
             // Create the site manager
-            _siteManager = new SiteManager(new DefaultPathResolver(path));
+            _siteManager = new SiteManager(new DefaultPathResolver(_path));
         }
 
         public string Url { get; private set; }
 
         public IClientTransport Transport { get; set; }
 
-        public void Initialize()
+        public void Initialize(int? keepAlive,
+                               int? connectonTimeOut,
+                               int? hearbeatInterval,
+                               bool enableAutoRejoiningGroups)
         {
             Url = _siteManager.CreateSite(_applicationName);
+
+            // Use a configuration file to specify values
+            string content = String.Format(WebConfigTemplate, keepAlive, connectonTimeOut, hearbeatInterval, enableAutoRejoiningGroups);
+
+            File.WriteAllText(_webConfigPath, content);
         }
 
         public void Dispose()
         {
             _siteManager.DeleteSite(_applicationName);
+
+            File.Delete(_webConfigPath);
         }
     }
 }
