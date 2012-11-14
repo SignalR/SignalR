@@ -24,19 +24,49 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
+        private HTMLTextWriter _htmlOutputWriter;
+
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
+        }
+
+        public override TextWriter OutputWriter
+        {
+            get
+            {
+                if (_htmlOutputWriter == null)
+                {
+                    _htmlOutputWriter = new HTMLTextWriter(new StreamWriter(Context.Response.AsStream(), Encoding.UTF8));
+                    _htmlOutputWriter.NewLine = "\n";
+                }
+
+                return _htmlOutputWriter;
+            }
+        }
+
+        public HTMLTextWriter HTMLOutputWriter
+        {
+            get
+            {
+                if (_htmlOutputWriter == null)
+                {
+                    _htmlOutputWriter = new HTMLTextWriter(new StreamWriter(Context.Response.AsStream(), Encoding.UTF8));
+                    _htmlOutputWriter.NewLine = "\n";
+                }
+
+                return _htmlOutputWriter;
+            }
         }
 
         public override Task KeepAlive()
         {
             return EnqueueOperation(() =>
             {
-                OutputWriter.Write("<script>r(c, {});</script>");
-                OutputWriter.WriteLine();
-                OutputWriter.WriteLine();
-                OutputWriter.Flush();
+                HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
+                HTMLOutputWriter.WriteLine();
+                HTMLOutputWriter.WriteLine();
+                HTMLOutputWriter.Flush();
 
                 return Context.Response.FlushAsync();
             });
@@ -48,10 +78,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             return EnqueueOperation(() =>
             {
-                OutputWriter.Write("<script>r(c, ");
-                JsonSerializer.Serialize(response, OutputWriter);
-                OutputWriter.Write(");</script>\r\n");
-                OutputWriter.Flush();
+                HTMLOutputWriter.WriteRaw("<script>r(c, ");
+                JsonSerializer.Serialize(response, HTMLOutputWriter);
+                HTMLOutputWriter.WriteRaw(");</script>\r\n");
+                HTMLOutputWriter.Flush();
 
                 return Context.Response.FlushAsync();
             });
@@ -66,13 +96,57 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                     return EnqueueOperation(() =>
                     {
-                        OutputWriter.Write(initScript);
-                        OutputWriter.Flush();
+                        HTMLOutputWriter.WriteRaw(initScript);
+                        HTMLOutputWriter.Flush();
 
                         return Context.Response.FlushAsync();
                     });
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
+        }
+
+        public class HTMLTextWriter : TextWriter
+        {
+            private readonly TextWriter _writer;
+
+            public HTMLTextWriter(TextWriter writer)
+            {
+                _writer = writer;
+            }
+
+            public override Encoding Encoding
+            {
+                get { return _writer.Encoding; }
+            }
+
+            public void WriteRaw(string value)
+            {
+                _writer.Write(value);
+                Debug.Write(value);
+            }
+
+            public override void Write(string value)
+            {
+                Debug.Write(EscapeAnyInlineScriptTags(value));
+                _writer.Write(EscapeAnyInlineScriptTags(value));
+            }
+
+            public override void WriteLine(string value)
+            {
+                Debug.WriteLine(EscapeAnyInlineScriptTags(value));
+                _writer.WriteLine(EscapeAnyInlineScriptTags(value));
+            }
+
+            public override void WriteLine()
+            {
+                Debug.WriteLine("");
+                _writer.WriteLine();
+            }
+
+            private static string EscapeAnyInlineScriptTags(string input)
+            {
+                return input.Replace("</script>", "</\"+\"script>");
+            }
         }
     }
 }

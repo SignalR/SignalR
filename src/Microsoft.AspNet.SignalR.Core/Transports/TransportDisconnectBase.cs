@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        public TextWriter OutputWriter
+        public virtual TextWriter OutputWriter
         {
             get
             {
