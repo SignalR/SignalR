@@ -109,7 +109,7 @@
             });
 
             var start = function () {
-                connection.start({ transport: "foreverFrame", jsonp: isJsonp })
+                connection.start({ transport: activeTransport, jsonp: isJsonp })
                     .then(function () {
                         $("#stopStart")
                            .prop("disabled", false)
