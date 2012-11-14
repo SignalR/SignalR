@@ -406,8 +406,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(keepAlive: null,
-                                connectonTimeOut: 5,
-                                hearbeatInterval: 2);
+                                connectonTimeOut: 1,
+                                hearbeatInterval: 1);
 
                 int max = 10;
 
