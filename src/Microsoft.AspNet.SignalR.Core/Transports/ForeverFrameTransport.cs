@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,20 +23,20 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
-        private HTMLTextWriter _htmlOutputWriter;
+        HTMLTextWriter _htmlOutputWriter;
 
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
         }
 
-        public override TextWriter OutputWriter
+        private HTMLTextWriter HTMLOutputWriter
         {
             get
             {
                 if (_htmlOutputWriter == null)
                 {
-                    _htmlOutputWriter = new HTMLTextWriter(new StreamWriter(Context.Response.AsStream(), Encoding.UTF8));
+                    _htmlOutputWriter = new HTMLTextWriter(Context.Response.AsStream(), Encoding.UTF8);
                     _htmlOutputWriter.NewLine = "\n";
                 }
 
@@ -45,17 +44,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        public HTMLTextWriter HTMLOutputWriter
+        /// <summary>
+        /// Pointed to the HTMLOutputWriter to wrap output stream with an HTML friendly one
+        /// </summary>
+        public override TextWriter OutputWriter
         {
             get
             {
-                if (_htmlOutputWriter == null)
-                {
-                    _htmlOutputWriter = new HTMLTextWriter(new StreamWriter(Context.Response.AsStream(), Encoding.UTF8));
-                    _htmlOutputWriter.NewLine = "\n";
-                }
-
-                return _htmlOutputWriter;
+                return HTMLOutputWriter;
             }
         }
 
@@ -105,42 +101,26 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }
 
-        public class HTMLTextWriter : TextWriter
+        private class HTMLTextWriter : StreamWriter
         {
-            private readonly TextWriter _writer;
-
-            public HTMLTextWriter(TextWriter writer)
+            public HTMLTextWriter(Stream stream, Encoding encoding)
+                : base(stream, encoding)
             {
-                _writer = writer;
-            }
-
-            public override Encoding Encoding
-            {
-                get { return _writer.Encoding; }
             }
 
             public void WriteRaw(string value)
             {
-                _writer.Write(value);
-                Debug.Write(value);
+                base.Write(value);
             }
 
             public override void Write(string value)
             {
-                Debug.Write(EscapeAnyInlineScriptTags(value));
-                _writer.Write(EscapeAnyInlineScriptTags(value));
+                base.Write(EscapeAnyInlineScriptTags(value));
             }
 
             public override void WriteLine(string value)
             {
-                Debug.WriteLine(EscapeAnyInlineScriptTags(value));
-                _writer.WriteLine(EscapeAnyInlineScriptTags(value));
-            }
-
-            public override void WriteLine()
-            {
-                Debug.WriteLine("");
-                _writer.WriteLine();
+                base.WriteLine(EscapeAnyInlineScriptTags(value));
             }
 
             private static string EscapeAnyInlineScriptTags(string input)
