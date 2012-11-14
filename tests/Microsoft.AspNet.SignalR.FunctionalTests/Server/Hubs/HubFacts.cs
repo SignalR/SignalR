@@ -4,31 +4,33 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class HubFacts : IDisposable
+    public class HubFacts : HostedTest
     {
         [Fact]
         public void ReadingState()
         {
-            using (var host = new MemoryHost())
+            using (var host = CreateHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Initialize();
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
 
                 var hub = connection.CreateHubProxy("demo");
 
                 hub["name"] = "test";
 
-                connection.Start(host).Wait();
+                connection.Start(host.Transport).Wait();
 
                 var result = hub.Invoke<string>("ReadStateValue").Result;
 
@@ -989,20 +991,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             public int Index { get; set; }
             public string Name { get; set; }
             public string Room { get; set; }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+        }        
     }
 }
