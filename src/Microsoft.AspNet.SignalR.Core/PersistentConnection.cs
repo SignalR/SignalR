@@ -280,6 +280,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Called when a connection disconnects.
         /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the disconnected connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
         protected virtual Task OnDisconnectAsync(IRequest request, string connectionId)

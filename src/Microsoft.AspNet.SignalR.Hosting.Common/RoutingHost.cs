@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
         }
 
         /// <summary>
-        /// Map the <see cref="HubDisptcher"/> to the default hub url (~/signalr)
+        /// Map the <see cref="T:Microsoft.AspNet.SignalR.Hubs.HubDisptcher"/> to the default hub url (~/signalr)
         /// </summary>
         public RoutingHost MapHubs()
         {
@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common
         }
 
         /// <summary>
-        /// Maps the <see cref="HubDisptcher"/> to the specified path.
+        /// Maps the <see cref="T:Microsoft.AspNet.SignalR.Hubs.HubDisptcher"/> to the specified path.
         /// </summary>
-        /// <param name="path">The path of the <see cref="HubDisptcher"/></param>
+        /// <param name="path">The path of the <see cref="T:Microsoft.AspNet.SignalR.Hubs.HubDisptcher"/></param>
         public RoutingHost MapHubs(string path)
         {
             _routeManager.MapHubs(path);

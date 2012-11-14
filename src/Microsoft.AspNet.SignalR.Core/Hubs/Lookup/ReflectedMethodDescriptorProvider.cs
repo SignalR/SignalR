@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Searches the specified <paramref name="hub">Hub</paramref> for the specified <paramref name="method"/>.
         /// </summary>
         /// <remarks>
-        /// In the case that there are multiple overloads of the specified <paramref name="method"/>, the <paramref name="parameter">parameter set</paramref> helps determine exactly which instance of the overload should be resolved. 
+        /// In the case that there are multiple overloads of the specified <paramref name="method"/>, the <paramref name="parameters">parameter set</paramref> helps determine exactly which instance of the overload should be resolved. 
         /// If there are multiple overloads found with the same number of matching paramters, none of the methods will be returned because it is not possible to determine which overload of the method was intended to be resolved.
         /// </remarks>
         /// <param name="hub">Hub to search for the specified <paramref name="method"/> on.</param>

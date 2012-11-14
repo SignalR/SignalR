@@ -38,8 +38,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             _counters = performanceCounterManager;
         }
 
-        // Static events intended for use when measuring performance
-        public static event Action<string> Sending;
         public static event Action<PersistentResponse> SendingResponse;
         public static event Action<string> Receiving;
 

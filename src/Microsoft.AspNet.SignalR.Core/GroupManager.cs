@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR
         /// Initializes a new instance of the <see cref="GroupManager"/> class.
         /// </summary>
         /// <param name="connection">The <see cref="IConnection"/> this group resides on.</param>
-        /// <param name="groupPrefix">The prefix for this group. Either a <see cref="IHub"/> name or <see cref="PersistentConnection"/> type name.</param>
+        /// <param name="groupPrefix">The prefix for this group. Either a <see cref="Microsoft.AspNet.SignalR.Hubs.IHub"/> name or <see cref="PersistentConnection"/> type name.</param>
         public GroupManager(IConnection connection, string groupPrefix)
         {
             if (connection == null)
@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="groupName">The name of the group.</param>
         /// <param name="value">The value to send.</param>
+        /// <param name="exclude"></param>
         /// <returns>A task that represents when send is complete.</returns>
         public Task Send(string groupName, object value, params string[] exclude)
         {

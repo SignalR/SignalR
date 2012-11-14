@@ -46,8 +46,10 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="stringMinifier"></param>
         /// <param name="traceManager"></param>
         /// <param name="performanceCounterManager"></param>
+        /// <param name="configurationManager"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The message broker is disposed when the bus is disposed.")]
         public MessageBus(IStringMinifier stringMinifier,
                           ITraceManager traceManager,
@@ -166,6 +168,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="subscriber"></param>
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
+        /// <param name="maxMessages"></param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Failure to invoke the callback should be ignored")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable object is returned to the caller")]
