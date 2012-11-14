@@ -2,13 +2,14 @@
 using System.Security.Principal;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class HubAuthFacts : IDisposable
+    public class HubAuthFacts : HostedTest
     {
         [Fact]
         public void UnauthenticatedUserCanReceiveHubMessagesByDefault()
@@ -970,20 +971,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }
