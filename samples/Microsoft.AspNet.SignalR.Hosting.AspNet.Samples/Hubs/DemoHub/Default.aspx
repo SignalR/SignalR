@@ -48,6 +48,9 @@
         <dt>Read State Value</dtRead>
         <dd id="readStateValue"></dd>
         
+        <dt>Inline Script Tag</dtRead>
+        <dd id="inlineScriptTag"></dd>
+
         <dt>Plain Task</dt>
         <dd id="plainTask"></dd>
 
