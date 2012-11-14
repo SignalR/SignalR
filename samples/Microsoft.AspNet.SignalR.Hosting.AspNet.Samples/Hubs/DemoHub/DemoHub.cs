@@ -158,6 +158,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             return n;
         }
 
+        public string InlineScriptTag()
+        {
+            return "WAITING for Script Tag to replace this.<script>$(\"#inlineScriptTag\").html('Success! Replaced by inline Script Tag');</script>";
+        }
+
         public void UnsupportedOverload(string x)
         {
 

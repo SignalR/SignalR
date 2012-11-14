@@ -167,6 +167,11 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["GetValue"], $.makeArray(arguments)));
          },
 
+        inlineScriptTag: function () {
+            /// <summary>Calls the InlineScriptTag method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["InlineScriptTag"], $.makeArray(arguments)));
+         },
+
         mispelledClientMethod: function () {
             /// <summary>Calls the MispelledClientMethod method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["MispelledClientMethod"], $.makeArray(arguments)));
