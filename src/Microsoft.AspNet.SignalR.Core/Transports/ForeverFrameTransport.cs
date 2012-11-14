@@ -2,6 +2,7 @@
 
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -125,7 +126,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             private static string EscapeAnyInlineScriptTags(string input)
             {
-                return input.Replace("</script>", "</\"+\"script>");
+                return Regex.Replace(input, "</(?i:(script))", match =>
+                {
+                    return "</\"+\"" + match.Groups[1].ToString();
+                });
             }
         }
     }
