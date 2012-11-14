@@ -16,10 +16,7 @@ namespace Microsoft.AspNet.SignalR.Tests
     {
         public class OnConnectedAsync : HostedTest
         {
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+            [Fact]
             public void ConnectionsWithTheSameConnectionIdSSECloseGracefully()
             {
                 using (var host = new MemoryHost())
