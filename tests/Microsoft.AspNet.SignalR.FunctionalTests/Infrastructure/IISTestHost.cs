@@ -32,16 +32,19 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public IISTestHost()
         {
             // Create a random application name
-            _applicationName = Guid.NewGuid().ToString().Substring(0, 8);
+            _applicationName = "signalr_test_" + Guid.NewGuid().ToString().Substring(0, 8);
 
-            // The path to the site is the test path
+            // The path to the site is the test path.
+            // We treat the test output path just like a site. This makes it super
+            // cheap to create and tear down sites. We don't need to copy any files.
+            // The downside is that we can't run tests in parallel anymore.
             _path = Path.Combine(Directory.GetCurrentDirectory(), "..");
 
             // Set the web.config path for this app
             _webConfigPath = Path.Combine(_path, "web.config");
 
             // Create the site manager
-            _siteManager = new SiteManager(new DefaultPathResolver(_path));
+            _siteManager = new SiteManager(_path);
         }
 
         public string Url { get; private set; }
@@ -56,7 +59,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             Url = _siteManager.CreateSite(_applicationName);
 
             // Use a configuration file to specify values
-            string content = String.Format(WebConfigTemplate, keepAlive, connectonTimeOut, hearbeatInterval, enableAutoRejoiningGroups);
+            string content = String.Format(WebConfigTemplate, 
+                                           keepAlive, 
+                                           connectonTimeOut, 
+                                           hearbeatInterval, 
+                                           enableAutoRejoiningGroups);
 
             File.WriteAllText(_webConfigPath, content);
         }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.NetworkInformation;
-using System.Threading;
 using IISServer = Microsoft.Web.Administration;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
@@ -12,11 +10,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
     {
         private static Random portNumberGenRnd = new Random((int)DateTime.Now.Ticks);
 
-        private readonly IPathResolver _pathResolver;
+        private readonly string _path;
 
-        public SiteManager(IPathResolver pathResolver)
+        public SiteManager(string path)
         {
-            _pathResolver = pathResolver;
+            _path = Path.GetFullPath(path);
         }
 
         public string CreateSite(string applicationName)
@@ -25,21 +23,20 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             try
             {
-                // Create the main site
-                string siteName = GetSiteName(applicationName);
-                string sitePath = _pathResolver.GetApplicationPath(applicationName);
+                Directory.CreateDirectory(_path);
 
-                EnsureDirectory(sitePath);
+                int sitePort = CreateSite(iis, applicationName, _path);
 
-                int sitePort = CreateSite(iis, applicationName, siteName, sitePath);
                 string url = String.Format("http://localhost:{0}/", sitePort);
 
                 // Commit the changes to iis
                 iis.CommitChanges();
 
-                // Give IIS some time to create the site and map the path
-                // REVIEW: Should we poll the site's state?
-                Thread.Sleep(1000);
+                // Get teh site after committing changes
+                var site = iis.Sites[applicationName];
+
+                // Wait until the site is in the started state
+                site.WaitForState(IISServer.ObjectState.Started);
 
                 return url;
             }
@@ -55,11 +52,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             var iis = new IISServer.ServerManager();
 
             // Get the app pool for this application
-            string appPoolName = GetAppPool(applicationName);
-            IISServer.ApplicationPool appPool = iis.ApplicationPools[appPoolName];
+            var appPool = iis.ApplicationPools[applicationName];
 
             // Make sure the acls are gone
-            RemoveAcls(applicationName, appPoolName);
+            RemoveAcls(applicationName);
 
             if (appPool == null)
             {
@@ -67,49 +63,24 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 return;
             }
 
-            string siteName = GetSiteName(applicationName);
-            DeleteSite(iis, siteName);
+            DeleteSite(iis, applicationName);
 
             iis.CommitChanges();
 
             // Remove the app pool and commit changes
-            iis.ApplicationPools.Remove(iis.ApplicationPools[appPoolName]);
+            iis.ApplicationPools.Remove(iis.ApplicationPools[applicationName]);
             iis.CommitChanges();
         }
 
-        private IISServer.ApplicationPool EnsureAppPool(IISServer.ServerManager iis, string appName)
-        {
-            string appPoolName = GetAppPool(appName);
-            var appPool = iis.ApplicationPools[appPoolName];
-            if (appPool == null)
-            {
-                iis.ApplicationPools.Add(appPoolName);
-                iis.CommitChanges();
-
-                appPool = iis.ApplicationPools[appPoolName];
-                appPool.ManagedPipelineMode = IISServer.ManagedPipelineMode.Integrated;
-                appPool.ManagedRuntimeVersion = "v4.0";
-                appPool.AutoStart = true;
-                appPool.ProcessModel.LoadUserProfile = false;
-                appPool.WaitForState(IISServer.ObjectState.Started);
-
-                SetupAcls(appName, appPoolName);
-            }
-
-            return appPool;
-        }
-
-        private void RemoveAcls(string appName, string appPoolName)
+        private void RemoveAcls(string appPoolName)
         {
             // Setup Acls for this user
             var icacls = new Executable(@"C:\Windows\System32\icacls.exe", Directory.GetCurrentDirectory());
 
-            string applicationPath = _pathResolver.GetApplicationPath(appName);
-
             try
             {
                 // Give full control to the app folder (we can make it minimal later)
-                icacls.Execute(@"""{0}\"" /remove ""IIS AppPool\{1}""", applicationPath, appPoolName);
+                icacls.Execute(@"""{0}"" /remove ""IIS AppPool\{1}""", _path, appPoolName);
             }
             catch (Exception ex)
             {
@@ -117,19 +88,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
         }
 
-        private void SetupAcls(string appName, string appPoolName)
+        private void SetupAcls(string appPoolName)
         {
             // Setup Acls for this user
             var icacls = new Executable(@"C:\Windows\System32\icacls.exe", Directory.GetCurrentDirectory());
 
-            // Make sure the application path exists
-            string applicationPath = _pathResolver.GetApplicationPath(appName);
-            Directory.CreateDirectory(applicationPath);
-
             try
             {
                 // Give full control to the app folder (we can make it minimal later)
-                icacls.Execute(@"""{0}"" /grant:r ""IIS AppPool\{1}:(OI)(CI)(F)"" /C /Q /T", applicationPath, appPoolName);
+                icacls.Execute(@"""{0}"" /grant:r ""IIS AppPool\{1}:(OI)(CI)(F)"" /C /Q /T", _path, appPoolName);
             }
             catch (Exception ex)
             {
@@ -137,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
         }
 
-        private int GetRandomPort(IISServer.ServerManager iis)
+        private static int GetRandomPort(IISServer.ServerManager iis)
         {
             int randomPort = portNumberGenRnd.Next(1025, 65535);
             while (!IsAvailable(randomPort, iis))
@@ -148,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             return randomPort;
         }
 
-        private bool IsAvailable(int port, IISServer.ServerManager iis)
+        private static bool IsAvailable(int port, IISServer.ServerManager iis)
         {
             var tcpConnections = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections();
             foreach (var connectionInfo in tcpConnections)
@@ -173,19 +140,19 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             return true;
         }
 
-        private int CreateSite(IISServer.ServerManager iis, string applicationName, string siteName, string siteRoot)
+        private int CreateSite(IISServer.ServerManager iis, string applicationName, string siteRoot)
         {
-            var pool = EnsureAppPool(iis, applicationName);
+            var appPool = EnsureAppPool(iis, applicationName);
             int sitePort = GetRandomPort(iis);
-            var site = iis.Sites.Add(siteName, siteRoot, sitePort);
-            site.ApplicationDefaults.ApplicationPoolName = pool.Name;
+            var site = iis.Sites.Add(applicationName, siteRoot, sitePort);
+            site.ApplicationDefaults.ApplicationPoolName = appPool.Name;
 
             return sitePort;
         }
 
-        private void DeleteSite(IISServer.ServerManager iis, string siteName)
+        private static void DeleteSite(IISServer.ServerManager iis, string applicationName)
         {
-            var site = iis.Sites[siteName];
+            var site = iis.Sites[applicationName];
             if (site != null)
             {
                 site.StopAndWait();
@@ -193,19 +160,26 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
         }
 
-        private static string GetSiteName(string applicationName)
+        private IISServer.ApplicationPool EnsureAppPool(IISServer.ServerManager iis, string applicationName)
         {
-            return "signalr_" + applicationName;
-        }
+            var appPool = iis.ApplicationPools[applicationName];
 
-        private static string GetAppPool(string applicationName)
-        {
-            return applicationName;
-        }
+            if (appPool == null)
+            {
+                iis.ApplicationPools.Add(applicationName);
+                iis.CommitChanges();
 
-        private void EnsureDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
+                appPool = iis.ApplicationPools[applicationName];
+                appPool.ManagedPipelineMode = IISServer.ManagedPipelineMode.Integrated;
+                appPool.ManagedRuntimeVersion = "v4.0";
+                appPool.AutoStart = true;
+                appPool.ProcessModel.LoadUserProfile = false;
+                appPool.WaitForState(IISServer.ObjectState.Started);
+
+                SetupAcls(applicationName);
+            }
+
+            return appPool;
         }
     }
 }

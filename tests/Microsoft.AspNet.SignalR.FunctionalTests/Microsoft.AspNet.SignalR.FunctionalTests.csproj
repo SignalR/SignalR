@@ -93,10 +93,8 @@
     <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />
-    <Compile Include="Infrastructure\IIS\DefaultPathResolver.cs" />
     <Compile Include="Infrastructure\IIS\Executable.cs" />
     <Compile Include="Infrastructure\IIS\IISExtensions.cs" />
-    <Compile Include="Infrastructure\IIS\IPathResolver.cs" />
     <Compile Include="Infrastructure\IIS\PollingWait.cs" />
     <Compile Include="Infrastructure\IIS\SiteManager.cs" />
     <Compile Include="Infrastructure\MemoryTestHost.cs" />
