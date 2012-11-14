@@ -87,11 +87,15 @@
     <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
     <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
 
-    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" Verbose="true" />
+    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" 
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" 
+           Verbose="true" />
   </Target>
 
   <Target Name="RunFunctionalTests">
-    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll" Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" Verbose="true" />
+    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll" 
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml" 
+           Verbose="true" />
   </Target>
           
   <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
