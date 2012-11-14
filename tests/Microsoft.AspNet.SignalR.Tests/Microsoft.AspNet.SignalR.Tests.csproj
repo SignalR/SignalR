@@ -63,6 +63,7 @@
     <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
+    <Compile Include="Core\Transports\ForeverFrameTransportFacts.cs" />
     <Compile Include="GroupManagerFacts.cs" />
     <Compile Include="Hosting\CookieFacts.cs" />
     <Compile Include="Hosting\HostContextExtensionsFacts.cs" />
