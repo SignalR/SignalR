@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private readonly string _applicationName;
         private readonly string _path;
         private readonly string _webConfigPath;
+        private int _disposed = 0;
 
         private const string WebConfigTemplate = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -56,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
-            Url = _siteManager.CreateSite(_applicationName);
+            Url = _siteManager.CreateSite(_applicationName).Trim('/');
 
             // Use a configuration file to specify values
             string content = String.Format(WebConfigTemplate, 
@@ -70,9 +72,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public void Dispose()
         {
-            _siteManager.DeleteSite(_applicationName);
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+            {
+                _siteManager.DeleteSite(_applicationName);
 
-            File.Delete(_webConfigPath);
+                File.Delete(_webConfigPath);
+            }
         }
     }
 }

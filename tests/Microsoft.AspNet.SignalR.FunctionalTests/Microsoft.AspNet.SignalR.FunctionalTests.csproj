@@ -90,6 +90,13 @@
     </Compile>
     <Compile Include="App_Start\RegisterHubs.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
+    <Compile Include="Connections\FilteredConnection.cs" />
+    <Compile Include="Connections\MyBadConnection.cs" />
+    <Compile Include="Connections\MyGroupConnection.cs" />
+    <Compile Include="Connections\MyGroupEchoConnection.cs" />
+    <Compile Include="Connections\MyReconnect.cs" />
+    <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
+    <Compile Include="Connections\MySendingConnection.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />

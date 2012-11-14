@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     public class MemoryTestHost : ITestHost
     {
         private readonly MemoryHost _host;
-        
+
         public MemoryTestHost(MemoryHost host)
         {
             _host = host;
@@ -18,14 +18,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             get
             {
-                return "http://foo";
+                return "http://memoryhost";
             }
         }
 
         public IClientTransport Transport { get; set; }
 
-        public void Initialize(int? keepAlive, 
-                               int? connectonTimeOut, 
+        public void Initialize(int? keepAlive,
+                               int? connectonTimeOut,
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
@@ -54,6 +54,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             }
 
             _host.MapHubs();
+            _host.MapConnection<MyBadConnection>("/ErrorsAreFun");
+            _host.MapConnection<MyGroupEchoConnection>("/group-echo");
+            _host.MapConnection<MySendingConnection>("/multisend");
+            _host.MapConnection<MyReconnect>("/my-reconnect");
+            _host.MapConnection<MyGroupConnection>("/groups");
+            _host.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups");
+            _host.MapConnection<FilteredConnection>("/filter");
         }
 
         public void Dispose()

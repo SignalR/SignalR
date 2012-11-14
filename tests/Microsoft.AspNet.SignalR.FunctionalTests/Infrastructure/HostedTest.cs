@@ -7,11 +7,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
     public abstract class HostedTest : IDisposable
     {
-        protected ITestHost CreateHost()
-        {
-            return CreateHost(HostType.Memory, TransportType.ServerSentEvents);
-        }
-
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
             ITestHost host = null;
@@ -34,26 +29,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             return host;
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-        public virtual void Dispose()
-        {
-            Dispose(true);
-        }
-
-        private IClientTransport CreateTransport(TransportType transportType)
+        protected IClientTransport CreateTransport(TransportType transportType)
         {
             return CreateTransport(transportType, new DefaultHttpClient());
         }
 
-        private IClientTransport CreateTransport(TransportType transportType, IHttpClient client)
+        protected IClientTransport CreateTransport(TransportType transportType, IHttpClient client)
         {
             switch (transportType)
             {
@@ -70,6 +51,20 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             }
 
             throw new NotSupportedException("Transport not supported");
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            Dispose(true);
         }
     }
 }
