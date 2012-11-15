@@ -30,6 +30,17 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
         }
 
+        /// <summary>
+        /// Pointed to the HTMLOutputWriter to wrap output stream with an HTML friendly one
+        /// </summary>
+        public override TextWriter OutputWriter
+        {
+            get
+            {
+                return HTMLOutputWriter;
+            }
+        }
+
         private HTMLTextWriter HTMLOutputWriter
         {
             get
@@ -41,17 +52,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 return _htmlOutputWriter;
-            }
-        }
-
-        /// <summary>
-        /// Pointed to the HTMLOutputWriter to wrap output stream with an HTML friendly one
-        /// </summary>
-        public override TextWriter OutputWriter
-        {
-            get
-            {
-                return HTMLOutputWriter;
             }
         }
 
@@ -115,15 +115,15 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             public override void Write(string value)
             {
-                base.Write(SanitizeInlineTags(value));
+                base.Write(JavascriptEncode(value));
             }
 
             public override void WriteLine(string value)
             {
-                base.WriteLine(SanitizeInlineTags(value));
+                base.WriteLine(JavascriptEncode(value));
             }
 
-            private static string SanitizeInlineTags(string input)
+            private static string JavascriptEncode(string input)
             {
                 return input.Replace("<", "\\u003c").Replace(">", "\\u003e");
             }
