@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests
     {
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void ReadingState(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -41,11 +41,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Stop();
             }
-        }
+        } 
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void SettingState(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void GetValueFromServer(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void TaskWithException(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void GenericTaskWithException(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void Overloads(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void UnsupportedOverloads(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void GuidTest(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void ComplexPersonState(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void DynamicInvokeTest(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void CreateProxyAfterConnectionStartsThrows(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void AddingToMultipleGroups(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -400,7 +400,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void HubGroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -458,8 +458,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         public void HubGroupsRejoinWhenAutoRejoiningGroupsEnabled(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -561,7 +561,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void CustomQueryStringRaw(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -584,7 +584,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void CustomQueryString(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -707,7 +707,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void SendToAllButCaller(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -741,7 +741,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void SendToAllButCallerInGroup(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -778,7 +778,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void SendToAll(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -812,7 +812,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void SendToSelf(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))

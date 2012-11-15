@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
             switch (hostType)
             {
-                case HostType.IIS:
-                    host = new IISTestHost();
+                case HostType.IISExpress:
+                    host = new IISExpressTestHost();
                     host.Transport = CreateTransport(transportType);
                     break;
                 case HostType.Memory:

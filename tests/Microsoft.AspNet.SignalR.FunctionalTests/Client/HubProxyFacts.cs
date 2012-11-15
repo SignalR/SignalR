@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IIS, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         public void EndToEndTest(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))

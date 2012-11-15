@@ -2,7 +2,7 @@
 {
     public enum HostType
     {
-        IIS,
+        IISExpress,
         Memory
     }
 }

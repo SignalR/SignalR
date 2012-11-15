@@ -68,8 +68,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void GroupsAreNotReadOnConnectedAsync(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -94,8 +94,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void SendRaisesOnReceivedFromAllEvents(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -129,8 +129,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void SendCanBeCalledAfterStateChangedEvent(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             // [InlineData(HostType.IIS, TransportType.LongPolling)]
             public void ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType)
             {
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             public void GroupsReceiveMessages(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             public void GroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -303,8 +303,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void GroupsRejoinedWhenOnRejoiningGroupsOverridden(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -348,8 +348,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientGroupsSyncWithServerGroupsOnReconnect(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             public void ClientGroupsSyncWithServerGroupsOnReconnectWhenNotRejoiningGroups(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -442,8 +442,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IIS, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void SendToAllButCaller(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))

@@ -6,10 +6,9 @@ using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
-    public class IISTestHost : ITestHost
+    public class IISExpressTestHost : ITestHost
     {
         private readonly SiteManager _siteManager;
-        private readonly string _applicationName;
         private readonly string _path;
         private readonly string _webConfigPath;
         private int _disposed = 0;
@@ -31,11 +30,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
   </system.webServer>
 </configuration>";
 
-        public IISTestHost()
-        {
-            // Create a random application name
-            _applicationName = "signalr_test_" + Guid.NewGuid().ToString().Substring(0, 8);
-
+        public IISExpressTestHost()
+        { 
             // The path to the site is the test path.
             // We treat the test output path just like a site. This makes it super
             // cheap to create and tear down sites. We don't need to copy any files.
@@ -58,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
-            Url = _siteManager.CreateSite(_applicationName).Trim('/');
+            Url = _siteManager.GetSiteUrl();
 
             // Use a configuration file to specify values
             string content = String.Format(WebConfigTemplate, 
@@ -74,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 0)
             {
-                _siteManager.DeleteSite(_applicationName);
+                _siteManager.RecycleApplication();
 
                 File.Delete(_webConfigPath);
             }

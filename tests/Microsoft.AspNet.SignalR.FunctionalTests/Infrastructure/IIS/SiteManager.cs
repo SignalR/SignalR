@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net.NetworkInformation;
-using IISServer = Microsoft.Web.Administration;
+using System.Threading;
+using Microsoft.Web.Administration;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 {
@@ -11,103 +11,53 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private static Random portNumberGenRnd = new Random((int)DateTime.Now.Ticks);
 
         private readonly string _path;
+        private readonly string _appHostConfigPath;
+        private readonly string _iisHomePath;
+        private readonly ServerManager _serverManager;
+        private static Process _iisExpressProcess;
+
+        private static readonly string IISExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                                                                     "IIS Express",
+                                                                     "iisexpress.exe");
+
+        private const string TestSiteName = "signalr-test-site";
 
         public SiteManager(string path)
         {
             _path = Path.GetFullPath(path);
+            _appHostConfigPath = Path.GetFullPath(Path.Combine(_path, "..", "..", "config", "applicationHost.config"));
+            _iisHomePath = Path.GetFullPath(Path.Combine(_appHostConfigPath, "..", ".."));
+            _serverManager = new ServerManager(_appHostConfigPath);
         }
 
-        public string CreateSite(string applicationName)
+        public string GetSiteUrl()
         {
-            var iis = new IISServer.ServerManager();
+            Site site = _serverManager.Sites[TestSiteName];
 
-            try
+            if (site == null)
             {
-                Directory.CreateDirectory(_path);
+                int sitePort = GetRandomPort();
+                site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + sitePort + ":localhost", _path);
 
-                int sitePort = CreateSite(iis, applicationName, _path);
-
-                string url = String.Format("http://localhost:{0}/", sitePort);
-
-                // Commit the changes to iis
-                iis.CommitChanges();
-
-                // Get teh site after committing changes
-                var site = iis.Sites[applicationName];
-
-                // Wait until the site is in the started state
-                site.WaitForState(IISServer.ObjectState.Started);
-
-                return url;
+                _serverManager.CommitChanges();
             }
-            catch
-            {
-                DeleteSite(applicationName);
-                throw;
-            }
+
+            EnsureIISExpressProcess();
+
+            return String.Format("http://localhost:{0}", site.Bindings[0].EndPoint.Port);
         }
 
-        public void DeleteSite(string applicationName)
+        public void RecycleApplication()
         {
-            var iis = new IISServer.ServerManager();
-
-            // Get the app pool for this application
-            var appPool = iis.ApplicationPools[applicationName];
-
-            // Make sure the acls are gone
-            RemoveAcls(applicationName);
-
-            if (appPool == null)
-            {
-                // If there's no app pool then do nothing
-                return;
-            }
-
-            DeleteSite(iis, applicationName);
-
-            iis.CommitChanges();
-
-            // Remove the app pool and commit changes
-            iis.ApplicationPools.Remove(iis.ApplicationPools[applicationName]);
-            iis.CommitChanges();
+            // This blows up with access denied. We need a way to force clearing the state without killing the process
+            // ApplicationPool appPool = _serverManager.ApplicationPools[_serverManager.ApplicationDefaults.ApplicationPoolName];
+            // appPool.Stop();
         }
 
-        private void RemoveAcls(string appPoolName)
-        {
-            // Setup Acls for this user
-            var icacls = new Executable(@"C:\Windows\System32\icacls.exe", Directory.GetCurrentDirectory());
-
-            try
-            {
-                // Give full control to the app folder (we can make it minimal later)
-                icacls.Execute(@"""{0}"" /remove ""IIS AppPool\{1}""", _path, appPoolName);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
-
-        private void SetupAcls(string appPoolName)
-        {
-            // Setup Acls for this user
-            var icacls = new Executable(@"C:\Windows\System32\icacls.exe", Directory.GetCurrentDirectory());
-
-            try
-            {
-                // Give full control to the app folder (we can make it minimal later)
-                icacls.Execute(@"""{0}"" /grant:r ""IIS AppPool\{1}:(OI)(CI)(F)"" /C /Q /T", _path, appPoolName);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
-
-        private static int GetRandomPort(IISServer.ServerManager iis)
+        private int GetRandomPort()
         {
             int randomPort = portNumberGenRnd.Next(1025, 65535);
-            while (!IsAvailable(randomPort, iis))
+            while (!IsPortAvailable(randomPort))
             {
                 randomPort = portNumberGenRnd.Next(1025, 65535);
             }
@@ -115,18 +65,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             return randomPort;
         }
 
-        private static bool IsAvailable(int port, IISServer.ServerManager iis)
+        private bool IsPortAvailable(int port)
         {
-            var tcpConnections = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections();
-            foreach (var connectionInfo in tcpConnections)
-            {
-                if (connectionInfo.LocalEndPoint.Port == port)
-                {
-                    return false;
-                }
-            }
-
-            foreach (var iisSite in iis.Sites)
+            foreach (var iisSite in _serverManager.Sites)
             {
                 foreach (var binding in iisSite.Bindings)
                 {
@@ -140,46 +81,38 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             return true;
         }
 
-        private int CreateSite(IISServer.ServerManager iis, string applicationName, string siteRoot)
+        private void EnsureIISExpressProcess()
         {
-            var appPool = EnsureAppPool(iis, applicationName);
-            int sitePort = GetRandomPort(iis);
-            var site = iis.Sites.Add(applicationName, siteRoot, sitePort);
-            site.ApplicationDefaults.ApplicationPoolName = appPool.Name;
-
-            return sitePort;
-        }
-
-        private static void DeleteSite(IISServer.ServerManager iis, string applicationName)
-        {
-            var site = iis.Sites[applicationName];
-            if (site != null)
+            Process oldProcess = Interlocked.CompareExchange(ref _iisExpressProcess, CreateIISExpressProcess(), null);
+            if (oldProcess == null)
             {
-                site.StopAndWait();
-                iis.Sites.Remove(site);
+                _iisExpressProcess.Start();
+                return;
             }
         }
 
-        private IISServer.ApplicationPool EnsureAppPool(IISServer.ServerManager iis, string applicationName)
+        private Process CreateIISExpressProcess()
         {
-            var appPool = iis.ApplicationPools[applicationName];
-
-            if (appPool == null)
+            if (!File.Exists(IISExpressPath))
             {
-                iis.ApplicationPools.Add(applicationName);
-                iis.CommitChanges();
-
-                appPool = iis.ApplicationPools[applicationName];
-                appPool.ManagedPipelineMode = IISServer.ManagedPipelineMode.Integrated;
-                appPool.ManagedRuntimeVersion = "v4.0";
-                appPool.AutoStart = true;
-                appPool.ProcessModel.LoadUserProfile = false;
-                appPool.WaitForState(IISServer.ObjectState.Started);
-
-                SetupAcls(applicationName);
+                throw new InvalidOperationException("Unable to locate IIS Express on the machine");
             }
 
-            return appPool;
+            var iisExpressProcess = new Process();
+            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:" + _appHostConfigPath);
+            iisExpressProcess.StartInfo.EnvironmentVariables["IIS_USER_HOME"] = _iisHomePath;
+            //iisExpressProcess.StartInfo.CreateNoWindow = false;
+            iisExpressProcess.StartInfo.UseShellExecute = false;
+            iisExpressProcess.EnableRaisingEvents = true;
+            iisExpressProcess.Exited += OnIIsExpressQuit;
+
+            return iisExpressProcess;
         }
+
+        void OnIIsExpressQuit(object sender, EventArgs e)
+        {
+            Interlocked.Exchange(ref _iisExpressProcess, null);
+        }
+
     }
 }

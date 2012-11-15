@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IIS, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             // [InlineData(HostType.IIS, TransportType.LongPolling)]
             public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType)
             {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (var ser = aggEx.GetError())
                     {
-                        if (hostType == HostType.IIS)
+                        if (hostType == HostType.IISExpress)
                         {
                             Assert.Equal(System.Net.HttpStatusCode.InternalServerError, ser.StatusCode);
                         }
