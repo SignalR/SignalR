@@ -14,28 +14,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
     public class ForeverFrameTransportFacts
     {
         [Fact]
-        public void ForeverFrameTransportEscapesScriptTags()
+        public void ForeverFrameTransportEscapesTags()
         {
             var request = new Mock<IRequest>();
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
+            var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
 
-            ForeverFrameTransport fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
-
-            AssertEscaped(fft, response, "</sCRiPT>", "</\"+\"sCRiPT>");
-            AssertEscaped(fft, response, "</SCRIPT dosomething='false'>", "</\"+\"SCRIPT dosomething='false'>");
-            AssertEscaped(fft, response, "</scrip>", "</scrip>");
+            AssertEscaped(fft, response, "</sCRiPT>", "\\u003c/sCRiPT\\u003e");
+            AssertEscaped(fft, response, "</SCRIPT dosomething='false'>", "\\u003c/SCRIPT dosomething='false'\\u003e");
+            AssertEscaped(fft, response, "<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e");
         }
 
         private static void AssertEscaped(ForeverFrameTransport fft, CustomResponse response, string input, string expectedOutput)
         {
             fft.Send(input).Wait();
 
-            string d = response.GetData();
+            string rawResponse = response.GetData();
             response.Reset();
 
-            // Doing contains due to all the crap that gets sent through the buffer
-            Assert.True(d.Contains(expectedOutput));
+            // Doing contains due to all the stuff that gets sent through the buffer
+            Assert.True(rawResponse.Contains(expectedOutput));
         }
 
         private class CustomResponse : IResponse
@@ -62,16 +61,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
 
             public void Write(ArraySegment<byte> data)
             {
-                foreach (byte b in data.Array)
-                {
-                    _stream.WriteByte(b);
-                }
+                _stream.Write(data.Array, data.Offset, data.Count);
             }
 
             public void Reset()
             {
-                _stream.Dispose();
-                _stream = new MemoryStream();
+                _stream.SetLength(0);
             }
 
             public Task FlushAsync()
