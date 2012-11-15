@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
-        HTMLTextWriter _htmlOutputWriter;
+        private HTMLTextWriter _htmlOutputWriter;
 
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
