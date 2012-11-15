@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR
                     {
                         // If we have a pending ack for longer than the threshold
                         // cancel it.
-                        info.Tcs.TrySetResult(null);
+                        info.Tcs.TrySetCanceled();
                     }
                 }
             }
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR
                     AckInfo info;
                     if (_acks.TryRemove(pair.Key, out info))
                     {
-                        info.Tcs.TrySetResult(null);
+                        info.Tcs.TrySetCanceled();
                     }
                 }
             }

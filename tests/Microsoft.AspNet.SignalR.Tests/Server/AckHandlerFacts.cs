@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Thread.Sleep(TimeSpan.FromSeconds(5));
 
             Assert.True(task.IsCompleted);
+            Assert.True(task.IsCanceled);
         }
 
         [Fact]
