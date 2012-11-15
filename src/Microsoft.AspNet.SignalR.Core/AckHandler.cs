@@ -18,15 +18,15 @@ namespace Microsoft.AspNet.SignalR
         private Timer _timer;
 
         public AckHandler()
-            : this(cancelAcksOnTimeout: true, 
-                   ackThreshold: TimeSpan.FromMinutes(1),
-                   ackInterval: TimeSpan.FromSeconds(10))
+            : this(completeAcksOnTimeout: true, 
+                   ackThreshold: TimeSpan.FromSeconds(5),
+                   ackInterval: TimeSpan.FromSeconds(5))
         {
         }
 
-        public AckHandler(bool cancelAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval)
+        public AckHandler(bool completeAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval)
         {
-            if (cancelAcksOnTimeout)
+            if (completeAcksOnTimeout)
             {
                 _timer = new Timer(_ => CheckAcks(), state: null, dueTime: ackInterval, period: ackInterval);
             }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR
                     {
                         // If we have a pending ack for longer than the threshold
                         // cancel it.
-                        info.Tcs.TrySetCanceled();
+                        info.Tcs.TrySetResult(null);
                     }
                 }
             }
@@ -79,9 +79,13 @@ namespace Microsoft.AspNet.SignalR
                 }
 
                 // Trip all pending acks
-                foreach (var ackInfo in _acks.Values)
+                foreach (var pair in _acks)
                 {
-                    ackInfo.Tcs.TrySetCanceled();
+                    AckInfo info;
+                    if (_acks.TryRemove(pair.Key, out info))
+                    {
+                        info.Tcs.TrySetResult(null);
+                    }
                 }
             }
         }

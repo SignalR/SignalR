@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                             new[] { "a", "signal", "connectionid" },
                                             new string[] { },
                                             traceManager.Object,
-                                            new AckHandler(cancelAcksOnTimeout: false, 
+                                            new AckHandler(completeAcksOnTimeout: false, 
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
                                             counters);

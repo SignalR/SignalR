@@ -8,9 +8,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
     public class AckHandlerFacts
     {
         [Fact]
-        public void AcksLastingLongerThanThresholdAreCancelled()
+        public void AcksLastingLongerThanThresholdAreCompleted()
         {
-            var ackHandler = new AckHandler(cancelAcksOnTimeout: true, 
+            var ackHandler = new AckHandler(completeAcksOnTimeout: true, 
                                             ackThreshold: TimeSpan.FromSeconds(1),
                                             ackInterval: TimeSpan.FromSeconds(1));
 
@@ -18,13 +18,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
 
-            Assert.True(task.IsCanceled);
+            Assert.True(task.IsCompleted);
         }
 
         [Fact]
         public void TriggeredAcksAreCompleted()
         {
-            var ackHandler = new AckHandler(cancelAcksOnTimeout: false,
+            var ackHandler = new AckHandler(completeAcksOnTimeout: false,
                                             ackThreshold: TimeSpan.Zero,
                                             ackInterval: TimeSpan.Zero);
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void UnregisteredAcksCantBeTriggered()
         {
-            var ackHandler = new AckHandler(cancelAcksOnTimeout: false,
+            var ackHandler = new AckHandler(completeAcksOnTimeout: false,
                                             ackThreshold: TimeSpan.Zero,
                                             ackInterval: TimeSpan.Zero);
 
