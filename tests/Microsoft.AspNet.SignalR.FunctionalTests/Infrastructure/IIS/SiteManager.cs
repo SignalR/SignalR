@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                                                                      "iisexpress.exe");
 
         private const string TestSiteName = "signalr-test-site";
+        private const int TestSitePort = 1337;
 
         public SiteManager(string path)
         {
@@ -40,42 +41,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             if (site == null)
             {
-                int sitePort = GetRandomPort();
-                site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + sitePort + ":localhost", _path);
+                site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + TestSitePort + ":localhost", _path);
 
                 _serverManager.CommitChanges();
             }
 
             EnsureIISExpressProcess();
 
-            return String.Format("http://localhost:{0}", site.Bindings[0].EndPoint.Port);
-        }
-
-        private int GetRandomPort()
-        {
-            int randomPort = portNumberGenRnd.Next(1025, 65535);
-            while (!IsPortAvailable(randomPort))
-            {
-                randomPort = portNumberGenRnd.Next(1025, 65535);
-            }
-
-            return randomPort;
-        }
-
-        private bool IsPortAvailable(int port)
-        {
-            foreach (var iisSite in _serverManager.Sites)
-            {
-                foreach (var binding in iisSite.Bindings)
-                {
-                    if (binding.EndPoint != null && binding.EndPoint.Port == port)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
+            return String.Format("http://localhost:{0}", TestSitePort);
         }
 
         private void EnsureIISExpressProcess()
@@ -98,12 +71,19 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             // If we have a cached IISExpress id then just use it
             if (_existingIISExpressProcessId != null)
             {
-                var process = Process.GetProcessById(_existingIISExpressProcessId.Value);
-
-                // Make sure it's iis express (Can process ids be reused?)
-                if (process.ProcessName.Equals("iisexpress"))
+                try
                 {
-                    return true;
+                    var process = Process.GetProcessById(_existingIISExpressProcessId.Value);
+
+                    // Make sure it's iis express (Can process ids be reused?)
+                    if (process.ProcessName.Equals("iisexpress"))
+                    {
+                        return true;
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    // The process specified by the processId parameter is not running. The identifier might be expired.
                 }
 
                 _existingIISExpressProcessId = null;
