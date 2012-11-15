@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         public SiteManager(string path)
         {
             _path = Path.GetFullPath(path);
-            _appHostConfigPath = Path.GetFullPath(Path.Combine(_path, "..", "..", "config", "applicationHost.config"));
+            _appHostConfigPath = Path.GetFullPath(Path.Combine(_path, "bin", "config", "applicationHost.config"));
             _iisHomePath = Path.GetFullPath(Path.Combine(_appHostConfigPath, "..", ".."));
             _serverManager = new ServerManager(_appHostConfigPath);
         }
@@ -118,7 +118,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                         foreach (ManagementObject processObj in searcher.Get())
                         {
                             string commandLine = (string)processObj["CommandLine"];
-                            if (!String.IsNullOrEmpty(commandLine) && commandLine.Contains(_appHostConfigPath))
+                            if (!String.IsNullOrEmpty(commandLine) &&
+                                (commandLine.Contains(_appHostConfigPath) ||
+                                 commandLine.Contains("/site:" + TestSiteName)))
                             {
                                 _existingIISExpressProcessId = process.Id;
                                 return true;
@@ -146,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
 
             var iisExpressProcess = new Process();
-            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:" + _appHostConfigPath);
+            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName);
             iisExpressProcess.StartInfo.EnvironmentVariables["IIS_USER_HOME"] = _iisHomePath;
             iisExpressProcess.StartInfo.UseShellExecute = false;
             iisExpressProcess.EnableRaisingEvents = true;
