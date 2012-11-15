@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Management;
 using System.Threading;
 using Microsoft.Web.Administration;
 
@@ -14,7 +16,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private readonly string _appHostConfigPath;
         private readonly string _iisHomePath;
         private readonly ServerManager _serverManager;
+
         private static Process _iisExpressProcess;
+        private static int? _existingIISExpressProcessId;
 
         private static readonly string IISExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                                                                      "IIS Express",
@@ -47,13 +51,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             return String.Format("http://localhost:{0}", site.Bindings[0].EndPoint.Port);
         }
 
-        public void RecycleApplication()
-        {
-            // This blows up with access denied. We need a way to force clearing the state without killing the process
-            // ApplicationPool appPool = _serverManager.ApplicationPools[_serverManager.ApplicationDefaults.ApplicationPoolName];
-            // appPool.Stop();
-        }
-
         private int GetRandomPort()
         {
             int randomPort = portNumberGenRnd.Next(1025, 65535);
@@ -83,12 +80,62 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         private void EnsureIISExpressProcess()
         {
+            if (AlreadyRunningIISExpress())
+            {
+                return;
+            }
+
             Process oldProcess = Interlocked.CompareExchange(ref _iisExpressProcess, CreateIISExpressProcess(), null);
             if (oldProcess == null)
             {
                 _iisExpressProcess.Start();
                 return;
             }
+        }
+
+        private bool AlreadyRunningIISExpress()
+        {
+            // If we have a cached IISExpress id then just use it
+            if (_existingIISExpressProcessId != null)
+            {
+                var process = Process.GetProcessById(_existingIISExpressProcessId.Value);
+
+                // Make sure it's iis express (Can process ids be reused?)
+                if (process.ProcessName.Equals("iisexpress"))
+                {
+                    return true;
+                }
+
+                _existingIISExpressProcessId = null;
+            }
+
+            foreach (Process process in Process.GetProcessesByName("iisexpress"))
+            {
+                try
+                {
+                    using (var searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id))
+                    {
+                        foreach (ManagementObject processObj in searcher.Get())
+                        {
+                            string commandLine = (string)processObj["CommandLine"];
+                            if (!String.IsNullOrEmpty(commandLine) && commandLine.Contains(_appHostConfigPath))
+                            {
+                                _existingIISExpressProcessId = process.Id;
+                                return true;
+                            }
+                        }
+                    }
+                }
+                catch (Win32Exception ex)
+                {
+                    if ((uint)ex.ErrorCode != 0x80004005)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private Process CreateIISExpressProcess()
@@ -101,7 +148,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             var iisExpressProcess = new Process();
             iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:" + _appHostConfigPath);
             iisExpressProcess.StartInfo.EnvironmentVariables["IIS_USER_HOME"] = _iisHomePath;
-            //iisExpressProcess.StartInfo.CreateNoWindow = false;
             iisExpressProcess.StartInfo.UseShellExecute = false;
             iisExpressProcess.EnableRaisingEvents = true;
             iisExpressProcess.Exited += OnIIsExpressQuit;
@@ -109,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             return iisExpressProcess;
         }
 
-        void OnIIsExpressQuit(object sender, EventArgs e)
+        private void OnIIsExpressQuit(object sender, EventArgs e)
         {
             Interlocked.Exchange(ref _iisExpressProcess, null);
         }

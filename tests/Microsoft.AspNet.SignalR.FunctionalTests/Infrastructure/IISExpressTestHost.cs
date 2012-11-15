@@ -70,8 +70,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 0)
             {
-                _siteManager.RecycleApplication();
-
                 File.Delete(_webConfigPath);
             }
         }
