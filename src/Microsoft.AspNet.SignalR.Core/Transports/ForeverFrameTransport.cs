@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable fields are disposed from a different method")]
     public class ForeverFrameTransport : ForeverTransport
     {
         private const string _initPrefix = "<!DOCTYPE html>" +
