@@ -73,13 +73,13 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
-  <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
+  <Target Name="CI" DependsOnTargets="Build; RunCodeAnalysis; RunTests;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
+  <Target Name="Go" DependsOnTargets="Build; RunCodeAnalysis; RunTests;">
   </Target>
 
-  <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
+  <Target Name="BuildCmd" DependsOnTargets="Build; RunCodeAnalysis; RunUnitTests;">
   </Target>
 
   <Target Name="RunUnitTests">
@@ -129,16 +129,19 @@
     <ItemGroup>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Net35\Microsoft.AspNet.SignalR.Client.Net35.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj"></AnalysisProjects>
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj"></AnalysisProjects>      
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj"></AnalysisProjects>        
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj"></AnalysisProjects>
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj"></AnalysisProjects>        
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj"></AnalysisProjects>
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj"></AnalysisProjects>        
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></AnalysisProjects>
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></AnalysisProjects>
+      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj"></AnalysisProjects>
     </ItemGroup>
 
     <MSBuild Projects="%(AnalysisProjects.Identity)"
-             Targets="Rebuild"
+             Targets="Build"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
   </Target>
 
