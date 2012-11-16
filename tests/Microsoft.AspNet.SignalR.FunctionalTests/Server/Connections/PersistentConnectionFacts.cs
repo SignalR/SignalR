@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var connection = new Client.Connection(host.Url + "/my-reconnect");
                     connection.Start(host.Transport).Wait();
 
-                    host.Dispose();
+                    host.Shutdown();
 
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 

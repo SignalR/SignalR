@@ -67,5 +67,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             _host.Dispose();
         }
+
+        public void Shutdown()
+        {
+            Dispose();
+        }
     }
 }

@@ -10,8 +10,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 {
     public class SiteManager
     {
-        private static Random portNumberGenRnd = new Random((int)DateTime.Now.Ticks);
-
         private readonly string _path;
         private readonly string _appHostConfigPath;
         private readonly string _iisHomePath;
@@ -49,6 +47,37 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             EnsureIISExpressProcess();
 
             return String.Format("http://localhost:{0}", TestSitePort);
+        }
+
+        public void StopSite()
+        {
+            KillProcess();
+        }
+
+        private void KillProcess()
+        {
+            Process process = _iisExpressProcess;
+            if (process == null)
+            {
+                if (_existingIISExpressProcessId == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    process = Process.GetProcessById(_existingIISExpressProcessId.Value);
+                }
+                catch(ArgumentException)
+                {
+                    return;
+                }
+            }
+
+            if (process != null)
+            {
+                process.Kill();
+            }
         }
 
         private void EnsureIISExpressProcess()
@@ -141,6 +170,5 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         {
             Interlocked.Exchange(ref _iisExpressProcess, null);
         }
-
     }
 }

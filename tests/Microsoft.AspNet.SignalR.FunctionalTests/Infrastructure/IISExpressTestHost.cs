@@ -73,5 +73,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 File.Delete(_webConfigPath);
             }
         }
+
+        public void Shutdown()
+        {
+            _siteManager.StopSite();
+        }
     }
 }

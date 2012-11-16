@@ -13,5 +13,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                         int? connectonTimeOut = 120,
                         int? hearbeatInterval = 10,
                         bool enableAutoRejoiningGroups = false);
+
+        void Shutdown();
     }
 }
