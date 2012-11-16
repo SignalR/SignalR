@@ -6,10 +6,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     internal static class CancellationTokenExtensions
     {
         public static IDisposable SafeRegister<T>(this CancellationToken cancellationToken, Action<T> callback, T state)
-        {            
+        {
+            var callbackInvoked = 0;
+
             try
             {
-                var callbackInvoked = 0;
                 CancellationTokenRegistration registration = cancellationToken.Register(callbackState =>
                 {
                     if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
@@ -29,9 +30,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     }
                 });
             }
-            catch(ObjectDisposedException)
+            catch (ObjectDisposedException)
             {
-                callback(state);
+                if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
+                {
+                    callback(state);
+                }
             }
 
             // Noop

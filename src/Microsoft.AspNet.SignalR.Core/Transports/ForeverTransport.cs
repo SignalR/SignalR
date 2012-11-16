@@ -255,9 +255,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;
-            var wh = new ManualResetEventSlim(initialState: false);
             IDisposable registration = null;
-            
+
+            var wh = new ManualResetEventSlim(initialState: false);
+
             try
             {
                 subscription = connection.Receive(LastMessageId, response =>
@@ -287,7 +288,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                              response.Aborted ||
                              ConnectionEndToken.IsCancellationRequested)
                     {
-                        registration.Dispose();
+                        // If this is null it's because the cancellation token tripped
+                        // before we setup the registration at all.
+                        if (registration != null)
+                        {
+                            registration.Dispose();
+                        }
 
                         if (response.Aborted)
                         {
@@ -320,6 +326,15 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return;
             }
 
+            // End the request if the connection end token is triggered
+            registration = ConnectionEndToken.SafeRegister(state =>
+            {
+                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
+
+                state.Dispose();
+            },
+            subscription);
+
             if (postReceive != null)
             {
                 postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
@@ -334,15 +349,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 wh.Set();
             }
-
-            // End the request if the connection end token is triggered
-            registration = ConnectionEndToken.SafeRegister(state =>
-            {
-                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
-
-                state.Dispose();
-            },
-            subscription);
         }
     }
 }
