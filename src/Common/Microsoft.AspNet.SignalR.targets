@@ -6,9 +6,13 @@
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)Microsoft.AspNet.SignalR.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis Condition="$(RunCodeAnalysis) == ''">false</RunCodeAnalysis>
+    <RunCodeAnalysis Condition="'$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
     <NoWarn>1591</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RunCodeAnalysis)' == 'true'">
+      <DefineConstants>$(DefineConstants);CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(KeyFile)' != '' And '$(DisableSigning)' != 'true'">

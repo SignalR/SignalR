@@ -73,13 +73,13 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
-  <Target Name="CI" DependsOnTargets="Build; RunCodeAnalysis; RunTests;">
+  <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
-  <Target Name="Go" DependsOnTargets="Build; RunCodeAnalysis; RunTests;">
+  <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
-  <Target Name="BuildCmd" DependsOnTargets="Build; RunCodeAnalysis; RunUnitTests;">
+  <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
   </Target>
 
   <Target Name="RunUnitTests">
@@ -141,7 +141,7 @@
     </ItemGroup>
 
     <MSBuild Projects="%(AnalysisProjects.Identity)"
-             Targets="Build"
+             Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
   </Target>
 
