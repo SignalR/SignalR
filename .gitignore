@@ -28,3 +28,4 @@ tests/Microsoft.AspNet.SignalR.Client.JS.Tests/temp/*
 tests/Microsoft.AspNet.SignalR.Client.JS.Tests/CommandLineBridge.js
 *.vspx
 signalr.log.txt
+/tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/
