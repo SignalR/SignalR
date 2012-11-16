@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private readonly string _path;
         private readonly string _appHostConfigPath;
         private readonly string _iisHomePath;
+        private readonly string _logPath;
         private readonly ServerManager _serverManager;
 
         private static Process _iisExpressProcess;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             _appHostConfigPath = Path.GetFullPath(Path.Combine(_path, "bin", "config", "applicationHost.config"));
             _iisHomePath = Path.GetFullPath(Path.Combine(_appHostConfigPath, "..", ".."));
             _serverManager = new ServerManager(_appHostConfigPath);
+            _logPath = Path.GetFullPath(Path.Combine(_path, "bin", "logs"));
         }
 
         public string GetSiteUrl()
@@ -39,7 +41,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             if (site == null)
             {
+                if (TryGetRunningIIsExpress())
+                {
+                    // Kill existing IIS Express process mapping to this application
+                    KillProcess();
+                }
+
                 site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + TestSitePort + ":localhost", _path);
+                site.TraceFailedRequestsLogging.Enabled = true;
+                site.TraceFailedRequestsLogging.Directory = _logPath;
 
                 _serverManager.CommitChanges();
             }
@@ -68,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 {
                     process = Process.GetProcessById(_existingIISExpressProcessId.Value);
                 }
-                catch(ArgumentException)
+                catch (ArgumentException)
                 {
                     return;
                 }
@@ -82,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         private void EnsureIISExpressProcess()
         {
-            if (AlreadyRunningIISExpress())
+            if (TryGetRunningIIsExpress())
             {
                 return;
             }
@@ -95,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
         }
 
-        private bool AlreadyRunningIISExpress()
+        private bool TryGetRunningIIsExpress()
         {
             // If we have a cached IISExpress id then just use it
             if (_existingIISExpressProcessId != null)
@@ -157,8 +167,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
 
             var iisExpressProcess = new Process();
-            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName);
+            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName + " /systray:false");
             iisExpressProcess.StartInfo.EnvironmentVariables["IIS_USER_HOME"] = _iisHomePath;
+            iisExpressProcess.StartInfo.CreateNoWindow = true;
             iisExpressProcess.StartInfo.UseShellExecute = false;
             iisExpressProcess.EnableRaisingEvents = true;
             iisExpressProcess.Exited += OnIIsExpressQuit;

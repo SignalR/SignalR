@@ -41,7 +41,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 case TransportType.Websockets:
                     break;
                 case TransportType.ServerSentEvents:
-                    return new ServerSentEventsTransport(client);
+                    return new ServerSentEventsTransport(client)
+                    {
+                        ConnectionTimeout = TimeSpan.FromSeconds(10)
+                    };
                 case TransportType.ForeverFrame:
                     break;
                 case TransportType.LongPolling:
