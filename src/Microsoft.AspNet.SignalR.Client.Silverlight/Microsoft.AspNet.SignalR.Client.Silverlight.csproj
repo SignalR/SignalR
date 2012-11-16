@@ -200,7 +200,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources.resx" />
+    <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
+      <Link>Resources.resx</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(LocalToolsPath)\Silverlight\v4.0\SignalR.Silverlight.targets" Condition="'$(LocalToolsPath)'!=''" />
