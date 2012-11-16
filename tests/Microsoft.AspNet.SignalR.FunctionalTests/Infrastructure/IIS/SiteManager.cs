@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
 
             var iisExpressProcess = new Process();
-            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName + " /systray:false");
+            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName + " /systray:false /userhome:\"" + _iisHomePath + "\"");
             iisExpressProcess.StartInfo.EnvironmentVariables["IIS_USER_HOME"] = _iisHomePath;
             iisExpressProcess.StartInfo.CreateNoWindow = true;
             iisExpressProcess.StartInfo.UseShellExecute = false;
