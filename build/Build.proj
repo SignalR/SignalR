@@ -137,7 +137,7 @@
       <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></AnalysisProjects>
     </ItemGroup>
 
-    <MSBuild Projects="%(Projects.Identity)"
+    <MSBuild Projects="%(AnalysisProjects.Identity)"
              Targets="Rebuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
   </Target>
