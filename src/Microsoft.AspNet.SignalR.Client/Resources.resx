@@ -124,15 +124,15 @@
     <value>Incompatible protocol version.</value>
   </data>
   <data name="Error_ProxiesCannotBeAddedConnectionStarted" xml:space="preserve">
-    <value>Proxies cannot be added after the connection has been started.</value>
+    <value>A HubProxy cannot be added after the connection has been started.</value>
   </data>
   <data name="Error_ServerNegotiationFailed" xml:space="preserve">
     <value>Server negotiation failed.</value>
   </data>
   <data name="Error_StartMustBeCalledBeforeDataCanBeSent" xml:space="preserve">
-    <value>Start must be called before data can be sent.</value>
+    <value>The Start method must be called before data can be sent.</value>
   </data>
   <data name="Error_UrlCantContainQueryStringDirectly" xml:space="preserve">
-    <value>Url cannot contain QueryString directly. Pass QueryString values in using available overload.</value>
+    <value>Url cannot contain query string directly. Pass query string values in using available overload.</value>
   </data>
 </root>

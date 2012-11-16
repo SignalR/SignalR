@@ -127,10 +127,10 @@
     <value>Error: </value>
   </data>
   <data name="Notify_GenerateHubProxy" xml:space="preserve">
-    <value>Generate Hub Proxy</value>
+    <value>Generate HubProxy</value>
   </data>
   <data name="Notify_GeneratesHubProxyJSFilesForHub" xml:space="preserve">
-    <value>Generates Hub proxy JavaScript files for server Hub classes.</value>
+    <value>Generates HubProxy JavaScript files for server Hub classes.</value>
   </data>
   <data name="Notify_Help" xml:space="preserve">
     <value>usage: signalr &lt;command&gt; [args]
@@ -145,7 +145,7 @@ For more information, visit https://github.com/SignalR/SignalR/wiki</value>
     <value>Installing performance counters...</value>
   </data>
   <data name="Notify_InstallPerformanceCounters" xml:space="preserve">
-    <value>Install Performance Counters</value>
+    <value>Install performance counters</value>
   </data>
   <data name="Notify_InstallSignalRPerformanceCounters" xml:space="preserve">
     <value>Installs SignalR performance counters.</value>
@@ -163,7 +163,7 @@ For more information, visit https://github.com/SignalR/SignalR/wiki</value>
     <value>Try running as admin.</value>
   </data>
   <data name="Notify_UninstallPerformanceCounters" xml:space="preserve">
-    <value>Uninstall Performance Counters</value>
+    <value>Uninstall performance counters</value>
   </data>
   <data name="Notify_UninstallSignalRPerformanceCounters" xml:space="preserve">
     <value>Uninstalls SignalR performance counters.</value>
