@@ -1,80 +1,102 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset='utf-8'>
 
-  <title>SignalR</title>
-  
-  <link href="css/style.css" type="text/css" rel="stylesheet">
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="ASP.NET SignalR : Incredibly simple real-time web for .NET" />
 
-  <style type="text/css">
-    -body {
-      margin-top: 1.0em;
-      background-color: #a5f7ad;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #000000;
-    }
-    -#container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    -h1 { font-size: 3.8em; color: #5a0852; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    -h1 -a { text-decoration: none }
-    -h2 { font-size: 1.5em; color: #5a0852; }
-    -h3 { text-align: center; color: #5a0852; }
-    -a { color: #5a0852; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; }
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; }
-    .footer li { display: inline; margin-right: 10px;  }
-  </style>
-</head>
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-<body>
-  <a href="https://github.com/SignalR/SignalR"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <title>ASP.NET SignalR</title>
+  </head>
 
-  <div id="container">
+  <body>
 
-    <h1><a href="https://github.com/SignalR/SignalR">SignalR</a></h1>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/SignalR/SignalR">View on GitHub</a>
 
-    <div class="description">
-      Async library for .NET to help build real-time, multi-user interactive web applications.
+          <h1 id="project_title">ASP.NET SignalR</h1>
+          <h2 id="project_tagline">Incredibly simple real-time web for .NET</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/SignalR/SignalR/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/SignalR/SignalR/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
     </div>
-   
-    <h2>Install</h2>
-      <p>
-        To install <a href="http://nuget.org/packages/signalr">SignalR</a>, run the following command in the <a href="http://docs.nuget.org/docs/start-here/using-the-package-manager-console">
-            Package Manager Console</a>
-    </p>
-    <div class="nuget-badge">
-        <p>
-            <pre>PM&gt; Install-Package SignalR</pre>
-        </p>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>What is ASP.NET SignalR</h2>
+
+<p>ASP.NET SignalR is a new library for ASP.NET developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients as it happens, in real-time.</p>
+
+<p>You may have heard of WebSockets, a new HTML5 API that enables bi-directional communication between the browser and server. SignalR will use WebSockets under the covers when it's available, and gracefully fallback to other techniques and technologies when it isn't, while your application code stays the same.</p>
+
+<p>SignalR also provides a very simple, high-level API for doing server to client RPC (call JavaScript functions in your clients' browsers from server-side .NET code) in your ASP.NET application, as well as adding useful hooks for connection management, e.g. connect/disconnect events, grouping connections, authorization. </p>
+
+<h2>What can you do with ASP.NET SignalR?</h2>
+
+<p>SignalR can be used to add any sort of "real-time" web functionality to your ASP.NET application. While chat is often used as an example, you can do a whole lot more. Any time a user refreshes a web page to see new data, or the page implements Ajax long polling to retrieve new data, is candidate for using SignalR.</p>
+
+<p>It also enables completely new types of applications, that require high frequency updates from the server, e.g. real-time gaming. For a great example of this see the <a href="http://shootr.signalr.net/">ShootR game</a></p>
+
+<h2>Documentation</h2>
+
+<p>See the <a href="https://github.com/SignalR/SignalR/wiki">documentation</a></p>
+
+<h2>Get it on NuGet!</h2>
+
+<pre><code>Install-Package Microsoft.AspNet.SignalR -pre
+</code></pre>
+
+<h2>Get a sample on NuGet, straight into your app!</h2>
+
+<pre><code>Install-Package Microsoft.AspNet.SignalR.Sample
+</code></pre>
+
+<h2>LICENSE</h2>
+
+<p><a href="https://github.com/SignalR/SignalR/blob/master/LICENSE.md">Apache 2.0 License</a></p>
+
+<h2>Building the source</h2>
+
+<h3>Windows</h3>
+
+<p>After cloning the repository, run <code>build.cmd</code>.</p>
+
+<h3>Mono</h3>
+
+<p>After cloning the repository, run <code>make</code>.</p>
+
+<p><strong>NOTE:</strong> Run <code>make tests</code> to run the unit tests. After running them it'll probably hang. If it does hang
+use <code>Ctrl+C</code> to break out (We're still working on this).</p>
+
+<p>Open Microsoft.AspNet.SignalR.Mono.sln to do development.</p>
+
+<h2>Continuous Integration</h2>
+
+<p>We have a CI Server (<a href="http://ci.signalr.net/">http://ci.signalr.net/</a>)</p>
+
+<h2>Questions?</h2>
+
+<p>The SignalR team hangs out in the <a href="http://jabbr.net/#/rooms/signalr">signalr</a> room at on <a href="http://jabbr.net/">JabbR</a>.</p>
+      </section>
     </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">ASP.NET SignalR maintained by <a href="https://github.com/SignalR">SignalR</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
     
-    <h3>Official</h3>
-    <p>
-        <a href="releases">v0.5.2</a>
-    </p>
-    <h3>Older Releases</h3>
-    <p>
-        <a href="releases/v051">v0.5.1</a>
-        <a href="releases/v050">v0.5</a>
-        <a href="releases/v040">v0.4</a>
-    </p>
-     <div class="footer">
-     <ul>
-         <li><a href="https://github.com/SignalR/SignalR/blob/master/LICENSE.md">License</a></li>
-         <li><a href="#">About</a></li>
-         <li><a href="https://github.com/SignalR/SignalR/wiki">Docs</a></li>
-         <li><a href="#">Learn</a></li>
-         <li><a target="_blank" href="http://jabbr.net/#/rooms/signalr">Discuss</a></li>
-     </ul>
-    </div>
-  </div>
 
-</body>
+  </body>
 </html>
