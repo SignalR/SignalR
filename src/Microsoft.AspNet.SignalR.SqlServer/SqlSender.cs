@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly string _tableName;
 
-        private string _insertSql = "INSERT INTO {0} (Payload) VALUES (@Payload)";
+        private string _insertSql = "INSERT INTO {0} (Payload, InsertedOn) VALUES (@Payload, GETDATE())";
 
         public SqlSender(string connectionString, string tableName)
         {

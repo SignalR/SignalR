@@ -7,6 +7,7 @@ using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
@@ -15,40 +16,46 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
+        private readonly string _streamId = "0";
         private readonly Func<string, ulong, Message[], Task> _onReceive;
+        private readonly TaskQueue _receiveQueue = new TaskQueue();
+        private readonly Lazy<object> _sqlDepedencyLazyInit;
 
         private string _selectSql = "SELECT PayloadId, Payload FROM {0} WHERE PayloadId > @PayloadId";
         private string _maxIdSql = "SELECT MAX(PayloadId) FROM {0}";
-        private object _sqlDependencyInit;
+        private bool _sqlDependencyInitialized;
         private long _lastPayloadId = 0;
+        private int _retryCount = 5;
+        private int _retryDelay = 250;
 
         public SqlReceiver(string connectionString, string tableName, Func<string, ulong, Message[], Task> onReceive)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _onReceive = onReceive;
+            _sqlDepedencyLazyInit = new Lazy<object>(InitSqlDependency);
 
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, _tableName);
 
             GetStartingId();
-            ListenForMessages();
+            ThreadPool.QueueUserWorkItem(Receive);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_sqlDependencyInit != null)
+                if (_sqlDependencyInitialized)
                 {
                     SqlDependency.Stop(_connectionString);
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
@@ -60,29 +67,52 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 using (var cmd = new SqlCommand(_maxIdSql, connection))
                 {
                     var maxId = cmd.ExecuteScalar();
-                    _lastPayloadId = maxId != null ? (long)maxId : _lastPayloadId;
+                    _lastPayloadId = maxId != null && maxId != DBNull.Value ? (long)maxId : _lastPayloadId;
                 }
             }
         }
 
-        private void ListenForMessages()
+        private void Receive(object state)
         {
-            InitSqlDependency();
+            for (var i = 0; i <= _retryCount; i++)
+            {
+                // Look for new messages until we find some or retry expires
+                if (CheckForMessages())
+                {
+                    // We found messages so start the loop again
+                    i = 0;
+                }
+                Thread.Sleep(_retryDelay);
+            }
+
+            // No messages found so set up query notification to callback when messages are available
+            SetupQueryNotification();
+        }
+
+        private void SetupQueryNotification()
+        {
+            var dummy = _sqlDepedencyLazyInit.Value;
             var connection = new SqlConnection(_connectionString);
             var command = BuildQueryCommand(connection);
-            
+
             var sqlDependency = new SqlDependency(command);
             sqlDependency.OnChange += (sender, e) =>
                 {
-                    GetMessages()
-                        .Then(hadMessages => ListenForMessages()) // TODO: Decide whether to immediately query or setup a dependency to wait
-                        .Catch();
+                    if (e.Type == SqlNotificationType.Change)
+                    {
+                        Receive(null);
+                    }
+                    else
+                    {
+                        // Probably a timeout or an error, just set it up again
+                        SetupQueryNotification();
+                    }
                 };
 
+            // Executing the query is required to set up the dependency
             connection.Open();
-            command.ExecuteReaderAsync()
-                .Then(() => connection.Close())
-                .Catch(_ => connection.Close());
+            command.ExecuteReader();
+            connection.Close();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
@@ -94,60 +124,43 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return command;
         }
 
-        private Task<bool> GetMessages()
+        private bool CheckForMessages()
         {
             var connection = new SqlConnection(_connectionString);
             connection.Open();
             var command = BuildQueryCommand(connection);
-            return command.ExecuteReaderAsync()
-                .Then(rdr =>
-                    {
-                        if (!rdr.HasRows)
-                        {
-                            connection.Close();
-                            return TaskAsyncHelper.False;
-                        }
+            var reader = command.ExecuteReader();
+            
+            if (!reader.HasRows)
+            {
+                connection.Close();
+                return false;
+            }
 
-                        var tcs = new TaskCompletionSource<bool>();
-                        ReadRow(rdr, tcs);
-                        return tcs.Task;
-                    })
-                .Then(hadMessages =>
-                    {
-                        connection.Close();
-                        return hadMessages;
-                    });
-        }
-
-        private void ReadRow(SqlDataReader reader, TaskCompletionSource<bool> tcs)
-        {
-            if (reader.Read())
+            while (reader.Read())
             {
                 var id = reader.GetInt64(0);
                 var messages = JsonConvert.DeserializeObject<Message[]>(reader.GetString(1));
 
-                // Update the last payload id
                 _lastPayloadId = id;
 
-                _onReceive("0", (ulong)id, messages)
-                    .Then((rdr, innerTcs) => ReadRow(rdr, innerTcs), reader, tcs)
-                    .Catch();
+                // Queue to send to the underlying message bus
+                _receiveQueue.Enqueue(() => _onReceive(_streamId, (ulong)id, messages));
             }
-            else
-            {
-                tcs.SetResult(true);
-            }
+
+            connection.Close();
+            return true;
         }
 
-        private void InitSqlDependency()
+        private object InitSqlDependency()
         {
-            LazyInitializer.EnsureInitialized(ref _sqlDependencyInit, () =>
-                {
-                    SqlDependency.Start(_connectionString);
-                    var perm = new SqlClientPermission(PermissionState.Unrestricted);
-                    perm.Demand();
-                    return new object();
-                });
+            var perm = new SqlClientPermission(PermissionState.Unrestricted);
+            perm.Demand();
+
+            SqlDependency.Start(_connectionString);
+            
+            _sqlDependencyInitialized = true;
+            return new object();
         }
     }
 }

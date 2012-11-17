@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal class SqlInstaller
     {
-        private const int SchemaVersion = 1;
+        private const int SchemaVersion = 2;
         private const string SchemaTableName = "[dbo].[SignalR_Schema]";
         private const string CheckSchemaTableExistsSql = "SELECT OBJECT_ID(@TableName)";
         private const string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaTableName;
@@ -26,7 +26,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private string _dropTableSql = "DROP TABLE {0}";
         private string _createMessagesTableSql = @"CREATE TABLE {0} (
                                                       [PayloadId] BIGINT NOT NULL PRIMARY KEY IDENTITY,
-	                                                  [Payload] NVARCHAR(MAX) NOT NULL
+                                                      [Payload] NVARCHAR(MAX) NOT NULL,
+                                                      [InsertedOn] DATETIME NOT NULL
                                                   )";
         private readonly Lazy<object> _initDummy;
 
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         schemaVersion = cmd.ExecuteScalar();
                     }
-
+                    
                     if (schemaVersion == null || schemaVersion == DBNull.Value || (int)schemaVersion < SchemaVersion)
                     {
                         // No schema row or older schema, just continue and we'll update it
@@ -90,7 +91,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
 
                 }
-
 
                 if (!schemaTableExists)
                 {
