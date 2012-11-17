@@ -154,7 +154,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // Setup the user agent along with any other defaults
                 connection.PrepareRequest(request);
 
-                connection.Items[HttpRequestKey] = request;
+                lock (connection.Items)
+                {
+                    connection.Items[HttpRequestKey] = request;
+                }
             };
         }
 

@@ -19,10 +19,13 @@ namespace Microsoft.AspNet.SignalR.Client
                 throw new ArgumentNullException("key");
             }
 
-            object value;
-            if (connection.Items.TryGetValue(key, out value))
+            lock (connection.Items)
             {
-                return (T)value;
+                object value;
+                if (connection.Items.TryGetValue(key, out value))
+                {
+                    return (T)value;
+                }
             }
 
             return default(T);
