@@ -127,9 +127,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ExceptionHelper.cs">
       <Link>Infrastructure\ExceptionHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
-      <Link>Resources.Designer.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>
     </Compile>
@@ -227,6 +224,7 @@
     <Compile Include="Http\DefaultHttpHandler.cs" />
     <Compile Include="Http\HttpResponseMessageWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -236,6 +234,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <PRIResource Include="Resources.resw" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>
@@ -246,10 +245,11 @@
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
+    <Copy SourceFiles="..\Microsoft.AspNet.SignalR.Client\Resources.resx" DestinationFiles="$(ProjectDir)\Resources.resw" SkipUnchangedFiles="true" />
   </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.  
   <Target Name="AfterBuild">
   </Target>
   -->
