@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
                 site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + TestSitePort + ":localhost", _path);
                 site.TraceFailedRequestsLogging.Enabled = true;
+                Directory.CreateDirectory(_logPath);
                 site.TraceFailedRequestsLogging.Directory = _logPath;
 
                 _serverManager.CommitChanges();
