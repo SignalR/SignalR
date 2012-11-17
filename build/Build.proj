@@ -126,7 +126,7 @@
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Silverlight.sln"
              Targets="Build"
-             Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')) Or (Exists('$(LocalToolsPath)\Silverlight'))"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets') Or Exists('$(LocalToolsPath)\Silverlight')"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WinRT.sln"
@@ -191,11 +191,6 @@
     <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP7\Microsoft.AspNet.SignalR.Client.WP7.csproj"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
-             Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight\Microsoft.AspNet.SignalR.Client.Silverlight.csproj"
-             Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v4.0') Or Exists('$(LocalToolsPath)\Silverlight\v4.0')"
              Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath);" />
 
     <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
