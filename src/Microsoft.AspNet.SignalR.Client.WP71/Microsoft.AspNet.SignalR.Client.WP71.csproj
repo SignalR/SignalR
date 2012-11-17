@@ -190,6 +190,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
+      <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
+      <Link>Resources.resx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
   <PropertyGroup>
     <MissingExternalDependenciesBlendDesignTimehack>false</MissingExternalDependenciesBlendDesignTimehack>
     <MissingExternalDependenciesBlendDesignTimehack Condition="!Exists('$(SolutionDir)Build')">true</MissingExternalDependenciesBlendDesignTimehack>
