@@ -119,7 +119,7 @@
              Targets="Build"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
 
-    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WP7.sln"
+    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WindowsPhone.sln"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
@@ -187,8 +187,8 @@
              Targets="Build"
              Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration)" />
 
-    <!-- Only build WP7 and Silverlight projects if SDK's avaliable -->
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP7\Microsoft.AspNet.SignalR.Client.WP7.csproj"
+    <!-- Only build WP71 and Silverlight projects if SDK's avaliable -->
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP71\Microsoft.AspNet.SignalR.Client.WP71.csproj"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
              Properties="BuildPackage=true;Version=$(PackageVersion);PackageOutputDir=$(ArtifactsDir);Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath);" />
