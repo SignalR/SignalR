@@ -12,7 +12,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
     {
         private readonly string _path;
         private readonly string _appHostConfigPath;
-        private readonly string _iisHomePath;
         private readonly ServerManager _serverManager;
 
         private static Process _iisExpressProcess;
@@ -29,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         {
             _path = Path.GetFullPath(path);
             _appHostConfigPath = Path.GetFullPath(Path.Combine(_path, "bin", "config", "applicationHost.config"));
-            _iisHomePath = Path.GetFullPath(Path.Combine(_appHostConfigPath, "..", ".."));
             _serverManager = new ServerManager(_appHostConfigPath);
         }
 
@@ -164,8 +162,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
 
             var iisExpressProcess = new Process();
-            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName + " /systray:false /userhome:\"" + _iisHomePath + "\"");
-            iisExpressProcess.StartInfo.EnvironmentVariables["IIS_USER_HOME"] = _iisHomePath;
+            iisExpressProcess.StartInfo = new ProcessStartInfo(IISExpressPath, "/config:\"" + _appHostConfigPath + "\" /site:" + TestSiteName + " /systray:false");
             iisExpressProcess.StartInfo.CreateNoWindow = true;
             iisExpressProcess.StartInfo.UseShellExecute = false;
             iisExpressProcess.EnableRaisingEvents = true;
