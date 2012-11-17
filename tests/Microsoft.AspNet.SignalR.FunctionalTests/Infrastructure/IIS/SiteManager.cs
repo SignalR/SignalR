@@ -13,7 +13,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private readonly string _path;
         private readonly string _appHostConfigPath;
         private readonly string _iisHomePath;
-        private readonly string _logPath;
         private readonly ServerManager _serverManager;
 
         private static Process _iisExpressProcess;
@@ -32,7 +31,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             _appHostConfigPath = Path.GetFullPath(Path.Combine(_path, "bin", "config", "applicationHost.config"));
             _iisHomePath = Path.GetFullPath(Path.Combine(_appHostConfigPath, "..", ".."));
             _serverManager = new ServerManager(_appHostConfigPath);
-            _logPath = Path.GetFullPath(Path.Combine(_path, "bin", "logs"));
         }
 
         public string GetSiteUrl()
@@ -49,8 +47,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
                 site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + TestSitePort + ":localhost", _path);
                 site.TraceFailedRequestsLogging.Enabled = true;
-                Directory.CreateDirectory(_logPath);
-                site.TraceFailedRequestsLogging.Directory = _logPath;
 
                 _serverManager.CommitChanges();
             }
