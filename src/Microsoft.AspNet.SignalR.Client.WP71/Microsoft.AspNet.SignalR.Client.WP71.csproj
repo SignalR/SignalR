@@ -182,9 +182,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
       <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client.WP7\Infrastructure\HashSet.cs">
-      <Link>Infrastructure\HashSet.cs</Link>
-    </Compile>
+    <Compile Include="Infrastructure\HashSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
