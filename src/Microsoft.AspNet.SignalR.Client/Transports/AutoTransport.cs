@@ -14,18 +14,39 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private readonly IHttpClient _httpClient;
 
+        private int _startIndex = 0;
+
         // List of transports in fallback order
         private readonly IClientTransport[] _transports;
 
         public AutoTransport(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _transports = new IClientTransport[] { new ServerSentEventsTransport(httpClient), new LongPollingTransport(httpClient) };
+            _transports = new IClientTransport[] { 
+#if NET45
+                new WebSocketTransport(httpClient),
+#endif
+                new ServerSentEventsTransport(httpClient), 
+                new LongPollingTransport(httpClient) 
+            };
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return HttpBasedTransport.GetNegotiationResponse(_httpClient, connection);
+            var task = HttpBasedTransport.GetNegotiationResponse(_httpClient, connection);
+#if NET45
+            return task.Then(response =>
+            {
+                if (!response.SupportsWebSockets)
+                {
+                    _startIndex = 1;
+                }
+
+                return response;
+            });
+#else
+            return task;
+#endif
         }
 
         public Task Start(IConnection connection, string data)
@@ -33,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var tcs = new TaskCompletionSource<object>();
 
             // Resolve the transport
-            ResolveTransport(connection, data, tcs, 0);
+            ResolveTransport(connection, data, tcs, _startIndex);
 
             return tcs.Task;
         }

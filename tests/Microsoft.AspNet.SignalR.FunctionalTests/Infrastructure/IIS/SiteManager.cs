@@ -119,6 +119,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 {
                     // The process specified by the processId parameter is not running. The identifier might be expired.
                 }
+                catch (InvalidOperationException)
+                {
+                    // The process ended
+                }
 
                 _existingIISExpressProcessId = null;
             }

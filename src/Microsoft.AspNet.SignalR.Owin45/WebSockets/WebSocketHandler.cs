@@ -10,7 +10,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.WebSockets
 {
-    internal class WebSocketHandler
+    public class WebSocketHandler
     {
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250); // wait 250 ms before giving up on a Close
         private const int _receiveLoopBufferSize = 8 * 1024; // 8K default fragment size (we expect most messages to be very short)

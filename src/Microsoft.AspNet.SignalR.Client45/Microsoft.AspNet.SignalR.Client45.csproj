@@ -191,6 +191,7 @@
       <Link>Transports\WebSockets\WebSocketMessageReader.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transports\WebSocketTransport.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">

@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             switch (transportType)
             {
                 case TransportType.Websockets:
-                    break;
+                    return new WebSocketTransport(client);
                 case TransportType.ServerSentEvents:
                     return new ServerSentEventsTransport(client)
                     {

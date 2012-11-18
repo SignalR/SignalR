@@ -104,12 +104,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
         protected string GetReceiveQueryString(IConnection connection, string data)
+        {
+            return GetReceiveQueryString(connection, data, _transport);
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
+        internal static string GetReceiveQueryString(IConnection connection, string data, string transport)
         {
             // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
             var qsBuilder = new StringBuilder();
-            qsBuilder.Append("?transport=" + _transport)
+            qsBuilder.Append("?transport=" + transport)
                      .Append("&connectionId=" + Uri.EscapeDataString(connection.ConnectionId));
 
             if (connection.MessageId != null)
@@ -209,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
-        protected static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
+        internal static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
             timedOut = false;
             disconnected = false;

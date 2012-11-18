@@ -13,6 +13,8 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -61,9 +65,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
-      <Project>{EB46B9C6-EE37-48F9-835E-E49580E40E0A}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client</Name>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
+      <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj">
       <Project>{3B71F0AE-D4B6-4F47-BF62-333D45615673}</Project>
