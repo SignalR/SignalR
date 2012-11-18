@@ -85,6 +85,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Ow
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SystemWeb45", "src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj", "{202FA02D-CC05-40D2-A574-4BD34E47F575}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client45", "src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj", "{50F8A174-695E-498C-B105-BDBE6B398646}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -365,6 +367,16 @@ Global
 		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{202FA02D-CC05-40D2-A574-4BD34E47F575}.Release|x86.ActiveCfg = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
