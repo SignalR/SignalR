@@ -155,17 +155,6 @@
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
   </Target>
 
-  <Target Name="BuildDocs" DependsOnTargets="CreateOutputDir">
-    <ItemGroup>
-      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" />
-      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.dll" />
-      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.dll" />
-      <DocProjects Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.dll" />
-    </ItemGroup>
-    <Exec Command="&quot;$(DocuExePath)&quot; @(DocProjects, ' ')" WorkingDirectory="$(DocsPath)" />
-    <Exec Command="&quot;$(ZipExe)&quot; a ..\..\docs.v$(PackageVersion).zip" WorkingDirectory="$(DocsPath)\output" />
-  </Target>
-
   <Target Name="BuildPackages" DependsOnTargets="CreateOutputDir">
     <Message Importance="high" Text="Using build resources from local tools path $(LocalToolsPath)"  />
 
