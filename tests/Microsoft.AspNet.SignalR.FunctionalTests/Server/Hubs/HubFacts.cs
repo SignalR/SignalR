@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var hub = connection.CreateHubProxy("demo");
 
-                var wh = new ManualResetEvent(false);
+                var wh = new ManualResetEventSlim(false);
 
                 hub.On("signal", id =>
                 {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub.Invoke("DynamicTask").Wait();
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 connection.Stop();
             }
         }
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var hub = connection.CreateHubProxy("demo");
 
-                var wh = new ManualResetEvent(false);
+                var wh = new ManualResetEventSlim(false);
 
                 hub.On<Guid>("TestGuid", id =>
                 {
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub.Invoke("TestGuid").Wait();
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 connection.Stop();
             }
         }
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var hub = connection.CreateHubProxy("demo");
 
-                var wh = new ManualResetEvent(false);
+                var wh = new ManualResetEventSlim(false);
 
                 hub.On(callback, () => wh.Set());
 
@@ -337,7 +337,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub.Invoke("DynamicInvoke", callback).Wait();
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 connection.Stop();
             }
         }
@@ -731,8 +731,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub1.Invoke("SendToAllButCaller").Wait();
 
-                Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(10)));
-                Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.False(wh1.Wait(TimeSpan.FromSeconds(5)));
+                Assert.True(wh2.Wait(TimeSpan.FromSeconds(10)));
 
                 connection1.Stop();
                 connection2.Stop();
@@ -768,8 +768,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub1.Invoke("AllInGroupButCaller", "group").Wait();
 
-                Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(10)));
-                Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.False(wh1.Wait(TimeSpan.FromSeconds(10)));
+                Assert.True(wh2.Wait(TimeSpan.FromSeconds(5)));
 
                 connection1.Stop();
                 connection2.Stop();
@@ -802,8 +802,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub1.Invoke("SendToAll").Wait();
 
-                Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                Assert.True(wh2.Wait(TimeSpan.FromSeconds(10)));
 
                 connection1.Stop();
                 connection2.Stop();
@@ -836,8 +836,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hub1.Invoke("SendToSelf").Wait();
 
-                Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                Assert.False(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                Assert.False(wh2.Wait(TimeSpan.FromSeconds(5)));
 
                 connection1.Stop();
                 connection2.Stop();
@@ -864,7 +864,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hubContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
                 hubContext.Clients.Group("Foo").send();
 
-                Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
 
                 connection1.Stop();
             }
@@ -889,7 +889,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hubContext.Clients.Client(connection1.ConnectionId).send();
 
-                Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
 
                 connection1.Stop();
             }
@@ -919,8 +919,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hubContext.Clients.All.send();
 
-                Assert.True(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                Assert.True(wh2.Wait(TimeSpan.FromSeconds(10)));
 
                 connection1.Stop();
                 connection2.Stop();
