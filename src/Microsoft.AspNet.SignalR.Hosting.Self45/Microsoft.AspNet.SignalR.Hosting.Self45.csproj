@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Hosting.Self\Resources.resx">
+      <LogicalName>Microsoft.AspNet.SignalR.Hosting.Self.Resources.resources</LogicalName>
       <Link>Resources.resx</Link>
     </EmbeddedResource>
   </ItemGroup>
