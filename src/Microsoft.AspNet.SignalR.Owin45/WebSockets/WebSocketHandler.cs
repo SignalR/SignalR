@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         private int _maxIncomingMessageSize = 4 * 1024 * 1024; // 4MB default max incoming message size
         private readonly TaskQueue _sendQueue = new TaskQueue(); // queue for sending messages
 
+        private volatile bool _isClosed;
+
         /*
          * USER OVERRIDES
          */
@@ -51,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             return SendAsync(message);
         }
-        
+
         internal Task SendAsync(string message)
         {
             return SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text);
@@ -59,7 +61,20 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(byte[] message, WebSocketMessageType messageType)
         {
-            return _sendQueue.Enqueue(() => WebSocket.SendAsync(new ArraySegment<byte>(message), messageType, true /* endOfMessage */, CancellationToken.None));
+            if (_isClosed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            return _sendQueue.Enqueue(() =>
+            {
+                if (_isClosed)
+                {
+                    return TaskAsyncHelper.Empty;
+                }
+
+                return WebSocket.SendAsync(new ArraySegment<byte>(message), messageType, true /* endOfMessage */, CancellationToken.None);
+            });
         }
 
         // Gracefully closes the connection
@@ -70,7 +85,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task CloseAsync()
         {
-            return _sendQueue.Enqueue(() => WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None));
+            return _sendQueue.Enqueue(() =>
+            {
+                _isClosed = true;
+                return WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            });
         }
 
         /*
