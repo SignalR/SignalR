@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return HttpBasedTransport.GetNegotiationResponse(_client, connection);
+            return TransportHelper.GetNegotiationResponse(_client, connection);
         }
 
         public async Task Start(IConnection connection, string data)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private void DoConnect(IConnection connection, string data, Action<Exception> errorCallback, bool reconnecting = false)
         {
             var url = reconnecting ? connection.Url : connection.Url + "/connect";
-            url += HttpBasedTransport.GetReceiveQueryString(connection, data, "webSockets");
+            url += TransportHelper.GetReceiveQueryString(connection, data, "webSockets");
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
@@ -57,17 +57,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Close();
         }
 
-        public async Task<T> Send<T>(IConnection connection, string data)
+        public Task Send(IConnection connection, string data)
         {
-            await SendAsync(data);
-            return default(T);
+            return SendAsync(data);
         }
+
 
         public override void OnMessage(string message)
         {
             bool timedOut;
             bool disconnected;
-            HttpBasedTransport.ProcessResponse(ConnectionInfo.Connection, message, out timedOut, out disconnected);
+            TransportHelper.ProcessResponse(ConnectionInfo.Connection, 
+                                            message, 
+                                            out timedOut, 
+                                            out disconnected);
 
             if (disconnected && !_stop)
             {

@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Client.Hubs;
-using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
-using Microsoft.AspNet.SignalR.Tests.Utilities;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -16,14 +13,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeWithErrorInHubResultReturnsFaultedTask()
         {
-            var result = new HubResult<object>
+            var hubResult = new HubResult
             {
                 Error = "This in an error"
             };
 
-            var connection = new Mock<SignalR.Client.IConnection>();
-            connection.Setup(m => m.Send<HubResult<object>>(It.IsAny<string>()))
-                      .Returns(TaskAsyncHelper.FromResult(result));
+            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
+                      .Callback<Action<HubResult>>(callback =>
+                      {
+                          callback(hubResult);
+                      });
+
+            connection.Setup(m => m.Send(It.IsAny<string>()))
+                      .Returns(TaskAsyncHelper.Empty);
 
             var hubProxy = new HubProxy(connection.Object, "foo");
 
@@ -34,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeWithStateCopiesStateToHubProxy()
         {
-            var result = new HubResult<object>
+            var hubResult = new HubResult
             {
                 State = new Dictionary<string, JToken>
                 {
@@ -42,9 +45,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             };
 
-            var connection = new Mock<SignalR.Client.IConnection>();
-            connection.Setup(m => m.Send<HubResult<object>>(It.IsAny<string>()))
-                      .Returns(TaskAsyncHelper.FromResult(result));
+            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
+                      .Callback<Action<HubResult>>(callback =>
+                      {
+                          callback(hubResult);
+                      });
+
+            connection.Setup(m => m.Send(It.IsAny<string>()))
+                      .Returns(TaskAsyncHelper.Empty);
 
             var hubProxy = new HubProxy(connection.Object, "foo");
 
@@ -56,14 +65,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeReturnsHubsResult()
         {
-            var hubResult = new HubResult<object>
+            var hubResult = new HubResult
             {
                 Result = "Something"
             };
 
-            var connection = new Mock<SignalR.Client.IConnection>();
-            connection.Setup(m => m.Send<HubResult<object>>(It.IsAny<string>()))
-                      .Returns(TaskAsyncHelper.FromResult(hubResult));
+            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
+                      .Callback<Action<HubResult>>(callback =>
+                      {
+                          callback(hubResult);
+                      });
+
+            connection.Setup(m => m.Send(It.IsAny<string>()))
+                      .Returns(TaskAsyncHelper.Empty);
 
             var hubProxy = new HubProxy(connection.Object, "foo");
 
@@ -75,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeEventRaisesEvent()
         {
-            var connection = new Mock<SignalR.Client.IConnection>();
+            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
             var hubProxy = new HubProxy(connection.Object, "foo");
             bool eventRaised = false;
 
@@ -91,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeEventRaisesEventWithData()
         {
-            var connection = new Mock<SignalR.Client.IConnection>();
+            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
             var hubProxy = new HubProxy(connection.Object, "foo");
             bool eventRaised = false;
 

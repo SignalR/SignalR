@@ -13,9 +13,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
     /// <summary>
     /// A <see cref="Connection"/> for interacting with Hubs.
     /// </summary>
-    public class HubConnection : Connection
+    public class HubConnection : Connection, IHubConnection
     {
         private readonly Dictionary<string, HubProxy> _hubs = new Dictionary<string, HubProxy>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Action<HubResult>> _callbacks = new Dictionary<string, Action<HubResult>>();
+        private int _callbackId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnection"/> class.
@@ -81,22 +83,35 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "")]
         protected override void OnReceived(JToken message)
         {
-            var invocation = message.ToObject<HubInvocation>();
-            HubProxy hubProxy;
-            if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
+            if (message["I"] != null)
             {
-                if (invocation.State != null)
+                var result = message.ToObject<HubResult>();
+                Action<HubResult> callback;
+                if (_callbacks.TryGetValue(result.Id, out callback))
                 {
-                    foreach (var state in invocation.State)
+                    _callbacks.Remove(result.Id);
+                    callback(result);
+                }
+            }
+            else
+            {
+                var invocation = message.ToObject<HubInvocation>();
+                HubProxy hubProxy;
+                if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
+                {
+                    if (invocation.State != null)
                     {
-                        hubProxy[state.Key] = state.Value;
+                        foreach (var state in invocation.State)
+                        {
+                            hubProxy[state.Key] = state.Value;
+                        }
                     }
+
+                    hubProxy.InvokeEvent(invocation.Method, invocation.Args);
                 }
 
-                hubProxy.InvokeEvent(invocation.Method, invocation.Args);
+                base.OnReceived(message);
             }
-
-            base.OnReceived(message);
         }
 
         protected override string OnSending()
@@ -128,6 +143,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 _hubs[hubName] = hubProxy;
             }
             return hubProxy;
+        }
+
+        public string RegisterCallback(Action<HubResult> callback)
+        {
+            string id = _callbackId.ToString(CultureInfo.InvariantCulture);
+            _callbacks[id] = callback;
+            _callbackId++;
+            return id;
         }
 
         private static string GetUrl(string url, bool useDefaultUrl)

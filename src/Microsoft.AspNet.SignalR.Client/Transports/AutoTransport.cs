@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            var task = HttpBasedTransport.GetNegotiationResponse(_httpClient, connection);
+            var task = TransportHelper.GetNegotiationResponse(_httpClient, connection);
 #if NET45
             return task.Then(response =>
             {
@@ -104,9 +104,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
-        public Task<T> Send<T>(IConnection connection, string data)
+        public Task Send(IConnection connection, string data)
         {
-            return _transport.Send<T>(connection, data);
+            return _transport.Send(connection, data);
         }
 
         public void Stop(IConnection connection)

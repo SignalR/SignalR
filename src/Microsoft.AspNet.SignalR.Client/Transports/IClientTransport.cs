@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     {
         Task<NegotiationResponse> Negotiate(IConnection connection);
         Task Start(IConnection connection, string data);
-        Task<T> Send<T>(IConnection connection, string data);
+        Task Send(IConnection connection, string data);
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop(IConnection connection);
     }

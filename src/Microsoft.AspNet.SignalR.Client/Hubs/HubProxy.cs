@@ -19,11 +19,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
  IHubProxy
     {
         private readonly string _hubName;
-        private readonly IConnection _connection;
+        private readonly IHubConnection _connection;
         private readonly Dictionary<string, JToken> _state = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>(StringComparer.OrdinalIgnoreCase);
 
-        public HubProxy(IConnection connection, string hubName)
+        public HubProxy(IHubConnection connection, string hubName)
         {
             _connection = connection;
             _hubName = hubName;
@@ -89,27 +89,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 tokenifiedArguments[i] = JToken.FromObject(args[i]);
             }
 
-            var hubData = new HubInvocation
-            {
-                Hub = _hubName,
-                Method = method,
-                Args = tokenifiedArguments,
-            };
-
-            if (_state.Count != 0)
-            {
-                hubData.State = _state;
-            }
-
-            var value = JsonConvert.SerializeObject(hubData);
-
-            return _connection.Send<HubResult<T>>(value).Then(result =>
+            var tcs = new TaskCompletionSource<T>();
+            var callbackId = _connection.RegisterCallback(result =>
             {
                 if (result != null)
                 {
                     if (result.Error != null)
                     {
-                        throw new InvalidOperationException(result.Error);
+                        tcs.TrySetException(new InvalidOperationException(result.Error));
                     }
 
                     if (result.State != null)
@@ -120,10 +107,31 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                         }
                     }
 
-                    return result.Result;
+                    tcs.TrySetResult((T)result.Result);
                 }
-                return default(T);
+                else
+                {
+                    tcs.TrySetResult(default(T));
+                }
             });
+
+            var hubData = new HubInvocation
+            {
+                Hub = _hubName,
+                Method = method,
+                Args = tokenifiedArguments,
+                CallbackId = callbackId
+            };
+
+            if (_state.Count != 0)
+            {
+                hubData.State = _state;
+            }
+
+            var value = JsonConvert.SerializeObject(hubData);
+
+            return _connection.Send(value).Then(() => tcs.Task);
+
         }
 
 #if !WINDOWS_PHONE && !NET35

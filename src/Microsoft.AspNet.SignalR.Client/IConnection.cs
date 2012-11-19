@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop();
         Task Send(string data);
-        Task<T> Send<T>(string data);
 
         void OnReceived(JToken data);
         void OnError(Exception ex);

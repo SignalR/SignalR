@@ -39,29 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return GetNegotiationResponse(_httpClient, connection);
-        }
-
-        internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
-        {
-#if SILVERLIGHT || WINDOWS_PHONE
-            string negotiateUrl = connection.Url + "negotiate?" + GetNoCacheUrlParam();
-#else
-            string negotiateUrl = connection.Url + "negotiate";
-#endif
-
-
-            return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
-            {
-                string raw = response.ReadAsString();
-
-                if (raw == null)
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
-                }
-
-                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
-            });
+            return TransportHelper.GetNegotiationResponse(_httpClient, connection);
         }
 
         public Task Start(IConnection connection, string data)
@@ -75,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         protected abstract void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
 
-        public Task<T> Send<T>(IConnection connection, string data)
+        public Task Send(IConnection connection, string data)
         {
             if (connection == null)
             {
@@ -83,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             string url = connection.Url + "send";
-            string customQueryString = GetCustomQueryString(connection);
+            string customQueryString = TransportHelper.GetCustomQueryString(connection);
 
             url += String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, customQueryString);
 
@@ -91,65 +69,22 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 { "data", data }
             };
 
-            return _httpClient.PostAsync(url, connection.PrepareRequest, postData).Then(response =>
-            {
-                string raw = response.ReadAsString();
+            return _httpClient.PostAsync(url, connection.PrepareRequest, postData)
+                              .Then(response =>
+                              {
+                                  string raw = response.ReadAsString();
 
-                if (String.IsNullOrEmpty(raw))
-                {
-                    return default(T);
-                }
-
-                return JsonConvert.DeserializeObject<T>(raw);
-            });
+                                  if (!String.IsNullOrEmpty(raw))
+                                  {
+                                      connection.OnReceived(JObject.Parse(raw));
+                                  }
+                              })
+                              .Catch(connection.OnError);
         }
 
         protected string GetReceiveQueryString(IConnection connection, string data)
         {
-            return GetReceiveQueryString(connection, data, _transport);
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
-        internal static string GetReceiveQueryString(IConnection connection, string data, string transport)
-        {
-            // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
-            var qsBuilder = new StringBuilder();
-            qsBuilder.Append("?transport=" + transport)
-                     .Append("&connectionId=" + Uri.EscapeDataString(connection.ConnectionId));
-
-            if (connection.MessageId != null)
-            {
-                qsBuilder.Append("&messageId=" + Uri.EscapeDataString(connection.MessageId));
-            }
-
-            if (connection.Groups != null && connection.Groups.Any())
-            {
-                qsBuilder.Append("&groups=" + Uri.EscapeDataString(JsonConvert.SerializeObject(connection.Groups)));
-            }
-
-            if (data != null)
-            {
-                qsBuilder.Append("&connectionData=" + data);
-            }
-
-            string customQuery = GetCustomQueryString(connection);
-
-            if (!String.IsNullOrEmpty(customQuery))
-            {
-                qsBuilder.Append("&")
-                         .Append(customQuery);
-            }
-
-#if SILVERLIGHT || WINDOWS_PHONE
-            qsBuilder.Append("&").Append(GetNoCacheUrlParam());
-#endif
-            return qsBuilder.ToString();
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is used on Silverlight and Windows Phone")]
-        private static string GetNoCacheUrlParam()
-        {
-            return "noCache=" + Guid.NewGuid().ToString();
+            return TransportHelper.GetReceiveQueryString(connection, data, _transport);
         }
 
         protected virtual Action<IRequest> PrepareRequest(IConnection connection)
@@ -209,111 +144,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected virtual void OnBeforeAbort(IConnection connection)
         {
 
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
-        internal static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
-        {
-            timedOut = false;
-            disconnected = false;
-
-            if (String.IsNullOrEmpty(response))
-            {
-                return;
-            }
-
-            try
-            {
-                var result = JValue.Parse(response);
-
-                if (!result.HasValues)
-                {
-                    return;
-                }
-
-                timedOut = result.Value<int>("T") == 1;
-                disconnected = result.Value<int>("D") == 1;
-
-                if (disconnected)
-                {
-                    return;
-                }
-
-                UpdateGroups(connection,
-                             resetGroups: result["R"],
-                             addedGroups: result["G"],
-                             removedGroups: result["g"]);
-
-                var messages = result["M"] as JArray;
-                if (messages != null)
-                {
-                    foreach (JToken message in messages)
-                    {
-                        try
-                        {
-                            connection.OnReceived(message);
-                        }
-                        catch (Exception ex)
-                        {
-#if NET35
-                            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
-#else
-                            Debug.WriteLine("Failed to process message: {0}", ex);
-#endif
-
-                            connection.OnError(ex);
-                        }
-                    }
-
-                    connection.MessageId = result["C"].Value<string>();
-                }
-            }
-            catch (Exception ex)
-            {
-#if NET35
-                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
-#else
-                Debug.WriteLine("Failed to response: {0}", ex);
-#endif
-                connection.OnError(ex);
-            }
-        }
-
-        private static void UpdateGroups(IConnection connection,
-                                         IEnumerable<JToken> resetGroups,
-                                         IEnumerable<JToken> addedGroups,
-                                         IEnumerable<JToken> removedGroups)
-        {
-            if (resetGroups != null)
-            {
-                connection.Groups.Clear();
-                EnumerateJTokens(resetGroups, connection.Groups.Add);
-            }
-            else
-            {
-                EnumerateJTokens(addedGroups, connection.Groups.Add);
-                EnumerateJTokens(removedGroups, g => connection.Groups.Remove(g));
-            }
-        }
-
-        private static void EnumerateJTokens(IEnumerable<JToken> items, Action<string> process)
-        {
-            if (items != null)
-            {
-                foreach (var item in items)
-                {
-                    process(item.ToString());
-                }
-            }
-        }
-
-        private static string GetCustomQueryString(IConnection connection)
-        {
-            return String.IsNullOrEmpty(connection.QueryString)
-                            ? ""
-                            : "&" + connection.QueryString;
         }
     }
 }

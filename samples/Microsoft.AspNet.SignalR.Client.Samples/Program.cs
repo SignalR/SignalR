@@ -1,9 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using System.Collections.Generic;
-#if !NET35
-using Microsoft.AspNet.SignalR.Hosting.Memory;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,45 +22,6 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             Console.ReadKey();
         }
-
-#if !NET35
-        private static void RunInMemoryHost()
-        {
-            var host = new MemoryHost();
-            host.MapConnection<MyConnection>("/echo");
-
-            var connection = new Connection("http://foo/echo");
-
-            connection.Received += data =>
-            {
-                Console.WriteLine(data);
-            };
-
-            connection.StateChanged += change =>
-            {
-                Console.WriteLine(change.OldState + " => " + change.NewState);
-            };
-
-            connection.Start(host).Wait();
-
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                try
-                {
-                    while (true)
-                    {
-                        connection.Send(DateTime.Now.ToString());
-
-                        Thread.Sleep(2000);
-                    }
-                }
-                catch
-                {
-
-                }
-            });
-        }
-#endif
 
         private static void RunDemoHub(HubConnection hubConnection)
         {

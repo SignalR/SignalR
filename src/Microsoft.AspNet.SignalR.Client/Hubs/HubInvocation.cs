@@ -9,6 +9,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
     public class HubInvocation
     {
+        [JsonProperty("I")]
+        public string CallbackId { get; set; }
+
         [JsonProperty("H")]
         public string Hub { get; set; }
 

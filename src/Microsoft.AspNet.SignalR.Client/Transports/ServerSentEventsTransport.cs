@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                             bool timedOut;
                             bool disconnected;
-                            ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
+                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
 
                             if (disconnected)
                             {

@@ -63,6 +63,7 @@
     <Compile Include="Hubs\HubRegistrationData.cs" />
     <Compile Include="Hubs\HubResult.cs" />
     <Compile Include="Hubs\Hubservable.cs" />
+    <Compile Include="Hubs\IHubConnection.cs" />
     <Compile Include="Hubs\IHubProxy.cs" />
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
     <Compile Include="Transports\ServerSentEvents\EventType.cs" />
     <Compile Include="Transports\ServerSentEvents\SseEvent.cs" />
+    <Compile Include="Transports\TransportHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

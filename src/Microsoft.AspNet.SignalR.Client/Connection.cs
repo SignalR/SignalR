@@ -351,7 +351,17 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(string data)
         {
-            return ((IConnection)this).Send<object>(data);
+            if (State == ConnectionState.Disconnected)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
+            }
+
+            if (State == ConnectionState.Connecting)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
+            }
+
+            return _transport.Send(this, data);
         }
 
         /// <summary>
@@ -367,21 +377,6 @@ namespace Microsoft.AspNet.SignalR.Client
         ICollection<string> IConnection.Groups
         {
             get { return _groups; }
-        }
-
-        Task<T> IConnection.Send<T>(string data)
-        {
-            if (State == ConnectionState.Disconnected)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
-            }
-
-            if (State == ConnectionState.Connecting)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
-            }
-
-            return _transport.Send<T>(this, data);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
