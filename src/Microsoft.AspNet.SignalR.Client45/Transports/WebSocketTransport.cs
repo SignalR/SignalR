@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +44,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += TransportHelper.GetReceiveQueryString(connection, data, "webSockets");
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
+
+            Debug.WriteLine("WS: " + builder.Uri);
 
             var webSocket = new ClientWebSocket();
 

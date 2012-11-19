@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -91,6 +92,10 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 {
                     _callbacks.Remove(result.Id);
                     callback(result);
+                }
+                else
+                {
+                    Debug.Fail("Callback with id " + result.Id + " not found!");
                 }
             }
             else

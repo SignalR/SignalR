@@ -82,6 +82,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             if (process != null)
             {
                 process.Kill();
+
+                // Sleep a little 
+                Thread.Sleep(500);
             }
         }
 
@@ -96,6 +99,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             if (oldProcess == null)
             {
                 _iisExpressProcess.Start();
+
+                // Give it a little time to start up the webserver
+                Thread.Sleep(250);
                 return;
             }
         }

@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         IClientTransport Transport { get; set; }
 
+        Func<IClientTransport> TransportFactory { get; set; }
+
         void Initialize(int? keepAlive = 15,
                         int? connectonTimeOut = 120,
                         int? hearbeatInterval = 10,

@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Stop();
             }
-        } 
+        }
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
@@ -740,8 +740,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -775,8 +775,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -813,8 +813,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -848,8 +848,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
