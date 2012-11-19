@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return TransportHelper.GetNegotiationResponse(_client, connection);
         }
 
-        public async Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, string data)
         {
             StartTcs = new TaskCompletionSource<object>();
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             DoConnect(connection, data, ex => StartTcs.TrySetException(ex));
 
-            await StartTcs.Task;
+            return StartTcs.Task;
         }
 
         private void DoConnect(IConnection connection, string data, Action<Exception> errorCallback, bool reconnecting = false)
