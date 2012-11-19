@@ -32,8 +32,7 @@
     <BuildDate>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</BuildDate>
     <Revision Condition="$(BUILD_NUMBER) != ''">$(BUILD_NUMBER)</Revision>
     <Revision Condition="$(BUILD_NUMBER) == ''">0</Revision>
-    <PrereleaseTag Condition="$(PRERELEASE) != ''">$(BuildQuality)-$([System.DateTime]::Now.ToString("yyMMdd"))</PrereleaseTag>
-    <PrereleaseTagWithSeparator Condition="$(PrereleaseTag) != ''">-$(PrereleaseTag)</PrereleaseTagWithSeparator>
+    <PrereleaseTagWithSeparator Condition="$(PRERELEASE) != '' And $(BuildQuality) != ''">-$(BuildQuality)-$([System.DateTime]::Now.ToString("yyMMdd"))</PrereleaseTagWithSeparator>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
     <FileVersion>$(MajorVersion).$(MinorVersion).$(BuildDate).$(Revision)</FileVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
