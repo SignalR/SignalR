@@ -7,15 +7,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 {
     internal class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
     {
-        private bool _raiseEvent = true;
-
         public override void OnClose(bool clean)
         {
-            if (!_raiseEvent)
-            {
-                return;
-            }
-
             Action<bool> onClose = ((IWebSocket)this).OnClose;
             if (onClose != null)
             {
@@ -68,12 +61,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         Task IWebSocket.Send(string value)
         {
             return Send(value);
-        }
-
-        public void End()
-        {
-            _raiseEvent = false;
-            Close();
         }
     }
 }
