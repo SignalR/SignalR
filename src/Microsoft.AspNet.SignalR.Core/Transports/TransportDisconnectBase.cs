@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.AsStream(), Encoding.UTF8);
+                    _outputWriter = new StreamWriter(Context.Response.AsStream(), new UTF8Encoding(false));
                     _outputWriter.NewLine = "\n";
                 }
 
