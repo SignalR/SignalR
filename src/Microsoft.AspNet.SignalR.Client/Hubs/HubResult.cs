@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// The return value of the hub
         /// </summary>
         [JsonProperty("R")]
-        public object Result { get; set; }
+        public JToken Result { get; set; }
         
         /// <summary>
         /// The error message returned from the hub invocation.

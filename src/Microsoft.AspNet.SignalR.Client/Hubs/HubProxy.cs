@@ -98,16 +98,25 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                     {
                         tcs.TrySetException(new InvalidOperationException(result.Error));
                     }
-
-                    if (result.State != null)
+                    else
                     {
-                        foreach (var pair in result.State)
+                        if (result.State != null)
                         {
-                            this[pair.Key] = pair.Value;
+                            foreach (var pair in result.State)
+                            {
+                                this[pair.Key] = pair.Value;
+                            }
+                        }
+
+                        if (result.Result != null)
+                        {
+                            tcs.TrySetResult(result.Result.ToObject<T>());
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(default(T));
                         }
                     }
-
-                    tcs.TrySetResult((T)result.Result);
                 }
                 else
                 {
