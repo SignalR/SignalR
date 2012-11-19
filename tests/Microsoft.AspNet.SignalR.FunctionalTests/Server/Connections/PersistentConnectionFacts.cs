@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void GroupsRejoinedWhenOnRejoiningGroupsOverridden(HostType hostType, TransportType transportType)
@@ -400,7 +400,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             public void ClientGroupsSyncWithServerGroupsOnReconnectWhenNotRejoiningGroups(HostType hostType, TransportType transportType)
             {
