@@ -39,6 +39,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 proxy.Invoke("Send", "hello").Wait();
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+
+                hubConnection.Stop();
             }
         }
 
