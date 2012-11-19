@@ -68,6 +68,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnMessage(string message)
         {
+            Debug.WriteLine("WS Receive: " + message);
+
             bool timedOut;
             bool disconnected;
             TransportHelper.ProcessResponse(ConnectionInfo.Connection, 

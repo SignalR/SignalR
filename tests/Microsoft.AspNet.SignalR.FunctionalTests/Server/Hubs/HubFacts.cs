@@ -284,8 +284,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var hub = connection.CreateHubProxy("demo");
 
-                var wh = new ManualResetEvent(false);
-
                 connection.Start(host.Transport).Wait();
 
                 var person = new SignalR.Samples.Hubs.DemoHub.DemoHub.Person
