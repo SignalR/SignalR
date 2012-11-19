@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             public void GroupsReceiveMessages(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
