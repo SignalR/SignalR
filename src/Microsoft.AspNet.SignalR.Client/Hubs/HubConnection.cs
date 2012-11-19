@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 }
                 else
                 {
-                    Debug.Fail("Callback with id " + result.Id + " not found!");
+                    Debug.Assert(false, "Callback with id " + result.Id + " not found!");
                 }
             }
             else
