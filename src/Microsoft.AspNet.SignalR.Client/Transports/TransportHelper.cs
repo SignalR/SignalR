@@ -18,6 +18,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     {
         internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
         {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
 #if SILVERLIGHT || WINDOWS_PHONE
             string negotiateUrl = connection.Url + "negotiate?" + GetNoCacheUrlParam();
 #else
@@ -41,6 +51,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
         public static string GetReceiveQueryString(IConnection connection, string data, string transport)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
             var qsBuilder = new StringBuilder();
             qsBuilder.Append("?transport=" + transport)
@@ -77,6 +92,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public static string GetCustomQueryString(IConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             return String.IsNullOrEmpty(connection.QueryString)
                             ? ""
                             : "&" + connection.QueryString;
@@ -87,6 +107,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
         public static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             timedOut = false;
             disconnected = false;
 

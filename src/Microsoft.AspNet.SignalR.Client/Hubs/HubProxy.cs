@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return Invoke<object>(method, args);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller")]
         public Task<T> Invoke<T>(string method, params object[] args)
         {
             if (method == null)
@@ -100,21 +101,30 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                     }
                     else
                     {
-                        if (result.State != null)
+                        try
                         {
-                            foreach (var pair in result.State)
+                            if (result.State != null)
                             {
-                                this[pair.Key] = pair.Value;
+                                foreach (var pair in result.State)
+                                {
+                                    this[pair.Key] = pair.Value;
+                                }
+                            }
+
+                            if (result.Result != null)
+                            {
+                                tcs.TrySetResult(result.Result.ToObject<T>());
+                            }
+                            else
+                            {
+                                tcs.TrySetResult(default(T));
                             }
                         }
-
-                        if (result.Result != null)
+                        catch (Exception ex)
                         {
-                            tcs.TrySetResult(result.Result.ToObject<T>());
-                        }
-                        else
-                        {
-                            tcs.TrySetResult(default(T));
+                            // If we failed to set the result for some reason or to update
+                            // state then just fail the tcs.
+                            tcs.TrySetException(ex);
                         }
                     }
                 }
