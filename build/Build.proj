@@ -72,7 +72,10 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
 
-  <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
+  <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
+  </Target>
+
+  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
