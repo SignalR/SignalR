@@ -16,6 +16,14 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Creates a new instance of <see cref="PersistentResponse"/>.
         /// </summary>
+        public PersistentResponse()
+            : this(m => false)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="PersistentResponse"/>.
+        /// </summary>
         /// <param name="exclude">A filter that determines whether messages should be written to the client.</param>
         public PersistentResponse(Func<Message, bool> exclude)
         {
@@ -62,12 +70,12 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// True if the AddedGroups should be diffed against an empty set of groups, i.e. client groups should equal AddedGroups.
         /// </summary>
-        public bool ResetGroups { get; set; } 
+        public bool ResetGroups { get; set; }
 
         /// <summary>
         /// Groups added to the connection since the last PersistentResponse.
         /// </summary>
-        public IEnumerable<string> AddedGroups  { get; set; }
+        public IEnumerable<string> AddedGroups { get; set; }
 
         /// <summary>
         /// Groups removed from the connection since the last PersistentResponse.
@@ -116,7 +124,7 @@ namespace Microsoft.AspNet.SignalR
                 }
                 WriteJsonArray(jsonWriter, AddedGroups);
             }
-            
+
             if (RemovedGroups != null)
             {
                 jsonWriter.WritePropertyName("g");

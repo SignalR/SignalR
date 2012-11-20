@@ -97,6 +97,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
+        // Unit testing hooks
+        internal Action AfterReceive;
+        internal Action BeforeCancellationTokenCallbackRegistered;
+        internal Action BeforeReceive;
+
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;
@@ -257,7 +262,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             IDisposable subscription = null;
             IDisposable registration = null;
 
-            var wh = new ManualResetEventSlim(initialState: false);
+            var wh = new ManualResetEventSlim();
+
+            if (BeforeReceive != null)
+            {
+                BeforeReceive();
+            }
 
             try
             {
@@ -326,14 +336,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return;
             }
 
-            // End the request if the connection end token is triggered
-            registration = ConnectionEndToken.SafeRegister(state =>
+            if (AfterReceive != null)
             {
-                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
-
-                state.Dispose();
-            },
-            subscription);
+                AfterReceive();
+            }
 
             if (postReceive != null)
             {
@@ -349,6 +355,20 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 wh.Set();
             }
+
+            if (BeforeCancellationTokenCallbackRegistered != null)
+            {
+                BeforeCancellationTokenCallbackRegistered();
+            }
+
+            // This has to be done last incase it runs synchronously.
+            registration = ConnectionEndToken.SafeRegister(state =>
+            {
+                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
+
+                state.Dispose();
+            },
+            subscription);
         }
     }
 }

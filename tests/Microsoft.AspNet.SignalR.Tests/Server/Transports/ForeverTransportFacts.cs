@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;
@@ -79,6 +80,58 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             transport.Object.ProcessRequest(transportConnection.Object).Wait();
 
             Assert.Equal("1", abortedConnectionId);
+        }
+
+        [Fact]
+        public void AvoidDeadlockIfCancellationTokenTriggeredBeforeSubscribing()
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            var counters = new Mock<IPerformanceCounterManager>();
+            var heartBeat = new Mock<ITransportHeartbeat>();
+            var json = new JsonNetSerializer();
+            var hostContext = new HostContext(request.Object, null);
+            var transportConnection = new Mock<ITransportConnection>();
+            var traceManager = new Mock<ITraceManager>();
+            traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
+
+            Func<PersistentResponse, Task<bool>> callback = null;
+
+            transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
+                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
+                                                     It.IsAny<int>())).Callback<string, Func<PersistentResponse, Task<bool>>, int>((id, cb, max) =>
+                                                     {
+                                                         callback = cb;
+                                                     })
+                                                     .Returns(new DisposableAction(() =>
+                                                     {
+                                                         callback(new PersistentResponse());
+                                                     }));
+
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            {
+                CallBase = true
+            };
+
+            var wh = new ManualResetEventSlim();
+
+            transport.Object.BeforeCancellationTokenCallbackRegistered = () =>
+            {
+                // Trip the cancellation token
+                transport.Object.End();
+            };
+
+            // Act
+            Task.Factory.StartNew(() =>
+            {
+                transport.Object.ProcessRequest(transportConnection.Object);
+                wh.Set();
+            });
+
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(2)), "Dead lock!");
         }
     }
 }
