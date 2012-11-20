@@ -11,16 +11,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class WebSocketTransport : WebSocketHandler, IClientTransport
     {
         private readonly IHttpClient _client;
-        private bool _stop;
+        private volatile bool _stop;
+        private WebSocketConnectionInfo _connectionInfo;
+        private TaskCompletionSource<object> _startTcs;
 
         public WebSocketTransport(IHttpClient client)
         {
             _client = client;
+
+            ReconnectDelay = TimeSpan.FromSeconds(2);
         }
 
-        private WebSocketConnectionInfo ConnectionInfo { get; set; }
-
-        private TaskCompletionSource<object> StartTcs { get; set; }
+        /// <summary>
+        /// The time to wait after a connection drops to try reconnecting.
+        /// </summary>
+        public TimeSpan ReconnectDelay { get; set; }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
@@ -29,16 +34,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string data)
         {
-            StartTcs = new TaskCompletionSource<object>();
+            _startTcs = new TaskCompletionSource<object>();
 
-            ConnectionInfo = new WebSocketConnectionInfo(connection, data);
+            _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
-            DoConnect(connection, data, ex => StartTcs.TrySetException(ex));
+            // We don't need to await this task
+            Task task = PerformConnect(connection, data);
 
-            return StartTcs.Task;
+            return _startTcs.Task;
         }
 
-        private void DoConnect(IConnection connection, string data, Action<Exception> errorCallback, bool reconnecting = false)
+        private async Task PerformConnect(IConnection connection, string data, bool reconnecting = false)
         {
             var url = reconnecting ? connection.Url : connection.Url + "/connect";
             url += TransportHelper.GetReceiveQueryString(connection, data, "webSockets");
@@ -49,14 +55,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var webSocket = new ClientWebSocket();
 
-            webSocket.ConnectAsync(builder.Uri, CancellationToken.None)
-                     .Catch(errorCallback)
-                     .Then(ws => ProcessWebSocketRequestAsync(ws), webSocket);
+            await webSocket.ConnectAsync(builder.Uri, CancellationToken.None);
+            await ProcessWebSocketRequestAsync(webSocket);
         }
 
         public void Stop(IConnection connection)
         {
             _stop = true;
+
             Close();
         }
 
@@ -65,16 +71,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return SendAsync(data);
         }
 
-
         public override void OnMessage(string message)
         {
             Debug.WriteLine("WS Receive: " + message);
 
             bool timedOut;
             bool disconnected;
-            TransportHelper.ProcessResponse(ConnectionInfo.Connection, 
-                                            message, 
-                                            out timedOut, 
+            TransportHelper.ProcessResponse(_connectionInfo.Connection,
+                                            message,
+                                            out timedOut,
                                             out disconnected);
 
             if (disconnected && !_stop)
@@ -85,10 +90,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnOpen()
         {
-            if (!StartTcs.TrySetResult(null) && 
-                ConnectionInfo.Connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
+            if (!_startTcs.TrySetResult(null) &&
+                _connectionInfo.Connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
             {
-                ConnectionInfo.Connection.OnReconnected();
+                _connectionInfo.Connection.OnReconnected();
             }
         }
 
@@ -99,18 +104,33 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
-            if (ConnectionInfo.Connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+            if (_connectionInfo.Connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
             {
-                DoConnect(ConnectionInfo.Connection,
-                          ConnectionInfo.Data,
-                          e => { },
-                          reconnecting: true);
+                DoReconnect();
+            }
+        }
+
+        private async void DoReconnect()
+        {
+            while (true)
+            {
+                try
+                {
+                    await PerformConnect(_connectionInfo.Connection, _connectionInfo.Data, reconnecting: true);
+                    break;
+                }
+                catch(Exception ex)
+                {
+                    _connectionInfo.Connection.OnError(ex);
+                }
+
+                await Task.Delay(ReconnectDelay);
             }
         }
 
         public override void OnError()
         {
-            ConnectionInfo.Connection.OnError(Error);
+            _connectionInfo.Connection.OnError(Error);
         }
 
         private class WebSocketConnectionInfo
