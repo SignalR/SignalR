@@ -118,10 +118,15 @@
              Targets="Build"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
 
-    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WindowsPhone.sln"
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP71\Microsoft.AspNet.SignalR.Client.WP71.csproj"
              Targets="Build"
              Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\') And Exists('$(MSBuildExtensionsPath)\Silverlight for Phone\v4.0\Microsoft.Silverlight.WindowsPhone71.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP7'))"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties);SolutionDir=$(ProjectRoot);" />
+
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
+             Targets="Build"
+             Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP8'))"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties);SolutionDir=$(ProjectRoot);" />
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Silverlight.sln"
              Targets="Build"
@@ -152,5 +157,17 @@
     <MSBuild Projects="%(AnalysisProjects.Identity)"
              Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <!-- These projects are built separately because they have conditional build commands -->
+    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Silverlight.sln"
+             Targets="ReBuild"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets') Or Exists('$(LocalToolsPath)\Silverlight')"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
+    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WinRT.sln"
+             Targets="ReBuild"
+             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
+
   </Target>
 </Project>
