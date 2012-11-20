@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return TransportHelper.GetNegotiationResponse(_client, connection);
+            return _client.GetNegotiationResponse(connection);
         }
 
         public Task Start(IConnection connection, string data)
@@ -39,15 +39,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
             // We don't need to await this task
-            Task task = PerformConnect(connection, data);
+            PerformConnect().ContinueWithNotComplete(_startTcs);
 
             return _startTcs.Task;
         }
 
-        private async Task PerformConnect(IConnection connection, string data, bool reconnecting = false)
+        private async Task PerformConnect(bool reconnecting = false)
         {
-            var url = reconnecting ? connection.Url : connection.Url + "/connect";
-            url += TransportHelper.GetReceiveQueryString(connection, data, "webSockets");
+            var url = reconnecting ? _connectionInfo.Connection.Url : _connectionInfo.Connection.Url + "/connect";
+            url += TransportHelper.GetReceiveQueryString(_connectionInfo.Connection, _connectionInfo.Data, "webSockets");
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
@@ -104,22 +104,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
-            if (_connectionInfo.Connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
-            {
-                DoReconnect();
-            }
+            DoReconnect();
         }
 
         private async void DoReconnect()
         {
-            while (true)
+            while (_connectionInfo.Connection.State == ConnectionState.Reconnecting ||
+                   _connectionInfo.Connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
             {
                 try
                 {
-                    await PerformConnect(_connectionInfo.Connection, _connectionInfo.Data, reconnecting: true);
+                    await PerformConnect(reconnecting: true);
                     break;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _connectionInfo.Connection.OnError(ex);
                 }

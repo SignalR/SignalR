@@ -10,10 +10,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly HostContext _context;
         private IWebSocket _socket;
         private bool _isAlive = true;
-        
+
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
-            : this(context, 
+            : this(context,
                    resolver.Resolve<IJsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
         }
 
-        public WebSocketTransport(HostContext context, 
-                                  IJsonSerializer serializer, 
+        public WebSocketTransport(HostContext context,
+                                  IJsonSerializer serializer,
                                   ITransportHeartbeat heartbeat,
                                   IPerformanceCounterManager performanceCounterWriter,
                                   ITraceManager traceManager)

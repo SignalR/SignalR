@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public static class TransportHelper
     {
-        internal static Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection)
+        public static Task<NegotiationResponse> GetNegotiationResponse(this IHttpClient httpClient, IConnection connection)
         {
             if (httpClient == null)
             {

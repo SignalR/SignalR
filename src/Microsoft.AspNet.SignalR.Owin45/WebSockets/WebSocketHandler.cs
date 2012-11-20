@@ -85,8 +85,18 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task CloseAsync()
         {
+            if (_isClosed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return _sendQueue.Enqueue(() =>
             {
+                if (_isClosed)
+                {
+                    return TaskAsyncHelper.Empty;
+                }
+
                 _isClosed = true;
                 return WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             });
@@ -131,6 +141,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             bool cleanClose = true;
             try
             {
+                _isClosed = false;
+
                 // first, set primitives and initialize the object
                 WebSocket = webSocket;
                 OnOpen();
