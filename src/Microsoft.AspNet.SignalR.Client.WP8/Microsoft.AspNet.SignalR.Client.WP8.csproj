@@ -85,6 +85,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Common\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Common\CommonVersionInfo.cs">
+      <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
@@ -135,6 +141,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubResult.cs">
       <Link>Hubs\HubResult.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\IHubConnection.cs">
+      <Link>Hubs\IHubConnection.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\IHubProxy.cs">
       <Link>Hubs\IHubProxy.cs</Link>
@@ -196,6 +205,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ServerSentEvents\SseEvent.cs">
       <Link>Transports\ServerSentEvents\SseEvent.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\TransportHelper.cs">
+      <Link>Transports\TransportHelper.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
       <Link>Infrastructure\ExceptionsExtensions.cs</Link>
     </Compile>
@@ -219,6 +231,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />
   <ProjectExtensions />
