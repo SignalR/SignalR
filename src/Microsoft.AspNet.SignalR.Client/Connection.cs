@@ -440,6 +440,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Can be called via other clients.")]
         private static string CreateUserAgentString(string client)
         {
             if (_assemblyVersion == null)

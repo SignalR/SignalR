@@ -113,6 +113,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 .Then(() => request.GetHttpResponseAsync());
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Text.StringBuilder.AppendFormat(System.String,System.Object[])", Justification = "This will never be localized.")]
         private static byte[] ProcessPostData(IDictionary<string, string> postData)
         {
             if (postData == null || postData.Count == 0)
