@@ -192,6 +192,7 @@
     <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
       <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
       <Link>Resources.resx</Link>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
