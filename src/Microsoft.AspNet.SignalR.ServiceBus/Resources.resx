@@ -173,7 +173,7 @@ values or invokes the AsyncCallback multiple times.</value>
     <value>Only call Check/SyncContinue once per async operation (once per PrepareAsyncCompletion).</value>
   </data>
   <data name="Error_SemaphoreCountAlreadyReachedZero" xml:space="preserve">
-    <value>Semaphore's count has already reached zero before this operaiton. Make sure Exit() is called only after successfully entered the semaphore</value>
+    <value>Semaphore's count has already reached zero before this operation. Make sure Exit() is called only after successfully entered the semaphore</value>
   </data>
   <data name="Error_UnableToResolveIncaseIndexOfRole" xml:space="preserve">
     <value>Unable to resolve the instance index of this role. Make sure Microsoft.WindowsAzure.ServiceRuntime.dll is deployed with your application.</value>
