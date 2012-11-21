@@ -208,10 +208,6 @@
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj">
-      <Project>{3b71f0ae-d4b6-4f47-bf62-333d45615673}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
       <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
       <Name>Microsoft.AspNet.SignalR.Owin45</Name>

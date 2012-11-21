@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 
-namespace Microsoft.AspNet.SignalR.Hosting.Common
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     public static class ProcessExtensions
     {
