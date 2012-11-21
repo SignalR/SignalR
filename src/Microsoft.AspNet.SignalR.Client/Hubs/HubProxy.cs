@@ -150,8 +150,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             var value = JsonConvert.SerializeObject(hubData);
 
             return _connection.Send(value)
-                              .Then(() => tcs.Task)
-                              .Catch(ex => tcs.TrySetException(ex));
+                              .Then(() => tcs.Task);
         }
 
 #if !WINDOWS_PHONE && !NET35
