@@ -376,6 +376,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return new Hubservable(proxy, eventName);
         }
 #endif
+
         private static T Convert<T>(JToken obj)
         {
             if (obj == null)

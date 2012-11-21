@@ -3,20 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-#if !WINDOWS_PHONE && !NET35
-using System.Dynamic;
-#endif
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
-    public class HubProxy :
-#if !WINDOWS_PHONE && !NET35
- DynamicObject,
-#endif
- IHubProxy
+    public class HubProxy : IHubProxy
     {
         private readonly string _hubName;
         private readonly IHubConnection _connection;
@@ -152,29 +145,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return _connection.Send(value)
                               .Then(() => tcs.Task);
         }
-
-#if !WINDOWS_PHONE && !NET35
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            this[binder.Name] = value as JToken ?? JToken.FromObject(value);
-            return true;
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            result = this[binder.Name];
-            return true;
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
-        {
-            result = Invoke(binder.Name, args);
-            return true;
-        }
-#endif
 
         public void InvokeEvent(string eventName, JToken[] args)
         {
