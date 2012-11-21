@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return TransportHelper.GetNegotiationResponse(_httpClient, connection);
+            return _httpClient.GetNegotiationResponse(connection);
         }
 
         public Task Start(IConnection connection, string data)
