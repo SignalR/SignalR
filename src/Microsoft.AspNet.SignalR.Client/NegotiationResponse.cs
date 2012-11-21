@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.SignalR.Client
         public string ConnectionId { get; set; }
         public string Url { get; set; }
         public string ProtocolVersion { get; set; }
-        public bool SupportsWebSockets { get; set; }
+        public bool TryWebSockets { get; set; }
     }
 }

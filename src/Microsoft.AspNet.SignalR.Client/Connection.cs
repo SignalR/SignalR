@@ -162,6 +162,14 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public string QueryString { get; private set; }
 
+        public IClientTransport Transport
+        {
+            get
+            {
+                return _transport;
+            }
+        }
+
         /// <summary>
         /// Gets the current <see cref="ConnectionState"/> of the connection.
         /// </summary>

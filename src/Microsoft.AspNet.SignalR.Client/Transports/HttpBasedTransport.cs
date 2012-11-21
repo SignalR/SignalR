@@ -32,6 +32,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _transport = transport;
         }
 
+        public string Name
+        {
+            get
+            {
+                return _transport;
+            }
+        }
+
         protected IHttpClient HttpClient
         {
             get { return _httpClient; }

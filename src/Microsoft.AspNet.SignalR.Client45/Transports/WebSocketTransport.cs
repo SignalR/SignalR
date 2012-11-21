@@ -27,6 +27,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
 
+        /// <summary>
+        /// The name of the transport.
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return "webSockets";
+            }
+        }
+
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
             return _client.GetNegotiationResponse(connection);

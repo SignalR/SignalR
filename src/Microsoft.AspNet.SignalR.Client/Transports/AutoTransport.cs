@@ -31,13 +31,26 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
         }
 
+        public string Name
+        {
+            get
+            {
+                if (_transport == null)
+                {
+                    return null;
+                }
+
+                return _transport.Name;
+            }
+        }
+
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
             var task = _httpClient.GetNegotiationResponse(connection);
 #if NET45
             return task.Then(response =>
             {
-                if (!response.SupportsWebSockets)
+                if (!response.TryWebSockets)
                 {
                     _startIndex = 1;
                 }
