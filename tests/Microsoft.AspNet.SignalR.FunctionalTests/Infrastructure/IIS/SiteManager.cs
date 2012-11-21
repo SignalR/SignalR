@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Management;
+using System.Net;
 using System.Threading;
 using Microsoft.Web.Administration;
 
@@ -23,6 +24,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         private const string TestSiteName = "signalr-test-site";
         private const int TestSitePort = 1337;
+        private static string TestSiteUrl = String.Format("http://localhost:{0}", TestSitePort);
+        private static string PingUrl = TestSiteUrl + "/ping";
 
         public SiteManager(string path)
         {
@@ -51,7 +54,40 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             EnsureIISExpressProcess();
 
-            return String.Format("http://localhost:{0}", TestSitePort);
+            PingServerUrl();
+
+            return TestSiteUrl;
+        }
+
+        private void PingServerUrl()
+        {
+            const int retryAttempts = 5;
+            const int delay = 250;
+
+            int attempt = retryAttempts;
+
+            while (true)
+            {
+                var request = HttpWebRequest.Create(PingUrl);
+                try
+                {
+                    var response = (HttpWebResponse)request.GetResponse();
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        break;
+                    }
+                }
+                catch
+                {
+                    if (attempt == 0)
+                    {
+                        throw;
+                    }
+                }
+
+                attempt--;
+                Thread.Sleep(delay);
+            }
         }
 
         public void StopSite()
