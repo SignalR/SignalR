@@ -118,6 +118,6 @@
   </Target>
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
     <PostBuildEvent>cd $(ProjectDir)
-powershell -ExecutionPolicy Bypass $(ProjectDir)build.ps1</PostBuildEvent>
+powershell -NoProfile -ExecutionPolicy Bypass $(ProjectDir)build.ps1</PostBuildEvent>
   </PropertyGroup>
 </Project>
