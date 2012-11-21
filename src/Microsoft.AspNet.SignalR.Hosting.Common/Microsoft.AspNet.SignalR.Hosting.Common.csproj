@@ -44,7 +44,6 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="GlobalHost.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
     <Compile Include="Infrastructure\UrlDecoder.cs" />
