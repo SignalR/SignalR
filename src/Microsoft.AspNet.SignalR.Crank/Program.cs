@@ -6,11 +6,14 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.Crank
 {
     class Program
     {
+        private static volatile bool _running = true;
+
         static void Main(string[] args)
         {
             Console.WriteLine("Crank v{0}", typeof(Program).Assembly.GetName().Version);
@@ -28,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             int batchInterval = args.Length < 4 ? 500 : Int32.Parse(args[3]);
 
             // Increase the number of min threads in the threadpool
-            ThreadPool.SetMinThreads(batchSize, batchSize);
+            ThreadPool.SetMinThreads(clients, 2);
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
@@ -80,6 +83,8 @@ namespace Microsoft.AspNet.SignalR.Crank
 
             totalRunStopwatch.Stop();
 
+            _running = false;
+
             Console.WriteLine("Closing connection(s).");
             Parallel.ForEach(connections, connection => connection.Stop());
         }
@@ -125,11 +130,20 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 var connection = new Connection(url);
 
+                if (!_running)
+                {
+                    batchTcs.TrySetResult(null);
+                    return;
+                }
+
                 try
                 {
                     await connection.Start();
-
-                    connections.Add(connection);
+                    
+                    if (_running)
+                    {
+                        connections.Add(connection);
+                    }
 
                     var clientId = connection.ConnectionId;
 
