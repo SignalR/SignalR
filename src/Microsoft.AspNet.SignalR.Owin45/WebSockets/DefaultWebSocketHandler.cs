@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 {
     internal class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
     {
-        private bool _raiseEvent = true;
+        private volatile bool _raiseEvent = true;
 
         public override void OnClose(bool clean)
         {
@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             Action<Exception> onError = ((IWebSocket)this).OnError;
             if (onError != null)
             {
-                // REVIEW: What error do we throw here?
                 onError(Error);
             }
         }
@@ -65,15 +64,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             set;
         }
 
-        Task IWebSocket.Send(string value)
-        {
-            return Send(value);
-        }
-
         public void End()
         {
             _raiseEvent = false;
+
             Close();
+        }
+
+        Task IWebSocket.Send(string value)
+        {
+            return Send(value);
         }
     }
 }
