@@ -57,7 +57,7 @@
                             // Not a client hub function
                             continue;
                         }
-                        
+
                         subscriptionMethod.call(hub, memberKey, makeProxyCallback(hub, memberValue));
                     }
                 }
@@ -65,19 +65,26 @@
         }
     }
 
-    signalR.hub = $.hubConnection("{serviceUrl}", { useDefaultPath: false })
-        .starting(function () {
+    $.hubConnection.prototype.createHubProxies = function () {
+        var proxies = {};
+        this.starting(function () {
             // Register the hub proxies as subscribed
             // (instance, shouldSubscribe)
-            registerHubProxies(signalR, true);
+            registerHubProxies(proxies, true);
 
             this._registerSubscribedHubs();
         }).disconnected(function () {
             // Unsubscribe all hub proxies when we "disconnect".  This is to ensure that we do not re-add functional call backs.
             // (instance, shouldSubscribe)
-            registerHubProxies(signalR, false);
+            registerHubProxies(proxies, false);
         });
 
     /*hubs*/
+
+        return proxies;
+    };
+
+    signalR.hub = $.hubConnection("{serviceUrl}", { useDefaultPath: false });
+    $.extend(signalR, signalR.hub.createHubProxies());
 
 }(window.jQuery, window));
