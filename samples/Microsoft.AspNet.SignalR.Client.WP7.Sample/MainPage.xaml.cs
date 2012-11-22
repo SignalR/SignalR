@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.Phone.Controls;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Client.WP7.Sample
 {
@@ -20,14 +19,17 @@ namespace Microsoft.AspNet.SignalR.Client.WP7.Sample
             DataContext = App.ViewModel;
             this.Loaded += new RoutedEventHandler(MainPage_Loaded);
 
-            var connection = new Connection("http://signalr-sample.azurewebsites.net/raw-connection/");
-            connection.Received += data =>
+            var connection = new HubConnection("http://signalr-sample.azurewebsites.net");
+
+            var hub = connection.CreateHubProxy("statushub");
+
+            hub.On<string>("joined", data =>
             {
                 Dispatcher.BeginInvoke(() =>
                 {
                     App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
                 });
-            };
+            });
 
             connection.Error += ex =>
             {

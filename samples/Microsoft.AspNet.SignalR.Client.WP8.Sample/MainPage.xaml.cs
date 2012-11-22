@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.WP8.Sample.ViewModels;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Phone.Controls;
 
 namespace Microsoft.AspNet.SignalR.Client.WP8.Sample
 {
@@ -24,14 +21,17 @@ namespace Microsoft.AspNet.SignalR.Client.WP8.Sample
             DataContext = App.ViewModel;
             this.Loaded += new RoutedEventHandler(MainPage_Loaded);
 
-            var connection = new Connection("http://signalr-sample.azurewebsites.net/raw-connection/");
-            connection.Received += data =>
+            var connection = new HubConnection("http://signalr-sample.azurewebsites.net");
+
+            var hub = connection.CreateHubProxy("statushub");
+
+            hub.On<string>("joined", data =>
             {
                 Dispatcher.BeginInvoke(() =>
                 {
                     App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
                 });
-            };
+            });
 
             connection.Error += ex =>
             {

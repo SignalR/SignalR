@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "")]
-        protected override void OnReceived(JToken message)
+        protected override void OnMessageReceived(JToken message)
         {
             if (message["I"] != null)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                     hubProxy.InvokeEvent(invocation.Method, invocation.Args);
                 }
 
-                base.OnReceived(message);
+                base.OnMessageReceived(message);
             }
         }
 
