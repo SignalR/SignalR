@@ -86,9 +86,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var methods = GetMethods(descriptor);
             var hubName = GetDescriptorName(descriptor);
 
-            sb.AppendFormat("signalR.{0} = signalR.hub.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
-            sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
-            sb.AppendFormat("    signalR.{0}.server = {{", hubName);
+            sb.AppendFormat("    proxies.{0} = this.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
+            sb.AppendFormat("        proxies.{0}.client = {{ }};", hubName).AppendLine();
+            sb.AppendFormat("        proxies.{0}.server = {{", hubName);
 
             bool first = true;
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 first = false;
             }
             sb.AppendLine();
-            sb.Append("    }");
+            sb.Append("        }");
         }
 
         protected virtual string GetDescriptorName(Descriptor descriptor)
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
-            sb.AppendFormat("        {0}: function ({1}) {{", GetDescriptorName(method), Commas(parameterNames)).AppendLine();
+            sb.AppendFormat("            {0}: function ({1}) {{", GetDescriptorName(method), Commas(parameterNames)).AppendLine();
             if (includeDocComments)
             {
                 sb.AppendFormat(Resources.DynamicComment_CallsMethodOnServerSideDeferredPromise, method.Name, method.Hub.Name).AppendLine();
@@ -148,8 +148,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));
                 }
             }
-            sb.AppendFormat("            return signalR.{0}.invoke.apply(signalR.{0}, $.merge([\"{1}\"], $.makeArray(arguments)));", hubName, method.Name).AppendLine();
-            sb.Append("         }");
+            sb.AppendFormat("                return proxies.{0}.invoke.apply(proxies.{0}, $.merge([\"{1}\"], $.makeArray(arguments)));", hubName, method.Name).AppendLine();
+            sb.Append("             }");
         }
 
         private static string MapToJavaScriptType(Type type)
