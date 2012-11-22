@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                var result = hub.Invoke<string>("ReadStateValue").Result;
+                var result = hub.InvokeWithTimeout<string>("ReadStateValue");
 
                 Assert.Equal("test", result);
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub = connection.CreateHubProxy("demo");
                 connection.Start(host.Transport).Wait();
 
-                var result = hub.Invoke<string>("SetStateValue", "test").Result;
+                var result = hub.InvokeWithTimeout<string>("SetStateValue", "test");
 
                 Assert.Equal("test", result);
                 Assert.Equal("test", hub["Company"]);
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                var result = hub.Invoke<int>("GetValue").Result;
+                var result = hub.InvokeWithTimeout<int>("GetValue");
 
                 Assert.Equal(10, result);
                 connection.Stop();
@@ -104,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                var ex = Assert.Throws<AggregateException>(() => hub.Invoke("TaskWithException").Wait());
+                var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
 
                 Assert.IsType<InvalidOperationException>(ex.GetBaseException());
                 Assert.Contains("System.Exception", ex.GetBaseException().Message);
@@ -127,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                var ex = Assert.Throws<AggregateException>(() => hub.Invoke("GenericTaskWithException").Wait());
+                var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("GenericTaskWithException"));
 
                 Assert.IsType<InvalidOperationException>(ex.GetBaseException());
                 Assert.Contains("System.Exception", ex.GetBaseException().Message);
@@ -150,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                int result = hub.Invoke<int>("GenericTaskWithContinueWith").Result;
+                int result = hub.InvokeWithTimeout<int>("GenericTaskWithContinueWith");
 
                 Assert.Equal(4, result);
                 connection.Stop();
@@ -172,8 +173,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                hub.Invoke("Overload").Wait();
-                int n = hub.Invoke<int>("Overload", 1).Result;
+                hub.InvokeWithTimeout("Overload");
+                int n = hub.InvokeWithTimeout<int>("Overload", 1);
 
                 Assert.Equal(1, n);
                 connection.Stop();
@@ -195,7 +196,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                TestUtilities.AssertAggregateException<InvalidOperationException>(() => hub.Invoke("UnsupportedOverload", 13177).Wait(), "'UnsupportedOverload' method could not be resolved.");
+                TestUtilities.AssertAggregateException<InvalidOperationException>(() => hub.InvokeWithTimeout("UnsupportedOverload", 13177), "'UnsupportedOverload' method could not be resolved.");
 
                 connection.Stop();
             }
@@ -221,7 +222,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("DynamicTask").Wait();
+                hub.InvokeWithTimeout("DynamicTask");
 
                 Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 connection.Stop();
@@ -250,7 +251,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                hub.Invoke("TestGuid").Wait();
+                hub.InvokeWithTimeout("TestGuid");
 
                 Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 connection.Stop();
@@ -297,7 +298,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Name = "David"
                 };
 
-                var person1 = hub.Invoke<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("ComplexType", person).Result;
+                var person1 = hub.InvokeWithTimeout<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("ComplexType", person);
                 var person2 = hub.GetValue<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("person");
 
                 Assert.NotNull(person1);
@@ -336,7 +337,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                hub.Invoke("DynamicInvoke", callback).Wait();
+                hub.InvokeWithTimeout("DynamicInvoke", callback);
 
                 Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 connection.Stop();
@@ -391,8 +392,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 for (int i = 0; i < max; i++)
                 {
                     var user = new User { Index = i, Name = "tester", Room = "test" + i };
-                    proxy.Invoke("login", user).Wait();
-                    proxy.Invoke("joinRoom", user).Wait();
+                    proxy.InvokeWithTimeout("login", user);
+                    proxy.InvokeWithTimeout("joinRoom", user);
                 }
 
                 Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
@@ -435,12 +436,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Start(host.Transport).Wait();
 
                 var user = new User { Name = "tester" };
-                proxy.Invoke("login", user).Wait();
+                proxy.InvokeWithTimeout("login", user);
 
                 for (int i = 0; i < max; i++)
                 {
                     user.Index = i;
-                    proxy.Invoke("joinRoom", user).Wait();
+                    proxy.InvokeWithTimeout("joinRoom", user);
                 }
 
                 // Force Reconnect
@@ -449,7 +450,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 for (int i = max; i < 2 * max; i++)
                 {
                     user.Index = i;
-                    proxy.Invoke("joinRoom", user).Wait();
+                    proxy.InvokeWithTimeout("joinRoom", user);
                 }
 
                 Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
@@ -496,12 +497,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Start(host.Transport).Wait();
 
                 var user = new User { Name = "tester" };
-                proxy.Invoke("login", user).Wait();
+                proxy.InvokeWithTimeout("login", user);
 
                 for (int i = 0; i < max; i++)
                 {
                     user.Index = i;
-                    proxy.Invoke("joinRoom", user).Wait();
+                    proxy.InvokeWithTimeout("joinRoom", user);
                 }
 
                 // Force Reconnect
@@ -510,7 +511,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 for (int i = max; i < 2 * max; i++)
                 {
                     user.Index = i;
-                    proxy.Invoke("joinRoom", user).Wait();
+                    proxy.InvokeWithTimeout("joinRoom", user);
                 }
 
                 Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
@@ -540,14 +541,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Start(host).Wait();
 
                 var user = new User { Name = "tester" };
-                proxy.Invoke("login", user).Wait();
-                proxy2.Invoke("login", user).Wait();
+                proxy.InvokeWithTimeout("login", user);
+                proxy2.InvokeWithTimeout("login", user);
 
                 // Force Reconnect
                 Thread.Sleep(TimeSpan.FromSeconds(3));
 
-                proxy.Invoke("joinRoom", user).Wait();
-                proxy2.Invoke("joinRoom", user).Wait();
+                proxy.InvokeWithTimeout("joinRoom", user);
+                proxy2.InvokeWithTimeout("joinRoom", user);
 
                 Thread.Sleep(TimeSpan.FromSeconds(3));
 
@@ -580,7 +581,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                var result = hub.Invoke<string>("GetQueryString", "a").Result;
+                var result = hub.InvokeWithTimeout<string>("GetQueryString", "a");
 
                 Assert.Equal("b", result);
 
@@ -605,7 +606,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                var result = hub.Invoke<string>("GetQueryString", "a").Result;
+                var result = hub.InvokeWithTimeout<string>("GetQueryString", "a");
 
                 Assert.Equal("b", result);
 
@@ -661,7 +662,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Force Reconnect
                 Thread.Sleep(TimeSpan.FromSeconds(3));
 
-                hub.Invoke("AllFoo").Wait();
+                hub.InvokeWithTimeout("AllFoo");
 
                 Thread.Sleep(TimeSpan.FromSeconds(3));
 
@@ -700,7 +701,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                var result = hub.Invoke<string>("ReadStateValue").Result;
+                var result = hub.InvokeWithTimeout<string>("ReadStateValue");
 
                 foreach (var mockDemoHub in mockHubs)
                 {
@@ -737,7 +738,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
 
-                hub1.Invoke("SendToAllButCaller").Wait();
+                hub1.InvokeWithTimeout("SendToAllButCaller");
 
                 Assert.False(wh1.Wait(TimeSpan.FromSeconds(5)));
                 Assert.True(wh2.Wait(TimeSpan.FromSeconds(10)));
@@ -772,10 +773,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
 
-                hub1.Invoke("JoinGroup", "group").Wait();
-                hub2.Invoke("JoinGroup", "group").Wait();
+                hub1.InvokeWithTimeout("JoinGroup", "group");
+                hub2.InvokeWithTimeout("JoinGroup", "group");
 
-                hub1.Invoke("AllInGroupButCaller", "group").Wait();
+                hub1.InvokeWithTimeout("AllInGroupButCaller", "group");
 
                 Assert.False(wh1.Wait(TimeSpan.FromSeconds(10)));
                 Assert.True(wh2.Wait(TimeSpan.FromSeconds(5)));
@@ -810,7 +811,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
 
-                hub1.Invoke("SendToAll").Wait();
+                hub1.InvokeWithTimeout("SendToAll");
 
                 Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
                 Assert.True(wh2.Wait(TimeSpan.FromSeconds(10)));
@@ -845,7 +846,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
 
-                hub1.Invoke("SendToSelf").Wait();
+                hub1.InvokeWithTimeout("SendToSelf");
 
                 Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
                 Assert.False(wh2.Wait(TimeSpan.FromSeconds(5)));

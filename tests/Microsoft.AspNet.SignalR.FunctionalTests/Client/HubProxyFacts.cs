@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hubConnection.Start(host.Transport).Wait();
 
-                proxy.Invoke("Send", "hello").Wait();
+                proxy.InvokeWithTimeout("Send", "hello");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 hubConnection.Start(host.Transport).Wait();
 
-                proxy.Invoke("Send", "hello").Wait();
+                proxy.InvokeWithTimeout("Send", "hello");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
             }
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
 
                 hubConnection.Start(host.Transport).Wait();
-                Assert.Throws<MissingMethodException>(() => proxy.Invoke("Send", "hello").Wait());
+                Assert.Throws<MissingMethodException>(() => proxy.InvokeWithTimeout("Send", "hello"));
             }
         }
 

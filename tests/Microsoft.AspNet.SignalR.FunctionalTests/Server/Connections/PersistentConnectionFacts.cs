@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     connection.Start(host.Transport).Wait();
-                    connection.Send("").Wait();
+                    connection.SendWithTimeout("");
 
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         if (stateChange.NewState == Client.ConnectionState.Connected)
                         {
-                            connection.Send("").Wait();
+                            connection.SendWithTimeout("");
                         }
                     };
 
@@ -243,16 +243,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Start(host.Transport).Wait();
 
                     // Join the group
-                    connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.SendWithTimeout(new { type = 1, group = "test" });
 
                     // Sent a message
-                    connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+                    connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
 
                     // Leave the group
-                    connection.Send(new { type = 2, group = "test" }).Wait();
+                    connection.SendWithTimeout(new { type = 2, group = "test" });
 
                     // Send a message
-                    connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+                    connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
 
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
@@ -285,16 +285,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Start(host.Transport).Wait();
 
                     // Join the group
-                    connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.SendWithTimeout(new { type = 1, group = "test" });
 
                     // Sent a message
-                    connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+                    connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
 
                     // Force Reconnect
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
                     // Send a message
-                    connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+                    connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
 
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
@@ -330,16 +330,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Start(host.Transport).Wait();
 
                     // Join the group
-                    connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.SendWithTimeout(new { type = 1, group = "test" });
 
                     // Sent a message
-                    connection.Send(new { type = 3, group = "test", message = "hello to group test" }).Wait();
+                    connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
 
                     // Force Reconnect
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
                     // Send a message
-                    connection.Send(new { type = 3, group = "test", message = "goodbye to group test" }).Wait();
+                    connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
 
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
@@ -379,13 +379,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyRejoinGroupsConnection).FullName + ".test"));
 
-                        connection.Send(new { type = 3, group = "test", message = "Reconnected" }).Wait();
+                        connection.SendWithTimeout(new { type = 3, group = "test", message = "Reconnected" });
                     };
 
                     connection.Start(host.Transport).Wait();
 
                     // Join the group
-                    connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.SendWithTimeout(new { type = 1, group = "test" });
 
                     // Force reconnect
                     Thread.Sleep(TimeSpan.FromSeconds(10));
@@ -424,14 +424,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Reconnected += () =>
                     {
-                        connection.Send(new { type = 1, group = "test2" }).Wait();
-                        connection.Send(new { type = 3, group = "test2", message = "Reconnected" }).Wait();
+                        connection.SendWithTimeout(new { type = 1, group = "test2" });
+                        connection.SendWithTimeout(new { type = 3, group = "test2", message = "Reconnected" });
                     };
 
                     connection.Start(host.Transport).Wait();
 
                     // Join the group
-                    connection.Send(new { type = 1, group = "test" }).Wait();
+                    connection.SendWithTimeout(new { type = 1, group = "test" });
 
                     // Force reconnect
                     Thread.Sleep(TimeSpan.FromSeconds(5));
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection1.Start(host.Transport).Wait();
                     connection2.Start(host.Transport).Wait();
 
-                    connection1.Send("test").Wait();
+                    connection1.SendWithTimeout("test");
 
                     Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                     Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
