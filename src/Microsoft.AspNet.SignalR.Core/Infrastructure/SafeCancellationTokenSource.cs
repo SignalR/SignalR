@@ -24,11 +24,22 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public void Cancel()
         {
-            var value = Interlocked.CompareExchange(ref _state, State.Cancelled, State.Initial);
+            var value = Interlocked.CompareExchange(ref _state, State.Cancelling, State.Initial);
 
             if (value == State.Initial)
             {
-                _cts.Cancel();
+                try
+                {
+                    _cts.Cancel();
+                }
+                finally
+                {
+                    if (Interlocked.CompareExchange(ref _state, State.Cancelled, State.Cancelling) == State.Disposing)
+                    {
+                        _cts.Dispose();
+                        Interlocked.Exchange(ref _state, State.Disposed);
+                    }
+                }
             }
         }
 
@@ -36,12 +47,24 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             if (disposing)
             {
-                var value = Interlocked.Exchange(ref _state, State.Disposed);
+                var value = Interlocked.Exchange(ref _state, State.Disposing);
 
-                // Only dispose if not already disposed
-                if (value != State.Disposed)
+                switch (value)
                 {
-                    _cts.Dispose();
+                    case State.Initial:
+                    case State.Cancelled:
+                        _cts.Dispose();
+                        Interlocked.Exchange(ref _state, State.Disposed);
+                        break;
+                    case State.Cancelling:
+                    case State.Disposing:
+                        // No-op
+                        break;
+                    case State.Disposed:
+                        Interlocked.Exchange(ref _state, State.Disposed);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -54,8 +77,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private static class State
         {
             public const int Initial = 0;
-            public const int Cancelled = 1;
-            public const int Disposed = 2;
+            public const int Cancelling = 1;
+            public const int Cancelled = 2;
+            public const int Disposing = 3;
+            public const int Disposed = 4;
         }
     }
 }
