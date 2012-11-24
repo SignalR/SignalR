@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class HubDispatcher : PersistentConnection
     {
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
-        private readonly string _url;
 
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
@@ -29,16 +28,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private IPerformanceCounterManager _counters;
         private bool _isDebuggingEnabled;
 
-        private static readonly MethodInfo _continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static);
+        private const string HubsUrl = "/hubs";
 
-        /// <summary>
-        /// Initializes an instance of the <see cref="HubDispatcher"/> class.
-        /// </summary>
-        /// <param name="url">The base url of the connection url.</param>
-        public HubDispatcher(string url)
-        {
-            _url = url;
-        }
+        private static readonly MethodInfo _continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static);
 
         protected override TraceSource Trace
         {
@@ -193,11 +185,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Trim any trailing slashes
             string normalized = context.Request.Url.LocalPath.TrimEnd('/');
 
-            if (normalized.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
+            if (normalized.EndsWith(HubsUrl, StringComparison.OrdinalIgnoreCase))
             {
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
+                string url = context.Request.Url.ToString();
+                url = url.Remove(url.Length - HubsUrl.Length, HubsUrl.Length);
+                string proxy = _proxyGenerator.GenerateProxy(url, includeDocComments: true);
+                return context.Response.EndAsync(proxy);
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();

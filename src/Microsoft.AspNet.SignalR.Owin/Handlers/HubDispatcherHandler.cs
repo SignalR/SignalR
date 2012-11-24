@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
             }
 
             var pathBase = environment.Get<string>(OwinConstants.RequestPathBase);
-            var dispatcher = new HubDispatcher(pathBase + _path);
+            var dispatcher = new HubDispatcher();
 
             var handler = new CallHandler(_resolver, dispatcher);
             return handler.Invoke(environment);
