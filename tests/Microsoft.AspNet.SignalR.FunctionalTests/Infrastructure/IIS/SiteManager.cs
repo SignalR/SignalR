@@ -113,6 +113,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 {
                     return;
                 }
+                catch (InvalidOperationException)
+                {
+                    return;
+                }
             }
 
             if (process != null)

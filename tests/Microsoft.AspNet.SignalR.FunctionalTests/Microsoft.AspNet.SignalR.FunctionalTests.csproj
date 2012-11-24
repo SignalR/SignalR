@@ -124,6 +124,7 @@
     <None Include="config\redirection.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <EmbeddedResource Include="Infrastructure\IIS\site.web.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
