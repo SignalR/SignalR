@@ -23,7 +23,8 @@
             /// <summary>Starts the long polling connection</summary>
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
-                initialConnectFired = false;
+                initialConnectFired = false,
+                unloading = false;
 
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
@@ -31,6 +32,9 @@
             }
 
             connection.messageId = null;
+
+            // work around issue where chrome errors all xhr requests on page unload, catch this, so we don't abort on it
+            $(window).bind('beforeunload', function () { unloading = true; });
 
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
@@ -50,6 +54,9 @@
                             return;
                         }
                     }
+
+                    // flag as not unloading
+                    unloading = false;
 
                     connection.log("Attempting to connect to '" + url + "' using longPolling.");
                     instance.pollXhr = $.ajax({
@@ -128,7 +135,10 @@
                                 window.clearTimeout(reconnectTimeOut);
                             }
 
-                            $(instance).triggerHandler(events.onError, [data.responseText]);
+                            // don't raise error when it's because of page reload
+                            if (!unloading) {
+                                $(instance).triggerHandler(events.onError, [data.responseText]);
+                            }
 
                             window.setTimeout(function () {
                                 if (isDisconnecting(instance) === false) {
