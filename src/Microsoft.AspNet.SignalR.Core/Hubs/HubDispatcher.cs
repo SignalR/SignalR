@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
                 string url = context.Request.Url.ToString();
-                url = url.Remove(url.Length - HubsUrl.Length, HubsUrl.Length);
+                url = url.Remove(url.Length - HubsUrl.Length, HubsUrl.Length).TrimEnd('/');
                 string proxy = _proxyGenerator.GenerateProxy(url, includeDocComments: true);
                 return context.Response.EndAsync(proxy);
             }
