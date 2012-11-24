@@ -113,6 +113,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 {
                     return;
                 }
+                catch (InvalidOperationException)
+                {
+                    return;
+                }
             }
 
             if (process != null)
@@ -154,6 +158,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 catch (ArgumentException)
                 {
                     // The process specified by the processId parameter is not running. The identifier might be expired.
+                }
+                catch (InvalidOperationException)
+                {
+                    // The process was not started
                 }
 
                 _existingIISExpressProcessId = null;
