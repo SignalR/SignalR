@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         public static string MimeType
         {
-            get { return "application/json"; }
+            get { return "application/json; charset=UTF-8"; }
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         public static string JsonpMimeType
         {
-            get { return "text/javascript"; }
+            get { return "text/javascript; charset=UTF-8"; }
         }
 
         public static string CreateJsonpCallback(string callback, string payload)
