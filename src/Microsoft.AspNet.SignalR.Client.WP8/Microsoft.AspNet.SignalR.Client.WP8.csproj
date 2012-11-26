@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.AspNet.SignalR.Client.WP8</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Client.WP8</AssemblyName>
+    <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <TargetFrameworkIdentifier>WindowsPhone</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v8.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
