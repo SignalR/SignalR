@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_htmlOutputWriter == null)
                 {
-                    _htmlOutputWriter = new HTMLTextWriter(Context.Response.AsStream(), Encoding.UTF8);
+                    _htmlOutputWriter = new HTMLTextWriter(Context.Response.AsStream(), new UTF8Encoding());
                     _htmlOutputWriter.NewLine = "\n";
                 }
 
