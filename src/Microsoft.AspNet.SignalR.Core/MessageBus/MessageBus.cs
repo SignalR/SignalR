@@ -88,9 +88,9 @@ namespace Microsoft.AspNet.SignalR
                 Trace = Trace
             };
 
-            // Keep topics alive for as long as we let connections wait until they are disconnected.
+            // Keep topics alive for twice as long as we let connections wait until they are disconnected.
             // This should be a good enough estimate for how long until we should consider a topic dead.
-            _topicTtl = configurationManager.DisconnectTimeout;
+            _topicTtl = TimeSpan.FromTicks(configurationManager.DisconnectTimeout.Ticks * 2);
 
             Topics = new ConcurrentDictionary<string, Topic>();
         }

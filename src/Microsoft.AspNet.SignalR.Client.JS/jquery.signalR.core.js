@@ -34,6 +34,7 @@
             onReceived: "onReceived",
             onError: "onError",
             onConnectionSlow: "onConnectionSlow",
+            onReconnecting: "onReconnecting",
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
@@ -83,6 +84,22 @@
 
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
+        }, 
+
+        configureStopReconnectingTimeout = function (connection) {
+            var stopReconnectingTimeout = null;
+            connection.reconnecting(function () {
+                if (stopReconnectingTimeout === null) {
+                    stopReconnectingTimeout = window.setTimeout(function () {
+                        connection.log(connection.disconnectTimeout + "ms have passed without successfully reconnecting. Disconnecting.");
+                        connection.stop(false, false);
+                    }, connection.disconnectTimeout);
+                }
+            });
+            connection.reconnected(function () {
+                window.clearTimeout(stopReconnectingTimeout);
+                stopReconnectingTimeout = null;
+            });
         };
 
     signalR = function (url, qs, logging) {
@@ -130,6 +147,7 @@
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
+            configureStopReconnectingTimeout(this);
         },
 
         ajaxDataType: "json",
@@ -143,6 +161,8 @@
         keepAliveData: {},
 
         reconnectDelay: 2000,
+
+        disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
 
         keepAliveTimeoutCount: 2,
 
@@ -310,6 +330,9 @@
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
+                    // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect.
+                    connection.disconnectTimeout = res.DisconnectTimeout * 1000;
+
                     // If we have a keep alive
                     if (res.KeepAlive) {
                         // Convert to milliseconds
@@ -457,6 +480,17 @@
                 callback.call(connection);
             });
 
+            return connection;
+        },
+
+        reconnecting: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the underlying transport begins reconnecting</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection enters a reconnecting state</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind(events.onReconnecting, function (e, data) {
+                callback.call(connection);
+            });
             return connection;
         },
 
