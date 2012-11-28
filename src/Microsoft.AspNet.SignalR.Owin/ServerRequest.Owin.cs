@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             var text = new StreamReader(body).ReadToEnd();
-            return ParamDictionary.ParseToEnumerable(text, null);
+            return ParamDictionary.ParseToEnumerable(text);
         }
     }
 }

@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _queryString, () =>
                     {
                         var collection = new NameValueCollection();
-                        foreach (var kv in ParamDictionary.ParseToEnumerable(RequestQueryString, null))
+                        foreach (var kv in ParamDictionary.ParseToEnumerable(RequestQueryString))
                         {
                             collection.Add(kv.Key, kv.Value);
                         }
