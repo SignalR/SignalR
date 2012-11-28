@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Collections.Specialized;
 using System.Net;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
@@ -23,6 +24,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// The cookies for this request.
         /// </summary>
         CookieContainer CookieContainer { get; set; }
+
+        /// <summary>
+        /// The headers for this request.
+        /// </summary>
+        NameValueCollection Headers { get; }
 
 #if !SILVERLIGHT
         /// <summary>
