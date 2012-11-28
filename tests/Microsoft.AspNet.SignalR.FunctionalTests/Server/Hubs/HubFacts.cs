@@ -983,6 +983,36 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void JoinAndSendToGroupRenamedHub(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(enableAutoRejoiningGroups: true);
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
+                var wh = new ManualResetEventSlim();
+
+                var hub = connection.CreateHubProxy("groupChat");
+
+                hub.On("send", wh.Set);
+
+                connection.Start(host.Transport).Wait();
+
+                hub.InvokeWithTimeout("Join", "Foo");
+
+                Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                hub.InvokeWithTimeout("Send", "Foo", "new test");
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+
+                connection.Stop();
+            }
+        }
+
         public class SendToSome : Hub
         {
             public Task SendToAllButCaller()
