@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             if (hostHeader.StartsWith("[", StringComparison.Ordinal))
             {
                 var portIndex = hostHeader.LastIndexOf("]:", StringComparison.Ordinal);
-                if (portIndex != -1 && int.TryParse(hostHeader.Substring(portIndex + 2), out port))
+                if (portIndex != -1 && Int32.TryParse(hostHeader.Substring(portIndex + 2), out port))
                 {
                     if (IPAddress.TryParse(hostHeader.Substring(1, portIndex - 1), out address))
                     {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 }
 
                 var portIndex = hostHeader.LastIndexOf(':');
-                if (portIndex != -1 && int.TryParse(hostHeader.Substring(portIndex + 1), out port))
+                if (portIndex != -1 && Int32.TryParse(hostHeader.Substring(portIndex + 1), out port))
                 {
                     host = hostHeader.Substring(0, portIndex);
                     return true;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     return port;
                 }
                 var portString = _environment.Get<string>(OwinConstants.LocalPort);
-                if (int.TryParse(portString, out port) && port != 0)
+                if (Int32.TryParse(portString, out port) && port != 0)
                 {
                     return port;
                 }
@@ -168,7 +168,10 @@ namespace Microsoft.AspNet.SignalR.Owin
             {
                 var contentType = ContentType;
                 if (contentType == null)
+                {
                     return null;
+                }
+
                 var delimiterPos = contentType.IndexOfAny(CommaSemicolon);
                 return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
             }
