@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,6 +43,60 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.Equal("test", result);
 
                 connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void VerifyOwinContext(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
+                var connection2 = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("MyItemsHub");
+                var hub1 = connection2.CreateHubProxy("MyItemsHub");
+
+                var results = new List<RequestItemsResponse>();
+                hub1.On<RequestItemsResponse>("update", result =>
+                {
+                    if (!results.Contains(result))
+                    {
+                        results.Add(result);
+                    }
+                });
+
+                connection.Start(host.Transport).Wait();
+                connection2.Start(host.Transport).Wait();
+
+                Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                hub1.InvokeWithTimeout("GetItems");
+
+                Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                connection.Stop();
+
+                Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                Debug.WriteLine(String.Join(", ", results));
+
+                Assert.Equal(3, results.Count);
+                Assert.Equal("OnConnected", results[0].Method);
+                Assert.Equal(1, results[0].Keys.Length);
+                Assert.Equal("owin.environment", results[0].Keys[0]);
+                Assert.Equal("GetItems", results[1].Method);
+                Assert.Equal(1, results[1].Keys.Length);
+                Assert.Equal("owin.environment", results[1].Keys[0]);
+                Assert.Equal("OnDisconnected", results[2].Method);
+                Assert.Equal(1, results[2].Keys.Length);
+                Assert.Equal("owin.environment", results[2].Keys[0]);
+
+                connection2.Stop();
             }
         }
 

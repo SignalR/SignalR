@@ -144,6 +144,13 @@ namespace Microsoft.AspNet.SignalR.Owin
             get { return _environment.Get<IPrincipal>(OwinConstants.User); }
         }
 
+
+        public IDictionary<string, object> Items
+        {
+            get;
+            private set;
+        }
+
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
 #if NET45

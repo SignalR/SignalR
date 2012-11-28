@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             ServerVariables = new NameValueCollection();
             QueryString = HttpUtility.ParseDelimited(Url.Query.TrimStart('?'));
             Cookies = new RequestCookieCollection();
+            Items = new Dictionary<string, object>();
 
             if (postData != null)
             {
@@ -108,6 +109,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         }
 
         public IPrincipal User
+        {
+            get;
+            private set;
+        }
+
+        public IDictionary<string, object> Items
         {
             get;
             private set;
