@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void VerifyOwinContext(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
