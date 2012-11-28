@@ -1530,13 +1530,14 @@
                                 return;
                             }
 
-                            connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                            if (connection.state !== signalR.connectionState.reconnecting) {
+                                connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                $(instance).triggerHandler(events.onError, [data.responseText]);
+                            }
 
                             // If the request failed then we clear the timeout so that the
                             // reconnect event doesn't get fired
                             window.clearTimeout(reconnectTimeOut);
-
-                            $(instance).triggerHandler(events.onError, [data.responseText]);
 
                             window.setTimeout(function () {
                                 if (isDisconnecting(instance) === false) {
