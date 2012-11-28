@@ -99,6 +99,7 @@
     <Compile Include="Connections\MyReconnect.cs" />
     <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
     <Compile Include="Connections\MySendingConnection.cs" />
+    <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Infrastructure\MemoryTestHost.cs" />
     <Compile Include="Infrastructure\ITestHost.cs" />
     <Compile Include="Infrastructure\IISExpressTestHost.cs" />
+    <Compile Include="Infrastructure\RequestItemsResponse.cs" />
     <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
