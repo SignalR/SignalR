@@ -88,9 +88,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.Owin.cs">
       <Link>ServerRequest.Owin.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequestCookieCollection.cs">
-      <Link>ServerRequestCookieCollection.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerResponse.cs">
       <Link>ServerResponse.cs</Link>
     </Compile>

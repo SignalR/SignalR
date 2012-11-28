@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Gets the cookies for this request.
         /// </summary>
-        IRequestCookieCollection Cookies { get; }
+        IDictionary<string, Cookie> Cookies { get; }
 
         /// <summary>
         /// Gets security information for the current HTTP request.

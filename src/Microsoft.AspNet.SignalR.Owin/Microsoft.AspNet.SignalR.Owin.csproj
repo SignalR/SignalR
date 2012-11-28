@@ -61,7 +61,6 @@
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />
     <Compile Include="Handlers\HubDispatcherHandler.cs" />
     <Compile Include="ServerRequest.Owin.cs" />
-    <Compile Include="ServerRequestCookieCollection.cs" />
     <Compile Include="ServerRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerResponse.cs" />

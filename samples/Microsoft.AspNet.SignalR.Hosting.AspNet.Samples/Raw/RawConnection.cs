@@ -13,8 +13,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
 
         protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            var userNameCookie = request.Cookies["user"];
-            if (userNameCookie != null)
+            Cookie userNameCookie;
+            if (request.Cookies.TryGetValue("user", out userNameCookie) &&
+                userNameCookie != null)
             {
                 _clients[connectionId] = userNameCookie.Value;
                 _users[userNameCookie.Value] = connectionId;
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
                         type = MessageType.Broadcast.ToString(),
                         from = GetUser(connectionId),
                         data = message.Value
-                    }, 
+                    },
                     connectionId);
                     break;
                 case MessageType.Send:
