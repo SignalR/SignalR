@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return _hubs.Select(hubDescriptor =>
             {
-                string groupPrefix = hubDescriptor.HubType.Name + ".";
+                string groupPrefix = hubDescriptor.Name + ".";
                 IEnumerable<string> groupsToRejoin = _pipelineInvoker.RejoiningGroups(hubDescriptor,
                                                                                       request,
                                                                                       groups.Where(g => g.StartsWith(groupPrefix, StringComparison.OrdinalIgnoreCase))
