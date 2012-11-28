@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         private NameValueCollection _form;
         private bool _formInitialized;
         private object _formLock;
-        private ServerRequestCookieCollection _cookies;
+        private IDictionary<string, Cookie> _cookies;
 
         public Uri Url
         {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _queryString, () =>
                     {
                         var collection = new NameValueCollection();
-                        foreach (var kv in ParamDictionary.ParseToEnumerable(RequestQueryString, null))
+                        foreach (var kv in ParamDictionary.ParseToEnumerable(RequestQueryString))
                         {
                             collection.Add(kv.Key, kv.Value);
                         }
@@ -118,14 +118,14 @@ namespace Microsoft.AspNet.SignalR.Owin
         }
 
 
-        public IRequestCookieCollection Cookies
+        public IDictionary<string, Cookie> Cookies
         {
             get
             {
                 return LazyInitializer.EnsureInitialized(
                     ref _cookies, () =>
                     {
-                        IDictionary<string, Cookie> cookies = new Dictionary<string, Cookie>();
+                        var cookies = new Dictionary<string, Cookie>(StringComparer.OrdinalIgnoreCase);
                         var text = RequestHeaders.GetHeader("Cookie");
                         foreach (var kv in ParamDictionary.ParseToEnumerable(text, CommaSemicolon))
                         {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                                 cookies.Add(kv.Key, new Cookie(kv.Key, kv.Value));
                             }
                         }
-                        return new ServerRequestCookieCollection(cookies);
+                        return cookies;
                     });
             }
         }

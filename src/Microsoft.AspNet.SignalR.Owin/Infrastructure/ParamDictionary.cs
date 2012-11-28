@@ -9,93 +9,100 @@ using System.Linq;
 namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "It is instantiated in the static Parse method")]
-    internal class ParamDictionary : IDictionary<string, string>
+    internal sealed class ParamDictionary : IDictionary<string, string>
     {
         private static readonly char[] DefaultParamSeparators = new[] { '&', ';' };
         private static readonly char[] ParamKeyValueSeparator = new[] { '=' };
         private static readonly char[] LeadingWhitespaceChars = new[] { ' ' };
 
-        // TODO: Un-uglify this code
-        public static IEnumerable<KeyValuePair<string, string>> ParseToEnumerable(string queryString, char[] delimiters)
+        internal static IEnumerable<KeyValuePair<string, string>> ParseToEnumerable(string value, char[] delimiters = null)
         {
-            var items = (queryString ?? "").Split(delimiters ?? DefaultParamSeparators, StringSplitOptions.RemoveEmptyEntries);
-            var rawPairs = items.Select(item => item.Split(ParamKeyValueSeparator, 2, StringSplitOptions.None));
-            var pairs = rawPairs.Select(pair => new KeyValuePair<string, string>(
-                Uri.UnescapeDataString(pair[0]).Replace('+', ' ').TrimStart(LeadingWhitespaceChars),
-                pair.Length < 2 ? "" : Uri.UnescapeDataString(pair[1]).Replace('+', ' ')));
-            return pairs;
+            value = value ?? String.Empty;
+            delimiters = delimiters ?? DefaultParamSeparators;
+
+            var items = value.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var item in items)
+            {
+                string[] pair = item.Split(ParamKeyValueSeparator, 2, StringSplitOptions.None);
+
+                string pairKey = Escape(pair[0]).TrimStart(LeadingWhitespaceChars);
+                string pairValue = pair.Length < 2 ? String.Empty : Escape(pair[1]);
+
+                yield return new KeyValuePair<string, string>(pairKey, pairValue);
+            }
         }
+        
+        private readonly IDictionary<string, string> _values;
 
-        readonly IDictionary<string, string> _impl;
-
-        ParamDictionary(IDictionary<string, string> impl)
+        internal ParamDictionary(IDictionary<string, string> values)
         {
-            _impl = impl;
+            _values = values;
         }
 
         IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
         {
-            return _impl.GetEnumerator();
+            return _values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _impl.GetEnumerator();
+            return _values.GetEnumerator();
         }
 
         void ICollection<KeyValuePair<string, string>>.Add(KeyValuePair<string, string> item)
         {
-            _impl.Add(item);
+            _values.Add(item);
         }
 
         void ICollection<KeyValuePair<string, string>>.Clear()
         {
-            _impl.Clear();
+            _values.Clear();
         }
 
         bool ICollection<KeyValuePair<string, string>>.Contains(KeyValuePair<string, string> item)
         {
-            return _impl.Contains(item);
+            return _values.Contains(item);
         }
 
         void ICollection<KeyValuePair<string, string>>.CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
         {
-            _impl.CopyTo(array, arrayIndex);
+            _values.CopyTo(array, arrayIndex);
         }
 
         bool ICollection<KeyValuePair<string, string>>.Remove(KeyValuePair<string, string> item)
         {
-            return _impl.Remove(item);
+            return _values.Remove(item);
         }
 
         int ICollection<KeyValuePair<string, string>>.Count
         {
-            get { return _impl.Count; }
+            get { return _values.Count; }
         }
 
         bool ICollection<KeyValuePair<string, string>>.IsReadOnly
         {
-            get { return _impl.IsReadOnly; }
+            get { return _values.IsReadOnly; }
         }
 
         bool IDictionary<string, string>.ContainsKey(string key)
         {
-            return _impl.ContainsKey(key);
+            return _values.ContainsKey(key);
         }
 
         void IDictionary<string, string>.Add(string key, string value)
         {
-            _impl.Add(key, value);
+            _values.Add(key, value);
         }
 
         bool IDictionary<string, string>.Remove(string key)
         {
-            return _impl.Remove(key);
+            return _values.Remove(key);
         }
 
         bool IDictionary<string, string>.TryGetValue(string key, out string value)
         {
-            return _impl.TryGetValue(key, out value);
+            return _values.TryGetValue(key, out value);
         }
 
         string IDictionary<string, string>.this[string key]
@@ -103,19 +110,32 @@ namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
             get
             {
                 string value;
-                return _impl.TryGetValue(key, out value) ? value : default(string);
+                if (_values.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+
+                return null;
             }
-            set { _impl[key] = value; }
+            set
+            {
+                _values[key] = value;
+            }
         }
 
         ICollection<string> IDictionary<string, string>.Keys
         {
-            get { return _impl.Keys; }
+            get { return _values.Keys; }
         }
 
         ICollection<string> IDictionary<string, string>.Values
         {
-            get { return _impl.Values; }
+            get { return _values.Values; }
+        }
+
+        private static string Escape(string value)
+        {
+            return Uri.UnescapeDataString(value).Replace('+', ' ');
         }
     }
 }

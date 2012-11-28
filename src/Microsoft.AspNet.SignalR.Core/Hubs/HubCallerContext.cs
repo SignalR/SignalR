@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Principal;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the cookies for the request.
         /// </summary>
-        public IRequestCookieCollection RequestCookies
+        public IDictionary<string, Cookie> RequestCookies
         {
             get
             {
