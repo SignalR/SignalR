@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Extensions;
 
@@ -470,6 +471,79 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection1.Stop();
                     connection2.Stop();
                 }
+            }
+        }
+
+        public class Owin : HostedTest
+        {
+            [Theory]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void EnvironmentIsAvailable(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+
+                    var connection = new Client.Connection(host.Url + "/items");
+                    var connection2 = new Client.Connection(host.Url + "/items");
+
+                    var results = new List<RequestItemsResponse>();
+                    connection2.Received += data =>
+                    {
+                        var val = JsonConvert.DeserializeObject<RequestItemsResponse>(data);
+                        if (!results.Contains(val))
+                        {
+                            results.Add(val);
+                        }
+                    };
+ 
+                    connection.Start(host.Transport).Wait();
+                    connection2.Start(host.Transport).Wait();
+
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                    connection.SendWithTimeout(null);
+
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                    connection.Stop();
+
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                    Debug.WriteLine(String.Join(", ", results));
+
+                    Assert.Equal(3, results.Count);
+                    Assert.Equal("OnConnectedAsync", results[0].Method);
+                    Assert.Equal(1, results[0].Keys.Length);
+                    Assert.Equal("owin.environment", results[0].Keys[0]);
+                    Assert.Equal("OnReceivedAsync", results[1].Method);
+                    Assert.Equal(1, results[1].Keys.Length);
+                    Assert.Equal("owin.environment", results[1].Keys[0]);
+                    Assert.Equal("OnDisconnectAsync", results[2].Method);
+                    Assert.Equal(1, results[2].Keys.Length);
+                    Assert.Equal("owin.environment", results[2].Keys[0]);
+
+                    connection2.Stop();
+                }
+            }
+        }
+
+        public class RequestItemsResponse
+        {
+            public string Method {get;set;}
+            public int Count { get; set; }
+            public string[] OwinKeys { get; set; }
+            public string[] Keys { get; set; }
+
+            public override int GetHashCode()
+            {
+                return Method.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Method.Equals(((RequestItemsResponse)obj).Method);
             }
         }
     }

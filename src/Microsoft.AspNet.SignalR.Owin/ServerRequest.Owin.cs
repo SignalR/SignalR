@@ -16,6 +16,11 @@ namespace Microsoft.AspNet.SignalR.Owin
         public ServerRequest(IDictionary<string, object> environment)
         {
             _environment = environment;
+
+            Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "owin.environment" , _environment }
+            };
         }
         
         private string RequestMethod
