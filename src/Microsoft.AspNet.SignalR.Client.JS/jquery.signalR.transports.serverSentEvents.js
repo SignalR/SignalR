@@ -108,14 +108,11 @@
 
                     if (onSuccess) {
                         onSuccess();
-                    }
-
-                    if (reconnecting) {
-                        if (changeState(connection,
-                                        signalR.connectionState.reconnecting,
-                                        signalR.connectionState.connected) === true) {
-                            $connection.triggerHandler(events.onReconnect);
-                        }
+                    } else if (changeState(connection,
+                                         signalR.connectionState.reconnecting,
+                                         signalR.connectionState.connected) === true) {
+                        // If there's no onSuccess handler we assume this is a reconnect
+                        $connection.triggerHandler(events.onReconnect);
                     }
                 }
             }, false);
@@ -166,14 +163,13 @@
             that.reconnectTimeout = window.setTimeout(function () {
                 that.stop(connection);
 
-                if (connection.state === signalR.connectionState.reconnecting ||
-                    changeState(connection,
-                                signalR.connectionState.connected,
-                                signalR.connectionState.reconnecting) === true) {
-                    connection.log("EventSource reconnecting");
-
-                    that.start(connection);
+                if (!transportLogic.ensureReconnectingState(connection)) {
+                    return;
                 }
+
+                connection.log("EventSource reconnecting");
+                $(connection).triggerHandler(events.onReconnecting);
+                that.start(connection);
 
             }, connection.reconnectDelay);
         },

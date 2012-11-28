@@ -63,13 +63,10 @@
 
                     if (onSuccess) {
                         onSuccess();
-                    }
-                    else {
-                        if (changeState(connection,
-                                        signalR.connectionState.reconnecting,
-                                        signalR.connectionState.connected) === true) {
-                            $connection.triggerHandler(events.onReconnect);
-                        }
+                    } else if (changeState(connection,
+                                         signalR.connectionState.reconnecting,
+                                         signalR.connectionState.connected) === true) {
+                        $connection.triggerHandler(events.onReconnect);
                     }
                 };
 
@@ -132,16 +129,14 @@
                         that.stop(connection);
                     }
 
-                    if (connection.state === signalR.connectionState.reconnecting ||
-                        changeState(connection,
-                                    signalR.connectionState.connected,
-                                    signalR.connectionState.reconnecting) === true) {
-
-                        connection.log("Websocket reconnecting");
-                        that.start(connection);
+                    if (!transportLogic.ensureReconnectingState(connection)) {
+                        return;
                     }
-                },
-                connection.reconnectDelay);
+
+                    connection.log("Websocket reconnecting");
+                    that.start(connection);
+
+                }, connection.reconnectDelay);
             }
         },
 
