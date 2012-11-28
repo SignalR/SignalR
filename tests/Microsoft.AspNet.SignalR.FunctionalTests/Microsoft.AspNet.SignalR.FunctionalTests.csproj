@@ -99,6 +99,7 @@
     <Compile Include="Connections\MyReconnect.cs" />
     <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
     <Compile Include="Connections\MySendingConnection.cs" />
+    <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
