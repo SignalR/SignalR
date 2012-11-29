@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.SignalR
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
-        protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
+        private Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
         {
             return new Connection(MessageBus,
                                   JsonSerializer,
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The default signals for this <see cref="PersistentConnection"/>.</returns>
-        protected IEnumerable<string> GetDefaultSignals(string connectionId)
+        private IEnumerable<string> GetDefaultSignals(string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
