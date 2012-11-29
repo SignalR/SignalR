@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.SignalR
                     return Canceled();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor).FastUnwrap();
+                    return FromMethod(successor);
 
                 default:
                     return TaskRunners<object, Task>.RunTask(task, successor)
@@ -628,6 +628,13 @@ namespace Microsoft.AspNet.SignalR
             {
                 return FromError(ex);
             }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task FromMethod(Func<Task> func)
+        {
+            return FromMethod<Task>(() => func()).FastUnwrap();
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
