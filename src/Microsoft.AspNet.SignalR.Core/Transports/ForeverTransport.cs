@@ -124,15 +124,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         // Return a task that completes when the connected event task & the receive loop task are both finished
                         bool newConnection = Heartbeat.AddConnection(this);
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
+                        
+                        // The connected callback
+                        Func<Task> connected = () =>
                         {
                             if (newConnection)
                             {
                                 return Connected().Then(() => _counters.ConnectionsConnected.Increment());
                             }
                             return TaskAsyncHelper.Empty;
-                        }
-                        , connection, Completed);
+                        };
+
+                        return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, connected, connection, Completed);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -196,38 +199,40 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequest(ITransportConnection connection, Func<Task> postReceive = null)
         {
             Heartbeat.AddConnection(this);
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
-        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Func<Task> postReceive = null)
         {
             Func<Task> afterReceive = () =>
             {
-                if (TransportConnected != null)
-                {
-                    TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
-                }
-
-                if (postReceive != null)
-                {
-                    try
-                    {
-                        postReceive();
-                    }
-                    catch (Exception ex)
-                    {
-                        return TaskAsyncHelper.FromError(ex);
-                    }
-                }
-
-                return InitializeResponse(connection);
+                return TaskAsyncHelper.Series(OnTransportConnected,
+                                              () =>
+                                              {
+                                                  if (postReceive != null)
+                                                  {
+                                                      return postReceive();
+                                                  }
+                                                  return TaskAsyncHelper.Empty;
+                                              },
+                                              () => InitializeResponse(connection));
             };
 
             return ProcessMessages(connection, afterReceive);
+        }
+
+        private Task OnTransportConnected()
+        {
+            if (TransportConnected != null)
+            {
+                return TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
+            }
+
+            return TaskAsyncHelper.Empty;
         }
 
         private Task ProcessMessages(ITransportConnection connection, Func<Task> postReceive = null)

@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
 
                 hubConnection.Start(host.Transport).Wait();
-                Assert.Throws<MissingMethodException>(() => proxy.InvokeWithTimeout("Send", "hello"));
+                var ex = Assert.Throws<AggregateException>(() => proxy.InvokeWithTimeout("Send", "hello"));
             }
         }
 
