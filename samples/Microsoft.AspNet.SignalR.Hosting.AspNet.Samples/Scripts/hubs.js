@@ -415,6 +415,10 @@
         proxies.StatusHub = this.createHubProxy('StatusHub'); 
         proxies.StatusHub.client = { };
         proxies.StatusHub.server = {
+            ping: function () {
+            /// <summary>Calls the Ping method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.StatusHub.invoke.apply(proxies.StatusHub, $.merge(["Ping"], $.makeArray(arguments)));
+             }
         };
 
         proxies.userAndRoleAuthHub = this.createHubProxy('userAndRoleAuthHub'); 
