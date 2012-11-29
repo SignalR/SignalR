@@ -57,6 +57,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", "rejoin-groups/{*operation}");
             RouteTable.Routes.MapConnection<FilteredConnection>("filter", "filter/{*operation}");
             RouteTable.Routes.MapConnection<ConnectionThatUsesItems>("items", "items/{*operation}");
+            RouteTable.Routes.MapConnection<SyncErrorConnection>("sync-error", "sync-error/{*operation}");
 
             // End point to hit to verify the webserver is up
             RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));

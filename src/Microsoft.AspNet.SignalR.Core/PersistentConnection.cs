@@ -166,24 +166,24 @@ namespace Microsoft.AspNet.SignalR
 
             Transport.Connected = () =>
             {
-                return OnConnectedAsync(context.Request, connectionId).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnConnectedAsync(context.Request, connectionId)).OrEmpty();
             };
 
             Transport.Reconnected = () =>
             {
-                return OnReconnectedAsync(context.Request, connectionId).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnReconnectedAsync(context.Request, connectionId)).OrEmpty();
             };
 
             Transport.Received = data =>
             {
                 Counters.ConnectionMessagesSentTotal.Increment();
                 Counters.ConnectionMessagesSentPerSec.Increment();
-                return OnReceivedAsync(context.Request, connectionId, data).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnReceivedAsync(context.Request, connectionId, data)).OrEmpty();
             };
 
             Transport.Disconnected = () =>
             {
-                return OnDisconnectAsync(context.Request, connectionId).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnDisconnectAsync(context.Request, connectionId)).OrEmpty();
             };
 
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);

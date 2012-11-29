@@ -472,6 +472,27 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection2.Stop();
                 }
             }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void SendWithSyncErrorThrows(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+
+                    var connection = new Client.Connection(host.Url + "/sync-error");
+
+                    connection.Start(host.Transport).Wait();
+
+                    Assert.Throws<AggregateException>(() => connection.SendWithTimeout("test"));
+
+                    connection.Stop();
+                }
+            }
         }
 
         public class Owin : HostedTest

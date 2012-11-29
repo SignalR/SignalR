@@ -61,6 +61,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _host.MapConnection<MyGroupConnection>("/groups");
             _host.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups");
             _host.MapConnection<FilteredConnection>("/filter");
+            _host.MapConnection<SyncErrorConnection>("/sync-error");
         }
 
         public void Dispose()
