@@ -163,14 +163,10 @@
             that.reconnectTimeout = window.setTimeout(function () {
                 that.stop(connection);
 
-                if (!transportLogic.ensureReconnectingState(connection)) {
-                    return;
+                if (transportLogic.ensureReconnectingState(connection)) {
+                    connection.log("EventSource reconnecting");
+                    that.start(connection);
                 }
-
-                connection.log("EventSource reconnecting");
-                $(connection).triggerHandler(events.onReconnecting);
-                that.start(connection);
-
             }, connection.reconnectDelay);
         },
 

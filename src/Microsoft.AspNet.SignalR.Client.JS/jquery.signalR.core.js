@@ -88,14 +88,16 @@
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout = null;
+
             connection.reconnecting(function () {
                 if (stopReconnectingTimeout === null) {
                     stopReconnectingTimeout = window.setTimeout(function () {
                         connection.log(connection.disconnectTimeout + "ms have passed without successfully reconnecting. Disconnecting.");
-                        connection.stop(false, false);
+                        connection.stop(/* async */ false, /* notifyServer */ false);
                     }, connection.disconnectTimeout);
                 }
             });
+
             connection.reconnected(function () {
                 window.clearTimeout(stopReconnectingTimeout);
                 stopReconnectingTimeout = null;
@@ -330,8 +332,9 @@
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
-                    // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect.
-                    connection.disconnectTimeout = res.DisconnectTimeout * 1000;
+                    // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
+                    // after res.DisconnectTimeout seconds.
+                    connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
 
                     // If we have a keep alive
                     if (res.KeepAlive) {

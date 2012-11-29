@@ -89,14 +89,16 @@
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout = null;
+
             connection.reconnecting(function () {
                 if (stopReconnectingTimeout === null) {
                     stopReconnectingTimeout = window.setTimeout(function () {
                         connection.log(connection.disconnectTimeout + "ms have passed without successfully reconnecting. Disconnecting.");
-                        connection.stop(false, false);
+                        connection.stop(/* async */ false, /* notifyServer */ false);
                     }, connection.disconnectTimeout);
                 }
             });
+
             connection.reconnected(function () {
                 window.clearTimeout(stopReconnectingTimeout);
                 stopReconnectingTimeout = null;
@@ -331,8 +333,9 @@
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
-                    // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect.
-                    connection.disconnectTimeout = res.DisconnectTimeout * 1000;
+                    // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
+                    // after res.DisconnectTimeout seconds.
+                    connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
 
                     // If we have a keep alive
                     if (res.KeepAlive) {
@@ -1018,13 +1021,10 @@
                         that.stop(connection);
                     }
 
-                    if (!transportLogic.ensureReconnectingState(connection)) {
-                        return;
+                    if (transportLogic.ensureReconnectingState(connection)) {
+                        connection.log("Websocket reconnecting");
+                        that.start(connection);
                     }
-
-                    connection.log("Websocket reconnecting");
-                    that.start(connection);
-
                 }, connection.reconnectDelay);
             }
         },
@@ -1213,14 +1213,10 @@
             that.reconnectTimeout = window.setTimeout(function () {
                 that.stop(connection);
 
-                if (!transportLogic.ensureReconnectingState(connection)) {
-                    return;
+                if (transportLogic.ensureReconnectingState(connection)) {
+                    connection.log("EventSource reconnecting");
+                    that.start(connection);
                 }
-
-                connection.log("EventSource reconnecting");
-                $(connection).triggerHandler(events.onReconnecting);
-                that.start(connection);
-
             }, connection.reconnectDelay);
         },
 
@@ -1326,19 +1322,12 @@
         reconnect: function (connection) {
             var that = this;
             window.setTimeout(function () {
-                if (!connection.frame) {
-                    return;
+                if (connection.frame && transportLogic.ensureReconnectingState(connection)) {
+                    var frame = connection.frame,
+                        src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
+                    connection.log("Updating iframe src to '" + src + "'.");
+                    frame.src = src;
                 }
-
-                if (!transportLogic.ensureReconnectingState(connection)) {
-                    return;
-                }
-
-                var frame = connection.frame,
-                src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
-                connection.log("Updating iframe src to '" + src + "'.");
-                frame.src = src;
-
             }, connection.reconnectDelay);
         },
 

@@ -129,13 +129,10 @@
                         that.stop(connection);
                     }
 
-                    if (!transportLogic.ensureReconnectingState(connection)) {
-                        return;
+                    if (transportLogic.ensureReconnectingState(connection)) {
+                        connection.log("Websocket reconnecting");
+                        that.start(connection);
                     }
-
-                    connection.log("Websocket reconnecting");
-                    that.start(connection);
-
                 }, connection.reconnectDelay);
             }
         },

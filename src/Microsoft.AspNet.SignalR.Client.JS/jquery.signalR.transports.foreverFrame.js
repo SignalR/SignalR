@@ -77,19 +77,12 @@
         reconnect: function (connection) {
             var that = this;
             window.setTimeout(function () {
-                if (!connection.frame) {
-                    return;
+                if (connection.frame && transportLogic.ensureReconnectingState(connection)) {
+                    var frame = connection.frame,
+                        src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
+                    connection.log("Updating iframe src to '" + src + "'.");
+                    frame.src = src;
                 }
-
-                if (!transportLogic.ensureReconnectingState(connection)) {
-                    return;
-                }
-
-                var frame = connection.frame,
-                src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
-                connection.log("Updating iframe src to '" + src + "'.");
-                frame.src = src;
-
             }, connection.reconnectDelay);
         },
 
