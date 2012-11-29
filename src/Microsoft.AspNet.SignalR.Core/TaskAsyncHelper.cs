@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -87,6 +89,12 @@ namespace Microsoft.AspNet.SignalR
             {
                 return TaskAsyncHelper.FromError<T>(ex);
             }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task Series(params Func<Task>[] tasks)
+        {
+            return tasks.Aggregate<Func<Task>, Task>(TaskAsyncHelper.Empty, (prev, next) => prev.Then(next));
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -202,11 +210,20 @@ namespace Microsoft.AspNet.SignalR
         /// it can decide when it starts and returns a task that completes when all are finished
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Interleave<T>(Func<T, Action, Task> before, Func<Task> after, T arg, TaskCompletionSource<object> tcs)
+        public static Task Interleave<T>(Func<T, Func<Task>, Task> before, Func<Task> after, T arg, TaskCompletionSource<object> tcs)
         {
             var tasks = new[] {
                             tcs.Task,
-                            before(arg, () => after().ContinueWith(tcs))
+                            before(arg, ()=> {
+                                // Run the after task
+                                Task task = after();
+
+                                // Mark the tcs as done when it completes
+                                task.ContinueWith(tcs);
+
+                                // Return the task we kicked off
+                                return task;
+                            })
                         };
 
             return tasks.Return();

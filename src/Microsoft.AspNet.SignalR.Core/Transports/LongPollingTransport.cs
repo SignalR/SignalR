@@ -233,13 +233,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             return ProcessReceiveRequest(connection);
         }
 
-        private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequest(ITransportConnection connection, Func<Task> postReceive = null)
         {
             Heartbeat.AddConnection(this);
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 
-        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Func<Task> postReceive = null)
         {
             if (TransportConnected != null)
             {
@@ -251,22 +251,29 @@ namespace Microsoft.AspNet.SignalR.Transports
                               connection.ReceiveAsync(null, ConnectionEndToken, MaxMessages) :
                               connection.ReceiveAsync(MessageId, ConnectionEndToken, MaxMessages);
 
-            if (postReceive != null)
-            {
-                postReceive();
-            }
 
-            return receiveTask.Then(response =>
+            return TaskAsyncHelper.Series(() =>
             {
-                response.TimedOut = IsTimedOut;
-
-                if (response.Aborted)
+                if (postReceive != null)
                 {
-                    // If this was a clean disconnect then raise the event
-                    OnDisconnect();
+                    return postReceive();
                 }
+                return TaskAsyncHelper.Empty;
+            },
+            () =>
+            {
+                return receiveTask.Then(response =>
+                {
+                    response.TimedOut = IsTimedOut;
 
-                return Send(response);
+                    if (response.Aborted)
+                    {
+                        // If this was a clean disconnect then raise the event
+                        OnDisconnect();
+                    }
+
+                    return Send(response);
+                });
             });
         }
 
