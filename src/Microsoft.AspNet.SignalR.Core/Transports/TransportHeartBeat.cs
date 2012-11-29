@@ -165,6 +165,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                 throw new ArgumentNullException("connection");
             }
 
+            // Do nothing if the connection isn't alive
+            if (!connection.IsAlive)
+            {
+                return;
+            }
+
             ConnectionMetadata metadata;
             if (_connections.TryGetValue(connection.ConnectionId, out metadata))
             {
