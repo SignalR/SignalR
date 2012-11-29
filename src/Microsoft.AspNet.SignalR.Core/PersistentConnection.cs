@@ -296,6 +296,7 @@ namespace Microsoft.AspNet.SignalR
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = ConnectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
                 KeepAlive = (keepAlive != null) ? keepAlive.Value.TotalSeconds : (double?)null,
+                DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
                 ProtocolVersion = "1.1"

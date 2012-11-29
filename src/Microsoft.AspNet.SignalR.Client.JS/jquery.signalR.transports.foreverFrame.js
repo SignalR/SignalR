@@ -22,13 +22,12 @@
             var that = this,
                 frameId = (transportLogic.foreverFrame.count += 1),
                 url,
-                connectTimeOut,
                 frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
 
             if (window.EventSource) {
                 // If the browser supports SSE, don't use Forever Frame
                 if (onFailed) {
-                    connection.log("This brower supports SSE, skipping Forever Frame.");
+                    connection.log("This browser supports SSE, skipping Forever Frame.");
                     onFailed();
                 }
                 return;
@@ -63,8 +62,7 @@
 
             // After connecting, if after the specified timeout there's no response stop the connection
             // and raise on failed
-            // REVIEW: Why is connectTimeOut set here and never used again?
-            connectTimeOut = window.setTimeout(function () {
+            window.setTimeout(function () {
                 if (connection.onSuccess) {
                     connection.log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
                     that.stop(connection);
@@ -79,21 +77,12 @@
         reconnect: function (connection) {
             var that = this;
             window.setTimeout(function () {
-                if (!connection.frame) {
-                    return;
-                }
-
-                if (connection.state === signalR.connectionState.reconnecting ||
-                    changeState(connection,
-                                signalR.connectionState.connected,
-                                signalR.connectionState.reconnecting) === true) {
-
+                if (connection.frame && transportLogic.ensureReconnectingState(connection)) {
                     var frame = connection.frame,
-                    src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
-                    connection.log("Upating iframe src to '" + src + "'.");
+                        src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
+                    connection.log("Updating iframe src to '" + src + "'.");
                     frame.src = src;
                 }
-
             }, connection.reconnectDelay);
         },
 
@@ -154,14 +143,11 @@
                 connection.onSuccess();
                 connection.onSuccess = null;
                 delete connection.onSuccess;
-            }
-            else {
-                if (changeState(connection,
-                                signalR.connectionState.reconnecting,
-                                signalR.connectionState.connected) === true) {
-                    // If there's no onSuccess handler we assume this is a reconnect
-                    $(connection).triggerHandler(events.onReconnect);
-                }
+            } else if (changeState(connection,
+                                   signalR.connectionState.reconnecting,
+                                   signalR.connectionState.connected) === true) {
+                // If there's no onSuccess handler we assume this is a reconnect
+                $(connection).triggerHandler(events.onReconnect);
             }
         }
     };
