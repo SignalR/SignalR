@@ -5,7 +5,8 @@ $(function () {
     var status = $.connection.StatusHub,
         startButton = $("#connectionStart"),
         stopButton = $("#connectionStop"),
-        messagesHolder = $("#messages");
+        messagesHolder = $("#messages"),
+        pingButton = $("#ping");
 
     function addMessage(value, className) {
         var html = $('<li>' + value + '</li>').addClass(className);
@@ -32,6 +33,10 @@ $(function () {
         addMessage(id + ' left at ' + when, 'text-error');
     };
 
+    status.client.pong = function () {
+        addMessage("Pong");
+    }
+
     stopButton.click(function () {
         $.connection.hub.stop();
 
@@ -39,15 +44,22 @@ $(function () {
 
         $(stopButton).attr('disabled', 'disabled');
         $(startButton).removeAttr('disabled');
+        $(pingButton).attr('disabled', 'disabled');
+        $(pingButton).unbind('click');
     });
 
     startButton.click(function () {
-        $.connection.hub.start({ transport: activeTransport });
+        $.connection.hub.start({ transport: activeTransport }).done(function () {
+            $(pingButton).click(function () {
+                status.server.ping();
+            });
+        });
 
         $(startButton).attr('disabled', 'disabled');
         $(stopButton).removeAttr('disabled');
+        $(pingButton).removeAttr('disabled');
     });
-    
+
     // Start Connection
     startButton.click();
 });
