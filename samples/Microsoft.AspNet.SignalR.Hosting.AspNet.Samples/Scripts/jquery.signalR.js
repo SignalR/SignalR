@@ -1937,3 +1937,11 @@
     $.hubConnection = hubConnection;
 
 }(window.jQuery, window));
+/* jquery.signalR.version.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+/*global window:false */
+/// <reference path="jquery.signalR.core.js" />
+(function ($) {
+    $.signalR.version = "1.0.0.rc";
+}(window.jQuery));
