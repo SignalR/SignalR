@@ -14,3 +14,8 @@ test("SignalR Connection Availability", function () {
 test("SignalR Hub Connection Availability", function () {
     ok($.hubConnection, "Verifies SignalR hub connection is available.");
 });
+
+test("SignalR version info is available", function () {
+    ok($.signalR.version, "Verifies SignalR version is available.");
+    ok($.connection.version, "Verifies connection (SignalR) version is available.");
+});
