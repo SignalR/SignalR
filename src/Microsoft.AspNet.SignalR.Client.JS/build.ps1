@@ -6,7 +6,12 @@ $files =
     "jquery.signalR.transports.serverSentEvents.js",
     "jquery.signalR.transports.foreverFrame.js",
     "jquery.signalR.transports.longPolling.js",
-	"jquery.signalR.hubs.js"
+	"jquery.signalR.hubs.js",
+	"jquery.signalR.version.js"
+
+$versionHolder = "##VERSION##"
+$versionInfo = ([xml](Get-Content -Path "..\..\build\Microsoft.AspNet.SignalR.versions.targets")).Project.PropertyGroup
+$version = %{'{0}.{1}.{2}.{3}' -f $versionInfo.MajorVersion, $versionInfo.MinorVersion, $versionInfo.PatchVersion, $versionInfo.BuildQuality}
 
 # Run JSHint against files
 Write-Host "Running JSHint..." -ForegroundColor Yellow
@@ -33,7 +38,7 @@ $filePath = "bin\jquery.signalR.js"
 Remove-Item $filePath -Force -ErrorAction SilentlyContinue
 foreach ($file in $files) {
     Add-Content -Path $filePath -Value "/* $file */"
-    Get-Content -Path $file | Add-Content -Path $filePath
+    Get-Content -Path $file | %{ $_.replace($versionHolder,$version) } | Add-Content -Path $filePath
 }
 Write-Host "done" -ForegroundColor Green
 
