@@ -1395,9 +1395,15 @@
                 if (connection.frame.stop) {
                     connection.frame.stop();
                 } else {
-                    cw = connection.frame.contentWindow || connection.frame.contentDocument;
-                    if (cw.document && cw.document.execCommand) {
-                        cw.document.execCommand("Stop");
+                    try
+                    {
+                        cw = connection.frame.contentWindow || connection.frame.contentDocument;
+                        if (cw.document && cw.document.execCommand) {
+                            cw.document.execCommand("Stop");
+                        }
+                    }
+                    catch (e) {
+                        connection.log("SignalR: Error occured when stopping foreverFrame transport. Message = " + e.message);
                     }
                 }
                 $(connection.frame).remove();
