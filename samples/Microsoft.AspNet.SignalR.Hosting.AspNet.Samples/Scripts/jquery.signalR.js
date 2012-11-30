@@ -227,8 +227,7 @@
 
             // If the transport is invalid throw an error and abort start
             if (!config.transport) {
-                $(connection).triggerHandler(events.onError, "SignalR: Invalid transport(s) specified, aborting start.");
-                return;
+                throw new Error("SignalR: Invalid transport(s) specified, aborting start.");
             }
 
             // Check to see if start is being called prior to page load
