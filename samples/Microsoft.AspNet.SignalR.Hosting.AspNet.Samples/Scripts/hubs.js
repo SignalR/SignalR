@@ -414,6 +414,10 @@
     signalR.StatusHub = signalR.hub.createHubProxy('StatusHub'); 
     signalR.StatusHub.client = { };
     signalR.StatusHub.server = {
+        ping: function () {
+            /// <summary>Calls the Ping method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.StatusHub.invoke.apply(signalR.StatusHub, $.merge(["Ping"], $.makeArray(arguments)));
+         }
     };
 
     signalR.userAndRoleAuthHub = signalR.hub.createHubProxy('userAndRoleAuthHub'); 
