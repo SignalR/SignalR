@@ -94,6 +94,7 @@
                     stopReconnectingTimeout = window.setTimeout(function () {
                         connection.log(connection.disconnectTimeout + "ms have passed without successfully reconnecting. Disconnecting.");
                         connection.stop(/* async */ false, /* notifyServer */ false);
+                        stopReconnectingTimeout = null;
                     }, connection.disconnectTimeout);
                 }
             });
