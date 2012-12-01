@@ -370,7 +370,9 @@
 
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
-                    connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
+                    if (!isNaN(res.DisconnectTimeout)) {
+                        connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
+                    }
 
                     // If we have a keep alive
                     if (res.KeepAlive) {
