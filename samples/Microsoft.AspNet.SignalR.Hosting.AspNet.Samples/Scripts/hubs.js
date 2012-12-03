@@ -124,6 +124,16 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["AddToGroups"], $.makeArray(arguments)));
          },
 
+        cancelledGenericTask: function () {
+            /// <summary>Calls the CancelledGenericTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["CancelledGenericTask"], $.makeArray(arguments)));
+         },
+
+        cancelledTask: function () {
+            /// <summary>Calls the CancelledTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["CancelledTask"], $.makeArray(arguments)));
+         },
+
         complexArray: function (people) {
             /// <summary>Calls the ComplexArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"people\" type=\"Object\">Server side type is Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.DemoHub+Person[]</param>

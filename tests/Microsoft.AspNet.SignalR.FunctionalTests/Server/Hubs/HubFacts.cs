@@ -124,6 +124,66 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        public void CancelledTask(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url);
+                var tcs = new TaskCompletionSource<object>();
+
+                var hub = connection.CreateHubProxy("demo");
+                connection.Start(host.Transport).Wait();
+
+                hub.Invoke("CancelledTask").ContinueWith(tcs);
+
+                try
+                {
+                    tcs.Task.Wait(TimeSpan.FromSeconds(10));
+                    Assert.True(false, "Didn't fault");
+                }
+                catch(Exception)
+                {
+                    
+                }
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        public void CancelledGenericTask(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url);
+                var tcs = new TaskCompletionSource<object>();
+
+                var hub = connection.CreateHubProxy("demo");
+                connection.Start(host.Transport).Wait();
+
+                hub.Invoke("CancelledGenericTask").ContinueWith(tcs);
+
+                try
+                {
+                    tcs.Task.Wait(TimeSpan.FromSeconds(10));
+                    Assert.True(false, "Didn't fault");
+                }
+                catch (Exception)
+                {
+
+                }
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void GetValueFromServer(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
