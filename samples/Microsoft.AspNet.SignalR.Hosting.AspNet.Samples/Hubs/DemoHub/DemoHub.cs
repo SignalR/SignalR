@@ -103,6 +103,23 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
         }
 #endif
 
+        public Task CancelledTask()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetCanceled();
+            return tcs.Task;
+        }
+
+        public Task<int> CancelledGenericTask()
+        {
+            var tcs = new TaskCompletionSource<int>();
+            return Task.Factory.StartNew(() =>
+            {
+                tcs.SetCanceled();
+                return tcs.Task;
+            }).Unwrap();
+        }
+
         public void SimpleArray(int[] nums)
         {
             foreach (var n in nums)

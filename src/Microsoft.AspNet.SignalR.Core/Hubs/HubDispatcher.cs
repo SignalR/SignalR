@@ -173,11 +173,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 if (task.IsFaulted)
                 {
-                    return ProcessResponse(tracker, null, hubRequest, task.Exception);
+                    return ProcessResponse(tracker, result: null, request: hubRequest, error: task.Exception);
+                }
+                else if (task.IsCanceled)
+                {
+                    return ProcessResponse(tracker, result: null, request: hubRequest, error: new OperationCanceledException());
                 }
                 else
                 {
-                    return ProcessResponse(tracker, task.Result, hubRequest, null);
+                    return ProcessResponse(tracker, task.Result, hubRequest, error: null);
                 }
             })
             .FastUnwrap();
@@ -394,16 +398,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 hub.Dispose();
             }
-        }
-
-        private Task ProcessTaskResult<T>(StateChangeTracker tracker, HubRequest request, Task<T> task)
-        {
-            if (task.IsFaulted)
-            {
-                return ProcessResponse(tracker, null, request, task.Exception);
-            }
-
-            return ProcessResponse(tracker, task.Result, request, null);
         }
 
         private Task ProcessResponse(StateChangeTracker tracker, object result, HubRequest request, Exception error)

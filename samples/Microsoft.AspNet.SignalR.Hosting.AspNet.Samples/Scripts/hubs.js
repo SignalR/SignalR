@@ -125,6 +125,16 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["AddToGroups"], $.makeArray(arguments)));
              },
 
+            cancelledGenericTask: function () {
+            /// <summary>Calls the CancelledGenericTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["CancelledGenericTask"], $.makeArray(arguments)));
+             },
+
+            cancelledTask: function () {
+            /// <summary>Calls the CancelledTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["CancelledTask"], $.makeArray(arguments)));
+             },
+
             complexArray: function (people) {
             /// <summary>Calls the ComplexArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"people\" type=\"Object\">Server side type is Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.DemoHub+Person[]</param>
