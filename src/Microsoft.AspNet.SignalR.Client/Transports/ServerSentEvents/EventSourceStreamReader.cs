@@ -76,10 +76,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     OnOpened();
                 };
 
-                if (_readBuffer == null)
-                {
-                    _readBuffer = new byte[4096];
-                }
+                // FIX: Potential memory leak if Close is called between the CompareExchange and here.
+                _readBuffer = new byte[4096];
 
                 // Start the process loop
                 Process();
@@ -98,13 +96,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         private void Process()
         {
         Read:
-
-            if (!Processing)
+            Task<int> readTask;
+            lock (_bufferLock)
             {
-                return;
+                if (Processing && _readBuffer != null)
+                {
+                    readTask = _stream.ReadAsync(_readBuffer);
+                }
+                else
+                {
+                    return;
+                }
             }
-
-            Task<int> readTask = _stream.ReadAsync(_readBuffer);
 
             if (readTask.IsCompleted)
             {
