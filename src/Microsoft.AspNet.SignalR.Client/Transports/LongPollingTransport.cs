@@ -74,7 +74,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 url += "reconnect";
 
-                if (!connection.EnsureReconnecting())
+                // FIX: Race if the connection is stopped and completely restarted between checking the token and calling
+                //      connection.EnsureReconnecting()
+                if (disconnectToken.IsCancellationRequested || !connection.EnsureReconnecting())
                 {
                     return;
                 }

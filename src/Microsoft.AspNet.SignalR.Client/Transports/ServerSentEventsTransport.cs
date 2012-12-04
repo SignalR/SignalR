@@ -51,7 +51,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
-                if (connection.EnsureReconnecting())
+                // FIX: Race if Connection is stopped and completely restarted between checking the token and calling
+                //      connection.EnsureReconnecting()
+                if (!disconnectToken.IsCancellationRequested && connection.EnsureReconnecting())
                 {
                     // Now attempt a reconnect
                     OpenConnection(connection, data,  disconnectToken, initializeCallback: null, errorCallback: null);
