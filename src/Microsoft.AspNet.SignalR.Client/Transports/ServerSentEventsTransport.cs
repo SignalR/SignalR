@@ -72,21 +72,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                     Action initializeCallback,
                                     Action<Exception> errorCallback)
         {
-            if (disconnectToken.IsCancellationRequested)
-            {
-                if (errorCallback != null)
-                {
-#if NET35
-                    errorCallback(new OperationCanceledException(Resources.Error_ConnectionCancelled));
-#else
-                    errorCallback(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
-#endif
-                }
-
-                end();
-                return;
-            }
-
             // If we're reconnecting add /connect to the url
             bool reconnecting = initializeCallback == null;
             var callbackInvoker = new ThreadSafeInvoker();
@@ -138,7 +123,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     {
                         retry = false;
                         es.Close();
-                        response.Close();
                     }, eventSource);
 
                     eventSource.Opened = () =>
@@ -190,41 +174,48 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             }
                         }
 
-                        // See http://msdn.microsoft.com/en-us/library/system.net.httpwebresponse.close.aspx
-                        response.Close();
-
                         // Skip reconnect attempt for aborted requests
-                        if (!isRequestAborted && retry)
+                        if (!isRequestAborted)
                         {
-                            Reconnect(connection, data, disconnectToken, end);
-                        }
-                        else
-                        {
-                            connection.Stop();
+                            if (retry)
+                            {
+                                Reconnect(connection, data, disconnectToken, end);
+                            }
+                            else
+                            {
+                                connection.Stop();
+                            }
                         }
                     };
+
+                    // See http://msdn.microsoft.com/en-us/library/system.net.httpwebresponse.close.aspx
+                    eventSource.Disabled = response.Close;
+
                     eventSource.Start();
                 }
-                disconnectToken.SafeRegister(ecb =>
-                {
-                    if (ecb != null) {
-                        callbackInvoker.Invoke((cb, token) =>
-                        {
-#if NET35
-                            cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
-#else
-                            cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
-#endif
-                        }, ecb, disconnectToken);
-                    }
-
-                    if (request != null)
-                    {
-                        request.Abort();
-                    }
-                    end();
-                }, errorCallback);
             });
+
+            disconnectToken.SafeRegister(req =>
+            {
+                if (req != null)
+                {
+                    req.Abort();
+                }
+
+                if (errorCallback != null)
+                {
+                    callbackInvoker.Invoke((cb, token) =>
+                    {
+#if NET35
+                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
+#else
+                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
+#endif
+                    }, errorCallback, disconnectToken);
+                }
+
+                end();
+            }, request);
 
             if (errorCallback != null)
             {
@@ -232,8 +223,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     callbackInvoker.Invoke((conn, cb) =>
                     {
-                        // Stop the connection
-                        disconnectToken.SafeRegister(e => e(), end);
                         connection.Stop();
 
                         // Connection timeout occurred

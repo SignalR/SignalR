@@ -63,21 +63,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                  Action<Exception> errorCallback,
                                  bool raiseReconnect = false)
         {
-            if (disconnectToken.IsCancellationRequested)
-            {
-                if (errorCallback != null)
-                {
-#if NET35
-                    errorCallback(new OperationCanceledException(Resources.Error_ConnectionCancelled));
-#else
-                    errorCallback(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
-#endif
-                }
-
-                end();
-                return;
-            }
-
             string url = connection.Url;
 
             IRequest request = null;
@@ -147,16 +132,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 finally
                 {
-                    disconnectToken.SafeRegister(req =>
-                    {
-                        if (req != null)
-                        {
-                            req.Abort();
-                        }
-                        reconnectInvoker.Invoke();
-                        end();
-                    }, request);
-
                     if (disconnectedReceived)
                     {
                         connection.Stop();
@@ -227,6 +202,29 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     }
                 }
             });
+
+            disconnectToken.SafeRegister(req =>
+            {
+                if (req != null)
+                {
+                    req.Abort();
+                }
+
+                reconnectInvoker.Invoke();
+                if (errorCallback != null)
+                {
+                    callbackInvoker.Invoke((cb, token) =>
+                    {
+#if NET35
+                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
+#else
+                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
+#endif
+                    }, errorCallback, disconnectToken);
+                }
+
+                end();
+            }, request);
 
             if (initializeCallback != null)
             {

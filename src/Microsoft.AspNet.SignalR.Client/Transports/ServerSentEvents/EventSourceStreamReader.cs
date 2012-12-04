@@ -31,9 +31,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         public Action Opened { get; set; }
 
         /// <summary>
-        /// Invoked when the connection is closed.
+        /// Invoked when the reader is closed while in the Processing state.
         /// </summary>
         public Action<Exception> Closed { get; set; }
+
+        /// <summary>
+        /// Invoked when the reader enters the Stopped state whether or not it was previously in the Processing state.
+        /// </summary>
+        public Action Disabled { get; set; }
 
         /// <summary>
         /// Invoked when there's a message if received in the stream.
@@ -192,7 +197,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void Close(Exception exception)
         {
-            if (Interlocked.Exchange(ref _reading, State.Stopped) == State.Processing)
+            var previousState = Interlocked.Exchange(ref _reading, State.Stopped);
+
+            if (previousState == State.Processing)
             {
                 Debug.WriteLine("EventSourceReader: Connection Closed");
                 if (Closed != null)
@@ -210,6 +217,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     // Release the buffer
                     _readBuffer = null;
                 }
+            }
+
+            if (previousState != State.Stopped && Disabled != null)
+            {
+                Disabled();
             }
         }
 
