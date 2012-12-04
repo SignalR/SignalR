@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
@@ -21,8 +22,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         // The transport name
         private readonly string _transport;
-
-        protected const string HttpRequestKey = "http.Request";
 
         private readonly IHttpClient _httpClient;
 
@@ -64,16 +63,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
-        public Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, string data, CancellationToken disconnectToken, Action end)
         {
             var tcs = new TaskCompletionSource<object>();
 
-            OnStart(connection, data, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
+            OnStart(connection, data, disconnectToken, end, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
 
             return tcs.Task;
         }
 
-        protected abstract void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
+        protected abstract void OnStart(IConnection connection,
+                                        string data,
+                                        CancellationToken disconnectToken,
+                                        Action end,
+                                        Action initializeCallback,
+                                        Action<Exception> errorCallback);
 
         public Task<T> Send<T>(IConnection connection, string data)
         {
@@ -102,6 +106,23 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 return JsonConvert.DeserializeObject<T>(raw);
             });
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
+        public void Abort(IConnection connection)
+        {
+            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
+
+            try
+            {
+                // Attempt to perform a clean disconnect, but only wait 2 seconds
+                _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
+            }
+            catch (Exception ex)
+            {
+                // Swallow any exceptions, but log them
+                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
@@ -145,65 +166,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private static string GetNoCacheUrlParam()
         {
             return "noCache=" + Guid.NewGuid().ToString();
-        }
-
-        protected virtual Action<IRequest> PrepareRequest(IConnection connection)
-        {
-            return request =>
-            {
-                // Setup the user agent along with any other defaults
-                connection.PrepareRequest(request);
-
-                lock (connection.Items)
-                {
-                    connection.Items[HttpRequestKey] = request;
-                }
-            };
-        }
-
-        public void Stop(IConnection connection)
-        {
-            var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
-            if (httpRequest != null)
-            {
-                try
-                {
-                    OnBeforeAbort(connection);
-
-                    // Abort the server side connection
-                    AbortConnection(connection);
-
-                    // Now abort the client connection
-                    httpRequest.Abort();
-                }
-                catch (NotImplementedException)
-                {
-                    // If this isn't implemented then do nothing
-                }
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
-        private void AbortConnection(IConnection connection)
-        {
-            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
-
-            try
-            {
-                // Attempt to perform a clean disconnect, but only wait 2 seconds
-                _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
-            }
-            catch (Exception ex)
-            {
-                // Swallow any exceptions, but log them
-                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
-            }
-        }
-
-
-        protected virtual void OnBeforeAbort(IConnection connection)
-        {
-
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]

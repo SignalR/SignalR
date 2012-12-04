@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         {
             get
             {
-                return _reading == 1;
+                return _reading == State.Processing;
             }
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// </summary>
         public void Start()
         {
-            if (Interlocked.Exchange(ref _reading, 1) == 0)
+            if (Interlocked.CompareExchange(ref _reading, State.Processing, State.Initial) == State.Initial)
             {
                 _setOpened = () =>
                 {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void Close(Exception exception)
         {
-            if (Interlocked.Exchange(ref _reading, 0) == 1)
+            if (Interlocked.Exchange(ref _reading, State.Stopped) == State.Processing)
             {
                 Debug.WriteLine("EventSourceReader: Connection Closed");
                 if (Closed != null)
@@ -227,6 +227,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             {
                 Message(sseEvent);
             }
+        }
+
+        private static class State
+        {
+            public const int Initial = 0;
+            public const int Processing = 1;
+            public const int Stopped = 2;
         }
     }
 }

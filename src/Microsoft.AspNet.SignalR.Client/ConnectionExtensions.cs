@@ -31,6 +31,15 @@ namespace Microsoft.AspNet.SignalR.Client
             return default(T);
         }
 
+        public static bool EnsureReconnecting(this IConnection connection)
+        {
+            if (connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+            {
+                connection.OnReconnecting();
+            }
+            return connection.State == ConnectionState.Reconnecting;
+        }
+
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
         public static IObservable<string> AsObservable(this Connection connection)
         {
