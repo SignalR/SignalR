@@ -63,11 +63,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
-        public Task Start(IConnection connection, string data, CancellationToken disconnectToken, Action end)
+        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
             var tcs = new TaskCompletionSource<object>();
 
-            OnStart(connection, data, disconnectToken, end, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
+            OnStart(connection, data, disconnectToken, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
 
             return tcs.Task;
         }
@@ -75,7 +75,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected abstract void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action end,
                                         Action initializeCallback,
                                         Action<Exception> errorCallback);
 

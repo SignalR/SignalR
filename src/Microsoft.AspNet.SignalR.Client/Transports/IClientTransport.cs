@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public interface IClientTransport
     {
         Task<NegotiationResponse> Negotiate(IConnection connection);
-        Task Start(IConnection connection, string data, CancellationToken disconnectToken, Action end);
+        Task Start(IConnection connection, string data, CancellationToken disconnectToken);
         Task<T> Send<T>(IConnection connection, string data);
         void Abort(IConnection connection);
     }
