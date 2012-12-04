@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void OnReceived(JToken data);
         void OnError(Exception ex);
+        void OnReconnecting();
         void OnReconnected();
         void PrepareRequest(IRequest request);
     }

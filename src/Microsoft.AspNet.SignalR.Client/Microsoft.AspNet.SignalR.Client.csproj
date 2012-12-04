@@ -48,8 +48,17 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
+      <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
       <Link>Infrastructure\ExceptionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
+      <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
@@ -78,7 +87,6 @@
     </Compile>
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
-    <Compile Include="Infrastructure\DisposableAction.cs" />
     <Compile Include="Http\HttpHelper.cs" />
     <Compile Include="Http\HttpWebRequestWrapper.cs" />
     <Compile Include="Http\HttpWebResponseWrapper.cs" />
