@@ -5,16 +5,16 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class ServerSentEventsTransport : HttpBasedTransport
     {
-        private const string EventSourceKey = "eventSourceStream";
-
         public ServerSentEventsTransport()
             : this(new DefaultHttpClient())
         {
@@ -37,35 +37,62 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
 
-        protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        protected override void OnStart(IConnection connection,
+                                        string data,
+                                        CancellationToken disconnectToken,
+                                        Action end,
+                                        Action initializeCallback,
+                                        Action<Exception> errorCallback)
         {
-            OpenConnection(connection, data, initializeCallback, errorCallback);
+            var disconnectInvoker = new ThreadSafeInvoker();
+            OpenConnection(connection, data, disconnectToken,
+                           () => disconnectInvoker.Invoke(end),
+                           initializeCallback,
+                           errorCallback);
         }
 
-        private void Reconnect(IConnection connection, string data)
+        private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken, Action end)
         {
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
-                if (connection.State == ConnectionState.Reconnecting ||
-                    connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                if (connection.EnsureReconnecting())
                 {
                     // Now attempt a reconnect
-                    OpenConnection(connection, data, initializeCallback: null, errorCallback: null);
+                    OpenConnection(connection, data,  disconnectToken, end, initializeCallback: null, errorCallback: null);
                 }
             });
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
-        private void OpenConnection(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        private void OpenConnection(IConnection connection,
+                                    string data,
+                                    CancellationToken disconnectToken,
+                                    Action end,
+                                    Action initializeCallback,
+                                    Action<Exception> errorCallback)
         {
+            if (disconnectToken.IsCancellationRequested)
+            {
+                if (errorCallback != null)
+                {
+#if NET35
+                    errorCallback(new OperationCanceledException(Resources.Error_ConnectionCancelled));
+#else
+                    errorCallback(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
+#endif
+                }
+
+                end();
+                return;
+            }
+
             // If we're reconnecting add /connect to the url
             bool reconnecting = initializeCallback == null;
             var callbackInvoker = new ThreadSafeInvoker();
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
-
-            Action<IRequest> prepareRequest = PrepareRequest(connection);
+            IRequest request = null;
 
 #if NET35
             Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "SSE: GET {0}", (object)url));
@@ -73,12 +100,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif
 
-            HttpClient.GetAsync(url, request =>
+            HttpClient.GetAsync(url, req =>
             {
-                prepareRequest(request);
+                request = req;
+                connection.PrepareRequest(request);
 
                 request.Accept = "text/event-stream";
-
             }).ContinueWith(task =>
             {
                 if (task.IsFaulted)
@@ -95,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             // Only raise the error event if we failed to reconnect
                             connection.OnError(exception);
 
-                            Reconnect(connection, data);
+                            Reconnect(connection, data, disconnectToken, end);
                         }
                     }
                 }
@@ -107,19 +134,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
 
-                    lock (connection.Items)
+                    disconnectToken.SafeRegister(es =>
                     {
-                        connection.Items[EventSourceKey] = eventSource;
-                    }
+                        retry = false;
+                        es.Close();
+                        response.Close();
+                    }, eventSource);
 
                     eventSource.Opened = () =>
                     {
-                        if (initializeCallback != null)
+                        if (!reconnecting)
                         {
                             callbackInvoker.Invoke(initializeCallback);
                         }
-
-                        if (reconnecting && connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
+                        else if (connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
                         {
                             // Raise the reconnect event if the connection comes back up
                             connection.OnReconnected();
@@ -166,21 +194,36 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         response.Close();
 
                         // Skip reconnect attempt for aborted requests
-                        if (!isRequestAborted)
+                        if (!isRequestAborted && retry)
                         {
-                            if (retry)
-                            {
-                                Reconnect(connection, data);
-                            }
-                            else
-                            {
-                                connection.Stop();
-                            }
+                            Reconnect(connection, data, disconnectToken, end);
+                        }
+                        else
+                        {
+                            connection.Stop();
                         }
                     };
-
                     eventSource.Start();
                 }
+                disconnectToken.SafeRegister(ecb =>
+                {
+                    if (ecb != null) {
+                        callbackInvoker.Invoke((cb, token) =>
+                        {
+#if NET35
+                            cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
+#else
+                            cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
+#endif
+                        }, ecb, disconnectToken);
+                    }
+
+                    if (request != null)
+                    {
+                        request.Abort();
+                    }
+                    end();
+                }, errorCallback);
             });
 
             if (errorCallback != null)
@@ -190,30 +233,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     callbackInvoker.Invoke((conn, cb) =>
                     {
                         // Stop the connection
-                        Stop(conn);
+                        disconnectToken.SafeRegister(e => e(), end);
+                        connection.Stop();
 
-                        // Connection timeout occured
+                        // Connection timeout occurred
                         cb(new TimeoutException());
                     },
                     connection,
                     errorCallback);
                 });
             }
-        }
-
-        /// <summary>
-        /// Stops even event source as well and the base connection.
-        /// </summary>
-        /// <param name="connection">The <see cref="IConnection"/> being aborted.</param>
-        protected override void OnBeforeAbort(IConnection connection)
-        {
-            var eventSourceStream = connection.GetValue<EventSourceStreamReader>(EventSourceKey);
-            if (eventSourceStream != null)
-            {
-                eventSourceStream.Close();
-            }
-
-            base.OnBeforeAbort(connection);
         }
     }
 }

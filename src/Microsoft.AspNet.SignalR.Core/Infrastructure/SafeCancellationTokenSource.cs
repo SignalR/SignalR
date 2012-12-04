@@ -5,8 +5,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
     /// Thread safe cancellation token source. Allows the following:
-    /// - Cancel can only be called once and will no-op if the token is disposed.
-    /// - Dispose can only be called once.
+    /// - Cancel will no-op if the token is disposed.
     /// - Dispose may be called after Cancel.
     /// </summary>
     internal class SafeCancellationTokenSource : IDisposable
