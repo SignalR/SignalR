@@ -281,12 +281,12 @@ namespace Microsoft.AspNet.SignalR.Client
                     // If there's any errors starting then Stop the connection                
                     if (task.IsFaulted)
                     {
-                        CompleteDisconnection();
+                        Disconnect();
                         tcs.SetException(task.Exception.Unwrap());
                     }
                     else if (task.IsCanceled)
                     {
-                        CompleteDisconnection();
+                        Disconnect();
                         tcs.SetCanceled();
                     }
                     else
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private Task StartTransport(string data)
         {
-            return _transport.Start(this, data, _disconnectCts.Token, CompleteDisconnection)
+            return _transport.Start(this, data, _disconnectCts.Token)
                              .Then(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
@@ -350,15 +350,15 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public virtual void Stop()
         {
-            // Do nothing if the connection is offline
-            if (State == ConnectionState.Disconnected)
+            lock (_stateLock)
             {
-                return;
+                // Do nothing if the connection is offline
+                if (State != ConnectionState.Disconnected)
+                {
+                    _transport.Abort(this);
+                    Disconnect();
+                }
             }
-
-            _transport.Abort(this);
-
-            _disconnectCts.Cancel();
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnReconnecting()
         {
-            TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => _stopReconnectInvoker.Invoke(_disconnectCts.Cancel));
+            TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => _stopReconnectInvoker.Invoke(Disconnect));
             if (Reconnecting != null)
             {
                 Reconnecting();
@@ -470,26 +470,23 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         }
 
-
-        private void CompleteDisconnection()
+        private void Disconnect()
         {
             lock (_stateLock)
             {
+                // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
-                    try
+                    _disconnectCts.Cancel();
+                    _disconnectCts.Dispose();
+                    _disconnectCts = new SafeCancellationTokenSource();
+
+                    State = ConnectionState.Disconnected;
+
+                    // TODO: Do we want to trigger Closed if we are connecting?
+                    if (Closed != null)
                     {
-                        // Only call Closed if State is Connected or Reconnecting
-                        if (Closed != null && State != ConnectionState.Connecting)
-                        {
-                            Closed();
-                        }
-                    }
-                    finally
-                    {
-                        _disconnectCts.Dispose();
-                        _disconnectCts = new SafeCancellationTokenSource();
-                        State = ConnectionState.Disconnected;
+                        Closed();
                     }
                 }
             }

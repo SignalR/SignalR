@@ -40,18 +40,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected override void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action end,
                                         Action initializeCallback,
                                         Action<Exception> errorCallback)
         {
-            var disconnectInvoker = new ThreadSafeInvoker();
-            OpenConnection(connection, data, disconnectToken,
-                           () => disconnectInvoker.Invoke(end),
-                           initializeCallback,
-                           errorCallback);
+            OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
         }
 
-        private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken, Action end)
+        private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
         {
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
@@ -59,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (connection.EnsureReconnecting())
                 {
                     // Now attempt a reconnect
-                    OpenConnection(connection, data,  disconnectToken, end, initializeCallback: null, errorCallback: null);
+                    OpenConnection(connection, data,  disconnectToken, initializeCallback: null, errorCallback: null);
                 }
             });
         }
@@ -68,7 +63,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private void OpenConnection(IConnection connection,
                                     string data,
                                     CancellationToken disconnectToken,
-                                    Action end,
                                     Action initializeCallback,
                                     Action<Exception> errorCallback)
         {
@@ -107,7 +101,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             // Only raise the error event if we failed to reconnect
                             connection.OnError(exception);
 
-                            Reconnect(connection, data, disconnectToken, end);
+                            Reconnect(connection, data, disconnectToken);
                         }
                     }
                 }
@@ -179,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         {
                             if (retry)
                             {
-                                Reconnect(connection, data, disconnectToken, end);
+                                Reconnect(connection, data, disconnectToken);
                             }
                             else
                             {
@@ -213,8 +207,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
                     }, errorCallback, disconnectToken);
                 }
-
-                end();
             }, request);
 
             if (errorCallback != null)

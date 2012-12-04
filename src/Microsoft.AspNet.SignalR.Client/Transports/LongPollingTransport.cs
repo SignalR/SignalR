@@ -46,19 +46,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected override void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action end,
                                         Action initializeCallback,
                                         Action<Exception> errorCallback)
         {
-            var disconnectInvoker = new ThreadSafeInvoker();
-            PollingLoop(connection, data, disconnectToken, () => disconnectInvoker.Invoke(end), initializeCallback, errorCallback);
+            PollingLoop(connection, data, disconnectToken, initializeCallback, errorCallback);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         private void PollingLoop(IConnection connection,
                                  string data,
                                  CancellationToken disconnectToken,
-                                 Action end,
                                  Action initializeCallback,
                                  Action<Exception> errorCallback,
                                  bool raiseReconnect = false)
@@ -176,7 +173,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                             PollingLoop(connection,
                                                 data,
                                                 disconnectToken,
-                                                end,
                                                 initializeCallback: null,
                                                 errorCallback: null,
                                                 raiseReconnect: shouldRaiseReconnect);
@@ -193,7 +189,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                 PollingLoop(connection,
                                             data,
                                             disconnectToken,
-                                            end,
                                             initializeCallback: null,
                                             errorCallback: null,
                                             raiseReconnect: shouldRaiseReconnect);
@@ -222,8 +217,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
                     }, errorCallback, disconnectToken);
                 }
-
-                end();
             }, request);
 
             if (initializeCallback != null)
