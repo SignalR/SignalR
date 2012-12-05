@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private IClientTransport _transport;
 
+        // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
 
         // The default connection state is disconnected
@@ -346,7 +347,7 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Stops the <see cref="Connection"/>.
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// </summary>
         public virtual void Stop()
         {
@@ -423,6 +424,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnReconnecting()
         {
+            // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
+            // the server during negotiation.
+            // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
+            // topic along with the contained disconnect message.
             TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => _stopReconnectInvoker.Invoke(Disconnect));
             if (Reconnecting != null)
             {
@@ -432,6 +437,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnReconnected()
         {
+            // Prevent the timeout set OnReconnecting from firing and stopping the connection if we have successfully
+            // reconnected before the _disconnectTimeout delay.
             _stopReconnectInvoker.Invoke();
             _stopReconnectInvoker = new ThreadSafeInvoker();
             if (Reconnected != null)
@@ -470,6 +477,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         }
 
+        // Stops the connection without sending an abort message to the server.
         private void Disconnect()
         {
             lock (_stateLock)

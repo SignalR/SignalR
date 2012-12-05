@@ -206,10 +206,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (req != null)
                 {
+                    // This will no-op if the request is already finished.
                     req.Abort();
                 }
 
+                // Prevent the connection state from switching to the reconnected state.
                 reconnectInvoker.Invoke();
+
                 if (errorCallback != null)
                 {
                     callbackInvoker.Invoke((cb, token) =>
