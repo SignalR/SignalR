@@ -35,7 +35,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public IClientTransport Transport { get; set; }
 
         public void Initialize(int? keepAlive,
-                               int? connectonTimeOut,
+                               int? connectionTimeout,
+                               int? disconnectTimeout,
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
@@ -44,7 +45,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             // Use a configuration file to specify values
             string content = String.Format(_webConfigTemplate.Value,
                                            keepAlive,
-                                           connectonTimeOut,
+                                           connectionTimeout,
+                                           disconnectTimeout,
                                            hearbeatInterval,
                                            enableAutoRejoiningGroups);
 

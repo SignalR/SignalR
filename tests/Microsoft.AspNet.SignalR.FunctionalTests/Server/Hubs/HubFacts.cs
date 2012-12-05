@@ -522,7 +522,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(keepAlive: null,
-                                connectonTimeOut: 1,
+                                connectionTimeout: 1,
                                 hearbeatInterval: 1);
 
                 int max = 10;
@@ -581,7 +581,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(keepAlive: null,
-                                connectonTimeOut: 5,
+                                connectionTimeout: 5,
                                 hearbeatInterval: 2,
                                 enableAutoRejoiningGroups: true);
 

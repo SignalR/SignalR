@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         {
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
+            string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
             string heartbeatIntervalRaw = ConfigurationManager.AppSettings["heartbeatInterval"];
             string enableRejoiningGroupsRaw = ConfigurationManager.AppSettings["enableRejoiningGroups"];
 
@@ -32,6 +33,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             if (Int32.TryParse(connectionTimeoutRaw, out connectionTimeout))
             {
                 GlobalHost.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout);
+            }
+            
+            int disconnectTimeout;
+            if (Int32.TryParse(disconnectTimeoutRaw, out disconnectTimeout))
+            {
+                GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout);
             }
 
             int heartbeatInterval;
