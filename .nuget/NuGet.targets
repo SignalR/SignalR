@@ -32,7 +32,7 @@
         <NuGetToolsPath>$(SolutionDir).nuget</NuGetToolsPath>
         <PackagesConfig>packages.config</PackagesConfig>
         <PackagesDir Condition="$(PackagesDir) == ''">$(SolutionDir)packages</PackagesDir>
-        <NuGetExeFile>nuget.exe</NuGetExeFile>
+        <NuGetExeFile>NuGet.exe</NuGetExeFile>
     </PropertyGroup>
     
     <PropertyGroup>
