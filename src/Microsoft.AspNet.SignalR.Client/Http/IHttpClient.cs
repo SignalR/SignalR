@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// </summary>
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
-        /// <returns>A <see cref="Task{IResponse}"/>.</returns>
+        /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         Task<IResponse> GetAsync(string url, Action<IRequest> prepareRequest);
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
         /// <param name="postData">form url encoded data.</param>
-        /// <returns>A <see cref="Task{IResponse}"/>.</returns>
+        /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData);
     }
 }

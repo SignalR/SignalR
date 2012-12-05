@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     instanceName = instanceName ?? Guid.NewGuid().ToString();
                     SetCounterProperties(instanceName);
                     // The initializer ran, so let's register the shutdown cleanup
-                    if (hostShutdownToken != null)
+                    if (hostShutdownToken != CancellationToken.None)
                     {
                         needToRegisterWithShutdownToken = true;
                     }

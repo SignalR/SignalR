@@ -356,11 +356,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         }
 
         /// <summary>
-        /// Registers a <see cref="IHubProxy"/> event has an <see cref="IObservable{T}"/>.
+        /// Registers a <see cref="IHubProxy"/> event has an <see cref="T:IObservable{T}"/>.
         /// </summary>
         /// <param name="proxy">The <see cref="IHubProxy"/></param>
         /// <param name="eventName">The name of the event.</param>
-        /// <returns>An <see cref="T:System.IObservable{object[]}"/>.</returns>
+        /// <returns>An <see cref="T:IObservable{object[]}"/>.</returns>
         public static IObservable<JToken[]> Observe(this IHubProxy proxy, string eventName)
         {
             if (proxy == null)
