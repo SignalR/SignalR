@@ -152,6 +152,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             if (disconnected)
                             {
                                 retry = false;
+                                connection.Stop();
                             }
                         }
                     };
@@ -178,10 +179,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             if (retry)
                             {
                                 Reconnect(connection, data, disconnectToken);
-                            }
-                            else
-                            {
-                                connection.Stop();
                             }
                         }
                     };
