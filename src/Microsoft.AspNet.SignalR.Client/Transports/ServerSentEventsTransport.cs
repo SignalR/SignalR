@@ -202,6 +202,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (req != null)
                 {
+                    // This will no-op if the request is already finished.
                     req.Abort();
                 }
 
