@@ -65,6 +65,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             IRequest request = null;
             var reconnectInvoker = new ThreadSafeInvoker();
             var callbackInvoker = new ThreadSafeInvoker();
+            var requestDisposer = new Disposer();
 
             if (connection.MessageId == null)
             {
@@ -197,10 +198,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             }
                         }
                     }
+                    requestDisposer.Dispose();
                 }
             });
 
-            disconnectToken.SafeRegister(req =>
+            var requestCancellationRegistration = disconnectToken.SafeRegister(req =>
             {
                 if (req != null)
                 {
@@ -220,6 +222,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     }, errorCallback, disconnectToken);
                 }
             }, request);
+
+            requestDisposer.Set(requestCancellationRegistration);
 
             if (initializeCallback != null)
             {

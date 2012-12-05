@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // If we're reconnecting add /connect to the url
             bool reconnecting = initializeCallback == null;
             var callbackInvoker = new ThreadSafeInvoker();
+            var requestDisposer = new Disposer();
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
             IRequest request = null;
@@ -106,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             Reconnect(connection, data, disconnectToken);
                         }
                     }
+                    requestDisposer.Dispose();
                 }
                 else
                 {
@@ -115,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
 
-                    disconnectToken.SafeRegister(es =>
+                    var esCancellationRegistration = disconnectToken.SafeRegister(es =>
                     {
                         retry = false;
                         es.Close();
@@ -185,13 +187,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     };
 
                     // See http://msdn.microsoft.com/en-us/library/system.net.httpwebresponse.close.aspx
-                    eventSource.Disabled = response.Close;
+                    eventSource.Disabled = () =>
+                    {
+                        requestDisposer.Dispose();
+                        esCancellationRegistration.Dispose();
+                        response.Close();
+                    };
 
                     eventSource.Start();
                 }
             });
 
-            disconnectToken.SafeRegister(req =>
+            var requestCancellationRegistration = disconnectToken.SafeRegister(req =>
             {
                 if (req != null)
                 {
@@ -210,6 +217,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     }, errorCallback, disconnectToken);
                 }
             }, request);
+
+            requestDisposer.Set(requestCancellationRegistration);
 
             if (errorCallback != null)
             {

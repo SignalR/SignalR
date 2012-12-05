@@ -34,8 +34,10 @@ namespace Microsoft.AspNet.SignalR
             }
             else
             {
+#if !NET35 && !SILVERLIGHT && !NETFX_CORE
                 // Set has been called multiple times, fail
                 Debug.Fail("Multiple calls to Disposer.Set(IDisposable) without calling Disposer.Dispose()");
+#endif
             }
         }
 
