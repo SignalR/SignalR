@@ -205,11 +205,11 @@
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Transports\ITrackingConnection.cs" />
     <Compile Include="Transports\ITransport.cs" />
-    <Compile Include="Transports\ITransportHeartbeat.cs" />
+    <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
     <Compile Include="Transports\TransportDisconnectBase.cs" />
-    <Compile Include="Transports\TransportHeartbeat.cs" />
+    <Compile Include="Transports\TransportHeartBeat.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
