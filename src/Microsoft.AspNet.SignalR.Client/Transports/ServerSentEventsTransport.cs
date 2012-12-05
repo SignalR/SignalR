@@ -174,12 +174,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
 
                         // Skip reconnect attempt for aborted requests
-                        if (!isRequestAborted)
+                        if (!isRequestAborted && retry)
                         {
-                            if (retry)
-                            {
-                                Reconnect(connection, data, disconnectToken);
-                            }
+                            Reconnect(connection, data, disconnectToken);
                         }
                     };
 
