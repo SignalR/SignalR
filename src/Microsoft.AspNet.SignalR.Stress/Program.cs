@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             int connections = 5000;
             // int senders = 1;
-            string payload = GetPayload();
+            // string payload = GetPayload();
 
             // return MessageBusRun.Run(connections, senders, payload);
             // return ConnectionRun.LongRunningSubscriptionRun(connections, senders, payload);
