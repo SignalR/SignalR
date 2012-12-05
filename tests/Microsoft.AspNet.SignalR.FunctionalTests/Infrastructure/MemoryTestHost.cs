@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public IClientTransport Transport { get; set; }
 
         public void Initialize(int? keepAlive,
-                               int? connectonTimeOut,
+                               int? connectionTimeout,
+                               int? disconnectTimeout,
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
@@ -38,9 +39,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 _host.Configuration.KeepAlive = null;
             }
 
-            if (connectonTimeOut != null)
+            if (connectionTimeout != null)
             {
-                _host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectonTimeOut.Value);
+                _host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout.Value);
+            }
+            
+            if (disconnectTimeout != null)
+            {
+                _host.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
             }
 
             if (hearbeatInterval != null)
