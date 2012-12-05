@@ -37,16 +37,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Web.Entity" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="jquery.signalR.hubs.js" />
     <Content Include="jquery.signalR.transports.common.js" />
     <Content Include="jquery.signalR.transports.webSockets.js" />
@@ -57,7 +47,6 @@
     <Content Include="packages.config" />
     <Content Include="jquery.signalR.transports.longPolling.js" />
     <Content Include="build.ps1" />
-    <Content Include="Properties\Microsoft.AspNet.SignalR.Js.nuspec" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js">
@@ -83,7 +72,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <ProjectExtensions>
     <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+      <FlavorProperties GUID="{349C5851-65DF-11DA-9384-00065B846F21}">
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
