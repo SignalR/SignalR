@@ -31,8 +31,7 @@
         <!-- We need to launch nuget.exe with the mono command if we're not on windows -->
         <NuGetToolsPath>$(SolutionDir).nuget</NuGetToolsPath>
         <PackagesConfig>packages.config</PackagesConfig>
-        <PackagesDir Condition="$(PackagesDir) == ''">$([System.IO.Path]::Combine($(SolutionDir), "packages"))</PackagesDir>
-        <NuGetExeFile>nuget.mono.exe</NuGetExeFile>
+        <PackagesDir Condition="$(PackagesDir) == ''">$(SolutionDir)packages</PackagesDir>
     </PropertyGroup>
     
     <PropertyGroup>
