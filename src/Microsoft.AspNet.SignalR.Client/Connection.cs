@@ -16,11 +16,6 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-// Include HashSet implementation for WP7.
-#if WINDOWS_PHONE
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
-#endif
-
 namespace Microsoft.AspNet.SignalR.Client
 {
     /// <summary>
