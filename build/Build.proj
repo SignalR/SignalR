@@ -81,11 +81,14 @@
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
+  <Target Name="GoMono" DependsOnTargets="Build; RunUnitTests;">
+  </Target>
+
   <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
   </Target>
 
   <Target Name="RunUnitTests">
-    <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" />
+    <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
     <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
     <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
 
@@ -110,7 +113,7 @@
   </Target>
 
   <Target Name="CreateOutputDir">
-    <RemoveDir Directories="$(ArtifactsDir)" />
+    <RemoveDir Directories="$(ArtifactsDir)" Condition="Exists('$(ArtifactsDir)')" ContinueOnError="true" />
     <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
     <MakeDir Directories="$(DocsPath)" Condition="!Exists('$(DocsPath)')" />
@@ -119,7 +122,13 @@
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.sln"
              Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
+             Condition=" '$(OS)' == 'Windows_NT'" />
+
+    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Mono.sln"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
+             Condition=" '$(OS)' != 'Windows_NT'" />
 
     <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP71\Microsoft.AspNet.SignalR.Client.WP71.csproj"
              Targets="Build"
