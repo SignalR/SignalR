@@ -129,6 +129,10 @@ namespace Microsoft.AspNet.SignalR
             {
                 return ProcessNegotiationRequest(context);
             }
+            else if (IsPingRequest(context.Request))
+            {
+                return ProcessPingRequest(context);
+            }
 
             Transport = GetTransport(context);
 
@@ -288,6 +292,11 @@ namespace Microsoft.AspNet.SignalR
             return TaskAsyncHelper.Empty;
         }
 
+        private Task ProcessPingRequest(HostContext context)
+        {
+            return context.Response.EndAsync("pong");
+        }
+
         private Task ProcessNegotiationRequest(HostContext context)
         {
             var keepAlive = _configurationManager.KeepAlive;
@@ -322,6 +331,11 @@ namespace Microsoft.AspNet.SignalR
         private static bool IsNegotiationRequest(IRequest request)
         {
             return request.Url.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsPingRequest(IRequest request)
+        {
+            return request.Url.LocalPath.EndsWith("/ping", StringComparison.OrdinalIgnoreCase);
         }
 
         private ITransport GetTransport(HostContext context)
