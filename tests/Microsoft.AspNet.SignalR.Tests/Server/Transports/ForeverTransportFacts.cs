@@ -135,7 +135,32 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         }
 
         [Fact]
-        public void AvoidWritesAfterRequestEnd()
+        public void RequestCompletesAfterCompletedWritesInTaskQueue()
+        {
+            EnqueAsyncWriteAndEndRequest(() => TaskAsyncHelper.Empty);
+        }
+
+        [Fact]
+        public void RequestCompletesAfterCancelledWritesInTaskQueue()
+        {
+            Func<Task> writeCancelled = () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetCanceled();
+                return tcs.Task;
+            };
+
+            EnqueAsyncWriteAndEndRequest(writeCancelled);
+        }
+
+        [Fact]
+        public void RequestCompletesAfterFaultedWritesInTaskQueue()
+        {
+            Func<Task> writeFaulted = () => TaskAsyncHelper.FromError(new Exception());
+            EnqueAsyncWriteAndEndRequest(writeFaulted);
+        }
+
+        public void EnqueAsyncWriteAndEndRequest(Func<Task> writeAsync)
         {
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
@@ -169,6 +194,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             };
 
             var tcs = new TaskCompletionSource<bool>();
+
+            transport.Object.EnqueueOperation(writeAsync);
 
             transport.Object.AfterRequestEnd = () =>
             {
