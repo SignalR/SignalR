@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Drain the task queue for pending write operations so we don't end the request and then try to write
                 // to a corrupted request object.
-                WriteQueue.Drain().Then(() =>
+                WriteQueue.Drain().Catch().ContinueWith(task =>
                 {
                     if (ex != null)
                     {
@@ -260,7 +260,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                     CompleteRequest();
 
                     Trace.TraceInformation("EndRequest(" + ConnectionId + ")");
-                });
+                }, 
+                TaskContinuationOptions.ExecuteSynchronously);
 
                 if (AfterRequestEnd != null)
                 {

@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected Task EnqueueOperation(Func<Task> writeAsync)
+        protected internal Task EnqueueOperation(Func<Task> writeAsync)
         {
             return WriteQueue.Enqueue(writeAsync);
         }
