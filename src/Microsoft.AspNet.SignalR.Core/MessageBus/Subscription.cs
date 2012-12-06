@@ -201,9 +201,6 @@ namespace Microsoft.AspNet.SignalR
                     }
                     catch (Exception ex)
                     {
-                        // Dispose if we failed to invoke the callback
-                        Dispose();
-
                         taskCompletionSource.TrySetException(ex);
                     }
                 }
@@ -235,9 +232,6 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (task.IsFaulted)
                 {
-                    // Dispose if we failed
-                    Dispose();
-
                     taskCompletionSource.TrySetException(task.Exception);
                 }
                 else if (task.Result)

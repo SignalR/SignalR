@@ -289,7 +289,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            return WriteQueue.Enqueue(writeAsync);
+            if (IsAlive)
+            {
+                // Only enqueue new writes if the connection is alive
+                return WriteQueue.Enqueue(writeAsync);
+            }
+
+            return TaskAsyncHelper.Empty;
         }
 
         protected void InitializePersistentState()
