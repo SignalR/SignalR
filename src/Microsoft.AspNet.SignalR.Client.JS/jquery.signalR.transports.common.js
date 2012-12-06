@@ -55,6 +55,37 @@
     }
 
     signalR.transports._logic = {
+        pingServer: function (connection, transport) {
+            /// <summary>Pings the server</summary>
+            /// <param name="connection" type="signalr">Connection associated with the server ping</param>
+            /// <returns type="signalR" />
+            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
+                url = baseUrl + connection.appRelativeUrl + "/ping",
+                deferral = $.Deferred();
+
+            $.ajax({
+                url: url,
+                global: false,
+                cache: false,
+                type: "GET",
+                data: {},
+                success: function (data) {
+                    if (data === "pong") {
+                        deferral.resolve();
+                    }
+                    else {
+                        deferral.reject("SignalR: Invalid ping response when pinging server: " + data.responseText);
+                    }
+                },
+                error: function (data) {
+                    deferral.reject("SignalR: Error pinging server: " + data.responseText);
+                }
+            });
+                
+
+            return deferral.promise();
+        },
+
         addQs: function (url, connection) {
             if (!connection.qs) {
                 return url;
