@@ -94,7 +94,8 @@
                 };
 
             connection.reconnecting(function () {
-                stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(this); }, this.disconnectTimeout);
+                var connection = this;
+                stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
             });
 
             connection.stateChanged(function (data) {
