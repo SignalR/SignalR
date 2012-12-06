@@ -296,8 +296,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var payload = "pong";
 
-            context.Response.ContentType = Json.MimeType;
-            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
+            return context.Response.EndAsync(payload);
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
