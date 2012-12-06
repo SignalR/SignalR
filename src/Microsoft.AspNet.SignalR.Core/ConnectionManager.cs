@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR
             return new HubContext(send, hubName, connection);
         }
 
-        private IConnection GetConnection(string connectionName)
+        internal Connection GetConnection(string connectionName)
         {
             var signals = connectionName == null ? Enumerable.Empty<string>() : new[] { connectionName };
 
