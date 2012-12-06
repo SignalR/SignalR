@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 5, connectionTimeout: 0, hearbeatInterval: 10);
+                    host.Initialize();
                     var connection = new Client.Hubs.HubConnection(host.Url);
                     int timesStopped = 0;
 
@@ -62,9 +63,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         timesStopped++;
                         Assert.Equal(ConnectionState.Disconnected, connection.State);
                     };
-
-                    // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                    var disconnectWait = TimeSpan.FromSeconds(30);
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -77,6 +75,40 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Stop();
                     }
                     Assert.Equal(15, timesStopped);
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(keepAlive: 1, disconnectTimeout: 2);
+                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var reconnectWh = new ManualResetEventSlim();
+                    var disconnectWh = new ManualResetEventSlim();
+
+                    connection.Reconnecting += () =>
+                    {
+                        reconnectWh.Set();
+                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                    };
+
+                    connection.Closed += () =>
+                    {
+                        disconnectWh.Set();
+                        Assert.Equal(ConnectionState.Disconnected, connection.State);
+                    };
+
+                    connection.Start(host.Transport).Wait();
+                    host.Shutdown();
+
+                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
         }
