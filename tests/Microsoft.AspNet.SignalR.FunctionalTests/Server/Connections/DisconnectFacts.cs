@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
 
-                connection.Stop();
+                connection.Disconnect();
 
                 Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 

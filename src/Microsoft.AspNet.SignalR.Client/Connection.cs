@@ -358,6 +358,31 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
+        /// Stops the <see cref="Connection"/> without sending an abort message to the server.
+        /// </summary>
+        public void Disconnect()
+        {
+            lock (_stateLock)
+            {
+                // Do nothing if the connection is offline
+                if (State != ConnectionState.Disconnected)
+                {
+                    _disconnectCts.Cancel();
+                    _disconnectCts.Dispose();
+                    _disconnectCts = new SafeCancellationTokenSource();
+
+                    State = ConnectionState.Disconnected;
+
+                    // TODO: Do we want to trigger Closed if we are connecting?
+                    if (Closed != null)
+                    {
+                        Closed();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Sends data asynchronously over the connection.
         /// </summary>
         /// <param name="data">The data to send.</param>
@@ -470,29 +495,6 @@ namespace Microsoft.AspNet.SignalR.Client
                 request.Proxy = Proxy;
             }
 #endif
-        }
-
-        // Stops the connection without sending an abort message to the server.
-        private void Disconnect()
-        {
-            lock (_stateLock)
-            {
-                // Do nothing if the connection is offline
-                if (State != ConnectionState.Disconnected)
-                {
-                    _disconnectCts.Cancel();
-                    _disconnectCts.Dispose();
-                    _disconnectCts = new SafeCancellationTokenSource();
-
-                    State = ConnectionState.Disconnected;
-
-                    // TODO: Do we want to trigger Closed if we are connecting?
-                    if (Closed != null)
-                    {
-                        Closed();
-                    }
-                }
-            }
         }
 
         private static string CreateUserAgentString(string client)

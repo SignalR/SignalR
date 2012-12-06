@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             if (disconnected)
                             {
                                 retry = false;
-                                connection.Stop();
+                                connection.Disconnect();
                             }
                         }
                     };
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     callbackInvoker.Invoke((conn, cb) =>
                     {
-                        connection.Stop();
+                        connection.Disconnect();
 
                         // Connection timeout occurred
                         cb(new TimeoutException());
