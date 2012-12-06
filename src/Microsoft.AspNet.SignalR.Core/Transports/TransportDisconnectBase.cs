@@ -38,9 +38,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
 
-        // Queue to protect against overlapping writes to the underlying response stream
-        private readonly TaskQueue _writeQueue = new TaskQueue();
-
         protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
             if (context == null)
@@ -72,6 +69,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             _jsonSerializer = jsonSerializer;
             _heartbeat = heartbeat;
             _counters = performanceCounterManager;
+
+            // Queue to protect against overlapping writes to the underlying response stream
+            WriteQueue = new TaskQueue();
 
             _trace = traceManager["SignalR.Transports." + GetType().Name];
         }
@@ -112,6 +112,12 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         protected TaskCompletionSource<object> Completed
+        {
+            get;
+            private set;
+        }
+
+        internal TaskQueue WriteQueue
         {
             get;
             private set;
@@ -283,7 +289,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected Task EnqueueOperation(Func<Task> writeAsync)
         {
-            return _writeQueue.Enqueue(writeAsync);
+            return WriteQueue.Enqueue(writeAsync);
         }
 
         protected void InitializePersistentState()

@@ -101,6 +101,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action AfterReceive;
         internal Action BeforeCancellationTokenCallbackRegistered;
         internal Action BeforeReceive;
+        internal Action AfterRequestEnd;
 
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
@@ -124,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         // Return a task that completes when the connected event task & the receive loop task are both finished
                         bool newConnection = Heartbeat.AddConnection(this);
-                        
+
                         // The connected callback
                         Func<Task> connected = () =>
                         {
@@ -241,18 +242,30 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             Action<Exception> endRequest = (ex) =>
             {
-                Trace.TraceInformation("EndRequest(" + ConnectionId + ")");
+                Trace.TraceInformation("DrainWrites(" + ConnectionId + ")");
 
-                if (ex != null)
+                // Drain the task queue for pending write operations so we don't end the request and then try to write
+                // to a corrupted request object.
+                WriteQueue.Drain().Then(() =>
                 {
-                    tcs.TrySetException(ex);
-                }
-                else
-                {
-                    tcs.TrySetResult(null);
-                }
+                    if (ex != null)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(null);
+                    }
 
-                CompleteRequest();
+                    CompleteRequest();
+
+                    Trace.TraceInformation("EndRequest(" + ConnectionId + ")");
+                });
+
+                if (AfterRequestEnd != null)
+                {
+                    AfterRequestEnd();
+                }
             };
 
             ProcessMessages(connection, postReceive, endRequest);
