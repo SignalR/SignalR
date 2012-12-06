@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -7,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Transports;
+using Moq;
 using Xunit;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
@@ -15,6 +18,52 @@ namespace Microsoft.AspNet.SignalR.Tests
 {
     public class DisconnectFacts : IDisposable
     {
+        [Fact]
+        public void FailedWriteCompletesRequestAfterDisconnectTimeout()
+        {
+            var request = new Mock<IRequest>();
+            var response = new Mock<IResponse>();
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            bool isConnected = true;
+            response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
+            response.Setup(m => m.FlushAsync()).Returns(TaskAsyncHelper.Empty);
+
+            var resolver = new DefaultDependencyResolver();
+            var config = resolver.Resolve<IConfigurationManager>();
+            var hostContext = new HostContext(request.Object, response.Object);
+            config.DisconnectTimeout = TimeSpan.Zero;
+            config.HeartbeatInterval = TimeSpan.FromSeconds(3);
+            var transport = new Mock<ForeverTransport>(hostContext, resolver)
+            {
+                CallBase = true
+            };
+
+            transport.Setup(m => m.Send(It.IsAny<PersistentResponse>()))
+                     .Returns(() =>
+                     {
+                         var task = TaskAsyncHelper.FromError(new Exception());
+                         isConnected = false;
+                         return task;
+                     });
+
+            var connectionManager = new ConnectionManager(resolver);
+            var connection = connectionManager.GetConnection("Foo");
+            var wh = new ManualResetEventSlim();
+
+            transport.Object.ProcessRequest(connection).ContinueWith(task =>
+            {
+                wh.Set();
+            });
+
+            connection.Broadcast("Some message");
+
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+        }
+
         [Fact]
         public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
         {
