@@ -308,7 +308,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             return String.IsNullOrEmpty(connection.QueryString)
                             ? ""
-                            : "&" + connection.QueryString;
+                            : connection.QueryString;
         }
     }
 }
