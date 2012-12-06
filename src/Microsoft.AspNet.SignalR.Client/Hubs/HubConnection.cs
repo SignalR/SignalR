@@ -88,14 +88,22 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             {
                 var result = message.ToObject<HubResult>();
                 Action<HubResult> callback;
-                if (_callbacks.TryGetValue(result.Id, out callback))
+
+                lock (_callbacks)
                 {
-                    _callbacks.Remove(result.Id);
-                    callback(result);
+                    if (_callbacks.TryGetValue(result.Id, out callback))
+                    {
+                        _callbacks.Remove(result.Id);
+                    }
+                    else
+                    {
+                        Debug.Assert(false, "Callback with id " + result.Id + " not found!");
+                    }
                 }
-                else
+
+                if (callback != null)
                 {
-                    Debug.Assert(false, "Callback with id " + result.Id + " not found!");
+                    callback(result);
                 }
             }
             else
@@ -152,10 +160,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
         public string RegisterCallback(Action<HubResult> callback)
         {
-            string id = _callbackId.ToString(CultureInfo.InvariantCulture);
-            _callbacks[id] = callback;
-            _callbackId++;
-            return id;
+            lock (_callbacks)
+            {
+                string id = _callbackId.ToString(CultureInfo.InvariantCulture);
+                _callbacks[id] = callback;
+                _callbackId++;
+                return id;
+            }
         }
 
         private static string GetUrl(string url, bool useDefaultUrl)
