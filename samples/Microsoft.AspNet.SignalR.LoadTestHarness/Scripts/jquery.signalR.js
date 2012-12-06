@@ -88,21 +88,21 @@
         }, 
 
         configureStopReconnectingTimeout = function (connection) {
-            var stopReconnectingTimeout = null;
+            var stopReconnectingTimeout,
+                onReconnectTimeout = function (connection) {
+                    connection.log("Couldn't reconnect within the configured timeout (" + connection.disconnectTimeout + "ms), disconnecting.");
+                    connection.stop(/* async */ false, /* notifyServer */ false);
+                };
 
             connection.reconnecting(function () {
-                if (stopReconnectingTimeout === null) {
-                    stopReconnectingTimeout = window.setTimeout(function () {
-                        connection.log(connection.disconnectTimeout + "ms have passed without successfully reconnecting. Disconnecting.");
-                        connection.stop(/* async */ false, /* notifyServer */ false);
-                        stopReconnectingTimeout = null;
-                    }, connection.disconnectTimeout);
-                }
+                stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(this); }, this.disconnectTimeout);
             });
 
-            connection.reconnected(function () {
-                window.clearTimeout(stopReconnectingTimeout);
-                stopReconnectingTimeout = null;
+            connection.stateChanged(function (data) {
+                if (data.oldState === signalR.connectionState.reconnecting) {
+                    // Clear the pending reconnect timeout check
+                    window.clearTimeout(stopReconnectingTimeout);
+                }
             });
         };
 
@@ -378,9 +378,8 @@
 
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
-                    if (!isNaN(res.DisconnectTimeout)) {
-                        connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
-                    }
+                    connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
+                    
 
                     // If we have a keep alive
                     if (res.KeepAlive) {
