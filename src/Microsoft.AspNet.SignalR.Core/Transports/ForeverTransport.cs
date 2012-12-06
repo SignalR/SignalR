@@ -340,7 +340,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                              .Catch(IncrementErrorCounters)
                                              .Catch(ex =>
                                              {
-                                                 Trace.TraceInformation("Send failed with: " + ex.GetBaseException());
+                                                 Trace.TraceInformation("Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
                                              });
                     }
                 },
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                              .Catch(ex => endRequest(ex))
                              .Catch(ex =>
                              {
-                                 Trace.TraceInformation("Failed post receive with:" + ex.GetBaseException());
+                                 Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
                              })
                              .ContinueWith(task => wh.Set());
             }
