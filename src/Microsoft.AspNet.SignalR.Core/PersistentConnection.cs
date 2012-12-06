@@ -294,9 +294,7 @@ namespace Microsoft.AspNet.SignalR
 
         private Task ProcessPingRequest(HostContext context)
         {
-            var payload = "pong";
-
-            return context.Response.EndAsync(payload);
+            return context.Response.EndAsync("pong");
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
