@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessPingRequest(HostContext context)
+        private static Task ProcessPingRequest(HostContext context)
         {
             return context.Response.EndAsync("pong");
         }
