@@ -96,6 +96,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
         public void Abort(IConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
 
             try

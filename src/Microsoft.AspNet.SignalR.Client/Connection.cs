@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client
     /// <summary>
     /// Provides client connections for SignalR services.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification="_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
         private static Version _assemblyVersion;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private TimeSpan _disconnectTimeout;
 
         // The default connection state is disconnected
-        private ConnectionState _state = ConnectionState.Disconnected;
+        private ConnectionState _state;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -120,10 +121,9 @@ namespace Microsoft.AspNet.SignalR.Client
             Url = url;
             QueryString = queryString;
             _groups = new HashSet<string>();
+            _stopReconnectInvoker = new ThreadSafeInvoker();
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
-            _disconnectCts = new SafeCancellationTokenSource();
-            _stopReconnectInvoker = new ThreadSafeInvoker();
         }
 
         /// <summary>
@@ -245,6 +245,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public virtual Task Start(IClientTransport transport)
         {
+            _disconnectCts = new SafeCancellationTokenSource();
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
                 return TaskAsyncHelper.Empty;
@@ -377,7 +378,6 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
-                    _disconnectCts = new SafeCancellationTokenSource();
 
                     State = ConnectionState.Disconnected;
 

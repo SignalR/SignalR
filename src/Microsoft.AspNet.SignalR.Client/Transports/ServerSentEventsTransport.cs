@@ -62,6 +62,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "We will refactor later.")]
         private void OpenConnection(IConnection connection,
                                     string data,
                                     CancellationToken disconnectToken,
