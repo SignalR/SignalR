@@ -74,7 +74,6 @@
                             dataType: connection.ajaxDataType,
                             success: function (minData) {
                                 var delay = 0,
-                                    timedOutReceived = false,
                                     data;
 
                                 if (minData) {
@@ -85,10 +84,6 @@
                                 if (data &&
                                     $.type(data.LongPollDelay) === "number") {
                                     delay = data.LongPollDelay;
-                                }
-
-                                if (data && data.TimedOut) {
-                                    timedOutReceived = data.TimedOut;
                                 }
 
                                 if (data && data.Disconnect) {
