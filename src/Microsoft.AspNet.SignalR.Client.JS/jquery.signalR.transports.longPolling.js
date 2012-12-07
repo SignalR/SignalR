@@ -26,20 +26,22 @@
 
             var that = this,
                 pingLoop,
+                // pingFail is used to loop the re-ping behavior.  When we fail we want to re-try.
                 pingFail = function (reason) {
                     if (isDisconnecting(connection) === false) {
                         connection.log("SignalR: Server ping failed because '" + reason + "', re-trying ping.");
                         window.setTimeout(pingLoop, that.reconnectDelay);
                     }
                 };
-            
+
             connection.log("SignalR: Initializing long polling connection with server.");
-            pingLoop = function () {                
+            pingLoop = function () {
+                // Ping the server, on successful ping call the onComplete method, otherwise if we fail call the pingFail
                 transportLogic.pingServer(connection, that.name).done(onComplete).fail(pingFail);
             };
 
             pingLoop();
-        },        
+        },
 
         start: function (connection, onSuccess, onFailed) {
             /// <summary>Starts the long polling connection</summary>
@@ -51,6 +53,8 @@
                 connection.stop();
             }
 
+            // We start with an initialization procedure which pings the server to verify that it is there.
+            // On scucessful initialization we'll then proceed with starting the transport.
             that.init(connection, function () {
                 connection.messageId = null;
 
@@ -61,6 +65,7 @@
                             reconnecting = !connect,
                             url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect);
 
+                        // If we've disconnected during the time we've tried to re-instantiate the poll then stop.
                         if (isDisconnecting(instance) === true) {
                             return;
                         }
@@ -94,6 +99,7 @@
                                     return;
                                 }
 
+                                // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
                                 if (delay > 0) {
                                     window.setTimeout(function () {
                                         poll(instance, false);
@@ -114,20 +120,24 @@
                                     $(instance).triggerHandler(events.onError, [data.responseText]);
                                 }
 
+                                // If we've errored out we need to verify that the server is still there, so re-start initialization process
+                                // This will ping the server until it successfully gets a response.
                                 that.init(instance, function () {
+                                    // Call poll with the raiseReconnect flag as true
                                     poll(instance, true);
                                 });
                             }
                         });
 
-
+                        // This will only ever pass after an error has occured via the poll ajax procedure.
                         if (reconnecting && raiseReconnect === true) {
                             if (changeState(connection,
                                             signalR.connectionState.reconnecting,
                                             signalR.connectionState.connected) === true) {
+                                // Successfully reconnected!
                                 connection.log("Raising the reconnect event");
                                 $(instance).triggerHandler(events.onReconnect);
-                            }                            
+                            }
                         }
                     }(connection));
 
