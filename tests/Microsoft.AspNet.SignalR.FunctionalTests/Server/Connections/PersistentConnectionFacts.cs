@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(keepAlive: null,
-                                    connectonTimeOut: 2,
+                                    connectionTimeout: 2,
                                     hearbeatInterval: 2);
 
                     var connection = new Client.Connection(host.Url + "/groups");
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(keepAlive: null,
-                                    connectonTimeOut: 2,
+                                    connectionTimeout: 2,
                                     hearbeatInterval: 2);
 
                     var connection = new Client.Connection(host.Url + "/rejoin-groups");
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(keepAlive: null,
-                                    connectonTimeOut: 5,
+                                    connectionTimeout: 5,
                                     hearbeatInterval: 2);
 
                     var connection = new Client.Connection(host.Url + "/rejoin-groups");
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(keepAlive: null,
-                                    connectonTimeOut: 5,
+                                    connectionTimeout: 5,
                                     hearbeatInterval: 2);
 
                     var connection = new Client.Connection(host.Url + "/groups");

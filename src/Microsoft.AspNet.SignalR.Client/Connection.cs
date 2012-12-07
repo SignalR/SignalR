@@ -7,16 +7,14 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
-// Include HashSet implementation for WP7.
-#if WINDOWS_PHONE
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
-#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -29,6 +27,9 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private IClientTransport _transport;
 
+        // The amount of time the client should attempt to reconnect before stopping.
+        private TimeSpan _disconnectTimeout;
+
         // The default connection state is disconnected
         private ConnectionState _state = ConnectionState.Disconnected;
 
@@ -37,6 +38,12 @@ namespace Microsoft.AspNet.SignalR.Client
 
         // The groups the connection is currently subscribed to
         private readonly HashSet<string> _groups;
+
+        // Propagates notification that connection should be stopped.
+        private SafeCancellationTokenSource _disconnectCts;
+
+        // Provides a way to cancel the the timeout that stops a reconnect cycle
+        private ThreadSafeInvoker _stopReconnectInvoker;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -52,6 +59,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Occurs when the <see cref="Connection"/> is stopped.
         /// </summary>
         public event Action Closed;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> starts reconnecting after an error.
+        /// </summary>
+        public event Action Reconnecting;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
@@ -110,6 +122,8 @@ namespace Microsoft.AspNet.SignalR.Client
             _groups = new HashSet<string>();
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
+            _disconnectCts = new SafeCancellationTokenSource();
+            _stopReconnectInvoker = new ThreadSafeInvoker();
         }
 
         /// <summary>
@@ -128,6 +142,14 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public IWebProxy Proxy { get; set; }
 #endif
+
+        /// <summary>
+        /// Gets a mutable collection of groups for the connection.
+        /// </summary>
+        ICollection<string> IConnection.Groups
+        {
+            get { return _groups; }
+        }
 
         /// <summary>
         /// Gets the groups for the connection.
@@ -177,10 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             get
             {
-                lock (_stateLock)
-                {
-                    return _state;
-                }
+                return _state;
             }
             private set
             {
@@ -251,6 +270,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
+                _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -265,12 +285,12 @@ namespace Microsoft.AspNet.SignalR.Client
                     // If there's any errors starting then Stop the connection                
                     if (task.IsFaulted)
                     {
-                        Stop();
+                        Disconnect();
                         tcs.SetException(task.Exception.Unwrap());
                     }
                     else if (task.IsCanceled)
                     {
-                        Stop();
+                        Disconnect();
                         tcs.SetCanceled();
                     }
                     else
@@ -290,7 +310,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private Task StartTransport(string data)
         {
-            return _transport.Start(this, data)
+            return _transport.Start(this, data, _disconnectCts.Token)
                              .Then(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
@@ -304,11 +324,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
         bool IConnection.ChangeState(ConnectionState oldState, ConnectionState newState)
         {
-            // If we're in the expected old state then change state and return true
-            if (_state == oldState)
+            lock (_stateLock)
             {
-                State = newState;
-                return true;
+                // If we're in the expected old state then change state and return true
+                if (_state == oldState)
+                {
+                    State = newState;
+                    return true;
+                }
             }
 
             // Invalid transition
@@ -327,28 +350,43 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Stops the <see cref="Connection"/>.
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// </summary>
         public virtual void Stop()
         {
-            try
+            lock (_stateLock)
             {
                 // Do nothing if the connection is offline
-                if (State == ConnectionState.Disconnected)
+                if (State != ConnectionState.Disconnected)
                 {
-                    return;
-                }
-
-                _transport.Stop(this);
-
-                if (Closed != null)
-                {
-                    Closed();
+                    _transport.Abort(this);
+                    Disconnect();
                 }
             }
-            finally
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> without sending an abort message to the server.
+        /// </summary>
+        public void Disconnect()
+        {
+            lock (_stateLock)
             {
-                State = ConnectionState.Disconnected;
+                // Do nothing if the connection is offline
+                if (State != ConnectionState.Disconnected)
+                {
+                    _disconnectCts.Cancel();
+                    _disconnectCts.Dispose();
+                    _disconnectCts = new SafeCancellationTokenSource();
+
+                    State = ConnectionState.Disconnected;
+
+                    // TODO: Do we want to trigger Closed if we are connecting?
+                    if (Closed != null)
+                    {
+                        Closed();
+                    }
+                }
             }
         }
 
@@ -382,10 +420,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(JsonConvert.SerializeObject(value));
         }
 
-        ICollection<string> IConnection.Groups
-        {
-            get { return _groups; }
-        }
+
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
@@ -410,8 +445,25 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
+        void IConnection.OnReconnecting()
+        {
+            // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
+            // the server during negotiation.
+            // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
+            // topic along with the contained disconnect message.
+            TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => _stopReconnectInvoker.Invoke(Disconnect));
+            if (Reconnecting != null)
+            {
+                Reconnecting();
+            }
+        }
+
         void IConnection.OnReconnected()
         {
+            // Prevent the timeout set OnReconnecting from firing and stopping the connection if we have successfully
+            // reconnected before the _disconnectTimeout delay.
+            _stopReconnectInvoker.Invoke();
+            _stopReconnectInvoker = new ThreadSafeInvoker();
             if (Reconnected != null)
             {
                 Reconnected();

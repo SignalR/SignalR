@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
@@ -21,8 +22,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         // The transport name
         private readonly string _transport;
-
-        protected const string HttpRequestKey = "http.Request";
 
         private readonly IHttpClient _httpClient;
 
@@ -50,16 +49,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return _httpClient.GetNegotiationResponse(connection);
         }
 
-        public Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
             var tcs = new TaskCompletionSource<object>();
 
-            OnStart(connection, data, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
+            OnStart(connection, data, disconnectToken, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
 
             return tcs.Task;
         }
 
-        protected abstract void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
+        protected abstract void OnStart(IConnection connection,
+                                        string data,
+                                        CancellationToken disconnectToken,
+                                        Action initializeCallback,
+                                        Action<Exception> errorCallback);
 
         public Task Send(IConnection connection, string data)
         {
@@ -90,49 +93,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               .Catch(connection.OnError);
         }
 
-        protected string GetReceiveQueryString(IConnection connection, string data)
-        {
-            return TransportHelper.GetReceiveQueryString(connection, data, _transport);
-        }
-
-        protected virtual Action<IRequest> PrepareRequest(IConnection connection)
-        {
-            return request =>
-            {
-                // Setup the user agent along with any other defaults
-                connection.PrepareRequest(request);
-
-                lock (connection.Items)
-                {
-                    connection.Items[HttpRequestKey] = request;
-                }
-            };
-        }
-
-        public void Stop(IConnection connection)
-        {
-            var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
-            if (httpRequest != null)
-            {
-                try
-                {
-                    OnBeforeAbort(connection);
-
-                    // Abort the server side connection
-                    AbortConnection(connection);
-
-                    // Now abort the client connection
-                    httpRequest.Abort();
-                }
-                catch (NotImplementedException)
-                {
-                    // If this isn't implemented then do nothing
-                }
-            }
-        }
-
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
-        private void AbortConnection(IConnection connection)
+        public void Abort(IConnection connection)
         {
             string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
 
@@ -148,10 +110,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-
-        protected virtual void OnBeforeAbort(IConnection connection)
+        protected string GetReceiveQueryString(IConnection connection, string data)
         {
-
+            return TransportHelper.GetReceiveQueryString(connection, data, _transport);
         }
+
     }
 }

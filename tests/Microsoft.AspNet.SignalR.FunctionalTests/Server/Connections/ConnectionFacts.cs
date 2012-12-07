@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests;
+using System.Threading;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Xunit;
 using Xunit.Extensions;
 
@@ -45,6 +42,73 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         Assert.NotNull(ser.ResponseBody);
                         Assert.NotNull(ser.Exception);
                     }
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    int timesStopped = 0;
+
+                    connection.Closed += () =>
+                    {
+                        timesStopped++;
+                        Assert.Equal(ConnectionState.Disconnected, connection.State);
+                    };
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        connection.Start(host.Transport).Wait();
+                        connection.Stop();
+                    }
+                    for (int i = 0; i < 10; i++)
+                    {
+                        connection.Start(host.Transport);
+                        connection.Stop();
+                    }
+                    Assert.Equal(15, timesStopped);
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(keepAlive: 1, disconnectTimeout: 2);
+                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var reconnectWh = new ManualResetEventSlim();
+                    var disconnectWh = new ManualResetEventSlim();
+
+                    connection.Reconnecting += () =>
+                    {
+                        reconnectWh.Set();
+                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                    };
+
+                    connection.Closed += () =>
+                    {
+                        disconnectWh.Set();
+                        Assert.Equal(ConnectionState.Disconnected, connection.State);
+                    };
+
+                    connection.Start(host.Transport).Wait();
+                    host.Shutdown();
+
+                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
         }
