@@ -33,7 +33,8 @@
                     }
                 };
             
-            pingLoop = function () {
+            connection.log("SignalR: Initializing long polling connection with server.");
+            pingLoop = function () {                
                 transportLogic.pingServer(connection, that.name).done(onComplete).fail(pingFail);
             };
 
@@ -58,26 +59,9 @@
                         var messageId = instance.messageId,
                             connect = (messageId === null),
                             reconnecting = !connect,
-                            url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect),
-                            reconnectTimeOut = null,
-                            reconnectFired = false,
-                            triggerReconnected = function () {
-                                // Fire the reconnect event if it hasn't been fired as yet
-                                if (reconnectFired === false) {
-                                    connection.log("Raising the reconnect event");
+                            url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect);
 
-                                    if (changeState(connection,
-                                                    signalR.connectionState.reconnecting,
-                                                    signalR.connectionState.connected) === true) {
-
-                                        $(instance).triggerHandler(events.onReconnect);
-                                        reconnectFired = true;
-                                    }
-                                }
-                            };
-
-                        if (reconnecting === true && raiseReconnect === true &&
-                            !transportLogic.ensureReconnectingState(connection)) {
+                        if (isDisconnecting(instance) === true) {
                             return;
                         }
 
@@ -95,10 +79,6 @@
 
                                 if (minData) {
                                     data = transportLogic.maximizePersistentResponse(minData);
-                                }
-
-                                if (raiseReconnect === true) {
-                                    triggerReconnected();
                                 }
 
                                 transportLogic.processMessages(instance, minData);
@@ -121,10 +101,10 @@
 
                                 if (delay > 0) {
                                     window.setTimeout(function () {
-                                        poll(instance, timedOutReceived);
+                                        poll(instance, false);
                                     }, delay);
                                 } else {
-                                    poll(instance, timedOutReceived);
+                                    poll(instance, false);
                                 }
                             },
 
@@ -145,8 +125,14 @@
                             }
                         });
 
-                        if (raiseReconnect === true) {
-                            reconnectTimeOut = window.setTimeout(triggerReconnected, that.reconnectDelay);
+
+                        if (reconnecting && raiseReconnect === true) {
+                            if (changeState(connection,
+                                            signalR.connectionState.reconnecting,
+                                            signalR.connectionState.connected) === true) {
+                                connection.log("Raising the reconnect event");
+                                $(instance).triggerHandler(events.onReconnect);
+                            }                            
                         }
                     }(connection));
 
