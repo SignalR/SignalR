@@ -23,11 +23,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return Encoding.UTF8.GetString(buffer, 0, count);
         }
 
-        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, byte[] buffer, int maxMessageSize)
+        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, byte[] buffer, int maxMessageSize, CancellationToken disconnectToken)
         {
             ArraySegment<byte> arraySegment = new ArraySegment<byte>(buffer);
 
-            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(arraySegment, CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false);
+            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
             // special-case close messages since they might not have the EOF flag set
             if (receiveResult.MessageType == WebSocketMessageType.Close)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 while (true)
                 {
                     // loop until an error occurs or we see EOF
-                    receiveResult = await webSocket.ReceiveAsync(arraySegment, CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false);
+                    receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
                     if (receiveResult.MessageType != originalMessageType)
                     {
                         throw new InvalidOperationException("Incorrect message type");
