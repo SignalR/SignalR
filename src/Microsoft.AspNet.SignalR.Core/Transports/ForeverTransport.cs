@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     if (ex != null)
                     {
-                        tcs.TrySetException(ex);
+                        tcs.TrySetUnwrappedException(ex);
                     }
                     else
                     {

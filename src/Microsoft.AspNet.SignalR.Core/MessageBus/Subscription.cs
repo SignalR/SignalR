@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.SignalR
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.TrySetException(ex);
+                        taskCompletionSource.TrySetUnwrappedException(ex);
                     }
                 }
                 else
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (task.IsFaulted)
                 {
-                    taskCompletionSource.TrySetException(task.Exception);
+                    taskCompletionSource.TrySetUnwrappedException(task.Exception);
                 }
                 else if (task.Result)
                 {

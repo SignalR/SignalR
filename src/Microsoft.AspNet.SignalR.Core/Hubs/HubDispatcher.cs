@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                tcs.TrySetUnwrappedException(ex);
             }
 
             return tcs.Task;
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
                 if (faulted != null)
                 {
-                    tcs.SetException(faulted.Exception);
+                    tcs.SetUnwrappedException(faulted.Exception);
                 }
                 else if (tasks.Any(t => t.IsCanceled))
                 {
@@ -443,7 +443,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (task.IsFaulted)
             {
-                tcs.TrySetException(task.Exception);
+                tcs.TrySetUnwrappedException(task.Exception);
             }
             else if (task.IsCanceled)
             {
@@ -461,7 +461,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 if (t.IsFaulted)
                 {
-                    tcs.TrySetException(t.Exception);
+                    tcs.TrySetUnwrappedException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {

@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (t.IsFaulted)
                 {
-                    SetException(tcs, t.Exception);
+                    tcs.SetUnwrappedException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (t.IsFaulted)
                 {
-                    tcs.TrySetException(t.Exception.InnerExceptions);
+                    tcs.TrySetUnwrappedException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (t.IsFaulted)
                 {
-                    tcs.TrySetException(t.Exception.InnerExceptions);
+                    tcs.TrySetUnwrappedException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.SignalR
                 var faulted = completedTasks.FirstOrDefault(t => t.IsFaulted);
                 if (faulted != null)
                 {
-                    SetException(tcs, faulted.Exception);
+                    tcs.SetUnwrappedException(faulted.Exception);
                     return;
                 }
                 var cancelled = completedTasks.FirstOrDefault(t => t.IsCanceled);
@@ -716,11 +716,12 @@ namespace Microsoft.AspNet.SignalR
         internal static Task<T> FromError<T>(Exception e)
         {
             var tcs = new TaskCompletionSource<T>();
-            SetException<T>(tcs, e);
+            tcs.SetUnwrappedException<T>(e);
             return tcs.Task;
         }
 
-        private static void SetException<T>(TaskCompletionSource<T> tcs, Exception e)
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        internal static void SetUnwrappedException<T>(this TaskCompletionSource<T> tcs, Exception e)
         {
             var aggregateException = e as AggregateException;
             if (aggregateException != null)
@@ -730,6 +731,20 @@ namespace Microsoft.AspNet.SignalR
             else
             {
                 tcs.SetException(e);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        internal static bool TrySetUnwrappedException<T>(this TaskCompletionSource<T> tcs, Exception e)
+        {
+            var aggregateException = e as AggregateException;
+            if (aggregateException != null)
+            {
+                return tcs.TrySetException(aggregateException.InnerExceptions);
+            }
+            else
+            {
+                return tcs.TrySetException(e);
             }
         }
 
@@ -757,7 +772,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (t.IsFaulted)
                 {
-                    SetException(tcs, t.Exception);
+                    tcs.SetUnwrappedException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {
@@ -772,7 +787,7 @@ namespace Microsoft.AspNet.SignalR
                     }
                     catch (Exception ex)
                     {
-                        SetException(tcs, ex);
+                        tcs.SetUnwrappedException(ex);
                     }
                 }
             });
@@ -790,7 +805,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     if (t.IsFaulted)
                     {
-                        SetException(tcs, t.Exception);
+                        tcs.SetUnwrappedException(t.Exception);
                     }
                     else if (t.IsCanceled)
                     {
@@ -805,7 +820,7 @@ namespace Microsoft.AspNet.SignalR
                         }
                         catch (Exception ex)
                         {
-                            SetException(tcs, ex);
+                            tcs.SetUnwrappedException(ex);
                         }
                     }
                 });
@@ -821,7 +836,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     if (t.IsFaulted)
                     {
-                        SetException(tcs, t.Exception);
+                        tcs.SetUnwrappedException(t.Exception);
                     }
                     else if (t.IsCanceled)
                     {
@@ -835,7 +850,7 @@ namespace Microsoft.AspNet.SignalR
                         }
                         catch (Exception ex)
                         {
-                            SetException(tcs, ex);
+                            tcs.SetUnwrappedException(ex);
                         }
                     }
                 });
@@ -851,7 +866,7 @@ namespace Microsoft.AspNet.SignalR
                 {
                     if (task.IsFaulted)
                     {
-                        SetException(tcs, t.Exception);
+                        tcs.SetUnwrappedException(t.Exception);
                     }
                     else if (task.IsCanceled)
                     {
@@ -865,7 +880,7 @@ namespace Microsoft.AspNet.SignalR
                         }
                         catch (Exception ex)
                         {
-                            SetException(tcs, ex);
+                            tcs.SetUnwrappedException(ex);
                         }
                     }
                 });

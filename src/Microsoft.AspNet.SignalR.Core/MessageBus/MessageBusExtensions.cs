@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                tcs.TrySetUnwrappedException(ex);
 
                 registration.Dispose();
 
