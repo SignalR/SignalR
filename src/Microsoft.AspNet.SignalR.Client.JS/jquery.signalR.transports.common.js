@@ -81,7 +81,6 @@
                     deferral.reject("SignalR: Error pinging server: " + data.responseText);
                 }
             });
-                
 
             return deferral.promise();
         },
