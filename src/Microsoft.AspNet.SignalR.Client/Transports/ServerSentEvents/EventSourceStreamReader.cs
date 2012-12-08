@@ -31,9 +31,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         public Action Opened { get; set; }
 
         /// <summary>
-        /// Invoked when the connection is closed.
+        /// Invoked when the reader is closed while in the Processing state.
         /// </summary>
         public Action<Exception> Closed { get; set; }
+
+        /// <summary>
+        /// Invoked when the reader enters the Stopped state whether or not it was previously in the Processing state.
+        /// </summary>
+        public Action Disabled { get; set; }
 
         /// <summary>
         /// Invoked when there's a message if received in the stream.
@@ -54,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         {
             get
             {
-                return _reading == 1;
+                return _reading == State.Processing;
             }
         }
 
@@ -63,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// </summary>
         public void Start()
         {
-            if (Interlocked.Exchange(ref _reading, 1) == 0)
+            if (Interlocked.CompareExchange(ref _reading, State.Processing, State.Initial) == State.Initial)
             {
                 _setOpened = () =>
                 {
@@ -71,10 +76,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     OnOpened();
                 };
 
-                if (_readBuffer == null)
-                {
-                    _readBuffer = new byte[4096];
-                }
+                // FIX: Potential memory leak if Close is called between the CompareExchange and here.
+                _readBuffer = new byte[4096];
 
                 // Start the process loop
                 Process();
@@ -93,13 +96,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         private void Process()
         {
         Read:
-
-            if (!Processing)
+            Task<int> readTask;
+            lock (_bufferLock)
             {
-                return;
+                if (Processing && _readBuffer != null)
+                {
+                    readTask = _stream.ReadAsync(_readBuffer);
+                }
+                else
+                {
+                    return;
+                }
             }
-
-            Task<int> readTask = _stream.ReadAsync(_readBuffer);
 
             if (readTask.IsCompleted)
             {
@@ -192,7 +200,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void Close(Exception exception)
         {
-            if (Interlocked.Exchange(ref _reading, 0) == 1)
+            var previousState = Interlocked.Exchange(ref _reading, State.Stopped);
+
+            if (previousState == State.Processing)
             {
                 Debug.WriteLine("EventSourceReader: Connection Closed");
                 if (Closed != null)
@@ -211,6 +221,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     _readBuffer = null;
                 }
             }
+
+            if (previousState != State.Stopped && Disabled != null)
+            {
+                Disabled();
+            }
         }
 
         private void OnOpened()
@@ -227,6 +242,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             {
                 Message(sseEvent);
             }
+        }
+
+        private static class State
+        {
+            public const int Initial = 0;
+            public const int Processing = 1;
+            public const int Stopped = 2;
         }
     }
 }

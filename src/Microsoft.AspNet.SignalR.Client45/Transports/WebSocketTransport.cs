@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.WebSockets;
 
@@ -11,13 +12,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class WebSocketTransport : WebSocketHandler, IClientTransport
     {
         private readonly IHttpClient _client;
-        private volatile bool _stop;
+        private CancellationToken _disconnectToken;
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
 
         public WebSocketTransport(IHttpClient client)
         {
             _client = client;
+            _disconnectToken = CancellationToken.None;
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
         }
@@ -43,10 +45,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return _client.GetNegotiationResponse(connection);
         }
 
-        public Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
             _startTcs = new TaskCompletionSource<object>();
-
+            _disconnectToken = disconnectToken;
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
             // We don't need to await this task
@@ -66,15 +68,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var webSocket = new ClientWebSocket();
 
-            await webSocket.ConnectAsync(builder.Uri, CancellationToken.None);
-            await ProcessWebSocketRequestAsync(webSocket);
+            await webSocket.ConnectAsync(builder.Uri, _disconnectToken);
+            await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
         }
 
-        public void Stop(IConnection connection)
+        public void Abort(IConnection connection)
         {
-            _stop = true;
-
-            Close();
         }
 
         public Task Send(IConnection connection, string data)
@@ -93,8 +92,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                             out timedOut,
                                             out disconnected);
 
-            if (disconnected && !_stop)
+            if (disconnected && !_disconnectToken.IsCancellationRequested)
             {
+                _connectionInfo.Connection.Disconnect();
                 Close();
             }
         }
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnClose(bool clean)
         {
-            if (_stop)
+            if (_disconnectToken.IsCancellationRequested)
             {
                 return;
             }
@@ -120,8 +120,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async void DoReconnect()
         {
-            while (_connectionInfo.Connection.State == ConnectionState.Reconnecting ||
-                   _connectionInfo.Connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+            while (_connectionInfo.Connection.EnsureReconnecting())
             {
                 try
                 {
@@ -130,6 +129,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException)
+                    {
+                        break;
+                    }
                     _connectionInfo.Connection.OnError(ex);
                 }
 

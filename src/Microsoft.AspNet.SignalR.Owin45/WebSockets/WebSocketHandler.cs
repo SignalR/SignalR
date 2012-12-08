@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
          * IMPLEMENTATION
          */
 
-        public Task ProcessWebSocketRequestAsync(WebSocket webSocket)
+        public Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken)
         {
             if (webSocket == null)
             {
@@ -133,10 +133,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
 
             byte[] buffer = new byte[_receiveLoopBufferSize];
-            return ProcessWebSocketRequestAsync(webSocket, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize));
+            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize, disconnectToken));
         }
 
-        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, Func<Task<WebSocketMessage>> messageRetriever)
+        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<Task<WebSocketMessage>> messageRetriever)
         {
             bool cleanClose = true;
             try
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 OnOpen();
 
                 // dispatch incoming messages
-                while (true)
+                while (!disconnectToken.IsCancellationRequested)
                 {
                     WebSocketMessage incomingMessage = await messageRetriever();
                     switch (incomingMessage.MessageType)
@@ -170,6 +170,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             return;
                     }
                 }
+                Close();
+            }
+            catch (OperationCanceledException)
+            {
+                Close();
             }
             catch (Exception ex)
             {
