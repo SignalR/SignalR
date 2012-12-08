@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.Start(host.Transport).Wait();
                     host.Shutdown();
 
-                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)));
                     Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
