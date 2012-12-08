@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.WebSockets;
 
@@ -119,8 +120,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async void DoReconnect()
         {
-            while (_connectionInfo.Connection.State == ConnectionState.Reconnecting ||
-                   _connectionInfo.Connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+            while (_connectionInfo.Connection.EnsureReconnecting())
             {
                 try
                 {
@@ -129,6 +129,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException)
+                    {
+                        break;
+                    }
                     _connectionInfo.Connection.OnError(ex);
                 }
 
