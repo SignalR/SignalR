@@ -209,7 +209,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
-  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\SignalR.Silverlight.targets" Condition="'$(LocalToolsPath)'!=''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets')" />
   <ProjectExtensions>
     <VisualStudio>
