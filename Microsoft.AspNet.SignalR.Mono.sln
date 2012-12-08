@@ -19,6 +19,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Host.SystemW
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Host.HttpListener", "katana\src\Microsoft.Owin.Host.HttpListener\Microsoft.Owin.Host.HttpListener.csproj", "{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Hosting", "katana\src\Microsoft.Owin.Hosting\Microsoft.Owin.Hosting.csproj", "{C225EB2E-E7A7-463F-B058-1705F204978E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CF382357-4299-466B-97A0-0A582D6806E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Owin.Samples", "samples\Microsoft.AspNet.Owin.Samples\Microsoft.AspNet.Owin.Samples.csproj", "{5D69B6BE-062B-408D-913E-5CD2F21D5D17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Owin", "src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj", "{2B8C6DAD-4D85-41B1-83FD-248D9F347522}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +43,14 @@ Global
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|x86.ActiveCfg = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|x86.Build.0 = Release|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Debug|x86.Build.0 = Debug|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Release|x86.ActiveCfg = Release|Any CPU
+		{2B8C6DAD-4D85-41B1-83FD-248D9F347522}.Release|x86.Build.0 = Release|Any CPU
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -43,6 +59,14 @@ Global
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}.Release|Any CPU.Build.0 = Release|Any CPU
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}.Release|x86.ActiveCfg = Release|Any CPU
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84}.Release|x86.Build.0 = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|x86.Build.0 = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.ActiveCfg = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.Build.0 = Release|Any CPU
 		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -51,6 +75,14 @@ Global
 		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.Build.0 = Release|Any CPU
 		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.ActiveCfg = Release|Any CPU
 		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.Build.0 = Release|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Debug|x86.Build.0 = Debug|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Release|x86.ActiveCfg = Release|Any CPU
+		{C225EB2E-E7A7-463F-B058-1705F204978E}.Release|x86.Build.0 = Release|Any CPU
 		{E31826E6-C29A-4F08-BD4F-E17ACA793BBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E31826E6-C29A-4F08-BD4F-E17ACA793BBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E31826E6-C29A-4F08-BD4F-E17ACA793BBC}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -88,6 +120,8 @@ Global
 		{FBA09237-84CC-4383-BD12-CDF58E4020E8} = {65DBC231-0173-4367-B830-8502F4A31711}
 		{E31826E6-C29A-4F08-BD4F-E17ACA793BBC} = {83F5AEF3-8BEE-49EF-BF6D-517D4F9F246C}
 		{452C45C7-57A5-4161-BF7D-C1CD5AD4BB84} = {83F5AEF3-8BEE-49EF-BF6D-517D4F9F246C}
+		{C225EB2E-E7A7-463F-B058-1705F204978E} = {83F5AEF3-8BEE-49EF-BF6D-517D4F9F246C}
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17} = {CF382357-4299-466B-97A0-0A582D6806E9}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj
