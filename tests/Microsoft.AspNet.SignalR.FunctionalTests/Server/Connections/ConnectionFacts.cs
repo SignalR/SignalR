@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType)
             {
@@ -82,6 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
             {
