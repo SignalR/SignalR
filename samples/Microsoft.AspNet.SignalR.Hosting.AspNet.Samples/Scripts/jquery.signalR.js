@@ -677,6 +677,36 @@
     }
 
     signalR.transports._logic = {
+        pingServer: function (connection, transport) {
+            /// <summary>Pings the server</summary>
+            /// <param name="connection" type="signalr">Connection associated with the server ping</param>
+            /// <returns type="signalR" />
+            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
+                url = baseUrl + connection.appRelativeUrl + "/ping",
+                deferral = $.Deferred();
+
+            $.ajax({
+                url: url,
+                global: false,
+                cache: false,
+                type: "GET",
+                data: {},
+                success: function (data) {
+                    if (data === "pong") {
+                        deferral.resolve();
+                    }
+                    else {
+                        deferral.reject("SignalR: Invalid ping response when pinging server: " + data.responseText);
+                    }
+                },
+                error: function (data) {
+                    deferral.reject("SignalR: Error pinging server: " + data.responseText);
+                }
+            });
+
+            return deferral.promise();
+        },
+
         addQs: function (url, connection) {
             if (!connection.qs) {
                 return url;
@@ -1470,139 +1500,132 @@
 
         reconnectDelay: 3000,
 
+        init: function (connection, onComplete) {
+            /// <summary>Pings the server to ensure availability</summary>
+            /// <param name="connection" type="signalr">Connection associated with the server ping</param>
+            /// <param name="onComplete" type="Function">Callback to call once initialization has completed</param>
+
+            var that = this,
+                pingLoop,
+                // pingFail is used to loop the re-ping behavior.  When we fail we want to re-try.
+                pingFail = function (reason) {
+                    if (isDisconnecting(connection) === false) {
+                        connection.log("SignalR: Server ping failed because '" + reason + "', re-trying ping.");
+                        window.setTimeout(pingLoop, that.reconnectDelay);
+                    }
+                };
+
+            connection.log("SignalR: Initializing long polling connection with server.");
+            pingLoop = function () {
+                // Ping the server, on successful ping call the onComplete method, otherwise if we fail call the pingFail
+                transportLogic.pingServer(connection, that.name).done(onComplete).fail(pingFail);
+            };
+
+            pingLoop();
+        },
+
         start: function (connection, onSuccess, onFailed) {
             /// <summary>Starts the long polling connection</summary>
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
-            var that = this,
-                initialConnectFired = false;
+            var that = this;
 
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
                 connection.stop();
             }
 
-            connection.messageId = null;
+            // We start with an initialization procedure which pings the server to verify that it is there.
+            // On scucessful initialization we'll then proceed with starting the transport.
+            that.init(connection, function () {
+                connection.messageId = null;
 
-            window.setTimeout(function () {
-                (function poll(instance, raiseReconnect) {
-                    var messageId = instance.messageId,
-                        connect = (messageId === null),
-                        reconnecting = !connect,
-                        url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect),
-                        reconnectTimeOut = null,
-                        reconnectFired = false,
-                        triggerReconnected = function () {
-                            // Fire the reconnect event if it hasn't been fired as yet
-                            if (reconnectFired === false) {
-                                connection.log("Raising the reconnect event");
-
-                                if (changeState(connection,
-                                                signalR.connectionState.reconnecting,
-                                                signalR.connectionState.connected) === true) {
-
-                                    $(instance).triggerHandler(events.onReconnect);
-                                    reconnectFired = true;
-                                }
-                            }
-                        };
-
-                    if (reconnecting === true && raiseReconnect === true &&
-                        !transportLogic.ensureReconnectingState(connection)) {
-                        return;
-                    }
-
-                    connection.log("Attempting to connect to '" + url + "' using longPolling.");
-                    instance.pollXhr = $.ajax({
-                        url: url,
-                        global: false,
-                        cache: false,
-                        type: "GET",
-                        dataType: connection.ajaxDataType,
-                        success: function (minData) {
-                            var delay = 0,
-                                timedOutReceived = false,
-                                data;
-
-                            if (minData) {
-                                data = transportLogic.maximizePersistentResponse(minData);
-                            }
-
-                            if (initialConnectFired === false) {
-                                onSuccess();
-                                initialConnectFired = true;
-                            }
-
-                            if (raiseReconnect === true) {
-                                triggerReconnected();
-                            }
-
-                            transportLogic.processMessages(instance, minData);
-                            if (data &&
-                                $.type(data.LongPollDelay) === "number") {
-                                delay = data.LongPollDelay;
-                            }
-
-                            if (data && data.TimedOut) {
-                                timedOutReceived = data.TimedOut;
-                            }
-
-                            if (data && data.Disconnect) {
-                                return;
-                            }
-
-                            if (isDisconnecting(instance) === true) {
-                                return;
-                            }
-
-                            if (delay > 0) {
-                                window.setTimeout(function () {
-                                    poll(instance, timedOutReceived);
-                                }, delay);
-                            } else {
-                                poll(instance, timedOutReceived);
-                            }
-                        },
-
-                        error: function (data, textStatus) {
-                            if (textStatus === "abort") {
-                                connection.log("Aborted xhr requst.");
-                                return;
-                            }
-
-                            if (connection.state !== signalR.connectionState.reconnecting) {
-                                connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
-                                $(instance).triggerHandler(events.onError, [data.responseText]);
-                            }
-
-                            // If the request failed then we clear the timeout so that the
-                            // reconnect event doesn't get fired
-                            window.clearTimeout(reconnectTimeOut);
-
-                            window.setTimeout(function () {
-                                if (isDisconnecting(instance) === false) {
-                                    poll(instance, true);
-                                }
-                            }, connection.reconnectDelay);
-                        }
-                    });
-
-                    if (raiseReconnect === true) {
-                        reconnectTimeOut = window.setTimeout(triggerReconnected, that.reconnectDelay);
-                    }
-
-                }(connection));
-
-                // Now connected
-                // There's no good way know when the long poll has actually started so
-                // we assume it only takes around 150ms (max) to start the connection
                 window.setTimeout(function () {
-                    if (initialConnectFired === false) {
-                        onSuccess();
-                        initialConnectFired = true;
-                    }
-                }, 150);
+                    (function poll(instance, raiseReconnect) {
+                        var messageId = instance.messageId,
+                            connect = (messageId === null),
+                            reconnecting = !connect,
+                            url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect);
 
-            }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
+                        // If we've disconnected during the time we've tried to re-instantiate the poll then stop.
+                        if (isDisconnecting(instance) === true) {
+                            return;
+                        }
+
+                        connection.log("Attempting to connect to '" + url + "' using longPolling.");
+                        instance.pollXhr = $.ajax({
+                            url: url,
+                            global: false,
+                            cache: false,
+                            type: "GET",
+                            dataType: connection.ajaxDataType,
+                            success: function (minData) {
+                                var delay = 0,
+                                    data;
+
+                                if (minData) {
+                                    data = transportLogic.maximizePersistentResponse(minData);
+                                }
+
+                                transportLogic.processMessages(instance, minData);
+                                if (data &&
+                                    $.type(data.LongPollDelay) === "number") {
+                                    delay = data.LongPollDelay;
+                                }
+
+                                if (data && data.Disconnect) {
+                                    return;
+                                }
+
+                                if (isDisconnecting(instance) === true) {
+                                    return;
+                                }
+
+                                // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
+                                if (delay > 0) {
+                                    window.setTimeout(function () {
+                                        poll(instance, false);
+                                    }, delay);
+                                } else {
+                                    poll(instance, false);
+                                }
+                            },
+
+                            error: function (data, textStatus) {
+                                if (textStatus === "abort") {
+                                    connection.log("Aborted xhr requst.");
+                                    return;
+                                }
+
+                                if (connection.state !== signalR.connectionState.reconnecting) {
+                                    connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                    $(instance).triggerHandler(events.onError, [data.responseText]);
+                                }
+
+                                // If we've errored out we need to verify that the server is still there, so re-start initialization process
+                                // This will ping the server until it successfully gets a response.
+                                that.init(instance, function () {
+                                    // Call poll with the raiseReconnect flag as true
+                                    poll(instance, true);
+                                });
+                            }
+                        });
+
+                        // This will only ever pass after an error has occured via the poll ajax procedure.
+                        if (reconnecting && raiseReconnect === true) {
+                            if (changeState(connection,
+                                            signalR.connectionState.reconnecting,
+                                            signalR.connectionState.connected) === true) {
+                                // Successfully reconnected!
+                                connection.log("Raising the reconnect event");
+                                $(instance).triggerHandler(events.onReconnect);
+                            }
+                        }
+                    }(connection));
+
+                    // Trigger the onSuccess() method because we've now instantiated a connection
+                    onSuccess();
+                }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
+            });
         },
 
         lostConnection: function (connection) {
