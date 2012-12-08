@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.SignalR
 {
     internal class DisposableAction : IDisposable
     {
+        public static readonly DisposableAction Empty = new DisposableAction(() => { });
+
         private Action _action;
 
         public DisposableAction(Action action)
