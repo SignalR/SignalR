@@ -69,33 +69,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\AdminAuthHub.cs">
-      <Link>Hubs\AdminAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\AuthHub.cs">
-      <Link>Hubs\AuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\IncomingAuthHub.cs">
-      <Link>Hubs\IncomingAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\InheritAuthHub.cs">
-      <Link>Hubs\InheritAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\InvokeAuthHub.cs">
-      <Link>Hubs\InvokeAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\NoAuthHub.cs">
-      <Link>Hubs\NoAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\OutgoingAuthHub.cs">
-      <Link>Hubs\OutgoingAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\UserAndRoleAuthHub.cs">
-      <Link>Hubs\UserAndRoleAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\demohub\DemoHub.cs">
-      <Link>Hubs\DemoHub.cs</Link>
-    </Compile>
     <Compile Include="App_Start\RegisterHubs.cs" />
     <Compile Include="App_Start\TestEndPoint.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
