@@ -37,6 +37,15 @@ namespace Microsoft.AspNet.SignalR.Client
                 return resourceMan;
             }
         }
+		
+        /// <summary>
+        ///   Looks up a localized string similar to The connection was stopped before it could be started..
+        /// </summary>
+        internal static string Error_ConnectionCancelled {
+            get {
+                return ResourceManager.GetString("Error_ConnectionCancelled");
+            }
+        }
 
         /// <summary>
         ///   Looks up a localized string similar to The connection has not been established..

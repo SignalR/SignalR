@@ -93,9 +93,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\TransportHelper.cs">
       <Link>Transports\TransportHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
-      <Link>Infrastructure\ExceptionsExtensions.cs</Link>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +101,21 @@
     </Compile>
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
+      <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
+      <Link>Infrastructure\ExceptionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
+      <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
+      <Link>Infrastructure\Disposer.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
@@ -161,9 +173,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\DisposableAction.cs">
-      <Link>Infrastructure\DisposableAction.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ThreadSafeInvoker.cs">
       <Link>Infrastructure\ThreadSafeInvoker.cs</Link>
