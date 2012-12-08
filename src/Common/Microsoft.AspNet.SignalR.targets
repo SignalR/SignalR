@@ -17,6 +17,10 @@
       <VisualStudioVersion>11.0</VisualStudioVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+      <DefineConstants>$(DefineConstants);MONO</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(KeyFile)' != '' And '$(DisableSigning)' != 'true'">
     <DefineConstants>$(DefineConstants);SIGNED</DefineConstants>
     <SignAssembly>true</SignAssembly>
