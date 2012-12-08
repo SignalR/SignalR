@@ -37,6 +37,14 @@ $(function () {
         addMessage("Pong");
     }
 
+
+    $.connection.hub.stateChanged(function () {
+        console.log($.connection.hub.state);
+        addMessage("STATE: " + $.connection.hub.state);
+    });
+
+    $.connection.hub.logging = true;
+
     stopButton.click(function () {
         $.connection.hub.stop();
 
@@ -49,7 +57,7 @@ $(function () {
     });
 
     startButton.click(function () {
-        $.connection.hub.start({ transport: activeTransport }).done(function () {
+        $.connection.hub.start({ transport: "longPolling" }).done(function () {
             $(pingButton).click(function () {
                 status.server.ping();
             });

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -36,17 +36,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>artifacts\Debug\bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <JSResourceFolder>resources</JSResourceFolder>
-    <JSCoreProject>Microsoft.AspNet.SignalR.Client.JS</JSCoreProject>
-    <TempFolder>temp</TempFolder>
     <QUnitTestsFolder>Tests</QUnitTestsFolder>
-    <QUnitLibrary>.\QUnit\qunit.js</QUnitLibrary>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -68,39 +64,53 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="default.aspx" />
-    <Content Include="Tests\Connections\ConnectionFacts.js" />
-    <Content Include="QUnit\qunit.css" />
-    <Content Include="QUnit\qunit.js" />
-    <Content Include="Tests\Connections\ConnectionStateFacts.js" />
-    <Content Include="Tests\Connections\HubConnectionFacts.js" />
-    <Content Include="Tests\SignalRFacts.js" />
-    <Content Include="Tests\Transports\ForeverFrameFacts.js" />
-    <Content Include="Tests\Transports\LongPollingFacts.js" />
-    <Content Include="Tests\Transports\ServerSentEventsFacts.js" />
-    <Content Include="Tests\Transports\WebSocketsFacts.js" />
+    <Content Include="default.html" />
+    <Content Include="Scripts\jquery-1.6.4.js" />
+    <Content Include="Scripts\jquery-1.6.4.min.js">
+      <DependentUpon>jquery-1.6.4.js</DependentUpon>
+    </Content>
+    <Content Include="Scripts\jquery.signalR.js" />
+    <Content Include="Tests\FunctionalTests\test.js" />
+    <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
+    <Content Include="Styles\qunit.css" />
+    <Content Include="Scripts\qunit.js" />
+    <Content Include="Tests\UnitTests\Connections\ConnectionStateFacts.js" />
+    <Content Include="Tests\UnitTests\Connections\HubConnectionFacts.js" />
+    <Content Include="Tests\UnitTests\SignalRFacts.js" />
+    <Content Include="Tests\UnitTests\Transports\ForeverFrameFacts.js" />
+    <Content Include="Tests\UnitTests\Transports\LongPollingFacts.js" />
+    <Content Include="Tests\UnitTests\Transports\ServerSentEventsFacts.js" />
+    <Content Include="Tests\UnitTests\Transports\WebSocketsFacts.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="default.aspx.cs">
-      <DependentUpon>default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="default.aspx.designer.cs">
-      <DependentUpon>default.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Microsoft.AspNet.SignalR.FunctionalTests\config\applicationhost.config">
+      <Link>config\applicationhost.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Microsoft.AspNet.SignalR.FunctionalTests\config\aspnet.config">
+      <Link>config\aspnet.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Microsoft.AspNet.SignalR.FunctionalTests\config\redirection.config">
+      <Link>config\redirection.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="QUnit\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -133,39 +143,38 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Target Name="BeforeBuild">
-    <!-- Update Web.config -->
-    <FileUpdate Files="Web.Config" Regex="&lt;add key=&quot;JSResourceFolder&quot; value=&quot;(.*?)&quot;/&gt;" ReplacementText="&lt;add key=&quot;JSResourceFolder&quot; value=&quot;$(JSResourceFolder)&quot;/&gt;" />
-    <FileUpdate Files="Web.Config" Regex="&lt;add key=&quot;JSCoreProject&quot; value=&quot;(.*?)&quot;/&gt;" ReplacementText="&lt;add key=&quot;JSCoreProject&quot; value=&quot;$(JSCoreProject)&quot;/&gt;" />
-    <FileUpdate Files="Web.Config" Regex="&lt;add key=&quot;TempFolder&quot; value=&quot;(.*?)&quot;/&gt;" ReplacementText="&lt;add key=&quot;TempFolder&quot; value=&quot;$(TempFolder)&quot;/&gt;" />
-    <FileUpdate Files="Web.Config" Regex="&lt;add key=&quot;QUnitTestsFolder&quot; value=&quot;(.*?)&quot;/&gt;" ReplacementText="&lt;add key=&quot;QUnitTestsFolder&quot; value=&quot;$(QUnitTestsFolder)&quot;/&gt;" />
-    <!-- Refresh temp directory to account for potential new additions or removals -->
-    <RemoveDir Directories="$(TempFolder)" ContinueOnError="true" />
-    <MakeDir Directories="$(TempFolder);$(TempFolder)/$(JSResourceFolder);" ContinueOnError="true" />
-    <!-- Pull all Javascript resources recursively from Microsoft.AspNet.SignalR.Client.JS project -->
-    <CreateItem Include="..\..\src\$(JSCoreProject)\**\*.js" Exclude="..\..\src\$(JSCoreProject)\**\*-vsdoc.js;..\..\src\$(JSCoreProject)\bin\*;..\..\src\$(JSCoreProject)\**\*.min.js;">
-      <Output TaskParameter="Include" ItemName="ResourceFolderOutput" />
-    </CreateItem>
-    <!-- Pull all QUnit tests from Microsoft.AspNet.SignalR.Client.JS.Tests project -->
-    <CreateItem Include=".\$(QUnitTestsFolder)\**\*.js" Exclude=".\$(QUnitTestsFolder)\**\*-vsdoc.js;.\$(QUnitTestsFolder)\**\*.min.js;">
-      <Output TaskParameter="Include" ItemName="QUnitTests" />
-    </CreateItem>
-    <!-- Copy the pulled files -->
-    <Copy SourceFiles="@(ResourceFolderOutput)" DestinationFolder="$(TempFolder)/$(JSResourceFolder)" OverwriteReadOnlyFiles="true">
-    </Copy>
-    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="true" Lines="// Auto-generated bridge file used for QUnit command line testing.&#xD;// QUnit library:">
-    </WriteLinesToFile>
-    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="/// &lt;reference path=&quot;$(QUnitLibrary)&quot; /&gt;&#xD;// Core javascript resource files:">
-    </WriteLinesToFile>
-    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="@(ResourceFolderOutput->'/// &lt;reference path=&quot;%(Identity)&quot; /&gt;')">
-    </WriteLinesToFile>
-    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="// QUnit tests:">
-    </WriteLinesToFile>
-    <WriteLinesToFile File="CommandLineBridge.js" Overwrite="false" Lines="@(QUnitTests->'/// &lt;reference path=&quot;%(Identity)&quot; /&gt;')">
-    </WriteLinesToFile>
-    <!-- Updated References file -->
-    <WriteLinesToFile File="Scripts/_references.js" Overwrite="true" Lines="@(ResourceFolderOutput->'/// &lt;reference path=&quot;..\..\src\%(Identity)&quot; /&gt;')">
-    </WriteLinesToFile>
+  <UsingTask TaskName="BuildScriptTags" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <ProjectDirectory Required="true" />
+      <RelativePath Required="true" />
+      <ScriptTagsOutput Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Web" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+            ScriptTagsOutput = "";
+            DirectoryInfo dirInfo = new DirectoryInfo(ProjectDirectory + "\\" + RelativePath.Replace("/", "\\"));
+            FileInfo[] fileInfos = dirInfo.GetFiles("*.js", SearchOption.AllDirectories);
+
+            foreach (FileInfo f in fileInfos)
+            {
+                var scriptTag = "<script type=\"text/javascript\" src=\"";
+                scriptTag += Uri.UnescapeDataString(f.FullName.Replace(ProjectDirectory + "\\", "").Replace("\\","/")) + "\"></script>";
+                
+                ScriptTagsOutput += scriptTag+"\n";
+            }
+    ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="BeforeBuild">    
+    <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
+      <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
+    </BuildScriptTags>
+    <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" />
+    
+    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!--

@@ -1,0 +1,39 @@
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Client.JS.Tests.Default" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit Tests</title>
+    <link rel="stylesheet" href="/QUnit/qunit.css">
+</head>
+<body>
+    <form runat="server" id="main">
+        <div id="qunit"></div>
+        <script src="QUnit/qunit.js"></script>
+        <!-- 
+                Javascript is dynamically added to this panel.  First all javascript from SignalR.Client.JS is added,
+                then all javascript from the Tests directory is added.  This is so that all the unit tests within the 
+                Tests directory can test the SignalR.Client.JS libraries.
+            -->
+        <!-- ##JS## --><script type="text/javascript" src="temp/resources/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.core.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.hubs.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.transports.common.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.transports.foreverFrame.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.transports.longPolling.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.transports.serverSentEvents.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.transports.webSockets.js"></script>
+<script type="text/javascript" src="temp/resources/jquery.signalR.version.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/SignalRFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Connections/ConnectionFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Connections/ConnectionStateFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Connections/HubConnectionFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Transports/ForeverFrameFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Transports/LongPollingFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Transports/ServerSentEventsFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Transports/WebSocketsFacts.js"></script>
+<!-- ##JS## -->
+    </form>
+</body>
+</html>
