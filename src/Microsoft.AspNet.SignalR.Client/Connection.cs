@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private SafeCancellationTokenSource _disconnectCts;
 
         // Provides a way to cancel the the timeout that stops a reconnect cycle
-        private ThreadSafeInvoker _stopReconnectInvoker;
+        private Action _preventDelayedDisconnect;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             _disconnectCts = new SafeCancellationTokenSource();
-            _stopReconnectInvoker = new ThreadSafeInvoker();
+            _preventDelayedDisconnect = () => { };
         }
 
         /// <summary>
@@ -367,6 +367,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
+                    _preventDelayedDisconnect();
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
                     _disconnectCts = new SafeCancellationTokenSource();
@@ -448,7 +449,12 @@ namespace Microsoft.AspNet.SignalR.Client
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
-            TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => _stopReconnectInvoker.Invoke(Disconnect));
+
+            var stopReconnectInvoker = new ThreadSafeInvoker();
+            _preventDelayedDisconnect = () => stopReconnectInvoker.Invoke();
+
+            TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => stopReconnectInvoker.Invoke(Disconnect));
+
             if (Reconnecting != null)
             {
                 Reconnecting();
@@ -459,8 +465,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             // Prevent the timeout set OnReconnecting from firing and stopping the connection if we have successfully
             // reconnected before the _disconnectTimeout delay.
-            _stopReconnectInvoker.Invoke();
-            _stopReconnectInvoker = new ThreadSafeInvoker();
+            _preventDelayedDisconnect();
             if (Reconnected != null)
             {
                 Reconnected();
