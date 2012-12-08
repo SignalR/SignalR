@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         private NameValueCollection _serverVariables;
         private NameValueCollection _form;
         private bool _formInitialized;
-        private object _formLock;
+        private object _formLock = new object();
         private IDictionary<string, Cookie> _cookies;
 
         public Uri Url
