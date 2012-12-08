@@ -113,6 +113,51 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(keepAlive: null,
+                                    connectionTimeout: 2,
+                                    hearbeatInterval: 2,
+                                    disconnectTimeout: 10);
+
+                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var reconnectingWh = new ManualResetEventSlim();
+                    var reconnectedWh = new ManualResetEventSlim();
+
+                    connection.Reconnecting += () =>
+                    {
+                        reconnectingWh.Set();
+                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                    };
+
+                    connection.Reconnected += () =>
+                    {
+                        reconnectedWh.Set();
+                        Assert.Equal(ConnectionState.Connected, connection.State);
+                    };
+
+                    connection.Start(host.Transport).Wait();
+
+                    // Force reconnect
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                    Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
+                    Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
+                    Thread.Sleep(TimeSpan.FromSeconds(15));
+                    Assert.NotEqual(ConnectionState.Disconnected, connection.State);
+
+                    connection.Stop();
+                }
+            }
         }
     }
 }
