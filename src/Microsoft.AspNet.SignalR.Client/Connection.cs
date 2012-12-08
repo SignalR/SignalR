@@ -27,8 +27,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private IClientTransport _transport;
 
+        // Propagates notification that connection should be stopped.
+        private SafeCancellationTokenSource _disconnectCts;
+
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
+
+        // Provides a way to cancel the the timeout that stops a reconnect cycle
+        private IDisposable _disconnectTimeoutOperation;
 
         // The default connection state is disconnected
         private ConnectionState _state = ConnectionState.Disconnected;
@@ -38,12 +44,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
         // The groups the connection is currently subscribed to
         private readonly HashSet<string> _groups;
-
-        // Propagates notification that connection should be stopped.
-        private SafeCancellationTokenSource _disconnectCts;
-
-        // Provides a way to cancel the the timeout that stops a reconnect cycle
-        private ThreadSafeInvoker _stopReconnectInvoker;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             _disconnectCts = new SafeCancellationTokenSource();
-            _stopReconnectInvoker = new ThreadSafeInvoker();
+            _disconnectTimeoutOperation = DisposableAction.Empty;
         }
 
         /// <summary>
@@ -367,6 +367,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
+                    _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
                     _disconnectCts = new SafeCancellationTokenSource();
@@ -448,7 +449,8 @@ namespace Microsoft.AspNet.SignalR.Client
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
-            TaskAsyncHelper.Delay(_disconnectTimeout).Then(() => _stopReconnectInvoker.Invoke(Disconnect));
+            _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
+
             if (Reconnecting != null)
             {
                 Reconnecting();
@@ -459,8 +461,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             // Prevent the timeout set OnReconnecting from firing and stopping the connection if we have successfully
             // reconnected before the _disconnectTimeout delay.
-            _stopReconnectInvoker.Invoke();
-            _stopReconnectInvoker = new ThreadSafeInvoker();
+            _disconnectTimeoutOperation.Dispose();
             if (Reconnected != null)
             {
                 Reconnected();
@@ -537,6 +538,17 @@ namespace Microsoft.AspNet.SignalR.Client
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
+        }
+
+        // TODO: Refactor into a helper class
+        private static IDisposable SetTimeout(TimeSpan delay, Action operation)
+        {
+            var cancellableInvoker = new ThreadSafeInvoker();
+
+            TaskAsyncHelper.Delay(delay).Then(() => cancellableInvoker.Invoke(operation));
+
+            // Disposing this return value will cancel the operation if it has not already been invoked.
+            return new DisposableAction(() => cancellableInvoker.Invoke());
         }
     }
 }
