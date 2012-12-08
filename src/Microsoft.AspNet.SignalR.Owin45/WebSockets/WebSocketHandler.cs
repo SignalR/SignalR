@@ -133,10 +133,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
 
             byte[] buffer = new byte[_receiveLoopBufferSize];
-            return ProcessWebSocketRequestAsync(webSocket, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize, disconnectToken));
+            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize, disconnectToken));
         }
 
-        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, Func<Task<WebSocketMessage>> messageRetriever)
+        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<Task<WebSocketMessage>> messageRetriever)
         {
             bool cleanClose = true;
             try
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 OnOpen();
 
                 // dispatch incoming messages
-                while (true)
+                while (!disconnectToken.IsCancellationRequested)
                 {
                     WebSocketMessage incomingMessage = await messageRetriever();
                     switch (incomingMessage.MessageType)
@@ -170,6 +170,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             return;
                     }
                 }
+                Close();
+            }
+            catch (OperationCanceledException)
+            {
+                Close();
             }
             catch (Exception ex)
             {
@@ -178,10 +183,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                     Error = ex;
                     OnError();
                     cleanClose = false;
-                }
-                else if (ex is OperationCanceledException)
-                {
-                    Close();
                 }
             }
             finally
@@ -218,12 +219,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                     case 0x80070026:
                         return false;
                 }
-            }
-
-            // If this exception is due to the Task being cancelled by Connection.Disconnect(), treat as a normal close
-            if (ex is OperationCanceledException)
-            {
-                return false;
             }
 
             // unknown exception; treat as fatal
