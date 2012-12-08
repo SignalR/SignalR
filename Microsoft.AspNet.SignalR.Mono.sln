@@ -124,7 +124,7 @@ Global
 		{5D69B6BE-062B-408D-913E-5CD2F21D5D17} = {CF382357-4299-466B-97A0-0A582D6806E9}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj
+		StartupItem = samples\Microsoft.AspNet.Owin.Samples\Microsoft.AspNet.Owin.Samples.csproj
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
