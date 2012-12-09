@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.Owin.Hosting;
 using Owin;
 
@@ -19,10 +20,11 @@ namespace Microsoft.AspNet.Owin.Samples
 
         public void Configuration(IAppBuilder app)
         {
-            // add SignalR to pipeline
+            // Map hubs
             app.MapHubs("/signalr");
 
-            app.MapConnection<RawConnection>("/raw");
+            // Map a connection
+            app.MapConnection<Echo>("/echo");
         }
     }
 
@@ -34,4 +36,11 @@ namespace Microsoft.AspNet.Owin.Samples
         }
     }
 
+    public class Echo : PersistentConnection
+    {
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        {
+            return Connection.Broadcast(data);
+        }
+    }
 }
