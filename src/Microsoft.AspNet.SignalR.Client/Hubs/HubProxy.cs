@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 {
                     if (result.Error != null)
                     {
-                        tcs.TrySetException(new InvalidOperationException(result.Error));
+                        tcs.TrySetUnwrappedException(new InvalidOperationException(result.Error));
                     }
                     else
                     {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                         {
                             // If we failed to set the result for some reason or to update
                             // state then just fail the tcs.
-                            tcs.TrySetException(ex);
+                            tcs.TrySetUnwrappedException(ex);
                         }
                     }
                 }
@@ -142,8 +142,20 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
-            return _connection.Send(value)
-                              .Then(() => tcs.Task);
+            _connection.Send(value).ContinueWith(task =>
+            {
+                if (task.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else if (task.IsFaulted)
+                {
+                    tcs.TrySetUnwrappedException(task.Exception);
+                }
+            },
+            TaskContinuationOptions.NotOnRanToCompletion);
+
+            return tcs.Task;
         }
 
         public void InvokeEvent(string eventName, JToken[] args)

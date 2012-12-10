@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.WebSockets;
 
@@ -59,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async Task PerformConnect(bool reconnecting = false)
         {
-            var url = reconnecting ? _connectionInfo.Connection.Url : _connectionInfo.Connection.Url + "/connect";
+            var url = reconnecting ? _connectionInfo.Connection.Url : _connectionInfo.Connection.Url + "connect";
             url += TransportHelper.GetReceiveQueryString(_connectionInfo.Connection, _connectionInfo.Data, "webSockets");
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
@@ -127,12 +126,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     await PerformConnect(reconnecting: true);
                     break;
                 }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
                 catch (Exception ex)
                 {
-                    if (ex is OperationCanceledException)
-                    {
-                        break;
-                    }
                     _connectionInfo.Connection.OnError(ex);
                 }
 
