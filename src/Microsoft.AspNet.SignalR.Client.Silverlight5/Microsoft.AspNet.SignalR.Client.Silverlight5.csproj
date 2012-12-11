@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Client.Silverlight5</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Client.Silverlight5</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.SignalR.Client</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
@@ -37,7 +37,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Bin\Debug\Microsoft.AspNet.SignalR.Client.Silverlight5.XML</DocumentationFile>
+    <DocumentationFile>Bin\Debug\Microsoft.AspNet.SignalR.Client.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -48,7 +48,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Bin\Release\Microsoft.AspNet.SignalR.Client.Silverlight5.XML</DocumentationFile>
+    <DocumentationFile>Bin\Release\Microsoft.AspNet.SignalR.Client.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
