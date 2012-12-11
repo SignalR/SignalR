@@ -15,6 +15,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
+            if (!Initialized)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return EnqueueOperation(() =>
             {
                 OutputWriter.Write("data: {}");

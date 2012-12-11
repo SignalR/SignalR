@@ -14,6 +14,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
 
+        // Determines whether the transport has been fully initialized.
+        private volatile bool _initialized;
+
         private const int MaxMessages = 10;
 
         protected ForeverTransport(HostContext context, IDependencyResolver resolver)
@@ -52,6 +55,18 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected IJsonSerializer JsonSerializer
         {
             get { return _jsonSerializer; }
+        }
+
+        protected bool Initialized
+        {
+            get
+            {
+                return _initialized;
+            }
+            set
+            {
+                _initialized = value;
+            }
         }
 
         protected virtual void OnSending(string payload)
@@ -220,7 +235,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                   }
                                                   return TaskAsyncHelper.Empty;
                                               },
-                                              () => InitializeResponse(connection));
+                                              () => InitializeResponse(connection),
+                                              () =>
+                                              {
+                                                  Initialized = true;
+                                                  return TaskAsyncHelper.Empty;
+                                              });
             };
 
             return ProcessMessages(connection, afterReceive);
