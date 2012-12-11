@@ -366,8 +366,8 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="$(SolutionDir)\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="$(SolutionDir)\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Target Name="AfterBuild">
     <Exec Condition="'$(ArtifactsDir)' == '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" Command="$(SolutionDir)\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\signalr.exe ghp /o:$(SolutionDir)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js" WorkingDirectory="$(OutputPath)" />
