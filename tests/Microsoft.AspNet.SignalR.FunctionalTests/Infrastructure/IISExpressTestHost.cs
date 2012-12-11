@@ -11,7 +11,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private readonly SiteManager _siteManager;
         private readonly string _path;
         private readonly string _webConfigPath;
-        private int _disposed = 0;
 
         private static readonly Lazy<string> _webConfigTemplate = new Lazy<string>(() => GetConfig());
 
@@ -57,10 +56,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public void Dispose()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0)
-            {
-                File.Delete(_webConfigPath);
-            }
+            Shutdown();
         }
 
         public void Shutdown()
