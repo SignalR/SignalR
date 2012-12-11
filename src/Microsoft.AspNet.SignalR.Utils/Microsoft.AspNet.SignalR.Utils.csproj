@@ -66,6 +66,7 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\InstallPerformanceCountersCommand.cs" />
     <Compile Include="Commands\PerformanceCounterInstaller.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\UninstallPerformanceCountersCommand.cs" />
