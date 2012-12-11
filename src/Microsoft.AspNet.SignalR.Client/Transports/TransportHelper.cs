@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 qsBuilder.Append("&connectionData=" + data);
             }
 
-            string customQuery = GetCustomQueryString(connection);
+            string customQuery = connection.QueryString;
 
             if (!String.IsNullOrEmpty(customQuery))
             {
@@ -88,18 +88,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             qsBuilder.Append("&").Append(GetNoCacheUrlParam());
 #endif
             return qsBuilder.ToString();
-        }
-
-        public static string GetCustomQueryString(IConnection connection)
-        {
-            if (connection == null)
-            {
-                throw new ArgumentNullException("connection");
-            }
-
-            return String.IsNullOrEmpty(connection.QueryString)
-                            ? ""
-                            : "&" + connection.QueryString;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
