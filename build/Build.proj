@@ -38,6 +38,56 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--Requires just VS2012-->
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></CoreProjects>
+    
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj"></CoreProjects>
+    
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj"></CoreProjects>
+    
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj"></CoreProjects>
+    
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj"></CoreProjects>
+
+    <!--Requires SDKs-->
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></CoreProjects>
+    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CoreProjects>
+  </ItemGroup>
+
+  <ItemGroup>
+    <BuildProjects Include="@(CoreProjects)"></BuildProjects>
+    <!--Sample projects-->
+    <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.LoadTestHarness\Microsoft.AspNet.SignalR.LoadTestHarness.csproj"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.Owin.Samples\Microsoft.AspNet.Owin.Samples.csproj"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Samples\Microsoft.AspNet.SignalR.Client.Samples.csproj"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WP8.Sample\Microsoft.AspNet.SignalR.Client.WP8.Sample.csproj"
+                   Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj"></UnitTestProjects>
+  </ItemGroup>
+
+  <ItemGroup>
+    <FunctionalTestProjects Include="@(UnitTestProjects)"></FunctionalTestProjects>
+    <FunctionalTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.csproj"></FunctionalTestProjects>
+  </ItemGroup>
+
+  <ItemGroup>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
@@ -86,7 +136,12 @@
   <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
   </Target>
 
-  <Target Name="RunUnitTests">
+  <Target Name="RunUnitTests" DependsOnTargets="CreateOutputDir">
+    <MSBuild Projects="%(UnitTestProjects.Identity)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition=" '$(OS)' == 'Windows_NT'"/>
+    
     <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
     <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
     <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
@@ -96,10 +151,16 @@
            Verbose="true" />     
   </Target>
 
-  <Target Name="RunFunctionalTests">
+  <Target Name="RunFunctionalTests" DependsOnTargets="CreateOutputDir">
+    <MSBuild Projects="%(FunctionalTestProjects.Identity)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition=" '$(OS)' == 'Windows_NT'"/>
+
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll" 
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml" 
            Verbose="true" />
+    
     <CallTarget Targets="KillIISExpress" />
     <OnError ExecuteTargets="KillIISExpress" />
   </Target>
@@ -108,7 +169,7 @@
     <Exec Command="taskkill /IM iisexpress.exe /F" ContinueOnError="true" />
   </Target>
 
-    <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
+  <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
   </Target>
 
   <Target Name="CreateOutputDir">
@@ -119,60 +180,20 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="CreateOutputDir">
-    <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.sln"
+    <MSBuild Projects="%(BuildProjects.Identity)"
              Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
-             Condition=" '$(OS)' == 'Windows_NT'" />
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition=" '$(OS)' == 'Windows_NT'"/>
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Mono.sln"
              Targets="Build"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
              Condition=" '$(OS)' != 'Windows_NT'" />
-
-    <!--<MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
-             Targets="Build"
-             Condition="(Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')) Or (Exists('$(LocalToolsPath)\WP8'))"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties);SolutionDir=$(ProjectRoot);" />-->
-
-    <!--<MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Silverlight.sln"
-             Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets') Or Exists('$(LocalToolsPath)\Silverlight')"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />-->
-
-    <!--<MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.WinRT.sln"
-             Targets="Build"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)" />-->
   </Target>
 
-  <Target Name="RunCodeAnalysis" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
-    <ItemGroup>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj"></AnalysisProjects>        
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj"></AnalysisProjects>        
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj"></AnalysisProjects>        
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></AnalysisProjects>
-      <AnalysisProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj"></AnalysisProjects>
-    </ItemGroup>
-
-    <MSBuild Projects="%(AnalysisProjects.Identity)"
+  <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDir" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
+    <MSBuild Projects="%(CoreProjects.Identity)"
              Targets="ReBuild"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-    
-    <!-- These projects are built separately because they have conditional build commands -->
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
-             Targets="ReBuild"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
-    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
-             Targets="ReBuild"
-             Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"
-             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);" />
-
+             Properties="RunCodeAnalysis=true;Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)" />
   </Target>
 </Project>
