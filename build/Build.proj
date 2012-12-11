@@ -143,7 +143,7 @@
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
              Condition=" '$(OS)' == 'Windows_NT'"/>
     
-    <Exec Command="$(ChutzpahExePath) $(JSTestsBridgeFile) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTestsBridgeFile)&quot; /silent" Condition=" '$(OS)' == 'Windows_NT'" />
     <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
     <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
 

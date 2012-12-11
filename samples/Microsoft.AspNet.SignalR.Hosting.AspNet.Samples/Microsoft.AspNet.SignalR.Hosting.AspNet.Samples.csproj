@@ -366,11 +366,16 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="$(SolutionDir)\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Copy SourceFiles="$(SolutionDir)\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Target Name="AfterBuild">
-    <Exec Condition="'$(ArtifactsDir)' == '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" Command="$(SolutionDir)\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\signalr.exe ghp /o:$(SolutionDir)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js" WorkingDirectory="$(OutputPath)" />
-    <Exec Condition="'$(ArtifactsDir)' != '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" Command="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Utils\signalr.exe ghp /o:$(SolutionDir)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js" WorkingDirectory="$(OutputPath)" />
+    <Exec Condition="'$(ArtifactsDir)' == '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" 
+          Command="&quot;$(SolutionDir)src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\signalr.exe&quot; ghp /o:&quot;$(SolutionDir)samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js&quot;" 
+          WorkingDirectory="$(OutputPath)" />
+          
+    <Exec Condition="'$(ArtifactsDir)' != '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" 
+          Command="&quot;$(ArtifactsDir)\Microsoft.AspNet.SignalR.Utils\signalr.exe&quot; ghp /o:&quot;$(SolutionDir)samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js&quot;" 
+          WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>
