@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 }
                 else
                 {
-                    tcs.TrySetResult(default(T));
+                    tcs.TrySetCanceled();
                 }
             });
 
