@@ -24,6 +24,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     host.TransportFactory = () => CreateTransport(transportType, mh);
                     host.Transport = host.TransportFactory();
                     break;
+                case HostType.Owin:
+                    host = new OwinTestHost();
+                    host.TransportFactory = () => CreateTransport(transportType);
+                    host.Transport = host.TransportFactory();
+                    break;
                 default:
                     break;
             }

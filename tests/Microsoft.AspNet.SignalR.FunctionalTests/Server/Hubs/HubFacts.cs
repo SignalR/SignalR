@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+using Microsoft.AspNet.SignalR.FunctionalTests.Owin;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -37,6 +37,36 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hub["name"] = "test";
 
                 connection.Start(host.Transport).Wait();
+
+                var result = hub.InvokeWithTimeout<string>("ReadStateValue");
+
+                Assert.Equal("test", result);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        // [InlineData(TransportType.ServerSentEvents)]
+        // [InlineData(TransportType.LongPolling)]
+        [InlineData(TransportType.Websockets)]
+        public void BasicAuthCredentialsFlow(TransportType transportType)
+        {
+            using (var host = new OwinTestHost())
+            {
+                Debug.Listeners.Clear();
+
+                host.Start<BasicAuthApplication>();
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                hub["name"] = "test";
+
+                connection.Credentials = new System.Net.NetworkCredential("user", "password");
+
+                connection.Start(CreateTransport(transportType)).Wait();
 
                 var result = hub.InvokeWithTimeout<string>("ReadStateValue");
 
@@ -145,9 +175,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                     tcs.Task.Wait(TimeSpan.FromSeconds(10));
                     Assert.True(false, "Didn't fault");
                 }
-                catch(Exception)
+                catch (Exception)
                 {
-                    
+
                 }
 
                 connection.Stop();

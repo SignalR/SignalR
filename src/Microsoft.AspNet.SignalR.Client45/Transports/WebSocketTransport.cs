@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 using Microsoft.AspNet.SignalR.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -66,6 +68,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("WS: " + builder.Uri);
 
             var webSocket = new ClientWebSocket();
+            _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
 
             await webSocket.ConnectAsync(builder.Uri, _disconnectToken);
             await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
@@ -141,6 +144,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnError()
         {
+            Debug.WriteLine("OnError({0}, {1})", _connectionInfo.Connection.ConnectionId, Error);
+
             _connectionInfo.Connection.OnError(Error);
         }
 
