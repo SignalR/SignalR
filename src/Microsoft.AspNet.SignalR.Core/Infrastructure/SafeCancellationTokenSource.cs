@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
@@ -27,18 +28,34 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             if (value == State.Initial)
             {
-                try
+                // Because cancellation tokens are so poorly behaved, always invoke the cancellation token on 
+                // another thread. Don't capture any of the context (execution context or sync context)
+                // while doing this.
+#if WINDOWS_PHONE || SILVERLIGHT
+                ThreadPool.QueueUserWorkItem(_ =>
+#elif NETFX_CORE
+                Task.Run(() =>
+#else
+                ThreadPool.UnsafeQueueUserWorkItem(_ =>
+#endif
                 {
-                    _cts.Cancel();
-                }
-                finally
-                {
-                    if (Interlocked.CompareExchange(ref _state, State.Cancelled, State.Cancelling) == State.Disposing)
+                    try
                     {
-                        _cts.Dispose();
-                        Interlocked.Exchange(ref _state, State.Disposed);
+                        _cts.Cancel();
+                    }
+                    finally
+                    {
+                        if (Interlocked.CompareExchange(ref _state, State.Cancelled, State.Cancelling) == State.Disposing)
+                        {
+                            _cts.Dispose();
+                            Interlocked.Exchange(ref _state, State.Disposed);
+                        }
                     }
                 }
+#if !NETFX_CORE
+                , state: null
+#endif
+);
             }
         }
 
