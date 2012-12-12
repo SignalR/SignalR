@@ -43,6 +43,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <QUnitTestsFolder>Tests</QUnitTestsFolder>
+    <TestConfig>Build/test.config.js</TestConfig>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -64,12 +65,11 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Build\disableCrossDomain.js" />
     <Content Include="default.html" />
     <Content Include="Scripts\jquery-1.6.4.js" />
-    <Content Include="Scripts\jquery-1.6.4.min.js">
-      <DependentUpon>jquery-1.6.4.js</DependentUpon>
-    </Content>
     <Content Include="Scripts\jquery.signalR.js" />
+    <Content Include="Build\test.config.js" />
     <Content Include="Tests\FunctionalTests\test.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
     <Content Include="Styles\qunit.css" />
@@ -81,12 +81,15 @@
     <Content Include="Tests\UnitTests\Transports\LongPollingFacts.js" />
     <Content Include="Tests\UnitTests\Transports\ServerSentEventsFacts.js" />
     <Content Include="Tests\UnitTests\Transports\WebSocketsFacts.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -109,13 +112,33 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="QUnit\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Microsoft.AspNet.SignalR.Tests.Common/Microsoft.AspNet.SignalR.Tests.Common.csproj">
+      <Project>{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}</Project>
+      <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
+      <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>
+      <Name>Microsoft.Owin.Host.SystemWeb45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
+      <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
+      <Name>Microsoft.AspNet.SignalR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
+      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
+      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
+      <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
+      <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -143,6 +166,10 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <TestURL Condition=" '$(TestURL)' == '' ">auto</TestURL>
+    <CommandLineTest Condition=" '$(CommandLineTest)' == '' ">false</CommandLineTest>
+  </PropertyGroup>
   <UsingTask TaskName="BuildScriptTags" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>
       <ProjectDirectory Required="true" />
@@ -168,12 +195,15 @@
     ]]></Code>
     </Task>
   </UsingTask>
-  <Target Name="BeforeBuild">    
+  <Target Name="BeforeBuild">
     <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
       <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
     </BuildScriptTags>
     <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" />
-    
+    <FileUpdate Condition="'$(TestURL)' == 'auto'" Files="default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" />
+    <FileUpdate Condition="'$(TestURL)' != 'auto'" Files="default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(TestURL)/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" />
+    <FileUpdate Files="$(TestConfig)" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(TestURL)'/*URL*/" />
+    <FileUpdate Files="$(TestConfig)" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/$(CommandLineTest)/*CMDLineTest*/" />
     <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

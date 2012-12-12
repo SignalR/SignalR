@@ -1,19 +1,18 @@
-﻿module("Test Facts");
+﻿module("Test Functional Fact");
 
 asyncTest("Connection Start and method invocation", function () {
-    var connection = $.hubConnection('http://localhost:1337');
-    var demo = connection.createHubProxies().demo;
-
+    var demo = $.connection.demo;
     demo.client.foo = function () {
     }
 
     $.connection.hub.logging = true;
 
-    connection.start().done(function () {
+    $.connection.hub.start().done(function () {
         demo.server.overload(6).done(function (val) {
-            console.log("FROM SERVER: " + val);
             equal(val, 6, "Successful return value from server");
             start();
         });
+    }).fail(function (reason) {
+        ok(false, "Failed to initiate signalr connection");
     });
 });

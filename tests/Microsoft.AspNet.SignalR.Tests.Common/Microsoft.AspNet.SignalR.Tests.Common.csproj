@@ -31,12 +31,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\AdminAuthHub.cs">
@@ -69,6 +79,36 @@
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
+      <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>
+      <Name>Microsoft.Owin.Host.SystemWeb45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
+      <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
+      <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
+      <Name>Microsoft.AspNet.SignalR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
+      <Project>{055f2118-fe29-4219-a28a-3d6f0889652e}</Project>
+      <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
+      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
+      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
+      <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
+      <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj">
+      <Project>{fba09237-84cc-4383-bd12-cdf58e4020e8}</Project>
+      <Name>Microsoft.AspNet.SignalR.Tests</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -15,12 +15,17 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private static readonly Lazy<string> _webConfigTemplate = new Lazy<string>(() => GetConfig());
 
         public IISExpressTestHost()
+            : this(Path.Combine(Directory.GetCurrentDirectory(), ".."))
+        {
+        }
+
+        public IISExpressTestHost(string path)
         {
             // The path to the site is the test path.
             // We treat the test output path just like a site. This makes it super
             // cheap to create and tear down sites. We don't need to copy any files.
             // The downside is that we can't run tests in parallel anymore.
-            _path = Path.Combine(Directory.GetCurrentDirectory(), "..");
+            _path = path;
 
             // Set the web.config path for this app
             _webConfigPath = Path.Combine(_path, "web.config");

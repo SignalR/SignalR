@@ -209,7 +209,8 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false
+                    jsonp: false,
+                    crossDomainCapable: true
                 },
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -281,7 +282,7 @@
                 config.transport = "longPolling";
             }
 
-            if (isCrossDomain(connection.url)) {
+            if (config.crossDomainCapable && isCrossDomain(connection.url)) {
                 connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {

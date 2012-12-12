@@ -121,6 +121,9 @@
     <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.HttpListener\Microsoft.Owin.Host.HttpListener45.csproj">
       <Project>{9f0c72d8-e43f-4f01-9deb-919191911919}</Project>
       <Name>Microsoft.Owin.Host.HttpListener45</Name>
+    <ProjectReference Include="../Microsoft.AspNet.SignalR.Tests.Common/Microsoft.AspNet.SignalR.Tests.Common.csproj">
+      <Project>{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}</Project>
+      <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
       <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>

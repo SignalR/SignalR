@@ -11,8 +11,10 @@
         <div id="qunit"></div>
         <script src="Scripts/qunit.js"></script>
         <script src="Scripts/jquery-1.6.4.js"></script>
-        <script src="Scripts/jquery.signalR.js"></script>
-        <script src="signalr/hubs"></script>
+        <script src="Scripts/jquery.signalR.js"></script>                
+        <!-- ##SIGNALRHUBS## --><script type='text/javascript' src='/signalr/hubs'></script><!-- ##SIGNALRHUBS## -->
+        <script src="Build/test.config.js"></script>
+        <script src="Build/disableCrossDomain.js"></script>
 
         <!-- 
                 Javascript is dynamically added to this panel.  First all javascript from SignalR.Client.JS is added,
