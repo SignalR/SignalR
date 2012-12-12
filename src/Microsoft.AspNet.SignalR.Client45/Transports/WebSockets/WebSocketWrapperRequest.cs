@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
             set
             {
-                _clientWebSocket.Options.SetRequestHeader("User-Agent", value);
+
             }
         }
 
