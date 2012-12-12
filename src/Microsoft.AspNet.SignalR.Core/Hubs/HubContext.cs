@@ -35,6 +35,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 get;
                 private set;
             }
+            public dynamic Others
+            {
+                get;
+                private set;
+            }
+            public dynamic Caller
+            {
+                get;
+                private set;
+            }
 
             public dynamic AllExcept(params string[] exclude)
             {
@@ -44,6 +54,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             public dynamic Group(string groupName, params string[] exclude)
             {
                 return new SignalProxy(_send, groupName, _hubName, exclude);
+            }
+
+            public dynamic OthersInGroup(string groupName)
+            {
+               return Group(groupName);
             }
 
             public dynamic Client(string connectionId)
