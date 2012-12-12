@@ -2,7 +2,7 @@
 using System.Net.WebSockets;
 using Microsoft.AspNet.SignalR.Client.Http;
 
-namespace Microsoft.AspNet.SignalR.Client.Transports.WebSockets
+namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     internal class WebSocketWrapperRequest : IRequest
     {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.WebSockets
             }
             set
             {
-
+                _clientWebSocket.Options.SetRequestHeader("User-Agent", value);
             }
         }
 
