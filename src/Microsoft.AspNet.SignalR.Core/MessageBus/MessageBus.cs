@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR
     {
         private readonly MessageBroker _broker;
 
-        private const int DefaultMessageStoreSize = 5000;
+        private readonly uint _messageStoreSize;
 
         private readonly IStringMinifier _stringMinifier;
 
@@ -76,6 +76,11 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("configurationManager");
             }
 
+            if (configurationManager.DefaultMessageBufferSize < 0)
+            {
+                throw new ArgumentOutOfRangeException(Resources.Error_BufferSizeOutOfRange);
+            }
+
             _stringMinifier = stringMinifier;
             _traceManager = traceManager;
             Counters = performanceCounterManager;
@@ -87,6 +92,9 @@ namespace Microsoft.AspNet.SignalR
             {
                 Trace = Trace
             };
+
+            // The default message store size
+            _messageStoreSize = (uint)configurationManager.DefaultMessageBufferSize;
 
             // Keep topics alive for twice as long as we let connections to reconnect.
             // Also add twice the keepalive interval since clients might take a while to notice they are disconnected.
@@ -285,6 +293,16 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        /// <summary>
+        /// Creates a topic for the specified key.
+        /// </summary>
+        /// <param name="key">The key to create the topic for.</param>
+        /// <returns>A <see cref="Topic"/> for the specified key.</returns>
+        protected virtual Topic CreateTopic(string key)
+        {
+            return new Topic(_messageStoreSize, _topicTtl);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -343,7 +361,7 @@ namespace Microsoft.AspNet.SignalR
 
         private Topic GetTopic(string key)
         {
-            Func<string, Topic> factory = _ => new Topic(DefaultMessageStoreSize, _topicTtl);
+            Func<string, Topic> factory = _ => CreateTopic(key);
 
             while (true)
             {

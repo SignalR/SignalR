@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.SignalR
             DisconnectTimeout = TimeSpan.FromSeconds(40);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
             KeepAlive = TimeSpan.FromSeconds(15);
+            DefaultMessageBufferSize = 5000;
         }
 
         public TimeSpan ConnectionTimeout
@@ -33,6 +34,12 @@ namespace Microsoft.AspNet.SignalR
         }
 
         public TimeSpan HeartbeatInterval
+        {
+            get;
+            set;
+        }
+
+        public int DefaultMessageBufferSize
         {
             get;
             set;
