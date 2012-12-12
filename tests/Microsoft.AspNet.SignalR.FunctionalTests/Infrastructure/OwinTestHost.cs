@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public OwinTestHost()
         {
-            Url = "http://localhost:8080";
+            Url = "http://localhost:" + new Random().Next(8000, 9000);
         }
 
         public string Url
