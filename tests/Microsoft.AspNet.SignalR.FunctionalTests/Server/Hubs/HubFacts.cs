@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(TransportType.ServerSentEvents)]
         [InlineData(TransportType.LongPolling)]
-        [InlineData(TransportType.Websockets)]
+        // [InlineData(TransportType.Websockets)]
         public void BasicAuthCredentialsFlow(TransportType transportType)
         {
             using (var host = new OwinTestHost())

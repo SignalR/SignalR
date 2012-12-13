@@ -10,9 +10,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private IDisposable _server;
         // private IDependencyResolver _resolver;
 
+        private static Random _random = new Random();
+
         public OwinTestHost()
         {
-            Url = "http://localhost:" + new Random().Next(8000, 9000);
+            Url = "http://localhost:" + _random.Next(8000, 9000);
         }
 
         public string Url
