@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly HashSet<string> _signals;
-        private readonly SafeSet<string> _groups;
+        private readonly DiffSet<string> _groups;
         private readonly IPerformanceCounterManager _counters;
 
         private bool _disconnected;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals, StringComparer.OrdinalIgnoreCase);
-            _groups = new SafeSet<string>(groups);
+            _groups = new DiffSet<string>(groups);
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
@@ -62,9 +62,11 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        public event Action<string> EventAdded;
+        public event Action<string> EventKeyAdded;
 
-        public event Action<string> EventRemoved;
+        public event Action<string> EventKeyRemoved;
+
+        public Func<string> GetCursor { get; set; }
 
         public string Identity
         {
@@ -82,6 +84,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Used for debugging purposes.")]
         private TraceSource Trace
         {
             get
@@ -125,21 +128,15 @@ namespace Microsoft.AspNet.SignalR
 
         public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int maxMessages)
         {
-            return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse, (result, response) =>
-            {
-                response.MessageId = result.LastMessageId;
-            });
+            return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
         }
+
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
         {
             return _bus.Subscribe(this, messageId, result =>
             {
-                Task<bool> keepGoing = callback(GetResponse(result));
-                if (result.Terminal)
-                {
-                    keepGoing = TaskAsyncHelper.False;
-                }
-                return keepGoing;
+                PersistentResponse response = GetResponse(result);
+                return callback(response);
             },
             maxMessages);
         }
@@ -149,9 +146,14 @@ namespace Microsoft.AspNet.SignalR
             // Do a single sweep through the results to process commands and extract values
             ProcessResults(result);
 
+            Debug.Assert(GetCursor != null, "Unable to resolve the cursor since the method is null");
+
+            // Resolve the cursor
+            string id = GetCursor();
+
             var response = new PersistentResponse(ExcludeMessage)
             {
-                MessageId = result.LastMessageId,
+                MessageId = id,
                 Messages = result.Messages,
                 Disconnect = _disconnected,
                 Aborted = _aborted,
@@ -210,16 +212,16 @@ namespace Microsoft.AspNet.SignalR
 
         private void ProcessCommand(Command command)
         {
-            switch (command.Type)
+            switch (command.CommandType)
             {
                 case CommandType.AddToGroup:
                     {
                         var name = command.Value;
 
-                        if (EventAdded != null)
+                        if (EventKeyAdded != null)
                         {
                             _groups.Add(name);
-                            EventAdded(name);
+                            EventKeyAdded(name);
                         }
                     }
                     break;
@@ -227,10 +229,10 @@ namespace Microsoft.AspNet.SignalR
                     {
                         var name = command.Value;
 
-                        if (EventRemoved != null)
+                        if (EventKeyRemoved != null)
                         {
                             _groups.Remove(name);
-                            EventRemoved(name);
+                            EventKeyRemoved(name);
                         }
                     }
                     break;
@@ -245,15 +247,18 @@ namespace Microsoft.AspNet.SignalR
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            // Set the groups on the outgoing transport data
-            if (_groups.Count > 0)
-            {
-                if (response.TransportData == null)
-                {
-                    response.TransportData = new Dictionary<string, object>();
-                }
+            var groupDiff = _groups.GetDiff();
 
-                response.TransportData["Groups"] = _groups.GetSnapshot();
+            response.ResetGroups = groupDiff.Reset;
+
+            if (groupDiff.Added.Count > 0)
+            {
+                response.AddedGroups = groupDiff.Added;
+            }
+
+            if (groupDiff.Removed.Count > 0)
+            {
+                response.RemovedGroups = groupDiff.Removed;
             }
         }
     }

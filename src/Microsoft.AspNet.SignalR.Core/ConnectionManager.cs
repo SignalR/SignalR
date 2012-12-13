@@ -45,6 +45,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A <see cref="IPersistentConnectionContext"/> for the <see cref="PersistentConnection"/>.</returns>
         public IPersistentConnectionContext GetConnection(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
             string connectionName = type.FullName;
             IConnection connection = GetConnection(connectionName);
 
@@ -71,7 +76,8 @@ namespace Microsoft.AspNet.SignalR
             var connection = GetConnection(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
             var pipelineInvoker = _resolver.Resolve<IHubPipelineInvoker>();
-            HubDescriptor hubDescriptor = hubManager.EnsureHub(hubName,
+
+            hubManager.EnsureHub(hubName,
                 _counters.ErrorsHubResolutionTotal,
                 _counters.ErrorsHubResolutionPerSec,
                 _counters.ErrorsAllTotal,
@@ -82,7 +88,7 @@ namespace Microsoft.AspNet.SignalR
             return new HubContext(send, hubName, connection);
         }
 
-        private IConnection GetConnection(string connectionName)
+        internal Connection GetConnection(string connectionName)
         {
             var signals = connectionName == null ? Enumerable.Empty<string>() : new[] { connectionName };
 

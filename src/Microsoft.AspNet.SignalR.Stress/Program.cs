@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             ThreadPool.SetMinThreads(32, 32);
 
             int connections = 5000;
-            int senders = 1;
+            // int senders = 1;
             string payload = GetPayload();
 
             // return MessageBusRun.Run(connections, senders, payload);

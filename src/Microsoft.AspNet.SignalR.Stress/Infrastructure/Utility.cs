@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNet.SignalR.Hosting.Common;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Stress.Infrastructure
 {
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Infrastructure
     {
         public static void InitializePerformanceCounters(IDependencyResolver resolver, CancellationToken cancellationToken)
         {
-            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(cancellationToken), cancellationToken);
+            resolver.InitializeHost(Process.GetCurrentProcess().GetUniqueInstanceName(cancellationToken), cancellationToken);
         }
 
         public static string FormatBytes(long bytes)

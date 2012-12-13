@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents when the connection is closed.</returns>
         public static Task EndAsync(this IResponse response, string data)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+
             var bytes = Encoding.UTF8.GetBytes(data);
             response.Write(new ArraySegment<byte>(bytes, 0, bytes.Length));
             return response.EndAsync();
@@ -32,6 +37,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A stream the wraps the response</returns>
         public static Stream AsStream(this IResponse response)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+
             return new ResponseStream(response);
         }
 

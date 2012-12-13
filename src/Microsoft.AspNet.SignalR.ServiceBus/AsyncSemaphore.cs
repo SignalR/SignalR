@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
 
     sealed class AsyncSemaphore
     {
@@ -49,6 +50,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to modify functionality.")]
         public bool EndEnter(IAsyncResult asyncResult)
         {
             AsyncWaiter asyncWaiter = asyncResult as AsyncWaiter;
@@ -68,8 +70,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 if (this.count == 0)
                 {
-                    throw new InvalidOperationException(
-                        "Semaphore's count has already reached zero before this operaiton. Make sure Exit() is called only after successfully entered the semaphore");
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_SemaphoreCountAlreadyReachedZero));
                 }
 
                 this.count--;

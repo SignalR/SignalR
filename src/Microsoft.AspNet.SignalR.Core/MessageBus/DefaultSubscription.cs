@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -116,13 +117,14 @@ namespace Microsoft.AspNet.SignalR
             return Cursor.MakeCursor(_cursors);
         }
 
-        protected override void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
+        protected override void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             var cursors = new List<Cursor>();
+            totalCount = 0;
 
             lock (_lockObj)
             {
-                items = new List<ArraySegment<Message>>(_cursors.Count);
                 for (int i = 0; i < _cursors.Count; i++)
                 {
                     Cursor cursor = Cursor.Clone(_cursors[i]);
@@ -139,8 +141,6 @@ namespace Microsoft.AspNet.SignalR
                         totalCount += storeResult.Messages.Count;
                     }
                 }
-
-                nextCursor = Cursor.MakeCursor(cursors);
 
                 // Return the state as a list of cursors
                 state = cursors;
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.SignalR
                    select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
         }
 
-        private ulong GetMessageId(IDictionary<string, Topic> topics, string key)
+        private static ulong GetMessageId(IDictionary<string, Topic> topics, string key)
         {
             Topic topic;
             if (topics.TryGetValue(key, out topic))
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.SignalR
             return 0;
         }
 
-        private ulong GetMessageId(Topic topic)
+        private static ulong GetMessageId(Topic topic)
         {
             if (topic == null)
             {

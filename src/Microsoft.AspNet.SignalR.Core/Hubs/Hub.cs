@@ -62,8 +62,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return TaskAsyncHelper.Empty;
         }
 
-        public virtual void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

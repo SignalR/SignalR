@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
 
@@ -9,18 +10,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class SignalProxy : DynamicObject, IClientProxy
     {
-        protected readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
-        protected readonly string _signal;
-        protected readonly string _hubName;
         private readonly string[] _exclude;
 
         public SignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, params string[] exclude)
         {
-            _send = send;
-            _signal = signal;
-            _hubName = hubName;
+            Send = send;
+            Signal = signal;
+            HubName = hubName;
             _exclude = exclude;
         }
+
+        protected Func<string, ClientHubInvocation, IEnumerable<string>, Task> Send { get; private set; }
+        protected string Signal { get; private set; }
+        protected string HubName { get; private set; }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
@@ -28,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return false;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
             result = Invoke(binder.Name, args);
@@ -38,19 +41,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             var invocation = GetInvocationData(method, args);
 
-            string signal = _hubName + "." + _signal;
+            string signal = HubName + "." + Signal;
 
-            return _send(signal, invocation, _exclude);
+            return Send(signal, invocation, _exclude);
         }
 
         protected virtual ClientHubInvocation GetInvocationData(string method, object[] args)
         {
             return new ClientHubInvocation
             {
-                Hub = _hubName,
+                Hub = HubName,
                 Method = method,
                 Args = args,
-                Target = _signal
+                Target = Signal
             };
         }
     }

@@ -3,6 +3,7 @@
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System;
+    using System.Globalization;
     using System.Threading;
 
     class IOThreadScheduler
@@ -80,6 +81,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public static void ScheduleCallbackLowPriNoFlow(Action<object> callback, object state)
         {
             if (callback == null)
@@ -110,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (Bits.Count(slot) == -1)
             {
-                throw new InvalidOperationException("Head/Tail overflow!");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_HeadTailOverflow));
             }
 
             bool wrapped;
@@ -131,6 +133,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return queued;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         bool ScheduleCallbackLowPriHelper(Action<object> callback, object state)
         {
             int slot = Interlocked.Add(ref this.headTailLowPri, Bits.HiOne);
@@ -152,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (Bits.CountNoIdle(slot) == 0)
             {
-                throw new InvalidOperationException("Low-priority Head/Tail overflow!");
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_LowPriorityHeadTailOverflow));
             }
 
             bool wrapped;
@@ -428,7 +431,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 if (this.scheduler != null)
                 {
-                    throw new InvalidOperationException("Cleanup called on an overlapped that is in-flight.");
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_CleanupCalledOnAnOverlappedThatsInFlight));
                 }
 
                 Overlapped.Free(this.nativeOverlapped);

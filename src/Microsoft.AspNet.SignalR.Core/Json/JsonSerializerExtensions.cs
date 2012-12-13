@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
+using System.Globalization;
 using System.IO;
 
 namespace Microsoft.AspNet.SignalR
@@ -18,6 +20,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The deserialized object from the JSON string.</returns>
         public static T Parse<T>(this IJsonSerializer serializer, string json)
         {
+            if (serializer == null)
+            {
+                throw new ArgumentNullException("serializer");
+            }
+
             return (T)serializer.Parse(json, typeof(T));
         }
 
@@ -29,7 +36,12 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A JSON string representation of the object.</returns>
         public static string Stringify(this IJsonSerializer serializer, object value)
         {
-            using (var writer = new StringWriter())
+            if (serializer == null)
+            {
+                throw new ArgumentNullException("serializer");
+            }
+
+            using (var writer = new StringWriter(CultureInfo.InvariantCulture))
             {
                 serializer.Serialize(value, writer);
                 return writer.ToString();

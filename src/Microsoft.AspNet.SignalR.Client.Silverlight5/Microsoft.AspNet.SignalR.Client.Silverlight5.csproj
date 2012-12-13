@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -55,10 +55,6 @@
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\sl4\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System.Threading.Tasks.SL5, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\System.Threading.Tasks.3.0.1\lib\sl50\System.Threading.Tasks.SL5.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows" />
     <Reference Include="system" />
     <Reference Include="System.Core" />
@@ -72,6 +68,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ExceptionHelper.cs">
       <Link>Infrastructure\ExceptionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
+      <Link>Resources.Designer.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>
@@ -88,9 +87,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ServerSentEvents\SseEvent.cs">
       <Link>Transports\ServerSentEvents\SseEvent.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
-      <Link>Infrastructure\ExceptionsExtensions.cs</Link>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +95,21 @@
     </Compile>
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
+      <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
+      <Link>Infrastructure\ExceptionsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
+      <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
+      <Link>Infrastructure\Disposer.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
@@ -157,9 +168,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\DisposableAction.cs">
-      <Link>Infrastructure\DisposableAction.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ThreadSafeInvoker.cs">
       <Link>Infrastructure\ThreadSafeInvoker.cs</Link>
     </Compile>
@@ -187,8 +195,8 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.Common\Infrastructure\UriQueryUtility.cs">
-      <Link>Infrastructure\UriQueryUtility.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
+      <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -197,13 +205,15 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
+      <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
+      <Link>Resources.resx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
-  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\SignalR.Silverlight.targets"
-          Condition="'$(LocalToolsPath)'!=''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets"
-          Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets')" />
-
+  <Import Project="$(LocalToolsPath)\Silverlight\v5.0\SignalR.Silverlight.targets" Condition="'$(LocalToolsPath)'!=''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" Condition=" '$(LocalToolsPath)' == '' And Exists('$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets')" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">

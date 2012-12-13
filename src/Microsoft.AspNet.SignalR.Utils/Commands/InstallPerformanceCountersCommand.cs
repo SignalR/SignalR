@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Utils
 {
@@ -13,22 +14,22 @@ namespace Microsoft.AspNet.SignalR.Utils
 
         public override string DisplayName
         {
-            get { return "Install Performance Counters"; }
+            get { return String.Format(CultureInfo.CurrentCulture, Resources.Notify_InstallPerformanceCounters); }
         }
 
         public override string Help
         {
-            get { return "Installs SignalR performance counters."; }
+            get { return String.Format(CultureInfo.CurrentCulture, Resources.Notify_InstallSignalRPerformanceCounters); }
         }
 
         public override string[] Names
         {
-            get { return new [] { "ipc" }; }
+            get { return new[] { "ipc" }; }
         }
 
         public override void Execute(string[] args)
         {
-            Info("Installing performance counters...");
+            Info(String.Format(CultureInfo.CurrentCulture, Resources.Notify_InstallingPerformanceCounters));
 
             var installer = new PerformanceCounterInstaller();
             IList<string> counters;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             catch (UnauthorizedAccessException ex)
             {
                 // Probably due to not running as admin, let's just stop here
-                Warning(ex.Message + " Try running as admin.");
+                Warning(String.Format(CultureInfo.CurrentCulture, ex.Message + Resources.Notify_TryRunningAsAdmin));
                 return;
             }
 
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Utils
                 Info("  " + counter);
             }
 
-            Success("Performance counters installed!");
+            Success(String.Format(CultureInfo.CurrentCulture, Resources.Notify_PerformanceCountersInstalled));
         }
     }
 }

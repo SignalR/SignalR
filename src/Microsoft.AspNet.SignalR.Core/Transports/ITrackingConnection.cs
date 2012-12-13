@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
     /// <summary>
-    /// Represents a connection that can be tracked by an <see cref="ITransportHeartBeat"/>.
+    /// Represents a connection that can be tracked by an <see cref="ITransportHeartbeat"/>.
     /// </summary>
     public interface ITrackingConnection
     {
@@ -58,6 +59,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <summary>
         /// Kills the connection.
         /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "Ends the connction thus the name is appropriate.")]
         void End();
     }
 }

@@ -32,22 +32,32 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             var memoryStream = MemoryStream("");
             var eventSource = new EventSourceStreamReader(memoryStream);
+            var wh = new ManualResetEventSlim();
 
             eventSource.Closed = (ex) =>
             {
+                wh.Set();
                 throw new Exception("Throw on closed");
             };
 
             eventSource.Start();
-                        
-            Thread.Sleep(TimeSpan.FromSeconds(5));
+
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Force any finalizers to run so we can see unhandled task errors
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
 
         public void Dispose()
         {
-            // Force any finalizers to run so we can see unhandled task errors
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            Dispose(true);
         }
 
         private MemoryStream MemoryStream(string data)

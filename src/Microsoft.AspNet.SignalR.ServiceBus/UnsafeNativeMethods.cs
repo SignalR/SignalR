@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern void GetSystemTimeAsFileTime([Out] out long time);
 
-        [DllImport("kernel32.dll", SetLastError = false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future."), DllImport("kernel32.dll", SetLastError = false)]
         public static extern uint GetSystemTimeAdjustment(
             [Out] out int adjustment,
             [Out] out uint increment,

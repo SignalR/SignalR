@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                               var command = m.Value as Command;
                               Assert.NotNull(command);
                               Assert.NotNull(command.Id);
-                              Assert.Equal(CommandType.AddToGroup, command.Type);
+                              Assert.Equal(CommandType.AddToGroup, command.CommandType);
                               Assert.Equal("Prefix.MyGroup", command.Value);
                               Assert.True(command.WaitForAck);
                           });
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                               var command = m.Value as Command;
                               Assert.NotNull(command);
                               Assert.NotNull(command.Id);
-                              Assert.Equal(CommandType.RemoveFromGroup, command.Type);
+                              Assert.Equal(CommandType.RemoveFromGroup, command.CommandType);
                               Assert.Equal("Prefix.MyGroup", command.Value);
                               Assert.True(command.WaitForAck);
                           });

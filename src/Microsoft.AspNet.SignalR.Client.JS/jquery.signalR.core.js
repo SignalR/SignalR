@@ -9,7 +9,7 @@
  *
  */
 
-/// <reference path="Scripts/jquery-1.6.2.js" />
+/// <reference path="Scripts/jquery-1.6.4.js" />
 (function ($, window) {
     "use strict";
 
@@ -34,6 +34,7 @@
             onReceived: "onReceived",
             onError: "onError",
             onConnectionSlow: "onConnectionSlow",
+            onReconnecting: "onReconnecting",
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
@@ -73,6 +74,7 @@
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
+
                 $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
                 return true;
             }
@@ -82,6 +84,26 @@
 
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
+        }, 
+
+        configureStopReconnectingTimeout = function (connection) {
+            var stopReconnectingTimeout,
+                onReconnectTimeout = function (connection) {
+                    connection.log("Couldn't reconnect within the configured timeout (" + connection.disconnectTimeout + "ms), disconnecting.");
+                    connection.stop(/* async */ false, /* notifyServer */ false);
+                };
+
+            connection.reconnecting(function () {
+                var connection = this;
+                stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+            });
+
+            connection.stateChanged(function (data) {
+                if (data.oldState === signalR.connectionState.reconnecting) {
+                    // Clear the pending reconnect timeout check
+                    window.clearTimeout(stopReconnectingTimeout);
+                }
+            });
         };
 
     signalR = function (url, qs, logging) {
@@ -122,14 +144,42 @@
 
     _pageWindow.load(function () { _pageLoaded = true; });
 
+    function validateTransport(requestedTransport, connection) {
+        /// <summary>Validates the requested transport by cross checking it with the pre-defined signalR.transports</summary>
+        /// <param name="requestedTransport" type="Object">The designated transports that the user has specified.</param>
+        /// <param name="connection" type="signalR">The connection that will be using the requested transports.  Used for logging purposes.</param>
+        /// <returns type="Object" />
+        if ($.isArray(requestedTransport)) {
+            // Go through transport array and remove an "invalid" tranports
+            for (var i = requestedTransport.length - 1; i >= 0; i--) {
+                var transport = requestedTransport[i];
+                if ($.type(requestedTransport) !== "object" && ($.type(transport) !== "string" || !signalR.transports[transport])) {
+                    connection.log("Invalid transport: " + transport + ", removing it from the transports list.");
+                    requestedTransport.splice(i, 1);
+                }
+            }
+
+            // Verify we still have transports left, if we dont then we have invalid transports
+            if (requestedTransport.length === 0) {
+                connection.log("No transports remain within the specified transport array.");
+                requestedTransport = null;
+            }
+        } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
+            connection.log("Invalid transport: " + requestedTransport.toString());
+            requestedTransport = null;
+        }
+
+        return requestedTransport;
+    }
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
-            this.keepAliveData = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
+            configureStopReconnectingTimeout(this);
         },
 
         ajaxDataType: "json",
@@ -138,7 +188,13 @@
 
         state: signalR.connectionState.disconnected,
 
+        groups: {},
+
+        keepAliveData: {},
+
         reconnectDelay: 2000,
+
+        disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
 
         keepAliveTimeoutCount: 2,
 
@@ -166,6 +222,13 @@
                 if ($.type(config.callback) === "function") {
                     callback = config.callback;
                 }
+            }
+
+            config.transport = validateTransport(config.transport, connection);
+
+            // If the transport is invalid throw an error and abort start
+            if (!config.transport) {
+                throw new Error("SignalR: Invalid transport(s) specified, aborting start.");
             }
 
             // Check to see if start is being called prior to page load
@@ -306,6 +369,11 @@
                     connection.id = res.ConnectionId;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
+                    // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
+                    // after res.DisconnectTimeout seconds.
+                    connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
+                    
+
                     // If we have a keep alive
                     if (res.KeepAlive) {
                         // Convert to milliseconds
@@ -327,7 +395,7 @@
                         keepAliveData.activated = false;
                     }
 
-                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.0") {
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.1") {
                         $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
                         deferred.reject("SignalR: Incompatible protocol version.");
                         return;
@@ -453,6 +521,17 @@
                 callback.call(connection);
             });
 
+            return connection;
+        },
+
+        reconnecting: function (callback) {
+            /// <summary>Adds a callback that will be invoked when the underlying transport begins reconnecting</summary>
+            /// <param name="callback" type="Function">A callback function to execute when the connection enters a reconnecting state</param>
+            /// <returns type="signalR" />
+            var connection = this;
+            $(connection).bind(events.onReconnecting, function (e, data) {
+                callback.call(connection);
+            });
             return connection;
         },
 

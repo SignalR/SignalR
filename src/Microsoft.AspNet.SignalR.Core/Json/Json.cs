@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -20,9 +22,10 @@ namespace Microsoft.AspNet.SignalR
         {
             if (name == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException("name");
             }
-            return String.Join(".", name.Split('.').Select(n => Char.ToLower(n[0]) + n.Substring(1)));
+
+            return String.Join(".", name.Split('.').Select(n => Char.ToLower(n[0], CultureInfo.InvariantCulture) + n.Substring(1)));
         }
 
         /// <summary>
@@ -30,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         public static string MimeType
         {
-            get { return "application/json"; }
+            get { return "application/json; charset=UTF-8"; }
         }
 
         /// <summary>
@@ -38,7 +41,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         public static string JsonpMimeType
         {
-            get { return "text/javascript"; }
+            get { return "text/javascript; charset=UTF-8"; }
         }
 
         public static string CreateJsonpCallback(string callback, string payload)

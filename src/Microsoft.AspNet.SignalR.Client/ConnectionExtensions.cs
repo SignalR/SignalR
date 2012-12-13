@@ -9,13 +9,35 @@ namespace Microsoft.AspNet.SignalR.Client
     {
         public static T GetValue<T>(this IConnection connection, string key)
         {
-            object value;
-            if (connection.Items.TryGetValue(key, out value))
+            if (connection == null)
             {
-                return (T)value;
+                throw new ArgumentNullException("connection");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+
+            lock (connection.Items)
+            {
+                object value;
+                if (connection.Items.TryGetValue(key, out value))
+                {
+                    return (T)value;
+                }
             }
 
             return default(T);
+        }
+
+        public static bool EnsureReconnecting(this IConnection connection)
+        {
+            if (connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+            {
+                connection.OnReconnecting();
+            }
+            return connection.State == ConnectionState.Reconnecting;
         }
 
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NET35

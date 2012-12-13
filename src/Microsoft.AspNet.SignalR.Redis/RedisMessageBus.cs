@@ -111,18 +111,23 @@ namespace Microsoft.AspNet.SignalR.Redis
             _publishQueue.Enqueue(() => OnReceived(key, (ulong)message.Id, message.Messages));
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            if (_channel != null)
+            if (disposing)
             {
-                _channel.Unsubscribe(_keys);
-                _channel.Close(abort: true);
+                if (_channel != null)
+                {
+                    _channel.Unsubscribe(_keys);
+                    _channel.Close(abort: true);
+                }
+
+                if (_connection != null)
+                {
+                    _connection.Close(abort: true);
+                }                
             }
 
-            if (_connection != null)
-            {
-                _connection.Close(abort: true);
-            }
+            base.Dispose(disposing);
         }
     }
 }

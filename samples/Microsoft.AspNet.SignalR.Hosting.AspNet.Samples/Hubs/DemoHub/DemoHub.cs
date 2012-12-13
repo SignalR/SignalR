@@ -103,6 +103,23 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
         }
 #endif
 
+        public Task CancelledTask()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetCanceled();
+            return tcs.Task;
+        }
+
+        public Task<int> CancelledGenericTask()
+        {
+            var tcs = new TaskCompletionSource<int>();
+            return Task.Factory.StartNew(() =>
+            {
+                tcs.SetCanceled();
+                return tcs.Task;
+            }).Unwrap();
+        }
+
         public void SimpleArray(int[] nums)
         {
             foreach (var n in nums)
@@ -156,6 +173,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
         public int Overload(int n)
         {
             return n;
+        }
+
+        public string InlineScriptTag()
+        {
+            return "WAITING for Script Tag to replace this.<script>$(\"#inlineScriptTag\").html('Success! Replaced by inline Script Tag');</script>";
         }
 
         public void UnsupportedOverload(string x)

@@ -32,10 +32,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return _sender.Send(messages);
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _receiver.Dispose();
-            base.Dispose();
+            if (disposing)
+            {
+                _receiver.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

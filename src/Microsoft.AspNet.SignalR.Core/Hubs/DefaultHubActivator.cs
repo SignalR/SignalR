@@ -15,12 +15,17 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public IHub Create(HubDescriptor descriptor)
         {
-            if(descriptor.Type == null)
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException("descriptor");
+            }
+
+            if(descriptor.HubType == null)
             {
                 return null;
             }
 
-            object hub = _resolver.Resolve(descriptor.Type) ?? Activator.CreateInstance(descriptor.Type);
+            object hub = _resolver.Resolve(descriptor.HubType) ?? Activator.CreateInstance(descriptor.HubType);
             return hub as IHub;
         }
     }

@@ -11,13 +11,18 @@ namespace Microsoft.AspNet.SignalR.Transports
     public class TransportManager : ITransportManager
     {
         private readonly ConcurrentDictionary<string, Func<HostContext, ITransport>> _transports = new ConcurrentDictionary<string, Func<HostContext, ITransport>>(StringComparer.OrdinalIgnoreCase);
-        
+
         /// <summary>
         /// Initializes a new instance of <see cref="TransportManager"/> class.
         /// </summary>
         /// <param name="resolver">The default <see cref="IDependencyResolver"/>.</param>
         public TransportManager(IDependencyResolver resolver)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
             Register("foreverFrame", context => new ForeverFrameTransport(context, resolver));
             Register("serverSentEvents", context => new ServerSentEventsTransport(context, resolver));
             Register("longPolling", context => new LongPollingTransport(context, resolver));
@@ -31,6 +36,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="transportFactory">The factory method for the specified transport.</param>
         public void Register(string transportName, Func<HostContext, ITransport> transportFactory)
         {
+            if (String.IsNullOrEmpty(transportName))
+            {
+                throw new ArgumentNullException("transportName");
+            }
+
+            if (transportFactory == null)
+            {
+                throw new ArgumentNullException("transportFactory");
+            }
+
             _transports.TryAdd(transportName, transportFactory);
         }
 
@@ -40,6 +55,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="transportName">The specified transport.</param>
         public void Remove(string transportName)
         {
+            if (String.IsNullOrEmpty(transportName))
+            {
+                throw new ArgumentNullException("transportName");
+            }
+
             Func<HostContext, ITransport> removed;
             _transports.TryRemove(transportName, out removed);
         }
@@ -49,9 +69,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// </summary>
         /// <param name="hostContext">The <see cref="HostContext"/> for the current request.</param>
         /// <returns>The <see cref="ITransport"/> for the specified <see cref="HostContext"/>.</returns>
-        public ITransport GetTransport(HostContext context)
+        public ITransport GetTransport(HostContext hostContext)
         {
-            string transportName = context.Request.QueryString["transport"];
+            if (hostContext == null)
+            {
+                throw new ArgumentNullException("hostContext");
+            }
+
+            string transportName = hostContext.Request.QueryString["transport"];
 
             if (String.IsNullOrEmpty(transportName))
             {
@@ -61,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Func<HostContext, ITransport> factory;
             if (_transports.TryGetValue(transportName, out factory))
             {
-                return factory(context);
+                return factory(hostContext);
             }
 
             return null;

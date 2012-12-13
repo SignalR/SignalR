@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
@@ -88,6 +89,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's disposed elsewhere")]
         public WaitHandle AsyncWaitHandle
         {
             get

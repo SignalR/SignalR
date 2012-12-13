@@ -63,13 +63,10 @@
 
                     if (onSuccess) {
                         onSuccess();
-                    }
-                    else {
-                        if (changeState(connection,
-                                        signalR.connectionState.reconnecting,
-                                        signalR.connectionState.connected) === true) {
-                            $connection.triggerHandler(events.onReconnect);
-                        }
+                    } else if (changeState(connection,
+                                         signalR.connectionState.reconnecting,
+                                         signalR.connectionState.connected) === true) {
+                        $connection.triggerHandler(events.onReconnect);
                     }
                 };
 
@@ -106,7 +103,8 @@
                         $connection = $(connection);
 
                     if (data) {
-                        if ($.isEmptyObject(data) || data.Messages) {
+                        // data.M is PersistentResponse.Messages
+                        if ($.isEmptyObject(data) || data.M) {
                             transportLogic.processMessages(connection, data);
                         } else {
                             // For websockets we need to trigger onReceived
@@ -131,16 +129,11 @@
                         that.stop(connection);
                     }
 
-                    if (connection.state === signalR.connectionState.reconnecting ||
-                        changeState(connection,
-                                    signalR.connectionState.connected,
-                                    signalR.connectionState.reconnecting) === true) {
-
+                    if (transportLogic.ensureReconnectingState(connection)) {
                         connection.log("Websocket reconnecting");
                         that.start(connection);
                     }
-                },
-                connection.reconnectDelay);
+                }, connection.reconnectDelay);
             }
         },
 

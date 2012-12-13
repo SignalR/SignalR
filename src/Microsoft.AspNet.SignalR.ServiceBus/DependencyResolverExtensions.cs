@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNet.SignalR.ServiceBus;
 
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.SignalR
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Unable to resolve the instance index of this role. Make sure Microsoft.WindowsAzure.ServiceRuntime.dll is deployed with your application.", ex);
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToResolveIncaseIndexOfRole), ex);
             }
 
             return UseServiceBus(resolver, connectionString, topicCount, instanceCount, azureRole.Index, azureRole.Name);
@@ -62,7 +63,7 @@ namespace Microsoft.AspNet.SignalR
             return resolver;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.LastIndexOf(System.String)", Justification = "Comparing non alpha numeric characters."), MethodImpl(MethodImplOptions.NoInlining)]
         private static AzureRoleInfo GetRoleInfo()
         {
             var roleInstance = Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment.CurrentRoleInstance;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNet.SignalR
 
             return new AzureRoleInfo
             {
-                Index = Int32.Parse(roleInstanceNo),
+                Index = Int32.Parse(roleInstanceNo, CultureInfo.CurrentCulture),
                 Name = roleInstance.Role.Name
             };
         }

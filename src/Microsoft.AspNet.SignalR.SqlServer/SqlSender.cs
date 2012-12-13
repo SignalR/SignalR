@@ -3,6 +3,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -19,9 +20,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             _connectionString = connectionString;
             _tableName = tableName;
-            _insertSql = String.Format(_insertSql, _tableName);
+            _insertSql = String.Format(CultureInfo.CurrentCulture, _insertSql, _tableName);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         public Task Send(Message[] messages)
         {
             if (messages == null || messages.Length == 0)
@@ -34,12 +36,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 connection = new SqlConnection(_connectionString);
                 connection.Open();
-                var cmd = new SqlCommand(_insertSql, connection);
-                cmd.Parameters.AddWithValue("Payload", JsonConvert.SerializeObject(messages));
-                
-                return cmd.ExecuteNonQueryAsync()
-                    .Then(() => connection.Close()) // close the connection if successful
-                    .Catch(ex => connection.Close()); // close the connection if it explodes
+                using (var cmd = new SqlCommand(_insertSql, connection))
+                {
+                    cmd.Parameters.AddWithValue("Payload", JsonConvert.SerializeObject(messages));
+
+                    return cmd.ExecuteNonQueryAsync()
+                        .Then(() => connection.Close()) // close the connection if successful
+                        .Catch(ex => connection.Close()); // close the connection if it explodes
+                }
             }
             catch (SqlException)
             {

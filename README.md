@@ -10,7 +10,7 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 
 ## Get it on NuGet!
 
-    Install-Package Microsoft.AspNet.SignalR
+    Install-Package Microsoft.AspNet.SignalR -pre
 
 ## Get a sample on NuGet, straight into your app!
 
@@ -20,6 +20,12 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
 
 ## Building the source
+
+```
+git clone git@github.com:SignalR/SignalR.git (or https if you use https)
+git submodule init (you only need to do this once)
+git submodule update
+```
 
 ### Windows
 After cloning the repository, run `build.cmd`.

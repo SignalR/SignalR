@@ -63,14 +63,15 @@
     <Content Include="jquery.signalR.transports.serverSentEvents.js" />
     <Content Include="jquery.signalR.core.js" />
     <Content Include="jquery.signalR.transports.foreverFrame.js" />
+    <Content Include="jquery.signalR.version.js" />
     <Content Include="packages.config" />
     <Content Include="jquery.signalR.transports.longPolling.js" />
     <Content Include="build.ps1" />
     <Content Include="Properties\Microsoft.AspNet.SignalR.Js.nuspec" />
-    <None Include="Scripts\jquery-1.6.2-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.6.2.js" />
-    <Content Include="Scripts\jquery-1.6.2.min.js">
-      <DependentUpon>jquery-1.6.2.js</DependentUpon>
+    <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.6.4.js" />
+    <Content Include="Scripts\jquery-1.6.4.min.js">
+      <DependentUpon>jquery-1.6.4.js</DependentUpon>
     </Content>
     <Content Include="Web.config" />
   </ItemGroup>

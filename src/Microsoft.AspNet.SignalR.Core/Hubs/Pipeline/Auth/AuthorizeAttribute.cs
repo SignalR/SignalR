@@ -15,15 +15,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private string _users;
         private string[] _usersSplit = new string[0];
 
-        public AuthorizeAttribute() { }
-
-        public AuthorizeAttribute(AuthorizeMode mode, string roles, string users)
-        {
-            Mode = mode;
-            Roles = roles;
-            Users = users;
-        }
-
         public AuthorizeMode Mode { get; set; }
 
         public string Roles
@@ -48,6 +39,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
             switch (Mode)
             {
                 case AuthorizeMode.Both:
@@ -61,6 +57,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext)
         {
+            if (hubIncomingInvokerContext == null)
+            {
+                throw new ArgumentNullException("hubIncomingInvokerContext");
+            }
+
             switch (Mode)
             {
                 case AuthorizeMode.Both:

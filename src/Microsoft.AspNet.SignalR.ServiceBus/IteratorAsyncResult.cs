@@ -74,6 +74,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         // This is typically called at the end of the derived AsyncResult
         // constructor, to start the async operation.
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         public IAsyncResult Start()
         {
             Debug.Assert(this.steps == null, "IteratorAsyncResult.Start called twice");
@@ -91,6 +92,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return this;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         public void RunSynchronously()
         {
             Debug.Assert(this.steps == null, "IteratorAsyncResult.RunSynchronously or .Start called twice");
@@ -109,11 +111,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         // Utility method to be called from GetAsyncSteps.  To create an implementation
         // of IAsyncCatch, use the CatchAndTransfer or CatchAndContinue methods.
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         protected AsyncStep CallAsync(BeginCall beginCall, EndCall endCall, Call call, ExceptionPolicy policy)
         {
             return new AsyncStep(beginCall, endCall, call, policy);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         protected AsyncStep CallAsync(BeginCall beginCall, EndCall endCall, ExceptionPolicy policy)
         {
             return new AsyncStep(beginCall, endCall, null, policy);
@@ -365,7 +369,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 get { return this.beginCall; }
             }
 
-            public EndCall  EndCall
+            public EndCall EndCall
             {
                 get { return this.endCall; }
             }
@@ -431,6 +435,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             long actions;
             Exception firstException;
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
             public ParallelAsyncResult(TIteratorAsyncResult iteratorAsyncResult, ICollection<TWorkItem> workItems, BeginCall<TWorkItem> beginCall, EndCall<TWorkItem> endCall, TimeSpan timeout, AsyncCallback callback, object state)
                 : base(callback, state)
             {
@@ -467,6 +472,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
             }
 
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
             static void OnCompleted(IAsyncResult ar)
             {
                 CallbackState state = (CallbackState)ar.AsyncState;

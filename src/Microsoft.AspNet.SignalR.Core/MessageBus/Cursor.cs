@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR
             var serialized = new string[cursors.Count];
             for (int i = 0; i < cursors.Count; i++)
             {
-                serialized[i] = cursors[i]._escapedKey + ',' + cursors[i].Id.ToString("X");
+                serialized[i] = cursors[i]._escapedKey + ',' + cursors[i].Id.ToString("X", CultureInfo.InvariantCulture);
             }
 
             return String.Join("|", serialized);
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR
                     }
                     else if (ch == '|')
                     {
-                        currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
+                        currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                         cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
                         sb.Clear();
                         consumingKey = true;
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (sb.Length > 0)
             {
-                currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber);
+                currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
             }
 

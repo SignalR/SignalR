@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Hosting.Common;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
@@ -15,9 +17,11 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
     public class MemoryHost : RoutingHost, IHttpClient, IDisposable
     {
-        private readonly CancellationTokenSource _shutDownToken = new CancellationTokenSource();
+        private readonly CancellationTokenSource _shutDownTokenSource = new CancellationTokenSource();
+        private readonly CancellationToken _shutDownToken;
         private int _disposed;
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The resolver is disposed when the shutdown token triggers")]
         public MemoryHost()
             : this(new DefaultDependencyResolver())
         {
@@ -27,7 +31,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         public MemoryHost(IDependencyResolver resolver)
             : base(resolver)
         {
-            resolver.InitializePerformanceCounters(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken.Token), _shutDownToken.Token);
+            _shutDownToken = _shutDownTokenSource.Token;
+
+            resolver.InitializeHost(Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken), _shutDownToken);
 
             User = Thread.CurrentPrincipal;
         }
@@ -46,16 +52,32 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return ProcessRequest(url, prepareRequest, postData);
         }
 
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData, bool disableWrites = false)
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
         {
+            return ProcessRequest(url, prepareRequest, postData, disableWrites: false);
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The cancellation token is disposed when the request ends")]
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData, bool disableWrites)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+
+            if (prepareRequest == null)
+            {
+                throw new ArgumentNullException("prepareRequest");
+            }
+
             var uri = new Uri(url);
             PersistentConnection connection;
 
             if (!_shutDownToken.IsCancellationRequested && TryGetConnection(uri.LocalPath, out connection))
             {
                 var tcs = new TaskCompletionSource<IClientResponse>();
-                var clientTokenSource = new CancellationTokenSource();
-                var request = new Request(uri, clientTokenSource, postData, User);
+                var clientTokenSource = new SafeCancellationTokenSource();
+                var request = new Request(uri, clientTokenSource.Cancel, postData, User);
                 prepareRequest(request);
 
                 Response response = null;
@@ -65,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 };
                 var hostContext = new HostContext(request, response);
 
-                hostContext.Items[HostConstants.ShutdownToken] = _shutDownToken.Token;
+                hostContext.Items[HostConstants.ShutdownToken] = _shutDownTokenSource.Token;
 
                 connection.Initialize(DependencyResolver, hostContext);
 
@@ -85,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     }
 
                     response.Close();
+                    clientTokenSource.Dispose();
                 });
 
                 return tcs.Task;
@@ -93,13 +116,22 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return TaskAsyncHelper.FromError<IClientResponse>(new InvalidOperationException("Not a valid end point"));
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                {
+                    _shutDownTokenSource.Cancel(throwOnFirstException: false);
+
+                    _shutDownTokenSource.Dispose();
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 0)
-            {
-                _shutDownToken.Cancel(throwOnFirstException: false);
-                DependencyResolver.Dispose();
-            }
+            Dispose(true);
         }
     }
 }

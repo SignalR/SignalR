@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,12 +13,15 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable fields are disposed from a different method")]
     public abstract class TransportDisconnectBase : ITrackingConnection
     {
         private readonly HostContext _context;
-        private readonly ITransportHeartBeat _heartBeat;
+        private readonly ITransportHeartbeat _heartbeat;
         private readonly IJsonSerializer _jsonSerializer;
         private TextWriter _outputWriter;
+
+        private TraceSource _trace;
 
         private int _isDisconnected;
         private int _timedOut;
@@ -27,21 +32,56 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
-        private CancellationTokenSource _connectionEndTokenSource;
+        private SafeCancellationTokenSource _connectionEndTokenSource;
 
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
-        private CancellationTokenRegistration _hostRegistration;
+        private IDisposable _hostRegistration;
 
-        // Queue to protect against overlapping writes to the underlying response stream
-        private readonly TaskQueue _writeQueue = new TaskQueue();
-
-        public TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
+        protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
+            if (heartbeat == null)
+            {
+                throw new ArgumentNullException("heartbeat");
+            }
+
+            if (performanceCounterManager == null)
+            {
+                throw new ArgumentNullException("performanceCounterManager");
+            }
+
+            if (traceManager == null)
+            {
+                throw new ArgumentNullException("traceManager");
+            }
+
             _context = context;
             _jsonSerializer = jsonSerializer;
-            _heartBeat = heartBeat;
+            _heartbeat = heartbeat;
             _counters = performanceCounterManager;
+
+            // Queue to protect against overlapping writes to the underlying response stream
+            WriteQueue = new TaskQueue();
+
+            _trace = traceManager["SignalR.Transports." + GetType().Name];
+        }
+
+        protected TraceSource Trace
+        {
+            get
+            {
+                return _trace;
+            }
         }
 
         public string ConnectionId
@@ -57,13 +97,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        public TextWriter OutputWriter
+        public virtual TextWriter OutputWriter
         {
             get
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.AsStream(), Encoding.UTF8);
+                    _outputWriter = new StreamWriter(Context.Response.AsStream(), new UTF8Encoding());
                     _outputWriter.NewLine = "\n";
                 }
 
@@ -72,6 +112,12 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         protected TaskCompletionSource<object> Completed
+        {
+            get;
+            private set;
+        }
+
+        internal TaskQueue WriteQueue
         {
             get;
             private set;
@@ -149,6 +195,23 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        protected ITransportConnection Connection { get; set; }
+
+        protected HostContext Context
+        {
+            get { return _context; }
+        }
+
+        protected ITransportHeartbeat Heartbeat
+        {
+            get { return _heartbeat; }
+        }
+
+        public Uri Url
+        {
+            get { return _context.Request.Url; }
+        }
+
         public Task Disconnect()
         {
             return OnDisconnect().Then(() => Connection.Close(ConnectionId));
@@ -156,23 +219,26 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task OnDisconnect()
         {
+            Trace.TraceInformation("OnDisconnect(" + ConnectionId + ")");
+
             // When a connection is aborted (graceful disconnect) we send a command to it
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
-            HeartBeat.RemoveConnection(this);
-
-            if (_connectionEndTokenSource != null)
-            {
-                _connectionEndTokenSource.Cancel();
-            }
-
+            Heartbeat.RemoveConnection(this);
+            
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
+                // End the connection
+                End();
+
                 var disconnected = Disconnected; // copy before invoking event to avoid race
                 if (disconnected != null)
                 {
-                    return disconnected().Catch()
-                        .Then(() => _counters.ConnectionsDisconnected.Increment());
+                    return disconnected().Catch(ex =>
+                    {
+                        Trace.TraceInformation("Failed to raise disconnect: " + ex.GetBaseException());
+                    })
+                    .Then(() => _counters.ConnectionsDisconnected.Increment());
                 }
             }
 
@@ -183,10 +249,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _timedOut, 1) == 0)
             {
-                if (_connectionEndTokenSource != null)
-                {
-                    _connectionEndTokenSource.Cancel();
-                }
+                Trace.TraceInformation("Timeout(" + ConnectionId + ")");
             }
         }
 
@@ -199,6 +262,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _ended, 1) == 0)
             {
+                Trace.TraceInformation("End(" + ConnectionId + ")");
+
                 if (_connectionEndTokenSource != null)
                 {
                     _connectionEndTokenSource.Cancel();
@@ -215,15 +280,22 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public void CompleteRequest()
         {
+            // REVIEW: We can get rid of this when we clean up the Interleave code.
             if (Completed != null)
             {
                 Completed.TrySetResult(null);
             }
         }
 
-        protected Task EnqueueOperation(Func<Task> writeAsync)
+        protected internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            return _writeQueue.Enqueue(writeAsync);
+            if (IsAlive)
+            {
+                // Only enqueue new writes if the connection is alive
+                return WriteQueue.Enqueue(writeAsync);
+            }
+
+            return TaskAsyncHelper.Empty;
         }
 
         protected void InitializePersistentState()
@@ -233,41 +305,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = new CancellationTokenSource();
+            _connectionEndTokenSource = new SafeCancellationTokenSource();            
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips
-            _hostRegistration = _hostShutdownToken.Register(state =>
+            _hostRegistration = _hostShutdownToken.SafeRegister(state =>
             {
-                try
-                {
-                    ((CancellationTokenSource)state).Cancel();
-                }
-                catch(ObjectDisposedException)
-                {
-                    // We've already disposed the token and we don't need to do any clean up
-                    // or triggering so just swallow the exception
-                }
+                state.Cancel();
             },
-            _connectionEndTokenSource, 
-            useSynchronizationContext: false);
-        }
-
-        protected ITransportConnection Connection { get; set; }
-
-        protected HostContext Context
-        {
-            get { return _context; }
-        }
-
-        protected ITransportHeartBeat HeartBeat
-        {
-            get { return _heartBeat; }
-        }
-
-        public Uri Url
-        {
-            get { return _context.Request.Url; }
+            _connectionEndTokenSource);
         }
     }
 }

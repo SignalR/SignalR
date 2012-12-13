@@ -28,21 +28,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                             new[] { "a", "signal", "connectionid" },
                                             new string[] { },
                                             traceManager.Object,
-                                            new AckHandler(cancelAcksOnTimeout: false, 
+                                            new AckHandler(completeAcksOnTimeout: false, 
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
                                             counters);
 
             connection.Send("a", new Command
             {
-                Type = CommandType.AddToGroup,
+                CommandType = CommandType.AddToGroup,
                 Value = "foo"
             });
 
             Assert.NotNull(message);
             Assert.True(message.IsCommand);
             var command = serializer.Parse<Command>(message.Value);
-            Assert.Equal(CommandType.AddToGroup, command.Type);
+            Assert.Equal(CommandType.AddToGroup, command.CommandType);
             Assert.Equal("foo", command.Value);
         }
     }

@@ -34,6 +34,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 (isTypicallyCanceledShortlyAfterBeingSet ? TimerManager.Value.VolatileTimerGroup : TimerManager.Value.StableTimerGroup);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public static long SystemTimeResolutionTicks
         {
             get
@@ -46,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         static long GetSystemTimeResolution()
         {
             int dummyAdjustment;
@@ -70,12 +72,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             if (timeFromNow == TimeSpan.MaxValue)
             {
-                throw new ArgumentException("IOThreadTimer cannot accept Timespan.MaxValue.", "timeFromNow");
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_IOThreadTimerCannotAcceptTimeSpanMaxVal), "timeFromNow");
             }
 
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Will be used in the future.")]
         public void Set(int millisecondsFromNow)
         {
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromMilliseconds(millisecondsFromNow)));
@@ -87,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 string errorMessage = string.Format(
                     CultureInfo.CurrentCulture,
-                    "The value supplied must be between {0} and {1}.",
+                    Resources.Error_ValueSuppliedMustBeBetween,
                     0,
                     TimeSpan.MaxValue.Ticks - 1);
 
@@ -331,11 +334,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.stableTimerGroup.Dispose();
+                    this.volatileTimerGroup.Dispose();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.stableTimerGroup.Dispose();
-                this.volatileTimerGroup.Dispose();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
 
@@ -366,10 +377,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.waitableTimer.Dispose();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.waitableTimer.Dispose();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
 
@@ -606,6 +625,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             static class TimerHelper
             {
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Do not want to alter functionality.")]
                 public static SafeWaitHandle CreateWaitableTimer()
                 {
                     SafeWaitHandle handle = UnsafeNativeMethods.CreateWaitableTimer(IntPtr.Zero, false, null);

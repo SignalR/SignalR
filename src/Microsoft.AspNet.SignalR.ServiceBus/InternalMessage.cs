@@ -2,8 +2,6 @@
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    using System;
-
     sealed class InternalMessage
     {
         readonly string stream;

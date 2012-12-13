@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.AspNet.SignalR.Client.WP7</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Client.WP7</AssemblyName>
+    <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <TargetFrameworkProfile>WindowsPhone71</TargetFrameworkProfile>
@@ -32,7 +32,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Bin\Debug\Microsoft.AspNet.SignalR.Client.WP7.XML</DocumentationFile>
+    <DocumentationFile>Bin\Debug\Microsoft.AspNet.SignalR.Client.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,7 +43,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Bin\Release\Microsoft.AspNet.SignalR.Client.WP7.XML</DocumentationFile>
+    <DocumentationFile>Bin\Release\Microsoft.AspNet.SignalR.Client.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -65,6 +65,18 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
+      <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
+      <Link>Infrastructure\Disposer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
+      <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>
     </Compile>
@@ -76,6 +88,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ExceptionHelper.cs">
       <Link>Infrastructure\ExceptionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
+      <Link>Resources.Designer.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>
@@ -131,9 +146,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\DisposableAction.cs">
-      <Link>Infrastructure\DisposableAction.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ThreadSafeInvoker.cs">
       <Link>Infrastructure\ThreadSafeInvoker.cs</Link>
     </Compile>
@@ -176,15 +188,22 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.Common\Infrastructure\UriQueryUtility.cs">
-      <Link>Infrastructure\UriQueryUtility.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
+      <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
+    <Compile Include="Infrastructure\HashSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
+      <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
+      <Link>Resources.resx</Link>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
   <PropertyGroup>
     <MissingExternalDependenciesBlendDesignTimehack>false</MissingExternalDependenciesBlendDesignTimehack>
     <MissingExternalDependenciesBlendDesignTimehack Condition="!Exists('$(SolutionDir)Build')">true</MissingExternalDependenciesBlendDesignTimehack>
@@ -192,13 +211,9 @@
     <CompileTimeSolutionDir Condition="'$(MissingExternalDependenciesBlendDesignTimehack)'=='true'">$(SolutionDir)..\</CompileTimeSolutionDir>
   </PropertyGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
-  <Import Project="$(LocalToolsPath)\WP7\SignalR.WP71.targets"
-          Condition="'$(LocalToolsPath)'!=''" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets"
-          Condition="'$(LocalToolsPath)'==''" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets"
-          Condition="'$(LocalToolsPath)'==''" />
-
+  <Import Project="$(LocalToolsPath)\WP7\SignalR.WP71.targets" Condition="'$(LocalToolsPath)'!=''" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" Condition="'$(LocalToolsPath)'==''" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" Condition="'$(LocalToolsPath)'==''" />
   <ProjectExtensions />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

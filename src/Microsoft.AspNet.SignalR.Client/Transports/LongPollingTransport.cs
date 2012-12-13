@@ -2,9 +2,13 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -39,17 +43,29 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             ConnectDelay = TimeSpan.FromSeconds(2);
         }
 
-        protected override void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback)
+        protected override void OnStart(IConnection connection,
+                                        string data,
+                                        CancellationToken disconnectToken,
+                                        Action initializeCallback,
+                                        Action<Exception> errorCallback)
         {
-            PollingLoop(connection, data, initializeCallback, errorCallback);
+            PollingLoop(connection, data, disconnectToken, initializeCallback, errorCallback);
         }
 
-        private void PollingLoop(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback, bool raiseReconnect = false)
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
+        private void PollingLoop(IConnection connection,
+                                 string data,
+                                 CancellationToken disconnectToken,
+                                 Action initializeCallback,
+                                 Action<Exception> errorCallback,
+                                 bool raiseReconnect = false)
         {
             string url = connection.Url;
 
+            IRequest request = null;
             var reconnectInvoker = new ThreadSafeInvoker();
             var callbackInvoker = new ThreadSafeInvoker();
+            var requestDisposer = new Disposer();
 
             if (connection.MessageId == null)
             {
@@ -59,8 +75,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 url += "reconnect";
 
-                if (connection.State != ConnectionState.Reconnecting &&
-                    !connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
+                // FIX: Race if the connection is stopped and completely restarted between checking the token and calling
+                //      connection.EnsureReconnecting()
+                if (disconnectToken.IsCancellationRequested || !connection.EnsureReconnecting())
                 {
                     return;
                 }
@@ -69,16 +86,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += GetReceiveQueryString(connection, data);
 
 #if NET35
-            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP: {0}", (object)url));
+            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP: {0}", (object)url));
 #else
             Debug.WriteLine("LP: {0}", (object)url);
 #endif
 
-            _httpClient.PostAsync(url, PrepareRequest(connection)).ContinueWith(task =>
+            HttpClient.PostAsync(url, req => 
             {
-                // Clear the pending request
-                connection.Items.Remove(HttpRequestKey);
-
+                request = req;
+                connection.PrepareRequest(request);
+            }).ContinueWith(task =>
+            {
                 bool shouldRaiseReconnect = false;
                 bool disconnectedReceived = false;
 
@@ -104,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         var raw = task.Result.ReadAsString();
 
 #if NET35
-                        Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
+                        Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
 #else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
 #endif
@@ -116,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     if (disconnectedReceived)
                     {
-                        connection.Stop();
+                        connection.Disconnect();
                     }
                     else
                     {
@@ -153,10 +171,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                     // before polling again so we aren't hammering the server 
                                     TaskAsyncHelper.Delay(ErrorDelay).Then(() =>
                                     {
-                                        if (connection.State != ConnectionState.Disconnected)
+                                        if (!disconnectToken.IsCancellationRequested)
                                         {
                                             PollingLoop(connection,
                                                 data,
+                                                disconnectToken,
                                                 initializeCallback: null,
                                                 errorCallback: null,
                                                 raiseReconnect: shouldRaiseReconnect);
@@ -167,19 +186,47 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                         else
                         {
-                            if (connection.State != ConnectionState.Disconnected)
+                            if (!disconnectToken.IsCancellationRequested)
                             {
                                 // Continue polling if there was no error
                                 PollingLoop(connection,
                                             data,
+                                            disconnectToken,
                                             initializeCallback: null,
                                             errorCallback: null,
                                             raiseReconnect: shouldRaiseReconnect);
                             }
                         }
                     }
+                    requestDisposer.Dispose();
                 }
             });
+
+            var requestCancellationRegistration = disconnectToken.SafeRegister(req =>
+            {
+                if (req != null)
+                {
+                    // This will no-op if the request is already finished.
+                    req.Abort();
+                }
+
+                // Prevent the connection state from switching to the reconnected state.
+                reconnectInvoker.Invoke();
+
+                if (errorCallback != null)
+                {
+                    callbackInvoker.Invoke((cb, token) =>
+                    {
+#if NET35 || WINDOWS_PHONE
+                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
+#else
+                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
+#endif
+                    }, errorCallback, disconnectToken);
+                }
+            }, request);
+
+            requestDisposer.Set(requestCancellationRegistration);
 
             if (initializeCallback != null)
             {

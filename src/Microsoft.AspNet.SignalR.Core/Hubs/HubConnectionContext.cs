@@ -29,14 +29,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="connection">The connection.</param>
         /// <param name="hubName">The hub name.</param>
         /// <param name="connectionId">The connection id.</param>
-        /// <param name="state">The connection hub state.</param>
-        public HubConnectionContext(IHubPipelineInvoker pipelineInvoker, IConnection connection, string hubName, string connectionId, TrackingDictionary state)
+        /// <param name="tracker">The connection hub state.</param>
+        public HubConnectionContext(IHubPipelineInvoker pipelineInvoker, IConnection connection, string hubName, string connectionId, StateChangeTracker tracker)
         {
             _send = (signal, invocation, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, invocation, exclude));
             _connectionId = connectionId;
             _hubName = hubName;
 
-            Caller = new StatefulSignalProxy(_send, connectionId, hubName, state);
+            Caller = new StatefulSignalProxy(_send, connectionId, hubName, tracker);
             All = AllExcept();
             Others = AllExcept(connectionId);
         }

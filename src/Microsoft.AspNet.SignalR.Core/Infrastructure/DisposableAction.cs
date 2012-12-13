@@ -7,6 +7,8 @@ namespace Microsoft.AspNet.SignalR
 {
     internal class DisposableAction : IDisposable
     {
+        public static readonly DisposableAction Empty = new DisposableAction(() => { });
+
         private Action _action;
 
         public DisposableAction(Action action)
@@ -14,9 +16,17 @@ namespace Microsoft.AspNet.SignalR
             _action = action;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Interlocked.Exchange(ref _action, () => { }).Invoke();
+            }
+        }
+
         public void Dispose()
         {
-            Interlocked.Exchange(ref _action, () => { }).Invoke();
+            Dispose(true);
         }
     }
 

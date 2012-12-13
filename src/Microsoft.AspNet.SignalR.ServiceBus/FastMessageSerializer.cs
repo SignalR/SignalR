@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Runtime.Serialization;
     using System.Text;
@@ -27,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return new MessagesStreamReader(stream).ReadToEnd();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Do not want to alter functionality.")]
         sealed class MessagesStreamReader
         {
             readonly BufferedStream stream;
@@ -77,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     }
                     else
                     {
-                        throw new SerializationException("Malformed data stream.");
+                        throw new SerializationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_MalformedDataStream));
                     }
                 }
 
@@ -92,12 +94,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 if (dataSize < -1)
                 {
-                    throw new SerializationException("Data size is smaller than -1");
+                    throw new SerializationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DataSizeSmallerThanNegOne));
                 }
 
                 if (dataSize >= MaxDataSizeInBytes)
                 {
-                    throw new SerializationException("Data size is too big.");
+                    throw new SerializationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DataSizeTooBig));
                 }
 
                 if (dataSize == DataSizeNull)

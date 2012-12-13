@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             return counterCreationData.Select(c => c.CounterName).ToList();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Called from non-static.")]
         public void UninstallCounters()
         {
             if (PerformanceCounterCategory.Exists(SignalRPerfCounterManager.CategoryName))

@@ -1,17 +1,20 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -24,11 +27,23 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private IClientTransport _transport;
 
+        // Propagates notification that connection should be stopped.
+        private SafeCancellationTokenSource _disconnectCts;
+
+        // The amount of time the client should attempt to reconnect before stopping.
+        private TimeSpan _disconnectTimeout;
+
+        // Provides a way to cancel the the timeout that stops a reconnect cycle
+        private IDisposable _disconnectTimeoutOperation;
+
         // The default connection state is disconnected
         private ConnectionState _state = ConnectionState.Disconnected;
 
-        // Used to synchornize state changes
+        // Used to synchronize state changes
         private readonly object _stateLock = new object();
+
+        // The groups the connection is currently subscribed to
+        private readonly HashSet<string> _groups;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -44,6 +59,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Occurs when the <see cref="Connection"/> is stopped.
         /// </summary>
         public event Action Closed;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> starts reconnecting after an error.
+        /// </summary>
+        public event Action Reconnecting;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> successfully reconnects after a timeout.
@@ -82,21 +102,28 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="queryString">The query string data to pass to the server.</param>
         public Connection(string url, string queryString)
         {
-            if (url.Contains("?"))
+            if (url == null)
             {
-                throw new ArgumentException("Url cannot contain QueryString directly. Pass QueryString values in using available overload.", "url");
+                throw new ArgumentNullException("url");
             }
 
-            if (!url.EndsWith("/"))
+            if (url.Contains("?"))
+            {
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UrlCantContainQueryStringDirectly), "url");
+            }
+
+            if (!url.EndsWith("/", StringComparison.Ordinal))
             {
                 url += "/";
             }
 
             Url = url;
             QueryString = queryString;
-            Groups = Enumerable.Empty<string>();
-            Items = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            _groups = new HashSet<string>();
+            Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
+            _disconnectCts = new SafeCancellationTokenSource();
+            _disconnectTimeoutOperation = DisposableAction.Empty;
         }
 
         /// <summary>
@@ -117,9 +144,20 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
 
         /// <summary>
-        /// Gets or sets the groups for the connection.
+        /// Gets a mutable collection of groups for the connection.
         /// </summary>
-        public IEnumerable<string> Groups { get; set; }
+        ICollection<string> IConnection.Groups
+        {
+            get { return _groups; }
+        }
+
+        /// <summary>
+        /// Gets the groups for the connection.
+        /// </summary>
+        public IEnumerable<string> Groups
+        {
+            get { return _groups; }
+        }
 
         /// <summary>
         /// Gets the url for the connection.
@@ -153,10 +191,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             get
             {
-                lock (_stateLock)
-                {
-                    return _state;
-                }
+                return _state;
             }
             private set
             {
@@ -217,6 +252,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return null;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is flowed back to the caller via the tcs.")]
         private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
@@ -226,6 +262,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
+                _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -240,12 +277,12 @@ namespace Microsoft.AspNet.SignalR.Client
                     // If there's any errors starting then Stop the connection                
                     if (task.IsFaulted)
                     {
-                        Stop();
+                        Disconnect();
                         tcs.SetException(task.Exception.Unwrap());
                     }
                     else if (task.IsCanceled)
                     {
-                        Stop();
+                        Disconnect();
                         tcs.SetCanceled();
                     }
                     else
@@ -265,7 +302,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private Task StartTransport(string data)
         {
-            return _transport.Start(this, data)
+            return _transport.Start(this, data, _disconnectCts.Token)
                              .Then(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
@@ -279,11 +316,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
         bool IConnection.ChangeState(ConnectionState oldState, ConnectionState newState)
         {
-            // If we're in the expected old state then change state and return true
-            if (_state == oldState)
+            lock (_stateLock)
             {
-                State = newState;
-                return true;
+                // If we're in the expected old state then change state and return true
+                if (_state == oldState)
+                {
+                    State = newState;
+                    return true;
+                }
             }
 
             // Invalid transition
@@ -295,35 +335,51 @@ namespace Microsoft.AspNet.SignalR.Client
             Version version;
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                !(version.Major == 1 && version.Minor == 0))
+                !(version.Major == 1 && version.Minor == 1))
             {
-                throw new InvalidOperationException("Incompatible protocol version.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IncompatibleProtocolVersion));
             }
         }
 
         /// <summary>
-        /// Stops the <see cref="Connection"/>.
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// </summary>
         public virtual void Stop()
         {
-            try
+            lock (_stateLock)
             {
                 // Do nothing if the connection is offline
-                if (State == ConnectionState.Disconnected)
+                if (State != ConnectionState.Disconnected)
                 {
-                    return;
-                }
-
-                _transport.Stop(this);
-
-                if (Closed != null)
-                {
-                    Closed();
+                    _transport.Abort(this);
+                    Disconnect();
                 }
             }
-            finally
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> without sending an abort message to the server.
+        /// </summary>
+        public void Disconnect()
+        {
+            lock (_stateLock)
             {
-                State = ConnectionState.Disconnected;
+                // Do nothing if the connection is offline
+                if (State != ConnectionState.Disconnected)
+                {
+                    _disconnectTimeoutOperation.Dispose();
+                    _disconnectCts.Cancel();
+                    _disconnectCts.Dispose();
+                    _disconnectCts = new SafeCancellationTokenSource();
+
+                    State = ConnectionState.Disconnected;
+
+                    // TODO: Do we want to trigger Closed if we are connecting?
+                    if (Closed != null)
+                    {
+                        Closed();
+                    }
+                }
             }
         }
 
@@ -347,26 +403,30 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(JsonConvert.SerializeObject(value));
         }
 
+
         Task<T> IConnection.Send<T>(string data)
         {
             if (State == ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException("Start must be called before data can be sent.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
             }
 
             if (State == ConnectionState.Connecting)
             {
-                throw new InvalidOperationException("The connection has not been established.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
             }
 
             return _transport.Send<T>(this, data);
         }
 
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
         {
             OnReceived(message);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         protected virtual void OnReceived(JToken message)
         {
             if (Received != null)
@@ -383,14 +443,32 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
+        void IConnection.OnReconnecting()
+        {
+            // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
+            // the server during negotiation.
+            // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
+            // topic along with the contained disconnect message.
+            _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
+
+            if (Reconnecting != null)
+            {
+                Reconnecting();
+            }
+        }
+
         void IConnection.OnReconnected()
         {
+            // Prevent the timeout set OnReconnecting from firing and stopping the connection if we have successfully
+            // reconnected before the _disconnectTimeout delay.
+            _disconnectTimeoutOperation.Dispose();
             if (Reconnected != null)
             {
                 Reconnected();
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
 #if WINDOWS_PHONE
@@ -438,6 +516,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]
         private static bool TryParseVersion(string versionString, out Version version)
         {
 #if WINDOWS_PHONE || NET35
@@ -459,6 +538,17 @@ namespace Microsoft.AspNet.SignalR.Client
         private static string CreateQueryString(IDictionary<string, string> queryString)
         {
             return String.Join("&", queryString.Select(kvp => kvp.Key + "=" + kvp.Value).ToArray());
+        }
+
+        // TODO: Refactor into a helper class
+        private static IDisposable SetTimeout(TimeSpan delay, Action operation)
+        {
+            var cancellableInvoker = new ThreadSafeInvoker();
+
+            TaskAsyncHelper.Delay(delay).Then(() => cancellableInvoker.Invoke(operation));
+
+            // Disposing this return value will cancel the operation if it has not already been invoked.
+            return new DisposableAction(() => cancellableInvoker.Invoke());
         }
     }
 }

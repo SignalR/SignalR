@@ -2,17 +2,14 @@
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class HubInvokerContext : IHubIncomingInvokerContext
+    internal class HubInvokerContext : IHubIncomingInvokerContext
     {
-        public HubInvokerContext(IHub hub, TrackingDictionary state, MethodDescriptor methodDescriptor, object[] args)
+        public HubInvokerContext(IHub hub, StateChangeTracker tracker, MethodDescriptor methodDescriptor, object[] args)
         {
             Hub = hub;
             MethodDescriptor = methodDescriptor;
             Args = args;
-            State = state;
+            StateTracker = tracker;
         }
 
         public IHub Hub
@@ -34,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         }
 
 
-        public TrackingDictionary State
+        public StateChangeTracker StateTracker
         {
             get;
             private set;

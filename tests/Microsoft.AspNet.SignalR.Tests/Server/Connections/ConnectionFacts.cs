@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
+using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -50,11 +51,11 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 transport.Setup(m => m.Negotiate(connection))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
-                             ProtocolVersion = "1.0",
+                             ProtocolVersion = "1.1",
                              ConnectionId = "Something"
                          }));
 
-                transport.Setup(m => m.Start(connection, null))
+                transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
                          .Returns(TaskAsyncHelper.FromError(new InvalidOperationException("Something failed.")));
 
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());

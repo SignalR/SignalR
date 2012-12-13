@@ -2,6 +2,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        private TKey GetKey(LinkedListNode<KeyValuePair<TKey, TValue>> node)
+        private static TKey GetKey(LinkedListNode<KeyValuePair<TKey, TValue>> node)
         {
             if (node == null)
             {

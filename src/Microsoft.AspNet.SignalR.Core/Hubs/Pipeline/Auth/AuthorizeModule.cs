@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                 // Get hub attributes implementing IAuthorizeHubConnection from the cache
                 // If the attributes do not exist in the cache, retrieve them using reflection and add them to the cache
-                var attributeAuthorizers = _connectionAuthorizersCache.GetOrAdd(hubDescriptor.Type,
+                var attributeAuthorizers = _connectionAuthorizersCache.GetOrAdd(hubDescriptor.HubType,
                     hubType => hubType.GetCustomAttributes(typeof(IAuthorizeHubConnection), inherit: true).Cast<IAuthorizeHubConnection>());
 
                 // Every attribute (if any) implementing IAuthorizeHubConnection attached to the relevant hub MUST allow the connection
@@ -108,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 
                 // Send error back to the client
                 return TaskAsyncHelper.FromError<object>(
-                    new NotAuthorizedException(String.Format("Caller is not authorized to invoke the {0} method on {1}.",
+                    new NotAuthorizedException(String.Format(CultureInfo.CurrentCulture, Resources.Error_CallerNotAuthorizedToInvokeMethodOn,
                                                              context.MethodDescriptor.Name,
                                                              context.MethodDescriptor.Hub.Name)));
             });

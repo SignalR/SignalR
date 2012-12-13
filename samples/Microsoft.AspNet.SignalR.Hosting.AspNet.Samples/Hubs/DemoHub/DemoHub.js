@@ -95,6 +95,10 @@
             }, 1000);
         });
 
+        demo.server.inlineScriptTag().done(function (val) {
+            $("#inlineScriptTag").html(val);
+        });
+
         demo.server.addToGroups();
 
         demo.state.name = 'Testing state!';

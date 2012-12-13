@@ -9,11 +9,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// <summary>
     /// Default <see cref="IServerCommandHandler"/> implementation.
     /// </summary>
-    public class ServerCommandHandler : IServerCommandHandler, ISubscriber
+    internal class ServerCommandHandler : IServerCommandHandler, ISubscriber, IDisposable
     {
         private readonly IMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;
         private readonly IJsonSerializer _serializer;
+        private IDisposable _subscription;
+
         private const int MaxMessages = 10;
 
         // The signal for all signalr servers
@@ -52,9 +54,27 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        public event Action<string> EventAdded;
+        event Action<string> ISubscriber.EventKeyAdded
+        {
+            add
+            {
+            }
+            remove
+            {
+            }
+        }
 
-        public event Action<string> EventRemoved;
+        event Action<string> ISubscriber.EventKeyRemoved
+        {
+            add
+            {
+            }
+            remove
+            {
+            }
+        }
+
+        public Func<string> GetCursor { get; set; }
 
         public string Identity
         {
@@ -73,10 +93,26 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return _messageBus.Publish(_serverIdManager.ServerId, ServerSignal, _serializer.Stringify(command));
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_subscription != null)
+                {
+                    _subscription.Dispose();
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages);
+            _subscription = _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages);
         }
 
         private Task<bool> HandleServerCommands(MessageResult result)

@@ -57,11 +57,13 @@
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
+    <Compile Include="DiffPair.cs" />
+    <Compile Include="DiffSet.cs" />
+    <Compile Include="GlobalHost.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
     <Compile Include="Hosting\Cookie.cs" />
-    <Compile Include="Hosting\IRequestCookieCollection.cs" />
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="CommandType.cs" />
@@ -92,6 +94,7 @@
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />
+    <Compile Include="Hubs\StateChangeTracker.cs" />
     <Compile Include="IAckHandler.cs" />
     <Compile Include="Hubs\Pipeline\HubPipeline.cs" />
     <Compile Include="Hubs\Pipeline\IHubIncomingInvokerContext.cs" />
@@ -106,6 +109,8 @@
     <Compile Include="Infrastructure\PerformanceCounterManager.cs" />
     <Compile Include="Infrastructure\Disposer.cs" />
     <Compile Include="Infrastructure\PerformanceCounterWrapper.cs" />
+    <Compile Include="Infrastructure\CancellationTokenExtensions.cs" />
+    <Compile Include="Infrastructure\SafeCancellationTokenSource.cs" />
     <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
@@ -143,7 +148,6 @@
     <Compile Include="MessageBus\IMessageBus.cs" />
     <Compile Include="MessageBus\ISubscriber.cs" />
     <Compile Include="MessageBus\MessageBus.cs" />
-    <Compile Include="MessageBus\IIdGenerator.cs" />
     <Compile Include="MessageBus\MessageBusExtensions.cs" />
     <Compile Include="MessageBus\MessageResult.cs" />
     <Compile Include="MessageBus\MessageStore.cs" />
@@ -165,7 +169,6 @@
     <Compile Include="IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
-    <Compile Include="Infrastructure\LockedList.cs" />
     <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
@@ -192,21 +195,25 @@
     <Compile Include="Infrastructure\ServerCommandType.cs" />
     <Compile Include="Infrastructure\ServerCommandHandler.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Transports\ITrackingConnection.cs" />
     <Compile Include="Transports\ITransport.cs" />
-    <Compile Include="Transports\ITransportHeartBeat.cs" />
+    <Compile Include="Transports\ITransportHeartbeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
     <Compile Include="Transports\TransportDisconnectBase.cs" />
-    <Compile Include="Transports\TransportHeartBeat.cs" />
+    <Compile Include="Transports\TransportHeartbeat.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
-    <Compile Include="Hubs\TrackingDictionary.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
@@ -223,6 +230,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Scripts\hubs.js" />
   </ItemGroup>
   <ItemGroup />
