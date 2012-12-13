@@ -1,0 +1,2 @@
+[config]
+project = tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj
