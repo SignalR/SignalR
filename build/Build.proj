@@ -165,6 +165,11 @@
     <CallTarget Targets="KillIISExpress" />
     <OnError ExecuteTargets="KillIISExpress" />
   </Target>
+
+  <Target Name="TestSwarm" Condition="$(TestSwarmPostData) != ''">
+    <HttpPostRequest Url="http://testswarm.cloudapp.net/api.php?action=addjob"
+                     Data="$(TestSwarmPostData)" />
+  </Target>
     
   <Target Name="KillIISExpress">
     <Exec Command="taskkill /IM iisexpress.exe /F" ContinueOnError="true" />
