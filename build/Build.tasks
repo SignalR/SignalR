@@ -30,5 +30,30 @@
             }
           ]]></Code>
         </Task>
-      </UsingTask>
+    </UsingTask>
+    <UsingTask TaskName="HttpPostRequest" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+          <Url ParameterType="System.String" Required="true" />
+          <Data ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+          <Using Namespace="System.IO" />
+          <Using Namespace="System.Net" />
+          <Using Namespace="System.Text" />
+          <Code Type="Fragment" Language="cs"><![CDATA[
+            HttpWebRequest httpWReq = (HttpWebRequest)WebRequest.Create(Url);
+
+            byte[] data = Encoding.UTF8.GetBytes(Data);
+
+            httpWReq.Method = "POST";
+            httpWReq.ContentType = "application/x-www-form-urlencoded";
+            httpWReq.ContentLength = data.Length;
+
+            using (Stream newStream = httpWReq.GetRequestStream())
+            {
+                newStream.Write(data, 0, data.Length);
+            }
+          ]]></Code>
+        </Task>
+    </UsingTask>
   </Project>
