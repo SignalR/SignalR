@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -42,6 +43,25 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         Assert.NotNull(ser.ResponseBody);
                         Assert.NotNull(ser.Exception);
                     }
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.Auto)]
+            // [InlineData(HostType.IISExpress, TransportType.Auto)]
+            public void FallbackToLongPollingWorks(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+
+                    var connection = new Client.Connection(host.Url + "/fall-back");
+                    
+                    connection.Start(host.Transport).Wait();
+
+                    Assert.Equal(connection.Transport.Name, "longPolling");
+
+                    connection.Stop();
                 }
             }
 

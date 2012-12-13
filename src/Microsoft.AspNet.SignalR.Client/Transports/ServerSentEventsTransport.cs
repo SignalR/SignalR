@@ -222,8 +222,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     callbackInvoker.Invoke((conn, cb) =>
                     {
-                        connection.Disconnect();
-
                         // Connection timeout occurred
                         cb(new TimeoutException());
                     },

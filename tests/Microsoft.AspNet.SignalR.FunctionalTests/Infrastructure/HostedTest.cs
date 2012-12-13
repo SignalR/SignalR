@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 case TransportType.LongPolling:
                     return new LongPollingTransport(client);
                 default:
-                    break;
+                    return new AutoTransport(client);
             }
 
             throw new NotSupportedException("Transport not supported");

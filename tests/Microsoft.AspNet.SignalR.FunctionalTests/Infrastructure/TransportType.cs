@@ -2,6 +2,7 @@
 {
     public enum TransportType
     {
+        Auto,
         Websockets,
         ServerSentEvents,
         ForeverFrame,
