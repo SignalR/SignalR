@@ -13,13 +13,15 @@ namespace Microsoft.AspNet.SignalR.Owin
     {
         private readonly IDictionary<string, object> _environment;
 
+        public static readonly string OwinEnvironmentKey = "owin.environment";
+
         public ServerRequest(IDictionary<string, object> environment)
         {
             _environment = environment;
 
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
-                { "owin.environment" , _environment }
+                { OwinEnvironmentKey , _environment }
             };
         }
         
