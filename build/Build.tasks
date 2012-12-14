@@ -56,4 +56,6 @@
           ]]></Code>
         </Task>
     </UsingTask>
+
+    <UsingTask TaskName="StartIISTask" AssemblyFile="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\$(Configuration)\Microsoft.AspNet.SignalR.Tests.Common.dll"></UsingTask>
   </Project>

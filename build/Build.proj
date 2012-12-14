@@ -13,8 +13,12 @@
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
     <XunitPath>$(ToolsPath)xunit\</XunitPath>
-    <ChutzpahExePath>$(ProjectRoot)\tools\chutzpah\chutzpah.console.exe</ChutzpahExePath>
-    <JSTestsBridgeFile>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js</JSTestsBridgeFile>
+    <ChutzpahExe>chutzpah.console.exe</ChutzpahExe>
+    <ChutzpahPath>$(ProjectRoot)\tools\chutzpah</ChutzpahPath>
+    <ChutzpahExePath>$(ChutzpahPath)\$(ChutzpahExe)</ChutzpahExePath>
+    <JSTestsURL>http://localhost:1337/signalr</JSTestsURL>
+    <JSTestsPath>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests</JSTestsPath>
+    <JSTester>$(JSTestsPath)\default.html</JSTester>
     <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
     <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
     <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\Scripts</ScriptTempPath>
@@ -140,16 +144,18 @@
   <Target Name="RunUnitTests" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="%(UnitTestProjects.Identity)"
              Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);CommandLineTest=true;TestURL=$(JSTestsURL);"
              Condition=" '$(OS)' == 'Windows_NT'"/>
-    
-    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTestsBridgeFile)&quot; /silent" Condition=" '$(OS)' == 'Windows_NT'" />
-    <RemoveDir Directories="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\temp" ContinueOnError="true"></RemoveDir>
-    <Delete Files="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\CommandLineBridge.js" ContinueOnError="true"></Delete>
+
+    <StartIISTask HostLocation="$(JSTestsPath)" />
+    <!--
+    <Exec Command="$(ChutzpahExePath) $(JSTester) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" 
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" 
            Verbose="true" />     
+    <CallTarget Targets="KillIISExpress" />
+    <OnError ExecuteTargets="KillIISExpress" />-->
   </Target>
 
   <Target Name="RunFunctionalTests" DependsOnTargets="CreateOutputDir">
