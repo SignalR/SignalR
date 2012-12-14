@@ -68,7 +68,6 @@
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
     <Compile Include="Client\HubProxyFacts.cs" />
-    <Compile Include="Owin\BasicAuthApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />

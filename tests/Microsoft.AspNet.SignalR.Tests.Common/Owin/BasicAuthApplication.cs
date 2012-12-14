@@ -3,7 +3,7 @@ using Owin;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Owin
 {
-    internal class BasicAuthApplication
+    public class BasicAuthApplication
     {
         public void Configuration(IAppBuilder app)
         {
