@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using Microsoft.AspNet.SignalR.Infrastructure;
+using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -46,7 +47,15 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task ProcessRequest(ITransportConnection connection)
         {
-            return _context.Request.AcceptWebSocketRequest(socket =>
+            var webSocketRequest = _context.Request as IWebSocketRequest;
+
+            // Throw if the server implementation doesn't support websockets
+            if (webSocketRequest == null)
+            {
+                throw new InvalidOperationException(Resources.Error_WebSocketsNotSupported);
+            }
+
+            return webSocketRequest.AcceptWebSocketRequest(socket =>
             {
                 _socket = socket;
 

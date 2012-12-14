@@ -156,6 +156,9 @@
   <data name="Error_UsingHubInstanceNotCreatedUnsupported" xml:space="preserve">
     <value>Using a Hub instance not created by the HubPipeline is unsupported.</value>
   </data>
+  <data name="Error_WebSocketsNotSupported" xml:space="preserve">
+    <value>WebSockets is not supported.</value>
+  </data>
   <data name="Errror_HubCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' Hub could not be resolved.</value>
   </data>

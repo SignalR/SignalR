@@ -52,11 +52,5 @@ namespace Microsoft.AspNet.SignalR
         /// Gets state for the current HTTP request.
         /// </summary>
         IDictionary<string, object> Items { get; }
-
-        /// <summary>
-        /// Accepts an websocket request using the specified user function.
-        /// </summary>
-        /// <param name="callback">The callback that fires when the websocket is ready.</param>
-        Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback);
     }
 }

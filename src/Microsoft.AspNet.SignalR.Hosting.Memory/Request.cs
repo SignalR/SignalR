@@ -119,11 +119,5 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             get;
             private set;
         }
-
-        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
-        {
-            // TODO: Add support
-            throw new NotSupportedException();
-        }
     }
 }

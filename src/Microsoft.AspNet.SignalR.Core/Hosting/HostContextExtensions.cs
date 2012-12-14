@@ -29,7 +29,10 @@ namespace Microsoft.AspNet.SignalR
 
         public static bool SupportsWebSockets(this HostContext context)
         {
-            return context.GetValue<bool>(HostConstants.SupportsWebSockets);
+            // The server needs to implement IWebSocketRequest for websockets to be supported.
+            // It also needs to set the flag in the items collection.
+            return context.GetValue<bool>(HostConstants.SupportsWebSockets) &&
+                   context.Request is IWebSocketRequest;
         }
 
         public static string WebSocketServerUrl(this HostContext context)

@@ -11,7 +11,7 @@ using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 namespace Microsoft.AspNet.SignalR.Owin
 {
     using WebSocketFunc = Func<IDictionary<string, object>, Task>;
-    public partial class ServerRequest : IRequest
+    public partial class ServerRequest : IWebSocketRequest
     {
         private static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
