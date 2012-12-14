@@ -55,7 +55,7 @@
     <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\RawConnection.cs">
       <Link>Connections\RawConnection.cs</Link>
     </Compile>
-    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.FunctionalTests\Infrastructure\CountDownRange.cs">
+    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
     <Compile Include="..\Common\CommonVersionInfo.cs">
