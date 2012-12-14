@@ -76,32 +76,7 @@
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
     <Compile Include="Client\HubProxyFacts.cs" />
-    <Compile Include="Connections\ConnectionThatUsesItems.cs" />
-    <Compile Include="Connections\FallbackToLongPollingConnection.cs" />
-    <Compile Include="Connections\FilteredConnection.cs" />
-    <Compile Include="Connections\MyBadConnection.cs" />
-    <Compile Include="Connections\MyGroupConnection.cs" />
-    <Compile Include="Connections\MyGroupEchoConnection.cs" />
-    <Compile Include="Connections\MyReconnect.cs" />
-    <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
-    <Compile Include="Connections\MySendingConnection.cs" />
-    <Compile Include="Connections\SyncErrorConnection.cs" />
-    <Compile Include="Hubs\ChatWithGroups.cs" />
-    <Compile Include="Hubs\MyItemsHub.cs" />
-    <Compile Include="Infrastructure\BasicAuthModule.cs" />
-    <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
-    <Compile Include="Infrastructure\CountDownRange.cs" />
-    <Compile Include="Infrastructure\HostedTest.cs" />
-    <Compile Include="Infrastructure\HostType.cs" />
-    <Compile Include="Infrastructure\IIS\SiteManager.cs" />
-    <Compile Include="Infrastructure\MemoryTestHost.cs" />
-    <Compile Include="Infrastructure\ITestHost.cs" />
-    <Compile Include="Infrastructure\IISExpressTestHost.cs" />
-    <Compile Include="Infrastructure\OwinTestHost.cs" />
-    <Compile Include="Infrastructure\RequestItemsResponse.cs" />
-    <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Owin\BasicAuthApplication.cs" />
-    <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
