@@ -147,15 +147,16 @@
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);CommandLineTest=true;TestURL=$(JSTestsURL);"
              Condition=" '$(OS)' == 'Windows_NT'"/>
 
-    <StartIISTask HostLocation="$(JSTestsPath)" />
+    <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
     
     <Exec Command="$(ChutzpahExePath) $(JSTester) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" 
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" 
-           Verbose="true" />     
-    <CallTarget Targets="KillIISExpress" />
-    <OnError ExecuteTargets="KillIISExpress" />
+           Verbose="true" />
+    
+    <CallTarget Targets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
+    <OnError ExecuteTargets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
 
   <Target Name="RunFunctionalTests" DependsOnTargets="CreateOutputDir">
