@@ -96,6 +96,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Owin.Hosting", "katana\src\Microsoft.Owin.Hosting\Microsoft.Owin.Hosting.csproj", "{C225EB2E-E7A7-463F-B058-1705F204978E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Owin.Samples", "samples\Microsoft.AspNet.Owin.Samples\Microsoft.AspNet.Owin.Samples.csproj", "{5D69B6BE-062B-408D-913E-5CD2F21D5D17}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Tests.Common", "tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj", "{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}"
 EndProject
 Global
@@ -570,13 +571,17 @@ Global
 		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.ActiveCfg = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|ARM.ActiveCfg = Debug|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|ARM.ActiveCfg = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|x64.ActiveCfg = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
