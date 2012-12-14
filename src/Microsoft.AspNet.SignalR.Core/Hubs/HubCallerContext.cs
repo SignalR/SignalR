@@ -36,17 +36,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         }
 
         /// <summary>
-        /// Gets the server variables for the request.
-        /// </summary>
-        public NameValueCollection ServerVariables
-        {
-            get
-            {
-                return Request.ServerVariables;
-            }
-        }
-
-        /// <summary>
         /// Gets the querystring for the request.
         /// </summary>
         public NameValueCollection QueryString

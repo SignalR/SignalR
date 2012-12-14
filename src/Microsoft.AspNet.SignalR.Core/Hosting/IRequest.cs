@@ -29,11 +29,6 @@ namespace Microsoft.AspNet.SignalR
         NameValueCollection Headers { get; }
 
         /// <summary>
-        /// Gets the server variables for this request.
-        /// </summary>
-        NameValueCollection ServerVariables { get; }
-
-        /// <summary>
         /// Gets the form for this request.
         /// </summary>
         NameValueCollection Form { get; }

@@ -23,7 +23,6 @@ namespace Microsoft.AspNet.SignalR.Owin
         private Uri _url;
         private NameValueCollection _queryString;
         private NameValueCollection _headers;
-        private NameValueCollection _serverVariables;
         private NameValueCollection _form;
         private bool _formInitialized;
         private object _formLock = new object();
@@ -81,24 +80,6 @@ namespace Microsoft.AspNet.SignalR.Owin
                                     collection.Add(kv.Key, kv.Value[index]);
                                 }
                             }
-                        }
-                        return collection;
-                    });
-            }
-        }
-
-        public NameValueCollection ServerVariables
-        {
-            get
-            {
-                return LazyInitializer.EnsureInitialized(
-                    ref _serverVariables, () =>
-                    {
-                        var collection = new NameValueCollection();
-                        var remoteIpAddress = _environment.Get<string>(OwinConstants.RemoteIpAddress);
-                        if (!String.IsNullOrEmpty(remoteIpAddress))
-                        {
-                            collection["REMOTE_ADDR"] = remoteIpAddress;
                         }
                         return collection;
                     });

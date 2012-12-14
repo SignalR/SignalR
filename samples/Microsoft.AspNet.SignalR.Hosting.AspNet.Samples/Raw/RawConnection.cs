@@ -21,7 +21,8 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
                 _users[userNameCookie.Value] = connectionId;
             }
 
-            string clientIp = request.ServerVariables["REMOTE_ADDR"];
+            string clientIp = GetClientIP(request);
+
             string user = GetUser(connectionId);
 
             return Groups.Add(connectionId, "foo").ContinueWith(_ =>
@@ -154,6 +155,24 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
         {
             public MessageType Type { get; set; }
             public string Value { get; set; }
+        }
+
+        private static string GetClientIP(IRequest request)
+        {
+            var env = Get<IDictionary<string, object>>(request.Items, "owin.environment");
+            
+            if (env == null)
+            {
+                return null;
+            }
+
+            return Get<string>(env, "server.RemoteIpAddress");
+        }
+
+        private static T Get<T>(IDictionary<string, object> env, string key)
+        {
+            object value;
+            return env.TryGetValue(key, out value) ? (T)value : default(T);
         }
     }
 }
