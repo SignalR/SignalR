@@ -57,21 +57,6 @@
             }
         },
 
-        isCrossDomain = function (url) {
-            var link;
-
-            url = $.trim(url);
-            if (url.indexOf("http") !== 0) {
-                return false;
-            }
-
-            // Create an anchor tag.
-            link = window.document.createElement("a");
-            link.href = url;
-
-            return link.protocol + link.host !== window.location.protocol + window.location.host;
-        },
-
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
@@ -183,6 +168,21 @@
             configureStopReconnectingTimeout(this);
         },
 
+        isCrossDomain: function (url) {
+            var link;
+
+            url = $.trim(url);
+            if (url.indexOf("http") !== 0) {
+                return false;
+            }
+
+            // Create an anchor tag.
+            link = window.document.createElement("a");
+            link.href = url;
+
+            return link.protocol + link.host !== window.location.protocol + window.location.host;
+        },
+
         ajaxDataType: "json",
 
         logging: false,
@@ -209,8 +209,7 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false,
-                    crossDomainCapable: true
+                    jsonp: false
                 },
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -282,7 +281,7 @@
                 config.transport = "longPolling";
             }
 
-            if (config.crossDomainCapable && isCrossDomain(connection.url)) {
+            if (this.isCrossDomain(connection.url)) {
                 connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {
