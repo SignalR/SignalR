@@ -82,6 +82,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinExtensions.cs">
       <Link>OwinExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\RequestExtensions.cs">
+      <Link>RequestExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.cs">
       <Link>ServerRequest.cs</Link>
     </Compile>

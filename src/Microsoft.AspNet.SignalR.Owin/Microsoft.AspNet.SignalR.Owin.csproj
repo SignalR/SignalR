@@ -60,6 +60,7 @@
     <Compile Include="Handlers\CallHandler.cs" />
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />
     <Compile Include="Handlers\HubDispatcherHandler.cs" />
+    <Compile Include="RequestExtensions.cs" />
     <Compile Include="ServerRequest.Owin.cs" />
     <Compile Include="ServerRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
