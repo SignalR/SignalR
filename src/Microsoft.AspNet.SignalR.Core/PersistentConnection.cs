@@ -294,6 +294,7 @@ namespace Microsoft.AspNet.SignalR
 
         private static Task ProcessPingRequest(HostContext context)
         {
+            context.Response.ContentType = "text/plain";
             return context.Response.EndAsync("pong");
         }
 
