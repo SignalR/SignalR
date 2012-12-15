@@ -7,6 +7,6 @@
         if (window.document.testUrl !== 'auto') {
             return $.hubConnection(window.document.testUrl);
         }
-        return $.hubConnection();
+        return $.hubConnection('signalr');
     };
 })($, window);
