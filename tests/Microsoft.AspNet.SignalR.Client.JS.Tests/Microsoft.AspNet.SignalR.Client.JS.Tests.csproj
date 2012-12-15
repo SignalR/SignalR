@@ -199,7 +199,7 @@
     ]]></Code>
     </Task>
   </UsingTask>
-  <Target Name="BeforeBuild">
+  <Target Name="AfterBuild">
     <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
       <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
     </BuildScriptTags>
@@ -208,7 +208,10 @@
     <FileUpdate Condition="'$(TestURL)' != 'auto'" Files="default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(TestURL)/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" />
     <FileUpdate Files="$(TestConfig)" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(TestURL)'/*URL*/" />
     <FileUpdate Files="$(TestConfig)" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/$(CommandLineTest)/*CMDLineTest*/" />
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    
+    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js"
+          DestinationFiles="Scripts\jquery.signalR.js" 
+          Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!--
