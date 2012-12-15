@@ -154,7 +154,7 @@
 
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
     
-    <Exec Command="$(ChutzpahExePath) $(JSTester) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="$(ChutzpahExePath) $(JSTester) /silent /debug" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" 
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" 
