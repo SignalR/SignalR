@@ -138,7 +138,7 @@
   <Target Name="GoMono" DependsOnTargets="Build; RunUnitTests;">
   </Target>
 
-  <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
+  <Target Name="BuildCmd" DependsOnTargets="RunUnitTests;">
   </Target>
 
   <Target Name="RunUnitTests" DependsOnTargets="CreateOutputDir">
