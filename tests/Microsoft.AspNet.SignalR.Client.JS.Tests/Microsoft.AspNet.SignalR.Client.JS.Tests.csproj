@@ -43,7 +43,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <QUnitTestsFolder>Tests</QUnitTestsFolder>
-    <TestConfig>Build/test.config.js</TestConfig>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -146,8 +145,7 @@
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <Import Project="..\..\build\MSBuild.Community.Tasks.Targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />  
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
@@ -203,11 +201,6 @@
     <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
       <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
     </BuildScriptTags>
-    <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" />
-    <FileUpdate Condition="'$(TestURL)' == 'auto'" Files="default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" />
-    <FileUpdate Condition="'$(TestURL)' != 'auto'" Files="default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(TestURL)/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" />
-    <FileUpdate Files="$(TestConfig)" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(TestURL)'/*URL*/" />
-    <FileUpdate Files="$(TestConfig)" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/$(CommandLineTest)/*CMDLineTest*/" />
     
     <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js"
           DestinationFiles="Scripts\jquery.signalR.js" 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
-  <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />
+  <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />  
 
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
@@ -23,7 +23,10 @@
     <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
     <ScriptTempPath>$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\Scripts</ScriptTempPath>
     <KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\35MSSharedLib1024.snk</KeyFile>
+    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
 
   <!-- Add extra properties to the build for signing -->
   <PropertyGroup Condition="Exists('$(KeyFile)')">
@@ -151,6 +154,13 @@
          Targets="pipelinePreDeployCopyAllFilesToOneFolder"
          Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);CommandLineTest=true;TestURL=$(JSTestsURL);_PackageTempDir=$(JSTestsPath);AutoParameterizationWebConfigConnectionStrings=false"
          Condition=" '$(OS)' == 'Windows_NT'"/>
+    
+      <!-- Replaces files for -->
+      <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
+      <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
+      <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(TestURL)/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
+      <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(TestURL)'/*URL*/" Condition=" '$(OS)' == 'Windows_NT'" />
+      <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/$(CommandLineTest)/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
     
