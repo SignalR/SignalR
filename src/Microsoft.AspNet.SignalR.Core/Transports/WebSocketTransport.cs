@@ -74,8 +74,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 socket.OnMessage = message =>
                 {
-                    OnReceiving(message);
-
                     if (Received != null)
                     {
                         Received(message).Catch();

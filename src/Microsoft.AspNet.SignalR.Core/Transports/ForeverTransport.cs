@@ -72,37 +72,12 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected virtual void OnSending(string payload)
         {
             Heartbeat.MarkConnection(this);
-
-            if (Sending != null)
-            {
-                Sending(payload);
-            }
         }
 
         protected virtual void OnSendingResponse(PersistentResponse response)
         {
             Heartbeat.MarkConnection(this);
-
-            if (SendingResponse != null)
-            {
-                SendingResponse(response);
-            }
         }
-
-        protected static void OnReceiving(string data)
-        {
-            if (Receiving != null)
-            {
-                Receiving(data);
-            }
-        }
-
-        // Static events intended for use when measuring performance
-        public static event Action<string> Sending;
-
-        public static event Action<PersistentResponse> SendingResponse;
-
-        public static event Action<string> Receiving;
 
         public Func<string, Task> Received { get; set; }
 
@@ -204,8 +179,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"];
-
-            OnReceiving(data);
 
             if (Received != null)
             {
