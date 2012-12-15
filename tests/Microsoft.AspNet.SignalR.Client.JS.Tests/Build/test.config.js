@@ -3,7 +3,10 @@
     window.document.testUrl = /*URL*/'auto'/*URL*/;
     window.document.commandLineTest = /*CMDLineTest*/false/*CMDLineTest*/;
 
-    if (window.document.testUrl !== 'auto') {
-        $.connection.hub.url = window.document.testUrl;
-    }
+    window.createHubConnection = function () {
+        if (window.document.testUrl !== 'auto') {
+            return $.hubConnection(window.document.testUrl);
+        }
+        return $.hubConnection();
+    };
 })($, window);
