@@ -160,13 +160,13 @@
     
       <!-- Replaces files for -->
       <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
-      <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(TestURL)/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
+      <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
       <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(JSTestsURL)'/*URL*/" Condition=" '$(OS)' == 'Windows_NT'" />
       <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
     
-    <Exec Command="$(ChutzpahExePath) $(JSTester) /silent /debug" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="$(ChutzpahExePath) $(JSTester) /silent" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" 
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" 
