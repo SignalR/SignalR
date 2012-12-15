@@ -17,7 +17,7 @@
     <ChutzpahPath>$(ProjectRoot)\tools\chutzpah</ChutzpahPath>
     <ChutzpahExePath>$(ChutzpahPath)\$(ChutzpahExe)</ChutzpahExePath>
     <JSTestsURL>http://localhost:1337/signalr</JSTestsURL>
-    <JSTestsPath>$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests</JSTestsPath>
+    <JSTestsPath>$(ArtifactsDir)\JsTestHarness</JSTestsPath>
     <JSTester>$(JSTestsPath)\default.html</JSTester>
     <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
     <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
@@ -144,8 +144,13 @@
   <Target Name="RunUnitTests" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="%(UnitTestProjects.Identity)"
              Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);CommandLineTest=true;TestURL=$(JSTestsURL);"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);"
              Condition=" '$(OS)' == 'Windows_NT'"/>
+
+    <MSBuild Projects="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj"
+         Targets="pipelinePreDeployCopyAllFilesToOneFolder"
+         Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);CommandLineTest=true;TestURL=$(JSTestsURL);_PackageTempDir=$(JSTestsPath);AutoParameterizationWebConfigConnectionStrings=false"
+         Condition=" '$(OS)' == 'Windows_NT'"/>
 
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
     
