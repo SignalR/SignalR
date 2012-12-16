@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR
 
         public Task Send(ConnectionMessage message)
         {
-            Message busMessage = CreateMessage(message.Signal, message.Value);
+            Message busMessage = CreateMessage(message);
 
             if (message.ExcludedSignals != null)
             {
@@ -104,25 +104,18 @@ namespace Microsoft.AspNet.SignalR
 
             if (busMessage.WaitForAck)
             {
-                Task ackTask = _ackHandler.CreateAck(busMessage.CommandId);
+                Task ackTask = _ackHandler.CreateAck(busMessage.Id);
                 return _bus.Publish(busMessage).Then(task => task, ackTask);
             }
 
             return _bus.Publish(busMessage);
         }
 
-        private Message CreateMessage(string key, object value)
+        private Message CreateMessage(ConnectionMessage connectionMessage)
         {
-            var command = value as Command;
-            var message = new Message(_connectionId, key, _serializer.Stringify(value));
-
-            if (command != null)
-            {
-                // Set the command id
-                message.CommandId = command.Id;
-                message.WaitForAck = command.WaitForAck;
-            }
-
+            var message = new Message(_connectionId, connectionMessage.Signal, _serializer.Stringify(connectionMessage.Value));
+            message.WaitForAck = connectionMessage.WaitForReply;
+            message.IsCommand = connectionMessage.Value is Command; 
             return message;
         }
 
@@ -170,6 +163,11 @@ namespace Microsoft.AspNet.SignalR
 
         private bool ExcludeMessage(Message message)
         {
+            if (message.IsCommand)
+            {
+                return true;
+            }
+
             if (String.IsNullOrEmpty(message.Filter))
             {
                 return false;
@@ -184,29 +182,29 @@ namespace Microsoft.AspNet.SignalR
 
         private void ProcessResults(MessageResult result)
         {
-            result.Messages.Enumerate(message => message.IsAck || message.IsCommand,
-                                      message =>
+            result.Messages.Enumerate(message =>
                                       {
                                           if (message.IsAck)
                                           {
-                                              _ackHandler.TriggerAck(message.CommandId);
+                                              _ackHandler.TriggerAck(message.AckId);
                                           }
                                           else if (message.IsCommand)
                                           {
                                               var command = _serializer.Parse<Command>(message.Value);
                                               ProcessCommand(command);
+                                          }
 
-                                              // Only send the ack if this command is waiting for it
-                                              if (message.WaitForAck)
+                                          // Only send the ack if this command is waiting for it
+                                          if (message.WaitForAck)
+                                          {
+                                              // If we're on the same box and there's a pending ack for this command then
+                                              // just trip it
+                                              if (!_ackHandler.TriggerAck(message.Id))
                                               {
-                                                  // If we're on the same box and there's a pending ack for this command then
-                                                  // just trip it
-                                                  if (!_ackHandler.TriggerAck(message.CommandId))
-                                                  {
-                                                      _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
-                                                  }
+                                                  _bus.Ack(_connectionId, message.Key, message.Id).Catch();
                                               }
                                           }
+
                                       });
         }
 

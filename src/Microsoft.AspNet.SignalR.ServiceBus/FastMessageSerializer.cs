@@ -56,20 +56,25 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                     if (marker == MessageMarker)
                     {
+                        string id = this.GetDataItem();
                         string source = this.GetDataItem();
                         string key = this.GetDataItem();
                         string value = this.GetDataItem();
-                        string commandId = this.GetDataItem();
+                        string isCommandValue = this.GetDataItem();
                         string waitForAcValue = this.GetDataItem();
-                        string isAckValue = this.GetDataItem();
+                        string ackValue = this.GetDataItem();
                         string filter = this.GetDataItem();
 
                         messages.Add(
-                            new Message(source, key, value)
+                            new Message()
                             {
-                                CommandId = commandId,
+                                Id = id,
+                                Source = source,
+                                Key = key,
+                                Value = value,
+                                IsCommand = Boolean.Parse(isCommandValue),
                                 WaitForAck = Boolean.Parse(waitForAcValue),
-                                IsAck = Boolean.Parse(isAckValue),
+                                AckId = ackValue,
                                 Filter = filter
                             });
                     }
@@ -222,7 +227,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     yield return BitConverter.GetBytes(MessageMarker);
 
-                    string[] itemList = new string[] { message.Source, message.Key, message.Value, message.CommandId, message.WaitForAck.ToString(), message.IsAck.ToString(), message.Filter };
+                    string[] itemList = new string[] { message.Id, message.Source, message.Key, message.Value, message.IsCommand.ToString(), message.WaitForAck.ToString(), message.AckId, message.Filter };
 
                     foreach (string item in itemList)
                     {

@@ -43,12 +43,60 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
+            if (signal == null)
+            {
+                throw new ArgumentNullException("signal");
+            }
+
             var message = new ConnectionMessage(signal, value)
             {
-                ExcludedSignals = exclude
+                ExcludedSignals = exclude,
             };
 
             return connection.Send(message);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="connectionId"></param>
+        /// <param name="value"></param>
+        /// <param name="waitForReply"></param>
+        /// <returns></returns>
+        public static Task Send(this IConnection connection, string connectionId, object value, bool waitForReply)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException("connectionId");
+            }
+
+            var message = new ConnectionMessage(connectionId, value)
+            {
+                WaitForReply = waitForReply
+            };
+
+            return connection.Send(message);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
+        public static Task Ping(this IConnection connection, string connectionId)
+        {
+            var command = new Command
+            {
+                CommandType = CommandType.Ping
+            };
+            return Send(connection, connectionId, command, waitForReply: true);
         }
 
         /// <summary>

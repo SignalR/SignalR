@@ -75,11 +75,10 @@ namespace Microsoft.AspNet.SignalR
             var command = new Command
             {
                 CommandType = CommandType.AddToGroup,
-                Value = CreateQualifiedName(groupName),
-                WaitForAck = true
+                Value = CreateQualifiedName(groupName)
             };
 
-            return _connection.Send(connectionId, command);
+            return _connection.Send(connectionId, command, waitForReply: true);
         }
 
         /// <summary>
@@ -103,11 +102,10 @@ namespace Microsoft.AspNet.SignalR
             var command = new Command
             {
                 CommandType = CommandType.RemoveFromGroup,
-                Value = CreateQualifiedName(groupName),
-                WaitForAck = true
+                Value = CreateQualifiedName(groupName)
             };
 
-            return _connection.Send(connectionId, command);
+            return _connection.Send(connectionId, command, waitForReply: true);
         }
 
         private string CreateQualifiedName(string groupName)

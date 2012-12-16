@@ -7,6 +7,7 @@ namespace Microsoft.AspNet.SignalR
         AddToGroup,
         RemoveFromGroup,
         Disconnect,
-        Abort
+        Abort,
+        Ping
     }
 }

@@ -29,6 +29,11 @@ namespace Microsoft.AspNet.SignalR
         public IEnumerable<string> ExcludedSignals { get; set; }
 
         /// <summary>
+        /// Determines if ths message should wait until the receiver received it.
+        /// </summary>
+        public bool WaitForReply { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionMessage"/> class.
         /// </summary>
         /// <param name="signal">The signal</param>

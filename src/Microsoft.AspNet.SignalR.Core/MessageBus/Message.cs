@@ -12,19 +12,24 @@ namespace Microsoft.AspNet.SignalR
         public string Source { get; set; }
         public string Key { get; set; }
         public string Value { get; set; }
+        public string Id { get; set; }
 
-        public string CommandId { get; set; }
+        // Replies
+        public string AckId { get; set; }
         public bool WaitForAck { get; set; }
-        public bool IsAck { get; set; }
-        public string Filter { get; set; }
 
-        public bool IsCommand
+        public bool IsAck
         {
             get
             {
-                return CommandId != null;
+                return AckId != null;
             }
         }
+
+        // Filtering
+        public string Filter { get; set; }
+        public bool IsCommand { get; set; }
+
 
         public Message()
         {
@@ -32,6 +37,7 @@ namespace Microsoft.AspNet.SignalR
 
         public Message(string source, string key, string value)
         {
+            Id = Guid.NewGuid().ToString();
             Source = source;
             Key = key;
             Value = value;

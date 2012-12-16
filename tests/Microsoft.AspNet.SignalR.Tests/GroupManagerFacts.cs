@@ -54,7 +54,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                               Assert.NotNull(command.Id);
                               Assert.Equal(CommandType.AddToGroup, command.CommandType);
                               Assert.Equal("Prefix.MyGroup", command.Value);
-                              Assert.True(command.WaitForAck);
                           });
 
                 var groupManager = new GroupManager(connection.Object, "Prefix");
@@ -105,7 +104,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                               Assert.NotNull(command.Id);
                               Assert.Equal(CommandType.RemoveFromGroup, command.CommandType);
                               Assert.Equal("Prefix.MyGroup", command.Value);
-                              Assert.True(command.WaitForAck);
                           });
 
                 var groupManager = new GroupManager(connection.Object, "Prefix");

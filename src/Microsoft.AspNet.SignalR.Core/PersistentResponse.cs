@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR
             jsonWriter.WritePropertyName("M");
             jsonWriter.WriteStartArray();
 
-            Messages.Enumerate(m => !m.IsCommand && !ExcludeFilter(m),
+            Messages.Enumerate(m => !ExcludeFilter(m),
                                m => jsonWriter.WriteRawValue(m.Value));
 
             jsonWriter.WriteEndArray();

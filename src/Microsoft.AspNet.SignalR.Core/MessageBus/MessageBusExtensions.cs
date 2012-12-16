@@ -31,12 +31,11 @@ namespace Microsoft.AspNet.SignalR
             return bus.Publish(new Message(source, key, value));
         }
 
-        internal static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
+        internal static Task Ack(this IMessageBus bus, string source, string eventKey, string id)
         {
             // Prepare the ack
             var message = new Message(source, AckPrefix(eventKey), null);
-            message.CommandId = commandId;
-            message.IsAck = true;
+            message.AckId = id;
             return bus.Publish(message);
         }
 
