@@ -90,6 +90,7 @@
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
     <Compile Include="Server\TestSubscriber.cs" />
+    <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
     <Compile Include="StringMinifierFacts.cs" />
     <Compile Include="TestUtilities.cs" />

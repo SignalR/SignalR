@@ -36,7 +36,8 @@ namespace Microsoft.AspNet.SignalR
         internal Action<string, Topic> AfterTopicGarbageCollected;
         internal Action<string, Topic> BeforeTopicMarked;
         internal Action<string> BeforeTopicCreated;
-        internal Action<string, Topic> AfterTopicMarked;
+        internal Action<string, Topic> AfterTopicMarkedSuccessfully;
+        internal Action<string, Topic, int> AfterTopicMarked;
 
         /// <summary>
         /// 
@@ -363,7 +364,6 @@ namespace Microsoft.AspNet.SignalR
                     switch (state)
                     {
                         case TopicState.NoSubscriptions:
-                            // Only remove if it was in the created or no subscriptions state
                             Topic topic;
                             Topics.TryRemove(pair.Key, out topic);
                             _stringMinifier.RemoveUnminified(pair.Key);
@@ -376,6 +376,8 @@ namespace Microsoft.AspNet.SignalR
                             }
                             break;
                         default:
+                            // Restore the old state
+                            Interlocked.Exchange(ref pair.Value.State, state);
                             break;
                     }
                 }
@@ -384,7 +386,7 @@ namespace Microsoft.AspNet.SignalR
             Interlocked.Exchange(ref _gcRunning, 0);
         }
 
-        private Topic GetTopic(string key)
+        internal Topic GetTopic(string key)
         {
             Func<string, Topic> factory = _ => CreateTopic(key);
 
@@ -402,14 +404,18 @@ namespace Microsoft.AspNet.SignalR
                     BeforeTopicMarked(key, topic);
                 }
 
-                // Created -> HasSubscriptions
-                if (Interlocked.CompareExchange(ref topic.State,
-                                                TopicState.HasSubscriptions,
-                                                TopicState.Created) != TopicState.Dead)
+                var oldState = Interlocked.Exchange(ref topic.State, TopicState.HasSubscriptions);
+
+                if (AfterTopicMarked != null)
                 {
-                    if (AfterTopicMarked != null)
+                    AfterTopicMarked(key, topic, oldState);
+                }
+
+                if (oldState != TopicState.Dead)
+                {
+                    if (AfterTopicMarkedSuccessfully != null)
                     {
-                        AfterTopicMarked(key, topic);
+                        AfterTopicMarkedSuccessfully(key, topic);
                     }
 
                     return topic;

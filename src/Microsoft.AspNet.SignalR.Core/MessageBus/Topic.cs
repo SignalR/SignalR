@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR
         // State of the topic
         internal int State;
 
-        public bool IsExpired
+        public virtual bool IsExpired
         {
             get
             {
@@ -29,7 +29,9 @@ namespace Microsoft.AspNet.SignalR
                 {
                     SubscriptionLock.EnterReadLock();
 
-                    return Subscriptions.Count == 0 && (DateTime.UtcNow - _lastUsed) > _lifespan;
+                    TimeSpan timeSpan = DateTime.UtcNow - _lastUsed;
+
+                    return Subscriptions.Count == 0 && timeSpan > _lifespan;
                 }
                 finally
                 {
@@ -66,8 +68,8 @@ namespace Microsoft.AspNet.SignalR
 
                 // Created -> HasSubscriptions
                 Interlocked.CompareExchange(ref State,
-                                            TopicState.Created,
-                                            TopicState.HasSubscriptions);
+                                            TopicState.HasSubscriptions,
+                                            TopicState.Created);
             }
             finally
             {
@@ -96,9 +98,9 @@ namespace Microsoft.AspNet.SignalR
                 if (Subscriptions.Count == 0)
                 {
                     // HasSubscriptions -> NoSubscriptions
-                    Interlocked.CompareExchange(ref State, 
-                                                TopicState.HasSubscriptions, 
-                                                TopicState.NoSubscriptions);
+                    Interlocked.CompareExchange(ref State,
+                                                TopicState.NoSubscriptions,
+                                                TopicState.HasSubscriptions);
                 }
             }
             finally
