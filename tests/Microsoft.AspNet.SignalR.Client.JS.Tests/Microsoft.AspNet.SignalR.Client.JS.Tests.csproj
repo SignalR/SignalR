@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Build\disableCrossDomain.js" />
+    <Content Include="Build\teamCityIntegration.js" />
     <Content Include="default.html" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery.signalR.js" />
@@ -194,14 +195,9 @@
     <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
       <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
     </BuildScriptTags>
-    
-    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js"
-          DestinationFiles="Scripts\jquery.signalR.js" 
-          Condition=" '$(OS)' == 'Windows_NT' " />
-
-   <!-- Update the default.html file with tests that need to run. -->
-   <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
-
+    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <!-- Update the default.html file with tests that need to run. -->
+    <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!--
