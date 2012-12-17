@@ -63,6 +63,11 @@ namespace Microsoft.AspNet.SignalR
                 {
                     Subscriptions.Add(subscription);
                 }
+
+                // Created -> HasSubscriptions
+                Interlocked.CompareExchange(ref State,
+                                            TopicState.Created,
+                                            TopicState.HasSubscriptions);
             }
             finally
             {
@@ -90,21 +95,16 @@ namespace Microsoft.AspNet.SignalR
 
                 if (Subscriptions.Count == 0)
                 {
-                    // Change the state from active -> no subs
-                    Interlocked.CompareExchange(ref State, TopicState.NoSubscriptions, TopicState.Active);
+                    // HasSubscriptions -> NoSubscriptions
+                    Interlocked.CompareExchange(ref State, 
+                                                TopicState.HasSubscriptions, 
+                                                TopicState.NoSubscriptions);
                 }
             }
             finally
             {
                 SubscriptionLock.ExitWriteLock();
             }
-        }
-
-        internal class TopicState
-        {
-            public const int NoSubscriptions = 0;
-            public const int Active = 1;
-            public const int Dead = 2;
         }
     }
 }

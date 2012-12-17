@@ -31,6 +31,13 @@ namespace Microsoft.AspNet.SignalR
 
         private readonly TimeSpan _topicTtl;
 
+        // For unit testing
+        internal Action<string, Topic> BeforeTopicGarbageCollected;
+        internal Action<string, Topic> AfterTopicGarbageCollected;
+        internal Action<string, Topic> BeforeTopicMarked;
+        internal Action<string> BeforeTopicCreated;
+        internal Action<string, Topic> AfterTopicMarked;
+
         /// <summary>
         /// 
         /// </summary>
@@ -86,7 +93,7 @@ namespace Microsoft.AspNet.SignalR
             Counters = performanceCounterManager;
             _trace = _traceManager["SignalR.MessageBus"];
 
-            _gcTimer = new Timer(_ => CheckTopics(), state: null, dueTime: _gcInterval, period: _gcInterval);
+            _gcTimer = new Timer(_ => GarbageCollectTopics(), state: null, dueTime: _gcInterval, period: _gcInterval);
 
             _broker = new MessageBroker(Counters)
             {
@@ -113,7 +120,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        protected ConcurrentDictionary<string, Topic> Topics { get; private set; }
+        protected internal ConcurrentDictionary<string, Topic> Topics { get; private set; }
         protected IPerformanceCounterManager Counters { get; private set; }
 
         public int AllocatedWorkers
@@ -143,14 +150,16 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("message");
             }
 
-            Topic topic = GetTopic(message.Key);
-
-            topic.Store.Add(message);
+            Topic topic;
+            if (Topics.TryGetValue(message.Key, out topic))
+            {
+                topic.Store.Add(message);
+                ScheduleTopic(topic);
+            }
 
             Counters.MessageBusMessagesPublishedTotal.Increment();
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
-            ScheduleTopic(topic);
 
             return TaskAsyncHelper.Empty;
         }
@@ -162,6 +171,7 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("message");
             }
 
+            // Don't mark topics as active when publishing
             Topic topic = GetTopic(message.Key);
 
             ulong id = topic.Store.Add(message);
@@ -331,7 +341,7 @@ namespace Microsoft.AspNet.SignalR
             Dispose(true);
         }
 
-        private void CheckTopics()
+        internal void GarbageCollectTopics()
         {
             if (Interlocked.Exchange(ref _gcRunning, 1) == 1)
             {
@@ -342,16 +352,31 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (pair.Value.IsExpired)
                 {
-                    // Only remove the topic if it's expired and we changed the state to dead
-                    if (Interlocked.CompareExchange(ref pair.Value.State,
-                                                    Topic.TopicState.Dead,
-                                                    Topic.TopicState.NoSubscriptions) == Topic.TopicState.NoSubscriptions)
+                    if (BeforeTopicGarbageCollected != null)
                     {
-                        Topic topic;
-                        Topics.TryRemove(pair.Key, out topic);
-                        _stringMinifier.RemoveUnminified(pair.Key);
+                        BeforeTopicGarbageCollected(pair.Key, pair.Value);
+                    }
 
-                        Trace.TraceInformation("RemoveTopic(" + pair.Key + ")");
+                    // Mark the topic as dead
+                    var state = Interlocked.Exchange(ref pair.Value.State, TopicState.Dead);
+
+                    switch (state)
+                    {
+                        case TopicState.NoSubscriptions:
+                            // Only remove if it was in the created or no subscriptions state
+                            Topic topic;
+                            Topics.TryRemove(pair.Key, out topic);
+                            _stringMinifier.RemoveUnminified(pair.Key);
+
+                            Trace.TraceInformation("RemoveTopic(" + pair.Key + ")");
+
+                            if (AfterTopicGarbageCollected != null)
+                            {
+                                AfterTopicGarbageCollected(pair.Key, topic);
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
@@ -365,13 +390,28 @@ namespace Microsoft.AspNet.SignalR
 
             while (true)
             {
+                if (BeforeTopicCreated != null)
+                {
+                    BeforeTopicCreated(key);
+                }
+
                 Topic topic = Topics.GetOrAdd(key, factory);
 
-                // If we sucessfully marked it as active then bail
-                if (Interlocked.CompareExchange(ref topic.State,
-                                                Topic.TopicState.Active,
-                                                Topic.TopicState.NoSubscriptions) != Topic.TopicState.Dead)
+                if (BeforeTopicMarked != null)
                 {
+                    BeforeTopicMarked(key, topic);
+                }
+
+                // Created -> HasSubscriptions
+                if (Interlocked.CompareExchange(ref topic.State,
+                                                TopicState.HasSubscriptions,
+                                                TopicState.Created) != TopicState.Dead)
+                {
+                    if (AfterTopicMarked != null)
+                    {
+                        AfterTopicMarked(key, topic);
+                    }
+
                     return topic;
                 }
             }

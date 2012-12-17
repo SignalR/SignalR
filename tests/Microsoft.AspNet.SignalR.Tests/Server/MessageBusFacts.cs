@@ -56,6 +56,23 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void PublishingDoesNotCreateTopic()
+        {
+            var dr = new DefaultDependencyResolver();
+            var configuration = dr.Resolve<IConfigurationManager>();
+            configuration.DisconnectTimeout = TimeSpan.Zero;
+            configuration.KeepAlive = null;
+
+            using (var bus = new MessageBus(dr))
+            {
+                bus.Publish("test", "key", "1").Wait();
+
+                Assert.Equal(0, bus.Topics.Count);
+                Assert.False(bus.Topics.ContainsKey("key"));
+            }
+        }
+
+        [Fact]
         public void SubscriptionWithExistingCursor()
         {
             var dr = new DefaultDependencyResolver();
@@ -66,6 +83,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 var subscriber = new TestSubscriber(new[] { "key" });
                 var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
                 IDisposable subscription = null;
+
+                // Pretend like we had an initial subscription
+                bus.Subscribe(subscriber, null, _ => TaskAsyncHelper.True, 10)
+                   .Dispose();
 
                 bus.Publish("test", "key", "1").Wait();
                 bus.Publish("test", "key", "2").Wait();
@@ -113,6 +134,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 var cdKey2 = new CountDownRange<int>(new[] { 1, 2, 10 });
                 IDisposable subscription = null;
 
+                // Pretend like we had an initial subscription
+                bus.Subscribe(subscriber, null, result => TaskAsyncHelper.True, 10)
+                    .Dispose();
+
+                // This simulates a reconnect
                 bus.Publish("test", "key", "1").Wait();
                 bus.Publish("test", "key", "2").Wait();
                 bus.Publish("test", "key", "3").Wait();
@@ -272,7 +298,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 bus.Publish("test", "key", "value").Wait();
 
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(5))); 
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
             }
             finally
             {
@@ -282,7 +308,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 }
 
                 Assert.Equal(bus.AllocatedWorkers, 1);
-                
+
                 bus.Dispose();
 
                 Assert.Equal(bus.AllocatedWorkers, 0);

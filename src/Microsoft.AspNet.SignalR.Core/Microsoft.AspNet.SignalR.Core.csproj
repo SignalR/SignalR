@@ -158,6 +158,7 @@
     <Compile Include="MessageBus\StringMinifier.cs" />
     <Compile Include="MessageBus\Subscription.cs" />
     <Compile Include="MessageBus\Topic.cs" />
+    <Compile Include="MessageBus\TopicState.cs" />
     <Compile Include="MessageBus\Volatile.cs" />
     <Compile Include="PersistentConnectionContext.cs" />
     <Compile Include="PersistentConnectionFactory.cs" />
