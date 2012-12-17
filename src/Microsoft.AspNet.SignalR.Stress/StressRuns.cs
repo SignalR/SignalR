@@ -67,6 +67,49 @@ namespace Microsoft.AspNet.SignalR.Stress
             return host;
         }
 
+        public static IDisposable BrodcastFromServer()
+        {
+            var host = new MemoryHost();
+            host.MapHubs();
+            host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+            host.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(10);
+            var context = host.ConnectionManager.GetHubContext("EchoHub");
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var thread = new Thread(() =>
+            {
+                while (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    context.Clients.All.echo();
+                }
+            });
+
+            thread.Start();
+
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateHubProxy("EchoHub");
+            
+            try
+            {
+                connection.Start(host).Wait();
+
+                Thread.Sleep(1000);
+            }
+            finally
+            {
+                connection.Stop();
+            }
+
+            return new DisposableAction(() =>
+            {
+                cancellationTokenSource.Cancel();
+
+                thread.Join();
+
+                host.Dispose();
+            });
+        }
+
         public static IDisposable ManyUniqueGroups(int concurrency)
         {
             var host = new MemoryHost();
