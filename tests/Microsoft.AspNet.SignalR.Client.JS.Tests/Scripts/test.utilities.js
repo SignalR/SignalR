@@ -1,8 +1,16 @@
 ﻿testUtilities = {
-	createHubConnection: function () {
-		if (window.document.testUrl !== 'auto') {
-			return $.hubConnection(window.document.testUrl, { useDefaultPath: false });
-		}
-		return $.hubConnection('signalr', { useDefaultPath: false });
-	}
+    createHubConnection: function () {
+        var connection;
+
+        if (window.document.testUrl !== 'auto') {
+            connection = $.hubConnection(window.document.testUrl, { useDefaultPath: false });
+        }
+        else {
+            connection = $.hubConnection('signalr', { useDefaultPath: false });
+        }
+
+        connection.logging = true;
+
+        return connection;
+    }
 };

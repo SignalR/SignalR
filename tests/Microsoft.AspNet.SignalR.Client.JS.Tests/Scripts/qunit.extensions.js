@@ -35,7 +35,6 @@
 				end();
 			}, timeout);
 
-			QUnit.stop();
 			testCleanup = test(end) || $.noop;
 
 			if (!$.isFunction(testCleanup)) {
