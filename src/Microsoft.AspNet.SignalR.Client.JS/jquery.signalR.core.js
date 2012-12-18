@@ -222,13 +222,6 @@
                 if ($.type(config.callback) === "function") {
                     callback = config.callback;
                 }
-            }            
-
-            config.transport = validateTransport(config.transport, connection);
-
-            // If the transport is invalid throw an error and abort start
-            if (!config.transport) {
-                throw new Error("SignalR: Invalid transport(s) specified, aborting start.");
             }
 
             config.transport = validateTransport(config.transport, connection);
