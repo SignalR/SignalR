@@ -19,6 +19,7 @@ asyncTest("Connection Start and method invocation", function () {
     }).fail(function (reason) {
         connection.stop();
         ok(false, "Failed to initiate signalr connection");
+        start();
     });
 });
 
@@ -34,5 +35,6 @@ asyncTest("Long Polling connection", function () {
     }).fail(function (reason) {
         ok(false, "Failed to initiate signalr connection");
         connection.stop();
+        start();
     });
 });
