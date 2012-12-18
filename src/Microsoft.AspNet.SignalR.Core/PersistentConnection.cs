@@ -292,10 +292,20 @@ namespace Microsoft.AspNet.SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        private static Task ProcessPingRequest(HostContext context)
+        private Task ProcessPingRequest(HostContext context)
         {
-            context.Response.ContentType = "text/plain";
-            return context.Response.EndAsync("pong");
+            var payload = new
+            {
+                Response = "pong"
+            };
+
+            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
+            {
+                return ProcessJsonpRequest(context, payload);
+            }
+
+            context.Response.ContentType = Json.MimeType;
+            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
@@ -314,14 +324,14 @@ namespace Microsoft.AspNet.SignalR
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
             {
-                return ProcessJsonpNegotiationRequest(context, payload);
+                return ProcessJsonpRequest(context, payload);
             }
 
             context.Response.ContentType = Json.MimeType;
             return context.Response.EndAsync(JsonSerializer.Stringify(payload));
         }
 
-        private Task ProcessJsonpNegotiationRequest(HostContext context, object payload)
+        private Task ProcessJsonpRequest(HostContext context, object payload)
         {
             context.Response.ContentType = Json.JsonpMimeType;
             var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
