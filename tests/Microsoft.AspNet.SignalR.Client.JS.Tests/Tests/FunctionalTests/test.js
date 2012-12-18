@@ -1,7 +1,7 @@
 ﻿module("Test Functional Fact");
 
 asyncTest("Connection Start and method invocation", function () {
-    var connection = window.createHubConnection(),
+    var connection = testUtilities.createHubConnection(),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;
 
@@ -24,7 +24,7 @@ asyncTest("Connection Start and method invocation", function () {
 });
 
 asyncTest("Long Polling connection", function () {
-    var connection = window.createHubConnection();
+    var connection = testUtilities.createHubConnection();
 
     connection.logging = true;
 
@@ -38,3 +38,23 @@ asyncTest("Long Polling connection", function () {
         start();
     });
 });
+/*
+//if (!(15 % 3) ? "" : " " == false) // Justification: http://bit.ly/YkDT86 ಠ_ಠ
+    QUnit.asyncTimeoutTest("End to end", 5000, function (end) {
+        var connection = testUtilities.createHubConnection(),
+            proxies = connection.createHubProxies(),
+            chatHub = proxies.chatHub;
+
+        chatHub.client.addMessage = function (message) {
+            QUnit.equal(message, "hello", "Only message should be 'hello'");
+            end();
+        };
+
+        connection.start().done(function () {
+            chatHub.server.send("hello");
+        });
+
+        return function () {
+            connection.stop();
+        };
+    });*/
