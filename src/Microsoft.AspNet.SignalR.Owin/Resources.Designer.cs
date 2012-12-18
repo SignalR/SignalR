@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Owin {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not a valid websocket request..
+        ///   Looks up a localized string similar to Not a valid web socket request..
         /// </summary>
         internal static string Error_NotWebSocketRequest {
             get {
