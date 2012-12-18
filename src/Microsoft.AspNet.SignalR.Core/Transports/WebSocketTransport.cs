@@ -15,16 +15,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                                   IDependencyResolver resolver)
             : this(context, 
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>(),
-                   resolver.Resolve<IPerformanceCounterManager>())
+                   resolver.Resolve<ITransportHeartbeat>(),
+                   resolver.Resolve<IPerformanceCounterManager>(),
+                   resolver.Resolve<ITraceManager>())
         {
         }
 
         public WebSocketTransport(HostContext context, 
                                   IJsonSerializer serializer, 
-                                  ITransportHeartBeat heartBeat,
-                                  IPerformanceCounterManager performanceCounterWriter)
-            : base(context, serializer, heartBeat, performanceCounterWriter)
+                                  ITransportHeartbeat heartbeat,
+                                  IPerformanceCounterManager performanceCounterWriter,
+                                  ITraceManager traceManager)
+            : base(context, serializer, heartbeat, performanceCounterWriter, traceManager)
         {
             _context = context;
         }

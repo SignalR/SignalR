@@ -8,7 +8,7 @@
     <link href="Content/dashboard.css" rel="stylesheet" />
 </head>
 <body>
-    <h1>SignalR Load Test Harness</h1>
+    <h1>ASP.NET SignalR Load Test Harness</h1>
     
     <fieldset id="options"><legend>Dashboard</legend>
         <div>

@@ -19,10 +19,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
         HubDescriptor GetHub(string hubName);
 
         /// <summary>
-        /// Retrieves all available hubs.
+        /// Retrieves all available hubs matching the given predicate.
         /// </summary>
         /// <returns>List of hub descriptors.</returns>
-        IEnumerable<HubDescriptor> GetHubs(Func<HubDescriptor, bool> predicate = null);
+        IEnumerable<HubDescriptor> GetHubs(Func<HubDescriptor, bool> predicate);
 
         /// <summary>
         /// Resolves a given hub name to a concrete object.
@@ -52,6 +52,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="hubName">Name of the hub,</param>
         /// <param name="predicate">Optional predicate for filtering results.</param>
         /// <returns>List of available methods.</returns>
-        IEnumerable<MethodDescriptor> GetHubMethods(string hubName, Func<MethodDescriptor, bool> predicate = null);
+        IEnumerable<MethodDescriptor> GetHubMethods(string hubName, Func<MethodDescriptor, bool> predicate);
     }
 }

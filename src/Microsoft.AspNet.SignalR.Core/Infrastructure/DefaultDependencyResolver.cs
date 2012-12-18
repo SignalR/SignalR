@@ -2,7 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;
@@ -13,7 +16,9 @@ namespace Microsoft.AspNet.SignalR
     {
         private readonly Dictionary<Type, IList<Func<object>>> _resolvers = new Dictionary<Type, IList<Func<object>>>();
         private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
+        private int _disposed;
 
+        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "It's easiest")]
         public DefaultDependencyResolver()
         {
             RegisterDefaultServices();
@@ -22,6 +27,8 @@ namespace Microsoft.AspNet.SignalR
             RegisterHubExtensions();
         }
 
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "The resolver is the class that does the most coupling by design.")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The resolver disposes dependencies on Dispose.")]
         private void RegisterDefaultServices()
         {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
@@ -51,8 +58,8 @@ namespace Microsoft.AspNet.SignalR
             var configurationManager = new DefaultConfigurationManager();
             Register(typeof(IConfigurationManager), () => configurationManager);
 
-            var transportHeartbeat = new Lazy<TransportHeartBeat>(() => new TransportHeartBeat(this));
-            Register(typeof(ITransportHeartBeat), () => transportHeartbeat.Value);
+            var transportHeartbeat = new Lazy<TransportHeartbeat>(() => new TransportHeartbeat(this));
+            Register(typeof(ITransportHeartbeat), () => transportHeartbeat.Value);
 
             var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
             Register(typeof(IConnectionManager), () => connectionManager.Value);
@@ -98,6 +105,11 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual object GetService(Type serviceType)
         {
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException("serviceType");
+            }
+
             IList<Func<object>> activators;
             if (_resolvers.TryGetValue(serviceType, out activators))
             {
@@ -107,7 +119,7 @@ namespace Microsoft.AspNet.SignalR
                 }
                 if (activators.Count > 1)
                 {
-                    throw new InvalidOperationException(String.Format("Multiple activators for type {0} are registered. Please call GetServices instead.", serviceType.FullName));
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MultipleActivatorsAreaRegisteredCallGetServices, serviceType.FullName));
                 }
                 return Track(activators[0]);
             }
@@ -145,6 +157,11 @@ namespace Microsoft.AspNet.SignalR
 
         public virtual void Register(Type serviceType, IEnumerable<Func<object>> activators)
         {
+            if (activators == null)
+            {
+                throw new ArgumentNullException("activators");
+            }
+
             IList<Func<object>> list;
             if (!_resolvers.TryGetValue(serviceType, out list))
             {
@@ -165,25 +182,46 @@ namespace Microsoft.AspNet.SignalR
         {
             object obj = creator();
 
-            var disposable = obj as IDisposable;
-            if (disposable != null)
+            if (_disposed == 0)
             {
-                lock (_trackedDisposables)
+                var disposable = obj as IDisposable;
+                if (disposable != null)
                 {
-                    _trackedDisposables.Add(disposable);
+                    lock (_trackedDisposables)
+                    {
+                        if (_disposed == 0)
+                        {
+                            _trackedDisposables.Add(disposable);
+                        }
+                    }
                 }
             }
 
             return obj;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                {
+                    lock (_trackedDisposables)
+                    {
+                        foreach (var d in _trackedDisposables)
+                        {
+                            d.Dispose();
+                        }
+
+                        _trackedDisposables.Clear();
+                    }
+                }
+            }
+        }
+
         public void Dispose()
         {
-            foreach (var d in _trackedDisposables)
-            {
-                d.Dispose();
-            }
-            _trackedDisposables.Clear();
+            Dispose(true);
         }
     }
 }

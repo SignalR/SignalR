@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.WP7.Sample
             DataContext = App.ViewModel;
             this.Loaded += new RoutedEventHandler(MainPage_Loaded);
 
-            var connection = new Connection("http://localhost:40476/Raw/raw");
+            var connection = new Connection("http://signalr-sample.azurewebsites.net/raw-connection/");
             connection.Received += data =>
             {
                 Dispatcher.BeginInvoke(() =>

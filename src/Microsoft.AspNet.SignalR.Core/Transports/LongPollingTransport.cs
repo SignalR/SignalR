@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -19,21 +20,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>(),
-                   resolver.Resolve<IPerformanceCounterManager>())
+                   resolver.Resolve<ITransportHeartbeat>(),
+                   resolver.Resolve<IPerformanceCounterManager>(),
+                   resolver.Resolve<ITraceManager>())
         {
 
         }
 
-        public LongPollingTransport(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartBeat heartBeat, IPerformanceCounterManager performanceCounterManager)
-            : base(context, jsonSerializer, heartBeat, performanceCounterManager)
+        public LongPollingTransport(HostContext context,
+                                    IJsonSerializer jsonSerializer,
+                                    ITransportHeartbeat heartbeat,
+                                    IPerformanceCounterManager performanceCounterManager,
+                                    ITraceManager traceManager)
+            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
         }
 
-        // Static events intended for use when measuring performance
-        public static event Action<string> Sending;
         public static event Action<PersistentResponse> SendingResponse;
         public static event Action<string> Receiving;
 
@@ -41,6 +45,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// The number of milliseconds to tell the browser to wait before restablishing a
         /// long poll connection after data is sent from the server. Defaults to 0.
         /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long", Justification = "Longpolling is a well known term")]
         public static long LongPollDelay
         {
             get;
@@ -154,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(PersistentResponse response)
         {
-            HeartBeat.MarkConnection(this);
+            Heartbeat.MarkConnection(this);
 
             if (SendingResponse != null)
             {
@@ -211,7 +216,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Connected != null)
             {
-                bool newConnection = HeartBeat.AddConnection(this);
+                bool newConnection = Heartbeat.AddConnection(this);
 
                 // Return a task that completes when the connected event task & the receive loop task are both finished
                 return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
@@ -228,13 +233,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             return ProcessReceiveRequest(connection);
         }
 
-        private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequest(ITransportConnection connection, Func<Task> postReceive = null)
         {
-            HeartBeat.AddConnection(this);
+            Heartbeat.AddConnection(this);
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 
-        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Func<Task> postReceive = null)
         {
             if (TransportConnected != null)
             {
@@ -246,34 +251,37 @@ namespace Microsoft.AspNet.SignalR.Transports
                               connection.ReceiveAsync(null, ConnectionEndToken, MaxMessages) :
                               connection.ReceiveAsync(MessageId, ConnectionEndToken, MaxMessages);
 
-            if (postReceive != null)
-            {
-                postReceive();
-            }
 
-            return receiveTask.Then(response =>
+            return TaskAsyncHelper.Series(() =>
             {
-                response.TimedOut = IsTimedOut;
-
-                if (response.Aborted)
+                if (postReceive != null)
                 {
-                    // If this was a clean disconnect then raise the event
-                    OnDisconnect();
+                    return postReceive();
                 }
+                return TaskAsyncHelper.Empty;
+            },
+            () =>
+            {
+                return receiveTask.Then(response =>
+                {
+                    response.TimedOut = IsTimedOut;
 
-                return Send(response);
+                    if (response.Aborted)
+                    {
+                        // If this was a clean disconnect then raise the event
+                        OnDisconnect();
+                    }
+
+                    return Send(response);
+                });
             });
         }
 
-        private void AddTransportData(PersistentResponse response)
+        private static void AddTransportData(PersistentResponse response)
         {
             if (LongPollDelay > 0)
             {
-                if (response.TransportData == null)
-                {
-                    response.TransportData = new Dictionary<string, object>();
-                }
-                response.TransportData["LongPollDelay"] = LongPollDelay;
+                response.LongPollDelay = LongPollDelay;
             }
         }
     }

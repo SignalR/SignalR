@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -238,17 +239,33 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void SetCounterProperties(string instanceName)
         {
+            bool loadCounters = true;
             foreach (var property in _counterProperties)
             {
-                var attribute = GetPerformanceCounterAttribute(property);
-                
+                PerformanceCounterAttribute attribute = GetPerformanceCounterAttribute(property);
+
                 if (attribute == null)
                 {
                     continue;
                 }
 
-                var counter = LoadCounter(CategoryName, attribute.Name, instanceName);
-                counter.NextSample(); // Initialize the counter sample
+                IPerformanceCounter counter = null;
+
+                if (loadCounters)
+                {
+                    counter = LoadCounter(CategoryName, attribute.Name, instanceName);
+
+                    if (counter == null)
+                    {
+                        loadCounters = false;
+                    }
+                }
+
+                counter = counter ?? _noOpCounter;
+
+                // Initialize the counter sample
+                counter.NextSample(); 
+
                 property.SetValue(this, counter, null);
             }
         }
@@ -268,6 +285,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     .SingleOrDefault();
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Counters are disposed later")]
         private static IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
         {
             try
@@ -276,10 +294,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 {
                     return new PerformanceCounterWrapper(new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false));
                 }
-                return _noOpCounter;
+                return null;
             }
-            catch (InvalidOperationException) { return _noOpCounter; }
-            catch (UnauthorizedAccessException) { return _noOpCounter; }
+            catch (InvalidOperationException) { return null; }
+            catch (UnauthorizedAccessException) { return null; }
         }
     }
 }

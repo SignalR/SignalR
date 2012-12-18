@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.SignalR
         public Message()
         {
         }
-        
+
         public Message(string source, string key, string value)
         {
             Source = source;

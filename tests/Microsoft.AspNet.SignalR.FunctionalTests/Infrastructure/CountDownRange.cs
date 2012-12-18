@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
 {
-    public class CountDownRange<T>
+    internal class CountDownRange<T>
     {
         private HashSet<T> _items;
         private HashSet<T> _seen;

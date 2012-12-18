@@ -21,23 +21,23 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             var connection = GlobalHost.ConnectionManager.GetConnectionContext<TestConnection>().Connection;
             return new HighFrequencyTimer(1,
                 _ =>
+                {
+                    if (_batchingEnabled)
                     {
-                        if (_batchingEnabled)
+                        var count = _broadcastCount;
+                        var payload = _broadcastPayload;
+                        for (var i = 0; i < count; i++)
                         {
-                            var count = _broadcastCount;
-                            var payload = _broadcastPayload;
-                            for (var i = 0; i < count; i++)
-                            {
-                                connection.Broadcast(payload);
-                            }
+                            connection.Broadcast(payload);
                         }
-                        else
-                        {
-                            connection.Broadcast(_broadcastPayload);
-                        }
-                    },
+                    }
+                    else
+                    {
+                        connection.Broadcast(_broadcastPayload);
+                    }
+                },
                 () => clients.All.started(),
-                () => clients.All.stopped(),
+                () => { clients.All.stopped(); clients.All.serverFps(0); },
                 fps => { _actualFps = fps; clients.All.serverFps(fps); }
             );
         });

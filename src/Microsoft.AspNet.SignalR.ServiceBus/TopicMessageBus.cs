@@ -2,13 +2,14 @@
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    using Microsoft.ServiceBus;
-    using Microsoft.ServiceBus.Messaging;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using Microsoft.ServiceBus;
+    using Microsoft.ServiceBus.Messaging;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Do not want to alter functionality.")]
     public sealed class TopicMessageBus
     {
         const int MaxInputQueueLength = 10000;
@@ -61,6 +62,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 null);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         public void Start()
         {
         }
@@ -75,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return nodeId.ToString(NumberFormatInfo.InvariantInfo);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         public Task SendAsync(Message[] messages)
         {
             try
@@ -103,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             readonly static Action<AsyncResult, Exception> CompletingAction = Finally;
             readonly TopicMessageBus owner;
-            
+
             TopicDescription topicDescription;
             MessagingFactory factory;
 
@@ -176,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     string topicPath = this.owner.GetTopicPath(partitionId);
                     string subscriptionName = GetSubscriptionName(this.owner.nodeId);
                     string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicPath, subscriptionName);
-                    
+
                     MessageSender sender = null;
 
                     yield return this.CallAsync(
@@ -187,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     this.owner.senders.Add(partitionId, sender);
 
                     MessageReceiver receiver = null;
-                    
+
                     yield return this.CallAsync(
                         (thisPtr, t, c, s) => factory.BeginCreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete, c, s),
                         (thisPtr, r) => receiver = factory.EndCreateMessageReceiver(r),

@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private const string ScriptResource = "Microsoft.AspNet.SignalR.Scripts.hubs.js";
 
         private readonly IHubManager _manager;
-        private readonly IJavaScriptMinifier _javascriptMinifier;
+        private readonly IJavaScriptMinifier _javaScriptMinifier;
 
         public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
             this(resolver.Resolve<IHubManager>(),
@@ -29,15 +30,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
         }
 
-        public DefaultJavaScriptProxyGenerator(IHubManager manager, IJavaScriptMinifier javascriptMinifier)
+        public DefaultJavaScriptProxyGenerator(IHubManager manager, IJavaScriptMinifier javaScriptMinifier)
         {
             _manager = manager;
-            _javascriptMinifier = javascriptMinifier ?? NullJavaScriptMinifier.Instance;
+            _javaScriptMinifier = javaScriptMinifier ?? NullJavaScriptMinifier.Instance;
         }
 
         public bool IsDebuggingEnabled { get; set; }
 
-        public string GenerateProxy(string serviceUrl, bool includeDocComments = false)
+        public string GenerateProxy(string serviceUrl, bool includeDocComments)
         {
             string script;
             if (_scriptCache.TryGetValue(serviceUrl, out script))
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             if (!IsDebuggingEnabled)
             {
-                script = _javascriptMinifier.Minify(script);
+                script = _javaScriptMinifier.Minify(script);
             }
 
             _scriptCache.TryAdd(serviceUrl, script);
@@ -83,9 +84,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             // Get only actions with minimum number of parameters.
             var methods = GetMethods(descriptor);
-
-            var members = methods.Select(m => m.Name).OrderBy(name => name).ToList();
             var hubName = GetDescriptorName(descriptor);
+
             sb.AppendFormat("signalR.{0} = signalR.hub.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.client = {{ }};", hubName).AppendLine();
             sb.AppendFormat("    signalR.{0}.server = {{", hubName);
@@ -107,6 +107,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         protected virtual string GetDescriptorName(Descriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException("descriptor");
+            }
+
             string name = descriptor.Name;
 
             // If the name was not specified then do not camel case
@@ -125,6 +130,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                    let oload = (from overload in overloads
                                 orderby overload.Parameters.Count
                                 select overload).FirstOrDefault()
+                   orderby oload.Name
                    select oload;
         }
 
@@ -135,8 +141,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
             sb.AppendFormat("        {0}: function ({1}) {{", GetDescriptorName(method), Commas(parameterNames)).AppendLine();
             if (includeDocComments)
             {
-                sb.AppendFormat("            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>", method.Name, method.Hub.Name).AppendLine();
-                var parameterDoc = method.Parameters.Select(p => String.Format("            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>", p.Name, MapToJavaScriptType(p.Type), p.Type)).ToList();
+                sb.AppendFormat(Resources.DynamicComment_CallsMethodOnServerSideDeferredPromise, method.Name, method.Hub.Name).AppendLine();
+                var parameterDoc = method.Parameters.Select(p => String.Format(CultureInfo.CurrentCulture, Resources.DynamicComment_ServerSideTypeIs, p.Name, MapToJavaScriptType(p.ParameterType), p.ParameterType)).ToList();
                 if (parameterDoc.Any())
                 {
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));
@@ -146,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             sb.Append("         }");
         }
 
-        private string MapToJavaScriptType(Type type)
+        private static string MapToJavaScriptType(Type type)
         {
             if (!type.IsPrimitive && !(type == typeof(string)))
             {
@@ -185,10 +191,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             using (Stream resourceStream = typeof(DefaultJavaScriptProxyGenerator).Assembly.GetManifestResourceStream(ScriptResource))
             {
-                using (var reader = new StreamReader(resourceStream))
-                {
-                    return reader.ReadToEnd();
-                }
+                var reader = new StreamReader(resourceStream);
+                return reader.ReadToEnd();
             }
         }
     }

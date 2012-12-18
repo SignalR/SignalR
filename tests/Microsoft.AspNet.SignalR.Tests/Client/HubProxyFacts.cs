@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var hubProxy = new HubProxy(connection.Object, "foo");
 
-            AssertAggregateException(() => hubProxy.Invoke("Invoke").Wait(),
+            TestUtilities.AssertAggregateException(() => hubProxy.Invoke("Invoke").Wait(),
                                      "This in an error");
         }
 
@@ -102,18 +103,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             hubProxy.InvokeEvent("foo", new[] { JToken.FromObject(1) });
             Assert.True(eventRaised);
-        }
-
-        private void AssertAggregateException(Action action, string message)
-        {
-            try
-            {
-                action();
-            }
-            catch (AggregateException ex)
-            {
-                Assert.Equal(ex.Unwrap().Message, message);
-            }
         }
     }
 }

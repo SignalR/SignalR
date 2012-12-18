@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable fields are disposed from a different method")]
     public class ForeverFrameTransport : ForeverTransport
     {
         private const string _initPrefix = "<!DOCTYPE html>" +
@@ -24,22 +25,46 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
-        private readonly bool _isDebug;
+        private HTMLTextWriter _htmlOutputWriter;
 
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
-            _isDebug = context.IsDebuggingEnabled();
+        }
+
+        /// <summary>
+        /// Pointed to the HTMLOutputWriter to wrap output stream with an HTML friendly one
+        /// </summary>
+        public override TextWriter OutputWriter
+        {
+            get
+            {
+                return HTMLOutputWriter;
+            }
+        }
+
+        private HTMLTextWriter HTMLOutputWriter
+        {
+            get
+            {
+                if (_htmlOutputWriter == null)
+                {
+                    _htmlOutputWriter = new HTMLTextWriter(Context.Response.AsStream(), new UTF8Encoding());
+                    _htmlOutputWriter.NewLine = "\n";
+                }
+
+                return _htmlOutputWriter;
+            }
         }
 
         public override Task KeepAlive()
         {
             return EnqueueOperation(() =>
             {
-                OutputWriter.Write("<script>r(c, {});</script>");
-                OutputWriter.WriteLine();
-                OutputWriter.WriteLine();
-                OutputWriter.Flush();
+                HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
+                HTMLOutputWriter.WriteLine();
+                HTMLOutputWriter.WriteLine();
+                HTMLOutputWriter.Flush();
 
                 return Context.Response.FlushAsync();
             });
@@ -51,12 +76,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             return EnqueueOperation(() =>
             {
-                OutputWriter.Write("<script>r(c, ");
-                JsonSerializer.Serialize(response, OutputWriter);
-                OutputWriter.Write(");</script>\r\n");
-                OutputWriter.Flush();
+                HTMLOutputWriter.WriteRaw("<script>r(c, ");
+                JsonSerializer.Serialize(response, HTMLOutputWriter);
+                HTMLOutputWriter.WriteRaw(");</script>\r\n");
+                HTMLOutputWriter.Flush();
 
-                return Context.Response.FlushAsync().Catch(IncrementErrorCounters);
+                return Context.Response.FlushAsync();
             });
         }
 
@@ -69,8 +94,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                     return EnqueueOperation(() =>
                     {
-                        OutputWriter.Write(initScript);
-                        OutputWriter.Flush();
+                        HTMLOutputWriter.WriteRaw(initScript);
+                        HTMLOutputWriter.Flush();
 
                         return Context.Response.FlushAsync();
                     });
@@ -78,38 +103,31 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }
 
-        private class TextWriterWrapper : TextWriter
+        private class HTMLTextWriter : StreamWriter
         {
-            private readonly TextWriter _writer;
-
-            public TextWriterWrapper(TextWriter writer)
+            public HTMLTextWriter(Stream stream, Encoding encoding)
+                : base(stream, encoding)
             {
-                _writer = writer;
             }
 
-            public override Encoding Encoding
+            public void WriteRaw(string value)
             {
-                get { return _writer.Encoding; }
+                base.Write(value);
             }
 
             public override void Write(string value)
             {
-                _writer.Write(EscapeAnyInlineScriptTags(value));
+                base.Write(JavascriptEncode(value));
             }
 
             public override void WriteLine(string value)
             {
-                _writer.Write(EscapeAnyInlineScriptTags(value));
+                base.WriteLine(JavascriptEncode(value));
             }
 
-            public override void WriteLine()
+            private static string JavascriptEncode(string input)
             {
-                _writer.WriteLine();
-            }
-
-            private static string EscapeAnyInlineScriptTags(string input)
-            {
-                return input.Replace("</script>", "</\"+\"script>");
+                return input.Replace("<", "\\u003c").Replace(">", "\\u003e");
             }
         }
     }

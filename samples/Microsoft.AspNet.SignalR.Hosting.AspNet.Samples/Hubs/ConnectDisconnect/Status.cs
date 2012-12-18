@@ -22,5 +22,10 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.ConnectDisconnect
         {
             return Clients.All.rejoined(Context.ConnectionId, DateTime.Now.ToString());
         }
+
+        public void Ping()
+        {
+            Clients.Caller.pong();
+        }
     }
 }

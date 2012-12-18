@@ -1,6 +1,6 @@
 ﻿<%@ Page Title="ASP.NET SignalR: Connection Status" Language="C#" MasterPageFile="~/SignalR.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Microsoft.AspNet.SignalR.Samples.Hubs.ConnectDisconnect.Default" %>
 
-<asp:Content ContentPlaceHolderID="MainContent" runat="server">
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <ul class="breadcrumb">
         <li><a href="<%: ResolveUrl("~/") %>">SignalR Samples</a> <span class="divider">/</span></li>
         <li class="active">Connection Status</li>
@@ -13,11 +13,15 @@
     <button id="connectionStop">STOP</button>
     <button id="connectionStart">START</button>
 
+    <button id="connectionStart">START</button>
+    <button id="connectionStop">STOP</button>    
+    <button id="ping">PING</button>
+
     <h4>Connection Status Messages</h4>
     <ul id="messages">
     </ul>
 </asp:Content>
-<asp:Content ContentPlaceHolderID="Scripts" runat="server">
+<asp:Content ID="Content2" ContentPlaceHolderID="Scripts" runat="server">
     <script src="<%: ResolveUrl("~/signalr/hubs") %>"></script>
     <script src="Status.js"></script>
 </asp:Content>

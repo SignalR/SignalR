@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -12,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client
     public interface IConnection
     {
         string MessageId { get; set; }
-        IEnumerable<string> Groups { get; set; }
+        ICollection<string> Groups { get; }
         IDictionary<string, object> Items { get; }
         string ConnectionId { get; }
         string Url { get; }
@@ -24,12 +26,15 @@ namespace Microsoft.AspNet.SignalR.Client
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
 
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop();
+        void Disconnect();
         Task Send(string data);
         Task<T> Send<T>(string data);
 
         void OnReceived(JToken data);
         void OnError(Exception ex);
+        void OnReconnecting();
         void OnReconnected();
         void PrepareRequest(IRequest request);
     }

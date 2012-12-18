@@ -34,21 +34,30 @@
 
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
-
                     var messageId = instance.messageId,
                         connect = (messageId === null),
                         reconnecting = !connect,
                         url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect),
                         reconnectTimeOut = null,
-                        reconnectFired = false;
+                        reconnectFired = false,
+                        triggerReconnected = function () {
+                            // Fire the reconnect event if it hasn't been fired as yet
+                            if (reconnectFired === false) {
+                                connection.log("Raising the reconnect event");
 
-                    if (reconnecting === true && raiseReconnect === true) {
-                        if (connection.state !== signalR.connectionState.reconnecting &&
-                            changeState(connection,
-                                        signalR.connectionState.connected,
-                                        signalR.connectionState.reconnecting) === false) {
-                            return;
-                        }
+                                if (changeState(connection,
+                                                signalR.connectionState.reconnecting,
+                                                signalR.connectionState.connected) === true) {
+
+                                    $(instance).triggerHandler(events.onReconnect);
+                                    reconnectFired = true;
+                                }
+                            }
+                        };
+
+                    if (reconnecting === true && raiseReconnect === true &&
+                        !transportLogic.ensureReconnectingState(connection)) {
+                        return;
                     }
 
                     connection.log("Attempting to connect to '" + url + "' using longPolling.");
@@ -58,9 +67,14 @@
                         cache: false,
                         type: "GET",
                         dataType: connection.ajaxDataType,
-                        success: function (data) {
+                        success: function (minData) {
                             var delay = 0,
-                                timedOutReceived = false;
+                                timedOutReceived = false,
+                                data;
+
+                            if (minData) {
+                                data = transportLogic.maximizePersistentResponse(minData);
+                            }
 
                             if (initialConnectFired === false) {
                                 onSuccess();
@@ -68,25 +82,13 @@
                             }
 
                             if (raiseReconnect === true) {
-                                // Fire the reconnect event if it hasn't been fired as yet
-                                if (reconnectFired === false) {
-                                    connection.log("Raising the reconnect event");
-
-                                    if (changeState(connection,
-                                                    signalR.connectionState.reconnecting,
-                                                    signalR.connectionState.connected) === true) {
-
-                                        $(instance).triggerHandler(events.onReconnect);
-                                        reconnectFired = true;
-                                    }
-                                }
+                                triggerReconnected();
                             }
 
-                            transportLogic.processMessages(instance, data);
+                            transportLogic.processMessages(instance, minData);
                             if (data &&
-                                data.TransportData &&
-                                $.type(data.TransportData.LongPollDelay) === "number") {
-                                delay = data.TransportData.LongPollDelay;
+                                $.type(data.LongPollDelay) === "number") {
+                                delay = data.LongPollDelay;
                             }
 
                             if (data && data.TimedOut) {
@@ -116,15 +118,14 @@
                                 return;
                             }
 
-                            connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
-
-                            if (reconnectTimeOut) {
-                                // If the request failed then we clear the timeout so that the
-                                // reconnect event doesn't get fired
-                                window.clearTimeout(reconnectTimeOut);
+                            if (connection.state !== signalR.connectionState.reconnecting) {
+                                connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                $(instance).triggerHandler(events.onError, [data.responseText]);
                             }
 
-                            $(instance).triggerHandler(events.onError, [data.responseText]);
+                            // If the request failed then we clear the timeout so that the
+                            // reconnect event doesn't get fired
+                            window.clearTimeout(reconnectTimeOut);
 
                             window.setTimeout(function () {
                                 if (isDisconnecting(instance) === false) {
@@ -135,18 +136,7 @@
                     });
 
                     if (raiseReconnect === true) {
-                        reconnectTimeOut = window.setTimeout(function () {
-                            if (reconnectFired === false) {
-                                if (changeState(connection,
-                                                signalR.connectionState.reconnecting,
-                                                signalR.connectionState.connected) === true) {
-
-                                    $(instance).triggerHandler(events.onReconnect);
-                                    reconnectFired = true;
-                                }
-                            }
-                        },
-                        that.reconnectDelay);
+                        reconnectTimeOut = window.setTimeout(triggerReconnected, that.reconnectDelay);
                     }
 
                 }(connection));

@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         public SourceSwitch Switch { get; private set; }
-        public TraceSource Source { get; private set; }
 
         public TraceSource this[string name]
         {

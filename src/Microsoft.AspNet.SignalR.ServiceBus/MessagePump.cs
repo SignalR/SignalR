@@ -2,9 +2,9 @@
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    using Microsoft.ServiceBus.Messaging;
     using System;
     using System.Collections.Generic;
+    using Microsoft.ServiceBus.Messaging;
 
     sealed class MessagePump
     {
@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             this.exitSemaphore = new Action(ExitSemaphore);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         public void Start()
         {
             try
@@ -40,6 +41,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
         static void OnPumpCompleted(IAsyncResult ar)
         {
             try

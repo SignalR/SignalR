@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR
@@ -30,14 +31,15 @@ namespace Microsoft.AspNet.SignalR
         public void RemoveUnminified(string fullString)
         {
             string minifiedString;
-            if(_stringMinifier.TryRemove(fullString, out minifiedString))
+            if (_stringMinifier.TryRemove(fullString, out minifiedString))
             {
                 string value;
                 _stringMaximizer.TryRemove(minifiedString, out value);
             }
         }
 
-        private char GetCharFromSixBitInt(uint num)
+        [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This is a valid exception to throw.")]
+        private static char GetCharFromSixBitInt(uint num)
         {
             if (num < 26)
             {
@@ -62,7 +64,7 @@ namespace Microsoft.AspNet.SignalR
             throw new IndexOutOfRangeException();
         }
 
-        private string GetStringFromInt(uint num)
+        private static string GetStringFromInt(uint num)
         {
             const int maxSize = 6;
 
@@ -72,10 +74,10 @@ namespace Microsoft.AspNet.SignalR
             do
             {
                 // Append next 6 bits of num
-                buffer[--index] = GetCharFromSixBitInt(num & 0x3f); 
+                buffer[--index] = GetCharFromSixBitInt(num & 0x3f);
                 num >>= 6;
 
-            // Don't pad output string, but ensure at least one character is written
+                // Don't pad output string, but ensure at least one character is written
             } while (num != 0);
 
             return new string(buffer, index, maxSize - index);

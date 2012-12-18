@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Retrieve all avaiable hubs.
         /// </summary>
         /// <returns>Collection of hub descriptors.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This call might be expensive")]
         IList<HubDescriptor> GetHubs();
 
         /// <summary>

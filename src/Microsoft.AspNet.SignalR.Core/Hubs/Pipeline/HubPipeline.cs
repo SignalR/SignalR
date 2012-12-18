@@ -2,12 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    public class HubPipeline : IHubPipeline, IHubPipelineInvoker
+    internal class HubPipeline : IHubPipeline, IHubPipelineInvoker
     {
         private readonly Stack<IHubPipelineModule> _modules;
         private readonly Lazy<ComposedPipeline> _pipeline;
@@ -18,13 +19,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _pipeline = new Lazy<ComposedPipeline>(() => new ComposedPipeline(_modules));
         }
 
-        public IHubPipeline AddModule(IHubPipelineModule builder)
+        public IHubPipeline AddModule(IHubPipelineModule pipelineModule)
         {
             if (_pipeline.IsValueCreated)
             {
-                throw new InvalidOperationException("Unable to add module. The HubPipeline has already been invoked.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToAddModulePiplineAlreadyInvoked));
             }
-            _modules.Push(builder);
+            _modules.Push(pipelineModule);
             return this;
         }
 
@@ -92,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             // IHubPipelineModule could be turned into a second generic parameter, but it would make the above invocations even longer than they currently are.
-            private Func<T, T> Compose<T>(IEnumerable<IHubPipelineModule> modules, Func<IHubPipelineModule, T, T> method)
+            private static Func<T, T> Compose<T>(IEnumerable<IHubPipelineModule> modules, Func<IHubPipelineModule, T, T> method)
             {
                 // Notice we are reversing and aggregating in one step. (Function composition is associative) 
                 return modules.Aggregate<IHubPipelineModule, Func<T, T>>(x => x, (a, b) => (x => method(b, a(x))));

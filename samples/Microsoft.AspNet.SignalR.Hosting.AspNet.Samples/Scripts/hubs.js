@@ -8,7 +8,7 @@
  *
  */
 
-/// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.2.js" />
+/// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />
 /// <reference path="jquery.signalR.js" />
 (function ($, window) {
     /// <param name="$" type="jQuery" />
@@ -57,7 +57,7 @@
                             // Not a client hub function
                             continue;
                         }
-
+                        
                         subscriptionMethod.call(hub, memberKey, makeProxyCallback(hub, memberValue));
                     }
                 }
@@ -99,6 +99,11 @@
     signalR.chat = signalR.hub.createHubProxy('chat'); 
     signalR.chat.client = { };
     signalR.chat.server = {
+        getUsers: function () {
+            /// <summary>Calls the GetUsers method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.chat.invoke.apply(signalR.chat, $.merge(["GetUsers"], $.makeArray(arguments)));
+         },
+
         join: function () {
             /// <summary>Calls the Join method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.chat.invoke.apply(signalR.chat, $.merge(["Join"], $.makeArray(arguments)));
@@ -106,27 +111,39 @@
 
         send: function (content) {
             /// <summary>Calls the Send method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="content" type="String">Server side type is System.String</param>
+            /// <param name=\"content\" type=\"String\">Server side type is System.String</param>
             return signalR.chat.invoke.apply(signalR.chat, $.merge(["Send"], $.makeArray(arguments)));
-         },
-
-        getUsers: function () {
-            /// <summary>Calls the GetUsers method on the server-side Chat hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.chat.invoke.apply(signalR.chat, $.merge(["GetUsers"], $.makeArray(arguments)));
          }
     };
 
     signalR.demo = signalR.hub.createHubProxy('demo'); 
     signalR.demo.client = { };
     signalR.demo.server = {
-        getValue: function () {
-            /// <summary>Calls the GetValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["GetValue"], $.makeArray(arguments)));
-         },
-
         addToGroups: function () {
             /// <summary>Calls the AddToGroups method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["AddToGroups"], $.makeArray(arguments)));
+         },
+
+        cancelledGenericTask: function () {
+            /// <summary>Calls the CancelledGenericTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["CancelledGenericTask"], $.makeArray(arguments)));
+         },
+
+        cancelledTask: function () {
+            /// <summary>Calls the CancelledTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["CancelledTask"], $.makeArray(arguments)));
+         },
+
+        complexArray: function (people) {
+            /// <summary>Calls the ComplexArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"people\" type=\"Object\">Server side type is Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.DemoHub+Person[]</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["ComplexArray"], $.makeArray(arguments)));
+         },
+
+        complexType: function (p) {
+            /// <summary>Calls the ComplexType method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"p\" type=\"Object\">Server side type is Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.DemoHub+Person</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["ComplexType"], $.makeArray(arguments)));
          },
 
         doSomethingAndCallError: function () {
@@ -134,14 +151,15 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["DoSomethingAndCallError"], $.makeArray(arguments)));
          },
 
+        dynamicInvoke: function (method) {
+            /// <summary>Calls the DynamicInvoke method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"method\" type=\"String\">Server side type is System.String</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["DynamicInvoke"], $.makeArray(arguments)));
+         },
+
         dynamicTask: function () {
             /// <summary>Calls the DynamicTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["DynamicTask"], $.makeArray(arguments)));
-         },
-
-        plainTask: function () {
-            /// <summary>Calls the PlainTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["PlainTask"], $.makeArray(arguments)));
          },
 
         genericTaskWithContinueWith: function () {
@@ -149,49 +167,24 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["GenericTaskWithContinueWith"], $.makeArray(arguments)));
          },
 
-        taskWithException: function () {
-            /// <summary>Calls the TaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["TaskWithException"], $.makeArray(arguments)));
-         },
-
         genericTaskWithException: function () {
             /// <summary>Calls the GenericTaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["GenericTaskWithException"], $.makeArray(arguments)));
          },
 
-        simpleArray: function (nums) {
-            /// <summary>Calls the SimpleArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="nums" type="Object">Server side type is System.Int32[]</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["SimpleArray"], $.makeArray(arguments)));
+        getValue: function () {
+            /// <summary>Calls the GetValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["GetValue"], $.makeArray(arguments)));
          },
 
-        readStateValue: function () {
-            /// <summary>Calls the ReadStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
+        inlineScriptTag: function () {
+            /// <summary>Calls the InlineScriptTag method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["InlineScriptTag"], $.makeArray(arguments)));
          },
 
-        setStateValue: function (value) {
-            /// <summary>Calls the SetStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="value" type="String">Server side type is System.String</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["SetStateValue"], $.makeArray(arguments)));
-         },
-
-        complexArray: function (people) {
-            /// <summary>Calls the ComplexArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="people" type="Object">Server side type is Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.DemoHub+Person[]</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["ComplexArray"], $.makeArray(arguments)));
-         },
-
-        complexType: function (p) {
-            /// <summary>Calls the ComplexType method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="p" type="Object">Server side type is Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.DemoHub+Person</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["ComplexType"], $.makeArray(arguments)));
-         },
-
-        passingDynamicComplex: function (p) {
-            /// <summary>Calls the PassingDynamicComplex method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="p" type="Object">Server side type is System.Object</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["PassingDynamicComplex"], $.makeArray(arguments)));
+        mispelledClientMethod: function () {
+            /// <summary>Calls the MispelledClientMethod method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["MispelledClientMethod"], $.makeArray(arguments)));
          },
 
         multipleCalls: function () {
@@ -204,10 +197,37 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["Overload"], $.makeArray(arguments)));
          },
 
-        unsupportedOverload: function (x) {
-            /// <summary>Calls the UnsupportedOverload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="x" type="String">Server side type is System.String</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["UnsupportedOverload"], $.makeArray(arguments)));
+        passingDynamicComplex: function (p) {
+            /// <summary>Calls the PassingDynamicComplex method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"p\" type=\"Object\">Server side type is System.Object</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["PassingDynamicComplex"], $.makeArray(arguments)));
+         },
+
+        plainTask: function () {
+            /// <summary>Calls the PlainTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["PlainTask"], $.makeArray(arguments)));
+         },
+
+        readStateValue: function () {
+            /// <summary>Calls the ReadStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
+         },
+
+        setStateValue: function (value) {
+            /// <summary>Calls the SetStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"value\" type=\"String\">Server side type is System.String</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["SetStateValue"], $.makeArray(arguments)));
+         },
+
+        simpleArray: function (nums) {
+            /// <summary>Calls the SimpleArray method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"nums\" type=\"Object\">Server side type is System.Int32[]</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["SimpleArray"], $.makeArray(arguments)));
+         },
+
+        taskWithException: function () {
+            /// <summary>Calls the TaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["TaskWithException"], $.makeArray(arguments)));
          },
 
         testGuid: function () {
@@ -215,30 +235,25 @@
             return signalR.demo.invoke.apply(signalR.demo, $.merge(["TestGuid"], $.makeArray(arguments)));
          },
 
-        dynamicInvoke: function (method) {
-            /// <summary>Calls the DynamicInvoke method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="method" type="String">Server side type is System.String</param>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["DynamicInvoke"], $.makeArray(arguments)));
-         },
-
-        mispelledClientMethod: function () {
-            /// <summary>Calls the MispelledClientMethod method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.demo.invoke.apply(signalR.demo, $.merge(["MispelledClientMethod"], $.makeArray(arguments)));
+        unsupportedOverload: function (x) {
+            /// <summary>Calls the UnsupportedOverload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"x\" type=\"String\">Server side type is System.String</param>
+            return signalR.demo.invoke.apply(signalR.demo, $.merge(["UnsupportedOverload"], $.makeArray(arguments)));
          }
     };
 
     signalR.DrawingPad = signalR.hub.createHubProxy('DrawingPad'); 
     signalR.DrawingPad.client = { };
     signalR.DrawingPad.server = {
+        Draw: function (data) {
+            /// <summary>Calls the Draw method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"data\" type=\"Object\">Server side type is Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad.DrawingPad+Line</param>
+            return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["Draw"], $.makeArray(arguments)));
+         },
+
         join: function () {
             /// <summary>Calls the Join method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["Join"], $.makeArray(arguments)));
-         },
-
-        Draw: function (data) {
-            /// <summary>Calls the Draw method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="data" type="Object">Server side type is Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad.DrawingPad+Line</param>
-            return signalR.DrawingPad.invoke.apply(signalR.DrawingPad, $.merge(["Draw"], $.makeArray(arguments)));
          }
     };
 
@@ -247,16 +262,16 @@
     signalR.hubBench.server = {
         hitMe: function (start, clientCalls, connectionId) {
             /// <summary>Calls the HitMe method on the server-side HubBench hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="start" type="Number">Server side type is System.Int64</param>
-            /// <param name="clientCalls" type="Number">Server side type is System.Int32</param>
-            /// <param name="connectionId" type="String">Server side type is System.String</param>
+            /// <param name=\"start\" type=\"Number\">Server side type is System.Int64</param>
+            /// <param name=\"clientCalls\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
             return signalR.hubBench.invoke.apply(signalR.hubBench, $.merge(["HitMe"], $.makeArray(arguments)));
          },
 
         hitUs: function (start, clientCalls) {
             /// <summary>Calls the HitUs method on the server-side HubBench hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="start" type="Number">Server side type is System.Int64</param>
-            /// <param name="clientCalls" type="Number">Server side type is System.Int32</param>
+            /// <param name=\"start\" type=\"Number\">Server side type is System.Int64</param>
+            /// <param name=\"clientCalls\" type=\"Number\">Server side type is System.Int32</param>
             return signalR.hubBench.invoke.apply(signalR.hubBench, $.merge(["HitUs"], $.makeArray(arguments)));
          }
     };
@@ -298,8 +313,8 @@
 
         move: function (x, y) {
             /// <summary>Calls the Move method on the server-side MouseTracking hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="x" type="Number">Server side type is System.Int32</param>
-            /// <param name="y" type="Number">Server side type is System.Int32</param>
+            /// <param name=\"x\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"y\" type=\"Number\">Server side type is System.Int32</param>
             return signalR.mouseTracking.invoke.apply(signalR.mouseTracking, $.merge(["Move"], $.makeArray(arguments)));
          }
     };
@@ -325,9 +340,25 @@
     signalR.realtime = signalR.hub.createHubProxy('realtime'); 
     signalR.realtime.client = { };
     signalR.realtime.server = {
+        getFPS: function () {
+            /// <summary>Calls the GetFPS method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetFPS"], $.makeArray(arguments)));
+         },
+
+        getFrameId: function () {
+            /// <summary>Calls the GetFrameId method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetFrameId"], $.makeArray(arguments)));
+         },
+
         isEngineRunning: function () {
             /// <summary>Calls the IsEngineRunning method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["IsEngineRunning"], $.makeArray(arguments)));
+         },
+
+        setFPS: function (fps) {
+            /// <summary>Calls the SetFPS method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"fps\" type=\"Number\">Server side type is System.Int32</param>
+            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["SetFPS"], $.makeArray(arguments)));
          },
 
         start: function () {
@@ -338,28 +369,46 @@
         stop: function () {
             /// <summary>Calls the Stop method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["Stop"], $.makeArray(arguments)));
-         },
-
-        getFPS: function () {
-            /// <summary>Calls the GetFPS method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetFPS"], $.makeArray(arguments)));
-         },
-
-        setFPS: function (fps) {
-            /// <summary>Calls the SetFPS method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="fps" type="Number">Server side type is System.Int32</param>
-            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["SetFPS"], $.makeArray(arguments)));
-         },
-
-        getFrameId: function () {
-            /// <summary>Calls the GetFrameId method on the server-side Realtime hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.realtime.invoke.apply(signalR.realtime, $.merge(["GetFrameId"], $.makeArray(arguments)));
          }
     };
 
     signalR.shapeShare = signalR.hub.createHubProxy('shapeShare'); 
     signalR.shapeShare.client = { };
     signalR.shapeShare.server = {
+        changeShape: function (id, x, y, w, h) {
+            /// <summary>Calls the ChangeShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"id\" type=\"String\">Server side type is System.String</param>
+            /// <param name=\"x\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"y\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"w\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"h\" type=\"Number\">Server side type is System.Int32</param>
+            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["ChangeShape"], $.makeArray(arguments)));
+         },
+
+        changeUserName: function (currentUserName, newUserName) {
+            /// <summary>Calls the ChangeUserName method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"currentUserName\" type=\"String\">Server side type is System.String</param>
+            /// <param name=\"newUserName\" type=\"String\">Server side type is System.String</param>
+            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["ChangeUserName"], $.makeArray(arguments)));
+         },
+
+        createShape: function (type) {
+            /// <summary>Calls the CreateShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"type\" type=\"String\">Server side type is System.String</param>
+            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["CreateShape"], $.makeArray(arguments)));
+         },
+
+        deleteAllShapes: function () {
+            /// <summary>Calls the DeleteAllShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["DeleteAllShapes"], $.makeArray(arguments)));
+         },
+
+        deleteShape: function (id) {
+            /// <summary>Calls the DeleteShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"id\" type=\"String\">Server side type is System.String</param>
+            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["DeleteShape"], $.makeArray(arguments)));
+         },
+
         getShapes: function () {
             /// <summary>Calls the GetShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["GetShapes"], $.makeArray(arguments)));
@@ -367,48 +416,18 @@
 
         join: function (userName) {
             /// <summary>Calls the Join method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="userName" type="String">Server side type is System.String</param>
+            /// <param name=\"userName\" type=\"String\">Server side type is System.String</param>
             return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["Join"], $.makeArray(arguments)));
-         },
-
-        changeUserName: function (currentUserName, newUserName) {
-            /// <summary>Calls the ChangeUserName method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="currentUserName" type="String">Server side type is System.String</param>
-            /// <param name="newUserName" type="String">Server side type is System.String</param>
-            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["ChangeUserName"], $.makeArray(arguments)));
-         },
-
-        createShape: function (type) {
-            /// <summary>Calls the CreateShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="type" type="String">Server side type is System.String</param>
-            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["CreateShape"], $.makeArray(arguments)));
-         },
-
-        changeShape: function (id, x, y, w, h) {
-            /// <summary>Calls the ChangeShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="id" type="String">Server side type is System.String</param>
-            /// <param name="x" type="Number">Server side type is System.Int32</param>
-            /// <param name="y" type="Number">Server side type is System.Int32</param>
-            /// <param name="w" type="Number">Server side type is System.Int32</param>
-            /// <param name="h" type="Number">Server side type is System.Int32</param>
-            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["ChangeShape"], $.makeArray(arguments)));
-         },
-
-        deleteShape: function (id) {
-            /// <summary>Calls the DeleteShape method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name="id" type="String">Server side type is System.String</param>
-            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["DeleteShape"], $.makeArray(arguments)));
-         },
-
-        deleteAllShapes: function () {
-            /// <summary>Calls the DeleteAllShapes method on the server-side ShapeShare hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            return signalR.shapeShare.invoke.apply(signalR.shapeShare, $.merge(["DeleteAllShapes"], $.makeArray(arguments)));
          }
     };
 
     signalR.StatusHub = signalR.hub.createHubProxy('StatusHub'); 
     signalR.StatusHub.client = { };
     signalR.StatusHub.server = {
+        ping: function () {
+            /// <summary>Calls the Ping method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            return signalR.StatusHub.invoke.apply(signalR.StatusHub, $.merge(["Ping"], $.makeArray(arguments)));
+         }
     };
 
     signalR.userAndRoleAuthHub = signalR.hub.createHubProxy('userAndRoleAuthHub'); 

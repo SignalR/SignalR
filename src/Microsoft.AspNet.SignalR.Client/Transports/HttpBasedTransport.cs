@@ -3,13 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Client.Http;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -19,16 +21,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private const string _sendQueryString = "?transport={0}&connectionId={1}{2}";
 
         // The transport name
-        protected readonly string _transport;
+        private readonly string _transport;
 
-        protected const string HttpRequestKey = "http.Request";
+        private readonly IHttpClient _httpClient;
 
-        protected readonly IHttpClient _httpClient;
-
-        public HttpBasedTransport(IHttpClient httpClient, string transport)
+        protected HttpBasedTransport(IHttpClient httpClient, string transport)
         {
             _httpClient = httpClient;
             _transport = transport;
+        }
+
+        protected IHttpClient HttpClient
+        {
+            get { return _httpClient; }
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
@@ -51,30 +56,39 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 if (raw == null)
                 {
-                    throw new InvalidOperationException("Server negotiation failed.");
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                 }
 
                 return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
             });
         }
 
-        public Task Start(IConnection connection, string data)
+        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
             var tcs = new TaskCompletionSource<object>();
 
-            OnStart(connection, data, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
+            OnStart(connection, data, disconnectToken, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
 
             return tcs.Task;
         }
 
-        protected abstract void OnStart(IConnection connection, string data, Action initializeCallback, Action<Exception> errorCallback);
+        protected abstract void OnStart(IConnection connection,
+                                        string data,
+                                        CancellationToken disconnectToken,
+                                        Action initializeCallback,
+                                        Action<Exception> errorCallback);
 
         public Task<T> Send<T>(IConnection connection, string data)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             string url = connection.Url + "send";
             string customQueryString = GetCustomQueryString(connection);
 
-            url += String.Format(_sendQueryString, _transport, connection.ConnectionId, customQueryString);
+            url += String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, customQueryString);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }
@@ -93,6 +107,24 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
+        public void Abort(IConnection connection)
+        {
+            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
+
+            try
+            {
+                // Attempt to perform a clean disconnect, but only wait 2 seconds
+                _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
+            }
+            catch (Exception ex)
+            {
+                // Swallow any exceptions, but log them
+                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
         protected string GetReceiveQueryString(IConnection connection, string data)
         {
             // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
@@ -129,66 +161,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return qsBuilder.ToString();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is used on Silverlight and Windows Phone")]
         private static string GetNoCacheUrlParam()
         {
             return "noCache=" + Guid.NewGuid().ToString();
         }
 
-        protected virtual Action<IRequest> PrepareRequest(IConnection connection)
-        {
-            return request =>
-            {
-                // Setup the user agent along with any other defaults
-                connection.PrepareRequest(request);
-
-                connection.Items[HttpRequestKey] = request;
-            };
-        }
-
-        public void Stop(IConnection connection)
-        {
-            var httpRequest = connection.GetValue<IRequest>(HttpRequestKey);
-            if (httpRequest != null)
-            {
-                try
-                {
-                    OnBeforeAbort(connection);
-
-                    // Abort the server side connection
-                    AbortConnection(connection);
-
-                    // Now abort the client connection
-                    httpRequest.Abort();
-                }
-                catch (NotImplementedException)
-                {
-                    // If this isn't implemented then do nothing
-                }
-            }
-        }
-
-        private void AbortConnection(IConnection connection)
-        {
-            string url = connection.Url + "abort" + String.Format(_sendQueryString, _transport, connection.ConnectionId, null);
-
-            try
-            {
-                // Attempt to perform a clean disconnect, but only wait 2 seconds
-                _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
-            }
-            catch (Exception ex)
-            {
-                // Swallow any exceptions, but log them
-                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
-            }
-        }
-
-
-        protected virtual void OnBeforeAbort(IConnection connection)
-        {
-
-        }
-
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
+        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
         protected static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
             timedOut = false;
@@ -208,15 +189,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
-                timedOut = result.Value<bool>("TimedOut");
-                disconnected = result.Value<bool>("Disconnect");
+                timedOut = result.Value<int>("T") == 1;
+                disconnected = result.Value<int>("D") == 1;
 
                 if (disconnected)
                 {
                     return;
                 }
 
-                var messages = result["Messages"] as JArray;
+                UpdateGroups(connection,
+                             resetGroups: result["R"],
+                             addedGroups: result["G"],
+                             removedGroups: result["g"]);
+
+                var messages = result["M"] as JArray;
                 if (messages != null)
                 {
                     foreach (JToken message in messages)
@@ -228,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         catch (Exception ex)
                         {
 #if NET35
-                            Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+                            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
 #else
                             Debug.WriteLine("Failed to process message: {0}", ex);
 #endif
@@ -237,28 +223,45 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                     }
 
-                    connection.MessageId = result["MessageId"].Value<string>();
-
-                    var transportData = result["TransportData"] as JObject;
-
-                    if (transportData != null)
-                    {
-                        var groups = (JArray)transportData["Groups"];
-                        if (groups != null)
-                        {
-                            connection.Groups = groups.Select(token => token.Value<string>());
-                        }
-                    }
+                    connection.MessageId = result["C"].Value<string>();
                 }
             }
             catch (Exception ex)
             {
 #if NET35
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
+                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
 #else
                 Debug.WriteLine("Failed to response: {0}", ex);
 #endif
                 connection.OnError(ex);
+            }
+        }
+
+        private static void UpdateGroups(IConnection connection,
+                                         IEnumerable<JToken> resetGroups,
+                                         IEnumerable<JToken> addedGroups,
+                                         IEnumerable<JToken> removedGroups)
+        {
+            if (resetGroups != null)
+            {
+                connection.Groups.Clear();
+                EnumerateJTokens(resetGroups, connection.Groups.Add);
+            }
+            else
+            {
+                EnumerateJTokens(addedGroups, connection.Groups.Add);
+                EnumerateJTokens(removedGroups, g => connection.Groups.Remove(g));
+            }
+        }
+
+        private static void EnumerateJTokens(IEnumerable<JToken> items, Action<string> process)
+        {
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    process(item.ToString());
+                }
             }
         }
 

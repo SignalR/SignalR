@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR
@@ -10,7 +11,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var command = new Command
             {
-                Type = CommandType.Disconnect
+                CommandType = CommandType.Disconnect
             };
 
             return connection.Send(new ConnectionMessage(connectionId, command));
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var command = new Command
             {
-                Type = CommandType.Abort
+                CommandType = CommandType.Abort
             };
 
             return connection.Send(new ConnectionMessage(connectionId, command));
@@ -37,6 +38,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents when the broadcast is complete.</returns>
         public static Task Send(this IConnection connection, string signal, object value, params string[] exclude)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             var message = new ConnectionMessage(signal, value)
             {
                 ExcludedSignals = exclude
@@ -54,6 +60,11 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents when the broadcast is complete.</returns>
         public static Task Broadcast(this IConnection connection, object value, params string[] exclude)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             return connection.Send(connection.DefaultSignal, value, exclude);
         }
     }

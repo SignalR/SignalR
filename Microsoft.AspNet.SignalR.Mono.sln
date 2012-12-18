@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet", "src\Microsoft.AspNet.SignalR.Hosting.AspNet\Microsoft.AspNet.SignalR.Hosting.AspNet.csproj", "{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.Common", "src\Microsoft.AspNet.SignalR.Hosting.Common\Microsoft.AspNet.SignalR.Hosting.Common.csproj", "{3B71F0AE-D4B6-4F47-BF62-333D45615673}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.Self", "src\Microsoft.AspNet.SignalR.Hosting.Self\Microsoft.AspNet.SignalR.Hosting.Self.csproj", "{A2BD866D-906A-4742-AB3B-DB8740830400}"
@@ -47,14 +45,6 @@ Global
 		{055F2118-FE29-4219-A28A-3D6F0889652E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{055F2118-FE29-4219-A28A-3D6F0889652E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{055F2118-FE29-4219-A28A-3D6F0889652E}.Release|x86.ActiveCfg = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Debug|x86.Build.0 = Debug|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|x86.ActiveCfg = Release|Any CPU
-		{0E513AE2-BEA8-40CF-B9F2-102B351F2FB2}.Release|x86.Build.0 = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Debug|x86.ActiveCfg = Debug|Any CPU

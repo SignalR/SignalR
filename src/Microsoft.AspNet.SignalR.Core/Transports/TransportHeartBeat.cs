@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -11,15 +12,15 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 namespace Microsoft.AspNet.SignalR.Transports
 {
     /// <summary>
-    /// Default implementation of <see cref="ITransportHeartBeat"/>.
+    /// Default implementation of <see cref="ITransportHeartbeat"/>.
     /// </summary>
-    public class TransportHeartBeat : ITransportHeartBeat, IDisposable
+    public class TransportHeartbeat : ITransportHeartbeat, IDisposable
     {
         private readonly ConcurrentDictionary<string, ConnectionMetadata> _connections = new ConcurrentDictionary<string, ConnectionMetadata>();
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
         private readonly IServerCommandHandler _serverCommandHandler;
-        private readonly ITraceManager _trace;
+        private readonly TraceSource _trace;
         private readonly string _serverId;
         private readonly IPerformanceCounterManager _counters;
         private readonly object _counterLock = new object();
@@ -27,37 +28,39 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _running;
 
         /// <summary>
-        /// Initializes and instance of the <see cref="TransportHeartBeat"/> class.
+        /// Initializes and instance of the <see cref="TransportHeartbeat"/> class.
         /// </summary>
         /// <param name="resolver">The <see cref="IDependencyResolver"/>.</param>
-        public TransportHeartBeat(IDependencyResolver resolver)
+        public TransportHeartbeat(IDependencyResolver resolver)
         {
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
-            _trace = resolver.Resolve<ITraceManager>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
-            
+
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR.Transports.TransportHeartBeat"];
+
             _serverCommandHandler.Command = ProcessServerCommand;
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
                                null,
-                               _configurationManager.HeartBeatInterval,
-                               _configurationManager.HeartBeatInterval);
+                               _configurationManager.HeartbeatInterval,
+                               _configurationManager.HeartbeatInterval);
         }
 
         private TraceSource Trace
         {
             get
             {
-                return _trace["SignalR.Transports.TransportHeartBeat"];
+                return _trace;
             }
         }
 
         private void ProcessServerCommand(ServerCommand command)
         {
-            switch (command.Type)
+            switch (command.ServerCommandType)
             {
                 case ServerCommandType.RemoveConnection:
                     // Only remove connections if this command didn't originate from the owner
@@ -77,6 +80,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="connection">The connection to be added.</param>
         public bool AddConnection(ITrackingConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             var newMetadata = new ConnectionMetadata(connection);
             ConnectionMetadata oldMetadata = null;
             bool isNewConnection = true;
@@ -137,6 +145,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="connection">The connection to remove.</param>
         public void RemoveConnection(ITrackingConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             // Remove the connection and associated metadata
             RemoveConnection(connection.ConnectionId);
         }
@@ -147,6 +160,17 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="connection">The connection to mark.</param>
         public void MarkConnection(ITrackingConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            // Do nothing if the connection isn't alive
+            if (!connection.IsAlive)
+            {
+                return;
+            }
+
             ConnectionMetadata metadata;
             if (_connections.TryGetValue(connection.ConnectionId, out metadata))
             {
@@ -159,11 +183,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             return _connections.Values.Select(metadata => metadata.Connection).ToList();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're tracing exceptions and don't want to crash the process.")]
         private void Beat(object state)
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
             {
-                Trace.TraceInformation("timer handler took longer than current interval");
+                Trace.TraceInformation("Timer handler took longer than current interval");
                 return;
             }
 
@@ -177,6 +202,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                     }
                     else
                     {
+                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+
                         // Check if we need to disconnect this connection
                         CheckDisconnect(metadata);
                     }
@@ -196,10 +223,13 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (RaiseTimeout(metadata))
             {
+                RemoveConnection(metadata.Connection);
+
                 // If we're past the expiration time then just timeout the connection                            
                 metadata.Connection.Timeout();
 
-                RemoveConnection(metadata.Connection);
+                // End the connection
+                metadata.Connection.End();
             }
             else
             {
@@ -208,7 +238,19 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
-                    metadata.Connection.KeepAlive().Catch();
+                    Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
+
+                    // If the keep alive send fails then kill the connection
+                    metadata.Connection.KeepAlive()
+                                       .Catch(ex =>
+                                       {
+                                           Trace.TraceInformation("Failed to send keep alive: " + ex.GetBaseException());
+
+                                           RemoveConnection(metadata.Connection);
+
+                                           metadata.Connection.End();
+                                       });
+
                     metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
                 }
 
@@ -216,6 +258,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We're tracing exceptions and don't want to crash the process.")]
         private void CheckDisconnect(ConnectionMetadata metadata)
         {
             try
@@ -227,9 +270,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                     // Fire disconnect on the connection
                     metadata.Connection.Disconnect();
-
-                    // End the connection
-                    metadata.Connection.End();
                 }
             }
             catch (Exception ex)
@@ -287,12 +327,30 @@ namespace Microsoft.AspNet.SignalR.Transports
             return elapsed >= _configurationManager.ConnectionTimeout;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_timer != null)
+                {
+                    _timer.Dispose();
+                }
+
+                // Kill all connections
+                foreach (var pair in _connections)
+                {
+                    ConnectionMetadata metadata;
+                    if (_connections.TryGetValue(pair.Key, out metadata))
+                    {
+                        metadata.Connection.End();
+                    }
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (_timer != null)
-            {
-                _timer.Dispose();
-            }
+            Dispose(true);
         }
 
         private class ConnectionMetadata

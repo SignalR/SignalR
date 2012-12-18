@@ -7,7 +7,8 @@
     "use strict";
 
     var signalR = $.signalR,
-        events = $.signalR.events;
+        events = $.signalR.events,
+        changeState = $.signalR.changeState;
 
     signalR.transports = {};
 
@@ -74,7 +75,8 @@
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
-                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id);
+                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id),
+                groups = this.getGroups(connection);
 
             if (connection.data) {
                 qs += "&connectionData=" + window.escape(connection.data);
@@ -87,16 +89,64 @@
                     url = url + "/reconnect";
                 }
                 if (connection.messageId) {
-                    qs += "&messageId=" + connection.messageId;
+                    qs += "&messageId=" + window.escape(connection.messageId);
                 }
-                if (connection.groups) {
-                    qs += "&groups=" + window.escape(JSON.stringify(connection.groups));
+                if (groups.length !== 0) {
+                    qs += "&groups=" + window.escape(JSON.stringify(groups));
                 }
             }
             url += "?" + qs;
             url = this.addQs(url, connection);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
+        },
+
+        maximizePersistentResponse: function (minPersistentResponse) {
+            return {
+                MessageId: minPersistentResponse.C,
+                Messages: minPersistentResponse.M,
+                Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
+                TimedOut: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
+                LongPollDelay: minPersistentResponse.L,
+                ResetGroups: minPersistentResponse.R,
+                AddedGroups: minPersistentResponse.G,
+                RemovedGroups: minPersistentResponse.g
+            };
+        },
+
+        updateGroups: function (connection, resetGroups, addedGroups, removedGroups) {
+            // Use the keys in connection.groups object as a set of groups.
+            // Prefix all group names with # so we don't conflict with the object's prototype or __proto__.
+            function addGroups(groups) {
+                $.each(groups, function (_, group) {
+                    connection.groups['#' + group] = true;
+                });
+            }
+
+            if (resetGroups) {
+                connection.groups = {};
+                addGroups(resetGroups);
+            } else {
+                if (addedGroups) {
+                    addGroups(addedGroups);
+                }
+                if (removedGroups) {
+                    $.each(removedGroups, function (_, group) {
+                        delete connection.groups['# ' + group];
+                    });
+                }
+            }
+        },
+
+        getGroups: function (connection) {
+            var groups = [];
+            if (connection.groups) {
+                $.each(connection.groups, function (group, _) {
+                    // Add keys from connection.groups without the # prefix
+                    groups.push(group.substr(1));
+                });
+            }
+            return groups;
         },
 
         ajaxSend: function (connection, data) {
@@ -151,7 +201,8 @@
             connection.log("Fired ajax abort async = " + async);
         },
 
-        processMessages: function (connection, data) {
+        processMessages: function (connection, minData) {
+            var data;
             // Transport can be null if we've just closed the connection
             if (connection.transport) {
                 var $connection = $(connection);
@@ -162,9 +213,11 @@
                     this.updateKeepAlive(connection);
                 }
 
-                if (!data) {
+                if (!minData) {
                     return;
                 }
+
+                data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server");
@@ -173,6 +226,8 @@
                     connection.stop(false, false);
                     return;
                 }
+
+                this.updateGroups(connection, data.ResetGroups, data.AddedGroups, data.RemovedGroups);
 
                 if (data.Messages) {
                     $.each(data.Messages, function () {
@@ -188,10 +243,6 @@
 
                 if (data.MessageId) {
                     connection.messageId = data.MessageId;
-                }
-
-                if (data.TransportData) {
-                    connection.groups = data.TransportData.Groups;
                 }
             }
         },
@@ -243,6 +294,15 @@
 
         updateKeepAlive: function (connection) {
             connection.keepAliveData.lastKeepAlive = new Date();
+        },
+
+        ensureReconnectingState: function (connection) {
+            if (changeState(connection,
+                        signalR.connectionState.connected,
+                        signalR.connectionState.reconnecting) === true) {
+                $(connection).triggerHandler(events.onReconnecting);
+            }
+            return connection.state === signalR.connectionState.reconnecting;
         },
 
         foreverFrame: {

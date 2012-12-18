@@ -5,7 +5,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Runtime.ExceptionServices;
     using System.Threading;
 
     sealed class InputQueue<T> : IDisposable where T : class
@@ -157,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 string errorMessage = string.Format(
                     CultureInfo.CurrentCulture,
-                    "A Dequeue operation timed out after {0}. The time allotted to this operation may have been a portion of a longer timeout.",
+                    Resources.Error_DequeueOperationTimedOut,
                     timeout);
 
                 throw new TimeoutException(errorMessage);
@@ -166,6 +165,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Do not want to alter functionality.")]
         public bool Dequeue(TimeSpan timeout, out T value)
         {
             WaitQueueReader reader = null;
@@ -277,6 +277,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         public bool EndDequeue(IAsyncResult result, out T value)
         {
             CompletedAsyncResult<T> typedResult = result as CompletedAsyncResult<T>;
@@ -302,6 +303,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Do not want to alter functionality.")]
         public bool EndWaitForItem(IAsyncResult result)
         {
             CompletedAsyncResult<bool> typedResult = result as CompletedAsyncResult<bool>;
@@ -442,6 +444,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        // We do not have a protected Dispose method because this is a sealed class
         public void Dispose()
         {
             bool dispose = false;
@@ -1042,10 +1045,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 return true;
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.waitEvent.Dispose();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.waitEvent.Dispose();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
 
@@ -1079,10 +1090,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 return this.itemAvailable;
             }
 
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    this.waitEvent.Close();
+                    GC.SuppressFinalize(this);
+                }
+            }
+
             public void Dispose()
             {
-                this.waitEvent.Close();
-                GC.SuppressFinalize(this);
+                Dispose(true);
             }
         }
     }

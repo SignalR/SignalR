@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR
 
         // Creates a message store with the specified capacity. The actual capacity will be *at least* the
         // specified value. That is, GetMessages may return more data than 'capacity'.
-        public MessageStore(uint capacity, uint offset = 0)
+        public MessageStore(uint capacity, uint offset)
         {
             // set a minimum capacity
             if (capacity < 32)
@@ -42,7 +42,13 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        public MessageStore(uint capacity)
+            : this(capacity, offset: 0)
+        {
+        }
+
         // only for testing purposes
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Only for testing")]
         public ulong GetMessageCount()
         {
             return (ulong)Volatile.Read(ref _nextFreeMessageId);

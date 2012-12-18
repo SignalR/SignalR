@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         TimeSpan originalTimeout;
         public static readonly TimeSpan MaxWait = TimeSpan.FromMilliseconds(Int32.MaxValue);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public TimeoutHelper(TimeSpan timeout) :
             this(timeout, false)
         {
@@ -39,11 +40,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             get { return this.originalTimeout; }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static bool IsTooLarge(TimeSpan timeout)
         {
             return (timeout > TimeoutHelper.MaxWait) && (timeout != TimeSpan.MaxValue);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static TimeSpan FromMilliseconds(int milliseconds)
         {
             if (milliseconds == Timeout.Infinite)
@@ -56,6 +59,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static int ToMilliseconds(TimeSpan timeout)
         {
             if (timeout == TimeSpan.MaxValue)
@@ -73,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static TimeSpan Min(TimeSpan val1, TimeSpan val2)
         {
             if (val1 > val2)
@@ -85,11 +90,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static TimeSpan Add(TimeSpan timeout1, TimeSpan timeout2)
         {
             return Ticks.ToTimeSpan(Ticks.Add(Ticks.FromTimeSpan(timeout1), Ticks.FromTimeSpan(timeout2)));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static DateTime Add(DateTime time, TimeSpan timeout)
         {
             if (timeout >= TimeSpan.Zero && DateTime.MaxValue - time <= timeout)
@@ -103,11 +110,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return time + timeout;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static DateTime Subtract(DateTime time, TimeSpan timeout)
         {
             return Add(time, TimeSpan.Zero - timeout);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static TimeSpan Divide(TimeSpan timeout, int factor)
         {
             if (timeout == TimeSpan.MaxValue)
@@ -143,6 +152,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public TimeSpan ElapsedTime()
         {
             return this.originalTimeout - this.RemainingTime();
@@ -165,31 +175,33 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (timeout < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    argumentName, 
-                    timeout, 
+                    argumentName,
+                    timeout,
                     string.Format(
-                        CultureInfo.CurrentCulture, 
-                        "Argument {0} must be a non-negative timeout value. The provided value was {1}.", 
-                        argumentName, 
+                        CultureInfo.CurrentCulture,
+                        Resources.Error_ArgumentMustBeNonNegativeTimeoutVal,
+                        argumentName,
                         timeout));
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static void ThrowIfNonPositiveArgument(TimeSpan timeout)
         {
             ThrowIfNonPositiveArgument(timeout, "timeout");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This will be called in the future.")]
         public static void ThrowIfNonPositiveArgument(TimeSpan timeout, string argumentName)
         {
             if (timeout <= TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    argumentName, 
+                    argumentName,
                     timeout,
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        "Argument {0} must be a positive timeout value. The provided value was {1}",
+                        Resources.Error_ArgumentMustBePositiveTimeoutVal,
                         argumentName,
                         timeout));
             }

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -22,10 +22,10 @@ namespace Microsoft.AspNet.SignalR
         private readonly IPerformanceCounterManager _counters;
 
         // The maximum number of workers (threads) allowed to process all incoming messages
-        private static readonly int MaxWorkers = 3 * Environment.ProcessorCount;
+        private readonly int _maxWorkers;
 
         // The maximum number of workers that can be left to idle (not busy but allocated)
-        private static readonly int MaxIdleWorkers = Environment.ProcessorCount;
+        private readonly int _maxIdleWorkers;
 
         // The number of allocated workers (currently running)
         private int _allocatedWorkers;
@@ -37,8 +37,15 @@ namespace Microsoft.AspNet.SignalR
         private bool _disposed;
 
         public MessageBroker(IPerformanceCounterManager performanceCounterManager)
+            : this(performanceCounterManager, 3 * Environment.ProcessorCount, Environment.ProcessorCount)
+        {
+        }
+
+        public MessageBroker(IPerformanceCounterManager performanceCounterManager, int maxWorkers, int maxIdleWorkers)
         {
             _counters = performanceCounterManager;
+            _maxWorkers = maxWorkers;
+            _maxIdleWorkers = maxIdleWorkers;
         }
 
         public TraceSource Trace
@@ -82,16 +89,27 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        public void AddWorker()
+        private void AddWorker()
         {
             // Only create a new worker if everyone is busy (up to the max)
-            if (_allocatedWorkers < MaxWorkers && _allocatedWorkers == _busyWorkers)
+            if (_allocatedWorkers < _maxWorkers)
             {
-                _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
+                if (_allocatedWorkers == _busyWorkers)
+                {
+                    _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
 
-                Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                    Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
-                ThreadPool.QueueUserWorkItem(ProcessWork);
+                    ThreadPool.QueueUserWorkItem(ProcessWork);
+                }
+                else
+                {
+                    Trace.TraceInformation("No need to add a worker because all allocated workers are not busy, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                }
+            }
+            else
+            {
+                Trace.TraceInformation("Already at max workers, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
             }
         }
 
@@ -110,6 +128,7 @@ namespace Microsoft.AspNet.SignalR
 
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
         private void ProcessWorkSync(Task pumpTask)
         {
             try
@@ -141,14 +160,15 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
-        public Task PumpAsync()
+        private Task PumpAsync()
         {
             var tcs = new TaskCompletionSource<object>();
             PumpImpl(tcs);
             return tcs.Task;
         }
 
-        public void PumpImpl(TaskCompletionSource<object> taskCompletionSource, ISubscription subscription = null)
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
+        private void PumpImpl(TaskCompletionSource<object> taskCompletionSource, ISubscription subscription = null)
         {
 
         Process:
@@ -159,12 +179,12 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
-            Debug.Assert(_allocatedWorkers <= MaxWorkers, "How did we pass the max?");
+            Debug.Assert(_allocatedWorkers <= _maxWorkers, "How did we pass the max?");
 
             // If we're withing the acceptable limit of idleness, just keep running
             int idleWorkers = _allocatedWorkers - _busyWorkers;
 
-            if (subscription != null || idleWorkers <= MaxIdleWorkers)
+            if (subscription != null || idleWorkers <= _maxIdleWorkers)
             {
                 // We already have a subscription doing work so skip the queue
                 if (subscription == null)
@@ -189,6 +209,7 @@ namespace Microsoft.AspNet.SignalR
                 }
 
                 _counters.MessageBusBusyWorkers.RawValue = Interlocked.Increment(ref _busyWorkers);
+                Trace.TraceInformation("Work(" + subscription.Identity + ")");
                 Task workTask = subscription.WorkAsync();
 
                 if (workTask.IsCompleted)
@@ -201,11 +222,13 @@ namespace Microsoft.AspNet.SignalR
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.TrySetException(ex);
+                        Trace.TraceInformation("Work failed for " + subscription.Identity + ": " + ex.GetBaseException());
+
+                        goto Process;
                     }
                     finally
                     {
-                        if (!subscription.UnsetQueued())
+                        if (!subscription.UnsetQueued() || workTask.IsFaulted)
                         {
                             // If we don't have more work to do just make the subscription null
                             subscription = null;
@@ -240,34 +263,44 @@ namespace Microsoft.AspNet.SignalR
 
                 if (task.IsFaulted)
                 {
-                    taskCompletionSource.TrySetException(task.Exception);
+                    Trace.TraceInformation("Work failed for " + subscription.Identity + ": " + task.Exception.GetBaseException());
+                }
+
+                if (moreWork && !task.IsFaulted)
+                {
+                    PumpImpl(taskCompletionSource, subscription);
                 }
                 else
                 {
-                    if (moreWork)
-                    {
-                        PumpImpl(taskCompletionSource, subscription);
-                    }
-                    else
-                    {
-                        // Don't reference the subscription anymore
-                        subscription = null;
+                    // Don't reference the subscription anymore
+                    subscription = null;
 
-                        PumpImpl(taskCompletionSource);
-                    }
+                    PumpImpl(taskCompletionSource);
                 }
             });
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (!_disposed)
+                {
+                    _disposed = true;
+
+                    Trace.TraceInformation("Dispoing the broker");
+
+                    // Wait for all threads to stop working
+                    WaitForDrain();
+
+                    Trace.TraceInformation("Disposed the broker");
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-
-                // Wait for all threads to stop working
-                WaitForDrain();
-            }
+            Dispose(true);
         }
 
         private void WaitForDrain()

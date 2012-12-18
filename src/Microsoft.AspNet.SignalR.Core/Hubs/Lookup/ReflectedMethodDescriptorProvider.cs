@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="hub">Hub to build cache for</param>
         /// <returns>Dictionary of available methods</returns>
-        private IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
+        private static IDictionary<string, IEnumerable<MethodDescriptor>> BuildMethodCacheFor(HubDescriptor hub)
         {
-            return ReflectionHelper.GetExportedHubMethods(hub.Type)
+            return ReflectionHelper.GetExportedHubMethods(hub.HubType)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
                               group => group.Select(oload =>
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                           .Select(p => new ParameterDescriptor
                                               {
                                                   Name = p.Name,
-                                                  Type = p.ParameterType,
+                                                  ParameterType = p.ParameterType,
                                               })
                                           .ToList()
                                   }),
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Searches the specified <paramref name="hub">Hub</paramref> for the specified <paramref name="method"/>.
         /// </summary>
         /// <remarks>
-        /// In the case that there are multiple overloads of the specified <paramref name="method"/>, the <paramref name="parameter">parameter set</paramref> helps determine exactly which instance of the overload should be resolved. 
+        /// In the case that there are multiple overloads of the specified <paramref name="method"/>, the <paramref name="parameters">parameter set</paramref> helps determine exactly which instance of the overload should be resolved. 
         /// If there are multiple overloads found with the same number of matching paramters, none of the methods will be returned because it is not possible to determine which overload of the method was intended to be resolved.
         /// </remarks>
         /// <param name="hub">Hub to search for the specified <paramref name="method"/> on.</param>

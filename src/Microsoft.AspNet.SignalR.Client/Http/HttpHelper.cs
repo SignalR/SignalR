@@ -3,17 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
     internal static class HttpHelper
     {
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
             try
@@ -26,6 +27,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<Stream> GetHttpRequestStreamAsync(this HttpWebRequest request)
         {
             try
@@ -38,11 +40,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
         }
 
-        public static Task<HttpWebResponse> GetAsync(string url)
-        {
-            return GetAsync(url, requestPreparer: null);
-        }
-
         public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer)
         {
             HttpWebRequest request = CreateWebRequest(url);
@@ -53,26 +50,13 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return request.GetHttpResponseAsync();
         }
 
-        public static Task<HttpWebResponse> PostAsync(string url)
-        {
-            return PostInternal(url, requestPreparer: null, postData: null);
-        }
-
-        public static Task<HttpWebResponse> PostAsync(string url, IDictionary<string, string> postData)
-        {
-            return PostInternal(url, requestPreparer: null, postData: postData);
-        }
-
-        public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer)
-        {
-            return PostInternal(url, requestPreparer, postData: null);
-        }
-
         public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             return PostInternal(url, requestPreparer, postData);
         }
 
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Callers check for null return.")]
         public static string ReadAsString(this HttpWebResponse response)
         {
             try
@@ -81,10 +65,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 {
                     using (Stream stream = response.GetResponseStream())
                     {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            return reader.ReadToEnd();
-                        }
+                        var reader = new StreamReader(stream);
+
+                        return reader.ReadToEnd();
                     }
                 }
             }
@@ -150,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                     continue;
                 }
 
-                sb.AppendFormat("{0}={1}", pair.Key, UriQueryUtility.UrlEncode(pair.Value));
+                sb.AppendFormat("{0}={1}", pair.Key, UrlEncoder.UrlEncode(pair.Value));
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());

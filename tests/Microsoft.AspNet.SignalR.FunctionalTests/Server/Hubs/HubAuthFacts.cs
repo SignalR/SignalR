@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Security.Principal;
 using System.Threading;
+using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class HubAuthFacts : IDisposable
+    public class HubAuthFacts : HostedTest
     {
         [Fact]
         public void UnauthenticatedUserCanReceiveHubMessagesByDefault()
@@ -80,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -107,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -187,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -215,7 +217,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -292,7 +294,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -319,7 +321,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -396,7 +398,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -423,7 +425,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -475,7 +477,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -527,7 +529,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -579,7 +581,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -631,7 +633,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -683,7 +685,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -735,7 +737,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -787,7 +789,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -833,7 +835,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 connection.Stop();
             }
@@ -884,7 +886,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -911,7 +913,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -938,7 +940,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                Assert.Throws<AggregateException>(() => hub.Invoke("InvokedFromClient").Wait());
+                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
                 Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
@@ -965,17 +967,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host).Wait();
 
-                hub.Invoke("InvokedFromClient").Wait();
+                hub.InvokeWithTimeout("InvokedFromClient");
 
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
-        }
-
-        public void Dispose()
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (connection == null)
             {
-                throw new InvalidOperationException(String.Format("'{0}' is not a {1}.", connectionType.FullName, typeof(PersistentConnection).FullName));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IsNotA, connectionType.FullName, typeof(PersistentConnection).FullName));
             }
 
             return connection;

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -23,6 +24,11 @@ namespace Microsoft.AspNet.SignalR
                                     IPerformanceCounterManager counters)
             : base(identity, eventKeys, callback, maxMessages, counters)
         {
+            if (streamMappings == null)
+            {
+                throw new ArgumentNullException("streamMappings");
+            }
+
             _streams = streamMappings;
 
             IEnumerable<Cursor> cursors = null;
@@ -45,10 +51,13 @@ namespace Microsoft.AspNet.SignalR
             return Cursor.MakeCursor(_cursors);
         }
 
-        protected override void PerformWork(ref List<ArraySegment<Message>> items, out string nextCursor, ref int totalCount, out object state)
+        [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The list needs to be populated")]
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
+        protected override void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
             var cursors = new List<Cursor>();
+            totalCount = 0;
 
             foreach (var stream in _streams)
             {
@@ -136,8 +145,6 @@ namespace Microsoft.AspNet.SignalR
                     node = node.Next;
                 }
             }
-
-            nextCursor = Cursor.MakeCursor(cursors);
 
             state = cursors;
         }

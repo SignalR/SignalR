@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="ex">The thrown exception.</param>
         /// <returns>An unwrapped exception in the form of a SignalRError.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         public static SignalRError GetError(this Exception ex)
         {
             ex = ex.Unwrap();
@@ -47,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return error;
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The return value of this private method is disposed in GetError.")]
         private static Stream Clone(Stream source)
         {
             var cloned = new MemoryStream();

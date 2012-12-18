@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    public class HubOutgoingInvokerContext : IHubOutgoingInvokerContext
+    internal class HubOutgoingInvokerContext : IHubOutgoingInvokerContext
     {        
         public HubOutgoingInvokerContext(IConnection connection, string signal, ClientHubInvocation invocation, IEnumerable<string> excludedSignals)
         {

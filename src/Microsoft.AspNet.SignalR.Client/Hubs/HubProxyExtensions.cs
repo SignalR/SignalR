@@ -20,6 +20,16 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>The value of the state variable.</returns>
         public static T GetValue<T>(this IHubProxy proxy, string name)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
             return Convert<T>(proxy[name]);
         }
 
@@ -32,6 +42,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On(this IHubProxy proxy, string eventName, Action onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -53,6 +78,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T>(this IHubProxy proxy, string eventName, Action<T> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -74,6 +114,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T1, T2>(this IHubProxy proxy, string eventName, Action<T1, T2> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -96,6 +151,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T1, T2, T3>(this IHubProxy proxy, string eventName, Action<T1, T2, T3> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -119,6 +189,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T1, T2, T3, T4>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -156,6 +241,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T1, T2, T3, T4, T5>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -181,6 +281,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T1, T2, T3, T4, T5, T6>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5, T6> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -207,6 +322,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="IDisposable"/> that represents this subscription.</returns>
         public static IDisposable On<T1, T2, T3, T4, T5, T6, T7>(this IHubProxy proxy, string eventName, Action<T1, T2, T3, T4, T5, T6, T7> onData)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
+            if (onData == null)
+            {
+                throw new ArgumentNullException("onData");
+            }
+
             Subscription subscription = proxy.Subscribe(eventName);
 
             Action<JToken[]> handler = args =>
@@ -233,6 +363,16 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <returns>An <see cref="T:System.IObservable{object[]}"/>.</returns>
         public static IObservable<JToken[]> Observe(this IHubProxy proxy, string eventName)
         {
+            if (proxy == null)
+            {
+                throw new ArgumentNullException("proxy");
+            }
+
+            if (String.IsNullOrEmpty(eventName))
+            {
+                throw new ArgumentNullException("eventName");
+            }
+
             return new Hubservable(proxy, eventName);
         }
 #endif

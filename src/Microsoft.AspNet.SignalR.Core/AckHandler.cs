@@ -18,15 +18,15 @@ namespace Microsoft.AspNet.SignalR
         private Timer _timer;
 
         public AckHandler()
-            : this(cancelAcksOnTimeout: true, 
-                   ackThreshold: TimeSpan.FromMinutes(1),
-                   ackInterval: TimeSpan.FromSeconds(10))
+            : this(completeAcksOnTimeout: true, 
+                   ackThreshold: TimeSpan.FromSeconds(5),
+                   ackInterval: TimeSpan.FromSeconds(5))
         {
         }
 
-        public AckHandler(bool cancelAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval)
+        public AckHandler(bool completeAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval)
         {
-            if (cancelAcksOnTimeout)
+            if (completeAcksOnTimeout)
             {
                 _timer = new Timer(_ => CheckAcks(), state: null, dueTime: ackInterval, period: ackInterval);
             }
@@ -69,18 +69,30 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_timer != null)
+                {
+                    _timer.Dispose();
+                }
+
+                // Trip all pending acks
+                foreach (var pair in _acks)
+                {
+                    AckInfo info;
+                    if (_acks.TryRemove(pair.Key, out info))
+                    {
+                        info.Tcs.TrySetCanceled();
+                    }
+                }
+            }
+        }
+
         public void Dispose()
         {
-            if (_timer != null)
-            {
-                _timer.Dispose();
-            }
-
-            // Trip all pending acks
-            foreach (var ackInfo in _acks.Values)
-            {
-                ackInfo.Tcs.TrySetCanceled();
-            }
+            Dispose(true);
         }
 
         private class AckInfo

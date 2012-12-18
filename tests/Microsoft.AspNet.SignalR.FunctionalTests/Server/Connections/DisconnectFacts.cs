@@ -1,22 +1,69 @@
-﻿using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Infrastructure;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Transports;
+using Moq;
 using Xunit;
-
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
-using Moq;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
     public class DisconnectFacts : IDisposable
     {
+        [Fact]
+        public void FailedWriteCompletesRequestAfterDisconnectTimeout()
+        {
+            var request = new Mock<IRequest>();
+            var response = new Mock<IResponse>();
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            bool isConnected = true;
+            response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
+            response.Setup(m => m.FlushAsync()).Returns(TaskAsyncHelper.Empty);
+
+            var resolver = new DefaultDependencyResolver();
+            var config = resolver.Resolve<IConfigurationManager>();
+            var hostContext = new HostContext(request.Object, response.Object);
+            config.DisconnectTimeout = TimeSpan.Zero;
+            config.HeartbeatInterval = TimeSpan.FromSeconds(3);
+            var transport = new Mock<ForeverTransport>(hostContext, resolver)
+            {
+                CallBase = true
+            };
+
+            transport.Setup(m => m.Send(It.IsAny<PersistentResponse>()))
+                     .Returns(() =>
+                     {
+                         var task = TaskAsyncHelper.FromError(new Exception());
+                         isConnected = false;
+                         return task;
+                     });
+
+            var connectionManager = new ConnectionManager(resolver);
+            var connection = connectionManager.GetConnection("Foo");
+            var wh = new ManualResetEventSlim();
+
+            transport.Object.ProcessRequest(connection).ContinueWith(task =>
+            {
+                wh.Set();
+            });
+
+            connection.Broadcast("Some message");
+
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+        }
+
         [Fact]
         public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
         {
@@ -24,14 +71,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.MapConnection<MyConnection>("/echo");
                 host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
                 host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
                 var connection = new Client.Connection("http://foo/echo");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -50,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.MapHubs();
                 host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartBeatInterval = TimeSpan.FromSeconds(5);
+                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
                 host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
@@ -59,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.CreateHubProxy("MyHub");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartBeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -89,7 +136,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var timeout = TimeSpan.FromSeconds(5);
                 foreach (var node in nodes)
                 {
-                    node.Server.Configuration.HeartBeatInterval = timeout;
+                    node.Server.Configuration.HeartbeatInterval = timeout;
                     node.Server.Configuration.DisconnectTimeout = TimeSpan.Zero;
                     node.Server.MapConnection<FarmConnection>("/echo");
                 }
@@ -107,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
 
-                connection.Stop();
+                connection.Disconnect();
 
                 Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
@@ -238,10 +285,18 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
         public void Dispose()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            Dispose(true);
         }
     }
 }

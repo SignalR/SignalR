@@ -8,21 +8,26 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
     {
         public SseEvent(EventType type, string data)
         {
-            Type = type;
+            EventType = type;
             Data = data;
         }
 
-        public EventType Type { get; private set; }
+        public EventType EventType { get; private set; }
         public string Data { get; private set; }
 
         public override string ToString()
         {
-            return Type + ": " + Data;
+            return EventType + ": " + Data;
         }
 
         public static bool TryParse(string line, out SseEvent sseEvent)
         {
             sseEvent = null;
+
+            if (line == null)
+            {
+                throw new ArgumentNullException("line");
+            }
 
             if (line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
             {

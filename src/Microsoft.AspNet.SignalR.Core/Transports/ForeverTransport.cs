@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -15,19 +16,21 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private const int MaxMessages = 10;
 
-        public ForeverTransport(HostContext context, IDependencyResolver resolver)
+        protected ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<IJsonSerializer>(),
-                   resolver.Resolve<ITransportHeartBeat>(),
-                   resolver.Resolve<IPerformanceCounterManager>())
+                   resolver.Resolve<ITransportHeartbeat>(),
+                   resolver.Resolve<IPerformanceCounterManager>(),
+                   resolver.Resolve<ITraceManager>())
         {
         }
 
-        public ForeverTransport(HostContext context,
-                                IJsonSerializer jsonSerializer,
-                                ITransportHeartBeat heartBeat,
-                                IPerformanceCounterManager performanceCounterWriter)
-            : base(context, jsonSerializer, heartBeat, performanceCounterWriter)
+        protected ForeverTransport(HostContext context,
+                                   IJsonSerializer jsonSerializer,
+                                   ITransportHeartbeat heartbeat,
+                                   IPerformanceCounterManager performanceCounterWriter,
+                                   ITraceManager traceManager)
+            : base(context, jsonSerializer, heartbeat, performanceCounterWriter, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
@@ -44,10 +47,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 return _lastMessageId;
             }
-            private set
-            {
-                _lastMessageId = value;
-            }
         }
 
         protected IJsonSerializer JsonSerializer
@@ -57,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void OnSending(string payload)
         {
-            HeartBeat.MarkConnection(this);
+            Heartbeat.MarkConnection(this);
 
             if (Sending != null)
             {
@@ -67,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void OnSendingResponse(PersistentResponse response)
         {
-            HeartBeat.MarkConnection(this);
+            Heartbeat.MarkConnection(this);
 
             if (SendingResponse != null)
             {
@@ -98,11 +97,17 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
+        // Unit testing hooks
+        internal Action AfterReceive;
+        internal Action BeforeCancellationTokenCallbackRegistered;
+        internal Action BeforeReceive;
+        internal Action AfterRequestEnd;
+
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;
 
-            if (Context.Request.Url.LocalPath.EndsWith("/send"))
+            if (Context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase))
             {
                 return ProcessSendRequest();
             }
@@ -119,16 +124,19 @@ namespace Microsoft.AspNet.SignalR.Transports
                     if (Connected != null)
                     {
                         // Return a task that completes when the connected event task & the receive loop task are both finished
-                        bool newConnection = HeartBeat.AddConnection(this);
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, () =>
+                        bool newConnection = Heartbeat.AddConnection(this);
+
+                        // The connected callback
+                        Func<Task> connected = () =>
                         {
                             if (newConnection)
                             {
                                 return Connected().Then(() => _counters.ConnectionsConnected.Increment());
                             }
                             return TaskAsyncHelper.Empty;
-                        }
-                        , connection, Completed);
+                        };
+
+                        return TaskAsyncHelper.Interleave(ProcessReceiveRequestWithoutTracking, connected, connection, Completed);
                     }
 
                     return ProcessReceiveRequest(connection);
@@ -161,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();
 
-                return Context.Response.EndAsync();
+                return Context.Response.EndAsync().Catch(IncrementErrorCounters);
             });
         }
 
@@ -192,37 +200,40 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessReceiveRequest(ITransportConnection connection, Action postReceive = null)
+        private Task ProcessReceiveRequest(ITransportConnection connection, Func<Task> postReceive = null)
         {
-            HeartBeat.AddConnection(this);
+            Heartbeat.AddConnection(this);
             return ProcessReceiveRequestWithoutTracking(connection, postReceive);
         }
 
-        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Action postReceive = null)
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
+        private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Func<Task> postReceive = null)
         {
             Func<Task> afterReceive = () =>
             {
-                if (TransportConnected != null)
-                {
-                    TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
-                }
-
-                if (postReceive != null)
-                {
-                    try
-                    {
-                        postReceive();
-                    }
-                    catch (Exception ex)
-                    {
-                        return TaskAsyncHelper.FromError(ex);
-                    }
-                }
-
-                return InitializeResponse(connection);
+                return TaskAsyncHelper.Series(OnTransportConnected,
+                                              () =>
+                                              {
+                                                  if (postReceive != null)
+                                                  {
+                                                      return postReceive();
+                                                  }
+                                                  return TaskAsyncHelper.Empty;
+                                              },
+                                              () => InitializeResponse(connection));
             };
 
             return ProcessMessages(connection, afterReceive);
+        }
+
+        private Task OnTransportConnected()
+        {
+            if (TransportConnected != null)
+            {
+                return TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
+            }
+
+            return TaskAsyncHelper.Empty;
         }
 
         private Task ProcessMessages(ITransportConnection connection, Func<Task> postReceive = null)
@@ -231,16 +242,31 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             Action<Exception> endRequest = (ex) =>
             {
-                if (ex != null)
-                {
-                    tcs.TrySetException(ex);
-                }
-                else
-                {
-                    tcs.TrySetResult(null);
-                }
+                Trace.TraceInformation("DrainWrites(" + ConnectionId + ")");
 
-                CompleteRequest();
+                // Drain the task queue for pending write operations so we don't end the request and then try to write
+                // to a corrupted request object.
+                WriteQueue.Drain().Catch().ContinueWith(task =>
+                {
+                    if (ex != null)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(null);
+                    }
+
+                    CompleteRequest();
+
+                    Trace.TraceInformation("EndRequest(" + ConnectionId + ")");
+                }, 
+                TaskContinuationOptions.ExecuteSynchronously);
+
+                if (AfterRequestEnd != null)
+                {
+                    AfterRequestEnd();
+                }
             };
 
             ProcessMessages(connection, postReceive, endRequest);
@@ -248,32 +274,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             return tcs.Task;
         }
 
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "This will be cleaned up later.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;
-            var wh = new ManualResetEventSlim(initialState: false);
-            var registration = default(CancellationTokenRegistration);
-            bool disposeSubscriptionImmediately = false;
+            IDisposable registration = null;
 
-            try
-            {
-                // End the request if the connection end token is triggered
-                registration = ConnectionEndToken.Register(() =>
-                {
-                    wh.Wait();
+            var wh = new ManualResetEventSlim();
 
-                    // This is only null if we failed to create the subscription
-                    if (subscription != null)
-                    {
-                        subscription.Dispose();
-                    }
-                });
-            }
-            catch (ObjectDisposedException)
+            if (BeforeReceive != null)
             {
-                // If we've ended the connection before we got a chance to register the connection
-                // then dispose the subscription immediately
-                disposeSubscriptionImmediately = true;
+                BeforeReceive();
             }
 
             try
@@ -291,14 +303,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                         // Send the response before removing any connection data
                         return Send(response).Then(() =>
                         {
+                            registration.Dispose();
+
                             // Remove connection without triggering disconnect
-                            HeartBeat.RemoveConnection(this);
+                            Heartbeat.RemoveConnection(this);
 
                             endRequest(null);
-
-                            // Dispose everything
-                            registration.Dispose();
-                            subscription.Dispose();
 
                             return TaskAsyncHelper.False;
                         });
@@ -307,6 +317,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                              response.Aborted ||
                              ConnectionEndToken.IsCancellationRequested)
                     {
+                        // If this is null it's because the cancellation token tripped
+                        // before we setup the registration at all.
+                        if (registration != null)
+                        {
+                            registration.Dispose();
+                        }
+
                         if (response.Aborted)
                         {
                             // If this was a clean disconnect raise the event.
@@ -315,15 +332,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                         endRequest(null);
 
-                        // Dispose everything
-                        registration.Dispose();
-                        subscription.Dispose();
-
                         return TaskAsyncHelper.False;
                     }
                     else
                     {
-                        return Send(response).Then(() => TaskAsyncHelper.True);
+                        return Send(response).Then(() => TaskAsyncHelper.True)
+                                             .Catch(IncrementErrorCounters)
+                                             .Catch(ex =>
+                                             {
+                                                 Trace.TraceInformation("Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                                             });
                     }
                 },
                 MaxMessages);
@@ -334,15 +352,22 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 wh.Set();
 
-                registration.Dispose();
-
                 return;
+            }
+
+            if (AfterReceive != null)
+            {
+                AfterReceive();
             }
 
             if (postReceive != null)
             {
                 postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
                              .Catch(ex => endRequest(ex))
+                             .Catch(ex =>
+                             {
+                                 Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                             })
                              .ContinueWith(task => wh.Set());
             }
             else
@@ -350,10 +375,19 @@ namespace Microsoft.AspNet.SignalR.Transports
                 wh.Set();
             }
 
-            if (disposeSubscriptionImmediately)
+            if (BeforeCancellationTokenCallbackRegistered != null)
             {
-                subscription.Dispose();
+                BeforeCancellationTokenCallbackRegistered();
             }
+
+            // This has to be done last incase it runs synchronously.
+            registration = ConnectionEndToken.SafeRegister(state =>
+            {
+                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
+
+                state.Dispose();
+            },
+            subscription);
         }
     }
 }

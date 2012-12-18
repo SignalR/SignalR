@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -12,10 +13,25 @@ namespace Microsoft.AspNet.SignalR
     {
         public static Task Publish(this IMessageBus bus, string source, string key, string value)
         {
+            if (bus == null)
+            {
+                throw new ArgumentNullException("bus");
+            }
+
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+
             return bus.Publish(new Message(source, key, value));
         }
 
-        public static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
+        internal static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
         {
             // Prepare the ack
             var message = new Message(source, AckPrefix(eventKey), null);
@@ -24,13 +40,14 @@ namespace Microsoft.AspNet.SignalR
             return bus.Publish(message);
         }
 
-        public static Task<T> ReceiveAsync<T>(this IMessageBus bus,
-                                              ISubscriber subscriber,
-                                              string cursor,
-                                              CancellationToken cancel,
-                                              int maxMessages,
-                                              Func<MessageResult, T> map,
-                                              Action<MessageResult, T> end) where T : class
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's disposed in an async manner.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
+        internal static Task<T> ReceiveAsync<T>(this IMessageBus bus,
+                                                ISubscriber subscriber,
+                                                string cursor,
+                                                CancellationToken cancel,
+                                                int maxMessages,
+                                                Func<MessageResult, T> map) where T : class
         {
             var tcs = new TaskCompletionSource<T>();
             IDisposable subscription = null;
@@ -38,17 +55,13 @@ namespace Microsoft.AspNet.SignalR
             var disposer = new Disposer();
             int resultSet = 0;
             var result = default(T);
-            var registration = default(CancellationTokenRegistration);
+            IDisposable registration = null;
 
-            try
+            registration = cancel.SafeRegister(state =>
             {
-                registration = cancel.Register(disposer.Dispose);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Dispose immediately
-                disposer.Dispose();
-            }
+                state.Dispose();
+            },
+            disposer);
 
             try
             {
@@ -61,17 +74,11 @@ namespace Microsoft.AspNet.SignalR
 
                         // Dispose of the cancellation token subscription
                         registration.Dispose();
-
-                        // Dispose the subscription
-                        disposer.Dispose();
                     }
 
                     if (messageResult.Terminal)
                     {
                         Interlocked.CompareExchange(ref result, map(messageResult), null);
-
-                        // Fire a callback before the result is set
-                        end(messageResult, result);
 
                         // Set the result
                         tcs.TrySetResult(result);
@@ -98,11 +105,36 @@ namespace Microsoft.AspNet.SignalR
 
         public static void Enumerate(this IList<ArraySegment<Message>> messages, Action<Message> onMessage)
         {
+            if (messages == null)
+            {
+                throw new ArgumentNullException("messages");
+            }
+
+            if (onMessage == null)
+            {
+                throw new ArgumentNullException("onMessage");
+            }
+
             Enumerate(messages, message => true, onMessage);
         }
 
         public static void Enumerate(this IList<ArraySegment<Message>> messages, Func<Message, bool> filter, Action<Message> onMessage)
         {
+            if (messages == null)
+            {
+                throw new ArgumentNullException("messages");
+            }
+
+            if (filter == null)
+            {
+                throw new ArgumentNullException("filter");
+            }
+
+            if (onMessage == null)
+            {
+                throw new ArgumentNullException("onMessage");
+            }
+
             for (int i = 0; i < messages.Count; i++)
             {
                 ArraySegment<Message> segment = messages[i];
@@ -121,31 +153,6 @@ namespace Microsoft.AspNet.SignalR
         private static string AckPrefix(string eventKey)
         {
             return "ACK_" + eventKey;
-        }
-
-        private class Subscriber : ISubscriber
-        {
-            public IEnumerable<string> EventKeys
-            {
-                get;
-                private set;
-            }
-
-            public string Identity
-            {
-                get;
-                private set;
-            }
-
-            public event Action<string> EventAdded;
-
-            public event Action<string> EventRemoved;
-
-            public Subscriber(IEnumerable<string> eventKeys, string source)
-            {
-                EventKeys = eventKeys;
-                Identity = source;
-            }
         }
     }
 }

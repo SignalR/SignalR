@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Parameter type.
         /// </summary>
-        public virtual Type Type { get; set; }
+        public virtual Type ParameterType { get; set; }
     }
 }
 

@@ -14,17 +14,19 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
     public class Request : IClientRequest, IRequest
     {
-        private readonly CancellationTokenSource _clientTokenSource;
+        private readonly Action _abort;
 
-        public Request(Uri uri, CancellationTokenSource clientTokenSource, Dictionary<string, string> postData, IPrincipal user)
+        public Request(Uri uri, Action abort, Dictionary<string, string> postData, IPrincipal user)
         {
             Url = uri;
-            _clientTokenSource = clientTokenSource;
+            _abort = abort;
             User = user;
             Form = new NameValueCollection();
             Headers = new NameValueCollection();
             ServerVariables = new NameValueCollection();
             QueryString = HttpUtility.ParseDelimited(Url.Query.TrimStart('?'));
+            Cookies = new Dictionary<string, Cookie>();
+            Items = new Dictionary<string, object>();
 
             if (postData != null)
             {
@@ -67,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void Abort()
         {
-            _clientTokenSource.Cancel();
+            _abort();
         }
 
         public Uri Url
@@ -100,13 +102,19 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             private set;
         }
 
-        public IRequestCookieCollection Cookies
+        public IDictionary<string, Cookie> Cookies
         {
             get;
             private set;
         }
 
         public IPrincipal User
+        {
+            get;
+            private set;
+        }
+
+        public IDictionary<string, object> Items
         {
             get;
             private set;

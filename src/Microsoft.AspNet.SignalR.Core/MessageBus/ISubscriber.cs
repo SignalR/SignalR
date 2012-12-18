@@ -9,10 +9,12 @@ namespace Microsoft.AspNet.SignalR
     {
         IEnumerable<string> EventKeys { get; }
 
+        Func<string> GetCursor { get; set; }
+
         string Identity { get; }
 
-        event Action<string> EventAdded;
+        event Action<string> EventKeyAdded;
 
-        event Action<string> EventRemoved;
+        event Action<string> EventKeyRemoved;
     }
 }

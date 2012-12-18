@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -17,36 +19,38 @@ namespace Microsoft.AspNet.SignalR
     {
         private const string WebSocketsTransportName = "webSockets";
 
-        protected IMessageBus _newMessageBus;
-        protected IJsonSerializer _jsonSerializer;
-        protected IConnectionIdPrefixGenerator _connectionIdPrefixGenerator;
-        protected IAckHandler _ackHandler;
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
-
-
-        protected ITraceManager _trace;
-        protected IPerformanceCounterManager _counters;
-        protected ITransport _transport;
         private IServerCommandHandler _serverMessageHandler;
 
         public virtual void Initialize(IDependencyResolver resolver, HostContext context)
         {
+            if (resolver == null)
+            {
+                throw new ArgumentNullException("resolver");
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             if (_initialized)
             {
                 return;
             }
 
-            _newMessageBus = resolver.Resolve<IMessageBus>();
+            MessageBus = resolver.Resolve<IMessageBus>();
+            ConnectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
+            JsonSerializer = resolver.Resolve<IJsonSerializer>();
+            TraceManager = resolver.Resolve<ITraceManager>();
+            Counters = resolver.Resolve<IPerformanceCounterManager>();
+            AckHandler = resolver.Resolve<IAckHandler>();
+
             _configurationManager = resolver.Resolve<IConfigurationManager>();
-            _connectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
-            _jsonSerializer = resolver.Resolve<IJsonSerializer>();
             _transportManager = resolver.Resolve<ITransportManager>();
-            _trace = resolver.Resolve<ITraceManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
-            _counters = resolver.Resolve<IPerformanceCounterManager>();
-            _ackHandler = resolver.Resolve<IAckHandler>();
 
             _initialized = true;
         }
@@ -55,9 +59,23 @@ namespace Microsoft.AspNet.SignalR
         {
             get
             {
-                return _trace["SignalR.PersistentConnection"];
+                return TraceManager["SignalR.PersistentConnection"];
             }
         }
+
+        protected IMessageBus MessageBus { get; private set; }
+
+        protected IJsonSerializer JsonSerializer { get; private set; }
+
+        protected IConnectionIdPrefixGenerator ConnectionIdPrefixGenerator { get; private set; }
+
+        protected IAckHandler AckHandler { get; private set; }
+
+        protected ITraceManager TraceManager { get; private set; }
+
+        protected IPerformanceCounterManager Counters { get; private set; }
+
+        protected ITransport Transport { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
@@ -97,9 +115,14 @@ namespace Microsoft.AspNet.SignalR
         /// </exception>
         public virtual Task ProcessRequestAsync(HostContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             if (!_initialized)
             {
-                throw new InvalidOperationException("Connection not initialized.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionNotInitialized));
             }
 
             if (IsNegotiationRequest(context.Request))
@@ -107,76 +130,76 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessNegotiationRequest(context);
             }
 
-            _transport = GetTransport(context);
+            Transport = GetTransport(context);
 
-            if (_transport == null)
+            if (Transport == null)
             {
-                throw new InvalidOperationException("Protocol error: Unknown transport.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
-            string connectionId = _transport.ConnectionId;
+            string connectionId = Transport.ConnectionId;
 
             // If there's no connection id then this is a bad request
             if (String.IsNullOrEmpty(connectionId))
             {
-                throw new InvalidOperationException("Protocol error: Missing connection id.");
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionId));
             }
 
             IEnumerable<string> signals = GetSignals(connectionId);
-            IEnumerable<string> groups = OnRejoiningGroups(context.Request, _transport.Groups, connectionId);
+            IEnumerable<string> groups = OnRejoiningGroups(context.Request, Transport.Groups, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
 
             Connection = connection;
             Groups = new GroupManager(connection, DefaultSignal);
 
-            _transport.TransportConnected = () =>
+            Transport.TransportConnected = () =>
             {
                 var command = new ServerCommand
                 {
-                    Type = ServerCommandType.RemoveConnection,
+                    ServerCommandType = ServerCommandType.RemoveConnection,
                     Value = connectionId
                 };
 
                 return _serverMessageHandler.SendCommand(command);
             };
 
-            _transport.Connected = () =>
+            Transport.Connected = () =>
             {
-                return OnConnectedAsync(context.Request, connectionId).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnConnectedAsync(context.Request, connectionId).OrEmpty());
             };
 
-            _transport.Reconnected = () =>
+            Transport.Reconnected = () =>
             {
-                return OnReconnectedAsync(context.Request, connectionId).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnReconnectedAsync(context.Request, connectionId).OrEmpty());
             };
 
-            _transport.Received = data =>
+            Transport.Received = data =>
             {
-                _counters.ConnectionMessagesSentTotal.Increment();
-                _counters.ConnectionMessagesSentPerSec.Increment();
-                return OnReceivedAsync(context.Request, connectionId, data).OrEmpty();
+                Counters.ConnectionMessagesSentTotal.Increment();
+                Counters.ConnectionMessagesSentPerSec.Increment();
+                return TaskAsyncHelper.FromMethod(() => OnReceivedAsync(context.Request, connectionId, data).OrEmpty());
             };
 
-            _transport.Disconnected = () =>
+            Transport.Disconnected = () =>
             {
-                return OnDisconnectAsync(context.Request, connectionId).OrEmpty();
+                return TaskAsyncHelper.FromMethod(() => OnDisconnectAsync(context.Request, connectionId).OrEmpty());
             };
 
-            return _transport.ProcessRequest(connection).OrEmpty().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
+            return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
         protected virtual Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
         {
-            return new Connection(_newMessageBus,
-                                  _jsonSerializer,
+            return new Connection(MessageBus,
+                                  JsonSerializer,
                                   DefaultSignal,
                                   connectionId,
                                   signals,
                                   groups,
-                                  _trace,
-                                  _ackHandler,
-                                  _counters);
+                                  TraceManager,
+                                  AckHandler,
+                                  Counters);
         }
 
         /// <summary>
@@ -257,6 +280,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Called when a connection disconnects.
         /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the disconnected connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
         protected virtual Task OnDisconnectAsync(IRequest request, string connectionId)
@@ -270,11 +294,12 @@ namespace Microsoft.AspNet.SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = _connectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
+                ConnectionId = ConnectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
                 KeepAlive = (keepAlive != null) ? keepAlive.Value.TotalSeconds : (double?)null,
+                DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.0"
+                ProtocolVersion = "1.1"
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
@@ -283,18 +308,18 @@ namespace Microsoft.AspNet.SignalR
             }
 
             context.Response.ContentType = Json.MimeType;
-            return context.Response.EndAsync(_jsonSerializer.Stringify(payload));
+            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessJsonpNegotiationRequest(HostContext context, object payload)
         {
             context.Response.ContentType = Json.JsonpMimeType;
-            var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], _jsonSerializer.Stringify(payload));
+            var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
             return context.Response.EndAsync(data);
         }
 
-        private bool IsNegotiationRequest(IRequest request)
+        private static bool IsNegotiationRequest(IRequest request)
         {
             return request.Url.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
         }
