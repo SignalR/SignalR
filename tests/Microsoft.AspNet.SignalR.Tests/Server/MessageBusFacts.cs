@@ -179,8 +179,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             using (var bus = new MessageBus(dr))
             {
-                var subscriber = new TestSubscriber(new[] { "key" });
-
                 bus.BeforeTopicMarked = (key, t) =>
                 {
                     bus.GarbageCollectTopics();
