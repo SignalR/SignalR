@@ -684,16 +684,17 @@
                 cache: false,
                 type: "GET",
                 data: {},
+                dataType: connection.ajaxDataType,
                 success: function (data) {
-                    if (data === "pong") {
+                    if (data.Response === "pong") {
                         deferral.resolve();
                     }
                     else {
-                        deferral.reject("SignalR: Invalid ping response when pinging server: " + data.responseText);
+                        deferral.reject("SignalR: Invalid ping response when pinging server: " + data.responseText || data.statusText);
                     }
                 },
                 error: function (data) {
-                    deferral.reject("SignalR: Error pinging server: " + data.responseText);
+                    deferral.reject("SignalR: Error pinging server: " + data.responseText || data.statusText);
                 }
             });
 
