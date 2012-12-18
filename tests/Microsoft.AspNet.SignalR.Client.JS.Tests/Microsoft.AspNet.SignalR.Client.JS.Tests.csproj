@@ -70,7 +70,10 @@
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
-    <Content Include="Tests\FunctionalTests\test.js" />
+    <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackConnectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPConnectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPSendFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEConnectionFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
     <Content Include="Styles\qunit.css" />
     <Content Include="Scripts\qunit.js" />
