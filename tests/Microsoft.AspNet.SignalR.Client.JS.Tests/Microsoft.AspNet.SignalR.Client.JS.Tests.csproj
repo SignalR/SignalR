@@ -105,6 +105,8 @@
       <Link>config\redirection.config</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\qunit.extensions.js" />
+    <Content Include="Scripts\test.utilities.js" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
