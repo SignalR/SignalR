@@ -1595,6 +1595,9 @@
                                     $(instance).triggerHandler(events.onError, [data.responseText]);
                                 }
 
+                                // Transition into the reconnecting state
+                                transportLogic.ensureReconnectingState(instance);
+
                                 // If we've errored out we need to verify that the server is still there, so re-start initialization process
                                 // This will ping the server until it successfully gets a response.
                                 that.init(instance, function () {
@@ -1609,7 +1612,7 @@
                             if (changeState(connection,
                                             signalR.connectionState.reconnecting,
                                             signalR.connectionState.connected) === true) {
-                                // Successfully reconnected!
+                                // Successfully reactiveTransportconnected!
                                 connection.log("Raising the reconnect event");
                                 $(instance).triggerHandler(events.onReconnect);
                             }
