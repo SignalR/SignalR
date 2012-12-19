@@ -312,7 +312,7 @@ namespace Microsoft.AspNet.SignalR
         protected virtual Topic CreateTopic(string key)
         {
             // REVIEW: This can be called multiple times, should we guard against it?
-            Counters.MessageBusTotalTopics.Increment();
+            Counters.MessageBusTopicsCurrent.Increment();
 
             return new Topic(_messageStoreSize, _topicTtl);
         }
@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.SignalR
                             Topics.TryRemove(pair.Key, out topic);
                             _stringMinifier.RemoveUnminified(pair.Key);
 
-                            Counters.MessageBusTotalTopics.Decrement();
+                            Counters.MessageBusTopicsCurrent.Decrement();
 
                             Trace.TraceInformation("RemoveTopic(" + pair.Key + ")");
 
