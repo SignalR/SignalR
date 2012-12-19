@@ -311,6 +311,9 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A <see cref="Topic"/> for the specified key.</returns>
         protected virtual Topic CreateTopic(string key)
         {
+            // REVIEW: This can be called multiple times, should we guard against it?
+            Counters.MessageBusTotalTopics.Increment();
+
             return new Topic(_messageStoreSize, _topicTtl);
         }
 
@@ -367,6 +370,8 @@ namespace Microsoft.AspNet.SignalR
                             Topic topic;
                             Topics.TryRemove(pair.Key, out topic);
                             _stringMinifier.RemoveUnminified(pair.Key);
+
+                            Counters.MessageBusTotalTopics.Decrement();
 
                             Trace.TraceInformation("RemoveTopic(" + pair.Key + ")");
 

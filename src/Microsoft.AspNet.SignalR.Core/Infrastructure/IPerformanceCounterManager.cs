@@ -93,6 +93,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         IPerformanceCounter MessageBusBusyWorkers { get; }
 
         /// <summary>
+        /// Gets the performance counter representing the number of topics in the message bus.
+        /// </summary>
+        IPerformanceCounter MessageBusTotalTopics { get; }
+
+        /// <summary>
         /// Gets the performance counter representing the total number of all errors processed since the application was started.
         /// </summary>
         IPerformanceCounter ErrorsAllTotal { get; }

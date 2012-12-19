@@ -123,6 +123,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter MessageBusBusyWorkers { get; private set; }
 
         /// <summary>
+        /// Gets the performance counter representing the number of topics in the message bus.
+        /// </summary>
+        [PerformanceCounter(Name = "Message Bus Total Topics", Description = "The number of topics in the message bus.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter MessageBusTotalTopics { get; private set; }
+
+        /// <summary>
         /// Gets the performance counter representing the total number of all errors processed since the application was started.
         /// </summary>
         [PerformanceCounter(Name = "Errors: All Total", Description = "The total number of all errors processed since the application was started.", CounterType = PerformanceCounterType.NumberOfItems32)]
