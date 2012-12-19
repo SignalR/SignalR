@@ -1,13 +1,13 @@
 ﻿module("Long Polling Facts");
 
-QUnit.asyncTimeoutTest("Long Polling transport can connect.", 5000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport can connect.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection();
 
     connection.start({ transport: 'longPolling' }).done(function () {
-        ok(true, "Connected");
+        assert.ok(true, "Connected");
         end();
     }).fail(function (reason) {
-        ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate signalr connection");
         end();
     });
 
