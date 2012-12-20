@@ -208,7 +208,8 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false
+                    jsonp: false,
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8"
                 },
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
