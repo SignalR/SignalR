@@ -57,7 +57,7 @@ $(function () {
     });
 
     startButton.click(function () {
-        $.connection.hub.start({ transport: "longPolling" }).done(function () {
+        $.connection.hub.start({ transport: activeTransport }).done(function () {
             $(pingButton).click(function () {
                 status.server.ping();
             });
