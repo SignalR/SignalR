@@ -121,9 +121,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
 
-            // Set the keep alive time
-            newMetadata.UpdateKeepAlive(_configurationManager.KeepAlive);
-
             return isNewConnection;
         }
 
@@ -198,6 +195,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 foreach (var metadata in _connections.Values)
                 {
+                    metadata.UpdateHeartbeatCount();
+
                     if (metadata.Connection.IsAlive)
                     {
                         CheckTimeoutAndKeepAlive(metadata);
@@ -252,8 +251,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                                            metadata.Connection.End();
                                        });
-
-                    metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
                 }
 
                 MarkConnection(metadata.Connection);
@@ -296,15 +293,15 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private bool RaiseKeepAlive(ConnectionMetadata metadata)
         {
-            TimeSpan? keepAlive = _configurationManager.KeepAlive;
+            int keepAlive = _configurationManager.KeepAlive;
 
-            if (keepAlive == null)
+            if (keepAlive == 0)
             {
                 return false;
             }
 
             // Raise keep alive if the keep alive value has passed
-            return DateTime.UtcNow >= metadata.KeepAliveTime;
+            return metadata.HeartbeatCount % keepAlive == 0;
         }
 
         private bool RaiseTimeout(ConnectionMetadata metadata)
@@ -315,10 +312,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return false;
             }
 
-            TimeSpan? keepAlive = _configurationManager.KeepAlive;
+            int keepAlive = _configurationManager.KeepAlive;
             // If keep alive is configured and the connection supports keep alive
             // don't ever time out
-            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
+            if (keepAlive != 0 && metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
@@ -373,17 +370,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             // The initial connection time of the connection
             public DateTime Initial { get; set; }
 
-            // The time to send the keep alive ping
-            public DateTime KeepAliveTime { get; set; }
+            // Number of heartbeats
+            public long HeartbeatCount { get; set; }
 
-            public void UpdateKeepAlive(TimeSpan? keepAliveInterval)
+            public void UpdateHeartbeatCount()
             {
-                if (keepAliveInterval == null)
-                {
-                    return;
-                }
-
-                KeepAliveTime = DateTime.UtcNow + keepAliveInterval.Value;
+                HeartbeatCount++;
             }
         }
     }
