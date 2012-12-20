@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.SignalR
         // The size of the messages store we allocate per topic.
         private readonly uint _messageStoreSize;
 
-        // The maximum number of topics without subscriptions to leave hanging around until expired.
         // By default, topics are cleaned up after having no subscribers and after 
         // an interval based on the disconnect timeout has passed. While this works in normal cases
         // it's an issue when the rate of incoming connections is too high. 
