@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
     {
         void Application_Start(object sender, EventArgs e)
         {
-            GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(30);
+            GlobalHost.Configuration.KeepAlive = 3;
 
             RouteTable.Routes.MapConnection<TestConnection>("TestConnection", "TestConnection/{*operation}");
             RouteTable.Routes.MapHubs();

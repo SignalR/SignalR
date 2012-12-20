@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             host.HubPipeline.EnableAutoRejoiningGroups();
             host.MapHubs();
             host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-            host.Configuration.KeepAlive = TimeSpan.FromSeconds(5);
+            host.Configuration.KeepAlive = 1;
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             var host = new MemoryHost();
 
-            host.Configuration.KeepAlive = null;
+            host.Configuration.KeepAlive = 0;
             host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
             host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
             host.MapConnection<MyRejoinGroupConnection>("/groups");
