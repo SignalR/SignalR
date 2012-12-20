@@ -75,6 +75,8 @@
             var stopReconnectingTimeout,
                 onReconnectTimeout;
 
+            // Check if this connection has already been configured to stop reconnecting after a specified timeout.
+            // Without this check if a connection is stopped then started events will be bound multiple times.
             if (!connection._.configuredStopReconnectingTimeout) {
                 onReconnectTimeout = function (connection) {
                     connection.log("Couldn't reconnect within the configured timeout (" + connection.disconnectTimeout + "ms), disconnecting.");
