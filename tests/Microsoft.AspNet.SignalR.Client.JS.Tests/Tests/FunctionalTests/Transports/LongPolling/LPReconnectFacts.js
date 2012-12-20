@@ -1,6 +1,6 @@
 ﻿module("Long Polling Facts");
 
-QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -18,7 +18,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
             if (connection.state == $.signalR.connectionState.connected) {
-                ok(true, "Reconnected");
+                assert.ok(true, "Reconnected");
                 end();
             }
         });
@@ -27,11 +27,11 @@ QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (
     };
 
     connection.start({ transport: 'longPolling' }).done(function () {
-        ok(true, "Connected");
+        assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate signalr connection");
         end();
     });
 
@@ -41,7 +41,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.", 5000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -59,7 +59,7 @@ QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.",
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
             if (connection.state == $.signalR.connectionState.reconnecting) {
-                ok(true, "Connection now in reconnecting state.");
+                assert.ok(true, "Connection now in reconnecting state.");
                 end();
             }
         });
@@ -68,11 +68,11 @@ QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.",
     };
 
     connection.start({ transport: 'longPolling' }).done(function () {
-        ok(true, "Connected");
+        assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate signalr connection");
         end();
     });
 
@@ -82,7 +82,7 @@ QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.",
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -99,7 +99,7 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, fu
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.reconnecting(function () {
-            ok(true, "Reconnecting triggered!");
+            assert.ok(true, "Reconnecting triggered!");
             end();
         });
 
@@ -107,11 +107,11 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, fu
     };
 
     connection.start({ transport: 'longPolling' }).done(function () {
-        ok(true, "Connected");
+        assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate signalr connection");
         end();
     });
 
@@ -121,7 +121,7 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, fu
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -138,7 +138,7 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, fun
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.reconnected(function () {
-            ok(true, "Reconnected triggered!");
+            assert.ok(true, "Reconnected triggered!");
             end();
         });
 
@@ -146,11 +146,11 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, fun
     };
 
     connection.start({ transport: 'longPolling' }).done(function () {
-        ok(true, "Connected");
+        assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate signalr connection");
         end();
     });
 
