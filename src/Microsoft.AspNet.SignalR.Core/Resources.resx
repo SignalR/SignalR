@@ -135,8 +135,14 @@
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating Hub {0}. </value>
   </data>
+  <data name="Error_HubCouldNotBeResolved" xml:space="preserve">
+    <value>'{0}' Hub could not be resolved.</value>
+  </data>
   <data name="Error_IsNotA" xml:space="preserve">
     <value>'{0}' is not a {1}.</value>
+  </data>
+  <data name="Error_KeepAliveMustBeGreaterThanZero" xml:space="preserve">
+    <value>Keep Alive value must be greater than zero.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
@@ -158,8 +164,5 @@
   </data>
   <data name="Error_WebSocketsNotSupported" xml:space="preserve">
     <value>WebSockets is not supported.</value>
-  </data>
-  <data name="Errror_HubCouldNotBeResolved" xml:space="preserve">
-    <value>'{0}' Hub could not be resolved.</value>
   </data>
 </root>
