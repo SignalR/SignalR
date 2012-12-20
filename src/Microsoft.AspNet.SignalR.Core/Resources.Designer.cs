@@ -115,6 +115,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; Hub could not be resolved..
+        /// </summary>
+        internal static string Error_HubCouldNotBeResolved {
+            get {
+                return ResourceManager.GetString("Error_HubCouldNotBeResolved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a {1}..
         /// </summary>
         internal static string Error_IsNotA {
@@ -183,15 +192,6 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_WebSocketsNotSupported {
             get {
                 return ResourceManager.GetString("Error_WebSocketsNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; Hub could not be resolved..
-        /// </summary>
-        internal static string Errror_HubCouldNotBeResolved {
-            get {
-                return ResourceManager.GetString("Errror_HubCouldNotBeResolved", resourceCulture);
             }
         }
     }

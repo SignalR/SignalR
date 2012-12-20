@@ -159,7 +159,7 @@
   <data name="Error_WebSocketsNotSupported" xml:space="preserve">
     <value>WebSockets is not supported.</value>
   </data>
-  <data name="Errror_HubCouldNotBeResolved" xml:space="preserve">
+  <data name="Error_HubCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' Hub could not be resolved.</value>
   </data>
 </root>
