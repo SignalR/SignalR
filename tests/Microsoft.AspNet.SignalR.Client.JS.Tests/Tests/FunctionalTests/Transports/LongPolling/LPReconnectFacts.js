@@ -1,6 +1,6 @@
 ﻿module("Long Polling Facts");
 
-QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 50000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (end) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -41,7 +41,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 50000, function 
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.", 50000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.", 5000, function (end) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -82,7 +82,7 @@ QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.",
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 50000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, function (end) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -121,7 +121,7 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 50000, f
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 50000, function (end) {
+QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, function (end) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
