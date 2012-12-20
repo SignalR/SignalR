@@ -358,7 +358,7 @@
                 cache: false,
                 type: "GET",
                 data: {},
-                contentType: config.contentType,
+                contentType: connection.contentType,
                 dataType: connection.ajaxDataType,
                 error: function (error) {
                     $(connection).triggerHandler(events.onError, [error.responseText]);
