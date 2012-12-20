@@ -30,6 +30,10 @@ namespace Microsoft.AspNet.SignalR.Configuration
             set;
         }
 
+        /// <summary>
+        /// Indicates how many Heartbeats to wait before triggering keep alive.  To convert this
+        /// value to a time span simply multiply it by the HeartbeatInterval.
+        /// </summary>
         public int KeepAlive
         {
             get
