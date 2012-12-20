@@ -73,22 +73,28 @@
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
+                onReconnectTimeout;
+
+            if (!connection._.configuredStopReconnectingTimeout) {
                 onReconnectTimeout = function (connection) {
                     connection.log("Couldn't reconnect within the configured timeout (" + connection.disconnectTimeout + "ms), disconnecting.");
                     connection.stop(/* async */ false, /* notifyServer */ false);
                 };
 
-            connection.reconnecting(function () {
-                var connection = this;
-                stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
-            });
+                connection.reconnecting(function () {
+                    var connection = this;
+                    stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+                });
 
-            connection.stateChanged(function (data) {
-                if (data.oldState === signalR.connectionState.reconnecting) {
-                    // Clear the pending reconnect timeout check
-                    window.clearTimeout(stopReconnectingTimeout);
-                }
-            });
+                connection.stateChanged(function (data) {
+                    if (data.oldState === signalR.connectionState.reconnecting) {
+                        // Clear the pending reconnect timeout check
+                        window.clearTimeout(stopReconnectingTimeout);
+                    }
+                });
+
+                connection._.configuredStopReconnectingTimeout = true;
+            }
         };
 
     signalR = function (url, qs, logging) {
@@ -161,10 +167,10 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
+            this._ = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
-            }
-            configureStopReconnectingTimeout(this);
+            }            
         },
 
         isCrossDomain: function (url) {
@@ -240,6 +246,8 @@
                 });
                 return deferred.promise();
             }
+
+            configureStopReconnectingTimeout(connection);
 
             if (changeState(connection,
                             signalR.connectionState.disconnected,
