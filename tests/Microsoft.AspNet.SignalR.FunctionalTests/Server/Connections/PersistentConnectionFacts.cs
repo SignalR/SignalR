@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = new MemoryHost())
                 {
                     var conn = new MyReconnect();
-                    host.Configuration.KeepAlive = null;
+                    host.Configuration.KeepAlive = 0;
                     host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
                     host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                     host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 2,
                                     hearbeatInterval: 2);
 
@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 2,
                                     hearbeatInterval: 2);
 
@@ -390,7 +390,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 5,
                                     hearbeatInterval: 2);
 
@@ -435,7 +435,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 5,
                                     hearbeatInterval: 2);
 

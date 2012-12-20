@@ -22,11 +22,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             int keepAlive;
             if (Int32.TryParse(keepAliveRaw, out keepAlive))
             {
-                GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
+                GlobalHost.Configuration.KeepAlive = keepAlive;
             }
             else
             {
-                GlobalHost.Configuration.KeepAlive = null;
+                GlobalHost.Configuration.KeepAlive = 0;
             }
 
             int connectionTimeout;
