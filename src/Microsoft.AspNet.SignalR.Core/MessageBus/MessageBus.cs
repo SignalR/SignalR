@@ -18,7 +18,15 @@ namespace Microsoft.AspNet.SignalR
     {
         private readonly MessageBroker _broker;
 
+        // The size of the messages store we allocate per topic.
         private readonly uint _messageStoreSize;
+
+        // By default, topics are cleaned up after having no subscribers and after 
+        // an interval based on the disconnect timeout has passed. While this works in normal cases
+        // it's an issue when the rate of incoming connections is too high. 
+        // This is the maximum number of un-expired topics with no subscribers 
+        // we'll leave hanging around. The rest will be cleaned up on an the gc interval.
+        private readonly int _maxTopicsWithNoSubscriptions;
 
         private readonly IStringMinifier _stringMinifier;
 
@@ -39,6 +47,8 @@ namespace Microsoft.AspNet.SignalR
         internal Action<string, Topic> AfterTopicMarkedSuccessfully;
         internal Action<string, Topic, int> AfterTopicMarked;
 
+        private const int DefaultMaxTopicsWithNoSubscriptions = 5000;
+
         /// <summary>
         /// 
         /// </summary>
@@ -47,7 +57,8 @@ namespace Microsoft.AspNet.SignalR
             : this(resolver.Resolve<IStringMinifier>(),
                    resolver.Resolve<ITraceManager>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
-                   resolver.Resolve<IConfigurationManager>())
+                   resolver.Resolve<IConfigurationManager>(),
+                   DefaultMaxTopicsWithNoSubscriptions)
         {
         }
 
@@ -58,11 +69,13 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="traceManager"></param>
         /// <param name="performanceCounterManager"></param>
         /// <param name="configurationManager"></param>
+        /// <param name="maxTopicsWithNoSubscriptions"></param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The message broker is disposed when the bus is disposed.")]
         public MessageBus(IStringMinifier stringMinifier,
                           ITraceManager traceManager,
                           IPerformanceCounterManager performanceCounterManager,
-                          IConfigurationManager configurationManager)
+                          IConfigurationManager configurationManager,
+                          int maxTopicsWithNoSubscriptions)
         {
             if (stringMinifier == null)
             {
@@ -93,6 +106,7 @@ namespace Microsoft.AspNet.SignalR
             _traceManager = traceManager;
             Counters = performanceCounterManager;
             _trace = _traceManager["SignalR.MessageBus"];
+            _maxTopicsWithNoSubscriptions = maxTopicsWithNoSubscriptions;
 
             _gcTimer = new Timer(_ => GarbageCollectTopics(), state: null, dueTime: _gcInterval, period: _gcInterval);
 
@@ -352,6 +366,8 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
+            int topicsWithNoSubs = 0;
+
             foreach (var pair in Topics)
             {
                 if (pair.Value.IsExpired)
@@ -362,33 +378,78 @@ namespace Microsoft.AspNet.SignalR
                     }
 
                     // Mark the topic as dead
-                    var state = Interlocked.Exchange(ref pair.Value.State, TopicState.Dead);
+                    DestroyTopic(pair.Key, pair.Value);
+                }
+                else if (pair.Value.State == TopicState.NoSubscriptions)
+                {
+                    // Keep track of the number of topics with no subscriptions
+                    topicsWithNoSubs++;
+                }
+            }
 
-                    switch (state)
+            int overflow = topicsWithNoSubs - _maxTopicsWithNoSubscriptions;
+            if (overflow > 0)
+            {
+                // If we've overflowed the max the collect topics that don't have
+                // subscribers
+                var candidates = new List<KeyValuePair<string, Topic>>();
+                foreach (var pair in Topics)
+                {
+                    if (pair.Value.State == TopicState.NoSubscriptions)
                     {
-                        case TopicState.NoSubscriptions:
-                            Topic topic;
-                            Topics.TryRemove(pair.Key, out topic);
-                            _stringMinifier.RemoveUnminified(pair.Key);
-
-                            Counters.MessageBusTopicsCurrent.Decrement();
-
-                            Trace.TraceInformation("RemoveTopic(" + pair.Key + ")");
-
-                            if (AfterTopicGarbageCollected != null)
-                            {
-                                AfterTopicGarbageCollected(pair.Key, topic);
-                            }
-                            break;
-                        default:
-                            // Restore the old state
-                            Interlocked.Exchange(ref pair.Value.State, state);
-                            break;
+                        candidates.Add(pair);
                     }
+                }
+
+                // We want to remove the overflow but oldest first
+                candidates.Sort((leftPair, rightPair) => rightPair.Value.LastUsed.CompareTo(leftPair.Value.LastUsed));
+
+                // Clear up to the overflow and stay within bounds
+                for (int i = 0; i < overflow && i < candidates.Count; i++)
+                {
+                    var pair = candidates[i];
+
+                    // Mark it as dead
+                    Interlocked.Exchange(ref pair.Value.State, TopicState.Dead);
+
+                    // Kill it
+                    DestroyTopicCore(pair.Key, pair.Value);
                 }
             }
 
             Interlocked.Exchange(ref _gcRunning, 0);
+        }
+
+        private void DestroyTopic(string key, Topic topic)
+        {
+            var state = Interlocked.Exchange(ref topic.State, TopicState.Dead);
+
+            switch (state)
+            {
+                case TopicState.NoSubscriptions:
+                    DestroyTopicCore(key, topic);
+                    break;
+                default:
+                    // Restore the old state
+                    Interlocked.Exchange(ref topic.State, state);
+                    break;
+            }
+        }
+
+        private void DestroyTopicCore(string key, Topic topic)
+        {
+            Topic dummy;
+            Topics.TryRemove(key, out dummy);
+            _stringMinifier.RemoveUnminified(key);
+
+            Counters.MessageBusTopicsCurrent.Decrement();
+
+            Trace.TraceInformation("RemoveTopic(" + key + ")");
+
+            if (AfterTopicGarbageCollected != null)
+            {
+                AfterTopicGarbageCollected(key, topic);
+            }
         }
 
         internal Topic GetTopic(string key)

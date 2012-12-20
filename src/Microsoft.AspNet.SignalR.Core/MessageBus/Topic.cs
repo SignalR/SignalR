@@ -40,6 +40,14 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        public DateTime LastUsed
+        {
+            get
+            {
+                return _lastUsed;
+            }
+        }
+
         public Topic(uint storeSize, TimeSpan lifespan)
         {
             _lifespan = lifespan;
