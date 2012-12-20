@@ -1,17 +1,20 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Configuration
 {
     public class DefaultConfigurationManager : IConfigurationManager
     {
+        private int _keepAlive;
+
         public DefaultConfigurationManager()
         {
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(40);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
-            KeepAlive = TimeSpan.FromSeconds(15);
+            KeepAlive = 2;
             DefaultMessageBufferSize = 1000;
         }
 
@@ -27,10 +30,21 @@ namespace Microsoft.AspNet.SignalR.Configuration
             set;
         }
 
-        public TimeSpan? KeepAlive
+        public int KeepAlive
         {
-            get;
-            set;
+            get
+            {
+                return _keepAlive;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_KeepAliveMustBeGreaterThanZero));
+                }
+
+                _keepAlive = value;
+            }
         }
 
         public TimeSpan HeartbeatInterval

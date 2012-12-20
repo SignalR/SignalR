@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time to wait before sending a keep alive packet over an idle connection. Set to null to disable keep alive.
         /// </summary>
-        TimeSpan? KeepAlive { get; set; }
+        int KeepAlive { get; set; }
 
         /// <summary>
         /// Gets of sets the number of messages to buffer for a specific signal.
