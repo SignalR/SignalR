@@ -1629,8 +1629,12 @@
                         }
                     }(connection));
 
-                    // Trigger the onSuccess() method because we've now instantiated a connection
-                    onSuccess();
+                    // Set an arbitrary timeout to trigger onSuccess, this will alot for enough time on the server to wire up the connection.
+                    // Will be fixed by #1189 and this code can be modified to not be a timeout
+                    window.setTimeout(function () {
+                        // Trigger the onSuccess() method because we've now instantiated a connection
+                        onSuccess();
+                    }, 250);
                 }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
             });
         },
