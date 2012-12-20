@@ -181,6 +181,7 @@
             }
             configureStopReconnectingTimeout(this);
         },
+    	contentType: "application/x-www-form-urlencoded; charset=UTF-8",
 
         ajaxDataType: "json",
 
@@ -294,7 +295,8 @@
                     }
                 }
             }
-
+            
+            connection.contentType = config.contentType;
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
 
             $(connection).bind(events.onStart, function (e, data) {
