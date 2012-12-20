@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _server = WebApplication.Start<TApplication>(Url);
         }
 
-        public void Initialize(int? keepAlive = 15, int? connectionTimeout = 120, int? disconnectTimeout = 40, int? hearbeatInterval = 10, bool enableAutoRejoiningGroups = false)
+        public void Initialize(int keepAlive = 2, int? connectionTimeout = 120, int? disconnectTimeout = 40, int? hearbeatInterval = 10, bool enableAutoRejoiningGroups = false)
         {            
             //_resolver = new DefaultDependencyResolver();
 

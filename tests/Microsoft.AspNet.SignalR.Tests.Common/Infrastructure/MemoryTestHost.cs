@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public Func<IClientTransport> TransportFactory { get; set; }
 
-        public void Initialize(int? keepAlive,
+        public void Initialize(int keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
                                int? hearbeatInterval,
@@ -34,11 +34,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             if (keepAlive != null)
             {
-                _host.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
+                _host.Configuration.KeepAlive = keepAlive;
             }
             else
             {
-                _host.Configuration.KeepAlive = null;
+                _host.Configuration.KeepAlive = 0;
             }
 
             if (connectionTimeout != null)

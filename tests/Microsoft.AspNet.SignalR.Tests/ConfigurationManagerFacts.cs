@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.Equal(config.DisconnectTimeout.TotalSeconds, 40);
             Assert.Equal(config.HeartbeatInterval.TotalSeconds, 10);
             Assert.NotNull(config.KeepAlive);
-            Assert.Equal(config.KeepAlive.Value.TotalSeconds, 15);
+            Assert.Equal(config.KeepAlive, 2);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public Func<IClientTransport> TransportFactory { get; set; }
 
-        public void Initialize(int? keepAlive,
+        public void Initialize(int keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
                                int? hearbeatInterval,
