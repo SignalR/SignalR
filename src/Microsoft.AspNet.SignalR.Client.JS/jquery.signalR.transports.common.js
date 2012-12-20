@@ -156,6 +156,7 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
+                contentType: connection.contentType,
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
@@ -194,6 +195,7 @@
                 timeout: 1000,
                 global: false,
                 type: "POST",
+                contentType: connection.contentType,
                 dataType: connection.ajaxDataType,
                 data: {}
             });
