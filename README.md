@@ -23,6 +23,7 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 
 ```
 git clone git@github.com:SignalR/SignalR.git (or https if you use https)
+cd SignalR
 git submodule init (you only need to do this once)
 git submodule update
 ```
