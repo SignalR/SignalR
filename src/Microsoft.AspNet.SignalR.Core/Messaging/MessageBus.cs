@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Keep topics alive for twice as long as we let connections to reconnect.
             // Also add twice the keepalive interval since clients might take a while to notice they are disconnected.
             // This should be a good enough estimate for how long until we should consider a topic dead.
-            _topicTtl = TimeSpan.FromTicks((configurationManager.DisconnectTimeout.Ticks + keepAlive ) * 2);
+            _topicTtl = TimeSpan.FromTicks((configurationManager.DisconnectTimeout.Ticks + keepAlive) * 2);
 
             Topics = new ConcurrentDictionary<string, Topic>();
         }
