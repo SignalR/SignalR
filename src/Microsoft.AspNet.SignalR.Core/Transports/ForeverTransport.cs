@@ -14,9 +14,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
 
-        // Determines whether the transport has been fully initialized.
-        private volatile bool _initialized;
-
         private const int MaxMessages = 10;
 
         protected ForeverTransport(HostContext context, IDependencyResolver resolver)
@@ -37,6 +34,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
+
         }
 
         protected string LastMessageId
@@ -57,17 +55,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        protected bool Initialized
-        {
-            get
-            {
-                return _initialized;
-            }
-            set
-            {
-                _initialized = value;
-            }
-        }
+        internal TaskCompletionSource<object> InitializeTcs { get; set; }
 
         protected virtual void OnSending(string payload)
         {
@@ -92,6 +80,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action BeforeCancellationTokenCallbackRegistered;
         internal Action BeforeReceive;
         internal Action AfterRequestEnd;
+
+        protected override void InitializePersistentState()
+        {
+            // PersistentConnection.OnConnectedAsync must complete before we can write to the output stream,
+            // so clients don't indicate the connection has started too early.
+            InitializeTcs = new TaskCompletionSource<object>();
+            WriteQueue = new TaskQueue(InitializeTcs.Task);
+
+            base.InitializePersistentState();
+        }
 
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
@@ -168,6 +166,22 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
+        protected internal override Task EnqueueOperation(Func<Task> writeAsync)
+        {
+            Task task = base.EnqueueOperation(writeAsync);
+
+            // If PersistentConnection.OnConnectedAsync has not completed (as indicated by InitializeTcs),
+            // the queue will be blocked to prevent clients from prematurely indicating the connection has
+            // started, but we must keep receive loop running to continue processing commands and to
+            // prevent deadlocks caused by waiting on ACKs.
+            if (InitializeTcs == null || InitializeTcs.Task.IsCompleted)
+            {
+                return task;
+            }
+
+            return TaskAsyncHelper.Empty;
+        }
+
         protected void IncrementErrorCounters(Exception exception)
         {
             _counters.ErrorsTransportTotal.Increment();
@@ -200,18 +214,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             Func<Task> afterReceive = () =>
             {
                 return TaskAsyncHelper.Series(OnTransportConnected,
+                                              () => InitializeResponse(connection),
                                               () =>
                                               {
                                                   if (postReceive != null)
                                                   {
                                                       return postReceive();
                                                   }
-                                                  return TaskAsyncHelper.Empty;
-                                              },
-                                              () => InitializeResponse(connection),
-                                              () =>
-                                              {
-                                                  Initialized = true;
                                                   return TaskAsyncHelper.Empty;
                                               });
             };
@@ -229,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessMessages(ITransportConnection connection, Func<Task> postReceive = null)
+        private Task ProcessMessages(ITransportConnection connection, Func<Task> postReceive)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -253,7 +262,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     CompleteRequest();
 
                     Trace.TraceInformation("EndRequest(" + ConnectionId + ")");
-                }, 
+                },
                 TaskContinuationOptions.ExecuteSynchronously);
 
                 if (AfterRequestEnd != null)
@@ -274,8 +283,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             IDisposable subscription = null;
             IDisposable registration = null;
 
-            var wh = new ManualResetEventSlim();
-
             if (BeforeReceive != null)
             {
                 BeforeReceive();
@@ -285,9 +292,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 subscription = connection.Receive(LastMessageId, response =>
                 {
-                    // We need to wait until post receive has been called
-                    wh.Wait();
-
                     response.TimedOut = IsTimedOut;
 
                     // If we're telling the client to disconnect then clean up the instantiated connection.
@@ -341,9 +345,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
-                endRequest(ex);
+                // Set the tcs so that the task queue isn't waiting forever
+                InitializeTcs.TrySetResult(null);
 
-                wh.Set();
+                endRequest(ex);
 
                 return;
             }
@@ -353,20 +358,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                 AfterReceive();
             }
 
-            if (postReceive != null)
-            {
-                postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
-                             .Catch(ex => endRequest(ex))
-                             .Catch(ex =>
-                             {
-                                 Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
-                             })
-                             .ContinueWith(task => wh.Set());
-            }
-            else
-            {
-                wh.Set();
-            }
+            postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
+                         .Catch(ex => endRequest(ex))
+                         .Catch(ex =>
+                         {
+                             Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                         })
+                         .ContinueWith(InitializeTcs);
 
             if (BeforeCancellationTokenCallbackRegistered != null)
             {

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            if (!Initialized)
+            if (InitializeTcs == null || !InitializeTcs.Task.IsCompleted)
             {
                 return TaskAsyncHelper.Empty;
             }

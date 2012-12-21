@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal TaskQueue WriteQueue
         {
             get;
-            private set;
+            set;
         }
 
         public IEnumerable<string> Groups
@@ -287,18 +287,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected internal Task EnqueueOperation(Func<Task> writeAsync)
+        protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            if (IsAlive)
+            if (!IsAlive)
             {
-                // Only enqueue new writes if the connection is alive
-                return WriteQueue.Enqueue(writeAsync);
+                return TaskAsyncHelper.Empty;
             }
 
-            return TaskAsyncHelper.Empty;
+            // Only enqueue new writes if the connection is alive
+            return WriteQueue.Enqueue(writeAsync);
         }
 
-        protected void InitializePersistentState()
+        protected virtual void InitializePersistentState()
         {
             _hostShutdownToken = _context.HostShutdownToken();
 
