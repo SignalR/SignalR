@@ -331,6 +331,56 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void ReturnDataWithPlus(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("echoHub");
+
+                connection.Start(host.Transport).Wait();
+
+                string result = hub.InvokeWithTimeout<string>("EchoReturn", "+");
+
+                Assert.Equal("+", result);
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void CallbackDataWithPlus(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("echoHub");
+                var tcs = new TaskCompletionSource<string>();
+                hub.On<string>("echo", tcs.SetResult);
+
+                connection.Start(host.Transport).Wait();
+
+                hub.InvokeWithTimeout("EchoCallback", "+");
+
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)), "Timeout waiting for callback");
+                Assert.Equal("+", tcs.Task.Result);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void UnsupportedOverloads(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))

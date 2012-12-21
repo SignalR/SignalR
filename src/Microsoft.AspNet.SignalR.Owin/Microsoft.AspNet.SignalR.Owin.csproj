@@ -53,6 +53,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.Memory\Infrastructure\UrlDecoder.cs">
+      <Link>Infrastructure\UrlDecoder.cs</Link>
+    </Compile>
     <Compile Include="Infrastructure\Headers.cs" />
     <Compile Include="Infrastructure\OwinConstants.cs" />
     <Compile Include="Infrastructure\OwinEnvironmentExtensions.cs" />

@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
@@ -26,16 +25,11 @@ namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
             {
                 string[] pair = item.Split(ParamKeyValueSeparator, 2, StringSplitOptions.None);
 
-                string pairKey = Escape(pair[0]).TrimStart(LeadingWhitespaceChars);
-                string pairValue = pair.Length < 2 ? String.Empty : Escape(pair[1]);
+                string pairKey = UrlDecoder.UrlDecode(pair[0]).TrimStart(LeadingWhitespaceChars);
+                string pairValue = pair.Length < 2 ? String.Empty : UrlDecoder.UrlDecode(pair[1]);
 
                 yield return new KeyValuePair<string, string>(pairKey, pairValue);
             }
-        }
-
-        private static string Escape(string value)
-        {
-            return Uri.UnescapeDataString(value).Replace('+', ' ');
         }
     }
 }
