@@ -135,6 +135,97 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         }
 
         [Fact]
+        public void ReceiveThrowingReturnsFaultedTask()
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            var counters = new Mock<IPerformanceCounterManager>();
+            var heartBeat = new Mock<ITransportHeartbeat>();
+            var json = new JsonNetSerializer();
+            var hostContext = new HostContext(request.Object, null);
+            var transportConnection = new Mock<ITransportConnection>();
+            var traceManager = new Mock<ITraceManager>();
+            traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
+
+            transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
+                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
+                                                     It.IsAny<int>())).Throws(new InvalidOperationException());
+
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            {
+                CallBase = true
+            };
+
+            // Act
+            var task = transport.Object.ProcessRequest(transportConnection.Object);
+
+            // Assert
+            Assert.Throws<AggregateException>(() => task.Wait(TimeSpan.FromSeconds(2)));
+        }
+
+        [Fact]
+        public void RunPostReceiveWithFaultedTask()
+        {
+            RunWithPostReceive(() => TaskAsyncHelper.FromError(new Exception()));
+        }
+
+        [Fact]
+        public void RunPostReceiveWithCancelledTask()
+        {
+            Func<Task> cancelled = () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetCanceled();
+                return tcs.Task;
+            };
+
+
+            RunWithPostReceive(cancelled);
+        }
+
+        [Fact]
+        public void RunPostReceiveWithSuccessfulTask()
+        {
+            RunWithPostReceive(() => TaskAsyncHelper.Empty);
+        }
+
+        public void RunWithPostReceive(Func<Task> postReceive)
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            var counters = new Mock<IPerformanceCounterManager>();
+            var heartBeat = new Mock<ITransportHeartbeat>();
+            var json = new JsonNetSerializer();
+            var hostContext = new HostContext(request.Object, null);
+            var transportConnection = new Mock<ITransportConnection>();
+            var traceManager = new Mock<ITraceManager>();
+            traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
+
+            transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
+                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
+                                                     It.IsAny<int>())).Returns(DisposableAction.Empty);
+
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            {
+                CallBase = true
+            };
+
+            transport.Object.Connected = postReceive;
+
+            // Act
+            transport.Object.ProcessRequest(transportConnection.Object);
+
+            // Assert
+            Assert.True(transport.Object.InitializeTcs.Task.Wait(TimeSpan.FromSeconds(2)), "Initialize task not tripped");
+        }
+
+        [Fact]
         public void RequestCompletesAfterCompletedWritesInTaskQueue()
         {
             EnqueAsyncWriteAndEndRequest(() => TaskAsyncHelper.Empty);

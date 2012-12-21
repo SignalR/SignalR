@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        protected TaskCompletionSource<object> InitializeTcs { get; set; }
+        internal TaskCompletionSource<object> InitializeTcs { get; set; }
 
         protected virtual void OnSending(string payload)
         {
@@ -345,7 +345,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
+                // Set the tcs so that the task queue isn't waiting forever
+                InitializeTcs.TrySetResult(null);
+
                 endRequest(ex);
+
                 return;
             }
 

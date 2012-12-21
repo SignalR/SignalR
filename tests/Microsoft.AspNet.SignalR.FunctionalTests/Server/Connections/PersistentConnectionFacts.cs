@@ -94,6 +94,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.Auto)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            // [InlineData(HostType.Memory, TransportType.LongPolling)]
             // [InlineData(HostType.IISExpress, TransportType.Auto)]
             public void GroupCanBeAddedAndMessagedOnConnected(HostType hostType, TransportType transportType)
             {

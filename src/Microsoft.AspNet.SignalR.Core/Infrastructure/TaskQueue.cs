@@ -15,7 +15,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private Task _lastQueuedTask;
         private volatile bool _drained;
 
-        public TaskQueue() : this(TaskAsyncHelper.Empty)
+        public TaskQueue()
+            : this(TaskAsyncHelper.Empty)
         {
         }
 
