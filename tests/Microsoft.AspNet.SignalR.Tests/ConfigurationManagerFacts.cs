@@ -26,10 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var config = new DefaultConfigurationManager();
 
             // Assert
-            Assert.Throws(typeof(InvalidOperationException), () =>
-            {
-                config.KeepAlive = -1;
-            });
+            Assert.Throws(typeof(ArgumentOutOfRangeException), () => config.KeepAlive = -1);
         }
     }
 }
