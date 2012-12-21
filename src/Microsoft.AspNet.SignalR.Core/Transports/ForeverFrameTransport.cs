@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            if (!InitializeTcs.Task.IsCompleted)
+            if (InitializeTcs == null || !InitializeTcs.Task.IsCompleted)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -97,10 +97,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     Context.Response.ContentType = "text/html";
 
-                    HTMLOutputWriter.WriteRaw(initScript);
-                    HTMLOutputWriter.Flush();
+                    return EnqueueOperation(() =>
+                    {
+                        HTMLOutputWriter.WriteRaw(initScript);
+                        HTMLOutputWriter.Flush();
 
-                    return Context.Response.FlushAsync();
+                        return Context.Response.FlushAsync();
+                    });
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
         }

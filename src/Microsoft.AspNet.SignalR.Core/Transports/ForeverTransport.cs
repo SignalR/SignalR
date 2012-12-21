@@ -178,6 +178,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 return task;
             }
+
             return TaskAsyncHelper.Empty;
         }
 
@@ -353,7 +354,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                 AfterReceive();
             }
 
-
             postReceive().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec)
                          .Catch(ex => endRequest(ex))
                          .Catch(ex =>
@@ -361,7 +361,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                              Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
                          })
                          .ContinueWith(InitializeTcs);
-
 
             if (BeforeCancellationTokenCallbackRegistered != null)
             {

@@ -54,13 +54,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                        {
                            Context.Response.ContentType = "text/event-stream";
 
-                           // "data: initialized\n\n"
-                           OutputWriter.Write("data: initialized");
-                           OutputWriter.WriteLine();
-                           OutputWriter.WriteLine();
-                           OutputWriter.Flush();
+                           return EnqueueOperation(() =>
+                           {
+                               // "data: initialized\n\n"
+                               OutputWriter.Write("data: initialized");
+                               OutputWriter.WriteLine();
+                               OutputWriter.WriteLine();
+                               OutputWriter.Flush();
 
-                           return Context.Response.FlushAsync();
+                               return Context.Response.FlushAsync();
+                           });
                        });
         }
     }
