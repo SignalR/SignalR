@@ -1,4 +1,4 @@
-﻿module("Ping Server Facts");
+﻿QUnit.module("Ping Server Facts");
 
 QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),

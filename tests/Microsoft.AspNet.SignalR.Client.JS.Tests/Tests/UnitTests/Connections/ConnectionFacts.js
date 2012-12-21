@@ -1,8 +1,8 @@
 ﻿/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 
-module("Connection Facts");
+QUnit.module("Connection Facts");
 
-test("Default Connection Parameters", function () {
+QUnit.test("Default Connection Parameters", function () {
     var con = $.connection;
     equal(con.fn.state, con.connectionState.disconnected, "Verifies connection is disconnected.");
     equal(con.fn.ajaxDataType, "json", "Verifies ajax data type is json.");
@@ -10,7 +10,7 @@ test("Default Connection Parameters", function () {
     equal(con.fn.reconnectDelay, 2000, "Verifies reconnect delay is 2000 ms.");
 });
 
-test("Stopping Connection", function () {
+QUnit.test("Stopping Connection", function () {
     var con = $.connection;
     // Need to be connected to stop a connection
     ok(con.changeState(con.fn, con.connectionState.disconnected, con.connectionState.connected), "Verify we can shift from disconnected into connected.");
@@ -19,7 +19,7 @@ test("Stopping Connection", function () {
     equal(con.fn.state, con.connectionState.disconnected, "Verifies connection is disconnected after stop has been called.");
 });
 
-test("Error on send prior to connected state", function () {
+QUnit.test("Error on send prior to connected state", function () {
     var con = $.connection;
     // Need the con.fn.state to be disconnected to fail on the send
     equal(con.fn.state, con.connectionState.disconnected, "Verifies connection is disconnected.");

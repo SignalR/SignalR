@@ -1,4 +1,4 @@
-﻿module("Server Sent Events Facts");
+﻿QUnit.module("Server Sent Events Facts");
 
 QUnit.asyncTimeoutTest("Server Sent Events transport can connect.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection();

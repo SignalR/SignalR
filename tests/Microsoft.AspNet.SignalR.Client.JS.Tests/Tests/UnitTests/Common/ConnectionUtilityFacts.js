@@ -1,4 +1,4 @@
-﻿module("Connection Utility Facts");
+﻿QUnit.module("Connection Utility Facts");
 
 QUnit.test("Is Cross Domain functions properly", function () {
     var con = $.connection,

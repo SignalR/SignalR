@@ -1,8 +1,8 @@
 ﻿/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.hubs.js" />
 
-module("Hub Connection Facts");
+QUnit.module("Hub Connection Facts");
 
-test("Default Hub Connection Parameters", function () {
+QUnit.test("Default Hub Connection Parameters", function () {
     var hubCon = $.hubConnection;
     equal(hubCon.fn.state, 4, "Verifies hub connection is disconnected.");
     equal(hubCon.fn.ajaxDataType, "json", "Verifies ajax data type is json.");

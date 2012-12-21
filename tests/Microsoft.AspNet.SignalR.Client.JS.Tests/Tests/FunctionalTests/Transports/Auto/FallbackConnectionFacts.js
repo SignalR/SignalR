@@ -1,4 +1,4 @@
-﻿module("Fallback Facts");
+﻿QUnit.module("Fallback Facts");
 
 QUnit.asyncTimeoutTest("Default transports fall back and connect.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection();
