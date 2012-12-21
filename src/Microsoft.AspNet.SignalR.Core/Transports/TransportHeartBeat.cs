@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Raise keep alive if the keep alive value has passed
-            return metadata.HeartbeatCount % keepAlive == 0;
+            return metadata.HeartbeatCount % (ulong)keepAlive == 0;
         }
 
         private bool RaiseTimeout(ConnectionMetadata metadata)
@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             public DateTime Initial { get; set; }
 
             // Number of heartbeats
-            public long HeartbeatCount { get; set; }
+            public ulong HeartbeatCount { get; set; }
 
             public void UpdateHeartbeatCount()
             {
