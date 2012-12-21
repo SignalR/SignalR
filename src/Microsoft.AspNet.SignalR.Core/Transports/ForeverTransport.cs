@@ -214,6 +214,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Func<Task> afterReceive = () =>
             {
                 return TaskAsyncHelper.Series(OnTransportConnected,
+                                              () => InitializeResponse(connection),
                                               () =>
                                               {
                                                   if (postReceive != null)
@@ -221,8 +222,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                       return postReceive();
                                                   }
                                                   return TaskAsyncHelper.Empty;
-                                              },
-                                              () => InitializeResponse(connection));
+                                              });
             };
 
             return ProcessMessages(connection, afterReceive);
