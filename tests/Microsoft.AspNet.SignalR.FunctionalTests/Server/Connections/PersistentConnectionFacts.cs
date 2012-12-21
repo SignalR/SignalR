@@ -93,6 +93,32 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
+            [InlineData(HostType.Memory, TransportType.Auto)]
+            // [InlineData(HostType.IISExpress, TransportType.Auto)]
+            public void GroupCanBeAddedAndMessagedOnConnected(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    var wh = new ManualResetEventSlim();
+                    host.Initialize();
+
+                    var connection = new Client.Connection(host.Url + "/add-group");
+                    connection.Received += data =>
+                    {
+                        Assert.Equal("hey", data);
+                        wh.Set();
+                    };
+
+                    connection.Start(host.Transport).Wait();
+                    connection.SendWithTimeout("");
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+
+                    connection.Stop();
+                }
+            }
+
+            [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.Websockets)]

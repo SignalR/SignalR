@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _host.MapConnection<FilteredConnection>("/filter");
             _host.MapConnection<SyncErrorConnection>("/sync-error");
             _host.MapConnection<FallbackToLongPollingConnection>("/fall-back");
+            _host.MapConnection<AddGroupOnConnectedConnection>("/add-group");
         }
 
         public void Dispose()

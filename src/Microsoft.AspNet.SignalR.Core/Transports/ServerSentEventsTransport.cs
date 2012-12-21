@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            if (!Initialized)
+            if (!InitializeTcs.Task.IsCompleted)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -54,16 +54,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                        {
                            Context.Response.ContentType = "text/event-stream";
 
-                           return EnqueueOperation(() =>
-                           {
-                               // "data: initialized\n\n"
-                               OutputWriter.Write("data: initialized");
-                               OutputWriter.WriteLine();
-                               OutputWriter.WriteLine();
-                               OutputWriter.Flush();
+                           // "data: initialized\n\n"
+                           OutputWriter.Write("data: initialized");
+                           OutputWriter.WriteLine();
+                           OutputWriter.WriteLine();
+                           OutputWriter.Flush();
 
-                               return Context.Response.FlushAsync();
-                           });
+                           return Context.Response.FlushAsync();
                        });
         }
     }

@@ -99,6 +99,7 @@
     <Compile Include="App_Start\RegisterHubs.cs" />
     <Compile Include="App_Start\TestEndPoint.cs" />
     <Compile Include="Build\StartIISTask.cs" />
+    <Compile Include="Connections\AddGroupOnConnectedConnection.cs" />
     <Compile Include="Connections\ConnectionThatUsesItems.cs" />
     <Compile Include="Connections\FallbackToLongPollingConnection.cs" />
     <Compile Include="Connections\FilteredConnection.cs" />
