@@ -166,6 +166,16 @@
         return requestedTransport;
     }
 
+    function removeDefaultPort(url) {
+        return url.replace(/:80[\/$]/, function (match) {
+            if (match === ":80/") {
+                return "/";
+            }
+
+            return "";
+        });
+    }
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
@@ -186,9 +196,11 @@
 
             // Create an anchor tag.
             link = window.document.createElement("a");
+
+            // When checking for cross domain we have to special case port 80 because the window.location will remove the 
             link.href = url;
 
-            return link.protocol + link.host !== window.location.protocol + window.location.host;
+            return link.protocol + removeDefaultPort(link.host) !== window.location.protocol + removeDefaultPort(window.location.host);
         },
 
         ajaxDataType: "json",
