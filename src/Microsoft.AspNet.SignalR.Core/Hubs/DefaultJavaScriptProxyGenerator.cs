@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -117,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // If the name was not specified then do not camel case
             if (!descriptor.NameSpecified)
             {
-                name = Json.CamelCase(name);
+                name = JsonUtility.CamelCase(name);
             }
 
             return name;

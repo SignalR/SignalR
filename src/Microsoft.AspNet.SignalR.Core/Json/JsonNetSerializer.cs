@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Json
 {
     /// <summary>
     /// Default <see cref="IJsonSerializer"/> implementation over Json.NET.

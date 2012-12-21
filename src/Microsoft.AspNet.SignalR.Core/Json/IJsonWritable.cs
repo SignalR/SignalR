@@ -2,7 +2,7 @@
 
 using System.IO;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Json
 {
     /// <summary>
     /// Implementations handle their own serialization to JSON.

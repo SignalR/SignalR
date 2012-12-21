@@ -6,12 +6,12 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Json
 {
     /// <summary>
     /// Helper class for common JSON operations.
     /// </summary>
-    public static class Json
+    public static class JsonUtility
     {
         /// <summary>
         /// Converts the specified name to camel case.

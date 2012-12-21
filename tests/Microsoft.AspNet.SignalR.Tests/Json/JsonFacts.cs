@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Microsoft.AspNet.SignalR.Json;
+using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Json
 {
@@ -8,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         public void CamelCaseConversPascalCaseToCamelCase()
         {
             // Act
-            string name = Microsoft.AspNet.SignalR.Json.CamelCase("SomeMethod");
+            string name = JsonUtility.CamelCase("SomeMethod");
 
             // Assert
             Assert.Equal("someMethod", name);
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         public void MimeTypeReturnsJsonMimeType()
         {
             // Act
-            string mimeType = Microsoft.AspNet.SignalR.Json.MimeType;
+            string mimeType = JsonUtility.MimeType;
 
             // Assert
             Assert.Equal("application/json; charset=UTF-8", mimeType);
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         public void JsonPMimeTypeReturnsJsonPMimeType()
         {
             // Act
-            string mimeType = Microsoft.AspNet.SignalR.Json.JsonpMimeType;
+            string mimeType = JsonUtility.JsonpMimeType;
 
             // Assert
             Assert.Equal("text/javascript; charset=UTF-8", mimeType);
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         public void CreateJsonPCallbackWrapsContentInMethod()
         {
             // Act
-            string callback = Microsoft.AspNet.SignalR.Json.CreateJsonpCallback("foo", "1");
+            string callback = JsonUtility.CreateJsonpCallback("foo", "1");
 
             // Assert
             Assert.Equal("foo(1);", callback);

@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR
@@ -304,7 +305,7 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = Json.MimeType;
+            context.Response.ContentType = JsonUtility.MimeType;
             return context.Response.EndAsync(JsonSerializer.Stringify(payload));
         }
 
@@ -327,14 +328,14 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = Json.MimeType;
+            context.Response.ContentType = JsonUtility.MimeType;
             return context.Response.EndAsync(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessJsonpRequest(HostContext context, object payload)
         {
-            context.Response.ContentType = Json.JsonpMimeType;
-            var data = Json.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
+            context.Response.ContentType = JsonUtility.JsonpMimeType;
+            var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
             return context.Response.EndAsync(data);
         }

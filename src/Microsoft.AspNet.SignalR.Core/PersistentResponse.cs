@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using Microsoft.AspNet.SignalR.Json;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR

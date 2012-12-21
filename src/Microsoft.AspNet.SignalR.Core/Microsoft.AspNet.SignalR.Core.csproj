@@ -191,7 +191,7 @@
     <Compile Include="Infrastructure\SafeSet.cs" />
     <Compile Include="ITransportConnection.cs" />
     <Compile Include="Json\JsonNetSerializer.cs" />
-    <Compile Include="Json\Json.cs" />
+    <Compile Include="Json\JsonUtility.cs" />
     <Compile Include="GroupManager.cs" />
     <Compile Include="Infrastructure\ServerCommand.cs" />
     <Compile Include="Infrastructure\ServerCommandType.cs" />

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -150,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            Context.Response.ContentType = Json.MimeType;
+            Context.Response.ContentType = JsonUtility.MimeType;
 
             return EnqueueOperation(() =>
             {
