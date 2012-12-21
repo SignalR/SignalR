@@ -76,6 +76,7 @@
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEConnectionFacts.js" />
+    <Content Include="Tests\UnitTests\Common\ConnectionUtilityFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
     <Content Include="Styles\qunit.css" />
     <Content Include="Scripts\qunit.js" />

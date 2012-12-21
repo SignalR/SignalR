@@ -165,6 +165,18 @@
         return requestedTransport;
     }
 
+    function removeDefaultPort(url) {
+        // Remove ports  from url.  We have to check if there's a / or end of line
+        // following the port in order to avoid removing ports such as 8080.
+        return url.replace(/:80(\/|$)/, function (match) {
+            if (match === ":80/") {
+                return "/";
+            }
+
+            return "";
+        });
+    }
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
@@ -175,7 +187,13 @@
             }            
         },
 
-        isCrossDomain: function (url) {
+        isCrossDomain: function (url, against) {
+            /// <summary>Checks if url is cross domain</summary>
+            /// <param name="url" type="String">The base URL</param>
+            /// <param name="against" type="Object">
+            ///     An optional argument to compare the URL against, if not specified it will be set to window.location.
+            ///     If specified it must contain a protocol and a host property.
+            /// </param>
             var link;
 
             url = $.trim(url);
@@ -183,11 +201,16 @@
                 return false;
             }
 
+            if (!against) {
+                against = window.location;
+            }
+
             // Create an anchor tag.
             link = window.document.createElement("a");
             link.href = url;
 
-            return link.protocol + link.host !== window.location.protocol + window.location.host;
+            // When checking for cross domain we have to special case port 80 because the window.location will remove the 
+            return link.protocol + removeDefaultPort(link.host) !== against.protocol + removeDefaultPort(against.host);
         },
 
         ajaxDataType: "json",
