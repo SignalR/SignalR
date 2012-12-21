@@ -166,6 +166,8 @@
     }
 
     function removeDefaultPort(url) {
+        // Remove ports  from url.  We have to check if there's a / or end of line
+        // following the port in order to avoid removing ports such as 8080.
         return url.replace(/:80(\/|$)/, function (match) {
             if (match === ":80/") {
                 return "/";
@@ -205,10 +207,9 @@
 
             // Create an anchor tag.
             link = window.document.createElement("a");
-
-            // When checking for cross domain we have to special case port 80 because the window.location will remove the 
             link.href = url;
 
+            // When checking for cross domain we have to special case port 80 because the window.location will remove the 
             return link.protocol + removeDefaultPort(link.host) !== against.protocol + removeDefaultPort(against.host);
         },
 
