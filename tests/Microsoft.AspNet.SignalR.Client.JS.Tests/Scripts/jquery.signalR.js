@@ -202,9 +202,7 @@
                 return false;
             }
 
-            if (!against) {
-                against = window.location;
-            }
+            against = against || window.location;
 
             // Create an anchor tag.
             link = window.document.createElement("a");
