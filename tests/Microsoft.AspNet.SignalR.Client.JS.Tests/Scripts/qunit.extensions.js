@@ -1,4 +1,8 @@
 ﻿(function ($, window) {
+    var QUnitTest = QUnit.test,
+        QUnitModule = QUnit.module,
+        runModule = true;
+
     QUnit.asyncTimeoutTest = function (name, timeout, test) {
         /// <summary>Runs an async test with a specified timeout.</summary>
         /// <param name="name" type="String">The name of the test.</param>
@@ -17,74 +21,75 @@
         ///         };&#10;
         ///     }&#10;
         /// </param>
+        if (runModule) {
+            QUnit.asyncTest(name, function () {
+                var timeoutId,
+                    testCleanup,
+                    hasFinished = false,
+                    assert = {
+                        deepEqual: function (actual, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.deepEqual(actual, expected, message);
+                            }
+                        },
+                        equal: function (actual, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.equal(actual, expected, message);
+                            }
+                        },
+                        notDeepEqual: function (actual, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.notDeepEqual(actual, expected, message);
+                            }
+                        },
+                        notEqual: function (actual, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.notEqual(actual, expected, message);
+                            }
+                        },
+                        notStrictEqual: function (actual, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.notStrictEqual(actual, expected, message);
+                            }
+                        },
+                        ok: function (state, message) {
+                            if (!hasFinished) {
+                                QUnit.ok(state, message);
+                            }
+                        },
+                        strictEqual: function (actual, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.strictEqual(actual, expected, message);
+                            }
+                        },
+                        throws: function (block, expected, message) {
+                            if (!hasFinished) {
+                                QUnit.throws(block, expected, message);
+                            }
+                        }
+                    };
 
-        QUnit.asyncTest(name, function () {
-            var timeoutId,
-                testCleanup,
-                hasFinished = false,
-                assert = {
-                    deepEqual: function (actual, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.deepEqual(actual, expected, message);
-                        }
-                    },
-                    equal: function (actual, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.equal(actual, expected, message);
-                        }
-                    },
-                    notDeepEqual: function (actual, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.notDeepEqual(actual, expected, message);
-                        }
-                    },
-                    notEqual: function (actual, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.notEqual(actual, expected, message);
-                        }
-                    },
-                    notStrictEqual: function (actual, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.notStrictEqual(actual, expected, message);
-                        }
-                    },
-                    ok: function (state, message) {
-                        if (!hasFinished) {
-                            QUnit.ok(state, message);
-                        }
-                    },
-                    strictEqual: function (actual, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.strictEqual(actual, expected, message);
-                        }
-                    },
-                    throws: function (block, expected, message) {
-                        if (!hasFinished) {
-                            QUnit.throws(block, expected, message);
-                        }
+                function end() {
+                    if (!hasFinished) {
+                        clearTimeout(timeoutId);
+                        hasFinished = true;
+                        testCleanup();
+                        QUnit.start();
                     }
-                };
-
-            function end(){ 
-                if (!hasFinished) {
-                    clearTimeout(timeoutId);
-                    hasFinished = true;
-                    testCleanup();
-                    QUnit.start();
                 }
-            }
 
-            timeoutId = setTimeout(function () {
-                assert.ok(false, "Test timed out.");
-                end();
-            }, timeout);
+                timeoutId = setTimeout(function () {
+                    assert.ok(false, "Test timed out.");
+                    end();
+                }, timeout);
 
-            testCleanup = test(end, assert) || $.noop;
+                testCleanup = test(end, assert) || $.noop;
 
-            if (!$.isFunction(testCleanup)) {
-                throw new Error("Return value of test must be falsey or a function");
-            }
-        });
+                if (!$.isFunction(testCleanup)) {
+                    throw new Error("Return value of test must be falsey or a function");
+                }
+            });
+        }
     };
 
     QUnit.skip = {
@@ -92,4 +97,21 @@
         asyncTest: function () { },
         asyncTimeoutTest: function () { },
     };
+
+    // Overwriting the original test so we can first check if we want to run the test
+    QUnit.test = function () {
+        if (runModule) {
+            QUnitTest.apply(this, arguments);
+        }
+    }
+
+    // Overwriting the original module to never use the lifecycle parameter and instead take in a run bool
+    QUnit.module = function (name, run) {
+        if (run !== false) {
+            run = true;
+        }
+
+        runModule = run;
+        QUnitModule.call(this, name);
+    }
 })($, window);
