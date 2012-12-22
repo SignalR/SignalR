@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Stress.Connections;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
+using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {

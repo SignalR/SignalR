@@ -53,12 +53,12 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>
     </Compile>
-    <Compile Include="AckHandler.cs" />
+    <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
-    <Compile Include="DiffPair.cs" />
-    <Compile Include="DiffSet.cs" />
+    <Compile Include="Infrastructure\DiffPair.cs" />
+    <Compile Include="Infrastructure\DiffSet.cs" />
     <Compile Include="GlobalHost.cs" />
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
@@ -67,7 +67,8 @@
     <Compile Include="Hosting\IWebSocketRequest.cs" />
     <Compile Include="Hosting\IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
-    <Compile Include="CommandType.cs" />
+    <Compile Include="Infrastructure\HostDependencyResolverExtensions.cs" />
+    <Compile Include="MessageBus\CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
     <Compile Include="Hubs\HubConnectionContext.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />
     <Compile Include="Hubs\StateChangeTracker.cs" />
-    <Compile Include="IAckHandler.cs" />
+    <Compile Include="Infrastructure\IAckHandler.cs" />
     <Compile Include="Hubs\Pipeline\HubPipeline.cs" />
     <Compile Include="Hubs\Pipeline\IHubIncomingInvokerContext.cs" />
     <Compile Include="Hubs\Pipeline\IHubPipeline.cs" />
@@ -160,9 +161,9 @@
     <Compile Include="MessageBus\Topic.cs" />
     <Compile Include="MessageBus\TopicState.cs" />
     <Compile Include="MessageBus\Volatile.cs" />
-    <Compile Include="PersistentConnectionContext.cs" />
-    <Compile Include="PersistentConnectionFactory.cs" />
-    <Compile Include="EmptyConnectionIdPrefixGenerator.cs" />
+    <Compile Include="Infrastructure\PersistentConnectionContext.cs" />
+    <Compile Include="Infrastructure\PersistentConnectionFactory.cs" />
+    <Compile Include="Infrastructure\EmptyConnectionIdPrefixGenerator.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\MethodDescriptor.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
@@ -171,7 +172,7 @@
     <Compile Include="IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
-    <Compile Include="Infrastructure\DependencyResolverExtensions.cs" />
+    <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Infrastructure\TraceManager.cs" />
@@ -179,24 +180,25 @@
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\Lookup\ReflectedHubDescriptorProvider.cs" />
-    <Compile Include="Hubs\Hub.cs" />
+    <Compile Include="Hub.cs" />
     <Compile Include="Hubs\ClientProxy.cs" />
     <Compile Include="Hubs\HubCallerContext.cs" />
     <Compile Include="Hubs\HubDispatcher.cs" />
     <Compile Include="Hubs\Lookup\IHubDescriptorProvider.cs" />
     <Compile Include="Hubs\SignalProxy.cs" />
     <Compile Include="Hubs\NullJavaScriptMinifier.cs" />
-    <Compile Include="Infrastructure\IDependencyResolver.cs" />
+    <Compile Include="IDependencyResolver.cs" />
     <Compile Include="Hubs\IJavaScriptMinifier.cs" />
     <Compile Include="Infrastructure\SafeSet.cs" />
-    <Compile Include="ITransportConnection.cs" />
+    <Compile Include="Transports\TransportConnectionExtensions.cs" />
+    <Compile Include="Transports\ITransportConnection.cs" />
     <Compile Include="Json\JsonNetSerializer.cs" />
     <Compile Include="Json\JsonUtility.cs" />
     <Compile Include="GroupManager.cs" />
     <Compile Include="Infrastructure\ServerCommand.cs" />
     <Compile Include="Infrastructure\ServerCommandType.cs" />
     <Compile Include="Infrastructure\ServerCommandHandler.cs" />
-    <Compile Include="Command.cs" />
+    <Compile Include="MessageBus\Command.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

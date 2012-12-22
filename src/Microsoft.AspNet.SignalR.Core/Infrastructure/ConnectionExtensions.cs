@@ -2,31 +2,12 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR
 {
     public static class ConnectionExtensions
-    {
-        internal static Task Close(this ITransportConnection connection, string connectionId)
-        {
-            var command = new Command
-            {
-                CommandType = CommandType.Disconnect
-            };
-
-            return connection.Send(new ConnectionMessage(connectionId, command));
-        }
-
-        internal static Task Abort(this ITransportConnection connection, string connectionId)
-        {
-            var command = new Command
-            {
-                CommandType = CommandType.Abort
-            };
-
-            return connection.Send(new ConnectionMessage(connectionId, command));
-        }
-
+    {        
         /// <summary>
         /// Sends a message to all connections subscribed to the specified signal. An example of signal may be a
         /// specific connection id, or fully qualified group name (Use <see cref="IGroupManager"/> to manipulate groups).

@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hubs;
 
-namespace Microsoft.AspNet.SignalR.Hubs
+namespace Microsoft.AspNet.SignalR
 {
     /// <summary>
     /// Provides methods that communicate with SignalR connections that connected to a <see cref="Hub"/>.

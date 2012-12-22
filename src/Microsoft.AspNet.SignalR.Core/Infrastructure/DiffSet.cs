@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Microsoft.AspNet.SignalR.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal class DiffSet<T>
     {

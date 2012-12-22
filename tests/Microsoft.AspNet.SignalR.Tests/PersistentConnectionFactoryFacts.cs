@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Xunit;
 

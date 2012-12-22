@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
     /// Responsible for creating <see cref="PersistentConnection"/> instances.
