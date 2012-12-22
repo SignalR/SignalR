@@ -7,8 +7,18 @@
         Granted, the command line runner still acts as if all requests are not cross domain.
         ***************************************************************************************/
 
+        // Maintain a reference to the original isCrossDomain function
+        var signalRCrossDomain = $.connection.prototype.isCrossDomain;
+
+        window.document.crossDomainDisabled = true;        
+
         $.connection.prototype.isCrossDomain = function () {
-            return false;
+            if (window.document.crossDomainDisabled) {
+                return false;
+            }
+            else {
+                return signalRCrossDomain.apply(this, arguments);
+            }
         }
     }
 })($, window);
