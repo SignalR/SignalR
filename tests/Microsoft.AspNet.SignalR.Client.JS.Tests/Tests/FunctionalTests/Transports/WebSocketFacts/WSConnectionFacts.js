@@ -1,4 +1,4 @@
-﻿QUnit.module("Web Sockets Connection Facts", testUtilities.webSocketsEnabled);
+﻿QUnit.module("Web Sockets Facts", testUtilities.webSocketsEnabled);
 
 QUnit.asyncTimeoutTest("Web Sockets transport can connect.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection();
