@@ -1,14 +1,14 @@
-﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
+﻿QUnit.module("Web Sockets Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling can send ", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Web Sockets can send ", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;
 
     // Must subscribe to at least one method on client
-    demo.client.foo = function () {};
+    demo.client.foo = function () { };
 
-    connection.start({ transport: "longPolling" }).done(function () {
+    connection.start({ transport: "webSockets" }).done(function () {
         demo.server.overload(6).done(function (val) {
             assert.equal(val, 6, "Successful return value from server via send");
             end();
