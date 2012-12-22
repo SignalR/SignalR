@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(String.Format(CultureInfo.CurrentCulture, Resources.Error_KeepAliveMustBeGreaterThanZero));
+                    throw new ArgumentOutOfRangeException(Resources.Error_KeepAliveMustBeGreaterThanZero);
                 }
 
                 _keepAlive = value;
