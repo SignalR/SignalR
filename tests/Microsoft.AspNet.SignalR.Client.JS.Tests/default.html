@@ -11,13 +11,13 @@
         <div id="qunit"></div>
         <script src="Scripts/jquery-1.6.4.js"></script>
         <script src="Scripts/qunit.js"></script>
-        <script src="Scripts/qunit.extensions.js"></script>
-        <script src="Scripts/test.utilities.js"></script>
+        <script src="Scripts/qunit.extensions.js"></script>        
         <script src="Build/teamCityIntegration.js"></script>
         <script src="http://testswarm.cloudapp.net/js/inject.js"></script>        
         <script src="Scripts/jquery.signalR.js"></script>                
         <!-- ##SIGNALRHUBS## --><script type='text/javascript' src='signalr/hubs'></script><!-- ##SIGNALRHUBS## -->
         <script src="Build/test.config.js"></script>
+        <script src="Scripts/test.utilities.js"></script>
         <script src="Build/disableCrossDomain.js"></script>
 
         <!-- 
@@ -27,10 +27,12 @@
             -->
         <!-- ##JS## --><script type="text/javascript" src="Tests/FunctionalTests/Transports/Auto/FallbackConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/Common/PingServerFacts.js"></script>
+<script type="text/javascript" src="Tests/FunctionalTests/Transports/ForeverFrame/FFConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/LongPolling/LPConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/LongPolling/LPReconnectFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/LongPolling/LPSendFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/ServerSentEvents/SSEConnectionFacts.js"></script>
+<script type="text/javascript" src="Tests/FunctionalTests/Transports/WebSocketFacts/WSConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/SignalRFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Common/ConnectionUtilityFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Connections/ConnectionFacts.js"></script>
