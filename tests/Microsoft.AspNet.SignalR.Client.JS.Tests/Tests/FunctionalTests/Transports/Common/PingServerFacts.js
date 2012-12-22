@@ -1,4 +1,4 @@
-﻿QUnit.module("Ping Server Facts");
+﻿QUnit.module("Ping Server Facts - Long Polling", testUtilities.longPollingEnabled);
 
 QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
@@ -28,6 +28,8 @@ QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", 5000,
         connection.stop();
     };
 });
+
+QUnit.module("Ping Server Facts - Server Sent Events", testUtilities.serverSentEventsEnabled);
 
 QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
