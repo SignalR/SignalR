@@ -216,7 +216,7 @@
     <Compile Include="Transports\TransportHeartBeat.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />
     <Compile Include="PersistentConnection.cs" />
-    <Compile Include="PersistentResponse.cs" />
+    <Compile Include="Transports\PersistentResponse.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
     <Compile Include="Infrastructure\Connection.cs" />
     <Compile Include="IConnection.cs" />
