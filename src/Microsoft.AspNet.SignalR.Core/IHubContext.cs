@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using Microsoft.AspNet.SignalR.Hubs;
 
-namespace Microsoft.AspNet.SignalR.Hubs
+namespace Microsoft.AspNet.SignalR
 {
     /// <summary>
     /// Provides access to information about a <see cref="IHub"/>.
