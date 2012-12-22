@@ -72,6 +72,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public void Schedule(ISubscription subscription)
         {
+            if (subscription == null)
+            {
+                throw new ArgumentNullException("subscription");
+            }
+
             if (_disposed)
             {
                 // Don't queue up new work if we've disposed the broker
