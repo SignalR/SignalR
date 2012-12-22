@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Handlers;
 

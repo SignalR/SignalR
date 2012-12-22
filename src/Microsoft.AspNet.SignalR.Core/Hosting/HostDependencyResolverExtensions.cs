@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Infrastructure
+namespace Microsoft.AspNet.SignalR.Hosting
 {
     public static class HostDependencyResolverExtensions
     {

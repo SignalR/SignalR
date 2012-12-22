@@ -67,7 +67,7 @@
     <Compile Include="Hosting\IWebSocketRequest.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="IResponse.cs" />
-    <Compile Include="Infrastructure\HostDependencyResolverExtensions.cs" />
+    <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
     <Compile Include="Messaging\CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
@@ -162,7 +162,7 @@
     <Compile Include="Messaging\TopicState.cs" />
     <Compile Include="Messaging\Volatile.cs" />
     <Compile Include="Infrastructure\PersistentConnectionContext.cs" />
-    <Compile Include="Infrastructure\PersistentConnectionFactory.cs" />
+    <Compile Include="Hosting\PersistentConnectionFactory.cs" />
     <Compile Include="Infrastructure\EmptyConnectionIdPrefixGenerator.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\MethodDescriptor.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
@@ -171,11 +171,11 @@
     <Compile Include="Hubs\IHub.cs" />
     <Compile Include="Infrastructure\IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
-    <Compile Include="Infrastructure\ITraceManager.cs" />
+    <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
     <Compile Include="Hosting\RequestExtensions.cs" />
-    <Compile Include="Infrastructure\TraceManager.cs" />
+    <Compile Include="Tracing\TraceManager.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />
     <Compile Include="Hubs\DefaultJavaScriptProxyGenerator.cs" />

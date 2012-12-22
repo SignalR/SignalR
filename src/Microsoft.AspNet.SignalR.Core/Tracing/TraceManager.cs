@@ -4,7 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.SignalR.Infrastructure
+namespace Microsoft.AspNet.SignalR.Tracing
 {
     public class TraceManager : ITraceManager
     {

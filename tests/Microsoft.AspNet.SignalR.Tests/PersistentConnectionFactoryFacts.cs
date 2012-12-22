@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Hosting;
 using Moq;
 using Xunit;
 
