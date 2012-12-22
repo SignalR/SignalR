@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Stress.Connections;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;

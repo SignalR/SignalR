@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Tests.Hosting
 {

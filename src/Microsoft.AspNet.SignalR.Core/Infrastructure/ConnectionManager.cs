@@ -9,7 +9,7 @@ using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
     /// Default <see cref="IConnectionManager"/> implementation.

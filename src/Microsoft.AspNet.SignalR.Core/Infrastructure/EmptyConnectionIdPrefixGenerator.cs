@@ -3,7 +3,7 @@
 using System;
 using System.Security.Principal;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
     /// The default connection id prefix generator.

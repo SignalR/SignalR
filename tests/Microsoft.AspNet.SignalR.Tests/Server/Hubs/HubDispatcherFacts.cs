@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hubs;
 using Moq;
 using Xunit;

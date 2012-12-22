@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Owin

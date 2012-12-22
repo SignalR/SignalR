@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Tests.Hosting
 {

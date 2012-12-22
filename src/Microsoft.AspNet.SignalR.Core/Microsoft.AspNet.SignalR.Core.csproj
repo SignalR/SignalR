@@ -55,7 +55,7 @@
     </Compile>
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
-    <Compile Include="ConnectionManager.cs" />
+    <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DiffPair.cs" />
     <Compile Include="Infrastructure\DiffSet.cs" />
@@ -63,10 +63,10 @@
     <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
     <Compile Include="Hosting\HostContextExtensions.cs" />
-    <Compile Include="Hosting\Cookie.cs" />
+    <Compile Include="Cookie.cs" />
     <Compile Include="Hosting\IWebSocketRequest.cs" />
-    <Compile Include="Hosting\IRequest.cs" />
-    <Compile Include="Hosting\IResponse.cs" />
+    <Compile Include="IRequest.cs" />
+    <Compile Include="IResponse.cs" />
     <Compile Include="Infrastructure\HostDependencyResolverExtensions.cs" />
     <Compile Include="MessageBus\CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
@@ -118,7 +118,7 @@
     <Compile Include="Json\IJsonWritable.cs" />
     <Compile Include="Json\JTokenValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
-    <Compile Include="Infrastructure\ConnectionExtensions.cs" />
+    <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubManagerExtensions.cs" />
     <Compile Include="Hubs\Lookup\DefaultParameterResolver.cs" />
@@ -169,7 +169,7 @@
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
-    <Compile Include="IConnectionIdPrefixGenerator.cs" />
+    <Compile Include="Infrastructure\IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Infrastructure\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
@@ -218,7 +218,7 @@
     <Compile Include="PersistentConnection.cs" />
     <Compile Include="PersistentResponse.cs" />
     <Compile Include="TaskAsyncHelper.cs" />
-    <Compile Include="Connection.cs" />
+    <Compile Include="Infrastructure\Connection.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
     <Compile Include="MessageBus\Message.cs" />

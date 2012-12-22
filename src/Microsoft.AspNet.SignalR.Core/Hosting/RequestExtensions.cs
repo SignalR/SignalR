@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Hosting
 {
     internal static class RequestExtensions
     {

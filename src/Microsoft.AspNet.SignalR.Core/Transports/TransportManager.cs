@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {

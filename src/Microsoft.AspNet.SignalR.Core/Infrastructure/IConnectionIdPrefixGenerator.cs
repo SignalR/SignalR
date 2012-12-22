@@ -2,7 +2,7 @@
 
 using System.Security.Principal;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
     /// Used to generate prefixes for connection ids.

@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Tests.Core
 {
