@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using System;
 using System.Net;

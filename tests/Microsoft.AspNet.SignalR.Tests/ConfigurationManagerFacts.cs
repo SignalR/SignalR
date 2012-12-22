@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Microsoft.AspNet.SignalR.Configuration;
+using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {

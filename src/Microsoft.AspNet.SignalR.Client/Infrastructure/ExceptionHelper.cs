@@ -2,6 +2,7 @@
 
 using System;
 using System.Net;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {

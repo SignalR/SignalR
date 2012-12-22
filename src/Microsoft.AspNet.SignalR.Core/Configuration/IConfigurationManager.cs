@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Configuration
 {
     /// <summary>
     /// Provides access to server configuration.

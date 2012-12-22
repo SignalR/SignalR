@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Configuration
 {
     public class DefaultConfigurationManager : IConfigurationManager
     {

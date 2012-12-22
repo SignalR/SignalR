@@ -2,9 +2,9 @@
 
 using System;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
-    public static class ExceptionsExtensions
+    internal static class ExceptionsExtensions
     {
         internal static Exception Unwrap(this Exception ex)
         {

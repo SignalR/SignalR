@@ -132,8 +132,8 @@
     <Compile Include="Hubs\Lookup\IMethodDescriptorProvider.cs" />
     <Compile Include="Hubs\Lookup\DefaultHubManager.cs" />
     <Compile Include="Hubs\Lookup\IHubManager.cs" />
-    <Compile Include="IConnectionManager.cs" />
-    <Compile Include="Infrastructure\DefaultDependencyResolver.cs" />
+    <Compile Include="Infrastructure\IConnectionManager.cs" />
+    <Compile Include="DefaultDependencyResolver.cs" />
     <Compile Include="Infrastructure\IServerIdManager.cs" />
     <Compile Include="Infrastructure\ServerIdManager.cs" />
     <Compile Include="IPersistentConnectionContext.cs" />
