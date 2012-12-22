@@ -1,4 +1,4 @@
-﻿QUnit.module("Long Polling Facts");
+﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
 
 QUnit.asyncTimeoutTest("Long Polling transport can connect.", 5000, function (end, assert) {
     var connection = testUtilities.createHubConnection();
