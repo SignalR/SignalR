@@ -40,9 +40,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             _counters = performanceCounterManager;
         }
 
-        public static event Action<PersistentResponse> SendingResponse;
-        public static event Action<string> Receiving;
-
         /// <summary>
         /// The number of milliseconds to tell the browser to wait before restablishing a
         /// long poll connection after data is sent from the server. Defaults to 0.
@@ -163,11 +160,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Heartbeat.MarkConnection(this);
 
-            if (SendingResponse != null)
-            {
-                SendingResponse(response);
-            }
-
             AddTransportData(response);
 
             return Send((object)response);
@@ -200,11 +192,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
-
-            if (Receiving != null)
-            {
-                Receiving(data);
-            }
 
             if (Received != null)
             {
