@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal unsafe class Cursor
     {

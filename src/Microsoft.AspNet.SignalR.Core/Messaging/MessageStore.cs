@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Messaging
 {
     // Represents a message store that is backed by a ring buffer.
     public sealed class MessageStore<T> where T : class

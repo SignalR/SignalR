@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Messaging
 {
     // TODO: This structure grows infinitely so we need to bound it
     public class Linktionary<TKey, TValue>

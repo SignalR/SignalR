@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System.Collections.Generic;
     using System.IO;
+    using Microsoft.AspNet.SignalR.Messaging;
     using Microsoft.ServiceBus.Messaging;
 
     static class MessageConverter

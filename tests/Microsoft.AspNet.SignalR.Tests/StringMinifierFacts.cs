@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests

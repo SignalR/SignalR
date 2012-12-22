@@ -5,6 +5,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Microsoft.AspNet.SignalR.Messaging;
 
     sealed class MessageDispatcher
     {

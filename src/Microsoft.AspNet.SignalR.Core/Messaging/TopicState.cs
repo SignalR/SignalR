@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.SignalR
+﻿namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal class TopicState
     {

@@ -8,14 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Messaging
 {
     /// <summary>
     /// This class is the main coordinator. It schedules work to be done for a particular subscription 
     /// and has an algorithm for choosing a number of workers (thread pool threads), to handle
     /// the scheduled work.
     /// </summary>
-    internal class MessageBroker : IDisposable
+    public class MessageBroker : IDisposable
     {
         private readonly Queue<ISubscription> _queue = new Queue<ISubscription>();
 

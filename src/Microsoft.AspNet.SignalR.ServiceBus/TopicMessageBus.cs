@@ -6,6 +6,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
+    using Microsoft.AspNet.SignalR.Messaging;
     using Microsoft.ServiceBus;
     using Microsoft.ServiceBus.Messaging;
 

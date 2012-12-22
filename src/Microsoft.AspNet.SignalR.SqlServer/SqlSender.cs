@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Messaging;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
