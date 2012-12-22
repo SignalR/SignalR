@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly object _counterLock = new object();
 
         private int _running;
+        private ulong _heartbeatCount;
 
         /// <summary>
         /// Initializes and instance of the <see cref="TransportHeartbeat"/> class.
@@ -193,9 +194,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             try
             {
+                _heartbeatCount++;
+
                 foreach (var metadata in _connections.Values)
                 {
-                    metadata.UpdateHeartbeatCount();
 
                     if (metadata.Connection.IsAlive)
                     {
@@ -301,7 +303,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Raise keep alive if the keep alive value has passed
-            return metadata.HeartbeatCount % (ulong)keepAlive == 0;
+            return _heartbeatCount % (ulong)keepAlive == 0;
         }
 
         private bool RaiseTimeout(ConnectionMetadata metadata)
@@ -369,14 +371,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // The initial connection time of the connection
             public DateTime Initial { get; set; }
-
-            // Number of heartbeats
-            public ulong HeartbeatCount { get; set; }
-
-            public void UpdateHeartbeatCount()
-            {
-                HeartbeatCount++;
-            }
         }
     }
 }
