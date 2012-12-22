@@ -15,6 +15,18 @@
             connection.logging = true;
 
             return connection;
-        }
+        },
+        webSocketsEnabled: (function() {
+            return (window.MozWebSocket || window.WebSocket) && !window.document.commandLineTest;
+        })(),
+        foreverFrameEnabled: (function () {
+            return !window.EventSource && !window.document.commandLineTest;
+        })(),
+        serverSentEventsEnabled: (function () {
+            return !!window.EventSource;
+        })(),
+        longPollingEnabled: (function () {
+            return true;
+        })()
     };
 })($, window);
