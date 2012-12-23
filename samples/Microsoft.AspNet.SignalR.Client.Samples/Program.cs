@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private static void RunStreamingSample()
         {
-            var connection = new Connection("http://localhost:8081/Raw/raw");
+            var connection = new Connection("http://localhost:40476/raw-connection");
 
             connection.Received += data =>
             {
@@ -89,8 +89,9 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             Console.WriteLine("Choose transport:");
             Console.WriteLine("1. AutoTransport");
-            Console.WriteLine("2. ServerSentEventsTransport");
-            Console.WriteLine("3. LongPollingTransport");
+            Console.WriteLine("2. WebSocketsTransort");
+            Console.WriteLine("3. ServerSentEventsTransport");
+            Console.WriteLine("4. LongPollingTransport");
             Console.Write("Option: ");
 
             Task startTask = null;
@@ -104,9 +105,13 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             }
             else if (key.Key == ConsoleKey.D2)
             {
-                startTask = connection.Start(new Client.Transports.ServerSentEventsTransport());
+                startTask = connection.Start(new Client.Transports.WebSocketTransport());
             }
             else if (key.Key == ConsoleKey.D3)
+            {
+                startTask = connection.Start(new Client.Transports.ServerSentEventsTransport());
+            }
+            else if (key.Key == ConsoleKey.D4)
             {
                 startTask = connection.Start(new Client.Transports.LongPollingTransport());
             }
@@ -117,6 +122,8 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
                 try
                 {
                     task.Wait();
+
+                    Console.WriteLine("Using {0}", connection.Transport.Name);
                 }
                 catch (Exception ex)
                 {
@@ -132,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
                 string line = null;
                 while ((line = Console.ReadLine()) != null)
                 {
-                    connection.Send(new { type = 1, value = line });
+                    connection.Send(new { type = 1, value = line }).Wait();
                 }
 
                 wh.Set();

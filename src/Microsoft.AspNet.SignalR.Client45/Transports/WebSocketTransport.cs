@@ -18,6 +18,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
 
+        public WebSocketTransport()
+            : this(new DefaultHttpClient())
+        {
+        }
+
         public WebSocketTransport(IHttpClient client)
         {
             _client = client;
