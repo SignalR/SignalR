@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client
 {

@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
     /// Helper class to manage disposing a resource at an arbirtary time

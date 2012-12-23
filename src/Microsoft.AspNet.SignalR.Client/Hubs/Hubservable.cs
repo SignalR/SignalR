@@ -3,6 +3,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {

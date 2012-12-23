@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
 

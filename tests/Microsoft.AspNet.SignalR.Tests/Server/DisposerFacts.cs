@@ -1,4 +1,5 @@
 ﻿using Xunit;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {

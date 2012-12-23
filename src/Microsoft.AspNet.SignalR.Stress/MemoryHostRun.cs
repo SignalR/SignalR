@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Stress.Connections;
 
 namespace Microsoft.AspNet.SignalR.Stress

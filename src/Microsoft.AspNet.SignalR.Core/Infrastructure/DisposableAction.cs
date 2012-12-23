@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal class DisposableAction : IDisposable
     {

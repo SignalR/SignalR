@@ -66,7 +66,7 @@
     <Compile Include="Cookie.cs" />
     <Compile Include="Hosting\IWebSocketRequest.cs" />
     <Compile Include="IRequest.cs" />
-    <Compile Include="IResponse.cs" />
+    <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
     <Compile Include="Messaging\CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />

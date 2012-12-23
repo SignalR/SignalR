@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
