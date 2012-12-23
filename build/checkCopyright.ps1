@@ -27,15 +27,26 @@ function NeedsCopyright([string]$FileName) {
     return !$line -or !$line.StartsWith("// Copyright") 
 }
 
-function Get-FilesWithoutCopyright($Directory) {
+function Get-FilesWithoutCopyright([string]$Directory) {
     return Get-ChildItem $Directory -Recurse -Filter *.cs | Where-Object { NeedsCopyright $_.FullName } | Select-Object FullName
 }
 
 function WriteWarnings([string]$Directory, $Files) {
     Write-Warning "There are $($Files.Length) files in '$Directory' without a copyright header:"
-    $Files | ForEach-Object { Write-Warning $_.FullName }
+    if($Files.Length) {
+        $Files | ForEach-Object { Write-Warning $_.FullName }
+    }
+}
+
+function FixCopyright([string]$FileName) {
+    $lines = New-Object System.Collections.ArrayList(,(Get-Content $FileName))
+    $lines.Insert(0, "")
+    $lines.Insert(0, $Header)
+
+    $lines | Set-Content $FileName -Encoding UTF8
 }
 
 $srcFilesWithoutCopyright = Get-FilesWithoutCopyright $SrcRoot
 
 WriteWarnings $SrcRoot $srcFilesWithoutCopyright
+$srcFilesWithoutCopyright | ForEach-Object { FixCopyright $_.FullName }
