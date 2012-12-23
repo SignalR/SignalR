@@ -172,6 +172,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 }
                 Close();
             }
+            catch (ObjectDisposedException)
+            {
+                // Happens when we pass an already disposed cancelation token to the messageRetriever
+                Close();
+            }
             catch (OperationCanceledException)
             {
                 Close();
