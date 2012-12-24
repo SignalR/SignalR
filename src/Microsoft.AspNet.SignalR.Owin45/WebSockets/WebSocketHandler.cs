@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -102,18 +103,23 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             });
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared code")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to swallow exceptions that may have been thrown already")]
         internal void Abort()
         {
             try
             {
                 // Drain the queue
                 _sendQueue.Drain().Wait();
-
-                // Then abort the socket
-                WebSocket.Abort();
             }
             catch
             {
+                // Swallow exceptions draining the queue
+            }
+            finally
+            {
+                // Then abort the socket
+                WebSocket.Abort();
             }
         }
 
