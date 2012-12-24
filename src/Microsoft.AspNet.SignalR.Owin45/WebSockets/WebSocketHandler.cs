@@ -102,6 +102,21 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             });
         }
 
+        internal void Abort()
+        {
+            try
+            {
+                // Drain the queue
+                _sendQueue.Drain().Wait();
+
+                // Then abort the socket
+                WebSocket.Abort();
+            }
+            catch
+            {
+            }
+        }
+
         /*
          * CONFIGURATION PROPERTIES
          */

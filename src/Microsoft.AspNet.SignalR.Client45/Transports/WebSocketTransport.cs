@@ -7,6 +7,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -74,7 +75,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("WS: " + builder.Uri);
 
             var webSocket = new ClientWebSocket();
-            _connectionInfo.WebSocket = webSocket;
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
 
             await webSocket.ConnectAsync(builder.Uri, _disconnectToken);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void Abort(IConnection connection)
         {
-            _connectionInfo.WebSocket.Abort();
+            Abort();
         }
 
         public Task Send(IConnection connection, string data)
@@ -143,7 +143,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 catch (Exception ex)
                 {
-                    _connectionInfo.Connection.OnError(ex);
+                    if (!ExceptionHelper.IsRequestAborted(ex))
+                    {
+                        _connectionInfo.Connection.OnError(ex);
+                    }
                 }
 
                 await Task.Delay(ReconnectDelay);
@@ -161,7 +164,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             public IConnection Connection { get; private set; }
             public string Data { get; private set; }
-            public ClientWebSocket WebSocket { get; set; }
 
             public WebSocketConnectionInfo(IConnection connection, string data)
             {
