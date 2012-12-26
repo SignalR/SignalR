@@ -143,10 +143,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 catch (Exception ex)
                 {
-                    if (!ExceptionHelper.IsRequestAborted(ex))
+                    if (ExceptionHelper.IsRequestAborted(ex))
                     {
-                        _connectionInfo.Connection.OnError(ex);
+                        break;
                     }
+
+                    _connectionInfo.Connection.OnError(ex);
                 }
 
                 await Task.Delay(ReconnectDelay);
