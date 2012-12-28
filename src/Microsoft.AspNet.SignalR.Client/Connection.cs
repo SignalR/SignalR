@@ -83,13 +83,13 @@ namespace Microsoft.AspNet.SignalR.Client
             : this(url, (string)null)
         {
         }
-        public Connection(string url, string querystring, string userAgent)
+        public Connection(string url, string querystring, string userInfo)
             : this(url, (string)null)
         {
-            _userAgent = userAgent;
+            _userInfo = userInfo;
         }
 
-        private string _userAgent;
+        private string _userInfo;
         /// <summary>
         /// Initializes a new instance of the <see cref="Connection"/> class.
         /// </summary>
@@ -484,7 +484,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #if SILVERLIGHT
             // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
 #else
-            request.UserAgent = CreateUserAgentString("SignalR.Client-" + _userAgent);
+            request.UserAgent = CreateUserAgentString(_userInfo);
 #endif
 #endif
             if (Credentials != null)

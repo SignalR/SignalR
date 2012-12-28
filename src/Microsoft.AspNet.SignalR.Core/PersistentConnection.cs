@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = ConnectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
+                ConnectionId = ConnectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request),// + Guid.NewGuid().ToString("d"),
                 KeepAlive = (keepAlive != null) ? keepAlive.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),

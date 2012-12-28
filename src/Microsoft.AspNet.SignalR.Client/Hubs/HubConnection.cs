@@ -35,8 +35,8 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             : base(GetUrl(url, useDefaultUrl))
         {
         }
-        public HubConnection(string url, string queryString, string userAgent)
-            : base(GetUrl(url, true), queryString, userAgent)
+        public HubConnection(string url, string queryString, string userInfo)
+            : base(GetUrl(url, true), queryString, userInfo)
         { }
 
         /// <summary>
