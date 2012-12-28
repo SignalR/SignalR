@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.SignalR.Configuration
         TimeSpan HeartbeatInterval { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time to wait before sending a keep alive packet over an idle connection. Set to null to disable keep alive.
+        /// Indicates how many Heartbeats to wait before triggering keep alive.  To convert this
+        /// value to a time span simply multiply it by the HeartbeatInterval.
         /// </summary>
         int KeepAlive { get; set; }
 
