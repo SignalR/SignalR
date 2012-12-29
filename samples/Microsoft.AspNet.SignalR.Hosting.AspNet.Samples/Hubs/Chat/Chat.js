@@ -195,6 +195,7 @@ $(function () {
     $('#new-message').val('');
     $('#new-message').focus();
 
+    $.connection.hub.logging = true;
     $.connection.hub.start({ transport: activeTransport }, function () {
         chat.server.join()
             .done(function (success) {
