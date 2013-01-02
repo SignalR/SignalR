@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Principal;
 
@@ -14,8 +14,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private string[] _rolesSplit = new string[0];
         private string _users;
         private string[] _usersSplit = new string[0];
+        private bool? _requireOutgoing;
 
-        public AuthorizeMode Mode { get; set; }
+        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification="Must be property because this is an attribute parameter.")]
+        public bool RequireOutgoing {
+            // It is impossible to tell here whether the attribute is being applied to a method or class. This makes
+            // it impossible to determine whether the value should be true or false when _requireOutgoing is null.
+            // It is also impossible to have a Nullable attribute parameter type.
+            get { throw new NotImplementedException(Resources.Error_DoNotReadRequireOutgoing); }
+            set { _requireOutgoing = value; }
+        }
 
         public string Roles
         {
@@ -44,33 +52,33 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("request");
             }
 
-            switch (Mode)
+            // If RequireOutgoing is explicitly set to false, authorize all connections.
+            if (_requireOutgoing.HasValue && !_requireOutgoing.Value)
             {
-                case AuthorizeMode.Both:
-                case AuthorizeMode.Outgoing:
-                    return UserAuthorized(request.User);
-                default:
-                    Debug.Assert(Mode == AuthorizeMode.Incoming); // Guard in case new values are added to the enum
-                    return true;
+                return true;
             }
+
+            return UserAuthorized(request.User);
         }
 
-        public bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext)
+        public bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext, bool appliesToMethod)
         {
             if (hubIncomingInvokerContext == null)
             {
                 throw new ArgumentNullException("hubIncomingInvokerContext");
             }
 
-            switch (Mode)
+            // It is impossible to require outgoing auth at the method level with SignalR's current design.
+            // Even though this isn't the stage at which outgoing auth would be applied, we want to throw a runtime error
+            // to indicate when the attribute is being used with obviously incorrect expectations.
+
+            // We must explicitly check if _requireOutgoing is true since it is a Nullable type.
+            if (appliesToMethod && (_requireOutgoing == true))
             {
-                case AuthorizeMode.Both:
-                case AuthorizeMode.Incoming:
-                    return UserAuthorized(hubIncomingInvokerContext.Hub.Context.User);
-                default:
-                    Debug.Assert(Mode == AuthorizeMode.Outgoing); // Guard in case new values are added to the enum
-                    return true;
+                throw new ArgumentException(Resources.Error_MethodLevelOutgoingAuthorization);
             }
+
+            return UserAuthorized(hubIncomingInvokerContext.Hub.Context.User);
         }
 
         private bool UserAuthorized(IPrincipal user)

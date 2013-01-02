@@ -87,9 +87,6 @@
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\NoAuthHub.cs">
       <Link>Hubs\NoAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\OutgoingAuthHub.cs">
-      <Link>Hubs\OutgoingAuthHub.cs</Link>
-    </Compile>
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\UserAndRoleAuthHub.cs">
       <Link>Hubs\UserAndRoleAuthHub.cs</Link>
     </Compile>

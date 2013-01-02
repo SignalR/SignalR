@@ -5,7 +5,6 @@ $(function () {
         'Messages Requiring Authentication to Send or Receive': $.connection.authHub,
         'Messages Requiring Authentication to Send or Receive Because of Inheritance': $.connection.inheritAuthHub,
         'Messages Requiring Authentication to Send': $.connection.incomingAuthHub,
-        'Messages Requiring Authentication to Receive': $.connection.outgoingAuthHub,
         'Messages Requiring Admin Membership to Send or Receive': $.connection.adminAuthHub,
         'Messages Requiring Name to be "User" and Role to be "Admin" to Send or Receive': $.connection.userAndRoleAuthHub
     };
