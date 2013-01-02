@@ -37,12 +37,6 @@ $(function () {
         addMessage("Pong");
     }
 
-
-    $.connection.hub.stateChanged(function () {
-        console.log($.connection.hub.state);
-        addMessage("STATE: " + $.connection.hub.state);
-    });
-
     $.connection.hub.logging = true;
 
     stopButton.click(function () {
