@@ -225,7 +225,7 @@
 
         disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
 
-        keepAliveTimeoutCount: 2,
+        keepAliveTimeoutCount: 3,
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
