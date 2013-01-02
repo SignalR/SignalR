@@ -8,16 +8,20 @@ using System.Security.Principal;
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
-    public sealed class AuthorizeAttribute : Attribute, IAuthorizeHubConnection, IAuthorizeHubMethodInvocation
+    [SuppressMessage("Microsoft.Performance", "CA1813:AvoidUnsealedAttributes", Justification = "MVC and WebAPI don't seal their AuthorizeAttributes")]
+    public class AuthorizeAttribute : Attribute, IAuthorizeHubConnection, IAuthorizeHubMethodInvocation
     {
         private string _roles;
         private string[] _rolesSplit = new string[0];
         private string _users;
         private string[] _usersSplit = new string[0];
-        private bool? _requireOutgoing;
 
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification="Must be property because this is an attribute parameter.")]
-        public bool RequireOutgoing {
+        [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Already somewhat represented by set-only RequiredOutgoing property.")]
+        protected bool? _requireOutgoing;
+
+        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification = "Must be property because this is an attribute parameter.")]
+        public bool RequireOutgoing
+        {
             // It is impossible to tell here whether the attribute is being applied to a method or class. This makes
             // it impossible to determine whether the value should be true or false when _requireOutgoing is null.
             // It is also impossible to have a Nullable attribute parameter type.
@@ -45,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        public bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
+        public virtual bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
         {
             if (request == null)
             {
@@ -61,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return UserAuthorized(request.User);
         }
 
-        public bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext, bool appliesToMethod)
+        public virtual bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext, bool appliesToMethod)
         {
             if (hubIncomingInvokerContext == null)
             {
@@ -81,8 +85,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return UserAuthorized(hubIncomingInvokerContext.Hub.Context.User);
         }
 
-        private bool UserAuthorized(IPrincipal user)
+        protected virtual bool UserAuthorized(IPrincipal user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
             if (!user.Identity.IsAuthenticated)
             {
                 return false;
