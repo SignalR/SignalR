@@ -14,16 +14,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         protected Hub()
         {
-            Clients = new HubConnectionContext();
-            Clients.All = new NullClientProxy();
-            Clients.Others = new NullClientProxy();
-            Clients.Caller = new NullClientProxy();
+            Clients = new HubConnectionContext
+                {
+                    All = new NullClientProxy(), 
+                    Others = new NullClientProxy(), 
+                    Caller = new NullClientProxy()
+                };
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public HubConnectionContext Clients { get; set; }
+        public IHubConnectionContext Clients { get; set; }
 
         /// <summary>
         /// Provides information about the calling client.
