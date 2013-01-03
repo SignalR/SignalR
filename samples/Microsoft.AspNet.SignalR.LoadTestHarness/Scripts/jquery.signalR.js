@@ -166,16 +166,23 @@
         return requestedTransport;
     }
 
-    function removeDefaultPort(url) {
+    function getDefaultPort(protocol) {
+        if(protocol === "http:") {
+            return 80;
+        }
+        else if (protocol === "https:") {
+            return 443;
+        }
+    }
+
+    function addDefaultPort(protocol, url) {
         // Remove ports  from url.  We have to check if there's a / or end of line
         // following the port in order to avoid removing ports such as 8080.
-        return url.replace(/:(80|443)(\/|$)/, function (match) {
-            if (match === ":80/" || match === ":443/") {
-                return "/";
-            }
-
-            return "";
-        });
+        if(url.match(/:\d+$/)) {
+            return url;
+        } else {
+            return url + ":" + getDefaultPort(protocol);
+        }
     }
 
     signalR.fn = signalR.prototype = {
@@ -209,7 +216,7 @@
             link.href = url;
 
             // When checking for cross domain we have to special case port 80 because the window.location will remove the 
-            return link.protocol + removeDefaultPort(link.host) !== against.protocol + removeDefaultPort(against.host);
+            return link.protocol + addDefaultPort(link.protocol, link.host) !== against.protocol + addDefaultPort(against.protocol, against.host);
         },
 
         ajaxDataType: "json",
