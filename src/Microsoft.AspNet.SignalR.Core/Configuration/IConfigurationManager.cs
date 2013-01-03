@@ -34,5 +34,10 @@ namespace Microsoft.AspNet.SignalR.Configuration
         /// Gets of sets the number of messages to buffer for a specific signal.
         /// </summary>
         int DefaultMessageBufferSize { get; set; }
+
+        /// <summary>
+        /// Determines whether or not JavaScript proxies for server hubs should be generated. (The default location would be ~/signalr/hubs)
+        /// </summary>
+        bool DisableJavaScriptProxies { get; set; }
     }
 }
