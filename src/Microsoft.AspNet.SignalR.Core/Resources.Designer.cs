@@ -142,6 +142,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SignalR: JavaScript Hub proxy generation has been disabled..
+        /// </summary>
+        internal static string Error_JavaScriptProxyDisabled {
+            get {
+                return ResourceManager.GetString("Error_JavaScriptProxyDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Keep Alive value must be greater than zero..
         /// </summary>
         internal static string Error_KeepAliveMustBeGreaterThanZero {

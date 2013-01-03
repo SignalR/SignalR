@@ -57,5 +57,11 @@ namespace Microsoft.AspNet.SignalR.Configuration
             get;
             set;
         }
+
+        public bool DisableJavaScriptProxies
+        {
+            get;
+            set;
+        }
     }
 }

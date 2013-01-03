@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
@@ -62,7 +63,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("context");
             }
 
-            _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
+            var config = resolver.Resolve<IConfigurationManager>();
+            if (config.DisableJavaScriptProxies)
+            {
+                _proxyGenerator = new EmptyJavaScriptProxyGenerator();
+            }
+            else
+            {
+                _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
+            }
+
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
