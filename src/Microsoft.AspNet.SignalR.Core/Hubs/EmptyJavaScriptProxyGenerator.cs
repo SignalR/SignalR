@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    class EmptyJavaScriptProxyGenerator : IJavaScriptProxyGenerator
+    public class EmptyJavaScriptProxyGenerator : IJavaScriptProxyGenerator
     {
         public string GenerateProxy(string serviceUrl, bool includeDocComments)
         {
