@@ -17,7 +17,7 @@
             return connection;
         },
         webSocketsEnabled: (function() {
-            return (window.MozWebSocket || window.WebSocket) && !window.document.commandLineTest;
+            return !!((window.MozWebSocket || window.WebSocket) && !window.document.commandLineTest);
         })(),
         foreverFrameEnabled: (function () {
             return !window.EventSource && !window.document.commandLineTest;
