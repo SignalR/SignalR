@@ -168,8 +168,8 @@
     function removeDefaultPort(url) {
         // Remove ports  from url.  We have to check if there's a / or end of line
         // following the port in order to avoid removing ports such as 8080.
-        return url.replace(/:80(\/|$)/, function (match) {
-            if (match === ":80/") {
+        return url.replace(/:(80|443)(\/|$)/, function (match) {
+            if (match === ":80/" || match === ":443/") {
                 return "/";
             }
 
