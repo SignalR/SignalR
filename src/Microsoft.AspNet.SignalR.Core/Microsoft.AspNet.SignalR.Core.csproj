@@ -74,7 +74,6 @@
     <Compile Include="Hubs\HubConnectionContext.cs" />
     <Compile Include="Hubs\IHubConnectionContext.cs" />
     <Compile Include="Hubs\NullClientProxy.cs" />
-    <Compile Include="Hubs\Pipeline\Auth\AuthorizeMode.cs" />
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeModule.cs" />
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeAttribute.cs" />
     <Compile Include="Hubs\Pipeline\AutoRejoiningGroupsModule.cs" />

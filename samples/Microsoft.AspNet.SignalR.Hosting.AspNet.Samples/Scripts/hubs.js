@@ -329,15 +329,6 @@
              }
         };
 
-        proxies.outgoingAuthHub = this.createHubProxy('outgoingAuthHub'); 
-        proxies.outgoingAuthHub.client = { };
-        proxies.outgoingAuthHub.server = {
-            invokedFromClient: function () {
-            /// <summary>Calls the InvokedFromClient method on the server-side OutgoingAuthHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-                return proxies.outgoingAuthHub.invoke.apply(proxies.outgoingAuthHub, $.merge(["InvokedFromClient"], $.makeArray(arguments)));
-             }
-        };
-
         proxies.realtime = this.createHubProxy('realtime'); 
         proxies.realtime.client = { };
         proxies.realtime.server = {

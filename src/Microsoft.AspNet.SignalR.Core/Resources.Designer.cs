@@ -106,6 +106,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Do not read RequireOutgoing. Use protected _requireOutgoing instead..
+        /// </summary>
+        internal static string Error_DoNotReadRequireOutgoing {
+            get {
+                return ResourceManager.GetString("Error_DoNotReadRequireOutgoing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error creating Hub {0}. .
         /// </summary>
         internal static string Error_ErrorCreatingHub {
@@ -147,6 +156,15 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_MethodCouldNotBeResolved {
             get {
                 return ResourceManager.GetString("Error_MethodCouldNotBeResolved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outgoing authorization can only be required for an entire Hub, not a specific method..
+        /// </summary>
+        internal static string Error_MethodLevelOutgoingAuthorization {
+            get {
+                return ResourceManager.GetString("Error_MethodLevelOutgoingAuthorization", resourceCulture);
             }
         }
         
