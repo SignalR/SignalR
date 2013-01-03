@@ -75,11 +75,11 @@
                         deferral.resolve();
                     }
                     else {
-                        deferral.reject("SignalR: Invalid ping response when pinging server: " + data.responseText || data.statusText);
+                        deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
                     }
                 },
                 error: function (data) {
-                    deferral.reject("SignalR: Error pinging server: " + data.responseText || data.statusText);
+                    deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
                 }
             });
 
