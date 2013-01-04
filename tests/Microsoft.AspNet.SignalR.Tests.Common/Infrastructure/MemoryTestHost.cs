@@ -32,14 +32,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
-            if (keepAlive != null)
-            {
-                _host.Configuration.KeepAlive = keepAlive;
-            }
-            else
-            {
-                _host.Configuration.KeepAlive = 0;
-            }
+            _host.Configuration.KeepAlive = keepAlive;
 
             if (connectionTimeout != null)
             {
