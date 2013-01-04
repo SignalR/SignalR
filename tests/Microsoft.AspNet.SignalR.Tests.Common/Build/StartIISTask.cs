@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+﻿using System;
+using System.IO;
+using System.Net;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common
 {
@@ -18,7 +20,25 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
                 myHost.Initialize(2, 120, 10, 1, false);
             }
-            catch(Exception ex)
+            catch (WebException ex)
+            {
+                var response = ex.Response;
+                if (response == null)
+                {
+                    Log.LogError(ex.ToString());
+                    throw;
+                }
+
+                using (response)
+                {
+                    using (var sr = new StreamReader(response.GetResponseStream()))
+                    {
+                        Log.LogError(sr.ReadToEnd());
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 Log.LogError(ex.ToString());
                 throw;
