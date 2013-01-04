@@ -242,15 +242,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
-                    // If the keep alive send fails then kill the connection
                     metadata.Connection.KeepAlive()
                                        .Catch(ex =>
                                        {
                                            Trace.TraceInformation("Failed to send keep alive: " + ex.GetBaseException());
-
-                                           RemoveConnection(metadata.Connection);
-
-                                           metadata.Connection.End();
                                        });
                 }
 
