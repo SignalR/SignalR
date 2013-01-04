@@ -198,7 +198,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 foreach (var metadata in _connections.Values)
                 {
-
                     if (metadata.Connection.IsAlive)
                     {
                         CheckTimeoutAndKeepAlive(metadata);
