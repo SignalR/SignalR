@@ -172,7 +172,7 @@
         getGroups: function (connection) {
             var groups = [];
             if (connection.groups) {
-                $.each(connection.groups, function (group, _) {
+                $.each(connection.groups, function (group) {
                     // Add keys from connection.groups without the # prefix
                     groups.push(group.substr(1));
                 });
