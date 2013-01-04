@@ -752,18 +752,18 @@
                 return url + "&" + connection.qs;
             }
 
-            return url + "&" + window.escape(connection.qs.toString());
+            return url + "&" + window.encodeURIComponent(connection.qs.toString());
         },
 
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
-                qs = "transport=" + transport + "&connectionId=" + window.escape(connection.id),
+                qs = "transport=" + transport + "&connectionId=" + window.encodeURIComponent(connection.id),
                 groups = this.getGroups(connection);
 
             if (connection.data) {
-                qs += "&connectionData=" + window.escape(connection.data);
+                qs += "&connectionData=" + window.encodeURIComponent(connection.data);
             }
 
             if (!reconnecting) {
@@ -773,10 +773,10 @@
                     url = url + "/reconnect";
                 }
                 if (connection.messageId) {
-                    qs += "&messageId=" + window.escape(connection.messageId);
+                    qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
                 if (groups.length !== 0) {
-                    qs += "&groups=" + window.escape(JSON.stringify(groups));
+                    qs += "&groups=" + window.encodeURIComponent(JSON.stringify(groups));
                 }
             }
             url += "?" + qs;
@@ -834,7 +834,7 @@
         },
 
         ajaxSend: function (connection, data) {
-            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
+            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.encodeURIComponent(connection.id);
             url = this.addQs(url, connection);
             return $.ajax({
                 url: url,
@@ -870,7 +870,7 @@
             // Async by default unless explicitly overidden
             async = typeof async === "undefined" ? true : async;
 
-            var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionId=" + window.escape(connection.id);
+            var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionId=" + window.encodeURIComponent(connection.id);
             url = this.addQs(url, connection);
             $.ajax({
                 url: url,
