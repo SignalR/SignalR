@@ -108,8 +108,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ExpressRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\x86\Release\Microsoft.AspNet.SignalR.Client.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
