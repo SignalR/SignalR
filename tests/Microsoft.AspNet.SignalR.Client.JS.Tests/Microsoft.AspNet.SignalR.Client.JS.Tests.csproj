@@ -87,6 +87,7 @@
     <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSSendFacts.js" />
     <Content Include="Tests\UnitTests\Common\ConnectionUtilityFacts.js" />
+    <Content Include="Tests\UnitTests\Common\TransportUtilityFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
     <Content Include="Styles\qunit.css" />
     <Content Include="Scripts\qunit.js" />
