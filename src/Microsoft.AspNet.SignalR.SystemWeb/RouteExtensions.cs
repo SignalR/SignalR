@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Web.Routing;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.SystemWeb.Infrastructure;
@@ -53,16 +51,13 @@ namespace System.Web.Routing
         /// <param name="name">The name of the route</param>
         /// <param name="url">path pattern of the route. Should end with catch-all parameter.</param>
         /// <returns>The registered route</returns>
-        /// <example>
-        /// routes.MapConnection("echo", "echo/{*operation}", typeof(MyConnection));
-        /// </example>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type)
         {
             return MapConnection(routes, name, url, type, GlobalHost.DependencyResolver);
         }
 
         /// <summary>
-        /// Initializes the default hub route (~/signalr).
+        /// Initializes the default hub route (/signalr).
         /// </summary>
         /// <param name="routes">The route table</param>
         /// <returns>The registered route</returns>
@@ -72,18 +67,18 @@ namespace System.Web.Routing
         }
 
         /// <summary>
-        /// Changes the dependency resolver for the default hub route (~/signalr).
+        /// Changes the dependency resolver for the default hub route (/signalr).
         /// </summary>
         /// <param name="routes">The route table</param>
         /// <param name="resolver">The dependency resolver to use for the hub connection</param>
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes, IDependencyResolver resolver)
         {
-            return MapHubs(routes, "~/signalr", resolver);
+            return MapHubs(routes, "/signalr", resolver);
         }
 
         /// <summary>
-        /// Changes the default hub route from ~/signalr to a specified path.
+        /// Changes the default hub route from /signalr to a specified path.
         /// </summary>
         /// <param name="routes">The route table</param>
         /// <param name="url">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
@@ -94,7 +89,7 @@ namespace System.Web.Routing
         }
 
         /// <summary>
-        /// Changes the default hub route from ~/signalr to a specified path.
+        /// Changes the default hub route from /signalr to a specified path.
         /// </summary>
         /// <param name="routes">The route table</param>
         /// <param name="url">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
@@ -117,18 +112,10 @@ namespace System.Web.Routing
                 throw new ArgumentNullException("resolver");
             }
 
-            var existing = routes["signalr.hubs"];
-            if (existing != null)
-            {
-                routes.Remove(existing);
-            }
-
-            var routeUrl = url.TrimStart('~').TrimStart('/');
-
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
             resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
-            return routes.MapOwinRoute("signalr.hubs", routeUrl, map => map.MapHubs(resolver));
+            return routes.MapOwinRoute("signalr.hubs", url, map => map.MapHubs(resolver));
         }
 
 
@@ -143,15 +130,7 @@ namespace System.Web.Routing
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, IDependencyResolver resolver)
         {
-            var routeUrl = url ?? String.Empty;
-            var catchAllIndex = routeUrl.LastIndexOf("/{*", StringComparison.Ordinal);
-            if (routeUrl.EndsWith("}", StringComparison.OrdinalIgnoreCase) && catchAllIndex != -1)
-            {
-                routeUrl = routeUrl.Substring(0, catchAllIndex);
-            }
-            routeUrl = routeUrl.TrimStart('~').TrimStart('/');
-
-            return routes.MapOwinRoute(name, routeUrl, map => map.MapConnection(String.Empty, type, resolver));
+            return routes.MapOwinRoute(name, url, map => map.MapConnection(String.Empty, type, resolver));
         }
     }
 }

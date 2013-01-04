@@ -56,16 +56,16 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             // Register the default hubs route: ~/signalr/hubs
             RouteTable.Routes.MapHubs();
-            RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun/{*operation}");
-            RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo/{*operation}");
-            RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend/{*operation}");
-            RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect/{*operation}");
-            RouteTable.Routes.MapConnection<MyGroupConnection>("groups", "groups/{*operation}");
-            RouteTable.Routes.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", "rejoin-groups/{*operation}");
-            RouteTable.Routes.MapConnection<FilteredConnection>("filter", "filter/{*operation}");
-            RouteTable.Routes.MapConnection<ConnectionThatUsesItems>("items", "items/{*operation}");
-            RouteTable.Routes.MapConnection<SyncErrorConnection>("sync-error", "sync-error/{*operation}");
-            RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group/{*operation}");
+            RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
+            RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
+            RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend");
+            RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect");
+            RouteTable.Routes.MapConnection<MyGroupConnection>("groups", "groups");
+            RouteTable.Routes.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", "rejoin-groups");
+            RouteTable.Routes.MapConnection<FilteredConnection>("filter", "filter");
+            RouteTable.Routes.MapConnection<ConnectionThatUsesItems>("items", "items");
+            RouteTable.Routes.MapConnection<SyncErrorConnection>("sync-error", "sync-error");
+            RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
 
             // End point to hit to verify the webserver is up
             RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));
