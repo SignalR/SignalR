@@ -35,7 +35,7 @@ namespace System.Web.Routing
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes)
         {
-            return MapHubs(routes, "/signalr", new HubConfiguration());
+            return routes.MapHubs("/signalr", new HubConfiguration());
         }
 
         /// <summary>
@@ -57,12 +57,24 @@ namespace System.Web.Routing
                 throw new ArgumentNullException("configuration");
             }
 
+            return routes.MapHubs("signalr.hubs", path, configuration);
+        }
+
+        /// <summary>
+        /// Initializes the hub route using specified configuration.
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <param name="name">The name of the route</param>
+        /// <param name="path">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
+        /// <param name="configuration">Configuration options</param>
+        /// <returns>The registered route</returns>
+        internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration)
+        {
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
             configuration.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
-            return routes.MapOwinRoute("signalr.hubs", path, map => map.MapHubs(String.Empty, configuration));
+            return routes.MapOwinRoute(name, path, map => map.MapHubs(String.Empty, configuration));
         }
-
 
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
