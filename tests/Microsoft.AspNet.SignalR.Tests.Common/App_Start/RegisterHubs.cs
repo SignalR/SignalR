@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             // Register the default hubs route: ~/signalr/hubs
             RouteTable.Routes.MapHubs();
+            RouteTable.Routes.MapHubs("signalr.hubs2", "/signalr2/test", new HubConfiguration());
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend");
