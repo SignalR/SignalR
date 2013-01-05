@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly string _url;
+        private readonly bool _enableJavaScriptProxies;
 
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
@@ -38,9 +39,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Initializes an instance of the <see cref="HubDispatcher"/> class.
         /// </summary>
         /// <param name="url">The base url of the connection url.</param>
-        public HubDispatcher(string url)
+        /// <param name="enableJavaScriptProxies">Indicates whether JavaScript proxies for the server-side hubs should be auto generated at {Path}/hubs.</param>
+        public HubDispatcher(string url, bool enableJavaScriptProxies)
         {
             _url = url;
+            _enableJavaScriptProxies = enableJavaScriptProxies;
         }
 
         protected override TraceSource Trace
@@ -63,15 +66,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("context");
             }
 
-            var config = resolver.Resolve<IConfigurationManager>();
-            if (config.DisableJavaScriptProxies)
-            {
-                _proxyGenerator = new EmptyJavaScriptProxyGenerator();
-            }
-            else
-            {
-                _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
-            }
+            _proxyGenerator = _enableJavaScriptProxies ? resolver.Resolve<IJavaScriptProxyGenerator>()
+                                                       : new EmptyJavaScriptProxyGenerator();
 
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();

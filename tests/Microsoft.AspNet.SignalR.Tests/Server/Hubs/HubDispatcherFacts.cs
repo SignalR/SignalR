@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void RequestingSignalrHubsUrlReturnsProxy()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr");
+            var dispatcher = new HubDispatcher("/signalr", enableJavaScriptProxies: true);
             var request = GetRequestForUrl("http://something/signalr/hubs");
             var response = new Mock<IResponse>();
             string contentType = null;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr");
+            var dispatcher = new HubDispatcher("/signalr", enableJavaScriptProxies: true);
             var request = GetRequestForUrl("http://something/signalr/hubs/");
             var response = new Mock<IResponse>();
             string contentType = null;

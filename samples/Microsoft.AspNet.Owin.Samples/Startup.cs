@@ -1,4 +1,5 @@
-﻿using Owin;
+﻿using Microsoft.AspNet.SignalR;
+using Owin;
 
 namespace Microsoft.AspNet.Owin.Samples
 {
@@ -7,7 +8,7 @@ namespace Microsoft.AspNet.Owin.Samples
         public void Configuration(IAppBuilder app)
         {
             // Map hubs
-            app.MapHubs("/signalr");
+            app.MapHubs("/signalr", new HubConfiguration());
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Samples
             routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection");
 
             // Register the default hubs route: ~/signalr/hubs
-            routes.MapHubs();
+            routes.MapHubs("/signalr", new HubConfiguration());
         }
     }
 }
