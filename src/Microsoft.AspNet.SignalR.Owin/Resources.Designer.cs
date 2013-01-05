@@ -61,6 +61,15 @@ namespace Microsoft.AspNet.SignalR.Owin {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A dependency resolver must be specified..
+        /// </summary>
+        internal static string Error_NoDepenendeyResolver {
+            get {
+                return ResourceManager.GetString("Error_NoDepenendeyResolver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not a valid web socket request..
         /// </summary>
         internal static string Error_NotWebSocketRequest {

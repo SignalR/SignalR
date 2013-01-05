@@ -54,14 +54,16 @@ namespace Owin
             if (args.Length > 0)
             {
                 var resolver = args[args.Length - 1] as IDependencyResolver;
-                if (resolver != null)
+                if (resolver == null)
                 {
-                    var env = builder.Properties;
-                    CancellationToken token = env.GetShutdownToken();
-                    string instanceName = env.GetAppInstanceName();
-
-                    resolver.InitializeHost(instanceName, token);
+                    throw new ArgumentException(Resources.Error_NoDepenendeyResolver);
                 }
+
+                var env = builder.Properties;
+                CancellationToken token = env.GetShutdownToken();
+                string instanceName = env.GetAppInstanceName();
+
+                resolver.InitializeHost(instanceName, token);
             }
 
             return builder.Use(typeof(T), args);
