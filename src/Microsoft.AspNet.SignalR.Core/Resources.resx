@@ -144,6 +144,9 @@
   <data name="Error_IsNotA" xml:space="preserve">
     <value>'{0}' is not a {1}.</value>
   </data>
+  <data name="Error_JavaScriptProxyDisabled" xml:space="preserve">
+    <value>SignalR: JavaScript Hub proxy generation has been disabled.</value>
+  </data>
   <data name="Error_KeepAliveMustBeGreaterThanZero" xml:space="preserve">
     <value>Keep Alive value must be greater than zero.</value>
   </data>

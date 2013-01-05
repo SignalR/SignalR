@@ -426,6 +426,36 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ChangeHubUrlAspNet(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                var wh = new ManualResetEventSlim(false);
+
+                hub.On("signal", id =>
+                {
+                    Assert.NotNull(id);
+                    wh.Set();
+                });
+
+                connection.Start(host.Transport).Wait();
+
+                hub.InvokeWithTimeout("DynamicTask");
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                connection.Stop();
+            }
+        }
+
+        [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         public void GuidTest(HostType hostType, TransportType transportType)

@@ -1,0 +1,17 @@
+﻿namespace Microsoft.AspNet.SignalR
+{
+    public class ConnectionConfiguration
+    {
+        // Resolver isn't set to GlobalHost.DependencyResolver in the ctor because it is lazily created.
+        private IDependencyResolver _resolver;
+
+        /// <summary>
+        /// The dependency resolver to use for the hub connection.
+        /// </summary>
+        public IDependencyResolver Resolver
+        {
+            get { return _resolver ?? GlobalHost.DependencyResolver; }
+            set { _resolver = value; }
+        }
+    }
+}

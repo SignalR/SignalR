@@ -13,17 +13,14 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
     {
         private readonly AppFunc _app;
         private readonly string _path;
+        private readonly bool _enableJavaScriptProxies;
         private readonly IDependencyResolver _resolver;
 
-        public HubDispatcherHandler(AppFunc app, IDependencyResolver resolver)
-            : this(app, String.Empty, resolver)
-        {
-        }
-
-        public HubDispatcherHandler(AppFunc app, string path, IDependencyResolver resolver)
+        public HubDispatcherHandler(AppFunc app, string path, bool enableJavaScriptProxies, IDependencyResolver resolver)
         {
             _app = app;
             _path = path;
+            _enableJavaScriptProxies = enableJavaScriptProxies;
             _resolver = resolver;
         }
 
@@ -36,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
             }
 
             var pathBase = environment.Get<string>(OwinConstants.RequestPathBase);
-            var dispatcher = new HubDispatcher(pathBase + _path);
+            var dispatcher = new HubDispatcher(pathBase + _path, _enableJavaScriptProxies);
 
             var handler = new CallHandler(_resolver, dispatcher);
             return handler.Invoke(environment);
