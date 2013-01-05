@@ -20,7 +20,7 @@ namespace Owin
 
         public static IAppBuilder MapHubs(this IAppBuilder builder, string path)
         {
-            return builder.UseType<HubDispatcherHandler>(path, new HubConfiguration());
+            return builder.MapHubs(path, new HubConfiguration());
         }
 
         public static IAppBuilder MapHubs(this IAppBuilder builder, string path, HubConfiguration configuration)
