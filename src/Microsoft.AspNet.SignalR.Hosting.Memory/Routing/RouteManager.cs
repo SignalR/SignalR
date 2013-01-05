@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Common.Routing
             if (!String.IsNullOrEmpty(_hubPath) &&
                 path.StartsWith(_hubPath, StringComparison.OrdinalIgnoreCase))
             {
-                connection = new HubDispatcher(_hubPath);
+                connection = new HubDispatcher(_hubPath, enableJavaScriptProxies: false);
                 return true;
             }
 
