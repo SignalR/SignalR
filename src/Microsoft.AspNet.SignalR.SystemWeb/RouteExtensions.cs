@@ -39,28 +39,28 @@ namespace System.Web.Routing
         }
 
         /// <summary>
-        /// Initializes the hub route using specified settings.
+        /// Initializes the hub route using specified configuration.
         /// </summary>
         /// <param name="routes">The route table</param>
         /// <param name="path">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
-        /// <param name="settings">Configuration options</param>
+        /// <param name="configuration">Configuration options</param>
         /// <returns>The registered route</returns>
-        public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration settings)
+        public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration configuration)
         {
             if (routes == null)
             {
                 throw new ArgumentNullException("routes");
             }
 
-            if (settings == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException("settings");
+                throw new ArgumentNullException("configuration");
             }
 
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
-            settings.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
+            configuration.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
-            return routes.MapOwinRoute("signalr.hubs", path, map => map.MapHubs(String.Empty, settings));
+            return routes.MapOwinRoute("signalr.hubs", path, map => map.MapHubs(String.Empty, configuration));
         }
 
 
@@ -71,11 +71,11 @@ namespace System.Web.Routing
         /// <param name="name">The name of the route</param>
         /// <param name="url">path pattern of the route. Should end with catch-all parameter.</param>
         /// <param name="type">The type of <see cref="PersistentConnection"/></param>
-        /// <param name="settings">Configuration options</param>
+        /// <param name="configuration">Configuration options</param>
         /// <returns>The registered route</returns>
-        public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration settings)
+        public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration configuration)
         {
-            return routes.MapOwinRoute(name, url, map => map.MapConnection(String.Empty, type, settings));
+            return routes.MapOwinRoute(name, url, map => map.MapConnection(String.Empty, type, configuration));
         }
     }
 }

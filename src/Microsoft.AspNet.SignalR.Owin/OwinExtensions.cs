@@ -15,17 +15,22 @@ namespace Owin
     {
         public static IAppBuilder MapHubs(this IAppBuilder builder)
         {
-            return builder.MapHubs(String.Empty, new HubConfiguration());
+            return builder.MapHubs(String.Empty);
         }
 
-        public static IAppBuilder MapHubs(this IAppBuilder builder, string path, HubConfiguration settings)
+        public static IAppBuilder MapHubs(this IAppBuilder builder, string path)
         {
-            if (settings == null)
+            return builder.UseType<HubDispatcherHandler>(path, new HubConfiguration());
+        }
+
+        public static IAppBuilder MapHubs(this IAppBuilder builder, string path, HubConfiguration configuration)
+        {
+            if (configuration == null)
             {
-                throw new ArgumentNullException("settings");
+                throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<HubDispatcherHandler>(path, settings.EnableJavaScriptProxies, settings.Resolver);
+            return builder.UseType<HubDispatcherHandler>(path, configuration.EnableJavaScriptProxies, configuration.Resolver);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
@@ -34,14 +39,14 @@ namespace Owin
             return builder.MapConnection(url, typeof(T), new ConnectionConfiguration());
         }
 
-        public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType, ConnectionConfiguration settings)
+        public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType, ConnectionConfiguration configuration)
         {
-            if (settings == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException("settings");
+                throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<PersistentConnectionHandler>(url, connectionType, settings.Resolver);
+            return builder.UseType<PersistentConnectionHandler>(url, connectionType, configuration.Resolver);
         }
 
         private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
