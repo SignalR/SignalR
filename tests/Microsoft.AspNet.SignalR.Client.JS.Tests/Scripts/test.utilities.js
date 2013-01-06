@@ -6,10 +6,24 @@
             var connection;
 
             if (window.document.testUrl !== 'auto') {
-                connection = $.hubConnection(window.document.testUrl, { useDefaultPath: false });
+                connection = $.hubConnection(window.document.testUrl);
             }
             else {
                 connection = $.hubConnection('signalr', { useDefaultPath: false });
+            }
+
+            connection.logging = true;
+
+            return connection;
+        },
+        createConnection: function (url) {
+            var connection;
+
+            if (window.document.testUrl !== 'auto') {
+                connection = $.connection(window.document.testUrl + '/' + url);
+            }
+            else {
+                connection = $.connection(url);
             }
 
             connection.logging = true;
