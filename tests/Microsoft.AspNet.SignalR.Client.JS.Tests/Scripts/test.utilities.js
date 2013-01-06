@@ -7,8 +7,7 @@
 
             if (window.document.testUrl !== 'auto') {
                 connection = $.hubConnection(window.document.testUrl);
-            }
-            else {
+            } else {
                 connection = $.hubConnection('signalr', { useDefaultPath: false });
             }
 
@@ -21,8 +20,7 @@
 
             if (window.document.testUrl !== 'auto') {
                 connection = $.connection(window.document.testUrl + '/' + url);
-            }
-            else {
+            } else {
                 connection = $.connection(url);
             }
 

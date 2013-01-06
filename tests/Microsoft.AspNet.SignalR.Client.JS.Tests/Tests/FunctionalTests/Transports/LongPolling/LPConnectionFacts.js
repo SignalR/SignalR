@@ -18,12 +18,13 @@ QUnit.asyncTimeoutTest("Long Polling transport can connect.", 5000, function (en
 });
 
 QUnit.asyncTimeoutTest("Long Polling transport can receive messages on connect.", 5000, function (end, assert) {
-    var connection = testUtilities.createConnection('multisend');
-    var values = [];
+    var connection = testUtilities.createConnection('multisend'),
+        values = [];
+
     connection.received(function (data) {
         values.push(data);
 
-        if (values.length == 2) {
+        if (values.length === 2) {
             assert.equal(values[0], "OnConnectedAsync1", "Received OnConnectedAsync1");
             assert.equal(values[1], "OnConnectedAsync2", "Received OnConnectedAsync2");
             end();
