@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         private readonly CancellationTokenSource _shutDownTokenSource = new CancellationTokenSource();
         private readonly CancellationToken _shutDownToken;
         private int _disposed;
-        private Func<IDictionary<string, object>, Task> _appFunc;
+        private AppFunc _appFunc;
 
         public MemoryHost()
         {
