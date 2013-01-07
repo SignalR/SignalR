@@ -5,14 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.FunctionalTests.Owin;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
+using Owin;
 using Xunit;
 using Xunit.Extensions;
 
@@ -403,8 +406,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs("/foo");
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration()
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/foo", config);
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
+
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -417,6 +430,36 @@ namespace Microsoft.AspNet.SignalR.Tests
                 });
 
                 connection.Start(host).Wait();
+
+                hub.InvokeWithTimeout("DynamicTask");
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ChangeHubUrlAspNet(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                var wh = new ManualResetEventSlim(false);
+
+                hub.On("signal", id =>
+                {
+                    Assert.NotNull(id);
+                    wh.Set();
+                });
+
+                connection.Start(host.Transport).Wait();
 
                 hub.InvokeWithTimeout("DynamicTask");
 
@@ -723,12 +766,21 @@ namespace Microsoft.AspNet.SignalR.Tests
             var logRejoiningGroups = new LogRejoiningGroupsModule();
             using (var host = new MemoryHost())
             {
-                host.HubPipeline.AddModule(logRejoiningGroups);
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.Configuration.KeepAlive = 0;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
-                host.MapHubs();
+                    app.MapHubs("/signalr", config);
+
+                    config.Resolver.Resolve<IHubPipeline>().AddModule(logRejoiningGroups);
+                    var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                    configuration.KeepAlive = 0;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                });
 
                 var connection = new Client.Hubs.HubConnection("http://foo");
                 var proxy = connection.CreateHubProxy("MultGroupHub");
@@ -819,11 +871,22 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = new MemoryHost())
             {
-                host.HubPipeline.EnableAutoRejoiningGroups();
-                host.Configuration.KeepAlive = 0;
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
-                host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
-                host.MapHubs();
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", config);
+                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
+
+                    var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                    configuration.KeepAlive = 0;
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
@@ -844,12 +907,23 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = new MemoryHost())
             {
-                host.HubPipeline.EnableAutoRejoiningGroups();
-                host.Configuration.KeepAlive = 0;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
-                host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
-                host.MapHubs();
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", config);
+                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
+
+                    var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                    configuration.KeepAlive = 0;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
@@ -883,14 +957,24 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = new MemoryHost())
             {
-                host.DependencyResolver.Register(typeof(IHub), () =>
+                host.Configure(app =>
                 {
-                    var mockHub = new Mock<IHub>() { CallBase = true };
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                    mockHubs.Add(mockHub);
-                    return mockHub.Object;
+                    app.MapHubs("/signalr", config);
+
+                    config.Resolver.Register(typeof(IHub), () =>
+                    {
+                        var mockHub = new Mock<IHub>() { CallBase = true };
+
+                        mockHubs.Add(mockHub);
+                        return mockHub.Object;
+                    });
                 });
-                host.MapHubs();
+
                 var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("demo");
@@ -1057,9 +1141,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
                 var connection1 = new Client.Hubs.HubConnection("http://foo/");
-                var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
 
@@ -1083,9 +1177,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
                 var connection1 = new Client.Hubs.HubConnection("http://foo/");
-                var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
 
@@ -1108,10 +1212,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
                 var connection1 = new Client.Hubs.HubConnection("http://foo/");
                 var connection2 = new Client.Hubs.HubConnection("http://foo/");
-                var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);

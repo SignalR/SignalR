@@ -46,7 +46,16 @@
         start: function (connection, onSuccess, onFailed) {
             /// <summary>Starts the long polling connection</summary>
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
-            var that = this;
+            var that = this,
+                initialConnectedFired = false,
+                fireConnect = function () {
+                    if (initialConnectedFired) {
+                        return;
+                    }
+                    initialConnectedFired = true;
+                    onSuccess();
+                    connection.log("Longpolling connected");
+                };
 
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
@@ -81,11 +90,14 @@
                                 var delay = 0,
                                     data;
 
+                                fireConnect();
+
                                 if (minData) {
                                     data = transportLogic.maximizePersistentResponse(minData);
                                 }
 
                                 transportLogic.processMessages(instance, minData);
+
                                 if (data &&
                                     $.type(data.LongPollDelay) === "number") {
                                     delay = data.LongPollDelay;
@@ -148,7 +160,7 @@
                     // Will be fixed by #1189 and this code can be modified to not be a timeout
                     window.setTimeout(function () {
                         // Trigger the onSuccess() method because we've now instantiated a connection
-                        onSuccess();
+                        fireConnect();
                     }, 250);
                 }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
             });

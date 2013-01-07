@@ -25,35 +25,7 @@ namespace System.Web.Routing
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url) where T : PersistentConnection
         {
-            return MapConnection(routes, name, url, typeof(T), GlobalHost.DependencyResolver);
-        }
-
-        /// <summary>
-        /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
-        /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <typeparam name="T">The type of <see cref="PersistentConnection"/></typeparam>
-        /// <param name="name">The name of the route</param>
-        /// <param name="url">path pattern of the route. Should end with catch-all parameter.</param>
-        /// <param name="resolver">The dependency resolver to use for this connection</param>
-        /// <returns>The registered route</returns>
-        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url, IDependencyResolver resolver) where T : PersistentConnection
-        {
-            return MapConnection(routes, name, url, typeof(T), resolver);
-        }
-
-        /// <summary>
-        /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
-        /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="type">The type of <see cref="PersistentConnection"/></param>
-        /// <param name="name">The name of the route</param>
-        /// <param name="url">path pattern of the route. Should end with catch-all parameter.</param>
-        /// <returns>The registered route</returns>
-        public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type)
-        {
-            return MapConnection(routes, name, url, type, GlobalHost.DependencyResolver);
+            return MapConnection(routes, name, url, typeof(T), new ConnectionConfiguration());
         }
 
         /// <summary>
@@ -63,61 +35,46 @@ namespace System.Web.Routing
         /// <returns>The registered route</returns>
         public static RouteBase MapHubs(this RouteCollection routes)
         {
-            return MapHubs(routes, GlobalHost.DependencyResolver);
+            return routes.MapHubs("/signalr", new HubConfiguration());
         }
 
         /// <summary>
-        /// Changes the dependency resolver for the default hub route (/signalr).
+        /// Initializes the hub route using specified configuration.
         /// </summary>
         /// <param name="routes">The route table</param>
-        /// <param name="resolver">The dependency resolver to use for the hub connection</param>
+        /// <param name="path">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
+        /// <param name="configuration">Configuration options</param>
         /// <returns>The registered route</returns>
-        public static RouteBase MapHubs(this RouteCollection routes, IDependencyResolver resolver)
-        {
-            return MapHubs(routes, "/signalr", resolver);
-        }
-
-        /// <summary>
-        /// Changes the default hub route from /signalr to a specified path.
-        /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="url">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
-        /// <returns>The registered route</returns>
-        public static RouteBase MapHubs(this RouteCollection routes, string url)
-        {
-            return MapHubs(routes, url, GlobalHost.DependencyResolver);
-        }
-
-        /// <summary>
-        /// Changes the default hub route from /signalr to a specified path.
-        /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="url">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
-        /// <param name="resolver">The dependency resolver to use for the hub connection</param>
-        /// <returns>The registered route</returns>
-        public static RouteBase MapHubs(this RouteCollection routes, string url, IDependencyResolver resolver)
+        public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration configuration)
         {
             if (routes == null)
             {
                 throw new ArgumentNullException("routes");
             }
 
-            if (url == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException("configuration");
             }
 
-            if (resolver == null)
-            {
-                throw new ArgumentNullException("resolver");
-            }
-
-            var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
-            resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
-
-            return routes.MapOwinRoute("signalr.hubs", url, map => map.MapHubs(resolver));
+            return routes.MapHubs("signalr.hubs", path, configuration);
         }
 
+        /// <summary>
+        /// Initializes the hub route using specified configuration.
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <param name="name">The name of the route</param>
+        /// <param name="path">The path of the hubs route. This should *NOT* contain catch-all parameter.</param>
+        /// <param name="configuration">Configuration options</param>
+        /// <returns>The registered route</returns>
+        internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration)
+        {
+            var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
+            configuration.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
+
+            return routes.MapOwinRoute(name, path, map => map.MapHubs(String.Empty, configuration));
+        }
 
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
@@ -126,11 +83,11 @@ namespace System.Web.Routing
         /// <param name="name">The name of the route</param>
         /// <param name="url">path pattern of the route. Should end with catch-all parameter.</param>
         /// <param name="type">The type of <see cref="PersistentConnection"/></param>
-        /// <param name="resolver">The dependency resolver to use for the hub connection</param>
+        /// <param name="configuration">Configuration options</param>
         /// <returns>The registered route</returns>
-        public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, IDependencyResolver resolver)
+        public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration configuration)
         {
-            return routes.MapOwinRoute(name, url, map => map.MapConnection(String.Empty, type, resolver));
+            return routes.MapOwinRoute(name, url, map => map.MapConnection(String.Empty, type, configuration));
         }
     }
 }

@@ -58,9 +58,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Hosting.Memory\Infrastructure\UrlDecoder.cs">
-      <Link>Infrastructure\UrlDecoder.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\CallHandler.cs">
       <Link>Handlers\CallHandler.cs</Link>
     </Compile>
@@ -81,6 +78,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\ParamDictionary.cs">
       <Link>Infrastructure\ParamDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\UrlDecoder.cs">
+      <Link>Infrastructure\UrlDecoder.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinExtensions.cs">
       <Link>OwinExtensions.cs</Link>

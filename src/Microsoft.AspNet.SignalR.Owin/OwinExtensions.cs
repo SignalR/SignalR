@@ -15,44 +15,44 @@ namespace Owin
     {
         public static IAppBuilder MapHubs(this IAppBuilder builder)
         {
-            return builder.UseType<HubDispatcherHandler>(GlobalHost.DependencyResolver);
+            return builder.MapHubs(String.Empty);
         }
 
         public static IAppBuilder MapHubs(this IAppBuilder builder, string path)
         {
-            return builder.UseType<HubDispatcherHandler>(path, GlobalHost.DependencyResolver);
+            return builder.MapHubs(path, new HubConfiguration());
         }
 
-        public static IAppBuilder MapHubs(this IAppBuilder builder, IDependencyResolver resolver)
+        public static IAppBuilder MapHubs(this IAppBuilder builder, string path, HubConfiguration configuration)
         {
-            return builder.UseType<HubDispatcherHandler>(resolver);
-        }
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
 
-        public static IAppBuilder MapHubs(this IAppBuilder builder, string path, IDependencyResolver resolver)
-        {
-            return builder.UseType<HubDispatcherHandler>(path, resolver);
+            return builder.UseType<HubDispatcherHandler>(path, configuration.EnableJavaScriptProxies, configuration.Resolver);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url) where T : PersistentConnection
         {
-            return builder.UseType<PersistentConnectionHandler>(url, typeof(T), GlobalHost.DependencyResolver);
+            return builder.MapConnection(url, typeof(T), new ConnectionConfiguration());
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, IDependencyResolver resolver) where T : PersistentConnection
+        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, ConnectionConfiguration configuration) where T : PersistentConnection
         {
-            return builder.UseType<PersistentConnectionHandler>(url, typeof(T), resolver);
+            return builder.MapConnection(url, typeof(T), configuration);
         }
 
-        public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType)
+        public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType, ConnectionConfiguration configuration)
         {
-            return builder.UseType<PersistentConnectionHandler>(url, connectionType, GlobalHost.DependencyResolver);
-        }
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
 
-        public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType, IDependencyResolver resolver)
-        {
-            return builder.UseType<PersistentConnectionHandler>(url, connectionType, resolver);
+            return builder.UseType<PersistentConnectionHandler>(url, connectionType, configuration.Resolver);
         }
 
         private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
@@ -60,14 +60,16 @@ namespace Owin
             if (args.Length > 0)
             {
                 var resolver = args[args.Length - 1] as IDependencyResolver;
-                if (resolver != null)
+                if (resolver == null)
                 {
-                    var env = builder.Properties;
-                    CancellationToken token = env.GetShutdownToken();
-                    string instanceName = env.GetAppInstanceName();
-
-                    resolver.InitializeHost(instanceName, token);
+                    throw new ArgumentException(Resources.Error_NoDepenendeyResolver);
                 }
+
+                var env = builder.Properties;
+                CancellationToken token = env.GetShutdownToken();
+                string instanceName = env.GetAppInstanceName();
+
+                resolver.InitializeHost(instanceName, token);
             }
 
             return builder.Use(typeof(T), args);

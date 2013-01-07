@@ -4,24 +4,19 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Calls to close with dispose the stream")]
-    public class Response : IClientResponse, IResponse
+    internal class Response : IClientResponse
     {
-        private readonly CancellationToken _clientToken;
         private readonly ResponseStream _stream;
-        private Action _flush;
 
-        public Response(CancellationToken clientToken, Action flush)
+        public Response(bool disableWrites, Action flush)
         {
-            _clientToken = clientToken;
-            _stream = new ResponseStream();
-            _flush = flush;
+            _stream = new ResponseStream(disableWrites, flush);
         }
 
         public string ReadAsString()
@@ -39,37 +34,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             _stream.Close();
         }
 
-        public bool IsClientConnected
-        {
-            get
-            {
-                return !_clientToken.IsCancellationRequested;
-            }
-        }
-
-        public string ContentType { get; set; }
-
-        public bool DisableWrites { get; set; }
-
-        public Task FlushAsync()
-        {
-            Interlocked.Exchange(ref _flush, () => { }).Invoke();
-            return TaskAsyncHelper.Empty;
-        }
-
-        public Task EndAsync()
-        {
-            return FlushAsync();
-        }
-
-        public void Write(ArraySegment<byte> data)
-        {
-            if (!DisableWrites)
-            {
-                _stream.Write(data.Array, data.Offset, data.Count);
-            }
-        }
-
         /// <summary>
         /// Mimics a network stream between client and server.
         /// </summary>
@@ -84,8 +48,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             private readonly object _completedLock = new object();
             private readonly object _writeLock = new object();
 
-            public ResponseStream()
+            private readonly Action _flush;
+            private readonly bool _disableWrites;
+
+            public ResponseStream(bool disableWrites, Action flush)
             {
+                _disableWrites = disableWrites;
+                _flush = flush;
                 _currentStream = new MemoryStream();
                 _cancellationTokenSource = new SafeCancellationTokenSource();
                 _cancellationToken = _cancellationTokenSource.Token;
@@ -125,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             public override void Flush()
             {
-
+                _flush();
             }
 
             public override long Length
@@ -263,6 +232,11 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             public override void Write(byte[] buffer, int offset, int count)
             {
+                if (_disableWrites)
+                {
+                    return;
+                }
+
                 lock (_writeLock)
                 {
                     _currentStream.Write(buffer, offset, count);

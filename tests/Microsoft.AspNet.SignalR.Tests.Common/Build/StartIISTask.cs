@@ -18,7 +18,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 var myHost = new IISExpressTestHost(HostLocation[0].ToString());
 
-                myHost.Initialize(2, 120, 10, 1, false);
+                myHost.Initialize(keepAlive: 2,
+                                  connectionTimeout: 120,
+                                  disconnectTimeout: 10,
+                                  hearbeatInterval: 1,
+                                  enableAutoRejoiningGroups: false);
             }
             catch (WebException ex)
             {
