@@ -2,68 +2,63 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Net;
-using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hosting.Common;
+using Microsoft.AspNet.SignalR.Owin;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
-    public class Request : IClientRequest, IRequest
+    internal class Request : IClientRequest
     {
+        private readonly IDictionary<string, string[]> _requestHeaders;
         private readonly Action _abort;
 
-        public Request(Uri uri, Action abort, Dictionary<string, string> postData, IPrincipal user)
+        public Request(IDictionary<string, object> env, Action abort)
         {
-            Url = uri;
+            _requestHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.RequestHeaders);
             _abort = abort;
-            User = user;
-            Form = new NameValueCollection();
-            Headers = new NameValueCollection();
-            ServerVariables = new NameValueCollection();
-            QueryString = HttpUtility.ParseDelimited(Url.Query.TrimStart('?'));
-            Cookies = new Dictionary<string, Cookie>();
-            Items = new Dictionary<string, object>();
-
-            if (postData != null)
-            {
-                foreach (var pair in postData)
-                {
-                    Form[pair.Key] = pair.Value;
-                }
-            }
         }
 
         public string UserAgent
         {
             get
             {
-                return Headers["User-Agent"];
+                return _requestHeaders.GetHeader("User-Agent");
             }
             set
             {
-                Headers["UserAgent"] = value;
+                _requestHeaders.SetHeader("User-Agent", value);
             }
         }
 
-        public ICredentials Credentials { get; set; }
+        public ICredentials Credentials
+        {
+            get;
+            set;
+        }
 
-        public CookieContainer CookieContainer { get; set; }
+        public CookieContainer CookieContainer
+        {
+            get;
+            set;
+        }
 
-        public IWebProxy Proxy { get; set; }
+        public IWebProxy Proxy
+        {
+            get;
+            set;
+        }
 
         public string Accept
         {
             get
             {
-                return Headers["Accept"];
+                return _requestHeaders.GetHeader("Accept");
             }
             set
             {
-                Headers["Accept"] = value;
+                _requestHeaders.SetHeader("Accept", value);
             }
         }
 
@@ -72,52 +67,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             _abort();
         }
 
-        public Uri Url
+        private static T Get<T>(IDictionary<string, object> environment, string key)
         {
-            get;
-            private set;
-        }
-
-        public NameValueCollection QueryString
-        {
-            get;
-            private set;
-        }
-
-        public NameValueCollection Headers
-        {
-            get;
-            private set;
-        }
-
-        public NameValueCollection ServerVariables
-        {
-            get;
-            private set;
-        }
-
-        public NameValueCollection Form
-        {
-            get;
-            private set;
-        }
-
-        public IDictionary<string, Cookie> Cookies
-        {
-            get;
-            private set;
-        }
-
-        public IPrincipal User
-        {
-            get;
-            private set;
-        }
-
-        public IDictionary<string, object> Items
-        {
-            get;
-            private set;
+            object value;
+            return environment.TryGetValue(key, out value) ? (T)value : default(T);
         }
     }
 }

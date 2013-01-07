@@ -39,6 +39,12 @@ namespace Owin
             return builder.MapConnection(url, typeof(T), new ConnectionConfiguration());
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
+        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, ConnectionConfiguration configuration) where T : PersistentConnection
+        {
+            return builder.MapConnection(url, typeof(T), configuration);
+        }
+
         public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType, ConnectionConfiguration configuration)
         {
             if (configuration == null)

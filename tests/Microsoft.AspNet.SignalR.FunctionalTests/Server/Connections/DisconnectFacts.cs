@@ -17,6 +17,7 @@ using Moq;
 using Xunit;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
+using Owin;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -73,16 +74,29 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapConnection<MyConnection>("/echo");
-                host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
-                host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
+                var dr = new DefaultDependencyResolver();
+                var configuration = dr.Resolve<IConfigurationManager>();
+
+                host.Configure(app =>
+                {
+                    var config = new ConnectionConfiguration
+                    {
+                        Resolver = dr
+                    };
+
+                    app.MapConnection<MyConnection>("/echo", config);
+
+                    configuration.DisconnectTimeout = TimeSpan.Zero;
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+
+                    dr.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
+                });
                 var connection = new Client.Connection("http://foo/echo");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -99,18 +113,31 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                var dr = new DefaultDependencyResolver();
+                var configuration = dr.Resolve<IConfigurationManager>();
+
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
-                host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = dr
+                    };
+
+                    app.MapHubs("/signalr", config);
+
+                    configuration.DisconnectTimeout = TimeSpan.Zero;
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                    dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 connection.CreateHubProxy("MyHub");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -140,9 +167,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var timeout = TimeSpan.FromSeconds(5);
                 foreach (var node in nodes)
                 {
-                    node.Server.Configuration.HeartbeatInterval = timeout;
-                    node.Server.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                    node.Server.MapConnection<FarmConnection>("/echo");
+                    var config = node.Resolver.Resolve<IConfigurationManager>();
+                    config.HeartbeatInterval = timeout;
+                    config.DisconnectTimeout = TimeSpan.Zero;
+
+                    IDependencyResolver resolver = node.Resolver;
+                    node.Server.Configure(app =>
+                    {
+                        app.MapConnection<FarmConnection>("/echo", new ConnectionConfiguration
+                        {
+                            Resolver = resolver
+                        });
+                    });
                 }
 
                 var loadBalancer = new LoadBalancer(nodes.Select(f => f.Server).ToArray());
@@ -170,19 +206,21 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public MemoryHost Server { get; private set; }
             public FarmConnection Connection { get; private set; }
+            public IDependencyResolver Resolver { get; private set; }
 
             private IConnection _connection;
 
             public ServerNode(IMessageBus bus)
             {
                 // Give each server it's own dependency resolver
-                Server = new MemoryHost(new DefaultDependencyResolver());
+                Server = new MemoryHost();
                 Connection = new FarmConnection();
+                Resolver = new DefaultDependencyResolver();
 
-                Server.DependencyResolver.Register(typeof(FarmConnection), () => Connection);
-                Server.DependencyResolver.Register(typeof(IMessageBus), () => bus);
+                Resolver.Register(typeof(FarmConnection), () => Connection);
+                Resolver.Register(typeof(IMessageBus), () => bus);
 
-                var context = Server.ConnectionManager.GetConnectionContext<FarmConnection>();
+                var context = Resolver.Resolve<IConnectionManager>().GetConnectionContext<FarmConnection>();
                 _connection = context.Connection;
             }
 

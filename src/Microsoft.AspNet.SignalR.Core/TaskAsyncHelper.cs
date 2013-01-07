@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR
             return FromResult<T>(value);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Empty
         {
             get

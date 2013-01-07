@@ -10,6 +10,8 @@ using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Extensions;
+using Owin;
+using Microsoft.AspNet.SignalR.Configuration;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -22,7 +24,15 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = new MemoryHost())
                 {
-                    host.MapConnection<MyGroupEchoConnection>("/echo");
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+                        app.MapConnection<MyGroupEchoConnection>("/echo", config);
+                    });
+
 
                     var tasks = new List<Task>();
 
@@ -44,7 +54,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = new MemoryHost())
                 {
-                    host.MapConnection<MyGroupEchoConnection>("/echo");
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+                        app.MapConnection<MyGroupEchoConnection>("/echo", config);
+                    });
 
                     var tasks = new List<Task>();
 
@@ -231,11 +248,21 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = new MemoryHost())
                 {
                     var conn = new MyReconnect();
-                    host.Configuration.KeepAlive = 0;
-                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-                    host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
-                    host.MapConnection<MyReconnect>("/endpoint");
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyReconnect>("/endpoint", config);
+                        var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                        configuration.KeepAlive = 0;
+                        configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                        configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+
+                        config.Resolver.Register(typeof(MyReconnect), () => conn);
+                    });
 
                     var connection = new Client.Connection("http://foo/endpoint");
                     var transport = CreateTransport(transportType, host);
@@ -555,7 +582,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             results.Add(val);
                         }
                     };
- 
+
                     connection.Start(host.Transport).Wait();
                     connection2.Start(host.Transport).Wait();
 

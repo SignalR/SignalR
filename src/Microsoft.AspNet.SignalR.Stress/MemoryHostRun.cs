@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Stress.Connections;
+using Owin;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
@@ -15,8 +16,12 @@ namespace Microsoft.AspNet.SignalR.Stress
         public static IDisposable Run(int connections, int senders, string payload, string transport)
         {
             var host = new MemoryHost();
-            // Let's not run out of memory everytime
-            host.MapConnection<StressConnection>("/echo");
+
+            host.Configure(app =>
+            {
+                app.MapConnection<StressConnection>("/echo");
+            });
+
             var countDown = new CountdownEvent(senders);
             var cancellationTokenSource = new CancellationTokenSource();
 

@@ -36,6 +36,13 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin.Builder">
+      <HintPath>..\..\packages\Owin.Builder.0.6.4\lib\net40\Owin.Builder.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -58,17 +65,18 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\Headers.cs">
+      <Link>Infrastructure\Headers.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\OwinConstants.cs">
+      <Link>Infrastructure\OwinConstants.cs</Link>
+    </Compile>
     <Compile Include="AsyncResult.cs" />
-    <Compile Include="Host.cs" />
-    <Compile Include="HttpUtility.cs" />
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
-    <Compile Include="Infrastructure\UrlDecoder.cs" />
     <Compile Include="MemoryHost.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RoutingHost.cs" />
-    <Compile Include="Routing\RouteManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
@@ -79,6 +87,13 @@
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
+      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
+      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

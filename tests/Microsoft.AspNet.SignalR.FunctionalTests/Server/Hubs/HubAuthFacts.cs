@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Security.Principal;
 using System.Threading;
-using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Owin;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
+    using AppFunc = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     public class HubAuthFacts : HostedTest
     {
         [Fact]
@@ -17,10 +20,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -42,10 +54,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -67,10 +88,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -94,10 +124,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -121,11 +160,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.HubPipeline.RequireAuthentication();
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
+
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");                
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -147,11 +195,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.HubPipeline.RequireAuthentication();
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
+
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -173,11 +230,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.HubPipeline.RequireAuthentication();
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
+
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -201,11 +267,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.HubPipeline.RequireAuthentication();
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
+
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -229,10 +304,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -254,10 +337,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -279,10 +370,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -306,10 +405,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -333,10 +440,17 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -358,10 +472,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -383,10 +505,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -410,10 +540,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -437,10 +575,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -462,10 +608,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -489,10 +643,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -514,10 +676,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -541,10 +711,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -566,10 +744,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -593,10 +779,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "User", "NotAdmin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "User", "NotAdmin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -618,10 +812,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -645,10 +847,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "test", "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "test", "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -670,10 +880,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -697,10 +915,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -722,10 +948,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -749,10 +983,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("Admin"), new string[] { });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("Admin"), new string[] { }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -774,10 +1016,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -801,10 +1051,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin", "Invoker" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin", "Invoker" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InvokeAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -828,10 +1086,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InvokeAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -855,10 +1121,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.User = new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" });
+                    WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" }));
+                    app.MapHubs("/signalr", configuration);
+                });
+
+                var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InvokeAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -875,6 +1149,20 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
+        }
+
+        private static void WithUser(IAppBuilder app, IPrincipal user)
+        {
+            Func<AppFunc, AppFunc> middleware = (next) =>
+            {
+                return env =>
+                {
+                    env["server.User"] = user;
+                    return next(env);
+                };
+            };
+
+            app.Use(middleware);
         }
     }
 }

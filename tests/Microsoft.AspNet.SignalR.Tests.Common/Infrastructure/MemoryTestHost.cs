@@ -2,6 +2,8 @@
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Configuration;
+using Owin;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
@@ -32,39 +34,52 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
-            _host.Configuration.KeepAlive = keepAlive;
+            var dr = new DefaultDependencyResolver();
 
-            if (connectionTimeout != null)
+            _host.Configure(app =>
             {
-                _host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout.Value);
-            }
-            
-            if (disconnectTimeout != null)
-            {
-                _host.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
-            }
+                var configuration = dr.Resolve<IConfigurationManager>();
 
-            if (hearbeatInterval != null)
-            {
-                _host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(hearbeatInterval.Value);
-            }
+                configuration.KeepAlive = keepAlive;
 
-            if (enableAutoRejoiningGroups)
-            {
-                _host.HubPipeline.EnableAutoRejoiningGroups();
-            }
+                if (connectionTimeout != null)
+                {
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout.Value);
+                }
 
-            _host.MapHubs();
-            _host.MapConnection<MyBadConnection>("/ErrorsAreFun");
-            _host.MapConnection<MyGroupEchoConnection>("/group-echo");
-            _host.MapConnection<MySendingConnection>("/multisend");
-            _host.MapConnection<MyReconnect>("/my-reconnect");
-            _host.MapConnection<MyGroupConnection>("/groups");
-            _host.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups");
-            _host.MapConnection<FilteredConnection>("/filter");
-            _host.MapConnection<SyncErrorConnection>("/sync-error");
-            _host.MapConnection<FallbackToLongPollingConnection>("/fall-back");
-            _host.MapConnection<AddGroupOnConnectedConnection>("/add-group");
+                if (disconnectTimeout != null)
+                {
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
+                }
+
+                if (hearbeatInterval != null)
+                {
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(hearbeatInterval.Value);
+                }
+
+                if (enableAutoRejoiningGroups)
+                {
+                    dr.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
+                }
+
+                app.MapHubs("/signalr", new HubConfiguration { Resolver = dr });
+
+                var config = new ConnectionConfiguration
+                {
+                    Resolver = dr
+                };
+
+                app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
+                app.MapConnection<MyGroupEchoConnection>("/group-echo", config);
+                app.MapConnection<MySendingConnection>("/multisend", config);
+                app.MapConnection<MyReconnect>("/my-reconnect", config);
+                app.MapConnection<MyGroupConnection>("/groups", config);
+                app.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups", config);
+                app.MapConnection<FilteredConnection>("/filter", config);
+                app.MapConnection<SyncErrorConnection>("/sync-error", config);
+                app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
+                app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
+            });
         }
 
         public void Dispose()
