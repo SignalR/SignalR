@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             if (_shutDownToken.IsCancellationRequested)
             {
-                return TaskAsyncHelper.FromError<IClientResponse>(new Exception("Service unavailable"));
+                return TaskAsyncHelper.FromError<IClientResponse>(new InvalidOperationException("Service unavailable"));
             }
 
             var tcs = new TaskCompletionSource<IClientResponse>();
