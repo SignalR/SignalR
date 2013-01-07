@@ -30,8 +30,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Resolver = new DefaultDependencyResolver()
                 };
 
-                app.MapHubs("/signalr", config);
-
+                app.MapHubs(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
@@ -97,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Resolver = new DefaultDependencyResolver()
                 };
 
-                app.MapHubs("/signalr", config);
+                app.MapHubs(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
@@ -155,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 {
                     Resolver = new DefaultDependencyResolver()
                 };
-                app.MapHubs("/signalr", config);
+                app.MapHubs(config);
             });
 
             for (int i = 0; i < concurrency; i++)
@@ -220,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 {
                     Resolver = new DefaultDependencyResolver()
                 };
-                app.MapHubs("/signalr", config);
+                app.MapHubs(config);
             });
 
             for (int i = 0; i < connections; i++)
