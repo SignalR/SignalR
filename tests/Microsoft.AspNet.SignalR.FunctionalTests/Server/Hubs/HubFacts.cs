@@ -412,8 +412,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         Resolver = new DefaultDependencyResolver()
                     };
+
                     app.MapHubs("/foo", config);
                 });
+
                 var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
 
 
@@ -884,7 +886,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
-                                
+
                 var connection = new Client.Hubs.HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
@@ -921,7 +923,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
-                
+
                 var connection = new Client.Hubs.HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
@@ -972,7 +974,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         return mockHub.Object;
                     });
                 });
-                
+
                 var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("demo");

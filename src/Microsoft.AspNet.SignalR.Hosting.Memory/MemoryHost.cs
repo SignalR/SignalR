@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Owin;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using Owin;
 using Owin.Builder;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
@@ -84,6 +85,11 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 throw new InvalidOperationException();
             }
 
+            if (_shutDownToken.IsCancellationRequested)
+            {
+                return TaskAsyncHelper.FromError<IClientResponse>(new Exception("Service unavailable"));
+            }
+
             var tcs = new TaskCompletionSource<IClientResponse>();
             var clientTokenSource = new SafeCancellationTokenSource();
 
@@ -96,13 +102,20 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             var uri = new Uri(url);
 
             env[OwinConstants.CallCancelled] = clientTokenSource.Token;
-            env[OwinConstants.RequestMethod] = postData == null ? "GET" : "POST";
+            string method = postData == null ? "GET" : "POST";
+            env[OwinConstants.RequestMethod] = method;
             env[OwinConstants.RequestPathBase] = String.Empty;
             env[OwinConstants.RequestPath] = uri.LocalPath;
             env[OwinConstants.RequestQueryString] = uri.Query.Length > 0 ? uri.Query.Substring(1) : String.Empty;
             env[OwinConstants.RequestScheme] = uri.Scheme;
             env[OwinConstants.RequestBody] = GetRequestBody(postData);
-            env[OwinConstants.RequestHeaders] = new Dictionary<string, string[]>();
+            var headers = new Dictionary<string, string[]>();
+            env[OwinConstants.RequestHeaders] = headers;
+
+            if (method == "POST")
+            {
+                headers.SetHeader("Content-Type", "application/x-www-form-urlencoded");
+            }
 
             // Run the client function to initialize the request
             prepareRequest(new Request(env, clientTokenSource.Cancel));
@@ -169,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     }
                     writer.Write(item.Key);
                     writer.Write("=");
-                    writer.Write(item.Value);
+                    writer.Write(UrlEncoder.UrlEncode(item.Value));
                     writer.WriteLine();
                     first = false;
                 }

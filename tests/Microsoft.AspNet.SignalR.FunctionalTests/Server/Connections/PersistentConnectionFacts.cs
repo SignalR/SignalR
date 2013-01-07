@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IIS, TransportType.LongPolling)]
+            // [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
