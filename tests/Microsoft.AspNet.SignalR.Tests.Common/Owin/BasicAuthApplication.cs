@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Owin
         {
             // TODO: Figure out how to not have this on all the time
             app.UseType<BasicAuthModule>("user", "password");
-            app.MapHubs("/signalr");
+            app.MapHubs(new HubConfiguration());
         }
     }
 }

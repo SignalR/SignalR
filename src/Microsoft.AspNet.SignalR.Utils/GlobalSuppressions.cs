@@ -11,3 +11,4 @@
 // You do not need to add suppressions to this file manually.
 
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "signalr", Justification="Consistency with other exes on the platform.")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1703:ResourceStringsShouldBeSpelledCorrectly", MessageId = "fwlink", Scope = "resource", Target = "Microsoft.AspNet.SignalR.Utils.Resources.resources", Justification = "Word is in a URL")]

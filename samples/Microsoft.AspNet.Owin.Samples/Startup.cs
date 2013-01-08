@@ -7,8 +7,12 @@ namespace Microsoft.AspNet.Owin.Samples
     {
         public void Configuration(IAppBuilder app)
         {
-            // Map hubs
-            app.MapHubs("/signalr", new HubConfiguration());
+            var config = new HubConfiguration
+            {
+                EnableJavaScriptProxies = true
+            };
+
+            app.MapHubs(config);
         }
     }
 }

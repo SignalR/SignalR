@@ -32,10 +32,11 @@ namespace System.Web.Routing
         /// Initializes the default hub route (/signalr).
         /// </summary>
         /// <param name="routes">The route table</param>
+        /// <param name="configuration">Configuration options</param>
         /// <returns>The registered route</returns>
-        public static RouteBase MapHubs(this RouteCollection routes)
+        public static RouteBase MapHubs(this RouteCollection routes, HubConfiguration configuration)
         {
-            return routes.MapHubs("/signalr", new HubConfiguration());
+            return routes.MapHubs("/signalr", configuration);
         }
 
         /// <summary>

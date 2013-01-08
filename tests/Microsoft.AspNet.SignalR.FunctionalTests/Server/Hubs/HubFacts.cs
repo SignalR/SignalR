@@ -1149,7 +1149,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", configuration);
+                    app.MapHubs(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
@@ -1185,7 +1185,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", configuration);
+                    app.MapHubs(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
@@ -1220,7 +1220,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", configuration);
+                    app.MapHubs(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
