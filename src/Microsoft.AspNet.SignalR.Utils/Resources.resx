@@ -139,7 +139,7 @@ Available commands:
 
   {0}
 
-For more information, visit https://github.com/SignalR/SignalR/wiki</value>
+For more information, visit http://go.microsoft.com/fwlink/?LinkId=275833</value>
   </data>
   <data name="Notify_InstallingPerformanceCounters" xml:space="preserve">
     <value>Installing performance counters...</value>
