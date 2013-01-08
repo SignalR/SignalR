@@ -185,14 +185,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        protected void IncrementErrorCounters(Exception exception)
-        {
-            _counters.ErrorsTransportTotal.Increment();
-            _counters.ErrorsTransportPerSec.Increment();
-            _counters.ErrorsAllTotal.Increment();
-            _counters.ErrorsAllPerSec.Increment();
-        }
-
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"];

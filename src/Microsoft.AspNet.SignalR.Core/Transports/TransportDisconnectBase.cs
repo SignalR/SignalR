@@ -215,6 +215,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Request.Url; }
         }
 
+        protected void IncrementErrorCounters(Exception exception)
+        {
+            _counters.ErrorsTransportTotal.Increment();
+            _counters.ErrorsTransportPerSec.Increment();
+            _counters.ErrorsAllTotal.Increment();
+            _counters.ErrorsAllPerSec.Increment();
+        }
+
         public Task Disconnect()
         {
             return OnDisconnect().Then(() => Connection.Close(ConnectionId));
