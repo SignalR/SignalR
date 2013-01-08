@@ -191,16 +191,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             return;
                     }
                 }
-                Close();
+
             }
-            catch (ObjectDisposedException)
+            catch (OperationCanceledException ex)
             {
-                // Happens when we pass an already disposed cancelation token to the messageRetriever
-                Close();
-            }
-            catch (OperationCanceledException)
-            {
-                Close();
+                if (!disconnectToken.IsCancellationRequested)
+                {
+                    Error = ex;
+                    OnError();
+                    cleanClose = false;
+                }
             }
             catch (Exception ex)
             {
@@ -215,6 +215,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 try
                 {
+                    Close();
                     OnClose(cleanClose);
                 }
                 finally
