@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // The connection is still alive so we need to keep it alive with a server side "ping".
                 // This is for scenarios where networking hardware (proxies, loadbalancers) get in the way
                 // of us handling timeout's or disconnects gracefully
-                if (RaiseKeepAlive())
+                if (RaiseKeepAlive(metadata))
                 {
                     Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
@@ -287,11 +287,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             return elapsed >= threshold;
         }
 
-        private bool RaiseKeepAlive()
+        private bool RaiseKeepAlive(ConnectionMetadata metadata)
         {
             int keepAlive = _configurationManager.KeepAlive;
 
-            if (keepAlive == 0)
+            // Don't raise keep alive if it's set to 0 or the transport doesn't support
+            // keep alive
+            if (keepAlive == 0 || !metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
