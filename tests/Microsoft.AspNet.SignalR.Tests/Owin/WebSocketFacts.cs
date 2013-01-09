@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             webSocket.Setup(ws => ws.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>())).Throws(new OperationCanceledException());
             webSocket.Setup(ws => ws.State).Returns(WebSocketState.Aborted);
 
-            webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, new CancellationToken());
+            webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
 
             webSocketHandler.Verify(wsh => wsh.OnError(), Times.AtLeastOnce());
             webSocketHandler.Verify(wsh => wsh.OnClose(It.IsAny<bool>()), Times.AtLeastOnce());

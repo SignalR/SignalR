@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void Abort(IConnection connection)
         {
-            Abort();
+            Close();
         }
 
         public Task Send(IConnection connection, string data)
