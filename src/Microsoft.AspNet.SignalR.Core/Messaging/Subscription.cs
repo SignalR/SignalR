@@ -323,16 +323,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "")]
         public abstract string GetCursor();
 
-        public override int GetHashCode()
-        {
-            return Identity.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Identity.Equals(((Subscription)obj).Identity);
-        }
-
         private static class State
         {
             public const int Idle = 0;
