@@ -8,7 +8,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class Topic
     {
-        private readonly HashSet<string> _subscriptionIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly TimeSpan _lifespan;
 
         // Keeps track of the last time this subscription was used
@@ -69,11 +68,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 _lastUsed = DateTime.UtcNow;
 
-                if (_subscriptionIdentities.Add(subscription.Identity))
-                {
-                    Subscriptions.Add(subscription);
-                }
-
+                Subscriptions.Add(subscription);
+                
                 // Created -> HasSubscriptions
                 Interlocked.CompareExchange(ref State,
                                             TopicState.HasSubscriptions,
@@ -98,10 +94,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 _lastUsed = DateTime.UtcNow;
 
-                if (_subscriptionIdentities.Remove(subscription.Identity))
-                {
-                    Subscriptions.Remove(subscription);
-                }
+              
+                Subscriptions.Remove(subscription);
+               
 
                 if (Subscriptions.Count == 0)
                 {
