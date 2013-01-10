@@ -7,12 +7,7 @@ namespace Microsoft.AspNet.Owin.Samples
     {
         public void Configuration(IAppBuilder app)
         {
-            var config = new HubConfiguration
-            {
-                EnableJavaScriptProxies = true
-            };
-
-            app.MapHubs(config);
+            app.MapHubs();
         }
     }
 }
