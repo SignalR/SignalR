@@ -260,13 +260,13 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public int DisconnectCount { get; set; }
 
-            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId)
             {
                 DisconnectCount++;
-                return base.OnDisconnectAsync(request, connectionId);
+                return base.OnDisconnected(request, connectionId);
             }
 
-            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }
@@ -314,16 +314,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            protected override Task OnConnectedAsync(IRequest request, string connectionId)
+            protected override Task OnConnected(IRequest request, string connectionId)
             {
                 _connectWh.Set();
-                return base.OnConnectedAsync(request, connectionId);
+                return base.OnConnected(request, connectionId);
             }
 
-            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId)
             {
                 _disconnectWh.Set();
-                return base.OnDisconnectAsync(request, connectionId);
+                return base.OnDisconnected(request, connectionId);
             }
         }
 

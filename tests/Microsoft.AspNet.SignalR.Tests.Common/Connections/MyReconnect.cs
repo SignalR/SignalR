@@ -10,15 +10,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
     {
         public int Reconnects { get; set; }
 
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
             return null;
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+        protected override Task OnReconnected(IRequest request, string connectionId)
         {
             Reconnects++;
-            return base.OnReconnectedAsync(request, connectionId);
+            return base.OnReconnected(request, connectionId);
         }
     }
 }

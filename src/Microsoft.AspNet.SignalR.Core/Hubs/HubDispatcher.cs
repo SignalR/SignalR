@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Processes the hub's incoming method calls.
         /// </summary>
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
             HubRequest hubRequest = _requestParser.Parse(data);
 
@@ -293,12 +293,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return context.Connection.Send(message);
         }
 
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
             return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Connect(hub));
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+        protected override Task OnReconnected(IRequest request, string connectionId)
         {
             return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
         }
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }).SelectMany(groupsToRejoin => groupsToRejoin);
         }
 
-        protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+        protected override Task OnDisconnected(IRequest request, string connectionId)
         {
             return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }

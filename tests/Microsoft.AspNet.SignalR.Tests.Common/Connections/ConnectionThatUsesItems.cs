@@ -5,17 +5,17 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 {
     public class ConnectionThatUsesItems : PersistentConnection
     {
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
             return PrintEnvironment("OnConnectedAsync", request, connectionId);
         }
 
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
             return PrintEnvironment("OnReceivedAsync", request, connectionId);
         }
 
-        protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+        protected override Task OnDisconnected(IRequest request, string connectionId)
         {
             return PrintEnvironment("OnDisconnectAsync", request, connectionId);
         }

@@ -4,7 +4,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 {
     public class MyGroupEchoConnection : PersistentConnection
     {
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
             return Groups.Send("test", "hey");
         }

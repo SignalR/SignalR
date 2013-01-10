@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 {
     public class MyGroupConnection : PersistentConnection
     {
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
             JObject operation = JObject.Parse(data);
             int type = operation.Value<int>("type");
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
                 return Groups.Send(group, operation.Value<string>("message"));
             }
 
-            return base.OnReceivedAsync(request, connectionId, data);
+            return base.OnReceived(request, connectionId, data);
         }
     }
 

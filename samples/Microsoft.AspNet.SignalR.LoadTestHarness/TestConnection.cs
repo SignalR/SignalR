@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
     {
         internal static ConnectionBehavior Behavior { get; set; }
 
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
             if (Behavior == ConnectionBehavior.Echo)
             {
