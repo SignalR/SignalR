@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="transport">The transport to use.</param>
         /// <returns>A task that represents when the connection has started.</returns>
-        public virtual Task Start(IClientTransport transport)
+        public Task Start(IClientTransport transport)
         {
             _disconnectCts = new SafeCancellationTokenSource();
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
