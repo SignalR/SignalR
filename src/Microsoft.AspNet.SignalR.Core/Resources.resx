@@ -147,8 +147,11 @@
   <data name="Error_JavaScriptProxyDisabled" xml:space="preserve">
     <value>SignalR: JavaScript Hub proxy generation has been disabled.</value>
   </data>
-  <data name="Error_KeepAliveMustBeGreaterThanZero" xml:space="preserve">
-    <value>Keep Alive value must be greater than zero.</value>
+  <data name="Error_KeepAliveMustBeGreaterThanTwoSeconds" xml:space="preserve">
+    <value>Keep Alive value must be greater than two seconds.</value>
+  </data>
+  <data name="Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" xml:space="preserve">
+    <value>Keep Alive value must be no more than a third of the DisconnectTimeout.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
@@ -158,6 +161,9 @@
   </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
+  </data>
+  <data name="Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds" xml:space="preserve">
+    <value>Non-zero DisconnectTimeout must be at least six seconds.</value>
   </data>
   <data name="Error_ProtocolErrorMissingConnectionId" xml:space="preserve">
     <value>Protocol error: Missing connectionId.</value>

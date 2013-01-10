@@ -20,15 +20,10 @@ namespace Microsoft.AspNet.SignalR.Configuration
         TimeSpan DisconnectTimeout { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="TimeSpan"/> representing the interval for checking the state of a connection. 
+        /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time between send keep alive messages.
+        /// If enabled, this value must be at least two seconds. Set to <see cref="TimeSpan.Zero"/> to disable.
         /// </summary>
-        TimeSpan HeartbeatInterval { get; set; }
-
-        /// <summary>
-        /// Indicates how many Heartbeats to wait before triggering keep alive.  To convert this
-        /// value to a time span simply multiply it by the HeartbeatInterval.
-        /// </summary>
-        int KeepAlive { get; set; }
+        TimeSpan KeepAlive { get; set; }
 
         /// <summary>
         /// Gets of sets the number of messages to buffer for a specific signal.

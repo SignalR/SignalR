@@ -6,17 +6,24 @@ namespace Microsoft.AspNet.SignalR.Configuration
 {
     public class DefaultConfigurationManager : IConfigurationManager
     {
-        private int _keepAlive;
+        // The below effectively sets the minimum heartbeat to once per second.
+        private static readonly TimeSpan _minimumKeepAlive = TimeSpan.FromSeconds(2);
+        private const int _minimumKeepAlivesPerDisconnectTimeout = 3;
+
+        // if _minimumDisconnectTimeout != 6 seconds, update the ArguementOutOfRanceExceptionMessage below
+        private static readonly TimeSpan _minimumDisconnectTimeout = TimeSpan.FromTicks(_minimumKeepAlive.Ticks * _minimumKeepAlivesPerDisconnectTimeout);
+
+        private TimeSpan _keepAlive;
+        private TimeSpan _disconnectTimeout;
 
         public DefaultConfigurationManager()
         {
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(40);
-            HeartbeatInterval = TimeSpan.FromSeconds(10);
-            KeepAlive = 2;
             DefaultMessageBufferSize = 1000;
         }
 
+        // TODO: Should we guard against negative TimeSpans here like everywhere else?
         public TimeSpan ConnectionTimeout
         {
             get;
@@ -25,11 +32,26 @@ namespace Microsoft.AspNet.SignalR.Configuration
 
         public TimeSpan DisconnectTimeout
         {
-            get;
-            set;
+            get
+            {
+                return _disconnectTimeout;
+            }
+            set
+            {
+                if (value != TimeSpan.Zero && value < _minimumDisconnectTimeout)
+                {
+                    throw new ArgumentOutOfRangeException(Resources.Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds);
+                }
+
+                _disconnectTimeout = value;
+
+                // TODO: How do we ensure developers don't configure custom KeepAlive values before setting DisconnectTimeout?
+                // TODO: Should setting the DisconnectTimeout to zero disable KeepAlives?
+                _keepAlive = TimeSpan.FromTicks(_disconnectTimeout.Ticks / _minimumKeepAlivesPerDisconnectTimeout);
+            }
         }
         
-        public int KeepAlive
+        public TimeSpan KeepAlive
         {
             get
             {
@@ -37,19 +59,19 @@ namespace Microsoft.AspNet.SignalR.Configuration
             }
             set
             {
-                if (value < 0)
+                if (value != TimeSpan.Zero && value < _minimumKeepAlive)
                 {
-                    throw new ArgumentOutOfRangeException(Resources.Error_KeepAliveMustBeGreaterThanZero);
+                    throw new ArgumentOutOfRangeException(Resources.Error_KeepAliveMustBeGreaterThanTwoSeconds);
+                }
+
+                // TODO: 
+                if (value > TimeSpan.FromTicks(_disconnectTimeout.Ticks / _minimumKeepAlivesPerDisconnectTimeout))
+                {
+                    throw new ArgumentOutOfRangeException(Resources.Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout);
                 }
 
                 _keepAlive = value;
             }
-        }
-
-        public TimeSpan HeartbeatInterval
-        {
-            get;
-            set;
         }
 
         public int DefaultMessageBufferSize

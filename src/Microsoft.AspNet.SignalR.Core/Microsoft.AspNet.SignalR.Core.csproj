@@ -54,6 +54,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>
     </Compile>
+    <Compile Include="Configuration\ConfigurationExtensions.cs" />
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />

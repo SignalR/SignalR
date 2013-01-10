@@ -315,13 +315,13 @@ namespace Microsoft.AspNet.SignalR
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
-            // Convert the keepAlive value to seconds based on the HeartBeat interval
-            var keepAlive = _configurationManager.KeepAlive * _configurationManager.HeartbeatInterval.TotalSeconds;
+            // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
+            var keepAliveTimeout = _configurationManager.KeepAliveTimeout().TotalSeconds;
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionId = ConnectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
-                KeepAlive = (keepAlive != 0) ? keepAlive : (double?)null,
+                KeepAliveTimeout = keepAliveTimeout != 0 ? keepAliveTimeout : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
