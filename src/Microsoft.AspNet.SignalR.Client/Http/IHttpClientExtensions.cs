@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 throw new ArgumentNullException("prepareRequest");
             }
 
-            return client.PostAsync(url, prepareRequest, postData: null);
+            return client.Post(url, prepareRequest, postData: null);
         }
     }
 }

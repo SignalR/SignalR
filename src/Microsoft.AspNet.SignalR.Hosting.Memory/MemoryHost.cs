@@ -52,12 +52,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public string InstanceName { get; set; }
 
-        Task<IClientResponse> IHttpClient.GetAsync(string url, Action<IClientRequest> prepareRequest)
+        Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest)
         {
             return ProcessRequest(url, prepareRequest, postData: null);
         }
 
-        Task<IClientResponse> IHttpClient.PostAsync(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
+        Task<IClientResponse> IHttpClient.Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
         {
             return ProcessRequest(url, prepareRequest, postData);
         }

@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 { "data", data }
             };
 
-            return _httpClient.PostAsync(url, connection.PrepareRequest, postData)
+            return _httpClient.Post(url, connection.PrepareRequest, postData)
                               .Then(response =>
                               {
                                   string raw = response.ReadAsString();

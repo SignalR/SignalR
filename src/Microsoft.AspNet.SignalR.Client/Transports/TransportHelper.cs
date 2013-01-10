@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
 
 
-            return httpClient.GetAsync(negotiateUrl, connection.PrepareRequest).Then(response =>
+            return httpClient.Get(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
 
