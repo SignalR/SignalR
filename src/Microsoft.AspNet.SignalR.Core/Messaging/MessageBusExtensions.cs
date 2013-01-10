@@ -42,12 +42,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's disposed in an async manner.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
-        internal static Task<T> ReceiveAsync<T>(this IMessageBus bus,
-                                                ISubscriber subscriber,
-                                                string cursor,
-                                                CancellationToken cancel,
-                                                int maxMessages,
-                                                Func<MessageResult, T> map) where T : class
+        internal static Task<T> Receive<T>(this IMessageBus bus,
+                                           ISubscriber subscriber,
+                                           string cursor,
+                                           CancellationToken cancel,
+                                           int maxMessages,
+                                           Func<MessageResult, T> map) where T : class
         {
             var tcs = new TaskCompletionSource<T>();
             IDisposable subscription = null;

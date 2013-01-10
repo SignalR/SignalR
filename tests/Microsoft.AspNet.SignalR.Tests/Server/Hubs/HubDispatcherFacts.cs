@@ -22,12 +22,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
             
             // Act
             var context = new HostContext(request.Object, response.Object);
             dispatcher.Initialize(new DefaultDependencyResolver(), context);
-            dispatcher.ProcessRequestAsync(context).Wait();
+            dispatcher.ProcessRequest(context).Wait();
 
             // Assert
             Assert.Equal("application/x-javascript", contentType);
@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             dispatcher.Initialize(new DefaultDependencyResolver(), context);
-            dispatcher.ProcessRequestAsync(context).Wait();
+            dispatcher.ProcessRequest(context).Wait();
 
             // Assert
             Assert.Equal("application/x-javascript", contentType);

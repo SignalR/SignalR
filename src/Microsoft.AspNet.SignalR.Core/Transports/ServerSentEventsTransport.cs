@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.WriteLine();
                 OutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.WriteLine();
                 OutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                OutputWriter.WriteLine();
                                OutputWriter.Flush();
 
-                               return Context.Response.FlushAsync();
+                               return Context.Response.Flush();
                            });
                        });
         }

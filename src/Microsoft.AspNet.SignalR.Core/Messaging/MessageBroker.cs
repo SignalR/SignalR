@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 _counters.MessageBusBusyWorkers.RawValue = Interlocked.Increment(ref _busyWorkers);
                 Trace.TraceInformation("Work(" + subscription.Identity + ")");
-                Task workTask = subscription.WorkAsync();
+                Task workTask = subscription.Work();
 
                 if (workTask.IsCompleted)
                 {

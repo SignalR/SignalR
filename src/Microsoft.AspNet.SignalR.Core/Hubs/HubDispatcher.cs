@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        public override Task ProcessRequestAsync(HostContext context)
+        public override Task ProcessRequest(HostContext context)
         {
             if (context == null)
             {
@@ -208,12 +208,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
+                return context.Response.End(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();
 
-            return base.ProcessRequestAsync(context);
+            return base.ProcessRequest(context);
         }
 
         internal static Task Connect(IHub hub)
@@ -295,12 +295,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         protected override Task OnConnected(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Connect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Connect(hub));
         }
 
         protected override Task OnReconnected(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         protected override Task OnDisconnected(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }
 
         protected override IEnumerable<string> GetSignals(string connectionId)
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                         .Concat(new[] { connectionId, "ACK_" + connectionId });
         }
 
-        private Task ExecuteHubEventAsync(IRequest request, string connectionId, Func<IHub, Task> action)
+        private Task ExecuteHubEvent(IRequest request, string connectionId, Func<IHub, Task> action)
         {
             var hubs = GetHubs(request, connectionId).ToList();
             var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();

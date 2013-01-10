@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             ResponseBody.Write(data.Array, data.Offset, data.Count);
         }
 
-        public Task FlushAsync()
+        public Task Flush()
         {
 #if NET45
             return ResponseBody.FlushAsync();
@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.SignalR.Owin
 #endif
         }
 
-        public Task EndAsync()
+        public Task End()
         {
-            return FlushAsync();
+            return Flush();
         }
 
         public IDictionary<string, string[]> ResponseHeaders

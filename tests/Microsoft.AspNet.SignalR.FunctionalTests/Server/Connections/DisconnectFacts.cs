@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
-            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
             bool isConnected = true;
             response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
-            response.Setup(m => m.FlushAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             var resolver = new DefaultDependencyResolver();
             var config = resolver.Resolve<IConfigurationManager>();

@@ -11,6 +11,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         bool SetQueued();
         bool UnsetQueued();
 
-        Task WorkAsync();
+        Task Work();
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -31,12 +32,13 @@ namespace Microsoft.AspNet.SignalR.Hosting
         /// Flushes the buffered response to the client.
         /// </summary>
         /// <returns>A task that represents when the data has been flushed.</returns>
-        Task FlushAsync();
+        Task Flush();
 
         /// <summary>
         /// Closes the connection to the client.
         /// </summary>
         /// <returns>A task that represents when the connection is closed.</returns>
-        Task EndAsync();
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "Ends the response thus the name is appropriate.")]
+        Task End();
     }
 }

@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 return;
             }
 
-            connection.ReceiveAsync(messageId, cancellationToken, maxMessages: 5000).Then(r =>
+            connection.Receive(messageId, cancellationToken, maxMessages: 5000).Then(r =>
             {
                 ReceiveLoop(connectionCountDown, connection, r.MessageId, cancellationToken);
             });

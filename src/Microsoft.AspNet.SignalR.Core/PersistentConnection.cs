@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        public virtual Task ProcessRequestAsync(HostContext context)
+        public virtual Task ProcessRequest(HostContext context)
         {
             if (context == null)
             {
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             context.Response.ContentType = JsonUtility.MimeType;
-            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
+            return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             context.Response.ContentType = JsonUtility.MimeType;
-            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
+            return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessJsonpRequest(HostContext context, object payload)
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.SignalR
             context.Response.ContentType = JsonUtility.JsonpMimeType;
             var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
-            return context.Response.EndAsync(data);
+            return context.Response.End(data);
         }
 
         private static bool IsNegotiationRequest(IRequest request)
