@@ -160,11 +160,20 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep Alive value must be greater than zero..
+        ///   Looks up a localized string similar to Keep Alive value must be greater than two seconds..
         /// </summary>
-        internal static string Error_KeepAliveMustBeGreaterThanZero {
+        internal static string Error_KeepAliveMustBeGreaterThanTwoSeconds {
             get {
-                return ResourceManager.GetString("Error_KeepAliveMustBeGreaterThanZero", resourceCulture);
+                return ResourceManager.GetString("Error_KeepAliveMustBeGreaterThanTwoSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep Alive value must be no more than a third of the DisconnectTimeout..
+        /// </summary>
+        internal static string Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout {
+            get {
+                return ResourceManager.GetString("Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout", resourceCulture);
             }
         }
         
@@ -192,6 +201,15 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_MultipleActivatorsAreaRegisteredCallGetServices {
             get {
                 return ResourceManager.GetString("Error_MultipleActivatorsAreaRegisteredCallGetServices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Non-zero DisconnectTimeout must be at least six seconds..
+        /// </summary>
+        internal static string Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds {
+            get {
+                return ResourceManager.GetString("Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds", resourceCulture);
             }
         }
         
