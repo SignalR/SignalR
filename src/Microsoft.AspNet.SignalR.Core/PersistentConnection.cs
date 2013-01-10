@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        public virtual Task ProcessRequestAsync(HostContext context)
+        public virtual Task ProcessRequest(HostContext context)
         {
             if (context == null)
             {
@@ -175,24 +175,24 @@ namespace Microsoft.AspNet.SignalR
 
             Transport.Connected = () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnConnectedAsync(context.Request, connectionId).OrEmpty());
+                return TaskAsyncHelper.FromMethod(() => OnConnected(context.Request, connectionId).OrEmpty());
             };
 
             Transport.Reconnected = () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnReconnectedAsync(context.Request, connectionId).OrEmpty());
+                return TaskAsyncHelper.FromMethod(() => OnReconnected(context.Request, connectionId).OrEmpty());
             };
 
             Transport.Received = data =>
             {
                 Counters.ConnectionMessagesSentTotal.Increment();
                 Counters.ConnectionMessagesSentPerSec.Increment();
-                return TaskAsyncHelper.FromMethod(() => OnReceivedAsync(context.Request, connectionId, data).OrEmpty());
+                return TaskAsyncHelper.FromMethod(() => OnReceived(context.Request, connectionId, data).OrEmpty());
             };
 
             Transport.Disconnected = () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnDisconnectAsync(context.Request, connectionId).OrEmpty());
+                return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId).OrEmpty());
             };
 
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
@@ -258,7 +258,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the connecting client.</param>
         /// <returns>A <see cref="Task"/> that completes when the connect operation is complete.</returns>
-        protected virtual Task OnConnectedAsync(IRequest request, string connectionId)
+        protected virtual Task OnConnected(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the re-connecting client.</param>
         /// <returns>A <see cref="Task"/> that completes when the re-connect operation is complete.</returns>
-        protected virtual Task OnReconnectedAsync(IRequest request, string connectionId)
+        protected virtual Task OnReconnected(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="connectionId">The id of the connection sending the data.</param>
         /// <param name="data">The payload sent to the connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the receive operation is complete.</returns>
-        protected virtual Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected virtual Task OnReceived(IRequest request, string connectionId, string data)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the disconnected connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
-        protected virtual Task OnDisconnectAsync(IRequest request, string connectionId)
+        protected virtual Task OnDisconnected(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             context.Response.ContentType = JsonUtility.MimeType;
-            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
+            return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             context.Response.ContentType = JsonUtility.MimeType;
-            return context.Response.EndAsync(JsonSerializer.Stringify(payload));
+            return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessJsonpRequest(HostContext context, object payload)
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.SignalR
             context.Response.ContentType = JsonUtility.JsonpMimeType;
             var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
-            return context.Response.EndAsync(data);
+            return context.Response.End(data);
         }
 
         private static bool IsNegotiationRequest(IRequest request)

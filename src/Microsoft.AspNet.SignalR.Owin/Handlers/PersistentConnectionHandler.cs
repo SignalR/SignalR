@@ -11,14 +11,14 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
 
     public class PersistentConnectionHandler
     {
-        private readonly AppFunc _app;
+        private readonly AppFunc _next;
         private readonly string _path;
         private readonly Type _connectionType;
         private readonly IDependencyResolver _resolver;
 
-        public PersistentConnectionHandler(AppFunc app, string path, Type connectionType, IDependencyResolver resolver)
+        public PersistentConnectionHandler(AppFunc next, string path, Type connectionType, IDependencyResolver resolver)
         {
-            _app = app;
+            _next = next;
             _path = path;
             _connectionType = connectionType;
             _resolver = resolver;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
             var path = environment.Get<string>(OwinConstants.RequestPath);
             if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
             {
-                return _app.Invoke(environment);
+                return _next(environment);
             }
 
             var connectionFactory = new PersistentConnectionFactory(_resolver);

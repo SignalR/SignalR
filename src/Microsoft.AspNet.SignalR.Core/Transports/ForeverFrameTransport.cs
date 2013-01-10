@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 HTMLOutputWriter.WriteLine();
                 HTMLOutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 HTMLOutputWriter.WriteRaw(");</script>\r\n");
                 HTMLOutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         HTMLOutputWriter.WriteRaw(initScript);
                         HTMLOutputWriter.Flush();
 
-                        return Context.Response.FlushAsync();
+                        return Context.Response.Flush();
                     });
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);

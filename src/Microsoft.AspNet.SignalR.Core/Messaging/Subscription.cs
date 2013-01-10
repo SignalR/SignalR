@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             TaskContinuationOptions.ExecuteSynchronously).FastUnwrap();
         }
 
-        public Task WorkAsync()
+        public Task Work()
         {
             // Set the state to working
             Interlocked.Exchange(ref _state, State.Working);

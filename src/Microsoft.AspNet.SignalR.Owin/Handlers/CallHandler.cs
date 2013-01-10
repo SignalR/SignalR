@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             _connection.Initialize(_resolver, hostContext);
 
-            return _connection.ProcessRequestAsync(hostContext);
+            return _connection.ProcessRequest(hostContext);
         }
     }
 }

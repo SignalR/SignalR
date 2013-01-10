@@ -13,13 +13,8 @@ namespace Microsoft.AspNet.SignalR.Samples
             routes.MapConnection<RawConnection>("raw-connection", "raw-connection");
             routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection");
 
-            // Register the default hubs route: ~/signalr/hubs
-            var config = new HubConfiguration()
-            {
-                EnableJavaScriptProxies = true
-            };
-
-            routes.MapHubs(config);
+            // Register the default hubs route /signalr
+            routes.MapHubs();
         }
     }
 }

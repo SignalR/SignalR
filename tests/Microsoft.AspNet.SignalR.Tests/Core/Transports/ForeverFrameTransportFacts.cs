@@ -70,12 +70,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                 _stream.SetLength(0);
             }
 
-            public Task FlushAsync()
+            public Task Flush()
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            public Task EndAsync()
+            public Task End()
             {
                 return TaskAsyncHelper.Empty;
             }

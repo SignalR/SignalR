@@ -10,13 +10,8 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             GlobalHost.Configuration.KeepAlive = 3;
 
             RouteTable.Routes.MapConnection<TestConnection>("TestConnection", "TestConnection");
+            RouteTable.Routes.MapHubs();
 
-            var config = new HubConfiguration
-            {
-                EnableJavaScriptProxies = true
-            };
-
-            RouteTable.Routes.MapHubs(config);
             Dashboard.Init();
         }
     }

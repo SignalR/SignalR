@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();
 
-                return Context.Response.EndAsync().Catch(IncrementErrorCounters);
+                return Context.Response.End().Catch(IncrementErrorCounters);
             });
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Task task = base.EnqueueOperation(writeAsync);
 
-            // If PersistentConnection.OnConnectedAsync has not completed (as indicated by InitializeTcs),
+            // If PersistentConnection.OnConnected has not completed (as indicated by InitializeTcs),
             // the queue will be blocked to prevent clients from prematurely indicating the connection has
             // started, but we must keep receive loop running to continue processing commands and to
             // prevent deadlocks caused by waiting on ACKs.

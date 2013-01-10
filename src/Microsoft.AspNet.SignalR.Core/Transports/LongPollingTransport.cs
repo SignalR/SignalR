@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 OutputWriter.Flush();
-                return Context.Response.EndAsync()
+                return Context.Response.End()
                                        .Catch(IncrementErrorCounters)
                                        .Catch(ex =>
                                        {
@@ -240,10 +240,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 TransportConnected().Catch();
             }
 
-            // ReceiveAsync() will async wait until a message arrives then return
+            // Receive() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
-                              connection.ReceiveAsync(null, ConnectionEndToken, MaxMessages) :
-                              connection.ReceiveAsync(MessageId, ConnectionEndToken, MaxMessages);
+                              connection.Receive(null, ConnectionEndToken, MaxMessages) :
+                              connection.Receive(MessageId, ConnectionEndToken, MaxMessages);
 
 
             return TaskAsyncHelper.Series(() =>

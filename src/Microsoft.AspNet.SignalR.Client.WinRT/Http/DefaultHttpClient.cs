@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     public class DefaultHttpClient : IHttpClient
     {
-        public async Task<IResponse> GetAsync(string url, Action<IRequest> prepareRequest)
+        public async Task<IResponse> Get(string url, Action<IRequest> prepareRequest)
         {
             var cts = new CancellationTokenSource();
             var handler = new DefaultHttpHandler(prepareRequest, cts.Cancel);
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return new HttpResponseMessageWrapper(responseMessage);
         }
 
-        public async Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData)
+        public async Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
         {
             var cts = new CancellationTokenSource();
             var handler = new DefaultHttpHandler(prepareRequest, cts.Cancel);

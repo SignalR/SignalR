@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif
 
-            HttpClient.GetAsync(url, req =>
+            HttpClient.Get(url, req =>
             {
                 request = req;
                 connection.PrepareRequest(request);

@@ -129,9 +129,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return message;
         }
 
-        public Task<PersistentResponse> ReceiveAsync(string messageId, CancellationToken cancel, int maxMessages)
+        public Task<PersistentResponse> Receive(string messageId, CancellationToken cancel, int maxMessages)
         {
-            return _bus.ReceiveAsync<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
+            return _bus.Receive<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
         }
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)

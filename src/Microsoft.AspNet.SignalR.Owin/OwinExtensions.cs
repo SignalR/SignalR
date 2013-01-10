@@ -13,6 +13,11 @@ namespace Owin
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Owin", Justification = "The owin namespace is for consistentcy.")]
     public static class OwinExtensions
     {
+        public static IAppBuilder MapHubs(this IAppBuilder builder)
+        {
+            return builder.MapHubs(new HubConfiguration());
+        }
+
         public static IAppBuilder MapHubs(this IAppBuilder builder, HubConfiguration configuration)
         {
             return builder.MapHubs("/signalr", configuration);

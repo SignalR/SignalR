@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("LP: {0}", (object)url);
 #endif
 
-            HttpClient.PostAsync(url, req => 
+            HttpClient.Post(url, req => 
             {
                 request = req;
                 connection.PrepareRequest(request);

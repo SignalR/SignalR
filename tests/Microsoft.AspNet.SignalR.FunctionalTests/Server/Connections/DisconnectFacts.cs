@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
-            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
             bool isConnected = true;
             response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
-            response.Setup(m => m.FlushAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             var resolver = new DefaultDependencyResolver();
             var config = resolver.Resolve<IConfigurationManager>();
@@ -239,20 +239,20 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _servers = servers;
             }
 
-            public Task<IClientResponse> GetAsync(string url, Action<IClientRequest> prepareRequest)
+            public Task<IClientResponse> Get(string url, Action<IClientRequest> prepareRequest)
             {
                 Debug.WriteLine("Server {0}: GET {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].GetAsync(url, prepareRequest);
+                return _servers[index].Get(url, prepareRequest);
             }
 
-            public Task<IClientResponse> PostAsync(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
+            public Task<IClientResponse> Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
             {
                 Debug.WriteLine("Server {0}: POST {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].PostAsync(url, prepareRequest, postData);
+                return _servers[index].Post(url, prepareRequest, postData);
             }
         }
 
@@ -260,13 +260,13 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public int DisconnectCount { get; set; }
 
-            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId)
             {
                 DisconnectCount++;
-                return base.OnDisconnectAsync(request, connectionId);
+                return base.OnDisconnected(request, connectionId);
             }
 
-            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }
@@ -314,16 +314,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            protected override Task OnConnectedAsync(IRequest request, string connectionId)
+            protected override Task OnConnected(IRequest request, string connectionId)
             {
                 _connectWh.Set();
-                return base.OnConnectedAsync(request, connectionId);
+                return base.OnConnected(request, connectionId);
             }
 
-            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId)
             {
                 _disconnectWh.Set();
-                return base.OnDisconnectAsync(request, connectionId);
+                return base.OnDisconnected(request, connectionId);
             }
         }
 

@@ -151,19 +151,19 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 #if !NET35
         public class MyConnection : PersistentConnection
         {
-            protected override Task OnConnectedAsync(IRequest request, string connectionId)
+            protected override Task OnConnected(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} Connected", connectionId);
-                return base.OnConnectedAsync(request, connectionId);
+                return base.OnConnected(request, connectionId);
             }
 
-            protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+            protected override Task OnReconnected(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} Reconnected", connectionId);
-                return base.OnReconnectedAsync(request, connectionId);
+                return base.OnReconnected(request, connectionId);
             }
 
-            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }

@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 {
     public class FallbackToLongPollingConnection : PersistentConnection
     {
-        protected override async Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override async Task OnConnected(IRequest request, string connectionId)
         {
             string transport = request.QueryString["transport"];
 
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
                 await Task.Delay(5000);
             }
 
-            await base.OnConnectedAsync(request, connectionId);
+            await base.OnConnected(request, connectionId);
         }
     }
 }
