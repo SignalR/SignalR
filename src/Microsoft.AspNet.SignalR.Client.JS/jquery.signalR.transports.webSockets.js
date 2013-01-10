@@ -31,10 +31,6 @@
                 reconnecting = !onSuccess,
                 $connection = $(connection);
 
-            if (window.MozWebSocket) {
-                window.WebSocket = window.MozWebSocket;
-            }
-
             if (!window.WebSocket) {
                 onFailed();
                 return;
