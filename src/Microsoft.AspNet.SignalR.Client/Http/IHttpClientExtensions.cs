@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     public static class IHttpClientExtensions
     {
-        public static Task<IResponse> PostAsync(this IHttpClient client, string url, Action<IRequest> prepareRequest)
+        public static Task<IResponse> Post(this IHttpClient client, string url, Action<IRequest> prepareRequest)
         {
             if (client == null)
             {

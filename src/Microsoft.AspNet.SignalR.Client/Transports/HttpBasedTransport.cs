@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             try
             {
                 // Attempt to perform a clean disconnect, but only wait 2 seconds
-                _httpClient.PostAsync(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
+                _httpClient.Post(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
             }
             catch (Exception ex)
             {
