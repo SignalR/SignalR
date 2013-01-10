@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
             configuration.DisconnectTimeout = TimeSpan.Zero;
-            configuration.KeepAlive = 0;
+            configuration.KeepAlive = TimeSpan.Zero;
 
             using (var bus = new MessageBus(dr))
             {
@@ -82,7 +82,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
             configuration.DisconnectTimeout = TimeSpan.Zero;
-            configuration.KeepAlive = 0;
+            // NOTE: The following is redundant, since setting the DisconnectTimeout to zero already disables keep-alives.
+            configuration.KeepAlive = TimeSpan.Zero;
 
             using (var bus = new MessageBus(dr))
             {
@@ -178,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
             configuration.DisconnectTimeout = TimeSpan.Zero;
-            configuration.KeepAlive = 0;
+            configuration.KeepAlive = TimeSpan.Zero;
 
             using (var bus = new MessageBus(dr))
             {

@@ -257,9 +257,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         app.MapConnection<MyReconnect>("/endpoint", config);
                         var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                        configuration.KeepAlive = 0;
+                        configuration.KeepAlive = TimeSpan.Zero;
                         configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                        configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
 
                         config.Resolver.Register(typeof(MyReconnect), () => conn);
                     });
@@ -327,9 +326,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 2,
-                                    hearbeatInterval: 2);
+                    host.Initialize(keepAlive: 2);
 
                     var connection = new Client.Connection(host.Url + "/groups");
                     var list = new List<string>();
@@ -371,9 +368,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 2,
-                                    hearbeatInterval: 2);
+                    host.Initialize(keepAlive: 2,
+                                    connectionTimeout: 2);
 
                     var connection = new Client.Connection(host.Url + "/rejoin-groups");
 
@@ -417,9 +413,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 5,
-                                    hearbeatInterval: 2);
+                    host.Initialize(keepAlive: 2,
+                                    connectionTimeout: 5);
 
                     var connection = new Client.Connection(host.Url + "/rejoin-groups");
                     var inGroupOnReconnect = new List<bool>();
@@ -462,9 +457,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 5,
-                                    hearbeatInterval: 2);
+                    host.Initialize(keepAlive: 2,
+                                    connectionTimeout: 5);
 
                     var connection = new Client.Connection(host.Url + "/groups");
                     var inGroupOnReconnect = new List<bool>();

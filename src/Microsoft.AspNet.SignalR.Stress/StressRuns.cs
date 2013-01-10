@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapHubs(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-                configuration.KeepAlive = 1;
+                // The below effectively sets the heartbeat interval to five seconds.
+                configuration.KeepAlive = TimeSpan.FromSeconds(10);
 
                 var pipeline = config.Resolver.Resolve<IHubPipeline>();
                 pipeline.EnableAutoRejoiningGroups();
@@ -99,7 +99,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapHubs(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                // The below effectively sets the heartbeat interval to five seconds.
+                configuration.KeepAlive = TimeSpan.FromSeconds(10);
                 configuration.DisconnectTimeout = TimeSpan.FromSeconds(10);
 
                 var connectionManager = config.Resolver.Resolve<IConnectionManager>();
@@ -264,9 +265,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapConnection<MyRejoinGroupConnection>("/groups", config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.KeepAlive = 0;
+                configuration.KeepAlive = TimeSpan.Zero;
                 configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
             });
 
             var connection = new Client.Connection("http://foo/groups");
