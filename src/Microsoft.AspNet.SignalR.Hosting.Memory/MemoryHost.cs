@@ -57,18 +57,18 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return ProcessRequest(url, prepareRequest, postData: null);
         }
 
-        Task<IClientResponse> IHttpClient.PostAsync(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
+        Task<IClientResponse> IHttpClient.PostAsync(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
         {
             return ProcessRequest(url, prepareRequest, postData);
         }
 
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
         {
             return ProcessRequest(url, prepareRequest, postData, disableWrites: false);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The cancellation token is disposed when the request ends")]
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData, bool disableWrites)
+        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool disableWrites)
         {
             if (url == null)
             {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The caller owns the stream")]
-        private static Stream GetRequestBody(Dictionary<string, string> postData)
+        private static Stream GetRequestBody(IDictionary<string, string> postData)
         {
             var ms = new MemoryStream();
             if (postData != null)

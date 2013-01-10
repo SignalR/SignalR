@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 return _servers[index].GetAsync(url, prepareRequest);
             }
 
-            public Task<IClientResponse> PostAsync(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
+            public Task<IClientResponse> PostAsync(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
             {
                 Debug.WriteLine("Server {0}: POST {1}", _counter, url);
                 int index = _counter;

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return new HttpResponseMessageWrapper(responseMessage);
         }
 
-        public async Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, Dictionary<string, string> postData)
+        public async Task<IResponse> PostAsync(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
         {
             var cts = new CancellationTokenSource();
             var handler = new DefaultHttpHandler(prepareRequest, cts.Cancel);
