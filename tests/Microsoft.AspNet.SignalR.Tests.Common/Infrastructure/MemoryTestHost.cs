@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public void Initialize(int keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
-                               int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
             var dr = new DefaultDependencyResolver();
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 var configuration = dr.Resolve<IConfigurationManager>();
 
-                configuration.KeepAlive = keepAlive;
+                configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
 
                 if (connectionTimeout != null)
                 {
@@ -50,11 +49,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 if (disconnectTimeout != null)
                 {
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
-                }
-
-                if (hearbeatInterval != null)
-                {
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(hearbeatInterval.Value);
                 }
 
                 if (enableAutoRejoiningGroups)

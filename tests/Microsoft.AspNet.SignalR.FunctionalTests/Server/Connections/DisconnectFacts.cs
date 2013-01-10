@@ -41,7 +41,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var config = resolver.Resolve<IConfigurationManager>();
             var hostContext = new HostContext(request.Object, response.Object);
             config.DisconnectTimeout = TimeSpan.Zero;
-            config.HeartbeatInterval = TimeSpan.FromSeconds(3);
+            // The below effectively sets the heartbeat interval to three seconds.
+            config.KeepAlive = TimeSpan.FromSeconds(6);
             var transport = new Mock<ForeverTransport>(hostContext, resolver)
             {
                 CallBase = true
@@ -89,14 +90,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapConnection<MyConnection>("/echo", config);
 
                     configuration.DisconnectTimeout = TimeSpan.Zero;
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                    // The below effectively sets the heartbeat interval to five seconds.
+                    configuration.KeepAlive = TimeSpan.FromSeconds(10);
 
                     dr.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
                 });
                 var connection = new Client.Connection("http://foo/echo");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -128,7 +130,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", config);
 
                     configuration.DisconnectTimeout = TimeSpan.Zero;
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                    // The below effectively sets the heartbeat interval to five seconds.
+                    configuration.KeepAlive = TimeSpan.FromSeconds(10);
                     dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
                 });
 
@@ -137,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.CreateHubProxy("MyHub");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -168,7 +171,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 foreach (var node in nodes)
                 {
                     var config = node.Resolver.Resolve<IConfigurationManager>();
-                    config.HeartbeatInterval = timeout;
+                    // The below effectively sets the heartbeat interval to timeout.
+                    config.KeepAlive = TimeSpan.FromTicks(timeout.Ticks * 2);
                     config.DisconnectTimeout = TimeSpan.Zero;
 
                     IDependencyResolver resolver = node.Resolver;

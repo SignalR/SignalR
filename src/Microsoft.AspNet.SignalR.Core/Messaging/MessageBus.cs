@@ -120,14 +120,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // The default message store size
             _messageStoreSize = (uint)configurationManager.DefaultMessageBufferSize;
 
-            // Calculate keepAlive duration in context of ticks. This is necessary because keepAlive indicates how
-            // many heartbeat intervals to wait before sending a keep alive.
-            var keepAlive = configurationManager.KeepAlive * configurationManager.HeartbeatInterval.Ticks;
-
             // Keep topics alive for twice as long as we let connections to reconnect.
-            // Also add twice the keepalive interval since clients might take a while to notice they are disconnected.
-            // This should be a good enough estimate for how long until we should consider a topic dead.
-            _topicTtl = TimeSpan.FromTicks((configurationManager.DisconnectTimeout.Ticks + keepAlive) * 2);
+            // Also add twice the keep-alive timeout since clients might take a while to notice they are disconnected.
+            // This should be a very conservative estimate for how long we must wait before considering a topic dead.
+            _topicTtl = TimeSpan.FromTicks((configurationManager.DisconnectTimeout.Ticks + configurationManager.KeepAliveTimeout().Ticks) * 2);
 
             Topics = new ConcurrentDictionary<string, Topic>();
         }

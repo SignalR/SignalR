@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         void Initialize(int keepAlive = 2,
                         int? connectionTimeout = 120,
                         int? disconnectTimeout = 40,
-                        int? hearbeatInterval = 10,
                         bool enableAutoRejoiningGroups = false);
 
         void Shutdown();
