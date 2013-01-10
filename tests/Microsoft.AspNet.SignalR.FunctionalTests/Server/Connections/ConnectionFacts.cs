@@ -144,9 +144,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
+                    host.Initialize(keepAlive: 2,
                                     connectionTimeout: 2,
-                                    hearbeatInterval: 2,
                                     disconnectTimeout: 10);
 
                     var connection = new Client.Hubs.HubConnection(host.Url);

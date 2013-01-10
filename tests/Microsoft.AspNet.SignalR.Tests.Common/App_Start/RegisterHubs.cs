@@ -16,17 +16,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
-            string heartbeatIntervalRaw = ConfigurationManager.AppSettings["heartbeatInterval"];
             string enableRejoiningGroupsRaw = ConfigurationManager.AppSettings["enableRejoiningGroups"];
 
             int keepAlive;
             if (Int32.TryParse(keepAliveRaw, out keepAlive))
             {
-                GlobalHost.Configuration.KeepAlive = keepAlive;
-            }
-            else
-            {
-                GlobalHost.Configuration.KeepAlive = 0;
+                GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
             }
 
             int connectionTimeout;
@@ -39,12 +34,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             if (Int32.TryParse(disconnectTimeoutRaw, out disconnectTimeout))
             {
                 GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout);
-            }
-
-            int heartbeatInterval;
-            if (Int32.TryParse(heartbeatIntervalRaw, out heartbeatInterval))
-            {
-                GlobalHost.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(heartbeatInterval);
             }
 
             bool enableRejoiningGroups;
