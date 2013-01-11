@@ -7,7 +7,7 @@
     <ProjectGuid>{50F8A174-695E-498C-B105-BDBE6B398646}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Client45</RootNamespace>
+    <RootNamespace>Microsoft.AspNet.SignalR.Client</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -214,7 +214,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
-      <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
       <Link>Resources.resx</Link>
     </EmbeddedResource>
   </ItemGroup>
