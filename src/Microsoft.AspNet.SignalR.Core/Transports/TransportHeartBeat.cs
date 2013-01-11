@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Don't raise keep alive if it's set to 0 or the transport doesn't support
             // keep alive
-            if (keepAlive == TimeSpan.Zero || !metadata.Connection.SupportsKeepAlive)
+            if (keepAlive == null || !metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             var keepAlive = _configurationManager.KeepAlive;
             // If keep alive is configured and the connection supports keep alive
             // don't ever time out
-            if (keepAlive != TimeSpan.Zero && metadata.Connection.SupportsKeepAlive)
+            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }

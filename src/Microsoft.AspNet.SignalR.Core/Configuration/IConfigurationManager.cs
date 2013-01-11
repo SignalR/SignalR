@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.SignalR.Configuration
 
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time between send keep alive messages.
-        /// If enabled, this value must be at least two seconds. Set to <see cref="TimeSpan.Zero"/> to disable.
+        /// If enabled, this value must be at least two seconds. Set to null to disable.
         /// </summary>
-        TimeSpan KeepAlive { get; set; }
+        TimeSpan? KeepAlive { get; set; }
 
         /// <summary>
         /// Gets of sets the number of messages to buffer for a specific signal.

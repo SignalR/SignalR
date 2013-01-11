@@ -135,6 +135,12 @@
   <data name="Error_ConnectionNotInitialized" xml:space="preserve">
     <value>The PersistentConnection is not initialized.</value>
   </data>
+  <data name="Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive" xml:space="preserve">
+    <value>DisconnectTimeout cannot be configured after the KeepAlive.</value>
+  </data>
+  <data name="Error_DisconnectTimeoutMustBeAtLeastSixSeconds" xml:space="preserve">
+    <value>DisconnectTimeout must be at least six seconds.</value>
+  </data>
   <data name="Error_DoNotReadRequireOutgoing" xml:space="preserve">
     <value>Do not read RequireOutgoing. Use protected _requireOutgoing instead.</value>
   </data>
@@ -164,9 +170,6 @@
   </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
-  </data>
-  <data name="Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds" xml:space="preserve">
-    <value>Non-zero DisconnectTimeout must be at least six seconds.</value>
   </data>
   <data name="Error_ProtocolErrorMissingConnectionToken" xml:space="preserve">
     <value>Protocol error: Missing connection token.</value>

@@ -115,6 +115,24 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DisconnectTimeout cannot be configured after the KeepAlive..
+        /// </summary>
+        internal static string Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive {
+            get {
+                return ResourceManager.GetString("Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DisconnectTimeout must be at least six seconds..
+        /// </summary>
+        internal static string Error_DisconnectTimeoutMustBeAtLeastSixSeconds {
+            get {
+                return ResourceManager.GetString("Error_DisconnectTimeoutMustBeAtLeastSixSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not read RequireOutgoing. Use protected _requireOutgoing instead..
         /// </summary>
         internal static string Error_DoNotReadRequireOutgoing {
@@ -201,15 +219,6 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_MultipleActivatorsAreaRegisteredCallGetServices {
             get {
                 return ResourceManager.GetString("Error_MultipleActivatorsAreaRegisteredCallGetServices", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Non-zero DisconnectTimeout must be at least six seconds..
-        /// </summary>
-        internal static string Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds {
-            get {
-                return ResourceManager.GetString("Error_NonZeroDisconnectTimeoutMustBeAtLeastSixSeconds", resourceCulture);
             }
         }
         

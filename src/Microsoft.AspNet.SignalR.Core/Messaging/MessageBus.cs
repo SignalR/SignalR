@@ -120,10 +120,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // The default message store size
             _messageStoreSize = (uint)configurationManager.DefaultMessageBufferSize;
 
+            // If the deep-alive is disabled, don't take it into account when calculating the topic TTL.
+            var keepAliveTimeout = configurationManager.KeepAliveTimeout() ?? TimeSpan.Zero;
+
             // Keep topics alive for twice as long as we let connections to reconnect.
             // Also add twice the keep-alive timeout since clients might take a while to notice they are disconnected.
             // This should be a very conservative estimate for how long we must wait before considering a topic dead.
-            _topicTtl = TimeSpan.FromTicks((configurationManager.DisconnectTimeout.Ticks + configurationManager.KeepAliveTimeout().Ticks) * 2);
+            _topicTtl = TimeSpan.FromTicks((configurationManager.DisconnectTimeout.Ticks + keepAliveTimeout.Ticks) * 2);
 
             Topics = new ConcurrentDictionary<string, Topic>();
         }

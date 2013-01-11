@@ -376,7 +376,7 @@ namespace Microsoft.AspNet.SignalR
         private Task ProcessNegotiationRequest(HostContext context)
         {
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
-            var keepAliveTimeout = _configurationManager.KeepAliveTimeout().TotalSeconds;
+            var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
 
             var payload = new
@@ -384,7 +384,7 @@ namespace Microsoft.AspNet.SignalR
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
                 ConnectionToken = ProtectedData.Protect(connectionId, ConnectionIdPurpose),
                 ConnectionId = connectionId,
-                KeepAliveTimeout = keepAliveTimeout != 0 ? keepAliveTimeout : (double?)null,
+                KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
