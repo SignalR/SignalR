@@ -18,12 +18,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
             string enableRejoiningGroupsRaw = ConfigurationManager.AppSettings["enableRejoiningGroups"];
 
-            int keepAlive;
-            if (Int32.TryParse(keepAliveRaw, out keepAlive))
-            {
-                GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
-            }
-
             int connectionTimeout;
             if (Int32.TryParse(connectionTimeoutRaw, out connectionTimeout))
             {
@@ -34,6 +28,17 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             if (Int32.TryParse(disconnectTimeoutRaw, out disconnectTimeout))
             {
                 GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout);
+            }
+
+            int keepAlive;
+            if (String.IsNullOrEmpty(keepAliveRaw))
+            {
+                GlobalHost.Configuration.KeepAlive = null;
+            }
+            // Set only if the keep-alive was changed from the default value.
+            else if (Int32.TryParse(keepAliveRaw, out keepAlive) && keepAlive != -1)
+            {
+                GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
             }
 
             bool enableRejoiningGroups;

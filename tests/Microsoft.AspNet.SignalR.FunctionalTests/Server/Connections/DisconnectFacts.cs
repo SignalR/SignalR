@@ -40,9 +40,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var resolver = new DefaultDependencyResolver();
             var config = resolver.Resolve<IConfigurationManager>();
             var hostContext = new HostContext(request.Object, response.Object);
-            config.DisconnectTimeout = TimeSpan.Zero;
-            // The below effectively sets the heartbeat interval to three seconds.
-            config.KeepAlive = TimeSpan.FromSeconds(6);
+            config.DisconnectTimeout = TimeSpan.FromSeconds(6);
             var transport = new Mock<ForeverTransport>(hostContext, resolver)
             {
                 CallBase = true
@@ -67,7 +65,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             connection.Broadcast("Some message");
 
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+            // 6 second disconnect timeout + 5 second disconnect threshold
+            // + up to 1 second for the heartbeat to check + 3 second leeway
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(15)));
         }
 
         [Fact]
@@ -89,9 +89,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     app.MapConnection<MyConnection>("/echo", config);
 
-                    configuration.DisconnectTimeout = TimeSpan.Zero;
-                    // The below effectively sets the heartbeat interval to five seconds.
-                    configuration.KeepAlive = TimeSpan.FromSeconds(10);
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
                     dr.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
                 });
@@ -129,9 +127,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     app.MapHubs("/signalr", config);
 
-                    configuration.DisconnectTimeout = TimeSpan.Zero;
-                    // The below effectively sets the heartbeat interval to five seconds.
-                    configuration.KeepAlive = TimeSpan.FromSeconds(10);
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
                     dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
                 });
 
@@ -171,9 +167,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 foreach (var node in nodes)
                 {
                     var config = node.Resolver.Resolve<IConfigurationManager>();
-                    // The below effectively sets the heartbeat interval to timeout.
-                    config.KeepAlive = TimeSpan.FromTicks(timeout.Ticks * 2);
-                    config.DisconnectTimeout = TimeSpan.Zero;
+                    config.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
                     IDependencyResolver resolver = node.Resolver;
                     node.Server.Configure(app =>

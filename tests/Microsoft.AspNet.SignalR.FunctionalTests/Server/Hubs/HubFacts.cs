@@ -649,7 +649,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(keepAlive: 2,
+                host.Initialize(keepAlive: null,
+                                disconnectTimeout: 6,
                                 connectionTimeout: 1);
 
                 int max = 10;
@@ -708,8 +709,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(keepAlive: 2,
-                                connectionTimeout: 5,
+                host.Initialize(keepAlive: null,
+                                disconnectTimeout: 6,
+                                connectionTimeout: 1,
                                 enableAutoRejoiningGroups: true);
 
                 int max = 10;
@@ -775,8 +777,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     config.Resolver.Resolve<IHubPipeline>().AddModule(logRejoiningGroups);
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                    configuration.KeepAlive = TimeSpan.Zero;
-                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+                    // The following sets the heartbeat to 1 s
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+                    configuration.KeepAlive = null;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                 });
 
                 var connection = new Client.Hubs.HubConnection("http://foo");
@@ -915,8 +919,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                    // The below effectively sets the heartbeat interval to one second.
-                    configuration.KeepAlive = TimeSpan.FromSeconds(2);
+                    // The following sets the heartbeat to 1 s
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+                    configuration.KeepAlive = null;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
 

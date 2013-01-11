@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 1, disconnectTimeout: 2);
+                    host.Initialize(disconnectTimeout: 6);
                     var connection = new Client.Hubs.HubConnection(host.Url);
                     var reconnectWh = new ManualResetEventSlim();
                     var disconnectWh = new ManualResetEventSlim();
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     host.Shutdown();
 
                     Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)));
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)));
                 }
             }
 
@@ -144,9 +144,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 2,
+                    host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
-                                    disconnectTimeout: 10);
+                                    disconnectTimeout: 6);
 
                     var connection = new Client.Hubs.HubConnection(host.Url);
                     var reconnectingWh = new ManualResetEventSlim();
