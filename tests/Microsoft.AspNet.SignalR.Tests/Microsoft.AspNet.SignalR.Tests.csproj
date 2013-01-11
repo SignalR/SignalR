@@ -78,6 +78,7 @@
     <Compile Include="Json\JsonFacts.cs" />
     <Compile Include="Json\JsonNetSerializerFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />
+    <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="PersistentResponseFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\DiffSetFacts.cs" />
