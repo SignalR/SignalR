@@ -101,7 +101,6 @@ namespace Microsoft.AspNet.SignalR.Stress
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 // The below effectively sets the heartbeat interval to five seconds.
                 configuration.KeepAlive = TimeSpan.FromSeconds(10);
-                configuration.DisconnectTimeout = TimeSpan.FromSeconds(10);
 
                 var connectionManager = config.Resolver.Resolve<IConnectionManager>();
                 context = connectionManager.GetHubContext("EchoHub");
@@ -265,8 +264,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapConnection<MyRejoinGroupConnection>("/groups", config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.KeepAlive = TimeSpan.Zero;
-                configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                configuration.KeepAlive = null;
+                configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
             });
 
             var connection = new Client.Connection("http://foo/groups");

@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         Func<IClientTransport> TransportFactory { get; set; }
 
-        void Initialize(int keepAlive = 2,
-                        int? connectionTimeout = 120,
-                        int? disconnectTimeout = 40,
+        void Initialize(int? keepAlive = -1,
+                        int? connectionTimeout = 110,
+                        int? disconnectTimeout = 30,
                         bool enableAutoRejoiningGroups = false);
 
         void Shutdown();
