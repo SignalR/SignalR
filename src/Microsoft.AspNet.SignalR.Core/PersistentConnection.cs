@@ -47,7 +47,6 @@ namespace Microsoft.AspNet.SignalR
             }
 
             MessageBus = resolver.Resolve<IMessageBus>();
-            ConnectionIdPrefixGenerator = resolver.Resolve<IConnectionIdPrefixGenerator>();
             JsonSerializer = resolver.Resolve<IJsonSerializer>();
             TraceManager = resolver.Resolve<ITraceManager>();
             Counters = resolver.Resolve<IPerformanceCounterManager>();
@@ -71,8 +70,6 @@ namespace Microsoft.AspNet.SignalR
         protected IMessageBus MessageBus { get; private set; }
 
         protected IJsonSerializer JsonSerializer { get; private set; }
-
-        protected IConnectionIdPrefixGenerator ConnectionIdPrefixGenerator { get; private set; }
 
         protected IAckHandler AckHandler { get; private set; }
 
@@ -152,6 +149,12 @@ namespace Microsoft.AspNet.SignalR
             if (String.IsNullOrEmpty(connectionId))
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionId));
+            }
+
+            Guid id;
+            if (!Guid.TryParse(connectionId, out id))
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
             }
 
             IEnumerable<string> signals = GetSignals(connectionId);
@@ -320,7 +323,7 @@ namespace Microsoft.AspNet.SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = ConnectionIdPrefixGenerator.GenerateConnectionIdPrefix(context.Request) + Guid.NewGuid().ToString("d"),
+                ConnectionId = Guid.NewGuid().ToString("d"),
                 KeepAlive = (keepAlive != 0) ? keepAlive : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),

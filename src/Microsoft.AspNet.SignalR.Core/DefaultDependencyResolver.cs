@@ -53,9 +53,6 @@ namespace Microsoft.AspNet.SignalR
             var serializer = new Lazy<JsonNetSerializer>();
             Register(typeof(IJsonSerializer), () => serializer.Value);
 
-            var connectionIdPrefixGenerator = new EmptyConnectionIdPrefixGenerator();
-            Register(typeof(IConnectionIdPrefixGenerator), () => connectionIdPrefixGenerator);
-
             var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
             Register(typeof(ITransportManager), () => transportManager.Value);
 

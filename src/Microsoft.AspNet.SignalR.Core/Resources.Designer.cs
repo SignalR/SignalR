@@ -97,6 +97,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The connection id is in the incorrect format..
+        /// </summary>
+        internal static string Error_ConnectionIdIncorrectFormat {
+            get {
+                return ResourceManager.GetString("Error_ConnectionIdIncorrectFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The PersistentConnection is not initialized..
         /// </summary>
         internal static string Error_ConnectionNotInitialized {
@@ -187,7 +196,7 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Protocol error: Missing connectionId..
+        ///   Looks up a localized string similar to Protocol error: Missing connection id..
         /// </summary>
         internal static string Error_ProtocolErrorMissingConnectionId {
             get {

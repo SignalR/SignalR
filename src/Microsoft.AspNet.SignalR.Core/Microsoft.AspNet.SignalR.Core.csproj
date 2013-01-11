@@ -166,13 +166,11 @@
     <Compile Include="Messaging\Volatile.cs" />
     <Compile Include="Infrastructure\PersistentConnectionContext.cs" />
     <Compile Include="Hosting\PersistentConnectionFactory.cs" />
-    <Compile Include="Infrastructure\EmptyConnectionIdPrefixGenerator.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\MethodDescriptor.cs" />
     <Compile Include="Hubs\HubMethodNameAttribute.cs" />
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
-    <Compile Include="Infrastructure\IConnectionIdPrefixGenerator.cs" />
     <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
