@@ -4,9 +4,9 @@ namespace Microsoft.AspNet.SignalR.Configuration
 {
     internal static class ConfigurationExtensions
     {
-        internal const int MissedTimeoutsBeforeClientReconnect = 2;
-        internal const int HeartBeatsPerKeepAlive = 2;
-        internal const int HeartBeatsPerDisconnectTimeout = 6;
+        public const int MissedTimeoutsBeforeClientReconnect = 2;
+        public const int HeartBeatsPerKeepAlive = 2;
+        public const int HeartBeatsPerDisconnectTimeout = 6;
 
         /// <summary>
         /// The amount of time the client should wait without seeing a keep alive before trying to reconnect.
@@ -38,6 +38,22 @@ namespace Microsoft.AspNet.SignalR.Configuration
                 // kept at the default value.
                 return TimeSpan.FromTicks(config.DisconnectTimeout.Ticks / HeartBeatsPerDisconnectTimeout);
             }
+        }
+
+        /// <summary>
+        /// The amount of time a Topic should stay in memory after its last subscriber is removed.
+        /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public static TimeSpan TopicTtl(this IConfigurationManager config)
+        {
+            // If the deep-alive is disabled, don't take it into account when calculating the topic TTL.
+            var keepAliveTimeout = config.KeepAliveTimeout() ?? TimeSpan.Zero;
+
+            // Keep topics alive for twice as long as we let connections to reconnect. (The DisconnectTimeout)
+            // Also add twice the keep-alive timeout since clients might take a while to notice they are disconnected.
+            // This should be a very conservative estimate for how long we must wait before considering a topic dead.
+            return TimeSpan.FromTicks((config.DisconnectTimeout.Ticks + keepAliveTimeout.Ticks) * 2);
         }
     }
 }
