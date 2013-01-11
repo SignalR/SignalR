@@ -33,15 +33,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
                     });
 
+                    string id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
                     for (int i = 0; i < 1000; i++)
                     {
-                        tasks.Add(ProcessRequest(host, "serverSentEvents", "1"));
+                        tasks.Add(ProcessRequest(host, "serverSentEvents", id));
                     }
 
-                    ProcessRequest(host, "serverSentEvents", "1");
+                    ProcessRequest(host, "serverSentEvents", id);
 
                     Task.WaitAll(tasks.ToArray());
 
@@ -63,14 +64,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
                     });
 
+                    string id = Guid.NewGuid().ToString("d");
+
                     var tasks = new List<Task>();
 
                     for (int i = 0; i < 1000; i++)
                     {
-                        tasks.Add(ProcessRequest(host, "longPolling", "1"));
+                        tasks.Add(ProcessRequest(host, "longPolling", id));
                     }
 
-                    ProcessRequest(host, "longPolling", "1");
+                    ProcessRequest(host, "longPolling", id);
 
                     Task.WaitAll(tasks.ToArray());
 
