@@ -51,7 +51,7 @@ namespace System.Web.Routing
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration configuration)
         {
-            return routes.MapOwinRoute(name, url, map => map.MapConnection(String.Empty, type, configuration));
+            return routes.MapOwinPath(name, url, map => map.MapConnection(String.Empty, type, configuration));
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace System.Web.Routing
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
             configuration.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
-            return routes.MapOwinRoute(name, path, map => map.MapHubs(String.Empty, configuration));
+            return routes.MapOwinPath(name, path, map => map.MapHubs(String.Empty, configuration));
         }
     }
 }
