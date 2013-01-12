@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "The caller wouldn't be able to specify what the generic type argument is")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "The count needs to be returned")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "The state needs to be set by the callee")]
-        protected abstract void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state);
+        protected abstract void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state);
 
         private void WorkImplAsync(Task<bool> callbackTask, TaskCompletionSource<object> taskCompletionSource)
         {

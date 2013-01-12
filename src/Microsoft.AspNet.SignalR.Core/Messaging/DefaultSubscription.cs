@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
-        protected override void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state)
+        protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             var cursors = new List<Cursor>();
             totalCount = 0;
