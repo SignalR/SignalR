@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send((object)response);
         }
 
-        public virtual Task Send(object value)
+        public Task Send(object value)
         {
             Context.Response.ContentType = IsJsonp ? JsonUtility.JsonpMimeType : JsonUtility.MimeType;
 
