@@ -179,11 +179,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             if (resetGroups != null)
             {
                 connection.Groups.Clear();
-                EnumerateJTokens(resetGroups, connection.Groups.Add);
+                EnumerateJTokens(resetGroups, g => connection.Groups.Add(g));
             }
             else
             {
-                EnumerateJTokens(addedGroups, connection.Groups.Add);
+                EnumerateJTokens(addedGroups, g => connection.Groups.Add(g));
                 EnumerateJTokens(removedGroups, g => connection.Groups.Remove(g));
             }
         }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -146,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets a mutable collection of groups for the connection.
         /// </summary>
-        ICollection<string> IConnection.Groups
+        ISet<string> IConnection.Groups
         {
             get { return _groups; }
         }
@@ -154,9 +155,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Gets the groups for the connection.
         /// </summary>
-        public IEnumerable<string> Groups
+        public IList<string> Groups
         {
-            get { return _groups; }
+            get { return new ReadOnlyCollection<string>(_groups.ToList()); }
         }
 
         /// <summary>
