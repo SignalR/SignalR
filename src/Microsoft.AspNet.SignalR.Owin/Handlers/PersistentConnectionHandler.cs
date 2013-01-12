@@ -14,14 +14,14 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
         private readonly AppFunc _next;
         private readonly string _path;
         private readonly Type _connectionType;
-        private readonly IDependencyResolver _resolver;
+        private readonly ConnectionConfiguration _configuration;
 
-        public PersistentConnectionHandler(AppFunc next, string path, Type connectionType, IDependencyResolver resolver)
+        public PersistentConnectionHandler(AppFunc next, string path, Type connectionType, ConnectionConfiguration configuration)
         {
             _next = next;
             _path = path;
             _connectionType = connectionType;
-            _resolver = resolver;
+            _configuration = configuration;
         }
 
         public Task Invoke(IDictionary<string, object> environment)
@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
                 return _next(environment);
             }
 
-            var connectionFactory = new PersistentConnectionFactory(_resolver);
+            var connectionFactory = new PersistentConnectionFactory(_configuration.Resolver);
             var connection = connectionFactory.CreateInstance(_connectionType);
 
-            var handler = new CallHandler(_resolver, connection);
+            var handler = new CallHandler(_configuration, connection);
             return handler.Invoke(environment);
         }
     }
