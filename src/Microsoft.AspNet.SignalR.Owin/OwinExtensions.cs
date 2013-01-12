@@ -30,7 +30,7 @@ namespace Owin
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<HubDispatcherHandler>(path, configuration.EnableJavaScriptProxies, configuration.Resolver);
+            return builder.UseType<HubDispatcherHandler>(path, configuration);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
@@ -52,14 +52,22 @@ namespace Owin
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<PersistentConnectionHandler>(url, connectionType, configuration.Resolver);
+            return builder.UseType<PersistentConnectionHandler>(url, connectionType, configuration);
         }
 
         private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
         {
             if (args.Length > 0)
             {
-                var resolver = args[args.Length - 1] as IDependencyResolver;
+                var configuration = args[args.Length - 1] as ConnectionConfiguration;
+
+                if (configuration == null)
+                {
+                    throw new ArgumentException(Resources.Error_NoConfiguration);
+                }
+
+                var resolver = configuration.Resolver;
+
                 if (resolver == null)
                 {
                     throw new ArgumentException(Resources.Error_NoDepenendeyResolver);

@@ -61,6 +61,15 @@ namespace Microsoft.AspNet.SignalR.Owin {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A configuration object must be specified..
+        /// </summary>
+        internal static string Error_NoConfiguration {
+            get {
+                return ResourceManager.GetString("Error_NoConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A dependency resolver must be specified..
         /// </summary>
         internal static string Error_NoDepenendeyResolver {

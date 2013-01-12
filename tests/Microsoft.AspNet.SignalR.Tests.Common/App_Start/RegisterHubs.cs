@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             {
                 GlobalHost.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout);
             }
-            
+
             int disconnectTimeout;
             if (Int32.TryParse(disconnectTimeoutRaw, out disconnectTimeout))
             {
@@ -54,8 +54,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 GlobalHost.HubPipeline.EnableAutoRejoiningGroups();
             }
 
+            var config = new HubConfiguration
+            {
+                EnableCrossDomain = true
+            };
 
-            RouteTable.Routes.MapHubs();
+            RouteTable.Routes.MapHubs(config);
 
             RouteTable.Routes.MapHubs("signalr.hubs2", "/signalr2/test", new HubConfiguration());
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");

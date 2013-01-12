@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -12,18 +11,16 @@ namespace Microsoft.AspNet.SignalR.Owin
 {
     public class CallHandler
     {
-        private readonly IDependencyResolver _resolver;
+        private readonly ConnectionConfiguration _configuration;
         private readonly PersistentConnection _connection;
-
-        private static readonly string[] AllowCredentialsTrue = new[] { "true" };
 
         private static bool _supportWebSockets;
         private static bool _supportWebSocketsInitialized;
         private static object _supportWebSocketsLock = new object();
 
-        public CallHandler(IDependencyResolver resolver, PersistentConnection connection)
+        public CallHandler(ConnectionConfiguration configuration, PersistentConnection connection)
         {
-            _resolver = resolver;
+            _configuration = configuration;
             _connection = connection;
         }
 
@@ -33,12 +30,29 @@ namespace Microsoft.AspNet.SignalR.Owin
             var serverResponse = new ServerResponse(environment);
             var hostContext = new HostContext(serverRequest, serverResponse);
 
-            // Add CORS support
-            var origins = serverRequest.RequestHeaders.GetHeaders("Origin");
-            if (origins != null && origins.Any(origin => !String.IsNullOrEmpty(origin)))
+            string origin = serverRequest.RequestHeaders.GetHeader("Origin");
+
+            if (_configuration.EnableCrossDomain)
             {
-                serverResponse.ResponseHeaders["Access-Control-Allow-Origin"] = origins;
-                serverResponse.ResponseHeaders["Access-Control-Allow-Credentials"] = AllowCredentialsTrue;
+                // Add CORS response headers support
+                if (!String.IsNullOrEmpty(origin))
+                {
+                    serverResponse.ResponseHeaders.SetHeader("Access-Control-Allow-Origin", origin);
+                    serverResponse.ResponseHeaders.SetHeader("Access-Control-Allow-Credentials", "true");
+                }
+            }
+            else
+            {
+                string callback = serverRequest.QueryString["callback"];
+
+                // If it's a JSONP request and we're not allowing cross domain requests then block it
+                // If there's an origin header and it's not a same origin request then block it.
+
+                if (!String.IsNullOrEmpty(callback) || 
+                    (!String.IsNullOrEmpty(origin) && !IsSameOrigin(serverRequest.Url, origin)))
+                {
+                    return EndResponse(environment, 403, "Forbidden");
+                }
             }
 
             hostContext.Items[HostConstants.SupportsWebSockets] = LazyInitializer.EnsureInitialized(
@@ -53,21 +67,39 @@ namespace Microsoft.AspNet.SignalR.Owin
             serverRequest.DisableRequestBuffering();
             serverResponse.DisableResponseBuffering();
 
-            _connection.Initialize(_resolver, hostContext);
+            _connection.Initialize(_configuration.Resolver, hostContext);
 
             if (!_connection.Authorize(serverRequest))
             {
                 // If we failed to authorize the request then return a 403 since the request
                 // can't do anything
-                environment[OwinConstants.ResponseStatusCode] = 403;
-                environment[OwinConstants.ResponseReasonPhrase] = "Forbidden";
-
-                return TaskAsyncHelper.Empty;
+                return EndResponse(environment, 403, "Forbidden");
             }
             else
             {
                 return _connection.ProcessRequest(hostContext);
             }
+        }
+
+        private static Task EndResponse(IDictionary<string, object> environment, int statusCode, string reason)
+        {
+            environment[OwinConstants.ResponseStatusCode] = statusCode;
+            environment[OwinConstants.ResponseReasonPhrase] = reason;
+
+            return TaskAsyncHelper.Empty;
+        }
+
+        private static bool IsSameOrigin(Uri requestUri, string origin)
+        {
+            Uri originUri;
+            if (!Uri.TryCreate(origin.Trim(), UriKind.Absolute, out originUri))
+            {
+                return false;
+            }
+
+            return (requestUri.Scheme == originUri.Scheme) &&
+                   (requestUri.Host == originUri.Host) &&
+                   (requestUri.Port == originUri.Port);
         }
     }
 }
