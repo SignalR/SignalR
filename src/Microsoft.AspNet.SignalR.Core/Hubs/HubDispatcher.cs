@@ -72,14 +72,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
-
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
-            // Call base initializer before populating _hubs so the _jsonSerializer is initialized
             base.Initialize(resolver, context);
+        }
 
+        protected override bool AuthorizeRequest(IRequest request)
+        {
             // Populate _hubs
-            string data = context.Request.QueryStringOrForm("connectionData");
+            string data = request.QueryStringOrForm("connectionData");
 
             if (!String.IsNullOrEmpty(data))
             {
@@ -95,14 +96,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
                             _counters.ErrorsAllTotal,
                             _counters.ErrorsAllPerSec);
 
-                        if (_pipelineInvoker.AuthorizeConnect(hubDescriptor, context.Request))
+                        if (_pipelineInvoker.AuthorizeConnect(hubDescriptor, request))
                         {
                             // Add this to the list of hub descriptors this connection is interested in
                             _hubs.Add(hubDescriptor);
                         }
                     }
+
+                    // If we have any hubs in the list then we're authorized
+                    return _hubs.Count > 0;
                 }
             }
+
+            return base.AuthorizeRequest(request);
         }
 
         /// <summary>

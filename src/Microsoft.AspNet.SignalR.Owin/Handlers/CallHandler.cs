@@ -55,7 +55,19 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             _connection.Initialize(_resolver, hostContext);
 
-            return _connection.ProcessRequest(hostContext);
+            if (!_connection.Authorize(serverRequest))
+            {
+                // If we failed to authorize the request then return a 403 since the request
+                // can't do anything
+                environment[OwinConstants.ResponseStatusCode] = 403;
+                environment[OwinConstants.ResponseReasonPhrase] = "Forbidden";
+
+                return TaskAsyncHelper.Empty;
+            }
+            else
+            {
+                return _connection.ProcessRequest(hostContext);
+            }
         }
     }
 }

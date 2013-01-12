@@ -107,6 +107,7 @@
     <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
     <Compile Include="Connections\MySendingConnection.cs" />
     <Compile Include="Connections\SyncErrorConnection.cs" />
+    <Compile Include="Connections\UnusableProtectedConnection.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />

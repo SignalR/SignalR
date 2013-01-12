@@ -183,9 +183,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -253,11 +252,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -325,9 +321,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -391,11 +386,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -460,9 +452,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -526,11 +517,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -596,9 +584,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -629,11 +616,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
-
-                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                
                 connection.Stop();
             }
         }
@@ -664,9 +648,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -697,11 +680,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -800,9 +780,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }
@@ -833,11 +812,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     wh.Set();
                 });
 
-                connection.Start(host).Wait();
+                Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
 
-                Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 connection.Stop();
             }
         }

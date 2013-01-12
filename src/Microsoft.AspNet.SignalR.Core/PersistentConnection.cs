@@ -59,6 +59,11 @@ namespace Microsoft.AspNet.SignalR
             _initialized = true;
         }
 
+        public bool Authorize(IRequest request)
+        {
+            return AuthorizeRequest(request);
+        }
+
         protected virtual TraceSource Trace
         {
             get
@@ -241,6 +246,16 @@ namespace Microsoft.AspNet.SignalR
         protected virtual IEnumerable<string> GetSignals(string connectionId)
         {
             return GetDefaultSignals(connectionId);
+        }
+
+        /// <summary>
+        /// Called before every request and gives the user a authorize the user.
+        /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
+        /// <returns>A boolean value that represents if the request is authorized.</returns>
+        protected virtual bool AuthorizeRequest(IRequest request)
+        {
+            return true;
         }
 
         /// <summary>
