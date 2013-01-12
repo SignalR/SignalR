@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
-        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>>();
+        private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>>();
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var mapping = new ScaleoutMapping(dictionary);
 
             // Get the stream for this payload
-            var stream = _streams.GetOrAdd(streamId, _ => new Linktionary<ulong, ScaleoutMapping>());
+            var stream = _streams.GetOrAdd(streamId, _ => new IndexedDictionary<ulong, ScaleoutMapping>());
 
             // Publish only after we've setup the mapping fully
             stream.Add(id, mapping);
