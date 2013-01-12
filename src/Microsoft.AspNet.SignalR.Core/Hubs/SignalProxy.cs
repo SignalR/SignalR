@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly string[] _exclude;
 
-        public SignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, params string[] exclude)
+        public SignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, params string[] exclude)
         {
             Send = send;
             Signal = signal;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _exclude = exclude;
         }
 
-        protected Func<string, ClientHubInvocation, IEnumerable<string>, Task> Send { get; private set; }
+        protected Func<string, ClientHubInvocation, IList<string>, Task> Send { get; private set; }
         protected string Signal { get; private set; }
         protected string HubName { get; private set; }
 

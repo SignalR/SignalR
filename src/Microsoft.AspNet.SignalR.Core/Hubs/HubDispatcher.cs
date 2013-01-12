@@ -291,11 +291,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         internal static Task Outgoing(IHubOutgoingInvokerContext context)
         {
-            var message = new ConnectionMessage(context.Signal, context.Invocation)
-            {
-                ExcludedSignals = context.ExcludedSignals
-            };
-
+            var message = new ConnectionMessage(context.Signal, context.Invocation, context.ExcludedSignals);
+            
             return context.Connection.Send(message);
         }
 

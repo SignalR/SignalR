@@ -47,10 +47,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             var qualifiedName = CreateQualifiedName(groupName);
-            var message = new ConnectionMessage(qualifiedName, value)
-            {
-                ExcludedSignals = exclude
-            };
+            var message = new ConnectionMessage(qualifiedName, value, exclude);
 
             return _connection.Send(message);
         }

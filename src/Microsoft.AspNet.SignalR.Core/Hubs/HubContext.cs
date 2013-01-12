@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     internal class HubContext : IHubContext
     {
-        public HubContext(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName, IConnection connection)
+        public HubContext(Func<string, ClientHubInvocation, IList<string>, Task> send, string hubName, IConnection connection)
         {
             Clients = new ExternalHubConnectionContext(send, hubName);
             Groups = new GroupManager(connection, hubName);
@@ -20,10 +20,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private class ExternalHubConnectionContext : IHubConnectionContext
         {
-            private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
+            private readonly Func<string, ClientHubInvocation, IList<string>, Task> _send;
             private readonly string _hubName;
 
-            public ExternalHubConnectionContext(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName)
+            public ExternalHubConnectionContext(Func<string, ClientHubInvocation, IList<string>, Task> send, string hubName)
             {
                 _send = send;
                 _hubName = hubName;

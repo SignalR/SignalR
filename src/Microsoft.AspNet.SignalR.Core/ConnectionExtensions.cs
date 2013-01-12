@@ -24,10 +24,7 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            var message = new ConnectionMessage(signal, value)
-            {
-                ExcludedSignals = exclude
-            };
+            var message = new ConnectionMessage(signal, value, exclude);
 
             return connection.Send(message);
         }

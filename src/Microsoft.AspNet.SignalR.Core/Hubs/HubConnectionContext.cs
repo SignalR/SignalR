@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly string _hubName;
         private readonly string _connectionId;
-        private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
+        private readonly Func<string, ClientHubInvocation, IList<string>, Task> _send;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/>.

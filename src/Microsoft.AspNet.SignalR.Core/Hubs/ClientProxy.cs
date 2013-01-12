@@ -10,11 +10,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class ClientProxy : DynamicObject, IClientProxy
     {
-        private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
+        private readonly Func<string, ClientHubInvocation, IList<string>, Task> _send;
         private readonly string _hubName;
         private readonly string[] _exclude;
         
-        public ClientProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName, params string[] exclude)
+        public ClientProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string hubName, params string[] exclude)
         {
             _send = send;
             _hubName = hubName;

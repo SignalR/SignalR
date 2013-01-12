@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 _counters.ErrorsAllTotal,
                 _counters.ErrorsAllPerSec);
 
-            Func<string, ClientHubInvocation, IEnumerable<string>, Task> send = (signal, value, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, value, exclude));
+            Func<string, ClientHubInvocation, IList<string>, Task> send = (signal, value, exclude) => pipelineInvoker.Send(new HubOutgoingInvokerContext(connection, signal, value, exclude));
 
             return new HubContext(send, hubName, connection);
         }

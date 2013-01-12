@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly StateChangeTracker _tracker;
 
-        public StatefulSignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, StateChangeTracker tracker)
+        public StatefulSignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, StateChangeTracker tracker)
             : base(send, signal, hubName)
         {
             _tracker = tracker;
