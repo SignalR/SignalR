@@ -99,14 +99,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 {
                     sb.Append(",").AppendLine();
                 }
-                this.GenerateMethod(sb, method, includeDocComments, hubName);
+                GenerateMethod(sb, method, includeDocComments, hubName);
                 first = false;
             }
             sb.AppendLine();
             sb.Append("        }");
         }
 
-        protected virtual string GetDescriptorName(Descriptor descriptor)
+        private static string GetDescriptorName(Descriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                    select oload;
         }
 
-        private void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments, string hubName)
+        private static void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments, string hubName)
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
