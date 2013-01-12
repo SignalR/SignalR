@@ -85,7 +85,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             if (!String.IsNullOrEmpty(data))
             {
                 var clientHubInfo = JsonSerializer.Parse<IEnumerable<ClientHubInfo>>(data);
-                if (clientHubInfo != null)
+
+                // If there's any hubs then perform the auth check
+                if (clientHubInfo != null && clientHubInfo.Any())
                 {
                     foreach (var hubInfo in clientHubInfo)
                     {
