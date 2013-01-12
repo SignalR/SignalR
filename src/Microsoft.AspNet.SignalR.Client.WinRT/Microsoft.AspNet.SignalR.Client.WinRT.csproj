@@ -9,7 +9,7 @@
     <ProjectGuid>{0D2276D4-E912-46A4-8A06-59C4B8A537FC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Client.WinRT</RootNamespace>
+    <RootNamespace>Microsoft.AspNet.SignalR.Client</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
