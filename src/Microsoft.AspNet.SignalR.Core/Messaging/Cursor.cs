@@ -52,41 +52,44 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private static string MakeCursorFast(IList<Cursor> cursors)
         {
-            const int MAX_CHARS = 8 * 1024;
-            char* pChars = stackalloc char[MAX_CHARS];
-            char* pNextChar = pChars;
-            int numCharsInBuffer = 0;
-
-            // Start shoving data into the buffer
-            for (int i = 0; i < cursors.Count; i++)
+            checked
             {
-                Cursor cursor = cursors[i];
-                string escapedKey = cursor._escapedKey;
+                const int MAX_CHARS = 8 * 1024;
+                char* pChars = stackalloc char[MAX_CHARS];
+                char* pNextChar = pChars;
+                int numCharsInBuffer = 0;
 
-                // comma + up to 16-char hex Id + pipe
-                numCharsInBuffer += escapedKey.Length + 18;
-
-                if (numCharsInBuffer > MAX_CHARS)
+                // Start shoving data into the buffer
+                for (int i = 0; i < cursors.Count; i++)
                 {
-                    return null; // we will overrun the buffer
+                    Cursor cursor = cursors[i];
+                    string escapedKey = cursor._escapedKey;
+
+                    // comma + up to 16-char hex Id + pipe
+                    numCharsInBuffer += escapedKey.Length + 18;
+
+                    if (numCharsInBuffer > MAX_CHARS)
+                    {
+                        return null; // we will overrun the buffer
+                    }
+
+                    for (int j = 0; j < escapedKey.Length; j++)
+                    {
+                        *pNextChar++ = escapedKey[j];
+                    }
+
+                    *pNextChar++ = ',';
+                    int hexLength = WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
+
+                    // Since we reserved 16 chars for the hex value, update numCharsInBuffer to reflect the actual number of
+                    // characters written by WriteUlongAsHexToBuffer.
+                    numCharsInBuffer += hexLength - 16;
+                    pNextChar += hexLength;
+                    *pNextChar++ = '|';
                 }
 
-                for (int j = 0; j < escapedKey.Length; j++)
-                {
-                    *pNextChar++ = escapedKey[j];
-                }
-
-                *pNextChar++ = ',';
-                int hexLength = WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
-
-                // Since we reserved 16 chars for the hex value, update numCharsInBuffer to reflect the actual number of
-                // characters written by WriteUlongAsHexToBuffer.
-                numCharsInBuffer += hexLength - 16;
-                pNextChar += hexLength;
-                *pNextChar++ = '|';
+                return (numCharsInBuffer == 0) ? String.Empty : new String(pChars, 0, numCharsInBuffer - 1); // -1 for final pipe
             }
-
-            return (numCharsInBuffer == 0) ? String.Empty : new String(pChars, 0, numCharsInBuffer - 1); // -1 for final pipe
         }
 
         private static int WriteUlongAsHexToBuffer(ulong value, char* pBuffer)
