@@ -160,6 +160,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There was an error invoking Hub method &apos;{0}.{1}&apos;..
+        /// </summary>
+        internal static string Error_HubInvocationFailed {
+            get {
+                return ResourceManager.GetString("Error_HubInvocationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a {1}..
         /// </summary>
         internal static string Error_IsNotA {
