@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             try
             {
-                var result = context.MethodDescriptor.Invoker.Invoke(context.Hub, context.Args);
+                object result = context.MethodDescriptor.Invoker(context.Hub, context.Args.ToArray());
                 Type returnType = context.MethodDescriptor.ReturnType;
 
                 if (typeof(Task).IsAssignableFrom(returnType))
