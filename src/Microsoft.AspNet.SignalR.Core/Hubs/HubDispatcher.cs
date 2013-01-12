@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly string _url;
         private readonly bool _enableJavaScriptProxies;
+        private readonly bool _enableDetailedHubErrors;
 
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
@@ -38,11 +39,17 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Initializes an instance of the <see cref="HubDispatcher"/> class.
         /// </summary>
         /// <param name="url">The base url of the connection url.</param>
-        /// <param name="enableJavaScriptProxies">Indicates whether JavaScript proxies for the server-side hubs should be auto generated at {Path}/hubs.</param>
-        public HubDispatcher(string url, bool enableJavaScriptProxies)
+        /// <param name="configuration">Configuration settings determining whether to enable JS proxies and provide clients with detailed hub errors.</param>
+        public HubDispatcher(string url, HubConfiguration configuration)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
             _url = url;
-            _enableJavaScriptProxies = enableJavaScriptProxies;
+            _enableJavaScriptProxies = configuration.EnableJavaScriptProxies;
+            _enableDetailedHubErrors = configuration.EnableDetailedHubErrors;
         }
 
         protected override TraceSource Trace
@@ -424,26 +431,31 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private Task ProcessResponse(StateChangeTracker tracker, object result, HubRequest request, Exception error)
         {
-            var exception = error.Unwrap();
-            string stackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;
-            string errorMessage = exception != null ? exception.Message : null;
-
-            if (exception != null)
-            {
-                _counters.ErrorsHubInvocationTotal.Increment();
-                _counters.ErrorsHubInvocationPerSec.Increment();
-                _counters.ErrorsAllTotal.Increment();
-                _counters.ErrorsAllPerSec.Increment();
-            }
-
             var hubResult = new HubResponse
             {
                 State = tracker.GetChanges(),
                 Result = result,
                 Id = request.Id,
-                Error = errorMessage,
-                StackTrace = stackTrace
             };
+
+            if (error != null)
+            {
+                _counters.ErrorsHubInvocationTotal.Increment();
+                _counters.ErrorsHubInvocationPerSec.Increment();
+                _counters.ErrorsAllTotal.Increment();
+                _counters.ErrorsAllPerSec.Increment();
+
+                if (_enableDetailedHubErrors)
+                {
+                    var exception = error.Unwrap();
+                    hubResult.StackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;
+                    hubResult.Error = exception != null ? exception.Message : null;
+                }
+                else
+                {
+                    hubResult.Error = String.Format(CultureInfo.CurrentCulture, Resources.Error_HubInvocationFailed, request.Hub, request.Method);
+                }
+            }
 
             return Transport.Send(hubResult);
         }
