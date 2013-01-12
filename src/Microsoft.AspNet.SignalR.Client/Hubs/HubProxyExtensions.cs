@@ -65,9 +65,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 onData();
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -101,9 +101,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 onData(Convert<T>(args[0]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -138,9 +138,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T2>(args[1]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -176,9 +176,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T3>(args[2]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -215,9 +215,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T4>(args[3]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
@@ -268,9 +268,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T5>(args[4]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -309,9 +309,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T6>(args[5]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -351,9 +351,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T7>(args[6]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>

@@ -24,11 +24,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         public IDisposable Subscribe(IObserver<JToken[]> observer)
         {
             var subscription = _proxy.Subscribe(_eventName);
-            subscription.Data += observer.OnNext;
+            subscription.Received += observer.OnNext;
 
             return new DisposableAction(() =>
             {
-                subscription.Data -= observer.OnNext;
+                subscription.Received -= observer.OnNext;
             });
         }
     }

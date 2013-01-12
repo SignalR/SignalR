@@ -10,13 +10,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
     /// </summary>
     public class Subscription
     {
-        public event Action<JToken[]> Data;
+        public event Action<JToken[]> Received;
 
-        internal void OnData(JToken[] data)
+        internal void OnReceived(JToken[] data)
         {
-            if (Data != null)
+            if (Received != null)
             {
-                Data(data);
+                Received(data);
             }
         } 
     }

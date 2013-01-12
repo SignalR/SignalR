@@ -160,10 +160,10 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
         public void InvokeEvent(string eventName, JToken[] args)
         {
-            Subscription eventObj;
-            if (_subscriptions.TryGetValue(eventName, out eventObj))
+            Subscription subscription;
+            if (_subscriptions.TryGetValue(eventName, out subscription))
             {
-                eventObj.OnData(args);
+                subscription.OnReceived(args);
             }
         }
     }
