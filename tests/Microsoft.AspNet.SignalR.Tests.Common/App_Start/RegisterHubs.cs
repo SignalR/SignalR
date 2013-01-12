@@ -50,12 +50,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             var config = new HubConfiguration
             {
-                EnableCrossDomain = true
+                EnableCrossDomain = true,
+                EnableDetailedHubErrors = true
             };
 
             RouteTable.Routes.MapHubs(config);
 
-            RouteTable.Routes.MapHubs("signalr.hubs2", "/signalr2/test", new HubConfiguration());
+            RouteTable.Routes.MapHubs("signalr.hubs2", "signalr2/test", new HubConfiguration());
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend");
