@@ -162,8 +162,8 @@
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
   </data>
-  <data name="Error_ProtocolErrorMissingConnectionId" xml:space="preserve">
-    <value>Protocol error: Missing connection id.</value>
+  <data name="Error_ProtocolErrorMissingConnectionToken" xml:space="preserve">
+    <value>Protocol error: Missing connection token.</value>
   </data>
   <data name="Error_ProtocolErrorUnknownTransport" xml:space="preserve">
     <value>Protocol error: Unknown transport.</value>

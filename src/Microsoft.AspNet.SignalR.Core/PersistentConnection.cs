@@ -153,19 +153,19 @@ namespace Microsoft.AspNet.SignalR
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
-            string rawConnectionId = context.Request.QueryString["connectionId"];
+            string connectionToken = context.Request.QueryString["connectionToken"];
 
             // If there's no connection id then this is a bad request
-            if (String.IsNullOrEmpty(rawConnectionId))
+            if (String.IsNullOrEmpty(connectionToken))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionId));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken));
             }
 
             string connectionId = null;
 
             try
             {
-                connectionId = ProtectedData.Unprotect(rawConnectionId, ConnectionIdPurpose);
+                connectionId = ProtectedData.Unprotect(connectionToken, ConnectionIdPurpose);
 
                 // Set the transport's connection id to the unprotected one
                 Transport.ConnectionId = connectionId;
@@ -353,12 +353,13 @@ namespace Microsoft.AspNet.SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = ProtectedData.Protect(connectionId, ConnectionIdPurpose),
+                ConnectionToken = ProtectedData.Protect(connectionId, ConnectionIdPurpose),
+                ConnectionId = connectionId,
                 KeepAlive = (keepAlive != 0) ? keepAlive : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.1"
+                ProtocolVersion = "1.2"
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))

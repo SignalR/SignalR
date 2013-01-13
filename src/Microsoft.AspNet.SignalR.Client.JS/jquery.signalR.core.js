@@ -405,6 +405,7 @@
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
+                    connection.token = res.ConnectionToken;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
@@ -433,7 +434,7 @@
                         keepAliveData.activated = false;
                     }
 
-                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.1") {
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.2") {
                         $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
                         deferred.reject("SignalR: Incompatible protocol version.");
                         return;

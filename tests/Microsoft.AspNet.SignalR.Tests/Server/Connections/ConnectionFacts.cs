@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 transport.Setup(m => m.Negotiate(connection))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
-                             ProtocolVersion = "1.1",
+                             ProtocolVersion = "1.2",
                              ConnectionId = "Something"
                          }));
 

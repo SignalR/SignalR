@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
-            public void MissingConnectionIdThrows()
+            public void MissingConnectionTokenThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -59,14 +59,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
-            public void UnprotectedConnectionIdThrows()
+            public void UnprotectedConnectionTokenThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
                 var qs = new NameValueCollection();
                 qs["transport"] = "serverSentEvents";
-                qs["connectionId"] = "1";
+                qs["connectionToken"] = "1";
                 req.Setup(m => m.QueryString).Returns(qs);
 
                 var protectedData = new Mock<IProtectedData>();

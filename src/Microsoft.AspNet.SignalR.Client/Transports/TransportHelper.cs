@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            // ?transport={0}&connectionId={1}&messageId={2}&groups={3}&connectionData={4}{5}
+            // ?transport={0}&connectionToken={1}&messageId={2}&groups={3}&connectionData={4}{5}
             var qsBuilder = new StringBuilder();
             qsBuilder.Append("?transport=" + transport)
-                     .Append("&connectionId=" + Uri.EscapeDataString(connection.ConnectionId));
+                     .Append("&connectionToken=" + Uri.EscapeDataString(connection.ConnectionToken));
 
             if (connection.MessageId != null)
             {

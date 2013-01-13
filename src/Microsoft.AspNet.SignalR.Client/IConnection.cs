@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client
         ISet<string> Groups { get; }
         IDictionary<string, object> Items { get; }
         string ConnectionId { get; }
+        string ConnectionToken { get; }
         string Url { get; }
         string QueryString { get; }
         ConnectionState State { get; }

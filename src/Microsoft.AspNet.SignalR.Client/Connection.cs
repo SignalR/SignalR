@@ -174,6 +174,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Gets or sets the connection id for the connection.
         /// </summary>
         public string ConnectionId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the connection token for the connection.
+        /// </summary>
+        public string ConnectionToken { get; set; }
 
         /// <summary>
         /// Gets a dictionary for storing state for a the connection.
@@ -272,6 +277,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
+                ConnectionToken = negotiationResponse.ConnectionToken;
+
                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
 
                 var data = OnSending();
@@ -345,7 +352,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Version version;
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                !(version.Major == 1 && version.Minor == 1))
+                !(version.Major == 1 && version.Minor == 2))
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IncompatibleProtocolVersion));
             }

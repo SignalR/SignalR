@@ -196,11 +196,11 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Protocol error: Missing connection id..
+        ///   Looks up a localized string similar to Protocol error: Missing connection token..
         /// </summary>
-        internal static string Error_ProtocolErrorMissingConnectionId {
+        internal static string Error_ProtocolErrorMissingConnectionToken {
             get {
-                return ResourceManager.GetString("Error_ProtocolErrorMissingConnectionId", resourceCulture);
+                return ResourceManager.GetString("Error_ProtocolErrorMissingConnectionToken", resourceCulture);
             }
         }
         

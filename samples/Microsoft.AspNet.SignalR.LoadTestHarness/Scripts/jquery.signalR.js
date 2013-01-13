@@ -406,6 +406,7 @@
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
+                    connection.token = res.ConnectionToken;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
@@ -434,7 +435,7 @@
                         keepAliveData.activated = false;
                     }
 
-                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.1") {
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.2") {
                         $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
                         deferred.reject("SignalR: Incompatible protocol version.");
                         return;
@@ -759,7 +760,7 @@
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
-                qs = "transport=" + transport + "&connectionId=" + window.encodeURIComponent(connection.id),
+                qs = "transport=" + transport + "&connectionToken=" + window.encodeURIComponent(connection.token),
                 groups = this.getGroups(connection);
 
             if (connection.data) {
@@ -834,7 +835,7 @@
         },
 
         ajaxSend: function (connection, data) {
-            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionId=" + window.encodeURIComponent(connection.id);
+            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection);
             return $.ajax({
                 url: url,
@@ -870,7 +871,7 @@
             // Async by default unless explicitly overidden
             async = typeof async === "undefined" ? true : async;
 
-            var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionId=" + window.encodeURIComponent(connection.id);
+            var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection);
             $.ajax({
                 url: url,
