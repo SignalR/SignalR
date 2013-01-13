@@ -50,6 +50,7 @@
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
     <Compile Include="Infrastructure\BuildManagerAssemblyLocator.cs" />
+    <Compile Include="Infrastructure\MachineKeyProtectedData.cs" />
     <Compile Include="RequestExtensions.cs" />
     <Compile Include="RouteExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

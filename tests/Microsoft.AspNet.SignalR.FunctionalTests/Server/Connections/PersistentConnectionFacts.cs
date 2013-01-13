@@ -4,14 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
+using Owin;
 using Xunit;
 using Xunit.Extensions;
-using Owin;
-using Microsoft.AspNet.SignalR.Configuration;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -30,6 +31,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             Resolver = new DefaultDependencyResolver()
                         };
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
                     });
 
@@ -61,6 +65,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             Resolver = new DefaultDependencyResolver()
                         };
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
                     });
 
@@ -634,6 +641,19 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection2.Stop();
                 }
+            }
+        }
+
+        public class EmptyProtectedData : IProtectedData
+        {
+            public string Protect(string data, string purpose)
+            {
+                return data;
+            }
+
+            public string Unprotect(string protectedValue, string purpose)
+            {
+                return protectedValue;
             }
         }
     }
