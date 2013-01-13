@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNet.SignalR
     public abstract class PersistentConnection
     {
         private const string WebSocketsTransportName = "webSockets";
+        private const string ConnectionIdPurpose = "SignalR.ConnectionId";
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
@@ -51,6 +53,7 @@ namespace Microsoft.AspNet.SignalR
             TraceManager = resolver.Resolve<ITraceManager>();
             Counters = resolver.Resolve<IPerformanceCounterManager>();
             AckHandler = resolver.Resolve<IAckHandler>();
+            ProtectedData = resolver.Resolve<IProtectedData>();
 
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
@@ -71,6 +74,8 @@ namespace Microsoft.AspNet.SignalR
                 return TraceManager["SignalR.PersistentConnection"];
             }
         }
+
+        protected IProtectedData ProtectedData { get; private set; }
 
         protected IMessageBus MessageBus { get; private set; }
 
@@ -148,16 +153,21 @@ namespace Microsoft.AspNet.SignalR
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
-            string connectionId = Transport.ConnectionId;
+            string connectionIdProtected = Transport.ConnectionId;
 
             // If there's no connection id then this is a bad request
-            if (String.IsNullOrEmpty(connectionId))
+            if (String.IsNullOrEmpty(connectionIdProtected))
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionId));
             }
 
-            Guid id;
-            if (!Guid.TryParse(connectionId, out id))
+            string connectionId = null;
+
+            try
+            {
+                connectionId = ProtectedData.Unprotect(connectionIdProtected, ConnectionIdPurpose);
+            }
+            catch
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
             }
@@ -335,10 +345,12 @@ namespace Microsoft.AspNet.SignalR
         {
             // Convert the keepAlive value to seconds based on the HeartBeat interval
             var keepAlive = _configurationManager.KeepAlive * _configurationManager.HeartbeatInterval.TotalSeconds;
+            string connectionId = Guid.NewGuid().ToString("d");
+
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = Guid.NewGuid().ToString("d"),
+                ConnectionId = ProtectedData.Protect(connectionId, ConnectionIdPurpose),
                 KeepAlive = (keepAlive != 0) ? keepAlive : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),

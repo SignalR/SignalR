@@ -75,7 +75,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             string url = connection.Url + "send";
             string customQueryString = String.IsNullOrEmpty(connection.QueryString) ? String.Empty : "&" + connection.QueryString;
 
-            url += String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, customQueryString);
+            url += String.Format(CultureInfo.InvariantCulture, 
+                                _sendQueryString, 
+                                _transport, 
+                                Uri.EscapeDataString(connection.ConnectionId), 
+                                customQueryString);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }

@@ -70,6 +70,9 @@ namespace Microsoft.AspNet.SignalR
 
             var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager());
             Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
+
+            var protectedData = new DefaultProtectedData();
+            Register(typeof(IProtectedData), () => protectedData);
         }
 
         private void RegisterHubExtensions()

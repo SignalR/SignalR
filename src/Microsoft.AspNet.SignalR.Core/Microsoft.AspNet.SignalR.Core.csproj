@@ -43,6 +43,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -61,6 +62,7 @@
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
+    <Compile Include="Infrastructure\DefaultProtectedData.cs" />
     <Compile Include="Infrastructure\DiffPair.cs" />
     <Compile Include="Infrastructure\DiffSet.cs" />
     <Compile Include="GlobalHost.cs" />
@@ -69,6 +71,7 @@
     <Compile Include="Hosting\HostContextExtensions.cs" />
     <Compile Include="Cookie.cs" />
     <Compile Include="Hosting\IWebSocketRequest.cs" />
+    <Compile Include="Infrastructure\IProtectedData.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
