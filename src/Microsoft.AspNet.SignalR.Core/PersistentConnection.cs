@@ -153,10 +153,10 @@ namespace Microsoft.AspNet.SignalR
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
-            string connectionIdProtected = Transport.ConnectionId;
+            string rawConnectionId = context.Request.QueryString["connectionId"];
 
             // If there's no connection id then this is a bad request
-            if (String.IsNullOrEmpty(connectionIdProtected))
+            if (String.IsNullOrEmpty(rawConnectionId))
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionId));
             }
@@ -165,7 +165,10 @@ namespace Microsoft.AspNet.SignalR
 
             try
             {
-                connectionId = ProtectedData.Unprotect(connectionIdProtected, ConnectionIdPurpose);
+                connectionId = ProtectedData.Unprotect(rawConnectionId, ConnectionIdPurpose);
+
+                // Set the transport's connection id to the unprotected one
+                Transport.ConnectionId = connectionId;
             }
             catch
             {

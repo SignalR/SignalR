@@ -29,7 +29,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _isDisconnected;
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
-        private string _connectionId;
         private int _ended;
 
         // Token that represents the end of the connection based on a combination of
@@ -89,15 +88,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public string ConnectionId
         {
-            get
-            {
-                if (_connectionId == null)
-                {
-                    _connectionId = _context.Request.QueryString["connectionId"];
-                }
-
-                return _connectionId;
-            }
+            get;
+            set;
         }
 
         public virtual TextWriter OutputWriter

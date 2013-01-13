@@ -106,7 +106,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
+            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, 
+                                                                  _sendQueryString, 
+                                                                  _transport, 
+                                                                  Uri.EscapeDataString(connection.ConnectionId), 
+                                                                  null);
 
             try
             {
