@@ -111,7 +111,23 @@ namespace Microsoft.AspNet.SignalR
         {
             get
             {
+                return PrefixHelper.GetPersistentConnectionName(DefaultSignalRaw);
+            }
+        }
+
+        private string DefaultSignalRaw
+        {
+            get
+            {
                 return GetType().FullName;
+            }
+        }
+
+        internal virtual string GroupPrefix
+        {
+            get
+            {
+                return PrefixHelper.PersistentConnectionGroupPrefix;
             }
         }
 
@@ -181,13 +197,14 @@ namespace Microsoft.AspNet.SignalR
             // Set the transport's connection id to the unprotected one
             Transport.ConnectionId = connectionId;
 
-            IEnumerable<string> signals = GetSignals(connectionId);
-            IEnumerable<string> groups = OnRejoiningGroups(context.Request, Transport.Groups, connectionId);
+            IList<string> signals = GetSignals(connectionId);
+            IList<string> groups = AppendGroupPrefixes(context, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
 
             Connection = connection;
-            Groups = new GroupManager(connection, DefaultSignal);
+            string groupName = PrefixHelper.GetPersistentConnectionGroupName(DefaultSignalRaw);
+            Groups = new GroupManager(connection, groupName);
 
             Transport.TransportConnected = () =>
             {
@@ -225,7 +242,13 @@ namespace Microsoft.AspNet.SignalR
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
-        private Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
+        private IList<string> AppendGroupPrefixes(HostContext context, string connectionId)
+        {
+            return (from g in OnRejoiningGroups(context.Request, Transport.Groups, connectionId)
+                    select GroupPrefix + g).ToList();
+        }
+
+        private Connection CreateConnection(string connectionId, IList<string> signals, IList<string> groups)
         {
             return new Connection(MessageBus,
                                   JsonSerializer,
@@ -243,7 +266,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The default signals for this <see cref="PersistentConnection"/>.</returns>
-        private IEnumerable<string> GetDefaultSignals(string connectionId)
+        private IList<string> GetDefaultSignals(string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
@@ -252,8 +275,8 @@ namespace Microsoft.AspNet.SignalR
 
             return new string[] {
                 DefaultSignal,
-                connectionId,
-                "ACK_" + connectionId
+                PrefixHelper.GetConnectionId(connectionId),
+                PrefixHelper.GetAck(connectionId)
             };
         }
 
@@ -262,7 +285,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
-        protected virtual IEnumerable<string> GetSignals(string connectionId)
+        protected virtual IList<string> GetSignals(string connectionId)
         {
             return GetDefaultSignals(connectionId);
         }
@@ -284,9 +307,9 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="groups">The groups the calling connection claims to be part of.</param>
         /// <param name="connectionId">The id of the reconnecting client.</param>
         /// <returns>A collection of group names that should be joined on reconnect</returns>
-        protected virtual IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected virtual IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
         {
-            return Enumerable.Empty<string>();
+            return ListHelper<string>.Empty;
         }
 
         /// <summary>

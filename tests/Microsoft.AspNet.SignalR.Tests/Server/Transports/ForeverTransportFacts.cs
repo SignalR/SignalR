@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             transport.Object.ConnectionId = "1";
             transport.Object.ProcessRequest(transportConnection.Object).Wait();
 
-            Assert.Equal("1", abortedConnectionId);
+            Assert.Equal("c-1", abortedConnectionId);
         }
 
         [Fact]

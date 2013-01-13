@@ -5,18 +5,21 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    public class SignalProxy : DynamicObject, IClientProxy
+    public abstract class SignalProxy : DynamicObject, IClientProxy
     {
-        private readonly string[] _exclude;
+        private readonly IList<string> _exclude;
+        private readonly string _prefix;
 
-        public SignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, params string[] exclude)
+        protected SignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, string prefix, IList<string> exclude)
         {
             Send = send;
             Signal = signal;
             HubName = hubName;
+            _prefix = prefix;
             _exclude = exclude;
         }
 
@@ -41,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             var invocation = GetInvocationData(method, args);
 
-            string signal = HubName + "." + Signal;
+            string signal = _prefix + HubName + "." + Signal;
 
             return Send(signal, invocation, _exclude);
         }

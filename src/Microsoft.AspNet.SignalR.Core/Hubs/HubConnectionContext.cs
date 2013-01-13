@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _connectionId = connectionId;
             _hubName = hubName;
 
-            Caller = new StatefulSignalProxy(_send, connectionId, hubName, tracker);
+            Caller = new StatefulSignalProxy(_send, connectionId, PrefixHelper.HubConnectionIdPrefix, hubName, tracker);
             All = AllExcept();
             Others = AllExcept(connectionId);
         }
@@ -59,12 +60,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Returns a dynamic representation of all clients except the calling client ones specified.
         /// </summary>
-        /// <param name="exclude">A list of connection ids to exclude.</param>
+        /// <param name="excludeConnectionIds">The list of connection ids to exclude</param>
         /// <returns>A dynamic representation of all clients except the calling client ones specified.</returns>
-        public dynamic AllExcept(params string[] exclude)
+        public dynamic AllExcept(params string[] excludeConnectionIds)
         {
             // REVIEW: Should this method be params array?
-            return new ClientProxy(_send, _hubName, exclude);
+            return new ClientProxy(_send, _hubName, PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
         }
 
         /// <summary>
@@ -81,11 +82,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Returns a dynamic representation of the specified group.
         /// </summary>
         /// <param name="groupName">The name of the group</param>
-        /// <param name="exclude">A list of connection ids to exclude.</param>
+        /// <param name="excludeConnectionIds">The list of connection ids to exclude</param>
         /// <returns>A dynamic representation of the specified group.</returns>
-        public dynamic Group(string groupName, params string[] exclude)
+        public dynamic Group(string groupName, params string[] excludeConnectionIds)
         {
-            return new SignalProxy(_send, groupName, _hubName, exclude);
+            return new GroupProxy(_send, groupName, _hubName, PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
         }
 
         /// <summary>
@@ -95,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A dynamic representation of the specified client.</returns>
         public dynamic Client(string connectionId)
         {
-            return new SignalProxy(_send, connectionId, _hubName);
+            return new ConnectionIdProxy(_send, connectionId, _hubName);
         }
     }
 }

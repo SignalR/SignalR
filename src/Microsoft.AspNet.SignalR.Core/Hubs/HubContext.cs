@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         public HubContext(Func<string, ClientHubInvocation, IList<string>, Task> send, string hubName, IConnection connection)
         {
             Clients = new ExternalHubConnectionContext(send, hubName);
-            Groups = new GroupManager(connection, hubName);
+            Groups = new GroupManager(connection, PrefixHelper.GetHubGroupName(hubName));
         }
 
         public IHubConnectionContext Clients { get; private set; }
@@ -43,12 +44,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             public dynamic Group(string groupName, params string[] exclude)
             {
-                return new SignalProxy(_send, groupName, _hubName, exclude);
+                return new GroupProxy(_send, groupName, _hubName, exclude);
             }
 
             public dynamic Client(string connectionId)
             {
-                return new SignalProxy(_send, connectionId, _hubName);
+                return new ConnectionIdProxy(_send, connectionId, _hubName);
             }
         }
     }

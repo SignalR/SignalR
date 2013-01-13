@@ -53,10 +53,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 throw new ArgumentNullException("type");
             }
 
-            string connectionName = type.FullName;
-            IConnection connection = GetConnection(connectionName);
+            string connectionName = PrefixHelper.GetPersistentConnectionName(type.FullName);
+            IConnection connection = GetConnectionCore(connectionName);
 
-            return new PersistentConnectionContext(connection, new GroupManager(connection, connectionName));
+            return new PersistentConnectionContext(connection, new GroupManager(connection, PrefixHelper.GetPersistentConnectionGroupName(connectionName)));
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <returns>a <see cref="IHubContext"/> for the specified hub</returns>
         public IHubContext GetHubContext(string hubName)
         {
-            var connection = GetConnection(connectionName: null);
+            var connection = GetConnectionCore(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
             var pipelineInvoker = _resolver.Resolve<IHubPipelineInvoker>();
 
@@ -91,9 +91,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return new HubContext(send, hubName, connection);
         }
 
-        internal Connection GetConnection(string connectionName)
+        internal Connection GetConnectionCore(string connectionName)
         {
-            var signals = connectionName == null ? Enumerable.Empty<string>() : new[] { connectionName };
+            IList<string> signals = connectionName == null ? ListHelper<string>.Empty : new[] { connectionName };
 
             // Give this a unique id
             var connectionId = Guid.NewGuid().ToString();
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                   connectionName,
                                   connectionId,
                                   signals,
-                                  Enumerable.Empty<string>(),
+                                  ListHelper<string>.Empty,
                                   _resolver.Resolve<ITraceManager>(),
                                   _resolver.Resolve<IAckHandler>(),
                                   _resolver.Resolve<IPerformanceCounterManager>());
