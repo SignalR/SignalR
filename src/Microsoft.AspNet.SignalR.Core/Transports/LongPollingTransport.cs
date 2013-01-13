@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return null;
         }
 
-        public virtual Task Send(PersistentResponse response)
+        public Task Send(PersistentResponse response)
         {
             Heartbeat.MarkConnection(this);
 
