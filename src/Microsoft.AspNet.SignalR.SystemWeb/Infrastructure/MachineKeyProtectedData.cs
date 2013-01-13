@@ -8,45 +8,26 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 {
     public class MachineKeyProtectedData : IProtectedData
-    {
-        private readonly MachineKeyProtectedData40 _machineKey = new MachineKeyProtectedData40();
-
+    {        
         public string Protect(string data, string purpose)
         {
             byte[] unprotectedBytes = Encoding.UTF8.GetBytes(data);
 
-            return _machineKey.Protect(unprotectedBytes);
+            return MachineKeyProtectedData40.Protect(unprotectedBytes);
         }
 
         public string Unprotect(string protectedValue, string purpose)
         {
-            byte[] unprotectedBytes = _machineKey.Unprotect(protectedValue);
+            byte[] unprotectedBytes = MachineKeyProtectedData40.Unprotect(protectedValue);
 
             return Encoding.UTF8.GetString(unprotectedBytes);
         }
 
-        private sealed class MachineKeyProtectedData40
+        private static class MachineKeyProtectedData40
         {
             private const uint MagicHeader = 0x855d4ec9;
 
-            private readonly Func<string, MachineKeyProtection, byte[]> _decoder;
-            private readonly Func<byte[], MachineKeyProtection, string> _encoder;
-
-#pragma warning disable 0618 // since Encode & Decode are [Obsolete] in 4.5
-            public MachineKeyProtectedData40()
-                : this(MachineKey.Encode, MachineKey.Decode)
-            {
-            }
-#pragma warning restore 0618
-
-            // for unit testing
-            internal MachineKeyProtectedData40(Func<byte[], MachineKeyProtection, string> encoder, Func<string, MachineKeyProtection, byte[]> decoder)
-            {
-                _encoder = encoder;
-                _decoder = decoder;
-            }
-
-            public string Protect(byte[] data)
+            public static string Protect(byte[] data)
             {
                 byte[] dataWithHeader = new byte[data.Length + 4];
                 Buffer.BlockCopy(data, 0, dataWithHeader, 4, data.Length);
@@ -58,14 +39,14 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
                     dataWithHeader[3] = (byte)(MagicHeader);
                 }
 
-                string hex = _encoder(dataWithHeader, MachineKeyProtection.All);
+                string hex = MachineKey.Encode(dataWithHeader, MachineKeyProtection.All);
                 return HexToBase64(hex);
             }
 
-            public byte[] Unprotect(string protectedData)
+            public static byte[] Unprotect(string protectedData)
             {
                 string hex = Base64ToHex(protectedData);
-                byte[] dataWithHeader = _decoder(hex, MachineKeyProtection.All);
+                byte[] dataWithHeader = MachineKey.Decode(hex, MachineKeyProtection.All);
 
                 if (dataWithHeader == null || dataWithHeader.Length < 4 || (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataWithHeader, 0)) != MagicHeader)
                 {
