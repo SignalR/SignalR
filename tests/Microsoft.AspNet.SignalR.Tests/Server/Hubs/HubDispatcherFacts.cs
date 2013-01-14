@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
-                                                          {"connectionId", "00000000-0000-0000-0000-000000000000"},
+                                                          {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
                                                       });
             request.Setup(m => m.Form).Returns(new NameValueCollection());
@@ -116,6 +117,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
             dispatcher.Initialize(resolver, context);
 
@@ -148,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
-                                                          {"connectionId", "00000000-0000-0000-0000-000000000000"},
+                                                          {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
                                                       });
             request.Setup(m => m.Form).Returns(new NameValueCollection());
@@ -165,6 +167,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
             dispatcher.Initialize(resolver, context);
 
@@ -197,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
-                                                          {"connectionId", "00000000-0000-0000-0000-000000000000"},
+                                                          {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
                                                       });
             request.Setup(m => m.Form).Returns(new NameValueCollection());
@@ -214,6 +217,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
             dispatcher.Initialize(resolver, context);
 
@@ -245,7 +249,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
-                                                          {"connectionId", "00000000-0000-0000-0000-000000000000"},
+                                                          {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
                                                       });
             request.Setup(m => m.Form).Returns(new NameValueCollection());
@@ -262,6 +266,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
             dispatcher.Initialize(resolver, context);
 

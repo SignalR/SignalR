@@ -114,6 +114,7 @@
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
+    <Compile Include="Infrastructure\EmptyProtectedData.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />
     <Compile Include="Infrastructure\IISExpressTestHost.cs" />
