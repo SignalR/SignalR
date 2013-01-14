@@ -29,7 +29,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             var request = new Mock<IRequest>();
             var response = new Mock<IResponse>();
             var qs = new NameValueCollection();
-            qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
@@ -46,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 CallBase = true
             };
-
+            transport.Object.ConnectionId = "1";
             transport.Setup(m => m.Send(It.IsAny<PersistentResponse>()))
                      .Returns(() =>
                      {
