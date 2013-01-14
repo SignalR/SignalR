@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
-            
+
             // Act
             var context = new HostContext(request.Object, response.Object);
             dispatcher.Initialize(new DefaultDependencyResolver(), context);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         {
             // Arrange
             var dispatcher = new HubDispatcher("/signalr", new HubConfiguration());
-            
+
             var request = new Mock<IRequest>();
             request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.Equal("application/json; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.NotNull(buffer[0]);
-            
+
             using (var reader = new StringReader(buffer[0]))
             {
                 var hubResponse = (HubResponse)json.Deserialize(reader, typeof(HubResponse));
