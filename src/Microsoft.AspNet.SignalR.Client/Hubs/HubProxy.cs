@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return tcs.Task;
         }
 
-        public void InvokeEvent(string eventName, JToken[] args)
+        public void InvokeEvent(string eventName, IList<JToken> args)
         {
             Subscription subscription;
             if (_subscriptions.TryGetValue(eventName, out subscription))

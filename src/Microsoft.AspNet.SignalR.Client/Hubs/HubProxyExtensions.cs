@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData();
             };
@@ -96,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T>(args[0]));
             };
@@ -132,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]));
@@ -169,7 +170,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -207,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -259,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -299,7 +300,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -340,7 +341,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -362,7 +363,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <param name="proxy">The <see cref="IHubProxy"/></param>
         /// <param name="eventName">The name of the event.</param>
         /// <returns>An <see cref="T:IObservable{object[]}"/>.</returns>
-        public static IObservable<JToken[]> Observe(this IHubProxy proxy, string eventName)
+        public static IObservable<IList<JToken>> Observe(this IHubProxy proxy, string eventName)
         {
             if (proxy == null)
             {
