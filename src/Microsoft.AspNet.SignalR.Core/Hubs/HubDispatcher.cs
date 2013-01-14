@@ -448,8 +448,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 if (_enableDetailedErrors)
                 {
                     var exception = error.Unwrap();
-                    hubResult.StackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;
-                    hubResult.Error = exception != null ? exception.Message : null;
+                    hubResult.StackTrace = _isDebuggingEnabled ? exception.StackTrace : null;
+                    hubResult.Error = exception.Message;
                 }
                 else
                 {
