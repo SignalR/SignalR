@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly string _url;
         private readonly bool _enableJavaScriptProxies;
-        private readonly bool _enableDetailedHubErrors;
+        private readonly bool _enableDetailedErrors;
 
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             _url = url;
             _enableJavaScriptProxies = configuration.EnableJavaScriptProxies;
-            _enableDetailedHubErrors = configuration.EnableDetailedHubErrors;
+            _enableDetailedErrors = configuration.EnableDetailedErrors;
         }
 
         protected override TraceSource Trace
@@ -445,7 +445,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 _counters.ErrorsAllTotal.Increment();
                 _counters.ErrorsAllPerSec.Increment();
 
-                if (_enableDetailedHubErrors)
+                if (_enableDetailedErrors)
                 {
                     var exception = error.Unwrap();
                     hubResult.StackTrace = (exception != null && _isDebuggingEnabled) ? exception.StackTrace : null;

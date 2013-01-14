@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             var config = new HubConfiguration
             {
                 EnableCrossDomain = true,
-                EnableDetailedHubErrors = true
+                EnableDetailedErrors = true
             };
 
             RouteTable.Routes.MapHubs(config);

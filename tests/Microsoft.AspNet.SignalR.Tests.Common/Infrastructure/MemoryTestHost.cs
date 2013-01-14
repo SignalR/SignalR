@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     dr.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
                 }
 
-                app.MapHubs("/signalr", new HubConfiguration { EnableDetailedHubErrors = true, Resolver = dr });
+                app.MapHubs("/signalr", new HubConfiguration { EnableDetailedErrors = true, Resolver = dr });
 
                 var config = new ConnectionConfiguration
                 {
