@@ -10,7 +10,7 @@ using Owin;
 
 namespace System.Web.Routing
 {
-    public static class RouteExtensions
+    public static class SignalRRouteExtensions
     {
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
