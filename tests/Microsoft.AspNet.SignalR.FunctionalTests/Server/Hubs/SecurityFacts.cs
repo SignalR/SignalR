@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Owin;
 using Xunit;
@@ -18,9 +19,18 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         {
             using (var host = new MemoryHost())
             {
+                IProtectedData protectedData = null;
+
                 host.Configure(app =>
                 {
-                    app.MapConnection<MyConnection>("/echo");
+                    var config = new ConnectionConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapConnection<MyConnection>("/echo", config);
+
+                    protectedData = config.Resolver.Resolve<IProtectedData>();
                 });
 
                 var connection = new Client.Connection("http://memoryhost/echo");
@@ -35,29 +45,36 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 connection.Start(host).Wait();
 
-                var wh = new ManualResetEventSlim();
+                var tcs = new TaskCompletionSource<object>();
                 EventSourceStreamReader reader = null;
 
                 Task.Run(async () =>
                 {
-                    string url = GetUrl(connection);
-                    var response = await MakeRequest(host, url);
-                    reader = new EventSourceStreamReader(response.GetResponseStream());
-
-                    reader.Message = sseEvent =>
+                    try
                     {
-                        if (sseEvent.EventType == EventType.Data && 
-                            sseEvent.Data != "initialized")
-                        {
-                            spyTcs.TrySetResult(sseEvent.Data);
-                        }
-                    };
+                        string url = GetUrl(protectedData, connection);
+                        var response = await MakeRequest(host, url);
+                        reader = new EventSourceStreamReader(response.GetResponseStream());
 
-                    reader.Start();
-                    wh.Set();
+                        reader.Message = sseEvent =>
+                        {
+                            if (sseEvent.EventType == EventType.Data &&
+                                sseEvent.Data != "initialized")
+                            {
+                                spyTcs.TrySetResult(sseEvent.Data);
+                            }
+                        };
+
+                        reader.Start();
+                        tcs.TrySetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
                 });
 
-                wh.Wait();
+                tcs.Task.Wait();
 
                 connection.SendWithTimeout("STUFFF");
 
@@ -74,16 +91,17 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             }
         }
 
-        private string GetUrl(Client.Connection connection)
+        private string GetUrl(IProtectedData protectedData, Client.Connection connection)
         {
-            string id = Guid.NewGuid().ToString("d");
+            // Generate a valid token
+            string token = protectedData.Protect(Guid.NewGuid().ToString("d"), PersistentConnection.ConnectionIdPurpose);
 
             var sb = new StringBuilder("http://memoryhost/echo/");
-            sb.Append("?connectionId=")
-              .Append(Uri.EscapeDataString(id))
+            sb.Append("?connectionToken=")
+              .Append(Uri.EscapeDataString(token))
               .Append("&transport=serverSentEvents")
               .Append("&groups=")
-              .Append(Uri.EscapeDataString(JsonConvert.SerializeObject(new[] { connection.ConnectionId })));
+              .Append(Uri.EscapeDataString(JsonConvert.SerializeObject(new[] { connection.ConnectionToken })));
 
             return sb.ToString();
         }

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR
     public abstract class PersistentConnection
     {
         private const string WebSocketsTransportName = "webSockets";
-        private const string ConnectionIdPurpose = "SignalR.ConnectionId";
+        internal const string ConnectionIdPurpose = "SignalR.ConnectionId";
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
