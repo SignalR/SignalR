@@ -100,12 +100,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (oldMetadata != null)
             {
-                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
+                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.CancellationToken, oldMetadata.Connection.Url, connection.Url);
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
-                oldMetadata.Connection.End();
-
+                EndConnection(oldMetadata);
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
             }
@@ -121,6 +120,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
+
+            // Register for disconnect cancellation
+            newMetadata.Registration = connection.CancellationToken.SafeRegister(OnConnectionEnded, newMetadata);
 
             return isNewConnection;
         }
@@ -166,7 +168,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Do nothing if the connection isn't alive
-            if (!connection.IsAlive)
+            if (connection.CancellationToken.IsCancellationRequested)
             {
                 return;
             }
@@ -198,16 +200,18 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 foreach (var metadata in _connections.Values)
                 {
-                    if (metadata.Connection.IsAlive)
-                    {
-                        CheckTimeoutAndKeepAlive(metadata);
-                    }
-                    else
+                    if (metadata.Connection.CancellationToken.IsCancellationRequested)
                     {
                         Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+                        
+                        OnConnectionEnded(metadata);
 
                         // Check if we need to disconnect this connection
                         CheckDisconnect(metadata);
+                    }
+                    else
+                    {
+                        CheckTimeoutAndKeepAlive(metadata);
                     }
                 }
             }
@@ -221,17 +225,23 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        private void OnConnectionEnded(ConnectionMetadata metadata)
+        {
+            Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+
+            EndConnection(metadata);
+        }
+
         private void CheckTimeoutAndKeepAlive(ConnectionMetadata metadata)
         {
             if (RaiseTimeout(metadata))
             {
                 RemoveConnection(metadata.Connection);
 
-                // If we're past the expiration time then just timeout the connection                            
+                // If we're past the expiration time then just timeout the connection
                 metadata.Connection.Timeout();
 
-                // End the connection
-                metadata.Connection.End();
+                EndConnection(metadata);
             }
             else
             {
@@ -339,7 +349,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     ConnectionMetadata metadata;
                     if (_connections.TryGetValue(pair.Key, out metadata))
                     {
-                        metadata.Connection.End();
+                        EndConnection(metadata);
                     }
                 }
             }
@@ -348,6 +358,18 @@ namespace Microsoft.AspNet.SignalR.Transports
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        private static void EndConnection(ConnectionMetadata metadata)
+        {
+            // End the connection
+            metadata.Connection.End();
+
+            // Dispose of the registration
+            if (metadata.Registration != null)
+            {
+                metadata.Registration.Dispose();
+            }
         }
 
         private class ConnectionMetadata
@@ -367,6 +389,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // The initial connection time of the connection
             public DateTime Initial { get; set; }
+
+            // The cancellation token registration
+            public IDisposable Registration { get; set; }
         }
     }
 }

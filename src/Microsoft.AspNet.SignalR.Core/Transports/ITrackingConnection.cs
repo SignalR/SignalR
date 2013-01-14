@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -17,9 +18,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         string ConnectionId { get; }
 
         /// <summary>
-        /// Gets a value that represents if the connection is alive.
+        /// Gets a cancellation token that represents the connection's lifetime.
         /// </summary>
-        bool IsAlive { get; }
+        CancellationToken CancellationToken { get; }
 
         /// <summary>
         /// Gets a value that represents if the connection is timed out.

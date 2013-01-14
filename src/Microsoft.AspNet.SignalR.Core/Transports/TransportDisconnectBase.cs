@@ -118,9 +118,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<Task> Disconnected { get; set; }
 
-        public virtual bool IsAlive
+        public virtual CancellationToken CancellationToken
         {
-            get { return _context.Response.IsClientConnected; }
+            get { return _context.Response.CancellationToken; }
         }
 
         protected CancellationToken ConnectionEndToken
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            if (!IsAlive)
+            if (CancellationToken.IsCancellationRequested)
             {
                 return TaskAsyncHelper.Empty;
             }
