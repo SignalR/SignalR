@@ -289,6 +289,33 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void DetailedErrorsAreDisabledByDefault(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                connection.Start(host.Transport).Wait();
+
+                connection.Start(host.Transport).Wait();
+
+                var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
+
+                Assert.IsType<InvalidOperationException>(ex.GetBaseException());
+                Assert.DoesNotContain("System.Exception", ex.GetBaseException().Message);
+                Assert.Contains("demo.TaskWithException", ex.GetBaseException().Message);
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
