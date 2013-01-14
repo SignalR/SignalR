@@ -19,7 +19,14 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             host.Configure(app =>
             {
-                app.MapConnection<StressConnection>("/echo");
+                var config = new ConnectionConfiguration
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                app.MapConnection<StressConnection>("/echo", config);
+
+                config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             });
 
             var countDown = new CountdownEvent(senders);
@@ -68,15 +75,15 @@ namespace Microsoft.AspNet.SignalR.Stress
             });
         }
 
-        private static Task ProcessRequest(MemoryHost host, string transport, string connectionId)
+        private static Task ProcessRequest(MemoryHost host, string transport, string connectionToken)
         {
-            return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionId=" + connectionId, request => { }, null, disableWrites: true);
+            return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken, request => { }, null, disableWrites: true);
         }
 
-        private static Task ProcessSendRequest(MemoryHost host, string transport, string connectionId, string data)
+        private static Task ProcessSendRequest(MemoryHost host, string transport, string connectionToken, string data)
         {
             var postData = new Dictionary<string, string> { { "data", data } };
-            return host.ProcessRequest("http://foo/echo/send?transport=" + transport + "&connectionId=" + connectionId, request => { }, postData);
+            return host.ProcessRequest("http://foo/echo/send?transport=" + transport + "&connectionToken=" + connectionToken, request => { }, postData);
         }
 
         private static void LongPollingLoop(MemoryHost host, string connectionId)
