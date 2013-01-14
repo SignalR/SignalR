@@ -82,6 +82,30 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(context));
             }
+
+            [Fact]
+            public void NullUnprotectedConnectionTokenThrows()
+            {
+                var connection = new Mock<PersistentConnection>() { CallBase = true };
+                var req = new Mock<IRequest>();
+                req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                var qs = new NameValueCollection();
+                qs["transport"] = "serverSentEvents";
+                qs["connectionToken"] = "1";
+                req.Setup(m => m.QueryString).Returns(qs);
+
+                var protectedData = new Mock<IProtectedData>();
+                protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
+                    .Returns<string, string>((value, purpose) => value);
+                protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>())).Returns((string)null);
+
+                var dr = new DefaultDependencyResolver();
+                dr.Register(typeof(IProtectedData), () => protectedData.Object);
+                var context = new HostContext(req.Object, null);
+                connection.Object.Initialize(dr, context);
+
+                Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(context));
+            }
         }
     }
 }

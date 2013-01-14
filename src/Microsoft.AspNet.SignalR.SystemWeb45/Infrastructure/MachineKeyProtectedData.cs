@@ -7,9 +7,11 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 {
     public class MachineKeyProtectedData : IProtectedData
     {
+        private static readonly UTF8Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         public string Protect(string data, string purpose)
         {
-            byte[] unprotectedBytes = Encoding.UTF8.GetBytes(data);
+            byte[] unprotectedBytes = _encoding.GetBytes(data);
 
             byte[] protectedBytes = MachineKey.Protect(unprotectedBytes, purpose);
 
@@ -22,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 
             byte[] unprotectedBytes = MachineKey.Unprotect(protectedBytes, purpose);
 
-            return Encoding.UTF8.GetString(unprotectedBytes);
+            return _encoding.GetString(unprotectedBytes);
         }
     }
 }

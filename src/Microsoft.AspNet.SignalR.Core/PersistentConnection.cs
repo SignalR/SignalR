@@ -125,6 +125,7 @@ namespace Microsoft.AspNet.SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
         public virtual Task ProcessRequest(HostContext context)
         {
             if (context == null)
@@ -166,14 +167,19 @@ namespace Microsoft.AspNet.SignalR
             try
             {
                 connectionId = ProtectedData.Unprotect(connectionToken, ConnectionIdPurpose);
-
-                // Set the transport's connection id to the unprotected one
-                Transport.ConnectionId = connectionId;
             }
-            catch
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("Failed to process connectionToken {0}: {1}", connectionToken, ex);
+            }
+
+            if (connectionId == null)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
             }
+
+            // Set the transport's connection id to the unprotected one
+            Transport.ConnectionId = connectionId;
 
             IEnumerable<string> signals = GetSignals(connectionId);
             IEnumerable<string> groups = OnRejoiningGroups(context.Request, Transport.Groups, connectionId);

@@ -8,10 +8,12 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 {
     public class MachineKeyProtectedData : IProtectedData
-    {        
+    {
+        private static readonly UTF8Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         public string Protect(string data, string purpose)
         {
-            byte[] unprotectedBytes = Encoding.UTF8.GetBytes(data);
+            byte[] unprotectedBytes = _encoding.GetBytes(data);
 
             return MachineKeyProtectedData40.Protect(unprotectedBytes);
         }
@@ -20,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
         {
             byte[] unprotectedBytes = MachineKeyProtectedData40.Unprotect(protectedValue);
 
-            return Encoding.UTF8.GetString(unprotectedBytes);
+            return _encoding.GetString(unprotectedBytes);
         }
 
         private static class MachineKeyProtectedData40
