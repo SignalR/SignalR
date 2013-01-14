@@ -21,42 +21,42 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         internal const string AckPrefix = "ack-";
 
 
-        internal static string GetConnectionId(string connectionId)
+        public static string GetConnectionId(string connectionId)
         {
             return ConnectionIdPrefix + connectionId;
         }
 
-        internal static string GetHubConnectionId(string connectionId)
+        public static string GetHubConnectionId(string connectionId)
         {
             return HubConnectionIdPrefix + connectionId;
         }
 
-        internal static string GetHubName(string connectionId)
+        public static string GetHubName(string connectionId)
         {
             return HubPrefix + connectionId;
         }
 
-        internal static string GetHubGroupName(string groupName)
+        public static string GetHubGroupName(string groupName)
         {
             return HubGroupPrefix + groupName;
         }
 
-        internal static string GetPersistentConnectionGroupName(string groupName)
+        public static string GetPersistentConnectionGroupName(string groupName)
         {
             return PersistentConnectionGroupPrefix + groupName;
         }
 
-        internal static string GetPersistentConnectionName(string connectionName)
+        public static string GetPersistentConnectionName(string connectionName)
         {
             return PersistentConnectionPrefix + connectionName;
         }
 
-        internal static string GetAck(string connectionId)
+        public static string GetAck(string connectionId)
         {
             return AckPrefix + connectionId;
         }
 
-        internal static IList<string> GetPrefixedConnectionIds(IList<string> connectionIds)
+        public static IList<string> GetPrefixedConnectionIds(IList<string> connectionIds)
         {
             if (connectionIds.Count == 0)
             {
@@ -66,12 +66,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return connectionIds.Select(PrefixHelper.GetConnectionId).ToList();
         }
 
-        internal static IEnumerable<string> RemoveGroupPrefixes(IEnumerable<string> groups)
+        public static IEnumerable<string> RemoveGroupPrefixes(IEnumerable<string> groups)
         {
             return groups.Select(PrefixHelper.RemoveGroupPrefix);
         }
 
-        internal static string RemoveGroupPrefix(string name)
+        public static string RemoveGroupPrefix(string name)
         {
             if (name.StartsWith(HubGroupPrefix, StringComparison.Ordinal))
             {
