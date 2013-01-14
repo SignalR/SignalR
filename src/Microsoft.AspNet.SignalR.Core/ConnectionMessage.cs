@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -11,8 +12,6 @@ namespace Microsoft.AspNet.SignalR
     [SuppressMessage("Microsoft.Performance", "CA1815:OverrideEqualsAndOperatorEqualsOnValueTypes", Justification = "Messags are never compared, just used as data.")]
     public struct ConnectionMessage
     {
-        private static readonly List<string> _emptyList = new List<string>();
-
         /// <summary>
         /// The signal to this message should be sent to. Connections subscribed to this signal
         /// will receive the message payload.
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.SignalR
         public IList<string> ExcludedSignals { get; private set; }
 
         public ConnectionMessage(string signal, object value)
-            : this(signal, value, _emptyList)
+            : this(signal, value, ListHelper<string>.Empty)
         {
         }
 

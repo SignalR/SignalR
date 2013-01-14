@@ -14,8 +14,8 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="groupName">The name of the group.</param>
         /// <param name="value">The value to send.</param>
-        /// <param name="exclude">List of connection ids to exclude</param>
+        /// <param name="excludeConnectionIds">The list of connection ids to exclude</param>
         /// <returns>A task that represents when send is complete.</returns>
-        Task Send(string groupName, object value, params string[] exclude);
+        Task Send(string groupName, object value, params string[] excludeConnectionIds);
     }
 }

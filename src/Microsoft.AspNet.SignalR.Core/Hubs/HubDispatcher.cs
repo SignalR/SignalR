@@ -53,6 +53,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
+        internal override string GroupPrefix
+        {
+            get
+            {
+                return PrefixHelper.HubGroupPrefix;
+            }
+        }
+
         public override void Initialize(IDependencyResolver resolver, HostContext context)
         {
             if (resolver == null)
@@ -294,7 +302,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         internal static Task Outgoing(IHubOutgoingInvokerContext context)
         {
             var message = new ConnectionMessage(context.Signal, context.Invocation, context.ExcludedSignals);
-            
+
             return context.Connection.Send(message);
         }
 
@@ -308,7 +316,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
         }
 
-        protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
         {
             return _hubs.Select(hubDescriptor =>
             {
@@ -319,7 +327,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                                                                             .Select(g => g.Substring(groupPrefix.Length)))
                                                                      .Select(g => groupPrefix + g);
                 return groupsToRejoin;
-            }).SelectMany(groupsToRejoin => groupsToRejoin);
+            }).SelectMany(groupsToRejoin => groupsToRejoin)
+              .ToList();
         }
 
         protected override Task OnDisconnected(IRequest request, string connectionId)
@@ -327,10 +336,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }
 
-        protected override IEnumerable<string> GetSignals(string connectionId)
+        protected override IList<string> GetSignals(string connectionId)
         {
-            return _hubs.SelectMany(info => new[] { info.Name, info.CreateQualifiedName(connectionId) })
-                        .Concat(new[] { connectionId, "ACK_" + connectionId });
+            return _hubs.SelectMany(info => new[] { PrefixHelper.GetHubName(info.Name), PrefixHelper.GetHubConnectionId(info.CreateQualifiedName(connectionId)) })
+                        .Concat(new[] { PrefixHelper.GetConnectionId(connectionId), PrefixHelper.GetAck(connectionId) })
+                        .ToList();
         }
 
         private Task ExecuteHubEvent(IRequest request, string connectionId, Func<IHub, Task> action)
@@ -378,7 +388,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                     hub.Context = new HubCallerContext(request, connectionId);
                     hub.Clients = new HubConnectionContext(_pipelineInvoker, Connection, descriptor.Name, connectionId, tracker);
-                    hub.Groups = new GroupManager(Connection, descriptor.Name);
+                    hub.Groups = new GroupManager(Connection, PrefixHelper.GetHubGroupName(descriptor.Name));
                 }
 
                 return hub;

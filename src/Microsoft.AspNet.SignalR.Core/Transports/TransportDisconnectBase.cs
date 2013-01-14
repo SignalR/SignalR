@@ -118,20 +118,20 @@ namespace Microsoft.AspNet.SignalR.Transports
             set;
         }
 
-        public IEnumerable<string> Groups
+        public IList<string> Groups
         {
             get
             {
                 if (IsConnectRequest)
                 {
-                    return Enumerable.Empty<string>();
+                    return ListHelper<string>.Empty;
                 }
 
                 string groupValue = Context.Request.QueryString["groups"];
 
                 if (String.IsNullOrEmpty(groupValue))
                 {
-                    return Enumerable.Empty<string>();
+                    return ListHelper<string>.Empty;
                 }
 
                 return _jsonSerializer.Parse<string[]>(groupValue);

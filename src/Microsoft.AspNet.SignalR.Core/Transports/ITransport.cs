@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <summary>
         /// Gets the groups the connection is a member of.
         /// </summary>
-        IEnumerable<string> Groups { get; }
+        IList<string> Groups { get; }
 
         /// <summary>
         /// Processes the specified <see cref="ITransportConnection"/> for this transport.

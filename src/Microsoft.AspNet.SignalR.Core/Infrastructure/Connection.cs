@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                           IJsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
-                          IEnumerable<string> signals,
-                          IEnumerable<string> groups,
+                          IList<string> signals,
+                          IList<string> groups,
                           ITraceManager traceManager,
                           IAckHandler ackHandler,
                           IPerformanceCounterManager performanceCounterManager)
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                                   // just trip it
                                                   if (!_ackHandler.TriggerAck(message.CommandId))
                                                   {
-                                                      _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
+                                                      _bus.Ack(_connectionId, message.CommandId).Catch();
                                                   }
                                               }
                                           }
@@ -254,14 +254,15 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             response.ResetGroups = groupDiff.Reset;
 
+            // Remove group prefixes before any thing goes over the wire
             if (groupDiff.Added.Count > 0)
             {
-                response.AddedGroups = groupDiff.Added;
+                response.AddedGroups = PrefixHelper.RemoveGroupPrefixes(groupDiff.Added);
             }
 
             if (groupDiff.Removed.Count > 0)
             {
-                response.RemovedGroups = groupDiff.Removed;
+                response.RemovedGroups = PrefixHelper.RemoveGroupPrefixes(groupDiff.Removed);
             }
         }
     }

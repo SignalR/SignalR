@@ -57,7 +57,9 @@
     </Compile>
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="HubConfiguration.cs" />
+    <Compile Include="Hubs\ConnectionIdProxy.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
+    <Compile Include="Hubs\GroupProxy.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ConnectionManager.cs" />
@@ -72,6 +74,8 @@
     <Compile Include="Cookie.cs" />
     <Compile Include="Hosting\IWebSocketRequest.cs" />
     <Compile Include="Infrastructure\IProtectedData.cs" />
+    <Compile Include="Infrastructure\ListHelper.cs" />
+    <Compile Include="Infrastructure\PrefixHelper.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
