@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR
         /// Determines whether detailed exceptions thrown in Hub methods get reported back the invoking client.
         /// Defaults to false.
         /// </summary>
-        public bool EnableDetailedHubErrors { get; set; }
+        public bool EnableDetailedErrors { get; set; }
 
         public HubConfiguration()
         {
