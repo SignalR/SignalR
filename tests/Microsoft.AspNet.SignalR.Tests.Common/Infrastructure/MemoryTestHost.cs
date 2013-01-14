@@ -28,10 +28,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public Func<IClientTransport> TransportFactory { get; set; }
 
-        public void Initialize(int keepAlive,
+        public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
-                               int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
             var dr = new DefaultDependencyResolver();
@@ -39,8 +38,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _host.Configure(app =>
             {
                 var configuration = dr.Resolve<IConfigurationManager>();
-
-                configuration.KeepAlive = keepAlive;
 
                 if (connectionTimeout != null)
                 {
@@ -52,9 +49,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
                 }
 
-                if (hearbeatInterval != null)
+                if (!keepAlive.HasValue)
                 {
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(hearbeatInterval.Value);
+                    configuration.KeepAlive = null;
+                }
+                // Set only if the keep-alive was changed from the default value.
+                else if (keepAlive.Value != -1)
+                {
+                    configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
                 }
 
                 if (enableAutoRejoiningGroups)

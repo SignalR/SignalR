@@ -115,6 +115,24 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DisconnectTimeout cannot be configured after the KeepAlive..
+        /// </summary>
+        internal static string Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive {
+            get {
+                return ResourceManager.GetString("Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DisconnectTimeout must be at least six seconds..
+        /// </summary>
+        internal static string Error_DisconnectTimeoutMustBeAtLeastSixSeconds {
+            get {
+                return ResourceManager.GetString("Error_DisconnectTimeoutMustBeAtLeastSixSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not read RequireOutgoing. Use protected _requireOutgoing instead..
         /// </summary>
         internal static string Error_DoNotReadRequireOutgoing {
@@ -160,11 +178,20 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep Alive value must be greater than zero..
+        ///   Looks up a localized string similar to Keep Alive value must be greater than two seconds..
         /// </summary>
-        internal static string Error_KeepAliveMustBeGreaterThanZero {
+        internal static string Error_KeepAliveMustBeGreaterThanTwoSeconds {
             get {
-                return ResourceManager.GetString("Error_KeepAliveMustBeGreaterThanZero", resourceCulture);
+                return ResourceManager.GetString("Error_KeepAliveMustBeGreaterThanTwoSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep Alive value must be no more than a third of the DisconnectTimeout..
+        /// </summary>
+        internal static string Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout {
+            get {
+                return ResourceManager.GetString("Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout", resourceCulture);
             }
         }
         

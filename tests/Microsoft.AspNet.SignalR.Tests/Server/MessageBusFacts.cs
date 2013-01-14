@@ -64,8 +64,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
-            configuration.DisconnectTimeout = TimeSpan.Zero;
-            configuration.KeepAlive = 0;
+            configuration.KeepAlive = null;
 
             using (var bus = new MessageBus(dr))
             {
@@ -81,8 +80,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
-            configuration.DisconnectTimeout = TimeSpan.Zero;
-            configuration.KeepAlive = 0;
+            configuration.KeepAlive = null;
 
             using (var bus = new MessageBus(dr))
             {
@@ -117,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
-            configuration.DisconnectTimeout = TimeSpan.Zero;
+            configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
             using (var bus = new MessageBus(dr))
             {
@@ -177,8 +175,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
-            configuration.DisconnectTimeout = TimeSpan.Zero;
-            configuration.KeepAlive = 0;
+            configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+            configuration.KeepAlive = null;
 
             using (var bus = new MessageBus(dr))
             {

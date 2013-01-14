@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
                                null,
-                               _configurationManager.HeartbeatInterval,
-                               _configurationManager.HeartbeatInterval);
+                               _configurationManager.HeartbeatInterval(),
+                               _configurationManager.HeartbeatInterval());
         }
 
         private TraceSource Trace
@@ -293,17 +293,17 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private bool RaiseKeepAlive(ConnectionMetadata metadata)
         {
-            int keepAlive = _configurationManager.KeepAlive;
+            var keepAlive = _configurationManager.KeepAlive;
 
             // Don't raise keep alive if it's set to 0 or the transport doesn't support
             // keep alive
-            if (keepAlive == 0 || !metadata.Connection.SupportsKeepAlive)
+            if (keepAlive == null || !metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
 
             // Raise keep alive if the keep alive value has passed
-            return _heartbeatCount % (ulong)keepAlive == 0;
+            return _heartbeatCount % (ulong)ConfigurationExtensions.HeartBeatsPerKeepAlive == 0;
         }
 
         private bool RaiseTimeout(ConnectionMetadata metadata)
@@ -314,10 +314,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return false;
             }
 
-            int keepAlive = _configurationManager.KeepAlive;
+            var keepAlive = _configurationManager.KeepAlive;
             // If keep alive is configured and the connection supports keep alive
             // don't ever time out
-            if (keepAlive != 0 && metadata.Connection.SupportsKeepAlive)
+            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }

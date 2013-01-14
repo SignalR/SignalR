@@ -16,18 +16,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
-            string heartbeatIntervalRaw = ConfigurationManager.AppSettings["heartbeatInterval"];
             string enableRejoiningGroupsRaw = ConfigurationManager.AppSettings["enableRejoiningGroups"];
-
-            int keepAlive;
-            if (Int32.TryParse(keepAliveRaw, out keepAlive))
-            {
-                GlobalHost.Configuration.KeepAlive = keepAlive;
-            }
-            else
-            {
-                GlobalHost.Configuration.KeepAlive = 0;
-            }
 
             int connectionTimeout;
             if (Int32.TryParse(connectionTimeoutRaw, out connectionTimeout))
@@ -41,10 +30,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout);
             }
 
-            int heartbeatInterval;
-            if (Int32.TryParse(heartbeatIntervalRaw, out heartbeatInterval))
+            int keepAlive;
+            if (String.IsNullOrEmpty(keepAliveRaw))
             {
-                GlobalHost.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(heartbeatInterval);
+                GlobalHost.Configuration.KeepAlive = null;
+            }
+            // Set only if the keep-alive was changed from the default value.
+            else if (Int32.TryParse(keepAliveRaw, out keepAlive) && keepAlive != -1)
+            {
+                GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
             }
 
             bool enableRejoiningGroups;

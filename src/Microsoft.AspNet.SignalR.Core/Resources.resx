@@ -135,6 +135,12 @@
   <data name="Error_ConnectionNotInitialized" xml:space="preserve">
     <value>The PersistentConnection is not initialized.</value>
   </data>
+  <data name="Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive" xml:space="preserve">
+    <value>DisconnectTimeout cannot be configured after the KeepAlive.</value>
+  </data>
+  <data name="Error_DisconnectTimeoutMustBeAtLeastSixSeconds" xml:space="preserve">
+    <value>DisconnectTimeout must be at least six seconds.</value>
+  </data>
   <data name="Error_DoNotReadRequireOutgoing" xml:space="preserve">
     <value>Do not read RequireOutgoing. Use protected _requireOutgoing instead.</value>
   </data>
@@ -150,8 +156,11 @@
   <data name="Error_JavaScriptProxyDisabled" xml:space="preserve">
     <value>SignalR: JavaScript Hub proxy generation has been disabled.</value>
   </data>
-  <data name="Error_KeepAliveMustBeGreaterThanZero" xml:space="preserve">
-    <value>Keep Alive value must be greater than zero.</value>
+  <data name="Error_KeepAliveMustBeGreaterThanTwoSeconds" xml:space="preserve">
+    <value>Keep Alive value must be greater than two seconds.</value>
+  </data>
+  <data name="Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" xml:space="preserve">
+    <value>Keep Alive value must be no more than a third of the DisconnectTimeout.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
