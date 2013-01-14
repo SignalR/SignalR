@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// <summary>
     /// Handles all communication over the hubs persistent connection.
     /// </summary>
+    [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "This dispatcher makes use of many interfaces.")]
     public class HubDispatcher : PersistentConnection
     {
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
