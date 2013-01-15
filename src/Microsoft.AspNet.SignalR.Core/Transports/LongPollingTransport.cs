@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IPerformanceCounterManager _counters;
+        private TaskCompletionSource<object> _requestTcs;
 
         // This should be ok to do since long polling request never hang around too long
         // so we won't bloat memory
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
                                     ITraceManager traceManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
@@ -120,6 +121,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
+        protected override void InitializePersistentState()
+        {
+            _requestTcs = new TaskCompletionSource<object>();
+
+            base.InitializePersistentState();
+        }
+
         public Task ProcessRequest(ITransportConnection connection)
         {
             Connection = connection;
@@ -136,9 +144,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 InitializePersistentState();
 
+                Task task = null;
+
                 if (IsConnectRequest)
                 {
-                    return ProcessConnectRequest(connection);
+                    task = ProcessConnectRequest(connection);
                 }
                 else if (MessageId != null)
                 {
@@ -146,14 +156,33 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         // Return a task that completes when the reconnected event task & the receive loop task are both finished
                         Func<Task> reconnected = () => Reconnected().Then(() => _counters.ConnectionsReconnected.Increment());
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
+                        task = TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
                     }
+                    else
+                    {
+                        task = ProcessReceiveRequest(connection);
+                    }
+                }
 
-                    return ProcessReceiveRequest(connection);
+                if (task != null)
+                {
+                    task.ContinueWith(_requestTcs);
+
+                    return _requestTcs.Task;
                 }
             }
 
             return null;
+        }
+
+        protected override void ReleaseRequest()
+        {
+            // Drain pending writes
+            WriteQueue.Drain().Catch().ContinueWith(task =>
+            {
+                // End the request
+                _requestTcs.TrySetResult(null);
+            });
         }
 
         public Task Send(PersistentResponse response)

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -9,11 +11,13 @@ using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "We do dispose it.")]
     public class WebSocketTransport : ForeverTransport
     {
         private readonly HostContext _context;
         private IWebSocket _socket;
-        private bool _isAlive = true;
+        private SafeCancellationTokenSource _cts = new SafeCancellationTokenSource();
+        private readonly CancellationToken _cancel;
 
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
@@ -33,13 +37,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             : base(context, serializer, heartbeat, performanceCounterWriter, traceManager)
         {
             _context = context;
+            _cancel = _cts.Token;
         }
 
-        public override bool IsAlive
+        public override CancellationToken CancellationToken
         {
             get
             {
-                return _isAlive;
+                return _cancel;
             }
         }
 
@@ -72,7 +77,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                         OnDisconnect();
                     }
 
-                    _isAlive = false;
+                    _cts.Cancel();
+
+                    _cts.Dispose();
                 };
 
                 socket.OnMessage = message =>

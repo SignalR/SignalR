@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Hosting
@@ -13,9 +14,9 @@ namespace Microsoft.AspNet.SignalR.Hosting
     public interface IResponse
     {
         /// <summary>
-        /// Gets a value that determines if this client is still connected.
+        /// Gets a cancellation token that represents the client's lifetime.
         /// </summary>
-        bool IsClientConnected { get; }
+        CancellationToken CancellationToken { get; }
 
         /// <summary>
         /// Gets or sets the content type of the response.

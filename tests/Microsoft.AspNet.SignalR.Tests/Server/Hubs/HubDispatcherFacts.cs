@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -109,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
 
             var response = new Mock<IResponse>();
-            response.SetupGet(m => m.IsClientConnected).Returns(true);
+            response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
@@ -159,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
 
             var response = new Mock<IResponse>();
-            response.SetupGet(m => m.IsClientConnected).Returns(true);
+            response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
@@ -209,7 +210,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
 
             var response = new Mock<IResponse>();
-            response.SetupGet(m => m.IsClientConnected).Returns(true);
+            response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
@@ -258,7 +259,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
 
             var response = new Mock<IResponse>();
-            response.SetupGet(m => m.IsClientConnected).Returns(true);
+            response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);

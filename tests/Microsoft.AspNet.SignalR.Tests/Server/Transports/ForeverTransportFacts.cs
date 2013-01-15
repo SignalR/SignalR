@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 CallBase = true
             };
 
-            transport.Setup(m => m.IsAlive).Returns(true);
+            transport.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
 
             var tcs = new TaskCompletionSource<bool>();
 
