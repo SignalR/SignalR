@@ -53,10 +53,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 throw new ArgumentNullException("type");
             }
 
-            string connectionName = PrefixHelper.GetPersistentConnectionName(type.FullName);
+            string rawConnectionName = type.FullName;
+            string connectionName = PrefixHelper.GetPersistentConnectionName(rawConnectionName);
             IConnection connection = GetConnectionCore(connectionName);
 
-            return new PersistentConnectionContext(connection, new GroupManager(connection, PrefixHelper.GetPersistentConnectionGroupName(connectionName)));
+            return new PersistentConnectionContext(connection, new GroupManager(connection, PrefixHelper.GetPersistentConnectionGroupName(rawConnectionName)));
         }
 
         /// <summary>

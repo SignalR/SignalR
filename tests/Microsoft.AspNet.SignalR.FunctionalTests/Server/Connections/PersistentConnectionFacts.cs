@@ -93,6 +93,44 @@ namespace Microsoft.AspNet.SignalR.Tests
                 return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken, request => { }, null);
             }
 
+            [Fact]
+            public void SendToGroupFromOutsideOfConnection()
+            {
+                using (var host = new MemoryHost())
+                {
+                    IPersistentConnectionContext connectionContext = null;
+                    host.Configure(app =>
+                    {
+                        var configuration = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<FilteredConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                    });
+
+                    var connection1 = new Client.Connection("http://foo/echo");
+
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+
+                    connection1.Start(host).Wait();
+
+                    connection1.Received += data =>
+                    {
+                        Assert.Equal("yay", data);
+                        wh1.Set();
+                    };
+
+                    connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                    connectionContext.Groups.Send("Foo", "yay");
+
+                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+
+                    connection1.Stop();
+                }
+            }
+
             [Theory]
             [InlineData(HostType.Memory, TransportType.Auto)]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
