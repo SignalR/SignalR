@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
                                     ITraceManager traceManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;

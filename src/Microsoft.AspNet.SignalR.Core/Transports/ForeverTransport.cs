@@ -33,11 +33,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                                    ITransportHeartbeat heartbeat,
                                    IPerformanceCounterManager performanceCounterWriter,
                                    ITraceManager traceManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterWriter, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
-
         }
 
         protected string LastMessageId

@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private int _ended;
+        private int _requestReleased;
 
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
@@ -39,16 +40,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
 
-        protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
+        protected TransportDisconnectBase(HostContext context, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
-            }
-
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
             }
 
             if (heartbeat == null)
@@ -258,7 +254,21 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _hostRegistration.Dispose();
             }
         }
+        
+        void ITrackingConnection.ReleaseRequest()
+        {
+            if (Interlocked.Exchange(ref _requestReleased, 1) == 0)
+            {
+                Trace.TraceInformation("ReleaseRequest(" + ConnectionId + ")");
 
+                ReleaseRequest();
+            }
+        }
+
+        protected virtual void ReleaseRequest()
+        {
+        }
+       
         public void CompleteRequest()
         {
             // REVIEW: We can get rid of this when we clean up the Interleave code.

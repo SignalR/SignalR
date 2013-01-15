@@ -204,8 +204,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
                         
-                        OnConnectionEnded(metadata);
-
                         // Check if we need to disconnect this connection
                         CheckDisconnect(metadata);
                     }
@@ -227,9 +225,15 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private void OnConnectionEnded(ConnectionMetadata metadata)
         {
-            Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+            Trace.TraceInformation("OnConnectionEnded({0})", metadata.Connection.ConnectionId);
 
-            EndConnection(metadata);
+            // Release the request
+            metadata.Connection.ReleaseRequest();
+
+            if (metadata.Registration != null)
+            {
+                metadata.Registration.Dispose();
+            }
         }
 
         private void CheckTimeoutAndKeepAlive(ConnectionMetadata metadata)
