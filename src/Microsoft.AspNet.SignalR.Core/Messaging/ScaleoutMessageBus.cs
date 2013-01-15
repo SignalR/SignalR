@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         /// <param name="messages"></param>
         /// <returns></returns>
-        protected abstract Task Send(Message[] messages);
+        protected abstract Task Send(IList<Message> messages);
 
         /// <summary>
         /// Invoked when a payload is received from the backplane. There should only be one active call at any time.
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        protected Task OnReceived(string streamId, ulong id, Message[] messages)
+        protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
         {
             // Create a local dictionary for this payload
             var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();

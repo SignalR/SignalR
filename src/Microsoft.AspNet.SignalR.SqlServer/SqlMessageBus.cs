@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived);
         }
 
-        protected override Task Send(Message[] messages)
+        protected override Task Send(IList<Message> messages)
         {
             return _sender.Send(messages);
         }

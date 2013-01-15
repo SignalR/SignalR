@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to ensure we catch all exceptions at this point.")]
-        public Task SendAsync(Message[] messages)
+        public Task SendAsync(IList<Message> messages)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
-        IAsyncResult BeginSend(Message[] messages, AsyncCallback callback, object state)
+        IAsyncResult BeginSend(IList<Message> messages, AsyncCallback callback, object state)
         {
             return new SendAsyncResult(this, messages, callback, state).Start();
         }
@@ -220,10 +220,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             static readonly Action<AsyncResult, Exception> CompletingAction = Finally;
             readonly TopicMessageBus owner;
-            readonly Message[] messages;
+            readonly IList<Message> messages;
             Dictionary<int, List<Message>> partitionedMessages;
 
-            public SendAsyncResult(TopicMessageBus owner, Message[] messages, AsyncCallback callback, object state)
+            public SendAsyncResult(TopicMessageBus owner, IList<Message> messages, AsyncCallback callback, object state)
                 : base(TimeSpan.MaxValue, callback, state)
             {
                 this.owner = owner;
