@@ -240,8 +240,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (RaiseTimeout(metadata))
             {
-                RemoveConnection(metadata.Connection);
-
                 // If we're past the expiration time then just timeout the connection
                 metadata.Connection.Timeout();
 
