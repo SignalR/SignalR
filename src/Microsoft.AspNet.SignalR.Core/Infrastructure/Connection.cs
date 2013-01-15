@@ -253,21 +253,29 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            DiffPair<string> groupDiff = _groups.GetDiff();
+            PopulateResponseState(response, _groups, _serializer, _protectedData);
+        }
+
+        internal static void PopulateResponseState(PersistentResponse response, 
+                                                   DiffSet<string> groupSet, 
+                                                   IJsonSerializer serializer, 
+                                                   IProtectedData protectedData)
+        {
+            DiffPair<string> groupDiff = groupSet.GetDiff();
 
             if (groupDiff.AnyChanges)
             {
                 // Create a protected payload of the sorted list
-                IEnumerable<string> groups = _groups.GetSnapshot();
+                IEnumerable<string> groups = groupSet.GetSnapshot();
 
                 // No groups so do nothing
                 if (groups.Any())
                 {
                     // Remove group prefixes before any thing goes over the wire
-                    string groupsString = _serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups));
+                    string groupsString = serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups));
 
                     // The groups token
-                    response.GroupsToken = _protectedData.Protect(groupsString, Purposes.Groups);
+                    response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);
                 }
             }
         }

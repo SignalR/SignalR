@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
-        private IList<string> VerifyGroups(HostContext context)
+        internal IList<string> VerifyGroups(HostContext context)
         {
             string groupsToken = context.Request.QueryString["groupsToken"];
 
