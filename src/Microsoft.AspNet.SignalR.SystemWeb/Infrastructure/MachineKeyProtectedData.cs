@@ -11,48 +11,73 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 {
     public class MachineKeyProtectedData : IProtectedData
     {
+        private const uint ConnectionIdMagicHeader = 0x855d4ec9;
+        private const uint GroupsMagicHeader = 0x85c8b45a;
+
         private static readonly UTF8Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
         public string Protect(string data, string purpose)
         {
+            MachineKeyProtectedData40 protectedData = GetProtectedDataForPurpose(purpose);
+
             byte[] unprotectedBytes = _encoding.GetBytes(data);
 
-            return MachineKeyProtectedData40.Protect(unprotectedBytes);
+            return protectedData.Protect(unprotectedBytes);
         }
 
         public string Unprotect(string protectedValue, string purpose)
         {
-            byte[] unprotectedBytes = MachineKeyProtectedData40.Unprotect(protectedValue);
+            MachineKeyProtectedData40 protectedData = GetProtectedDataForPurpose(purpose);
+
+            byte[] unprotectedBytes = protectedData.Unprotect(protectedValue);
 
             return _encoding.GetString(unprotectedBytes);
         }
 
-        private static class MachineKeyProtectedData40
+        private static MachineKeyProtectedData40 GetProtectedDataForPurpose(string purpose)
         {
-            private const uint MagicHeader = 0x855d4ec9;
+            switch (purpose)
+            {
+                case Purposes.ConnectionId:
+                    return new MachineKeyProtectedData40(ConnectionIdMagicHeader);
+                case Purposes.Groups:
+                    return new MachineKeyProtectedData40(GroupsMagicHeader);
+            }
 
-            public static string Protect(byte[] data)
+            throw new NotSupportedException();
+        }
+
+        private class MachineKeyProtectedData40
+        {
+            private readonly uint _magicHeader;
+
+            public MachineKeyProtectedData40(uint magicHeader)
+            {
+                _magicHeader = magicHeader;
+            }
+
+            public string Protect(byte[] data)
             {
                 byte[] dataWithHeader = new byte[data.Length + 4];
                 Buffer.BlockCopy(data, 0, dataWithHeader, 4, data.Length);
                 unchecked
                 {
-                    dataWithHeader[0] = (byte)(MagicHeader >> 24);
-                    dataWithHeader[1] = (byte)(MagicHeader >> 16);
-                    dataWithHeader[2] = (byte)(MagicHeader >> 8);
-                    dataWithHeader[3] = (byte)(MagicHeader);
+                    dataWithHeader[0] = (byte)(_magicHeader >> 24);
+                    dataWithHeader[1] = (byte)(_magicHeader >> 16);
+                    dataWithHeader[2] = (byte)(_magicHeader >> 8);
+                    dataWithHeader[3] = (byte)(_magicHeader);
                 }
 
                 string hex = MachineKey.Encode(dataWithHeader, MachineKeyProtection.All);
                 return HexToBase64(hex);
             }
 
-            public static byte[] Unprotect(string protectedData)
+            public byte[] Unprotect(string protectedData)
             {
                 string hex = Base64ToHex(protectedData);
                 byte[] dataWithHeader = MachineKey.Decode(hex, MachineKeyProtection.All);
 
-                if (dataWithHeader == null || dataWithHeader.Length < 4 || (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataWithHeader, 0)) != MagicHeader)
+                if (dataWithHeader == null || dataWithHeader.Length < 4 || (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(dataWithHeader, 0)) != _magicHeader)
                 {
                     // the decoded data is blank or doesn't begin with the magic header
                     return null;
