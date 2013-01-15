@@ -169,6 +169,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid cursor..
+        /// </summary>
+        internal static string Error_InvalidCursorFormat {
+            get {
+                return ResourceManager.GetString("Error_InvalidCursorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a {1}..
         /// </summary>
         internal static string Error_IsNotA {
