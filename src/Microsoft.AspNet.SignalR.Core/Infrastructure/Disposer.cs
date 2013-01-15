@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
@@ -14,6 +15,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private static readonly object _disposedSentinel = new object();
 
         private object _disposable;
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The object is immediately disposed")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public void Set(Action action)
+        {
+            Set(new DisposableAction(action));
+        }
 
         public void Set(IDisposable disposable)
         {
