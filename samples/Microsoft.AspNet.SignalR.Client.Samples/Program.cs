@@ -167,11 +167,6 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             {
                 return Connection.Broadcast(data);
             }
-
-            protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
-            {
-                return groups;
-            }
         }
 #endif
     }

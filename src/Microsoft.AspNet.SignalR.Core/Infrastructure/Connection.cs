@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
         private readonly IAckHandler _ackHandler;
+        private readonly IProtectedData _protectedData;
 
         public Connection(IMessageBus newMessageBus,
                           IJsonSerializer jsonSerializer,
@@ -36,7 +37,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                           IList<string> groups,
                           ITraceManager traceManager,
                           IAckHandler ackHandler,
-                          IPerformanceCounterManager performanceCounterManager)
+                          IPerformanceCounterManager performanceCounterManager,
+                          IProtectedData protectedData)
         {
             _bus = newMessageBus;
             _serializer = jsonSerializer;
@@ -47,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
+            _protectedData = protectedData;
         }
 
         public string DefaultSignal
@@ -250,19 +253,22 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            var groupDiff = _groups.GetDiff();
+            DiffPair<string> groupDiff = _groups.GetDiff();
 
-            response.ResetGroups = groupDiff.Reset;
-
-            // Remove group prefixes before any thing goes over the wire
-            if (groupDiff.Added.Count > 0)
+            if (groupDiff.AnyChanges)
             {
-                response.AddedGroups = PrefixHelper.RemoveGroupPrefixes(groupDiff.Added);
-            }
+                // Create a protected payload of the sorted list
+                IEnumerable<string> groups = _groups.GetSnapshot();
 
-            if (groupDiff.Removed.Count > 0)
-            {
-                response.RemovedGroups = PrefixHelper.RemoveGroupPrefixes(groupDiff.Removed);
+                // No groups so do nothing
+                if (groups.Any())
+                {
+                    // Remove group prefixes before any thing goes over the wire
+                    string groupsString = _serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups));
+
+                    // The groups token
+                    response.GroupsToken = _protectedData.Protect(groupsString, Purposes.Groups);
+                }
             }
         }
     }

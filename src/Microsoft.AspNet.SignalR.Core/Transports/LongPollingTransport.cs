@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return TimeSpan.FromMilliseconds(LongPollDelay); }
         }
 
-        protected override bool IsConnectRequest
+        public override bool IsConnectRequest
         {
             get
             {

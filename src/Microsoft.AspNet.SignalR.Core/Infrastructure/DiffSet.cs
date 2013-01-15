@@ -6,7 +6,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal class DiffSet<T>
     {
-        private bool _reset;
         private readonly SafeSet<T> _items;
         private readonly HashSet<T> _addedItems;
         private readonly HashSet<T> _removedItems;
@@ -14,7 +13,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public DiffSet(IEnumerable<T> items)
         {
-            _reset = true;
             _addedItems = new HashSet<T>(items);
             _removedItems = new HashSet<T>();
             // We don't want to re-enumerate items
@@ -69,11 +67,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             {
                 var pair = new DiffPair<T>
                 {
-                    Reset = _reset,
                     Added = new List<T>(_addedItems),
                     Removed = new List<T>(_removedItems)
                 };
-                _reset = false;
                 _addedItems.Clear();
                 _removedItems.Clear();
                 return pair;

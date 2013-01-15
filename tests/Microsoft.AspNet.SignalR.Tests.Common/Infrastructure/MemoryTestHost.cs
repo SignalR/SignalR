@@ -59,11 +59,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
                 }
 
-                if (enableAutoRejoiningGroups)
-                {
-                    dr.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
-                }
-
                 app.MapHubs("/signalr2/test", new HubConfiguration());
                 app.MapHubs("/signalr", new HubConfiguration { EnableDetailedErrors = true, Resolver = dr });
 

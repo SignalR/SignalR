@@ -94,14 +94,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         private string GetUrl(IProtectedData protectedData, Client.Connection connection)
         {
             // Generate a valid token
-            string token = protectedData.Protect(Guid.NewGuid().ToString("d"), PersistentConnection.ConnectionIdPurpose);
+            string token = protectedData.Protect(Guid.NewGuid().ToString("d"), Purposes.ConnectionId);
+            string groupsToken = protectedData.Protect(JsonConvert.SerializeObject(new[] { connection.ConnectionToken }), Purposes.Groups);
 
             var sb = new StringBuilder("http://memoryhost/echo/");
             sb.Append("?connectionToken=")
               .Append(Uri.EscapeDataString(token))
               .Append("&transport=serverSentEvents")
-              .Append("&groups=")
-              .Append(Uri.EscapeDataString(JsonConvert.SerializeObject(new[] { connection.ConnectionToken })));
+              .Append("&groupsToken=")
+              .Append(Uri.EscapeDataString(groupsToken));
 
             return sb.ToString();
         }
@@ -116,11 +117,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Send(connectionId, data.Trim());
-            }
-
-            protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
-            {
-                return groups;
             }
         }
     }

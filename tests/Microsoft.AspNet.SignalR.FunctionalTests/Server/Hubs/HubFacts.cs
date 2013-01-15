@@ -670,64 +670,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void HubGroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
-        {
-            using (var host = CreateHost(hostType, transportType))
-            {
-                host.Initialize(keepAlive: null,
-                                disconnectTimeout: 6,
-                                connectionTimeout: 1);
-
-                int max = 10;
-
-                var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
-                var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
-                var connection = new Client.Hubs.HubConnection(host.Url);
-                var proxy = connection.CreateHubProxy("MultGroupHub");
-
-                proxy.On<User>("onRoomJoin", u =>
-                {
-                    if (u.Index < max)
-                    {
-                        Assert.True(countDown.Mark(u.Index));
-                    }
-                    else
-                    {
-                        Assert.True(countDownAfterReconnect.Mark(u.Index));
-                    }
-                });
-
-                connection.Start(host.Transport).Wait();
-
-                var user = new User { Name = "tester" };
-                proxy.InvokeWithTimeout("login", user);
-
-                for (int i = 0; i < max; i++)
-                {
-                    user.Index = i;
-                    proxy.InvokeWithTimeout("joinRoom", user);
-                }
-
-                // Force Reconnect
-                Thread.Sleep(TimeSpan.FromSeconds(3));
-
-                for (int i = max; i < 2 * max; i++)
-                {
-                    user.Index = i;
-                    proxy.InvokeWithTimeout("joinRoom", user);
-                }
-
-                Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-                Assert.True(!countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)) && countDownAfterReconnect.Count == max);
-
-                connection.Stop();
-            }
-        }
-
-        [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
@@ -907,7 +849,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     app.MapHubs("/signalr", config);
-                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
                     // The below effectively sets the heartbeat interval to one second.
@@ -943,7 +884,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     app.MapHubs("/signalr", config);
-                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
                     // The following sets the heartbeat to 1 s

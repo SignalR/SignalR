@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client
     public interface IConnection
     {
         string MessageId { get; set; }
-        ISet<string> Groups { get; }
+        string GroupsToken { get; set; }
         IDictionary<string, object> Items { get; }
         string ConnectionId { get; }
         string ConnectionToken { get; }

@@ -44,9 +44,6 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
-        // The groups the connection is currently subscribed to
-        private readonly HashSet<string> _groups;
-
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
         /// </summary>
@@ -121,7 +118,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
             Url = url;
             QueryString = queryString;
-            _groups = new HashSet<string>();
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
@@ -145,22 +141,6 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
 
         /// <summary>
-        /// Gets a mutable collection of groups for the connection.
-        /// </summary>
-        ISet<string> IConnection.Groups
-        {
-            get { return _groups; }
-        }
-
-        /// <summary>
-        /// Gets the groups for the connection.
-        /// </summary>
-        public IList<string> Groups
-        {
-            get { return new ReadOnlyCollection<string>(_groups.ToList()); }
-        }
-
-        /// <summary>
         /// Gets the url for the connection.
         /// </summary>
         public string Url { get; private set; }
@@ -179,6 +159,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Gets or sets the connection token for the connection.
         /// </summary>
         public string ConnectionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the groups token for the connection.
+        /// </summary>
+        public string GroupsToken { get; set; }
 
         /// <summary>
         /// Gets a dictionary for storing state for a the connection.

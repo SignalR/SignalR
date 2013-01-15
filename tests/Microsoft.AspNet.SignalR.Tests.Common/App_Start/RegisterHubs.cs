@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
-            string enableRejoiningGroupsRaw = ConfigurationManager.AppSettings["enableRejoiningGroups"];
 
             int connectionTimeout;
             if (Int32.TryParse(connectionTimeoutRaw, out connectionTimeout))
@@ -39,13 +38,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             else if (Int32.TryParse(keepAliveRaw, out keepAlive) && keepAlive != -1)
             {
                 GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
-            }
-
-            bool enableRejoiningGroups;
-            if (Boolean.TryParse(enableRejoiningGroupsRaw, out enableRejoiningGroups) &&
-                enableRejoiningGroups)
-            {
-                GlobalHost.HubPipeline.EnableAutoRejoiningGroups();
             }
 
             var config = new HubConfiguration

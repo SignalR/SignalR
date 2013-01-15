@@ -35,9 +35,6 @@ namespace Microsoft.AspNet.SignalR.Stress
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 // The below effectively sets the heartbeat interval to five seconds.
                 configuration.KeepAlive = TimeSpan.FromSeconds(10);
-
-                var pipeline = config.Resolver.Resolve<IHubPipeline>();
-                pipeline.EnableAutoRejoiningGroups();
             });
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
@@ -280,15 +277,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             connection.Reconnected += () =>
             {
-                var inGroup = connection.Groups.Contains(typeof(MyRejoinGroupConnection).FullName + ".test");
-
-                if (!inGroup)
-                {
-                    Debugger.Break();
-                }
-
-                inGroupOnReconnect.Add(inGroup);
-
                 connection.Send(new { type = 3, group = "test", message = "Reconnected" }).Wait();
             };
 
@@ -429,10 +417,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public class MyRejoinGroupConnection : MyGroupConnection
         {
-            protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
-            {
-                return groups;
-            }
         }
 
     }

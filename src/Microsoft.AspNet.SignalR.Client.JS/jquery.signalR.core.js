@@ -224,8 +224,6 @@
 
         state: signalR.connectionState.disconnected,
 
-        groups: {},
-
         keepAliveData: {},
 
         reconnectDelay: 2000,
@@ -609,7 +607,7 @@
                 $(connection).triggerHandler(events.onDisconnect);
 
                 delete connection.messageId;
-                delete connection.groups;
+                delete connection.groupsToken;
 
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;

@@ -77,6 +77,7 @@
     <Compile Include="Infrastructure\IProtectedData.cs" />
     <Compile Include="Infrastructure\ListHelper.cs" />
     <Compile Include="Infrastructure\PrefixHelper.cs" />
+    <Compile Include="Infrastructure\Purposes.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
@@ -88,7 +89,6 @@
     <Compile Include="Hubs\NullClientProxy.cs" />
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeModule.cs" />
     <Compile Include="AuthorizeAttribute.cs" />
-    <Compile Include="Hubs\Pipeline\AutoRejoiningGroupsModule.cs" />
     <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />
     <Compile Include="Hubs\ClientHubInvocation.cs" />
     <Compile Include="Hubs\HubContext.cs" />

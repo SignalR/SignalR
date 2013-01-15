@@ -9,10 +9,5 @@ namespace Microsoft.AspNet.SignalR.Samples
         {
             return Connection.Send(connectionId, data);
         }
-
-        protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
-        {
-            return groups;
-        }
     }
 }

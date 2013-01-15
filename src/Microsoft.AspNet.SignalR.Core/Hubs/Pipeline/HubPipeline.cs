@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Reconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildReconnect(f))(HubDispatcher.Reconnect);
                 Disconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
                 AuthorizeConnect = Compose<Func<HubDescriptor, IRequest, bool>>(modules, (m, f) => m.BuildAuthorizeConnect(f))((h, r) => true);
-                RejoiningGroups = Compose<Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))((h, r, g) => Enumerable.Empty<string>());
+                RejoiningGroups = Compose<Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))((h, r, g) => g);
                 Send = Compose<Func<IHubOutgoingInvokerContext, Task>>(modules, (m, f) => m.BuildOutgoing(f))(HubDispatcher.Outgoing);
             }
 

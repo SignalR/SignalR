@@ -43,11 +43,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         string ConnectionId { get; set; }
 
         /// <summary>
-        /// Gets the groups the connection is a member of.
-        /// </summary>
-        IList<string> Groups { get; }
-
-        /// <summary>
         /// Processes the specified <see cref="ITransportConnection"/> for this transport.
         /// </summary>
         /// <param name="connection">The <see cref="ITransportConnection"/> to process.</param>

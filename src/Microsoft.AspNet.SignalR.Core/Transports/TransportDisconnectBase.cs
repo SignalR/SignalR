@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly HostContext _context;
         private readonly ITransportHeartbeat _heartbeat;
-        private readonly IJsonSerializer _jsonSerializer;
         private TextWriter _outputWriter;
 
         private TraceSource _trace;
@@ -68,7 +67,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             _context = context;
-            _jsonSerializer = jsonSerializer;
             _heartbeat = heartbeat;
             _counters = performanceCounterManager;
 
@@ -118,26 +116,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             set;
         }
 
-        public IList<string> Groups
-        {
-            get
-            {
-                if (IsConnectRequest)
-                {
-                    return ListHelper<string>.Empty;
-                }
-
-                string groupValue = Context.Request.QueryString["groups"];
-
-                if (String.IsNullOrEmpty(groupValue))
-                {
-                    return ListHelper<string>.Empty;
-                }
-
-                return _jsonSerializer.Parse<string[]>(groupValue);
-            }
-        }
-
         public Func<Task> Disconnected { get; set; }
 
         public virtual bool IsAlive
@@ -174,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return TimeSpan.FromSeconds(5); }
         }
 
-        protected virtual bool IsConnectRequest
+        public virtual bool IsConnectRequest
         {
             get
             {

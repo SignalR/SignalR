@@ -106,7 +106,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                   ListHelper<string>.Empty,
                                   _resolver.Resolve<ITraceManager>(),
                                   _resolver.Resolve<IAckHandler>(),
-                                  _resolver.Resolve<IPerformanceCounterManager>());
+                                  _resolver.Resolve<IPerformanceCounterManager>(),
+                                  _resolver.Resolve<IProtectedData>());
         }
     }
 }

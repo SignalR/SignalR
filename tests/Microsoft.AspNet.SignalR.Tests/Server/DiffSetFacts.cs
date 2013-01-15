@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(5, diffSet.GetSnapshot().Count);
             Assert.Equal(5, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.True(diffPair.Reset);
+
             for (int i = 0; i < 5; i++)
             {
                 Assert.True(diffSet.Contains(i));
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var diffPair = diffSet.GetDiff();
             Assert.Equal(100, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.True(diffPair.Reset);
+
             for (int i = 1; i <= 100; i++)
             {
                 Assert.True(diffPair.Added.Contains(i));
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var diffPair = diffSet.GetDiff();
             Assert.Equal(99, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.True(diffPair.Reset);
+
             for (int i = 0; i < 99; i++)
             {
                 Assert.True(diffPair.Added.Contains(i));
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             diffPair = diffSet.GetDiff();
             Assert.Equal(1, diffPair.Added.Count);
             Assert.Equal(1, diffPair.Removed.Count);
-            Assert.False(diffPair.Reset);
+
             Assert.True(diffPair.Added.Contains(99));
             Assert.True(diffPair.Removed.Contains(0));
             for (int i = 1; i < 100; i++)
@@ -116,7 +116,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var diffPair = diffSet.GetDiff();
             Assert.Equal(100, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.True(diffPair.Reset);
             for (int i = 0; i < 100; i++)
             {
                 Assert.True(diffPair.Added.Contains(i));
@@ -135,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             diffPair = diffSet.GetDiff();
             Assert.Equal(0, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.False(diffPair.Reset);
+
             for (int i = 0; i < 100; i++)
             {
                 Assert.True(diffSet.Contains(i));
@@ -151,7 +150,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Assert.Equal(100, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.True(diffPair.Reset);
 
             var tasks = new[] {
                 Task.Factory.StartNew(() =>
@@ -182,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Assert.Equal(50, diffPair.Added.Count);
             Assert.Equal(50, diffPair.Removed.Count);
-            Assert.False(diffPair.Reset);
+
             for (int i = 0; i < 50; i++)
             {
                 Assert.False(diffSet.Contains(i));
@@ -228,14 +226,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var diffPair = diffSet.GetDiff();
             Assert.Equal(5, diffPair.Added.Count);
             Assert.Equal(0, diffPair.Removed.Count);
-            Assert.True(diffPair.Reset);
 
             for (int i = 0; i < 10; i++)
             {
                 Task.WaitAll(Enumerable.Repeat(updateSet, 10).Select(Task.Factory.StartNew).ToArray());
                 var snapShot = diffSet.GetSnapshot();
                 diffPair = diffSet.GetDiff();
-                Assert.False(diffPair.Reset);
+
                 Assert.Equal(0, diffPair.Added.Intersect(diffPair.Removed).Count());
                 foreach (var addedItem in diffPair.Added)
                 {

@@ -114,11 +114,6 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
             return base.OnReceived(request, connectionId, data);
         }
 
-        protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
-        {
-            return groups;
-        }
-
         private string GetUser(string connectionId)
         {
             string user;

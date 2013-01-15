@@ -152,32 +152,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void GroupsAreNotReadOnConnectedAsync(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize();
-
-                    var connection = new Client.Connection(host.Url + "/group-echo");
-                    ((Client.IConnection)connection).Groups.Add(typeof(MyGroupEchoConnection).FullName + ".test");
-                    connection.Received += data =>
-                    {
-                        Assert.False(true, "Unexpectedly received data");
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    connection.Stop();
-                }
-            }
-
-            [Theory]
             [InlineData(HostType.Memory, TransportType.Auto)]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             // [InlineData(HostType.Memory, TransportType.LongPolling)]
@@ -389,48 +363,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            public void GroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize(keepAlive: null,
-                                    disconnectTimeout: 6,
-                                    connectionTimeout: 2);
-
-                    var connection = new Client.Connection(host.Url + "/groups");
-                    var list = new List<string>();
-                    connection.Received += data =>
-                    {
-                        list.Add(data);
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Join the group
-                    connection.SendWithTimeout(new { type = 1, group = "test" });
-
-                    // Sent a message
-                    connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
-
-                    // Force Reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    // Send a message
-                    connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
-
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    connection.Stop();
-
-                    Assert.Equal(1, list.Count);
-                    Assert.Equal("hello to group test", list[0]);
-                }
-            }
-
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
@@ -472,98 +404,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.Equal(2, list.Count);
                     Assert.Equal("hello to group test", list[0]);
                     Assert.Equal("goodbye to group test", list[1]);
-                }
-            }
-
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ClientGroupsSyncWithServerGroupsOnReconnect(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize(keepAlive: null,
-                                    disconnectTimeout: 6,
-                                    connectionTimeout: 4);
-
-                    var connection = new Client.Connection(host.Url + "/rejoin-groups");
-                    var inGroupOnReconnect = new List<bool>();
-                    var wh = new ManualResetEventSlim();
-
-                    connection.Received += message =>
-                    {
-                        Assert.Equal("Reconnected", message);
-                        wh.Set();
-                    };
-
-                    connection.Reconnected += () =>
-                    {
-                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyRejoinGroupsConnection).FullName + ".test"));
-                        connection.SendWithTimeout(new { type = 3, group = "test", message = "Reconnected" });
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Join the group
-                    connection.SendWithTimeout(new { type = 1, group = "test" });
-
-                    // Force reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
-                    Assert.True(inGroupOnReconnect.Count > 0);
-                    Assert.True(inGroupOnReconnect.All(b => b));
-
-                    connection.Stop();
-                }
-            }
-
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            public void ClientGroupsSyncWithServerGroupsOnReconnectWhenNotRejoiningGroups(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize(keepAlive: null,
-                                    disconnectTimeout: 6,
-                                    connectionTimeout: 4);
-
-                    var connection = new Client.Connection(host.Url + "/groups");
-                    var inGroupOnReconnect = new List<bool>();
-                    var wh = new ManualResetEventSlim();
-
-                    connection.Received += message =>
-                    {
-                        Assert.Equal("Reconnected", message);
-                        inGroupOnReconnect.Add(!connection.Groups.Contains(typeof(MyGroupConnection).FullName + ".test"));
-                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyGroupConnection).FullName + ".test2"));
-                        wh.Set();
-                    };
-
-                    connection.Reconnected += () =>
-                    {
-                        connection.SendWithTimeout(new { type = 1, group = "test2" });
-                        connection.SendWithTimeout(new { type = 3, group = "test2", message = "Reconnected" });
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Join the group
-                    connection.SendWithTimeout(new { type = 1, group = "test" });
-
-                    // Force reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
-                    Assert.True(inGroupOnReconnect.Count > 0);
-                    Assert.True(inGroupOnReconnect.All(b => b));
-
-                    connection.Stop();
                 }
             }
         }

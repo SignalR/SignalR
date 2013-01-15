@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.SignalR
     public abstract class PersistentConnection
     {
         private const string WebSocketsTransportName = "webSockets";
-        internal const string ConnectionIdPurpose = "SignalR.ConnectionId";
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
@@ -182,7 +181,7 @@ namespace Microsoft.AspNet.SignalR
 
             try
             {
-                connectionId = ProtectedData.Unprotect(connectionToken, ConnectionIdPurpose);
+                connectionId = ProtectedData.Unprotect(connectionToken, Purposes.ConnectionId);
             }
             catch (Exception ex)
             {
@@ -242,9 +241,40 @@ namespace Microsoft.AspNet.SignalR
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
+        private IList<string> VerifyGroups(HostContext context)
+        {
+            string groupsToken = context.Request.QueryString["groupsToken"];
+
+            if (String.IsNullOrEmpty(groupsToken))
+            {
+                Trace.TraceInformation("The groups token is missing");
+
+                return ListHelper<string>.Empty;
+            }
+
+            string groupsValue = null;
+
+            try
+            {
+                groupsValue = ProtectedData.Unprotect(groupsToken, Purposes.Groups);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("Failed to process groupsToken {0}: {1}", groupsToken, ex);
+            }
+
+            if (String.IsNullOrEmpty(groupsValue))
+            {
+                return ListHelper<string>.Empty;
+            }
+
+            return JsonSerializer.Parse<string[]>(groupsValue);
+        }
+
         private IList<string> AppendGroupPrefixes(HostContext context, string connectionId)
         {
-            return (from g in OnRejoiningGroups(context.Request, Transport.Groups, connectionId)
+            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context), connectionId)
                     select GroupPrefix + g).ToList();
         }
 
@@ -258,7 +288,8 @@ namespace Microsoft.AspNet.SignalR
                                   groups,
                                   TraceManager,
                                   AckHandler,
-                                  Counters);
+                                  Counters,
+                                  ProtectedData);
         }
 
         /// <summary>
@@ -309,7 +340,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A collection of group names that should be joined on reconnect</returns>
         protected virtual IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
         {
-            return ListHelper<string>.Empty;
+            return groups;
         }
 
         /// <summary>
@@ -382,7 +413,7 @@ namespace Microsoft.AspNet.SignalR
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionToken = ProtectedData.Protect(connectionId, ConnectionIdPurpose),
+                ConnectionToken = ProtectedData.Protect(connectionId, Purposes.ConnectionId),
                 ConnectionId = connectionId,
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
