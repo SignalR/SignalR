@@ -167,7 +167,7 @@
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <!-- Debugging is required in order to pump data from phantomjs to TeamCity -->
-    <Exec Command="$(ChutzpahExePath) $(JSTester) /silent /debug /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /silent /debug /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
