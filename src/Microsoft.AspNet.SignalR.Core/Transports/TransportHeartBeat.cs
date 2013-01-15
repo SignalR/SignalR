@@ -194,6 +194,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return;
             }
 
+            lock (_counterLock)
+            {
+                _counters.ConnectionsCurrent.RawValue = _connections.Count;
+            }
+
             try
             {
                 _heartbeatCount++;
