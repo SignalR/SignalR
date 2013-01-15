@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client
     /// <summary>
     /// Provides client connections for SignalR services.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification="_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
         private static Version _assemblyVersion;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private IDisposable _disconnectTimeoutOperation;
 
         // The default connection state is disconnected
-        private ConnectionState _state = ConnectionState.Disconnected;
+        private ConnectionState _state;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -120,10 +121,9 @@ namespace Microsoft.AspNet.SignalR.Client
             Url = url;
             QueryString = queryString;
             _groups = new HashSet<string>();
+            _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
-            _disconnectCts = new SafeCancellationTokenSource();
-            _disconnectTimeoutOperation = DisposableAction.Empty;
         }
 
         /// <summary>
@@ -184,6 +184,14 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public string QueryString { get; private set; }
 
+        public IClientTransport Transport
+        {
+            get
+            {
+                return _transport;
+            }
+        }
+
         /// <summary>
         /// Gets the current <see cref="ConnectionState"/> of the connection.
         /// </summary>
@@ -235,8 +243,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="transport">The transport to use.</param>
         /// <returns>A task that represents when the connection has started.</returns>
-        public virtual Task Start(IClientTransport transport)
+        public Task Start(IClientTransport transport)
         {
+            _disconnectCts = new SafeCancellationTokenSource();
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
                 return TaskAsyncHelper.Empty;
@@ -370,7 +379,6 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
-                    _disconnectCts = new SafeCancellationTokenSource();
 
                     State = ConnectionState.Disconnected;
 
@@ -390,7 +398,17 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(string data)
         {
-            return ((IConnection)this).Send<object>(data);
+            if (State == ConnectionState.Disconnected)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
+            }
+
+            if (State == ConnectionState.Connecting)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
+            }
+
+            return _transport.Send(this, data);
         }
 
         /// <summary>
@@ -404,30 +422,15 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
 
-        Task<T> IConnection.Send<T>(string data)
-        {
-            if (State == ConnectionState.Disconnected)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
-            }
-
-            if (State == ConnectionState.Connecting)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
-            }
-
-            return _transport.Send<T>(this, data);
-        }
-
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
         {
-            OnReceived(message);
+            OnMessageReceived(message);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
-        protected virtual void OnReceived(JToken message)
+        protected virtual void OnMessageReceived(JToken message)
         {
             if (Received != null)
             {
@@ -462,6 +465,7 @@ namespace Microsoft.AspNet.SignalR.Client
             // Prevent the timeout set OnReconnecting from firing and stopping the connection if we have successfully
             // reconnected before the _disconnectTimeout delay.
             _disconnectTimeoutOperation.Dispose();
+
             if (Reconnected != null)
             {
                 Reconnected();
@@ -498,6 +502,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Can be called via other clients.")]
         private static string CreateUserAgentString(string client)
         {
             if (_assemblyVersion == null)

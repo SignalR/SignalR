@@ -1,9 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using System.Collections.Generic;
-#if !NET35
-using Microsoft.AspNet.SignalR.Hosting.Memory;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,45 +22,6 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             Console.ReadKey();
         }
-
-#if !NET35
-        private static void RunInMemoryHost()
-        {
-            var host = new MemoryHost();
-            host.MapConnection<MyConnection>("/echo");
-
-            var connection = new Connection("http://foo/echo");
-
-            connection.Received += data =>
-            {
-                Console.WriteLine(data);
-            };
-
-            connection.StateChanged += change =>
-            {
-                Console.WriteLine(change.OldState + " => " + change.NewState);
-            };
-
-            connection.Start(host).Wait();
-
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                try
-                {
-                    while (true)
-                    {
-                        connection.Send(DateTime.Now.ToString());
-
-                        Thread.Sleep(2000);
-                    }
-                }
-                catch
-                {
-
-                }
-            });
-        }
-#endif
 
         private static void RunDemoHub(HubConnection hubConnection)
         {
@@ -101,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private static void RunStreamingSample()
         {
-            var connection = new Connection("http://localhost:8081/Raw/raw");
+            var connection = new Connection("http://localhost:40476/raw-connection");
 
             connection.Received += data =>
             {
@@ -131,8 +89,9 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             Console.WriteLine("Choose transport:");
             Console.WriteLine("1. AutoTransport");
-            Console.WriteLine("2. ServerSentEventsTransport");
-            Console.WriteLine("3. LongPollingTransport");
+            Console.WriteLine("2. WebSocketsTransort");
+            Console.WriteLine("3. ServerSentEventsTransport");
+            Console.WriteLine("4. LongPollingTransport");
             Console.Write("Option: ");
 
             Task startTask = null;
@@ -146,9 +105,13 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             }
             else if (key.Key == ConsoleKey.D2)
             {
-                startTask = connection.Start(new Client.Transports.ServerSentEventsTransport());
+                startTask = connection.Start(new Client.Transports.WebSocketTransport());
             }
             else if (key.Key == ConsoleKey.D3)
+            {
+                startTask = connection.Start(new Client.Transports.ServerSentEventsTransport());
+            }
+            else if (key.Key == ConsoleKey.D4)
             {
                 startTask = connection.Start(new Client.Transports.LongPollingTransport());
             }
@@ -159,6 +122,8 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
                 try
                 {
                     task.Wait();
+
+                    Console.WriteLine("Using {0}", connection.Transport.Name);
                 }
                 catch (Exception ex)
                 {
@@ -174,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
                 string line = null;
                 while ((line = Console.ReadLine()) != null)
                 {
-                    connection.Send(new { type = 1, value = line });
+                    connection.Send(new { type = 1, value = line }).Wait();
                 }
 
                 wh.Set();
@@ -186,19 +151,19 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 #if !NET35
         public class MyConnection : PersistentConnection
         {
-            protected override Task OnConnectedAsync(IRequest request, string connectionId)
+            protected override Task OnConnected(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} Connected", connectionId);
-                return base.OnConnectedAsync(request, connectionId);
+                return base.OnConnected(request, connectionId);
             }
 
-            protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+            protected override Task OnReconnected(IRequest request, string connectionId)
             {
                 Console.WriteLine("{0} Reconnected", connectionId);
-                return base.OnReconnectedAsync(request, connectionId);
+                return base.OnReconnected(request, connectionId);
             }
 
-            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }

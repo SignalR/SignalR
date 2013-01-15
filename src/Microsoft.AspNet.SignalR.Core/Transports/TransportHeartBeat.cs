@@ -7,7 +7,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -26,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly object _counterLock = new object();
 
         private int _running;
+        private ulong _heartbeatCount;
 
         /// <summary>
         /// Initializes and instance of the <see cref="TransportHeartbeat"/> class.
@@ -119,9 +122,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
 
-            // Set the keep alive time
-            newMetadata.UpdateKeepAlive(_configurationManager.KeepAlive);
-
             return isNewConnection;
         }
 
@@ -194,6 +194,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             try
             {
+                _heartbeatCount++;
+
                 foreach (var metadata in _connections.Values)
                 {
                     if (metadata.Connection.IsAlive)
@@ -240,18 +242,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
-                    // If the keep alive send fails then kill the connection
                     metadata.Connection.KeepAlive()
                                        .Catch(ex =>
                                        {
                                            Trace.TraceInformation("Failed to send keep alive: " + ex.GetBaseException());
-
-                                           RemoveConnection(metadata.Connection);
-
-                                           metadata.Connection.End();
                                        });
-
-                    metadata.UpdateKeepAlive(_configurationManager.KeepAlive);
                 }
 
                 MarkConnection(metadata.Connection);
@@ -294,15 +289,17 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private bool RaiseKeepAlive(ConnectionMetadata metadata)
         {
-            TimeSpan? keepAlive = _configurationManager.KeepAlive;
+            int keepAlive = _configurationManager.KeepAlive;
 
-            if (keepAlive == null)
+            // Don't raise keep alive if it's set to 0 or the transport doesn't support
+            // keep alive
+            if (keepAlive == 0 || !metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
 
             // Raise keep alive if the keep alive value has passed
-            return DateTime.UtcNow >= metadata.KeepAliveTime;
+            return _heartbeatCount % (ulong)keepAlive == 0;
         }
 
         private bool RaiseTimeout(ConnectionMetadata metadata)
@@ -313,10 +310,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return false;
             }
 
-            TimeSpan? keepAlive = _configurationManager.KeepAlive;
+            int keepAlive = _configurationManager.KeepAlive;
             // If keep alive is configured and the connection supports keep alive
             // don't ever time out
-            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
+            if (keepAlive != 0 && metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
@@ -370,19 +367,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // The initial connection time of the connection
             public DateTime Initial { get; set; }
-
-            // The time to send the keep alive ping
-            public DateTime KeepAliveTime { get; set; }
-
-            public void UpdateKeepAlive(TimeSpan? keepAliveInterval)
-            {
-                if (keepAliveInterval == null)
-                {
-                    return;
-                }
-
-                KeepAliveTime = DateTime.UtcNow + keepAliveInterval.Value;
-            }
         }
     }
 }

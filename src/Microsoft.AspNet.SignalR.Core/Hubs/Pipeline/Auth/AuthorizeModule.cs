@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return base.BuildIncoming(context =>
             {
                 // Execute the global method invocation authorizer if there is one and short circuit if it denies authorization.
-                if (_globalInvocationAuthorizer == null || _globalInvocationAuthorizer.AuthorizeHubMethodInvocation(context))
+                if (_globalInvocationAuthorizer == null || _globalInvocationAuthorizer.AuthorizeHubMethodInvocation(context, appliesToMethod: false))
                 {
                     // Get hub attributes implementing IAuthorizeHubMethodInvocation from the cache
                     // If the attributes do not exist in the cache, retrieve them using reflection and add them to the cache
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                         hubType => hubType.GetCustomAttributes(typeof(IAuthorizeHubMethodInvocation), inherit: true).Cast<IAuthorizeHubMethodInvocation>());
 
                     // Execute all hub level authorizers and short circuit if ANY deny authorization.
-                    if (classLevelAuthorizers.All(a => a.AuthorizeHubMethodInvocation(context)))
+                    if (classLevelAuthorizers.All(a => a.AuthorizeHubMethodInvocation(context, appliesToMethod: false)))
                     {
                         // Get method attributes implementing IAuthorizeHubMethodInvocation from the cache
                         // If the attributes do not exist in the cache, retrieve them from the MethodDescriptor and add them to the cache
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                             methodDescriptor => methodDescriptor.Attributes.OfType<IAuthorizeHubMethodInvocation>());
                         
                         // Execute all method level authorizers. If ALL provide authorization, continue executing the invocation pipeline.
-                        if (methodLevelAuthorizers.All(a => a.AuthorizeHubMethodInvocation(context)))
+                        if (methodLevelAuthorizers.All(a => a.AuthorizeHubMethodInvocation(context, appliesToMethod: true)))
                         {
                             return invoke(context);
                         }

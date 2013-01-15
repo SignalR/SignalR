@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Microsoft.AspNet.SignalR.Hosting;
 using Moq;
 using Xunit;
 

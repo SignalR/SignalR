@@ -7,21 +7,26 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Owin
 {
     using WebSocketFunc = Func<IDictionary<string, object>, Task>;
-    public partial class ServerRequest : IRequest
+    public partial class ServerRequest : 
+#if NET45
+        IWebSocketRequest
+#else
+        IRequest
+#endif
     {
         private static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
         private Uri _url;
         private NameValueCollection _queryString;
         private NameValueCollection _headers;
-        private NameValueCollection _serverVariables;
         private NameValueCollection _form;
         private bool _formInitialized;
-        private object _formLock;
+        private object _formLock = new object();
         private IDictionary<string, Cookie> _cookies;
 
         public Uri Url
@@ -82,24 +87,6 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
         }
 
-        public NameValueCollection ServerVariables
-        {
-            get
-            {
-                return LazyInitializer.EnsureInitialized(
-                    ref _serverVariables, () =>
-                    {
-                        var collection = new NameValueCollection();
-                        var remoteIpAddress = _environment.Get<string>(OwinConstants.RemoteIpAddress);
-                        if (!String.IsNullOrEmpty(remoteIpAddress))
-                        {
-                            collection["REMOTE_ADDR"] = remoteIpAddress;
-                        }
-                        return collection;
-                    });
-            }
-        }
-
         public NameValueCollection Form
         {
             get
@@ -151,22 +138,20 @@ namespace Microsoft.AspNet.SignalR.Owin
             private set;
         }
 
+#if NET45
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
-#if NET45
             var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
             {
-                return TaskAsyncHelper.FromError(new InvalidOperationException("Not a web socket request"));
+                return TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_NotWebSocketRequest));
             }
 
             var options = new Dictionary<string, object>();
             var handler = new OwinWebSocketHandler(callback);
             accept(options, handler.ProcessRequestAsync);
             return TaskAsyncHelper.Empty;
-#else
-            throw new NotImplementedException();
-#endif
         }
+#endif
     }
 }

@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("LP: {0}", (object)url);
 #endif
 
-            HttpClient.PostAsync(url, req => 
+            HttpClient.Post(url, req => 
             {
                 request = req;
                 connection.PrepareRequest(request);
@@ -126,8 +126,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #else
                         Debug.WriteLine("LP Receive: {0}", (object)raw);
 #endif
-
-                        ProcessResponse(connection, raw, out shouldRaiseReconnect, out disconnectedReceived);
+                        TransportHelper.ProcessResponse(connection, 
+                                                        raw, 
+                                                        out shouldRaiseReconnect, 
+                                                        out disconnectedReceived);
                     }
                 }
                 finally

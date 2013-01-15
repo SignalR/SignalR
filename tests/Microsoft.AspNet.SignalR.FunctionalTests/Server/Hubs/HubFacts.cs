@@ -5,14 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+using Microsoft.AspNet.SignalR.FunctionalTests.Owin;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
-using Newtonsoft.Json.Linq;
+using Owin;
 using Xunit;
 using Xunit.Extensions;
 
@@ -23,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void ReadingState(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -46,8 +50,39 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
+        [InlineData(TransportType.ServerSentEvents)]
+        [InlineData(TransportType.LongPolling)]
+        // [InlineData(TransportType.Websockets)]
+        public void BasicAuthCredentialsFlow(TransportType transportType)
+        {
+            using (var host = new OwinTestHost())
+            {
+                Debug.Listeners.Clear();
+
+                host.Start<BasicAuthApplication>();
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                hub["name"] = "test";
+
+                connection.Credentials = new System.Net.NetworkCredential("user", "password");
+
+                connection.Start(CreateTransport(transportType)).Wait();
+
+                var result = hub.InvokeWithTimeout<string>("ReadStateValue");
+
+                Assert.Equal("test", result);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void VerifyOwinContext(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -102,6 +137,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void SettingState(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -142,9 +178,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                     tcs.Task.Wait(TimeSpan.FromSeconds(10));
                     Assert.True(false, "Didn't fault");
                 }
-                catch(Exception)
+                catch (Exception)
                 {
-                    
+
                 }
 
                 connection.Stop();
@@ -184,6 +220,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void GetValueFromServer(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -205,6 +242,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void TaskWithException(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -227,6 +265,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void GenericTaskWithException(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -249,6 +288,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -270,6 +310,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void Overloads(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -292,6 +333,57 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void ReturnDataWithPlus(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("echoHub");
+
+                connection.Start(host.Transport).Wait();
+
+                string result = hub.InvokeWithTimeout<string>("EchoReturn", "+");
+
+                Assert.Equal("+", result);
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void CallbackDataWithPlus(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("echoHub");
+                var tcs = new TaskCompletionSource<string>();
+                hub.On<string>("echo", tcs.SetResult);
+
+                connection.Start(host.Transport).Wait();
+
+                hub.InvokeWithTimeout("EchoCallback", "+");
+
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)), "Timeout waiting for callback");
+                Assert.Equal("+", tcs.Task.Result);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void UnsupportedOverloads(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -314,8 +406,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs("/foo");
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration()
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/foo", config);
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
+
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -328,6 +430,36 @@ namespace Microsoft.AspNet.SignalR.Tests
                 });
 
                 connection.Start(host).Wait();
+
+                hub.InvokeWithTimeout("DynamicTask");
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ChangeHubUrlAspNet(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                var wh = new ManualResetEventSlim(false);
+
+                hub.On("signal", id =>
+                {
+                    Assert.NotNull(id);
+                    wh.Set();
+                });
+
+                connection.Start(host.Transport).Wait();
 
                 hub.InvokeWithTimeout("DynamicTask");
 
@@ -382,6 +514,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void ComplexPersonState(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -390,8 +523,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Client.Hubs.HubConnection(host.Url);
 
                 var hub = connection.CreateHubProxy("demo");
-
-                var wh = new ManualResetEvent(false);
 
                 connection.Start(host.Transport).Wait();
 
@@ -408,24 +539,17 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var person1 = hub.InvokeWithTimeout<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("ComplexType", person);
                 var person2 = hub.GetValue<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>("person");
-                JObject obj = ((dynamic)hub).person;
-                var person3 = obj.ToObject<SignalR.Samples.Hubs.DemoHub.DemoHub.Person>();
 
                 Assert.NotNull(person1);
                 Assert.NotNull(person2);
-                Assert.NotNull(person3);
                 Assert.Equal("David", person1.Name);
                 Assert.Equal("David", person2.Name);
-                Assert.Equal("David", person3.Name);
                 Assert.Equal(25, person1.Age);
                 Assert.Equal(25, person2.Age);
-                Assert.Equal(25, person3.Age);
                 Assert.Equal("Redmond", person1.Address.Street);
                 Assert.Equal("Redmond", person2.Address.Street);
-                Assert.Equal("Redmond", person3.Address.Street);
                 Assert.Equal("98052", person1.Address.Zip);
                 Assert.Equal("98052", person2.Address.Zip);
-                Assert.Equal("98052", person3.Address.Zip);
 
                 connection.Stop();
             }
@@ -434,6 +558,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void DynamicInvokeTest(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -461,6 +586,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void CreateProxyAfterConnectionStartsThrows(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -483,6 +609,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void AddingToMultipleGroups(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -517,11 +644,12 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void HubGroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(keepAlive: null,
+                host.Initialize(keepAlive: 0,
                                 connectionTimeout: 1,
                                 hearbeatInterval: 1);
 
@@ -576,11 +704,12 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void HubGroupsRejoinWhenAutoRejoiningGroupsEnabled(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(keepAlive: null,
+                host.Initialize(keepAlive: 0,
                                 connectionTimeout: 5,
                                 hearbeatInterval: 2,
                                 enableAutoRejoiningGroups: true);
@@ -637,12 +766,21 @@ namespace Microsoft.AspNet.SignalR.Tests
             var logRejoiningGroups = new LogRejoiningGroupsModule();
             using (var host = new MemoryHost())
             {
-                host.HubPipeline.AddModule(logRejoiningGroups);
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                host.Configuration.KeepAlive = null;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
-                host.MapHubs();
+                    app.MapHubs("/signalr", config);
+
+                    config.Resolver.Resolve<IHubPipeline>().AddModule(logRejoiningGroups);
+                    var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                    configuration.KeepAlive = 0;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                });
 
                 var connection = new Client.Hubs.HubConnection("http://foo");
                 var proxy = connection.CreateHubProxy("MultGroupHub");
@@ -678,6 +816,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void CustomQueryStringRaw(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -701,6 +840,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void CustomQueryString(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -731,11 +871,22 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = new MemoryHost())
             {
-                host.HubPipeline.EnableAutoRejoiningGroups();
-                host.Configuration.KeepAlive = null;
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
-                host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
-                host.MapHubs();
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", config);
+                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
+
+                    var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                    configuration.KeepAlive = 0;
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
@@ -756,12 +907,23 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = new MemoryHost())
             {
-                host.HubPipeline.EnableAutoRejoiningGroups();
-                host.Configuration.KeepAlive = null;
-                host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
-                host.DependencyResolver.Register(typeof(SomeHub), () => mockHub.Object);
-                host.MapHubs();
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs("/signalr", config);
+                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
+
+                    var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                    configuration.KeepAlive = 0;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
@@ -795,14 +957,24 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = new MemoryHost())
             {
-                host.DependencyResolver.Register(typeof(IHub), () =>
+                host.Configure(app =>
                 {
-                    var mockHub = new Mock<IHub>() { CallBase = true };
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
 
-                    mockHubs.Add(mockHub);
-                    return mockHub.Object;
+                    app.MapHubs("/signalr", config);
+
+                    config.Resolver.Register(typeof(IHub), () =>
+                    {
+                        var mockHub = new Mock<IHub>() { CallBase = true };
+
+                        mockHubs.Add(mockHub);
+                        return mockHub.Object;
+                    });
                 });
-                host.MapHubs();
+
                 var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("demo");
@@ -824,6 +996,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void SendToAllButCaller(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -839,8 +1012,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -858,6 +1031,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void SendToAllButCallerInGroup(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -873,8 +1047,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -895,6 +1069,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void SendToAll(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -910,8 +1085,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -929,6 +1104,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void SendToSelf(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -944,8 +1120,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var hub1 = connection1.CreateHubProxy("SendToSome");
                 var hub2 = connection2.CreateHubProxy("SendToSome");
 
-                connection1.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection1.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 hub1.On("send", wh1.Set);
                 hub2.On("send", wh2.Set);
@@ -965,9 +1141,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs(configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
                 var connection1 = new Client.Hubs.HubConnection("http://foo/");
-                var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
 
@@ -991,9 +1177,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs(configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
                 var connection1 = new Client.Hubs.HubConnection("http://foo/");
-                var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
 
@@ -1016,10 +1212,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs(configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
                 var connection1 = new Client.Hubs.HubConnection("http://foo/");
                 var connection2 = new Client.Hubs.HubConnection("http://foo/");
-                var hubContext = host.ConnectionManager.GetHubContext("SendToSome");
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);

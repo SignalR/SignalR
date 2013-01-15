@@ -62,6 +62,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "We will refactor later.")]
         private void OpenConnection(IConnection connection,
                                     string data,
                                     CancellationToken disconnectToken,
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif
 
-            HttpClient.GetAsync(url, req =>
+            HttpClient.Get(url, req =>
             {
                 request = req;
                 connection.PrepareRequest(request);
@@ -147,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                             bool timedOut;
                             bool disconnected;
-                            ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
+                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
 
                             if (disconnected)
                             {
@@ -221,8 +222,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     callbackInvoker.Invoke((conn, cb) =>
                     {
-                        connection.Disconnect();
-
                         // Connection timeout occurred
                         cb(new TimeoutException());
                     },

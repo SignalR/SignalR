@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Configuration
 {
     /// <summary>
     /// Provides access to server configuration.
@@ -25,8 +25,14 @@ namespace Microsoft.AspNet.SignalR
         TimeSpan HeartbeatInterval { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time to wait before sending a keep alive packet over an idle connection. Set to null to disable keep alive.
+        /// Indicates how many Heartbeats to wait before triggering keep alive.  To convert this
+        /// value to a time span simply multiply it by the HeartbeatInterval.
         /// </summary>
-        TimeSpan? KeepAlive { get; set; }
+        int KeepAlive { get; set; }
+
+        /// <summary>
+        /// Gets of sets the number of messages to buffer for a specific signal.
+        /// </summary>
+        int DefaultMessageBufferSize { get; set; }
     }
 }

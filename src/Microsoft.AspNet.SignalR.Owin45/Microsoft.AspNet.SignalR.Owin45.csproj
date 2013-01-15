@@ -79,8 +79,17 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\ParamDictionary.cs">
       <Link>Infrastructure\ParamDictionary.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\UrlDecoder.cs">
+      <Link>Infrastructure\UrlDecoder.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinExtensions.cs">
       <Link>OwinExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\RequestExtensions.cs">
+      <Link>RequestExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Resources.Designer.cs">
+      <Link>Resource.Designer.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.cs">
       <Link>ServerRequest.cs</Link>
@@ -109,9 +118,15 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Owin\Resources.resx">
+      <Link>Resources.resx</Link>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Import Project="$(SolutionDir).nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

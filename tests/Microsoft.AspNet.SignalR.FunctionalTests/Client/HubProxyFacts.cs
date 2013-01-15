@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         public void EndToEndTest(HostType hostType, TransportType transportType)
@@ -38,7 +39,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 proxy.InvokeWithTimeout("Send", "hello");
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+
+                hubConnection.Stop();
             }
         }
 
@@ -65,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 proxy.InvokeWithTimeout("Send", "hello");
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
             }
         }
 

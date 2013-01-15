@@ -8,12 +8,12 @@ namespace Microsoft.AspNet.SignalR.Samples
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
-            routes.MapConnection<SendingConnection>("sending-connection", "sending-connection/{*operation}");
-            routes.MapConnection<TestConnection>("test-connection", "test-connection/{*operation}");
-            routes.MapConnection<RawConnection>("raw-connection", "raw-connection/{*operation}");
-            routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection/{*operation}");
+            routes.MapConnection<SendingConnection>("sending-connection", "sending-connection");
+            routes.MapConnection<TestConnection>("test-connection", "test-connection");
+            routes.MapConnection<RawConnection>("raw-connection", "raw-connection");
+            routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection");
 
-            // Register the default hubs route: ~/signalr/hubs
+            // Register the default hubs route /signalr
             routes.MapHubs();
         }
     }

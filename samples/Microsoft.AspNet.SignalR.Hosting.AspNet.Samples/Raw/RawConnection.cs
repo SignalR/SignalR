@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
         private static readonly ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
         private static readonly ConcurrentDictionary<string, string> _clients = new ConcurrentDictionary<string, string>();
 
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
             Cookie userNameCookie;
             if (request.Cookies.TryGetValue("user", out userNameCookie) &&
@@ -21,28 +21,29 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
                 _users[userNameCookie.Value] = connectionId;
             }
 
-            string clientIp = request.ServerVariables["REMOTE_ADDR"];
+            string clientIp = GetClientIP(request);
+
             string user = GetUser(connectionId);
 
             return Groups.Add(connectionId, "foo").ContinueWith(_ =>
                    Connection.Broadcast(DateTime.Now + ": " + user + " joined from " + clientIp)).Unwrap();
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+        protected override Task OnReconnected(IRequest request, string connectionId)
         {
             string user = GetUser(connectionId);
 
             return Connection.Broadcast(DateTime.Now + ": " + user + " reconnected");
         }
 
-        protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+        protected override Task OnDisconnected(IRequest request, string connectionId)
         {
             string ignored;
             _users.TryRemove(connectionId, out ignored);
             return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
         }
 
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
             var message = JsonConvert.DeserializeObject<Message>(data);
 
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
                     break;
             }
 
-            return base.OnReceivedAsync(request, connectionId, data);
+            return base.OnReceived(request, connectionId, data);
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
@@ -154,6 +155,24 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
         {
             public MessageType Type { get; set; }
             public string Value { get; set; }
+        }
+
+        private static string GetClientIP(IRequest request)
+        {
+            var env = Get<IDictionary<string, object>>(request.Items, "owin.environment");
+            
+            if (env == null)
+            {
+                return null;
+            }
+
+            return Get<string>(env, "server.RemoteIpAddress");
+        }
+
+        private static T Get<T>(IDictionary<string, object> env, string key)
+        {
+            object value;
+            return env.TryGetValue(key, out value) ? (T)value : default(T);
         }
     }
 }

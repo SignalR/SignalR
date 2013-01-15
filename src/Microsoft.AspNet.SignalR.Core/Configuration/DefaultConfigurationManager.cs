@@ -2,16 +2,19 @@
 
 using System;
 
-namespace Microsoft.AspNet.SignalR
+namespace Microsoft.AspNet.SignalR.Configuration
 {
     public class DefaultConfigurationManager : IConfigurationManager
     {
+        private int _keepAlive;
+
         public DefaultConfigurationManager()
         {
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(40);
             HeartbeatInterval = TimeSpan.FromSeconds(10);
-            KeepAlive = TimeSpan.FromSeconds(15);
+            KeepAlive = 2;
+            DefaultMessageBufferSize = 1000;
         }
 
         public TimeSpan ConnectionTimeout
@@ -25,14 +28,31 @@ namespace Microsoft.AspNet.SignalR
             get;
             set;
         }
+        
+        public int KeepAlive
+        {
+            get
+            {
+                return _keepAlive;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(Resources.Error_KeepAliveMustBeGreaterThanZero);
+                }
 
-        public TimeSpan? KeepAlive
+                _keepAlive = value;
+            }
+        }
+
+        public TimeSpan HeartbeatInterval
         {
             get;
             set;
         }
 
-        public TimeSpan HeartbeatInterval
+        public int DefaultMessageBufferSize
         {
             get;
             set;

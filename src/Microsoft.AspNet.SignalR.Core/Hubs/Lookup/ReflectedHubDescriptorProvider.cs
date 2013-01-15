@@ -35,9 +35,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             // Getting all IHub-implementing types that apply
             var types = _locator.Value.GetAssemblies()
-                .Where(a => !a.GlobalAssemblyCache && !a.IsDynamic)
-                .SelectMany(GetTypesSafe)
-                .Where(IsHubType);
+                                      .SelectMany(GetTypesSafe)
+                                      .Where(IsHubType);
 
             // Building cache entries for each descriptor
             // Each descriptor is stored in dictionary under a key

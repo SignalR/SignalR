@@ -56,21 +56,6 @@
             }
         },
 
-        isCrossDomain = function (url) {
-            var link;
-
-            url = $.trim(url);
-            if (url.indexOf("http") !== 0) {
-                return false;
-            }
-
-            // Create an anchor tag.
-            link = window.document.createElement("a");
-            link.href = url;
-
-            return link.protocol + link.host !== window.location.protocol + window.location.host;
-        },
-
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
@@ -88,22 +73,30 @@
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
+                onReconnectTimeout;
+
+            // Check if this connection has already been configured to stop reconnecting after a specified timeout.
+            // Without this check if a connection is stopped then started events will be bound multiple times.
+            if (!connection._.configuredStopReconnectingTimeout) {
                 onReconnectTimeout = function (connection) {
                     connection.log("Couldn't reconnect within the configured timeout (" + connection.disconnectTimeout + "ms), disconnecting.");
                     connection.stop(/* async */ false, /* notifyServer */ false);
                 };
 
-            connection.reconnecting(function () {
-                var connection = this;
-                stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
-            });
+                connection.reconnecting(function () {
+                    var connection = this;
+                    stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+                });
 
-            connection.stateChanged(function (data) {
-                if (data.oldState === signalR.connectionState.reconnecting) {
-                    // Clear the pending reconnect timeout check
-                    window.clearTimeout(stopReconnectingTimeout);
-                }
-            });
+                connection.stateChanged(function (data) {
+                    if (data.oldState === signalR.connectionState.reconnecting) {
+                        // Clear the pending reconnect timeout check
+                        window.clearTimeout(stopReconnectingTimeout);
+                    }
+                });
+
+                connection._.configuredStopReconnectingTimeout = true;
+            }
         };
 
     signalR = function (url, qs, logging) {
@@ -172,14 +165,57 @@
         return requestedTransport;
     }
 
+    function getDefaultPort(protocol) {
+        if(protocol === "http:") {
+            return 80;
+        }
+        else if (protocol === "https:") {
+            return 443;
+        }
+    }
+
+    function addDefaultPort(protocol, url) {
+        // Remove ports  from url.  We have to check if there's a / or end of line
+        // following the port in order to avoid removing ports such as 8080.
+        if(url.match(/:\d+$/)) {
+            return url;
+        } else {
+            return url + ":" + getDefaultPort(protocol);
+        }
+    }
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
+            this._ = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
+            }            
+        },
+
+        isCrossDomain: function (url, against) {
+            /// <summary>Checks if url is cross domain</summary>
+            /// <param name="url" type="String">The base URL</param>
+            /// <param name="against" type="Object">
+            ///     An optional argument to compare the URL against, if not specified it will be set to window.location.
+            ///     If specified it must contain a protocol and a host property.
+            /// </param>
+            var link;
+
+            url = $.trim(url);
+            if (url.indexOf("http") !== 0) {
+                return false;
             }
-            configureStopReconnectingTimeout(this);
+
+            against = against || window.location;
+
+            // Create an anchor tag.
+            link = window.document.createElement("a");
+            link.href = url;
+
+            // When checking for cross domain we have to special case port 80 because the window.location will remove the 
+            return link.protocol + addDefaultPort(link.protocol, link.host) !== against.protocol + addDefaultPort(against.protocol, against.host);
         },
 
         ajaxDataType: "json",
@@ -196,7 +232,7 @@
 
         disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
 
-        keepAliveTimeoutCount: 2,
+        keepAliveTimeoutCount: 3,
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -241,6 +277,8 @@
                 return deferred.promise();
             }
 
+            configureStopReconnectingTimeout(connection);
+
             if (changeState(connection,
                             signalR.connectionState.disconnected,
                             signalR.connectionState.connecting) === false) {
@@ -273,7 +311,7 @@
                 config.transport = "longPolling";
             }
 
-            if (isCrossDomain(connection.url)) {
+            if (this.isCrossDomain(connection.url)) {
                 connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {

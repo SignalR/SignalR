@@ -37,6 +37,8 @@ $(function () {
         addMessage("Pong");
     }
 
+    $.connection.hub.logging = true;
+
     stopButton.click(function () {
         $.connection.hub.stop();
 

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {

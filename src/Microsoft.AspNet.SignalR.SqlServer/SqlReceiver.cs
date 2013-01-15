@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Messaging;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.SqlServer

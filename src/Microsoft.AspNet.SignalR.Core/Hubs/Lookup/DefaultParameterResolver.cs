@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {

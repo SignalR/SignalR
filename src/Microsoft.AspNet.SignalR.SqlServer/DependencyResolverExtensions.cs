@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.SqlServer;
 
 namespace Microsoft.AspNet.SignalR

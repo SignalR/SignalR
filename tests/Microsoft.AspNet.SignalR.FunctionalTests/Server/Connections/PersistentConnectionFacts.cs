@@ -10,6 +10,8 @@ using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Extensions;
+using Owin;
+using Microsoft.AspNet.SignalR.Configuration;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -22,16 +24,25 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = new MemoryHost())
                 {
-                    host.MapConnection<MyGroupEchoConnection>("/echo");
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+                        app.MapConnection<MyGroupEchoConnection>("/echo", config);
+                    });
+
+                    string id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
                     for (int i = 0; i < 1000; i++)
                     {
-                        tasks.Add(ProcessRequest(host, "serverSentEvents", "1"));
+                        tasks.Add(ProcessRequest(host, "serverSentEvents", id));
                     }
 
-                    ProcessRequest(host, "serverSentEvents", "1");
+                    ProcessRequest(host, "serverSentEvents", id);
 
                     Task.WaitAll(tasks.ToArray());
 
@@ -44,16 +55,25 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = new MemoryHost())
                 {
-                    host.MapConnection<MyGroupEchoConnection>("/echo");
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+                        app.MapConnection<MyGroupEchoConnection>("/echo", config);
+                    });
+
+                    string id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
                     for (int i = 0; i < 1000; i++)
                     {
-                        tasks.Add(ProcessRequest(host, "longPolling", "1"));
+                        tasks.Add(ProcessRequest(host, "longPolling", id));
                     }
 
-                    ProcessRequest(host, "longPolling", "1");
+                    ProcessRequest(host, "longPolling", id);
 
                     Task.WaitAll(tasks.ToArray());
 
@@ -93,8 +113,37 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
+            [InlineData(HostType.Memory, TransportType.Auto)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            // [InlineData(HostType.Memory, TransportType.LongPolling)]
+            // [InlineData(HostType.IISExpress, TransportType.Auto)]
+            public void GroupCanBeAddedAndMessagedOnConnected(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    var wh = new ManualResetEventSlim();
+                    host.Initialize();
+
+                    var connection = new Client.Connection(host.Url + "/add-group");
+                    connection.Received += data =>
+                    {
+                        Assert.Equal("hey", data);
+                        wh.Set();
+                    };
+
+                    connection.Start(host.Transport).Wait();
+                    connection.SendWithTimeout("");
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+
+                    connection.Stop();
+                }
+            }
+
+            [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void SendRaisesOnReceivedFromAllEvents(HostType hostType, TransportType transportType)
@@ -130,6 +179,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void SendCanBeCalledAfterStateChangedEvent(HostType hostType, TransportType transportType)
@@ -171,8 +221,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IIS, TransportType.LongPolling)]
+            // [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -200,11 +251,21 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var host = new MemoryHost())
                 {
                     var conn = new MyReconnect();
-                    host.Configuration.KeepAlive = null;
-                    host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                    host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-                    host.DependencyResolver.Register(typeof(MyReconnect), () => conn);
-                    host.MapConnection<MyReconnect>("/endpoint");
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyReconnect>("/endpoint", config);
+                        var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                        configuration.KeepAlive = 0;
+                        configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                        configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+
+                        config.Resolver.Register(typeof(MyReconnect), () => conn);
+                    });
 
                     var connection = new Client.Connection("http://foo/endpoint");
                     var transport = CreateTransport(transportType, host);
@@ -224,6 +285,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             public void GroupsReceiveMessages(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -263,11 +325,12 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             public void GroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 2,
                                     hearbeatInterval: 2);
 
@@ -304,13 +367,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void GroupsRejoinedWhenOnRejoiningGroupsOverridden(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 2,
                                     hearbeatInterval: 2);
 
@@ -349,13 +413,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientGroupsSyncWithServerGroupsOnReconnect(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 5,
                                     hearbeatInterval: 2);
 
@@ -394,12 +459,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             public void ClientGroupsSyncWithServerGroupsOnReconnectWhenNotRejoiningGroups(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 5,
                                     hearbeatInterval: 2);
 
@@ -443,6 +509,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void SendToAllButCaller(HostType hostType, TransportType transportType)
@@ -518,7 +585,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             results.Add(val);
                         }
                     };
- 
+
                     connection.Start(host.Transport).Wait();
                     connection2.Start(host.Transport).Wait();
 

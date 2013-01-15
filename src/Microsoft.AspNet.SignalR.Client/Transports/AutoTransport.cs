@@ -16,18 +16,52 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private readonly IHttpClient _httpClient;
 
+        private int _startIndex = 0;
+
         // List of transports in fallback order
         private readonly IClientTransport[] _transports;
 
         public AutoTransport(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _transports = new IClientTransport[] { new ServerSentEventsTransport(httpClient), new LongPollingTransport(httpClient) };
+            _transports = new IClientTransport[] { 
+#if NET45
+                new WebSocketTransport(httpClient),
+#endif
+                new ServerSentEventsTransport(httpClient), 
+                new LongPollingTransport(httpClient) 
+            };
+        }
+
+        public string Name
+        {
+            get
+            {
+                if (_transport == null)
+                {
+                    return null;
+                }
+
+                return _transport.Name;
+            }
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection)
         {
-            return HttpBasedTransport.GetNegotiationResponse(_httpClient, connection);
+            var task = _httpClient.GetNegotiationResponse(connection);
+#if NET45
+            return task.Then(response =>
+            {
+                if (!response.TryWebSockets)
+                {
+                    _startIndex = 1;
+                }
+
+                return response;
+            });
+#else
+            return task;
+#endif
         }
 
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
@@ -35,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var tcs = new TaskCompletionSource<object>();
 
             // Resolve the transport
-            ResolveTransport(connection, data, disconnectToken, tcs, 0);
+            ResolveTransport(connection, data, disconnectToken, tcs, _startIndex);
 
             return tcs.Task;
         }
@@ -85,9 +119,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
-        public Task<T> Send<T>(IConnection connection, string data)
+        public Task Send(IConnection connection, string data)
         {
-            return _transport.Send<T>(connection, data);
+            return _transport.Send(connection, data);
         }
 
         public void Abort(IConnection connection)

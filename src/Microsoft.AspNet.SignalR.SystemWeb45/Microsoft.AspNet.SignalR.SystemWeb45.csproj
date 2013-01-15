@@ -55,6 +55,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\Infrastructure\BuildManagerAssemblyLocator.cs">
       <Link>Infrastructure\BuildManagerAssemblyLocator.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\RequestExtensions.cs">
+      <Link>RequestExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\RouteExtensions.cs">
       <Link>RouteExtensions.cs</Link>
     </Compile>
@@ -79,7 +82,7 @@
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Import Project="$(SolutionDir).nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

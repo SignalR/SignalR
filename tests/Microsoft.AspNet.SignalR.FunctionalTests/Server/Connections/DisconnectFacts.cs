@@ -5,14 +5,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
 using Xunit;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
+using Owin;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -27,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
-            response.Setup(m => m.EndAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
             bool isConnected = true;
             response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
-            response.Setup(m => m.FlushAsync()).Returns(TaskAsyncHelper.Empty);
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             var resolver = new DefaultDependencyResolver();
             var config = resolver.Resolve<IConfigurationManager>();
@@ -69,16 +74,29 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapConnection<MyConnection>("/echo");
-                host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
-                host.DependencyResolver.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
+                var dr = new DefaultDependencyResolver();
+                var configuration = dr.Resolve<IConfigurationManager>();
+
+                host.Configure(app =>
+                {
+                    var config = new ConnectionConfiguration
+                    {
+                        Resolver = dr
+                    };
+
+                    app.MapConnection<MyConnection>("/echo", config);
+
+                    configuration.DisconnectTimeout = TimeSpan.Zero;
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+
+                    dr.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
+                });
                 var connection = new Client.Connection("http://foo/echo");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -95,18 +113,31 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                host.MapHubs();
-                host.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                var dr = new DefaultDependencyResolver();
+                var configuration = dr.Resolve<IConfigurationManager>();
+
                 var connectWh = new ManualResetEventSlim();
                 var disconnectWh = new ManualResetEventSlim();
-                host.DependencyResolver.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = dr
+                    };
+
+                    app.MapHubs("/signalr", config);
+
+                    configuration.DisconnectTimeout = TimeSpan.Zero;
+                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                    dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+                });
+
                 var connection = new Client.Hubs.HubConnection("http://foo/");
 
                 connection.CreateHubProxy("MyHub");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(host.Configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -124,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
-            using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager))
+            using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             {
                 var nodeCount = 3;
                 var nodes = new List<ServerNode>();
@@ -136,9 +167,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var timeout = TimeSpan.FromSeconds(5);
                 foreach (var node in nodes)
                 {
-                    node.Server.Configuration.HeartbeatInterval = timeout;
-                    node.Server.Configuration.DisconnectTimeout = TimeSpan.Zero;
-                    node.Server.MapConnection<FarmConnection>("/echo");
+                    var config = node.Resolver.Resolve<IConfigurationManager>();
+                    config.HeartbeatInterval = timeout;
+                    config.DisconnectTimeout = TimeSpan.Zero;
+
+                    IDependencyResolver resolver = node.Resolver;
+                    node.Server.Configure(app =>
+                    {
+                        app.MapConnection<FarmConnection>("/echo", new ConnectionConfiguration
+                        {
+                            Resolver = resolver
+                        });
+                    });
                 }
 
                 var loadBalancer = new LoadBalancer(nodes.Select(f => f.Server).ToArray());
@@ -166,19 +206,21 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public MemoryHost Server { get; private set; }
             public FarmConnection Connection { get; private set; }
+            public IDependencyResolver Resolver { get; private set; }
 
             private IConnection _connection;
 
             public ServerNode(IMessageBus bus)
             {
                 // Give each server it's own dependency resolver
-                Server = new MemoryHost(new DefaultDependencyResolver());
+                Server = new MemoryHost();
                 Connection = new FarmConnection();
+                Resolver = new DefaultDependencyResolver();
 
-                Server.DependencyResolver.Register(typeof(FarmConnection), () => Connection);
-                Server.DependencyResolver.Register(typeof(IMessageBus), () => bus);
+                Resolver.Register(typeof(FarmConnection), () => Connection);
+                Resolver.Register(typeof(IMessageBus), () => bus);
 
-                var context = Server.ConnectionManager.GetConnectionContext<FarmConnection>();
+                var context = Resolver.Resolve<IConnectionManager>().GetConnectionContext<FarmConnection>();
                 _connection = context.Connection;
             }
 
@@ -197,20 +239,20 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _servers = servers;
             }
 
-            public Task<IClientResponse> GetAsync(string url, Action<IClientRequest> prepareRequest)
+            public Task<IClientResponse> Get(string url, Action<IClientRequest> prepareRequest)
             {
                 Debug.WriteLine("Server {0}: GET {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].GetAsync(url, prepareRequest);
+                return _servers[index].Get(url, prepareRequest);
             }
 
-            public Task<IClientResponse> PostAsync(string url, Action<IClientRequest> prepareRequest, Dictionary<string, string> postData)
+            public Task<IClientResponse> Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
             {
                 Debug.WriteLine("Server {0}: POST {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].PostAsync(url, prepareRequest, postData);
+                return _servers[index].Post(url, prepareRequest, postData);
             }
         }
 
@@ -218,13 +260,13 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public int DisconnectCount { get; set; }
 
-            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId)
             {
                 DisconnectCount++;
-                return base.OnDisconnectAsync(request, connectionId);
+                return base.OnDisconnected(request, connectionId);
             }
 
-            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Broadcast(data);
             }
@@ -272,16 +314,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            protected override Task OnConnectedAsync(IRequest request, string connectionId)
+            protected override Task OnConnected(IRequest request, string connectionId)
             {
                 _connectWh.Set();
-                return base.OnConnectedAsync(request, connectionId);
+                return base.OnConnected(request, connectionId);
             }
 
-            protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId)
             {
                 _disconnectWh.Set();
-                return base.OnDisconnectAsync(request, connectionId);
+                return base.OnDisconnected(request, connectionId);
             }
         }
 

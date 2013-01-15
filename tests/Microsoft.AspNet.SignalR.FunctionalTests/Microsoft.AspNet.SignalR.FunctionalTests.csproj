@@ -11,7 +11,7 @@
     <AssemblyName>Microsoft.AspNet.SignalR.FunctionalTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <UseBinPath>true</UseBinPath>
   </PropertyGroup>
@@ -39,8 +39,12 @@
     <Reference Include="Moq">
       <HintPath>..\..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.4.5.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin">
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -61,57 +65,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AdminAuthHub.cs">
-      <Link>Hubs\AdminAuthHub.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
+      <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\AuthHub.cs">
-      <Link>Hubs\AuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\IncomingAuthHub.cs">
-      <Link>Hubs\IncomingAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\InheritAuthHub.cs">
-      <Link>Hubs\InheritAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\InvokeAuthHub.cs">
-      <Link>Hubs\InvokeAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\NoAuthHub.cs">
-      <Link>Hubs\NoAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\OutgoingAuthHub.cs">
-      <Link>Hubs\OutgoingAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\Auth\UserAndRoleAuthHub.cs">
-      <Link>Hubs\UserAndRoleAuthHub.cs</Link>
-    </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\DemoHub\DemoHub.cs">
-      <Link>Hubs\DemoHub.cs</Link>
-    </Compile>
-    <Compile Include="App_Start\RegisterHubs.cs" />
-    <Compile Include="App_Start\TestEndPoint.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
-    <Compile Include="Connections\ConnectionThatUsesItems.cs" />
-    <Compile Include="Connections\FilteredConnection.cs" />
-    <Compile Include="Connections\MyBadConnection.cs" />
-    <Compile Include="Connections\MyGroupConnection.cs" />
-    <Compile Include="Connections\MyGroupEchoConnection.cs" />
-    <Compile Include="Connections\MyReconnect.cs" />
-    <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
-    <Compile Include="Connections\MySendingConnection.cs" />
-    <Compile Include="Connections\SyncErrorConnection.cs" />
-    <Compile Include="Hubs\ChatWithGroups.cs" />
-    <Compile Include="Hubs\MyItemsHub.cs" />
-    <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
-    <Compile Include="Infrastructure\CountDownRange.cs" />
-    <Compile Include="Infrastructure\HostedTest.cs" />
-    <Compile Include="Infrastructure\HostType.cs" />
-    <Compile Include="Infrastructure\IIS\SiteManager.cs" />
-    <Compile Include="Infrastructure\MemoryTestHost.cs" />
-    <Compile Include="Infrastructure\ITestHost.cs" />
-    <Compile Include="Infrastructure\IISExpressTestHost.cs" />
-    <Compile Include="Infrastructure\RequestItemsResponse.cs" />
-    <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
@@ -129,17 +86,28 @@
     <None Include="config\redirection.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <EmbeddedResource Include="Infrastructure\IIS\site.web.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.HttpListener\Microsoft.Owin.Host.HttpListener45.csproj">
+      <Project>{9f0c72d8-e43f-4f01-9deb-919191911919}</Project>
+      <Name>Microsoft.Owin.Host.HttpListener45</Name>
+    </ProjectReference>
+    <ProjectReference Include="../Microsoft.AspNet.SignalR.Tests.Common/Microsoft.AspNet.SignalR.Tests.Common.csproj">
+      <Project>{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}</Project>
+      <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
       <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>
       <Name>Microsoft.Owin.Host.SystemWeb45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
-      <Project>{eb46b9c6-ee37-48f9-835e-e49580e40e0a}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client</Name>
+    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Hosting\Microsoft.Owin.Hosting.csproj">
+      <Project>{c225eb2e-e7a7-463f-b058-1705f204978e}</Project>
+      <Name>Microsoft.Owin.Hosting</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
+      <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client45</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>

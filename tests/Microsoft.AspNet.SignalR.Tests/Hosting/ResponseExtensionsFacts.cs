@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Tests.Hosting
 {
@@ -40,10 +41,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Hosting
                         value = Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
                     });
 
-            response.Setup(m => m.EndAsync()).Verifiable();
+            response.Setup(m => m.End()).Verifiable();
 
             // Act
-            response.Object.EndAsync("Hello World");
+            response.Object.End("Hello World");
 
             // Assert
             Assert.Equal("Hello World", value);

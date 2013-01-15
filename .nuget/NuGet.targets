@@ -31,8 +31,8 @@
         <!-- We need to launch nuget.exe with the mono command if we're not on windows -->
         <NuGetToolsPath>$(SolutionDir).nuget</NuGetToolsPath>
         <PackagesConfig>packages.config</PackagesConfig>
-        <PackagesDir Condition="$(PackagesDir) == ''">$([System.IO.Path]::Combine($(SolutionDir), "packages"))</PackagesDir>
-        <NuGetExeFile>nuget.mono.exe</NuGetExeFile>
+        <PackagesDir Condition="$(PackagesDir) == ''">$(SolutionDir)packages</PackagesDir>
+        <NuGetExeFile>NuGet.exe</NuGetExeFile>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -41,7 +41,7 @@
         <PackageSources Condition=" $(PackageSources) == '' ">@(PackageSource)</PackageSources>
         
         <NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
-        <NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(NuGetExePath)</NuGetCommand>
+        <NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono $(NuGetExePath)</NuGetCommand>
 
         <PackageOutputDir Condition="$(PackageOutputDir) == ''">$(TargetDir.Trim('\\'))</PackageOutputDir>
 

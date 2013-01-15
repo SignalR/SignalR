@@ -2,6 +2,9 @@
 using Moq;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Xunit;
+using Microsoft.AspNet.SignalR.Json;
+using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -59,6 +60,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
+            if (InitializeTcs == null || !InitializeTcs.Task.IsCompleted)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return EnqueueOperation(() =>
             {
                 HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
@@ -66,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 HTMLOutputWriter.WriteLine();
                 HTMLOutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -81,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 HTMLOutputWriter.WriteRaw(");</script>\r\n");
                 HTMLOutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -97,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         HTMLOutputWriter.WriteRaw(initScript);
                         HTMLOutputWriter.Flush();
 
-                        return Context.Response.FlushAsync();
+                        return Context.Response.Flush();
                     });
                 },
                 _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);

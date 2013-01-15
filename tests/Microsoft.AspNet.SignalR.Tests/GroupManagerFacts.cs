@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.AspNet.SignalR.Messaging;
 using Moq;
 using Xunit;
 

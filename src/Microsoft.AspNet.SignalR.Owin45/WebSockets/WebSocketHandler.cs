@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,7 +11,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.WebSockets
 {
-    internal class WebSocketHandler
+    public class WebSocketHandler
     {
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250); // wait 250 ms before giving up on a Close
         private const int _receiveLoopBufferSize = 8 * 1024; // 8K default fragment size (we expect most messages to be very short)
@@ -102,6 +103,26 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             });
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared code")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to swallow exceptions that may have been thrown already")]
+        internal void Abort()
+        {
+            try
+            {
+                // Drain the queue
+                _sendQueue.Drain().Wait();
+            }
+            catch
+            {
+                // Swallow exceptions draining the queue
+            }
+            finally
+            {
+                // Then abort the socket
+                WebSocket.Abort();
+            }
+        }
+
         /*
          * CONFIGURATION PROPERTIES
          */
@@ -125,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
          * IMPLEMENTATION
          */
 
-        public Task ProcessWebSocketRequestAsync(WebSocket webSocket)
+        public Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken)
         {
             if (webSocket == null)
             {
@@ -133,10 +154,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
 
             byte[] buffer = new byte[_receiveLoopBufferSize];
-            return ProcessWebSocketRequestAsync(webSocket, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize));
+            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize, disconnectToken));
         }
 
-        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, Func<Task<WebSocketMessage>> messageRetriever)
+        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<Task<WebSocketMessage>> messageRetriever)
         {
             bool cleanClose = true;
             try
@@ -148,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 OnOpen();
 
                 // dispatch incoming messages
-                while (true)
+                while (!disconnectToken.IsCancellationRequested)
                 {
                     WebSocketMessage incomingMessage = await messageRetriever();
                     switch (incomingMessage.MessageType)
@@ -170,6 +191,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             return;
                     }
                 }
+
+            }
+            catch (OperationCanceledException ex)
+            {
+                if (!ex.CancellationToken.IsCancellationRequested)
+                {
+                    Error = ex;
+                    OnError();
+                    cleanClose = false;
+                }
             }
             catch (Exception ex)
             {
@@ -184,6 +215,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 try
                 {
+                    Close();
                     OnClose(cleanClose);
                 }
                 finally

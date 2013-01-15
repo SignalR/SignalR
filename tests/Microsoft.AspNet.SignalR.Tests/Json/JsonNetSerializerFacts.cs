@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Microsoft.AspNet.SignalR.Json;
 using Moq;
 using Xunit;
 

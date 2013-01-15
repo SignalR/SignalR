@@ -1,15 +1,20 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
+using Owin;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
@@ -18,10 +23,22 @@ namespace Microsoft.AspNet.SignalR.Stress
         public static IDisposable StressGroups(int max = 100)
         {
             var host = new MemoryHost();
-            host.HubPipeline.EnableAutoRejoiningGroups();
-            host.MapHubs();
-            host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-            host.Configuration.KeepAlive = TimeSpan.FromSeconds(5);
+            host.Configure(app =>
+            {
+                var config = new HubConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                app.MapHubs(config);
+
+                var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                configuration.KeepAlive = 1;
+
+                var pipeline = config.Resolver.Resolve<IHubPipeline>();
+                pipeline.EnableAutoRejoiningGroups();
+            });
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
             var connection = new Client.Hubs.HubConnection("http://foo");
@@ -67,13 +84,78 @@ namespace Microsoft.AspNet.SignalR.Stress
             return host;
         }
 
+        public static IDisposable BrodcastFromServer()
+        {
+            var host = new MemoryHost();
+            IHubContext context = null;
+
+            host.Configure(app =>
+            {
+                var config = new HubConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                app.MapHubs(config);
+
+                var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                configuration.DisconnectTimeout = TimeSpan.FromSeconds(10);
+
+                var connectionManager = config.Resolver.Resolve<IConnectionManager>();
+                context = connectionManager.GetHubContext("EchoHub");
+            });
+
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var thread = new Thread(() =>
+            {
+                while (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    context.Clients.All.echo();
+                }
+            });
+
+            thread.Start();
+
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateHubProxy("EchoHub");
+
+            try
+            {
+                connection.Start(host).Wait();
+
+                Thread.Sleep(1000);
+            }
+            finally
+            {
+                connection.Stop();
+            }
+
+            return new DisposableAction(() =>
+            {
+                cancellationTokenSource.Cancel();
+
+                thread.Join();
+
+                host.Dispose();
+            });
+        }
+
         public static IDisposable ManyUniqueGroups(int concurrency)
         {
             var host = new MemoryHost();
             var threads = new List<Thread>();
             var cancellationTokenSource = new CancellationTokenSource();
 
-            host.MapHubs();
+            host.Configure(app =>
+            {
+                var config = new HubConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+                app.MapHubs(config);
+            });
 
             for (int i = 0; i < concurrency; i++)
             {
@@ -131,7 +213,14 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             var host = new MemoryHost();
 
-            host.MapHubs();
+            host.Configure(app =>
+            {
+                var config = new HubConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+                app.MapHubs(config);
+            });
 
             for (int i = 0; i < connections; i++)
             {
@@ -165,10 +254,20 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             var host = new MemoryHost();
 
-            host.Configuration.KeepAlive = null;
-            host.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-            host.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
-            host.MapConnection<MyRejoinGroupConnection>("/groups");
+            host.Configure(app =>
+            {
+                var config = new ConnectionConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                app.MapConnection<MyRejoinGroupConnection>("/groups", config);
+
+                var configuration = config.Resolver.Resolve<IConfigurationManager>();
+                configuration.KeepAlive = 0;
+                configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
+                configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
+            });
 
             var connection = new Client.Connection("http://foo/groups");
             var inGroupOnReconnect = new List<bool>();
@@ -220,7 +319,14 @@ namespace Microsoft.AspNet.SignalR.Stress
             var threads = new List<Thread>();
             var cancellationTokenSource = new CancellationTokenSource();
 
-            host.MapConnection<RawConnection>("/Raw-connection");
+            host.Configure(app =>
+            {
+                var config = new ConnectionConfiguration
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+                app.MapConnection<RawConnection>("/Raw-connection", config);
+            });
 
             for (int i = 0; i < concurrency; i++)
             {
@@ -299,7 +405,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public class MyGroupConnection : PersistentConnection
         {
-            protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 JObject operation = JObject.Parse(data);
                 int type = operation.Value<int>("type");
@@ -318,7 +424,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     return Groups.Send(group, operation.Value<string>("message"));
                 }
 
-                return base.OnReceivedAsync(request, connectionId, data);
+                return base.OnReceived(request, connectionId, data);
             }
         }
 

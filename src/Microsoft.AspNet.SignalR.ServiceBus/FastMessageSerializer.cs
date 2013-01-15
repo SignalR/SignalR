@@ -8,6 +8,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     using System.IO;
     using System.Runtime.Serialization;
     using System.Text;
+    using Microsoft.AspNet.SignalR.Messaging;
 
     // This class provides binary stream represendation of Message instances
     // and allows to get Message instances back from such stream.

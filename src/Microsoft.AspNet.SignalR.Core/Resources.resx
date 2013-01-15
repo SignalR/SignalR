@@ -123,26 +123,47 @@
   <data name="DynamicComment_ServerSideTypeIs" xml:space="preserve">
     <value>            /// &lt;param name=\"{0}\" type=\"{1}\"&gt;Server side type is {2}&lt;/param&gt;</value>
   </data>
+  <data name="Error_BufferSizeOutOfRange" xml:space="preserve">
+    <value>The buffer size '{0}' is out of range.</value>
+  </data>
   <data name="Error_CallerNotAuthorizedToInvokeMethodOn" xml:space="preserve">
     <value>Caller is not authorized to invoke the {0} method on {1}.</value>
+  </data>
+  <data name="Error_ConnectionIdIncorrectFormat" xml:space="preserve">
+    <value>The connection id is in the incorrect format.</value>
   </data>
   <data name="Error_ConnectionNotInitialized" xml:space="preserve">
     <value>The PersistentConnection is not initialized.</value>
   </data>
+  <data name="Error_DoNotReadRequireOutgoing" xml:space="preserve">
+    <value>Do not read RequireOutgoing. Use protected _requireOutgoing instead.</value>
+  </data>
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating Hub {0}. </value>
+  </data>
+  <data name="Error_HubCouldNotBeResolved" xml:space="preserve">
+    <value>'{0}' Hub could not be resolved.</value>
   </data>
   <data name="Error_IsNotA" xml:space="preserve">
     <value>'{0}' is not a {1}.</value>
   </data>
+  <data name="Error_JavaScriptProxyDisabled" xml:space="preserve">
+    <value>SignalR: JavaScript Hub proxy generation has been disabled.</value>
+  </data>
+  <data name="Error_KeepAliveMustBeGreaterThanZero" xml:space="preserve">
+    <value>Keep Alive value must be greater than zero.</value>
+  </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
+  </data>
+  <data name="Error_MethodLevelOutgoingAuthorization" xml:space="preserve">
+    <value>Outgoing authorization can only be required for an entire Hub, not a specific method.</value>
   </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
   </data>
   <data name="Error_ProtocolErrorMissingConnectionId" xml:space="preserve">
-    <value>Protocol error: Missing connectionId.</value>
+    <value>Protocol error: Missing connection id.</value>
   </data>
   <data name="Error_ProtocolErrorUnknownTransport" xml:space="preserve">
     <value>Protocol error: Unknown transport.</value>
@@ -153,7 +174,7 @@
   <data name="Error_UsingHubInstanceNotCreatedUnsupported" xml:space="preserve">
     <value>Using a Hub instance not created by the HubPipeline is unsupported.</value>
   </data>
-  <data name="Errror_HubCouldNotBeResolved" xml:space="preserve">
-    <value>'{0}' Hub could not be resolved.</value>
+  <data name="Error_WebSocketsNotSupported" xml:space="preserve">
+    <value>WebSockets is not supported.</value>
   </data>
 </root>

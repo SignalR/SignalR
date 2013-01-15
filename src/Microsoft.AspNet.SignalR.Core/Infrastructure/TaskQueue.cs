@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
@@ -11,9 +12,20 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     internal sealed class TaskQueue
     {
         private readonly object _lockObj = new object();
-        private Task _lastQueuedTask = TaskAsyncHelper.Empty;
+        private Task _lastQueuedTask;
         private volatile bool _drained;
 
+        public TaskQueue()
+            : this(TaskAsyncHelper.Empty)
+        {
+        }
+
+        public TaskQueue(Task initialTask)
+        {
+            _lastQueuedTask = initialTask;
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
         public bool IsDrained
         {
             get
@@ -38,6 +50,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
         public Task Drain()
         {
             lock (_lockObj)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -46,9 +47,29 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
+            [InlineData(HostType.Memory, TransportType.Auto)]
+            // [InlineData(HostType.IISExpress, TransportType.Auto)]
+            public void FallbackToLongPollingWorks(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+
+                    var connection = new Client.Connection(host.Url + "/fall-back");
+                    
+                    connection.Start(host.Transport).Wait();
+
+                    Assert.Equal(connection.Transport.Name, "longPolling");
+
+                    connection.Stop();
+                }
+            }
+
+            [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType)
             {
@@ -82,6 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
             {
@@ -107,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.Start(host.Transport).Wait();
                     host.Shutdown();
 
-                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)));
                     Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
@@ -116,12 +138,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: null,
+                    host.Initialize(keepAlive: 0,
                                     connectionTimeout: 2,
                                     hearbeatInterval: 2,
                                     disconnectTimeout: 10);

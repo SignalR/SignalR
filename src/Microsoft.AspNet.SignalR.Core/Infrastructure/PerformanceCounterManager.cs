@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
@@ -23,6 +25,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly static IPerformanceCounter _noOpCounter = new NoOpPerformanceCounter();
         private volatile bool _initialized;
         private object _initLocker = new object();
+
+        // REVIEW: Is this long enough to determine if it *would* hang forever?
+        private readonly static TimeSpan _performanceCounterWaitTimeout = TimeSpan.FromSeconds(2);
 
         /// <summary>
         /// Creates a new instance.
@@ -123,6 +128,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter MessageBusBusyWorkers { get; private set; }
 
         /// <summary>
+        /// Gets the performance counter representing representing the current number of topics in the message bus.
+        /// </summary>
+        [PerformanceCounter(Name = "Message Bus Topics Current", Description = "The number of topics in the message bus.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter MessageBusTopicsCurrent { get; private set; }
+
+        /// <summary>
         /// Gets the performance counter representing the total number of all errors processed since the application was started.
         /// </summary>
         [PerformanceCounter(Name = "Errors: All Total", Description = "The total number of all errors processed since the application was started.", CounterType = PerformanceCounterType.NumberOfItems32)]
@@ -190,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     instanceName = instanceName ?? Guid.NewGuid().ToString();
                     SetCounterProperties(instanceName);
                     // The initializer ran, so let's register the shutdown cleanup
-                    if (hostShutdownToken != null)
+                    if (hostShutdownToken != CancellationToken.None)
                     {
                         needToRegisterWithShutdownToken = true;
                     }
@@ -239,7 +250,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void SetCounterProperties(string instanceName)
         {
-            bool loadCounters = true;
+            var loadCounters = true;
+            var loadCountersFast = false;
+
             foreach (var property in _counterProperties)
             {
                 PerformanceCounterAttribute attribute = GetPerformanceCounterAttribute(property);
@@ -253,18 +266,34 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 if (loadCounters)
                 {
-                    counter = LoadCounter(CategoryName, attribute.Name, instanceName);
+                    if (loadCountersFast)
+                    {
+                        // Load counters normally
+                        counter = LoadCounter(CategoryName, attribute.Name, instanceName, PerformanceCounterExists);
+                    }
+                    else
+                    {
+                        // See if we can load at least once counter without timing out since this call
+                        // can possibly hang forever on certain machines. See #1158.
+                        counter = LoadCounter(CategoryName, attribute.Name, instanceName, PerformanceCounterExistsSlow);
+                    }
 
                     if (counter == null)
                     {
+                        // We failed to load the counter so skip the rest
                         loadCounters = false;
+                    }
+                    else
+                    {
+                        // Once we successfully loaded the counter when can load the rest without the timeout check.
+                        loadCountersFast = true;
                     }
                 }
 
                 counter = counter ?? _noOpCounter;
 
                 // Initialize the counter sample
-                counter.NextSample(); 
+                counter.NextSample();
 
                 property.SetValue(this, counter, null);
             }
@@ -286,18 +315,44 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Counters are disposed later")]
-        private static IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
+        private static IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, Func<string, string, bool> exists)
         {
+            // See http://msdn.microsoft.com/en-us/library/tzz6bdx9.aspx for the list of exceptions
+            // and when they are thrown. 
             try
             {
-                if (PerformanceCounterCategory.Exists(categoryName) && PerformanceCounterCategory.CounterExists(counterName, categoryName))
+                if (exists(categoryName, counterName))
                 {
                     return new PerformanceCounterWrapper(new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false));
                 }
+
                 return null;
             }
             catch (InvalidOperationException) { return null; }
             catch (UnauthorizedAccessException) { return null; }
+            catch (Win32Exception) { return null; }
+            catch (OperationCanceledException) { return null; }
+            catch (AggregateException) { return null; }
+        }
+
+        private static bool PerformanceCounterExistsSlow(string categoryName, string counterName)
+        {
+            // Fire this off on an separate thread
+            var task = Task.Factory.StartNew(() => PerformanceCounterExists(categoryName, counterName));
+            
+            if (!task.Wait(_performanceCounterWaitTimeout))
+            {
+                // If it timed out then throw
+                throw new OperationCanceledException();
+            }
+
+            return task.Result;
+        }
+
+        private static bool PerformanceCounterExists(string categoryName, string counterName)
+        {
+            return PerformanceCounterCategory.Exists(categoryName) &&
+                   PerformanceCounterCategory.CounterExists(counterName, categoryName);
         }
     }
 }

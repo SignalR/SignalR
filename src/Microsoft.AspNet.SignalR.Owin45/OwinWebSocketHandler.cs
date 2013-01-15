@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Owin
@@ -69,10 +70,11 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             var handler = new DefaultWebSocketHandler();
-            var task = handler.ProcessWebSocketRequestAsync(webSocket);
+            var task = handler.ProcessWebSocketRequestAsync(webSocket, CancellationToken.None);
 
             _callback(handler).Catch()
                               .ContinueWith(t => handler.End());
+
             return task;
         }
 

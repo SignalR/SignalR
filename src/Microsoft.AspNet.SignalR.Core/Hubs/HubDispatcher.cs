@@ -9,7 +9,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -20,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly string _url;
+        private readonly bool _enableJavaScriptProxies;
 
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
@@ -35,9 +38,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Initializes an instance of the <see cref="HubDispatcher"/> class.
         /// </summary>
         /// <param name="url">The base url of the connection url.</param>
-        public HubDispatcher(string url)
+        /// <param name="enableJavaScriptProxies">Indicates whether JavaScript proxies for the server-side hubs should be auto generated at {Path}/hubs.</param>
+        public HubDispatcher(string url, bool enableJavaScriptProxies)
         {
             _url = url;
+            _enableJavaScriptProxies = enableJavaScriptProxies;
         }
 
         protected override TraceSource Trace
@@ -60,7 +65,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("context");
             }
 
-            _proxyGenerator = resolver.Resolve<IJavaScriptProxyGenerator>();
+            _proxyGenerator = _enableJavaScriptProxies ? resolver.Resolve<IJavaScriptProxyGenerator>()
+                                                       : new EmptyJavaScriptProxyGenerator();
+
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
@@ -101,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Processes the hub's incoming method calls.
         /// </summary>
-        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
+        protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
             HubRequest hubRequest = _requestParser.Parse(data);
 
@@ -187,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        public override Task ProcessRequestAsync(HostContext context)
+        public override Task ProcessRequest(HostContext context)
         {
             if (context == null)
             {
@@ -201,12 +208,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.EndAsync(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
+                return context.Response.End(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();
 
-            return base.ProcessRequestAsync(context);
+            return base.ProcessRequest(context);
         }
 
         internal static Task Connect(IHub hub)
@@ -270,7 +277,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                tcs.TrySetUnwrappedException(ex);
             }
 
             return tcs.Task;
@@ -286,14 +293,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return context.Connection.Send(message);
         }
 
-        protected override Task OnConnectedAsync(IRequest request, string connectionId)
+        protected override Task OnConnected(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Connect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Connect(hub));
         }
 
-        protected override Task OnReconnectedAsync(IRequest request, string connectionId)
+        protected override Task OnReconnected(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
         }
 
         protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
@@ -310,9 +317,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }).SelectMany(groupsToRejoin => groupsToRejoin);
         }
 
-        protected override Task OnDisconnectAsync(IRequest request, string connectionId)
+        protected override Task OnDisconnected(IRequest request, string connectionId)
         {
-            return ExecuteHubEventAsync(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }
 
         protected override IEnumerable<string> GetSignals(string connectionId)
@@ -321,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                         .Concat(new[] { connectionId, "ACK_" + connectionId });
         }
 
-        private Task ExecuteHubEventAsync(IRequest request, string connectionId, Func<IHub, Task> action)
+        private Task ExecuteHubEvent(IRequest request, string connectionId, Func<IHub, Task> action)
         {
             var hubs = GetHubs(request, connectionId).ToList();
             var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
@@ -339,7 +346,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
                 if (faulted != null)
                 {
-                    tcs.SetException(faulted.Exception);
+                    tcs.SetUnwrappedException(faulted.Exception);
                 }
                 else if (tasks.Any(t => t.IsCanceled))
                 {
@@ -443,7 +450,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             if (task.IsFaulted)
             {
-                tcs.TrySetException(task.Exception);
+                tcs.TrySetUnwrappedException(task.Exception);
             }
             else if (task.IsCanceled)
             {
@@ -461,7 +468,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 if (t.IsFaulted)
                 {
-                    tcs.TrySetException(t.Exception);
+                    tcs.TrySetUnwrappedException(t.Exception);
                 }
                 else if (t.IsCanceled)
                 {

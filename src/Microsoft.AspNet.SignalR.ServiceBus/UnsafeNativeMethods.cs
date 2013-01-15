@@ -17,10 +17,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             [Out] out uint increment,
             [Out] out uint adjustmentDisabled);
 
-        [DllImport("kernel32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Interoperability", "CA1414:MarkBooleanPInvokeArgumentsWithMarshalAs", Justification = "To maintain functionality."), DllImport("kernel32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
         public static extern SafeWaitHandle CreateWaitableTimer(IntPtr mustBeZero, bool manualReset, string timerName);
 
-        [DllImport("kernel32.dll", ExactSpelling = true)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Interoperability", "CA1414:MarkBooleanPInvokeArgumentsWithMarshalAs", Justification = "To maintain functionality."), DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern bool SetWaitableTimer(SafeWaitHandle handle, ref long dueTime, int period, IntPtr mustBeZero, IntPtr mustBeZeroAlso, bool resume);
     }
 }

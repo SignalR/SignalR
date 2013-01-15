@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System;
     using System.Collections.Generic;
+    using Microsoft.AspNet.SignalR.Messaging;
     using Microsoft.ServiceBus.Messaging;
 
     sealed class MessagePump

@@ -30,8 +30,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
         public bool Join()
         {
             // Check the user id cookie
-            var userIdCookie = Context.RequestCookies["userid"];
-            if (userIdCookie == null)
+            Cookie userIdCookie;
+
+            if (!Context.RequestCookies.TryGetValue("userid", out userIdCookie))
             {
                 return false;
             }

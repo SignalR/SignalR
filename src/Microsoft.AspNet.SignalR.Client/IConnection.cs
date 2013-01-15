@@ -30,7 +30,6 @@ namespace Microsoft.AspNet.SignalR.Client
         void Stop();
         void Disconnect();
         Task Send(string data);
-        Task<T> Send<T>(string data);
 
         void OnReceived(JToken data);
         void OnError(Exception ex);

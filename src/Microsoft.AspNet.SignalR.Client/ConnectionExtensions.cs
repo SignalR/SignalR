@@ -33,10 +33,16 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public static bool EnsureReconnecting(this IConnection connection)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             if (connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))
             {
                 connection.OnReconnecting();
             }
+
             return connection.State == ConnectionState.Reconnecting;
         }
 

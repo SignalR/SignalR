@@ -3,6 +3,7 @@
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     using System.Threading.Tasks;
+    using Microsoft.AspNet.SignalR.Messaging;
 
     public class ServiceBusMessageBus : ScaleoutMessageBus
     {

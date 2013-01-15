@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Json;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -37,9 +39,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
         }
-
-        public static event Action<PersistentResponse> SendingResponse;
-        public static event Action<string> Receiving;
 
         /// <summary>
         /// The number of milliseconds to tell the browser to wait before restablishing a
@@ -161,11 +160,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Heartbeat.MarkConnection(this);
 
-            if (SendingResponse != null)
-            {
-                SendingResponse(response);
-            }
-
             AddTransportData(response);
 
             return Send((object)response);
@@ -173,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            Context.Response.ContentType = IsJsonp ? Json.JsonpMimeType : Json.MimeType;
+            Context.Response.ContentType = IsJsonp ? JsonUtility.JsonpMimeType : JsonUtility.MimeType;
 
             return EnqueueOperation(() =>
             {
@@ -191,18 +185,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 OutputWriter.Flush();
-                return Context.Response.EndAsync();
+                return Context.Response.End()
+                                       .Catch(IncrementErrorCounters)
+                                       .Catch(ex =>
+                                       {
+                                           Trace.TraceInformation("Failed EndAsync() for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                                       });
             });
         }
 
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
-
-            if (Receiving != null)
-            {
-                Receiving(data);
-            }
 
             if (Received != null)
             {
@@ -246,10 +240,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 TransportConnected().Catch();
             }
 
-            // ReceiveAsync() will async wait until a message arrives then return
+            // Receive() will async wait until a message arrives then return
             var receiveTask = IsConnectRequest ?
-                              connection.ReceiveAsync(null, ConnectionEndToken, MaxMessages) :
-                              connection.ReceiveAsync(MessageId, ConnectionEndToken, MaxMessages);
+                              connection.Receive(null, ConnectionEndToken, MaxMessages) :
+                              connection.Receive(MessageId, ConnectionEndToken, MaxMessages);
 
 
             return TaskAsyncHelper.Series(() =>

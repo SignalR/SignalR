@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
 {
-    [Authorize(Mode=AuthorizeMode.Incoming)]
+    [Authorize(RequireOutgoing=false)]
     public class IncomingAuthHub : NoAuthHub
     {
     }

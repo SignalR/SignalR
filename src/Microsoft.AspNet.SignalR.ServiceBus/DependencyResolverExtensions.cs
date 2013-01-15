@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.ServiceBus;
 
 namespace Microsoft.AspNet.SignalR

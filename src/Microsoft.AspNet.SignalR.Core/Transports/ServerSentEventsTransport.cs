@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -15,6 +16,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
+            if (InitializeTcs == null || !InitializeTcs.Task.IsCompleted)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return EnqueueOperation(() =>
             {
                 OutputWriter.Write("data: {}");
@@ -22,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.WriteLine();
                 OutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -38,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 OutputWriter.WriteLine();
                 OutputWriter.Flush();
 
-                return Context.Response.FlushAsync();
+                return Context.Response.Flush();
             });
         }
 
@@ -57,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                OutputWriter.WriteLine();
                                OutputWriter.Flush();
 
-                               return Context.Response.FlushAsync();
+                               return Context.Response.Flush();
                            });
                        });
         }

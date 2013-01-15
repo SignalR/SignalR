@@ -58,7 +58,7 @@
         $(function () {
             "use strict";
 
-            var connection = $.connection("/raw-connection");
+            var connection = $.connection("../raw-connection");
             connection.logging = true;
 
             connection.received(function (data) {

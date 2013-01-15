@@ -3,27 +3,20 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-#if !WINDOWS_PHONE && !NET35
-using System.Dynamic;
-#endif
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
-    public class HubProxy :
-#if !WINDOWS_PHONE && !NET35
- DynamicObject,
-#endif
- IHubProxy
+    public class HubProxy : IHubProxy
     {
         private readonly string _hubName;
-        private readonly IConnection _connection;
+        private readonly IHubConnection _connection;
         private readonly Dictionary<string, JToken> _state = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>(StringComparer.OrdinalIgnoreCase);
 
-        public HubProxy(IConnection connection, string hubName)
+        public HubProxy(IHubConnection connection, string hubName)
         {
             _connection = connection;
             _hubName = hubName;
@@ -71,6 +64,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return Invoke<object>(method, args);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller")]
         public Task<T> Invoke<T>(string method, params object[] args)
         {
             if (method == null)
@@ -89,11 +83,56 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 tokenifiedArguments[i] = JToken.FromObject(args[i]);
             }
 
+            var tcs = new TaskCompletionSource<T>();
+            var callbackId = _connection.RegisterCallback(result =>
+            {
+                if (result != null)
+                {
+                    if (result.Error != null)
+                    {
+                        tcs.TrySetUnwrappedException(new InvalidOperationException(result.Error));
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (result.State != null)
+                            {
+                                foreach (var pair in result.State)
+                                {
+                                    this[pair.Key] = pair.Value;
+                                }
+                            }
+
+                            if (result.Result != null)
+                            {
+                                tcs.TrySetResult(result.Result.ToObject<T>());
+                            }
+                            else
+                            {
+                                tcs.TrySetResult(default(T));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // If we failed to set the result for some reason or to update
+                            // state then just fail the tcs.
+                            tcs.TrySetUnwrappedException(ex);
+                        }
+                    }
+                }
+                else
+                {
+                    tcs.TrySetCanceled();
+                }
+            });
+
             var hubData = new HubInvocation
             {
                 Hub = _hubName,
                 Method = method,
                 Args = tokenifiedArguments,
+                CallbackId = callbackId
             };
 
             if (_state.Count != 0)
@@ -103,51 +142,21 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             var value = JsonConvert.SerializeObject(hubData);
 
-            return _connection.Send<HubResult<T>>(value).Then(result =>
+            _connection.Send(value).ContinueWith(task =>
             {
-                if (result != null)
+                if (task.IsCanceled)
                 {
-                    if (result.Error != null)
-                    {
-                        throw new InvalidOperationException(result.Error);
-                    }
-
-                    if (result.State != null)
-                    {
-                        foreach (var pair in result.State)
-                        {
-                            this[pair.Key] = pair.Value;
-                        }
-                    }
-
-                    return result.Result;
+                    tcs.TrySetCanceled();
                 }
-                return default(T);
-            });
-        }
+                else if (task.IsFaulted)
+                {
+                    tcs.TrySetUnwrappedException(task.Exception);
+                }
+            },
+            TaskContinuationOptions.NotOnRanToCompletion);
 
-#if !WINDOWS_PHONE && !NET35
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            this[binder.Name] = value as JToken ?? JToken.FromObject(value);
-            return true;
+            return tcs.Task;
         }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            result = this[binder.Name];
-            return true;
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
-        {
-            result = Invoke(binder.Name, args);
-            return true;
-        }
-#endif
 
         public void InvokeEvent(string eventName, JToken[] args)
         {

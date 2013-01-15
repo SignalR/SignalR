@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Tests.Core
 {
@@ -69,12 +70,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                 _stream.SetLength(0);
             }
 
-            public Task FlushAsync()
+            public Task Flush()
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            public Task EndAsync()
+            public Task End()
             {
                 return TaskAsyncHelper.Empty;
             }

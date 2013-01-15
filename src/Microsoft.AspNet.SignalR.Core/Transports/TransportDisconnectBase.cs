@@ -9,7 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Json;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -120,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal TaskQueue WriteQueue
         {
             get;
-            private set;
+            set;
         }
 
         public IEnumerable<string> Groups
@@ -212,6 +215,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Request.Url; }
         }
 
+        protected void IncrementErrorCounters(Exception exception)
+        {
+            _counters.ErrorsTransportTotal.Increment();
+            _counters.ErrorsTransportPerSec.Increment();
+            _counters.ErrorsAllTotal.Increment();
+            _counters.ErrorsAllPerSec.Increment();
+        }
+
         public Task Disconnect()
         {
             return OnDisconnect().Then(() => Connection.Close(ConnectionId));
@@ -287,18 +298,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected internal Task EnqueueOperation(Func<Task> writeAsync)
+        protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            if (IsAlive)
+            if (!IsAlive)
             {
-                // Only enqueue new writes if the connection is alive
-                return WriteQueue.Enqueue(writeAsync);
+                return TaskAsyncHelper.Empty;
             }
 
-            return TaskAsyncHelper.Empty;
+            // Only enqueue new writes if the connection is alive
+            return WriteQueue.Enqueue(writeAsync);
         }
 
-        protected void InitializePersistentState()
+        protected virtual void InitializePersistentState()
         {
             _hostShutdownToken = _context.HostShutdownToken();
 

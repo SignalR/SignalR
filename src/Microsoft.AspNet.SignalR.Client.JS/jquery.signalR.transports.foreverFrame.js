@@ -115,8 +115,7 @@
                 if (connection.frame.stop) {
                     connection.frame.stop();
                 } else {
-                    try
-                    {
+                    try {
                         cw = connection.frame.contentWindow || connection.frame.contentDocument;
                         if (cw.document && cw.document.execCommand) {
                             cw.document.execCommand("Stop");

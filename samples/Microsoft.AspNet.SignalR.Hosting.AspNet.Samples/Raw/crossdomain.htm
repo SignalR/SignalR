@@ -24,7 +24,7 @@
     <script>
         $(function () {
             "use strict";
-            var connection = $.connection('http://localhost:8081/raw');
+            var connection = $.connection('http://localhost:8080/raw');
             connection.logging = true;
 
             connection.received(function (data) {
