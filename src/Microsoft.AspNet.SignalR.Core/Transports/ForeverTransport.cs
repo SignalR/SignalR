@@ -11,11 +11,14 @@ using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The disposer is an optimization")]
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private readonly IPerformanceCounterManager _counters;
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
+        private Disposer _requestDisposer;
+        private int _requestEnded;
 
         private const int MaxMessages = 10;
 
@@ -33,11 +36,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                                    ITransportHeartbeat heartbeat,
                                    IPerformanceCounterManager performanceCounterWriter,
                                    ITraceManager traceManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterWriter, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
-
         }
 
         protected string LastMessageId
@@ -86,10 +88,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override void InitializePersistentState()
         {
-            // PersistentConnection.OnConnectedAsync must complete before we can write to the output stream,
+            // PersistentConnection.OnConnected must complete before we can write to the output stream,
             // so clients don't indicate the connection has started too early.
             InitializeTcs = new TaskCompletionSource<object>();
             WriteQueue = new TaskQueue(InitializeTcs.Task);
+
+            _requestDisposer = new Disposer();
 
             base.InitializePersistentState();
         }
@@ -185,6 +189,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
+        protected override void ReleaseRequest()
+        {
+            _requestDisposer.Dispose();
+        }
+
         private Task ProcessSendRequest()
         {
             string data = Context.Request.Form["data"];
@@ -239,6 +248,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             Action<Exception> endRequest = (ex) =>
             {
+                // Only do this once
+                if (Interlocked.Exchange(ref _requestEnded, 1) == 1)
+                {
+                    return;
+                }
+
                 Trace.TraceInformation("DrainWrites(" + ConnectionId + ")");
 
                 // Drain the task queue for pending write operations so we don't end the request and then try to write
@@ -267,6 +282,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             };
 
             ProcessMessages(connection, postReceive, endRequest);
+
+            _requestDisposer.Set(() => endRequest(null));
 
             return tcs.Task;
         }

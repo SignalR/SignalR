@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
-            bool isConnected = true;
-            response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
+            var cts = new CancellationTokenSource();
+            response.Setup(m => m.CancellationToken).Returns(cts.Token);
             response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             var resolver = new DefaultDependencyResolver();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                      .Returns(() =>
                      {
                          var task = TaskAsyncHelper.FromError(new Exception());
-                         isConnected = false;
+                         cts.Cancel();
                          return task;
                      });
 

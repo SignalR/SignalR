@@ -22,9 +22,9 @@ namespace Microsoft.AspNet.SignalR.Owin
             _callCancelled = _environment.Get<CancellationToken>(OwinConstants.CallCancelled);
         }
 
-        public bool IsClientConnected
+        public CancellationToken CancellationToken
         {
-            get { return !_callCancelled.IsCancellationRequested; }
+            get { return _callCancelled; }
         }
 
         public string ContentType

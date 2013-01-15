@@ -1,14 +1,11 @@
-﻿using Microsoft.AspNet.SignalR.Transports;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System;
 using System.IO;
-using System.Security.Principal;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Transports;
+using Moq;
+using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Core
 {
@@ -53,9 +50,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                 return new StreamReader(_stream).ReadToEnd();
             }
 
-            public bool IsClientConnected
+            public CancellationToken CancellationToken
             {
-                get { return true; }
+                get { return CancellationToken.None; }
             }
 
             public string ContentType { get; set; }
