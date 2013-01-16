@@ -709,7 +709,6 @@ namespace Microsoft.AspNet.SignalR
         internal static Task FromError(Exception e)
         {
             var tcs = new TaskCompletionSource<object>();
-            Console.WriteLine(e.Message);
             tcs.SetException(e);
             return tcs.Task;
         }

@@ -30,16 +30,16 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                         }
                         catch (Exception e)
                         {
-                            var webException = e as WebException;
-                            if (webException != null)
-                            {
-                                var resp =
-                                    webException.Response as HttpWebResponse;
-                                if (resp != null && resp.StatusCode == HttpStatusCode.BadGateway)
-                                {
-                                    Console.WriteLine(e.Message);
-                                }
-                            }
+                            //var webException = e as WebException;
+                            //if (webException != null)
+                            //{
+                            //    var resp =
+                            //        webException.Response as HttpWebResponse;
+                            //    if (resp != null && resp.StatusCode == HttpStatusCode.BadGateway)
+                            //    {
+                            //        Console.WriteLine(e.Message);
+                            //    }
+                            //}
                             exception = e;
                         }
 
