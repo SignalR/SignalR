@@ -8,6 +8,9 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR
 {
+    /// <summary>
+    /// Apply to Hubs and Hub methods to authorize client connections to Hubs and authorize client invocations of Hub methods.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     [SuppressMessage("Microsoft.Performance", "CA1813:AvoidUnsealedAttributes", Justification = "MVC and WebAPI don't seal their AuthorizeAttributes")]
     public class AuthorizeAttribute : Attribute, IAuthorizeHubConnection, IAuthorizeHubMethodInvocation
@@ -20,6 +23,11 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields", Justification = "Already somewhat represented by set-only RequiredOutgoing property.")]
         protected bool? _requireOutgoing;
 
+        /// <summary>
+        /// Set to false to apply authorization only to the invocations of any of the Hub's server-side methods.
+        /// This property only affects attributes applied to the Hub class.
+        /// This property cannot be read.
+        /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification = "Must be property because this is an attribute parameter.")]
         public bool RequireOutgoing
         {
@@ -30,6 +38,9 @@ namespace Microsoft.AspNet.SignalR
             set { _requireOutgoing = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the user roles.
+        /// </summary>
         public string Roles
         {
             get { return _roles ?? String.Empty; }
@@ -40,6 +51,9 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        /// <summary>
+        /// Gets or sets the authorized users.
+        /// </summary>
         public string Users
         {
             get { return _users ?? String.Empty; }
@@ -50,6 +64,12 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
+        /// <summary>
+        /// Determines whether client is authorized to connect to <see cref="IHub"/>.
+        /// </summary>
+        /// <param name="hubDescriptor">Description of the hub client is attempting to connect to.</param>
+        /// <param name="request">The (re)connect request from the client.</param>
+        /// <returns>true if the caller is authorized to connect to the hub; otherwise, false.</returns>
         public virtual bool AuthorizeHubConnection(HubDescriptor hubDescriptor, IRequest request)
         {
             if (request == null)
@@ -66,6 +86,12 @@ namespace Microsoft.AspNet.SignalR
             return UserAuthorized(request.User);
         }
 
+        /// <summary>
+        /// Determines whether client is authorized to invoke the <see cref="IHub"/> method.
+        /// </summary>
+        /// <param name="hubIncomingInvokerContext">An <see cref="IHubIncomingInvokerContext"/> providing details regarding the <see cref="IHub"/> method invocation.</param>
+        /// <param name="appliesToMethod">Indicates whether the interface instance is an attribute applied directly to a method.</param>
+        /// <returns>true if the caller is authorized to invoke the <see cref="IHub"/> method; otherwise, false.</returns>
         public virtual bool AuthorizeHubMethodInvocation(IHubIncomingInvokerContext hubIncomingInvokerContext, bool appliesToMethod)
         {
             if (hubIncomingInvokerContext == null)
@@ -86,6 +112,12 @@ namespace Microsoft.AspNet.SignalR
             return UserAuthorized(hubIncomingInvokerContext.Hub.Context.User);
         }
 
+        /// <summary>
+        /// When overridden, provides an entry point for custom authorization checks.
+        /// Called by <see cref="AuthorizeAttribute.AuthorizeHubConnection"/> and <see cref="AuthorizeAttribute.AuthorizeHubMethodInvocation"/>.
+        /// </summary>
+        /// <param name="user">The <see cref="System.Security.Principal.IPrincipal"/> for the client being authorize</param>
+        /// <returns>true if the user is authorized, otherwise, false</returns>
         protected virtual bool UserAuthorized(IPrincipal user)
         {
             if (user == null)
