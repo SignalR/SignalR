@@ -1342,7 +1342,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public Dictionary<string, List<string>> GroupsRejoined = new Dictionary<string, List<string>>();
 
-            public override Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+            public override Func<HubDescriptor, IRequest, IList<string>, IList<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IList<string>, IList<string>> rejoiningGroups)
             {
                 return (hubDescriptor, request, groups) =>
                 {

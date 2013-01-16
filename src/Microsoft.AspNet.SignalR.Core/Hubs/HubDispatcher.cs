@@ -331,14 +331,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return _hubs.Select(hubDescriptor =>
             {
                 string groupPrefix = hubDescriptor.Name + ".";
-                IEnumerable<string> groupsToRejoin = _pipelineInvoker.RejoiningGroups(hubDescriptor,
-                                                                                      request,
-                                                                                      groups.Where(g => g.StartsWith(groupPrefix, StringComparison.OrdinalIgnoreCase))
-                                                                                            .Select(g => g.Substring(groupPrefix.Length)))
-                                                                     .Select(g => groupPrefix + g);
-                return groupsToRejoin;
-            }).SelectMany(groupsToRejoin => groupsToRejoin)
-              .ToList();
+
+                var hubGroups = groups.Where(g => g.StartsWith(groupPrefix, StringComparison.OrdinalIgnoreCase))
+                                      .Select(g => g.Substring(groupPrefix.Length))
+                                      .ToList();
+
+                return _pipelineInvoker.RejoiningGroups(hubDescriptor, request, hubGroups)
+                                        .Select(g => groupPrefix + g);
+
+            }).SelectMany(groupsToRejoin => groupsToRejoin).ToList();
         }
 
         protected override Task OnDisconnected(IRequest request, string connectionId)

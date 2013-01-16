@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return Pipeline.AuthorizeConnect(hubDescriptor, request);
         }
 
-        public IEnumerable<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IEnumerable<string> groups)
+        public IList<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IList<string> groups)
         {
             return Pipeline.RejoiningGroups(hubDescriptor, request, groups);
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             public Func<IHub, Task> Reconnect;
             public Func<IHub, Task> Disconnect;
             public Func<HubDescriptor, IRequest, bool> AuthorizeConnect;
-            public Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> RejoiningGroups;
+            public Func<HubDescriptor, IRequest, IList<string>, IList<string>> RejoiningGroups;
             public Func<IHubOutgoingInvokerContext, Task> Send;
 
             public ComposedPipeline(Stack<IHubPipelineModule> modules)
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Reconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildReconnect(f))(HubDispatcher.Reconnect);
                 Disconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
                 AuthorizeConnect = Compose<Func<HubDescriptor, IRequest, bool>>(modules, (m, f) => m.BuildAuthorizeConnect(f))((h, r) => true);
-                RejoiningGroups = Compose<Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))((h, r, g) => g);
+                RejoiningGroups = Compose<Func<HubDescriptor, IRequest, IList<string>, IList<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))((h, r, g) => g);
                 Send = Compose<Func<IHubOutgoingInvokerContext, Task>>(modules, (m, f) => m.BuildOutgoing(f))(HubDispatcher.Outgoing);
             }
 
