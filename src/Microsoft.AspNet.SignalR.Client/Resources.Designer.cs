@@ -10,6 +10,7 @@
 
 namespace Microsoft.AspNet.SignalR.Client {
     using System;
+    using System.Reflection;
     
     
     /// <summary>
@@ -39,7 +40,12 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.SignalR.Client.Resources", typeof(Resources).Assembly);
+#if NETFX_CORE
+                    var assembly = typeof(Resources).GetTypeInfo().Assembly;
+#else
+                    var assembly = typeof(Resources).Assembly;
+#endif
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.SignalR.Client.Resources", assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
