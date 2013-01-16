@@ -64,7 +64,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A dynamic representation of all clients except the calling client ones specified.</returns>
         public dynamic AllExcept(params string[] excludeConnectionIds)
         {
-            // REVIEW: Should this method be params array?
             return new ClientProxy(_send, _hubName, PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
         }
 

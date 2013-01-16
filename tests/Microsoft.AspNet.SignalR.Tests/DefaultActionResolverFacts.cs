@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodWithComplex", out actionInfo, new IJsonValue[] { new JTokenValue(arg) });
 
             Assert.NotNull(actionInfo);
-            var complex = binder.ResolveMethodParameters(actionInfo, new JTokenValue(arg))[0] as Complex;
+            var complex = binder.ResolveMethodParameters(actionInfo, new[] { new JTokenValue(arg) })[0] as Complex;
             Assert.NotNull(complex);
             Assert.Equal(1, complex.Age);
             Assert.NotNull(complex.Address);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodWithArray", out actionInfo, new IJsonValue[] { new JTokenValue(arg) });
 
             Assert.NotNull(actionInfo);
-            var args = binder.ResolveMethodParameters(actionInfo, new JTokenValue(arg))[0] as int[];
+            var args = binder.ResolveMethodParameters(actionInfo, new[] { new JTokenValue(arg) })[0] as int[];
             Assert.Equal(1, args[0]);
             Assert.Equal(2, args[1]);
             Assert.Equal(3, args[2]);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodWithArrayOfComplete", out actionInfo, new IJsonValue[] { new JTokenValue(new JArray(new object[] { arg })) });
 
             Assert.NotNull(actionInfo);
-            var complexArray = binder.ResolveMethodParameters(actionInfo, new JTokenValue(new JArray(new object[] { arg })))[0] as Complex[];
+            var complexArray = binder.ResolveMethodParameters(actionInfo, new[] { new JTokenValue(new JArray(new object[] { arg })) })[0] as Complex[];
             Assert.Equal(1, complexArray.Length);
             var complex = complexArray[0];
             Assert.NotNull(complex);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodWithGuid", out actionInfo, new IJsonValue[] { arg });
 
             Assert.NotNull(actionInfo);
-            var arg0 = (Guid)binder.ResolveMethodParameters(actionInfo, arg)[0];
+            var arg0 = (Guid)binder.ResolveMethodParameters(actionInfo, new[] { arg })[0];
             Assert.Equal(new Guid("1d6a1d30-599f-4495-ace7-303fd87204bb"), arg0);
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodWithByteArray", out actionInfo, new IJsonValue[] { arg });
 
             Assert.NotNull(actionInfo);
-            var arg0 = (byte[])binder.ResolveMethodParameters(actionInfo, arg)[0];
+            var arg0 = (byte[])binder.ResolveMethodParameters(actionInfo, new[] { arg })[0];
             Assert.Equal("Hello World!", Encoding.UTF8.GetString(arg0));
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodListOfByteArray", out actionInfo, new IJsonValue[] { arg });
 
             Assert.NotNull(actionInfo);
-            var arg0 = (List<byte[]>)binder.ResolveMethodParameters(actionInfo, arg)[0];
+            var arg0 = (List<byte[]>)binder.ResolveMethodParameters(actionInfo, new[] { arg })[0];
             Assert.Equal("Hello World!", Encoding.UTF8.GetString(arg0[0]));
         }
 
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "MethodWithNullables", out actionInfo, new IJsonValue[] { arg1, arg2 });
 
             Assert.NotNull(actionInfo);
-            var args = binder.ResolveMethodParameters(actionInfo, arg1, arg2);
+            var args = binder.ResolveMethodParameters(actionInfo, new[] { arg1, arg2 });
             Assert.Null(args[0]);
             Assert.Null(args[1]);
         }

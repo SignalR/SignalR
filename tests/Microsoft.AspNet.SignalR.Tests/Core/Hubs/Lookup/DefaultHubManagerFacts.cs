@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNet.SignalR.Hubs;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Core
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         {
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
-            var methodDescriptor = hubManager.GetHubMethod("CoreTestHubWithMethod", "AddNumbers", null, null);
+            var methodDescriptor = hubManager.GetHubMethod("CoreTestHubWithMethod", "AddNumbers", new IJsonValue[] { null, null });
 
             Assert.NotNull(methodDescriptor);
             Assert.Equal(methodDescriptor.Name, "AddNumbers");
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
             // There is no ________________CoreTestHubWithMethod________________ name
-            var methodDescriptor = hubManager.GetHubMethod("________________CoreTestHubWithMethod________________", "AddNumbers", null, null);
+            var methodDescriptor = hubManager.GetHubMethod("________________CoreTestHubWithMethod________________", "AddNumbers", new IJsonValue[] { null, null });
 
             Assert.Null(methodDescriptor);
         }
