@@ -153,6 +153,9 @@
   <data name="Error_HubInvocationFailed" xml:space="preserve">
     <value>There was an error invoking Hub method '{0}.{1}'.</value>
   </data>
+  <data name="Error_InvalidCursorFormat" xml:space="preserve">
+    <value>Invalid cursor.</value>
+  </data>
   <data name="Error_IsNotA" xml:space="preserve">
     <value>'{0}' is not a {1}.</value>
   </data>
