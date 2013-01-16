@@ -14,7 +14,7 @@
 ### Features
 
 * Added support for windows phone 8.
-* Add websocket support for the .NET client. ([#1001](https://github.com/SignalR/SignalR/issues/1001))
+* Add websocket support for the .NET client. ([#985](https://github.com/SignalR/SignalR/issues/985))
 * Ability to prevent auto generated Javascript proxies. ([#978](https://github.com/SignalR/SignalR/issues/978))
 * Remove the Mode parameter from AuthorizeAttribute. ([#956](https://github.com/SignalR/SignalR/issues/956))
 
