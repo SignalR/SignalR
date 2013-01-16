@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
 using Xunit;
 using Xunit.Extensions;
@@ -116,6 +117,24 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.Equal(1, deserializedCursors.Length);
             Assert.Equal("", deserializedCursors[0].Key);
             Assert.Equal(10UL, deserializedCursors[0].Id);
+        }
+
+        [Fact]
+        public void CursorWithInvalidSurrogatePair()
+        {
+            var surrogatePair = "\U0001F4A9";
+            var cursorChars = new[] { surrogatePair[0], surrogatePair[1], surrogatePair[0], ',', 'A' };
+            var serializedCursor = new StringBuilder().Append(cursorChars).ToString();
+            var cursors = Cursor.GetCursors(serializedCursor);
+
+            Assert.Equal(1, cursors.Length);
+            Assert.Equal(3, cursors[0].Key.Length);
+            Assert.Equal(10UL, cursors[0].Id);
+
+            cursorChars = new[] { surrogatePair[0], surrogatePair[1], surrogatePair[0], ',', surrogatePair[1], 'A' };
+            serializedCursor = new StringBuilder().Append(cursorChars).ToString();
+
+            Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));
         }
 
         [Fact]
