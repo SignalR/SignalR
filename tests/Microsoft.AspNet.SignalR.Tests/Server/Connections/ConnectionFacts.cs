@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNet.SignalR.Infrastructure;
+﻿using System.Collections.Generic;
+using System.IO;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
@@ -60,7 +62,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 groupSet.Add("g");
 
-                var serializer = new JsonNetSerializer();
+                var serializer = new Mock<IJsonSerializer>();
+                HashSet<string> results = null;
+                serializer.Setup(m => m.Serialize(It.IsAny<object>(), It.IsAny<TextWriter>()))
+                          .Callback<object, TextWriter>((obj, tw) => {
+                              results = new HashSet<string>((IEnumerable<string>)obj);
+                              var jsonNet = new JsonNetSerializer();
+                              jsonNet.Serialize(obj, tw);
+                          });
                 var protectedData = new Mock<IProtectedData>();
                 protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
                     .Returns<string, string>((value, purpose) => value);
@@ -68,9 +77,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
                              .Returns<string, string>((value, purpose) => value);
 
-                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object);
+                Connection.PopulateResponseState(response, groupSet, serializer.Object, protectedData.Object);
 
-                Assert.Equal(@"[""d"",""c"",""b"",""a"",""g""]", response.GroupsToken);
+                Assert.NotNull(response.GroupsToken);
+                Assert.True(results.Contains("a"));
+                Assert.True(results.Contains("b"));
+                Assert.True(results.Contains("c"));
+                Assert.True(results.Contains("d"));
+                Assert.True(results.Contains("g"));
             }
         }
     }
