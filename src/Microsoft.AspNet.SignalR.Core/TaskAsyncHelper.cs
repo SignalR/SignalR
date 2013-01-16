@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -708,6 +709,7 @@ namespace Microsoft.AspNet.SignalR
         internal static Task FromError(Exception e)
         {
             var tcs = new TaskCompletionSource<object>();
+            Console.WriteLine(e.Message);
             tcs.SetException(e);
             return tcs.Task;
         }

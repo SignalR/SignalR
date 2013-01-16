@@ -196,16 +196,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 foreach (var metadata in _connections.Values)
                 {
-                    if (metadata.Connection.IsAlive)
+                    if (metadata.Connection.IsAlive || true)
                     {
                         CheckTimeoutAndKeepAlive(metadata);
                     }
                     else
                     {
-                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+                        //Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
 
-                        // Check if we need to disconnect this connection
-                        CheckDisconnect(metadata);
+                        //// Check if we need to disconnect this connection
+                        //CheckDisconnect(metadata);
                     }
                 }
             }

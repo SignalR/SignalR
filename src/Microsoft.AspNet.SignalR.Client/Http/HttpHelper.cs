@@ -19,7 +19,37 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             try
             {
-                return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
+                Exception exception = null;
+                var task = Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar =>
+                    {
+                        HttpWebResponse response = null;
+
+                        try
+                        {
+                            response = (HttpWebResponse)request.EndGetResponse(ar);
+                        }
+                        catch (Exception e)
+                        {
+                            var webException = e as WebException;
+                            if (webException != null)
+                            {
+                                var resp =
+                                    webException.Response as HttpWebResponse;
+                                if (resp != null && resp.StatusCode == HttpStatusCode.BadGateway)
+                                {
+                                    Console.WriteLine(e.Message);
+                                }
+                            }
+                            exception = e;
+                        }
+
+                        return response;
+                    }, null);
+                if (exception != null)
+                {
+                    return TaskAsyncHelper.FromError<HttpWebResponse>(exception);
+                }
+                return task;
             }
             catch (Exception ex)
             {

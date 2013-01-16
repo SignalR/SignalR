@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public ServerSentEventsTransport(IHttpClient httpClient)
             : base(httpClient, "serverSentEvents")
         {
-            ReconnectDelay = TimeSpan.FromSeconds(2);
-            ConnectionTimeout = TimeSpan.FromSeconds(2);
+            ReconnectDelay = TimeSpan.FromSeconds(30);
+            ConnectionTimeout = TimeSpan.FromSeconds(30);
         }
 
         /// <summary>
@@ -86,7 +86,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 request = req;
                 connection.PrepareRequest(request);
-
                 request.Accept = "text/event-stream";
             }).ContinueWith(task =>
             {

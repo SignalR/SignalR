@@ -269,7 +269,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
-
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
             })
