@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void RequestingSignalrHubsUrlReturnsProxy()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration());
+            var dispatcher = new HubDispatcher(new HubConfiguration());
             var request = GetRequestForUrl("http://something/signalr/hubs");
             var response = new Mock<IResponse>();
             string contentType = null;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration());
+            var dispatcher = new HubDispatcher(new HubConfiguration());
             var request = GetRequestForUrl("http://something/signalr/hubs/");
             var response = new Mock<IResponse>();
             string contentType = null;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration() { EnableJavaScriptProxies = false });
+            var dispatcher = new HubDispatcher(new HubConfiguration() { EnableJavaScriptProxies = false });
             var request = GetRequestForUrl("http://something/signalr/hubs");
             var response = new Mock<IResponse>();
             string contentType = null;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void DetailedErrorsAreDisabledByDefault()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration());
+            var dispatcher = new HubDispatcher(new HubConfiguration());
 
             var request = new Mock<IRequest>();
             request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void DetailedErrorsFromFaultedTasksAreDisabledByDefault()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration());
+            var dispatcher = new HubDispatcher(new HubConfiguration());
 
             var request = new Mock<IRequest>();
             request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void DetailedErrorsCanBeEnabled()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration() { EnableDetailedErrors = true });
+            var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
             var request = new Mock<IRequest>();
             request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void DetailedErrorsFromFaultedTasksCanBeEnabled()
         {
             // Arrange
-            var dispatcher = new HubDispatcher("/signalr", new HubConfiguration() { EnableDetailedErrors = true });
+            var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
             var request = new Mock<IRequest>();
             request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));

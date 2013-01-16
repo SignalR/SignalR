@@ -21,8 +21,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "This dispatcher makes use of many interfaces.")]
     public class HubDispatcher : PersistentConnection
     {
+        private const string HubsSuffix = "/hubs";
+
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
-        private readonly string _url;
         private readonly bool _enableJavaScriptProxies;
         private readonly bool _enableDetailedErrors;
 
@@ -39,16 +40,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Initializes an instance of the <see cref="HubDispatcher"/> class.
         /// </summary>
-        /// <param name="url">The base url of the connection url.</param>
         /// <param name="configuration">Configuration settings determining whether to enable JS proxies and provide clients with detailed hub errors.</param>
-        public HubDispatcher(string url, HubConfiguration configuration)
+        public HubDispatcher(HubConfiguration configuration)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException("configuration");
             }
 
-            _url = url;
             _enableJavaScriptProxies = configuration.EnableJavaScriptProxies;
             _enableDetailedErrors = configuration.EnableDetailedErrors;
         }
@@ -228,11 +227,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Trim any trailing slashes
             string normalized = context.Request.Url.LocalPath.TrimEnd('/');
 
-            if (normalized.EndsWith("/hubs", StringComparison.OrdinalIgnoreCase))
+            if (normalized.EndsWith(HubsSuffix, StringComparison.OrdinalIgnoreCase))
             {
+                // Generate the proper hub url
+                string hubUrl = normalized.Substring(0, normalized.Length - HubsSuffix.Length);
+
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.End(_proxyGenerator.GenerateProxy(_url, includeDocComments: true));
+                return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl, includeDocComments: true));
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();
