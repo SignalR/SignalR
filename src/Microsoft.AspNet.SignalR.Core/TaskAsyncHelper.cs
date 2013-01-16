@@ -542,6 +542,25 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task RunSynchronously(this Task task, Action successor)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor);
+
+                default:
+                    return RunTaskSynchronously(task, successor);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task FastUnwrap(this Task<Task> task)
         {
             var innerTask = (task.Status == TaskStatus.RanToCompletion) ? task.Result : null;
@@ -792,6 +811,39 @@ namespace Microsoft.AspNet.SignalR
                     }
                 }
             });
+
+            return tcs.Task;
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        private static Task RunTaskSynchronously(Task task, Action successor)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    tcs.SetUnwrappedException(t.Exception);
+                }
+                else if (t.IsCanceled)
+                {
+                    tcs.SetCanceled();
+                }
+                else
+                {
+                    try
+                    {
+                        successor();
+                        tcs.SetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetUnwrappedException(ex);
+                    }
+                }
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
 
             return tcs.Task;
         }
