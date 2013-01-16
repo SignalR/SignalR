@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="method">Method descriptor.</param>
         /// <param name="values">List of values to resolve parameter values from.</param>
         /// <returns>Array of parameter values.</returns>
-        public virtual object[] ResolveMethodParameters(MethodDescriptor method, IList<IJsonValue> values)
+        public virtual IList<object> ResolveMethodParameters(MethodDescriptor method, IList<IJsonValue> values)
         {
             if (method == null)
             {
