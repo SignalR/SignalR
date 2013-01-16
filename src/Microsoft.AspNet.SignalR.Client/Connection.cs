@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private Task StartTransport(string data)
         {
             return _transport.Start(this, data, _disconnectCts.Token)
-                             .Then(() =>
+                             .RunSynchronously(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
                              });
