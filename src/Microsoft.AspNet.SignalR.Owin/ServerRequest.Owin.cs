@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 { OwinEnvironmentKey , _environment }
             };
         }
-        
+
         private string RequestMethod
         {
             get { return _environment.Get<string>(OwinConstants.RequestMethod); }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             address = null;
             host = null;
-            port = 0;
+            port = -1;
 
             var hostHeader = RequestHeaders.GetHeader("Host");
             if (String.IsNullOrWhiteSpace(hostHeader))
@@ -77,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 return false;
             }
 
+            // IPv6 (http://www.ietf.org/rfc/rfc2732.txt)
             if (hostHeader.StartsWith("[", StringComparison.Ordinal))
             {
                 var portIndex = hostHeader.LastIndexOf("]:", StringComparison.Ordinal);
@@ -95,17 +96,18 @@ namespace Microsoft.AspNet.SignalR.Owin
                     if (IPAddress.TryParse(hostHeader.Substring(1, hostHeader.Length - 2), out address))
                     {
                         host = null;
-                        port = 0;
+                        port = -1;
                         return true;
                     }
                 }
             }
             else
             {
+                // IPAddresses
                 if (IPAddress.TryParse(hostHeader, out address))
                 {
                     host = null;
-                    port = 0;
+                    port = -1;
                     return true;
                 }
 
@@ -117,6 +119,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 }
             }
 
+            // Plain
             host = hostHeader;
             return true;
         }
@@ -143,15 +146,29 @@ namespace Microsoft.AspNet.SignalR.Owin
                 IPAddress address;
                 string host;
                 int port;
-                if (TryParseHostHeader(out address, out host, out port) && port != 0)
+                if (TryParseHostHeader(out address, out host, out port))
                 {
+                    if (port == -1)
+                    {
+                        return DefaultPort;
+                    }
                     return port;
                 }
+
                 var portString = _environment.Get<string>(OwinConstants.LocalPort);
                 if (Int32.TryParse(portString, out port) && port != 0)
                 {
                     return port;
                 }
+
+                return DefaultPort;
+            }
+        }
+
+        private int DefaultPort
+        {
+            get
+            {
                 return String.Equals(RequestScheme, "https", StringComparison.OrdinalIgnoreCase) ? 443 : 80;
             }
         }
