@@ -127,6 +127,10 @@ namespace Microsoft.AspNet.SignalR
             {
                 for (int i = 0; i < _cursors.Count; i++)
                 {
+                    if (_cursorTopics[i].Store == null)
+                    {
+                        continue;
+                    }
                     Cursor cursor = Cursor.Clone(_cursors[i]);
                     cursors.Add(cursor);
 
