@@ -32,7 +32,7 @@
             return !!(window.WebSocket && !window.document.commandLineTest);
         })(),
         foreverFrameEnabled: (function () {
-            return !window.EventSource && !window.document.commandLineTest;
+            return !window.EventSource && !window.document.commandLineTest && !!$.browser.msie;
         })(),
         serverSentEventsEnabled: (function () {
             return !!window.EventSource;
