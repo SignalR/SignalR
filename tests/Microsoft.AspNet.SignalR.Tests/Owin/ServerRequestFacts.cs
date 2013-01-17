@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             env[OwinConstants.RequestHeaders] = headers;
             var request = new ServerRequest(env);
 
-            Assert.Equal("[fedc:ba98:7654:3210:fedc:ba98:7654:3210]", request.Url.Host);
+            Assert.Equal("[fedc:ba98:7654:3210:fedc:ba98:7654:3210]", request.Url.Host.ToLowerInvariant());
             Assert.Equal(80, request.Url.Port);
         }
 
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             env[OwinConstants.RequestHeaders] = headers;
             var request = new ServerRequest(env);
 
-            Assert.Equal("[fedc:ba98:7654:3210:fedc:ba98:7654:3210]", request.Url.Host);
+            Assert.Equal("[fedc:ba98:7654:3210:fedc:ba98:7654:3210]", request.Url.Host.ToLowerInvariant());
             Assert.Equal(1234, request.Url.Port);
         }
 
