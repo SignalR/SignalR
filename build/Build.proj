@@ -141,7 +141,7 @@
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
   </Target>
 
-  <Target Name="GoMono" DependsOnTargets="Build; RunUnitTests;">
+  <Target Name="GoMono" DependsOnTargets="Build;">
   </Target>
 
   <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
