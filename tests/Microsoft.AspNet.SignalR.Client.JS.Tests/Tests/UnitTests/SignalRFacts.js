@@ -3,19 +3,19 @@
 
 QUnit.module("SignalR Facts");
 
-QUnit.test("SignalR Availability", function () {
+QUnit.test("Availability", function () {
     ok($.signalR, "Verifies SignalR is available.");
 });
 
-QUnit.test("SignalR Connection Availability", function () {
+QUnit.test("Connection Availability", function () {
     ok($.connection, "Verifies SignalR connection is available.");
 });
 
-QUnit.test("SignalR Hub Connection Availability", function () {
+QUnit.test("Hub Connection Availability", function () {
     ok($.hubConnection, "Verifies SignalR hub connection is available.");
 });
 
-QUnit.test("SignalR version info is available", function () {
+QUnit.test("Version info is available", function () {
     ok($.signalR.version, "Verifies SignalR version is available.");
     ok($.connection.version, "Verifies connection (SignalR) version is available.");
 });
