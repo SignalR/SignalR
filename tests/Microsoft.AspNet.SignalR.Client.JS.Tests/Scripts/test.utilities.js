@@ -1,6 +1,9 @@
 ﻿var testUtilities;
 
 (function ($, window) {
+    var ios = !!((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))),
+        ios6 = !!(ios && navigator.userAgent.indexOf("CPU OS 6_0") >= 0);
+
     testUtilities = {
         createHubConnection: function () {
             var connection;
@@ -28,11 +31,17 @@
 
             return connection;
         },
-        webSocketsEnabled: (function() {
-            return !!(window.WebSocket && !window.document.commandLineTest);
+        webSocketsEnabled: (function () {
+            var validPlatform = true;
+
+            if (ios && !ios6) {
+                validPlatform = false;
+            }
+
+            return !!(window.WebSocket && !window.document.commandLineTest && validPlatform);
         })(),
         foreverFrameEnabled: (function () {
-            return !window.EventSource && !window.document.commandLineTest && !!$.browser.msie;
+            return !window.EventSource && !window.document.commandLineTest && navigator.appName === "Microsoft Internet Explorer";
         })(),
         serverSentEventsEnabled: (function () {
             return !!window.EventSource;
