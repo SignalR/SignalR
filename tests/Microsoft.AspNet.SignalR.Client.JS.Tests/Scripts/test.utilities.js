@@ -5,6 +5,22 @@
         ios6 = !!(ios && navigator.userAgent.indexOf("CPU OS 6_0") >= 0);
 
     testUtilities = {
+        defaultTestTimeout: (function () {
+            var defaultTestTimeout = window.location.href.match(/#defaultTestTimeout=\d+/g);
+            
+            // There is no default test timeout parameter
+            if (!defaultTestTimeout) {
+                // Return the default
+                return 10000;
+            }
+            
+            // Match returns an array, so we need to take the first element (string).
+            defaultTestTimeout = defaultTestTimeout[0].match(/\d+/g);
+            // Convert to integer and translate to milliseconds
+            defaultTestTimeout = parseInt(defaultTestTimeout) * 1000;
+
+            return defaultTestTimeout;
+        })(),
         createHubConnection: function () {
             var connection;
 
