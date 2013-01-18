@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.SignalR.Owin
             get { return _environment.Get<string>(OwinConstants.RequestQueryString); }
         }
 
-        public Action DisableRequestBuffering
+        public Action DisableRequestCompression
         {
-            get { return _environment.Get<Action>(OwinConstants.DisableRequestBuffering) ?? (() => { }); }
+            get { return _environment.Get<Action>(OwinConstants.DisableRequestCompression) ?? (() => { }); }
         }
 
         private bool TryParseHostHeader(out IPAddress address, out string host, out int port)

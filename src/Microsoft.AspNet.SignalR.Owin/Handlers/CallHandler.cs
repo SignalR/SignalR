@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             hostContext.Items[HostConstants.ShutdownToken] = environment.GetShutdownToken();
             hostContext.Items[HostConstants.DebugMode] = environment.GetIsDebugEnabled();
 
-            serverRequest.DisableRequestBuffering();
+            serverRequest.DisableRequestCompression();
             serverResponse.DisableResponseBuffering();
 
             _connection.Initialize(_configuration.Resolver, hostContext);
