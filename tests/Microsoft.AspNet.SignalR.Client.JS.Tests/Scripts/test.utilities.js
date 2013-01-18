@@ -2,7 +2,7 @@
 
 (function ($, window) {
     var ios = !!((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))),
-        ios6 = !!(ios && navigator.userAgent.indexOf("CPU OS 6_0") >= 0);
+        ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0);
 
     testUtilities = {
         defaultTestTimeout: (function () {
