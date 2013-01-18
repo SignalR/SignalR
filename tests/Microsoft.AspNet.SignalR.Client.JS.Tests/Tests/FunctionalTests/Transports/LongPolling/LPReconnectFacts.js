@@ -1,6 +1,6 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -47,7 +47,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can reconnect.", 5000, function (
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -94,7 +94,7 @@ QUnit.asyncTimeoutTest("Long Polling transport shifts into reconnecting state.",
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -139,7 +139,7 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnecting.", 5000, fu
     };
 });
 
-QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -184,7 +184,7 @@ QUnit.asyncTimeoutTest("Long Polling transport triggers reconnected.", 5000, fun
     };
 });
 
-QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", 10000, function (end, assert) {
+QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         // Trigger disconnect timeout after X second of trying to reconnect.  This has to be a unique value because

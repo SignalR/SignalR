@@ -1,6 +1,6 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling can send ", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can send ", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;

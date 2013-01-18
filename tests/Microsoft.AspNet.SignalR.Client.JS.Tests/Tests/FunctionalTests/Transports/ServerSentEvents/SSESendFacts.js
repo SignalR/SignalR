@@ -1,6 +1,6 @@
 ﻿QUnit.module("Server Sent Event Facts", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Server Sent Events can send ", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can send ", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;
