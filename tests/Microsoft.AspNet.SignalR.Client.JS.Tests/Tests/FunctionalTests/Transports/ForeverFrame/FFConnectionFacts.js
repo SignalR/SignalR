@@ -1,6 +1,6 @@
 ﻿QUnit.module("Forever Frame Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Can connect.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection();
 
     connection.start({ transport: 'foreverFrame' }).done(function () {

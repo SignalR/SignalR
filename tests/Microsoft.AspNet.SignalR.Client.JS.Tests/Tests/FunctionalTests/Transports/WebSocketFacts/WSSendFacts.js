@@ -1,6 +1,6 @@
 ﻿QUnit.module("Web Sockets Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Can send ", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can send ", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;

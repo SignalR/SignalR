@@ -1,6 +1,6 @@
 ﻿QUnit.module("Web Sockets Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", 10000, function (end, assert) {
+QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
@@ -39,7 +39,7 @@ QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", 10000, func
 });
 
 
-QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state", 10000, function (end, assert) {
+QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {

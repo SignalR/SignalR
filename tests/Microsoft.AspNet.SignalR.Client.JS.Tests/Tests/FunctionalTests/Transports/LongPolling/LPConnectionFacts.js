@@ -1,6 +1,6 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Can connect.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection();
 
     connection.start({ transport: 'longPolling' }).done(function () {
@@ -17,7 +17,7 @@ QUnit.asyncTimeoutTest("Can connect.", 5000, function (end, assert) {
     };
 });
 
-QUnit.asyncTimeoutTest("Can receive messages on connect.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Can receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createConnection('multisend'),
         values = [];
 

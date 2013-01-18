@@ -1,6 +1,6 @@
 ﻿QUnit.module("Ping Server Facts - Long Polling", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "longPolling").done(function() {
@@ -31,7 +31,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", 5000,
 
 QUnit.module("Ping Server Facts - Server Sent Events", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", 5000, function (end, assert) {
+QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "serverSentEvents").done(function () {
