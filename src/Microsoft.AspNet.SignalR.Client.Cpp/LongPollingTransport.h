@@ -12,9 +12,9 @@ public:
 
     struct PollHttpRequestInfo
     {
-        void* UserState;
-        LongPollingTransport* Transport;
         START_CALLBACK Callback;
+        void* CallbackState;
+        LongPollingTransport* Transport;
         Connection* Connection;
         string Data;
     };

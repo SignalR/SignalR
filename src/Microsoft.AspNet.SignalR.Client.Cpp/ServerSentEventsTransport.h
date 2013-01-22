@@ -13,12 +13,13 @@ public:
     void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);
     void Abort(Connection* connection);
 
-    struct StartHttpRequestInfo
+    struct HttpRequestInfo
     {
-        void* UserState;
-        ServerSentEventsTransport* Transport;
         START_CALLBACK Callback;
+        void* CallbackState;
+        ServerSentEventsTransport* Transport;
         Connection* Connection;
+        string Data;
     };
 
     struct ReadInfo
@@ -26,10 +27,10 @@ public:
         Connection* Connection;
         IHttpResponse* HttpResponse;
         ServerSentEventsTransport* Transport;
-        StartHttpRequestInfo* StartInfo;
+        HttpRequestInfo* RequestInfo;
     };
 
-    void ReadLoop(IHttpResponse* httpResponse, Connection* connection, StartHttpRequestInfo* startInfo);
+    void ReadLoop(IHttpResponse* httpResponse, Connection* connection, HttpRequestInfo* reqestInfo);
 
 private:
     static void OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
