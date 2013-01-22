@@ -21,21 +21,17 @@ void Connection::Start(IHttpClient* client)
 
 void Connection::Start(IClientTransport* transport) 
 {	
-    ChangeState(State::Disconnected, State::Connecting);
-
-    string url = mUrl + "/negotiate";
-
     mTransport = transport;
 
-    transport->Negotiate(this, &Connection::OnNegotiateCompleted, this);
+    if(ChangeState(State::Disconnected, State::Connecting))
+    {
+        mTransport->Negotiate(this, &Connection::OnNegotiateCompleted, this);
+    }
 }
 
-void Connection::Send(string data, CONNECTION_SEND_CALLBACK callback, void* state)
+void Connection::Send(string data)
 {
-    // TODO: Add callback here
     mTransport->Send(this, data);
-
-    callback(this, NULL, state);
 }
 
 bool Connection::ChangeState(State oldState, State newState)
@@ -97,7 +93,9 @@ string Connection::GetMessageId()
 
 void Connection::Stop() 
 {
+    mTransport->Stop(this);
 }
+
 void Connection::OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exception* error, void* state) 
 {	
     auto connection = (Connection*)state;
