@@ -24,17 +24,6 @@ void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK sta
     mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, info);
 }
 
-void ServerSentEventsTransport::Stop(Connection* connection)
-{
-
-}
-
-
-void ServerSentEventsTransport::Abort(Connection* connection)
-{
-
-}
-
 void ServerSentEventsTransport::OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
 {
     auto startInfo = (StartHttpRequestInfo*)state;

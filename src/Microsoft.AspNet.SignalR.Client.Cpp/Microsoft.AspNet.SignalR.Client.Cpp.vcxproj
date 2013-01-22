@@ -70,6 +70,7 @@
     <ClCompile Include="IHttpClient.cpp" />
     <ClCompile Include="IHttpRequest.cpp" />
     <ClCompile Include="IHttpResponse.cpp" />
+    <ClCompile Include="LongPollingTransport.cpp" />
     <ClCompile Include="MyConnectionHandler.cpp" />
     <ClCompile Include="ServerSentEventsTransport.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -84,6 +85,7 @@
     <ClInclude Include="IHttpClient.h" />
     <ClInclude Include="IHttpRequest.h" />
     <ClInclude Include="IHttpResponse.h" />
+    <ClInclude Include="LongPollingTransport.h" />
     <ClInclude Include="MyConnectionHandler.h" />
     <ClInclude Include="NegotiateResponse.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />

@@ -51,6 +51,9 @@
     <ClCompile Include="HttpBasedTransport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LongPollingTransport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HttpBasedTransport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LongPollingTransport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

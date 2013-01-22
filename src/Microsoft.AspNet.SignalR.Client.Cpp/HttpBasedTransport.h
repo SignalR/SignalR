@@ -18,9 +18,10 @@ public:
 
     void Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL);
     void Send(Connection* connection, string data);
+    void Stop(Connection* connection);
     void Abort(Connection* connection);
 
 private:
-        static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
+    static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
 };
 

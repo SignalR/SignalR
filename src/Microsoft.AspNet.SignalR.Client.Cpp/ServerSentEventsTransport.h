@@ -11,7 +11,6 @@ public:
     ~ServerSentEventsTransport(void);
 
     void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);
-    void Stop(Connection* connection);
     void Abort(Connection* connection);
 
     struct StartHttpRequestInfo

@@ -35,3 +35,15 @@ void HttpBasedTransport::OnSendHttpResponse(IHttpResponse* httpResponse, excepti
 {
 
 }
+
+void HttpBasedTransport::Stop(Connection* connection)
+{
+
+}
+
+
+void HttpBasedTransport::Abort(Connection* connection)
+{
+
+}
+
