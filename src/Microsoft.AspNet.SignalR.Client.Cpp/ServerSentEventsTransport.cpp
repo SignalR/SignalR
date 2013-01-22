@@ -1,18 +1,14 @@
 #include "ServerSentEventsTransport.h"
 
-ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* client)
+ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* httpClient) : 
+    HttpBasedTransport(httpClient)
 {
-    mHttpClient = client;
+
 }
 
 ServerSentEventsTransport::~ServerSentEventsTransport(void)
 {
-    delete mHttpClient;
-}
 
-void ServerSentEventsTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state)
-{
-    TransportHelper::GetNegotiationResponse(mHttpClient, connection, negotiateCallback, state);
 }
 
 void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
@@ -28,20 +24,6 @@ void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK sta
     mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, info);
 }
 
-void ServerSentEventsTransport::Send(Connection* connection, string data)
-{
-    auto url = connection->GetUrl() + 
-        "send?transport=serverSentEvents&connectionToken=" + 
-        connection->GetConnectionToken();
-
-    auto postData = map<string, string>();
-    postData["data"] = data;
-
-    // TODO: Queue requests so that we don't send fire the next request off until the previous one is finished
-    // This logic should probably be in another class
-    mHttpClient->Post(url, postData, &ServerSentEventsTransport::OnSendHttpResponse, this);
-}
-
 void ServerSentEventsTransport::Stop(Connection* connection)
 {
 
@@ -49,11 +31,6 @@ void ServerSentEventsTransport::Stop(Connection* connection)
 
 
 void ServerSentEventsTransport::Abort(Connection* connection)
-{
-
-}
-
-void ServerSentEventsTransport::OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
 {
 
 }
