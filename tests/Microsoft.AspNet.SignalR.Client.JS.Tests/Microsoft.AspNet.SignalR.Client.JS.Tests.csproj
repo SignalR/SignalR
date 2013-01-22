@@ -74,6 +74,8 @@
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Tests\FunctionalTests\Common\AjaxAbortFacts.js" />
+    <Content Include="Tests\FunctionalTests\Common\AjaxSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\PingServerFacts.js" />
@@ -90,8 +92,10 @@
     <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSSendFacts.js" />
-    <Content Include="Tests\UnitTests\Common\ConnectionUtilityFacts.js" />
-    <Content Include="Tests\UnitTests\Common\TransportUtilityFacts.js" />
+    <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
+    <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />
+    <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
+    <Content Include="Tests\UnitTests\Common\UrlFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
     <Content Include="Styles\qunit.css" />
     <Content Include="Scripts\qunit.js" />

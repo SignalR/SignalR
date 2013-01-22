@@ -53,7 +53,9 @@
                 then all javascript from the Tests directory is added.  This is so that all the unit tests within the 
                 Tests directory can test the SignalR.Client.JS libraries.
             -->
-        <!-- ##JS## --><script type="text/javascript" src="Tests/FunctionalTests/Common/PingServerFacts.js"></script>
+        <!-- ##JS## --><script type="text/javascript" src="Tests/FunctionalTests/Common/AjaxAbortFacts.js"></script>
+<script type="text/javascript" src="Tests/FunctionalTests/Common/AjaxSendFacts.js"></script>
+<script type="text/javascript" src="Tests/FunctionalTests/Common/PingServerFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/Auto/FallbackConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/Auto/FallbackSendFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/ForeverFrame/FFConnectionFacts.js"></script>
@@ -70,10 +72,12 @@
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/WebSocketFacts/WSConnectionStateFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/WebSocketFacts/WSSendFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/SignalRFacts.js"></script>
-<script type="text/javascript" src="Tests/UnitTests/Common/ConnectionUtilityFacts.js"></script>
-<script type="text/javascript" src="Tests/UnitTests/Common/TransportUtilityFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Common/AjaxFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Common/ResponseFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Common/UrlFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Connections/ConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Connections/ConnectionStateFacts.js"></script>
+<script type="text/javascript" src="Tests/UnitTests/Connections/ConnectionUtilityFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Connections/HubConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Transports/ForeverFrameFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Transports/LongPollingFacts.js"></script>
