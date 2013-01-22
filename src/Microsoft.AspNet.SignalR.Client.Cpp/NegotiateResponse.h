@@ -9,4 +9,5 @@ struct NegotiateResponse
     string ConnectionId;
     string ConnectionToken;
     string ProtocolVersion;
+    double DisconnectTimeout;
 };
