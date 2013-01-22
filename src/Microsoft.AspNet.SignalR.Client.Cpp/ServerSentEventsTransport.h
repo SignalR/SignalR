@@ -32,9 +32,10 @@ public:
         Connection* Connection;
         IHttpResponse* HttpResponse;
         ServerSentEventsTransport* Transport;
+        StartHttpRequestInfo* StartInfo;
     };
 
-    void ReadLoop(IHttpResponse* httpResponse, Connection* connection);
+    void ReadLoop(IHttpResponse* httpResponse, Connection* connection, StartHttpRequestInfo* startInfo);
 
 private:
     IHttpClient* mHttpClient; 

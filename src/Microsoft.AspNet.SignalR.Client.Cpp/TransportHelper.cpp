@@ -59,3 +59,8 @@ string TransportHelper::GetReceiveQueryString(Connection* connection, string dat
 
     return qs;
 }
+
+void TransportHelper::ProcessMessages(Connection* connection, string raw, bool* timedOut, bool* disconnected)
+{
+    // Parse some JSON stuff
+}
