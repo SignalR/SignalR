@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -117,6 +114,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         public virtual CancellationToken CancellationToken
         {
             get { return _context.Response.CancellationToken; }
+        }
+
+        public virtual bool IsAlive
+        {
+            get { return !(CancellationToken.IsCancellationRequested || _requestReleased == 1); }
         }
 
         protected CancellationToken ConnectionEndToken
@@ -253,6 +255,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 _hostRegistration.Dispose();
             }
+
+            // Ensure the request is released if we're ending everything
+            ((ITrackingConnection)this).ReleaseRequest();
         }
         
         void ITrackingConnection.ReleaseRequest()
@@ -280,7 +285,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            if (CancellationToken.IsCancellationRequested)
+            if (!IsAlive)
             {
                 return TaskAsyncHelper.Empty;
             }
