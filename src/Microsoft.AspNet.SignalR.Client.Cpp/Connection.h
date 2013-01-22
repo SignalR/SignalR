@@ -43,7 +43,8 @@ public:
     string GetMessageId();
 
     // Transport API
-    void ChangeState(State old_state, State new_state);
+    bool ChangeState(State oldState, State newState);
+    bool EnsureReconnecting();
     void OnError(exception error);
     void OnReceived(string data);
 

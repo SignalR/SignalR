@@ -15,37 +15,38 @@ void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK sta
 {
     string url = connection->GetUrl() + TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
 
-    auto info = new StartHttpRequestInfo();
-    info->UserState = state;
-    info->Transport = this;
-    info->Callback = startCallback;
-    info->Connection = connection;
+    auto requestInfo = new HttpRequestInfo();
+    requestInfo->CallbackState = state;
+    requestInfo->Transport = this;
+    requestInfo->Callback = startCallback;
+    requestInfo->Connection = connection;
+    requestInfo->Data = data;
 
-    mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, info);
+    mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
 }
 
 void ServerSentEventsTransport::OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
 {
-    auto startInfo = (StartHttpRequestInfo*)state;
+    auto requestInfo = (HttpRequestInfo*)state;
 
     if(NULL != error)
     {
-        startInfo->Transport->ReadLoop(httpResponse, startInfo->Connection, startInfo);
+        requestInfo->Transport->ReadLoop(httpResponse, requestInfo->Connection, requestInfo);
     }
     else
     {
-        startInfo->Callback(error, startInfo->UserState);
-        delete startInfo;
+        requestInfo->Callback(error, requestInfo->CallbackState);
+        delete requestInfo;
     }
 }
 
-void ServerSentEventsTransport::ReadLoop(IHttpResponse* httpResponse, Connection* connection, StartHttpRequestInfo* startInfo)
+void ServerSentEventsTransport::ReadLoop(IHttpResponse* httpResponse, Connection* connection, HttpRequestInfo* requestInfo)
 {
     auto readInfo = new ReadInfo();
 
     readInfo->HttpResponse = httpResponse;
     readInfo->Connection = connection;
-    readInfo->StartInfo = startInfo;
+    readInfo->RequestInfo = requestInfo;
 
     httpResponse->ReadLine(&ServerSentEventsTransport::OnReadLine, readInfo);
 }
@@ -58,15 +59,29 @@ void ServerSentEventsTransport::OnReadLine(string data, exception* error, void* 
 
     if(data == "data: initialized")
     {
-        if(readInfo->StartInfo != NULL)
+        if(readInfo->RequestInfo->Callback != NULL)
         {
-            readInfo->StartInfo->Callback(NULL, NULL);
-            readInfo->StartInfo = NULL;
+            readInfo->RequestInfo->Callback(NULL, readInfo->RequestInfo->CallbackState);
+            readInfo->RequestInfo->Callback = NULL;
         }
         else
         {
             // Reconnected
             readInfo->Connection->ChangeState(Connection::State::Reconnecting, Connection::State::Connected);
+        }
+    }
+    else if(error != NULL)
+    {
+        if(readInfo->Connection->EnsureReconnecting())
+        {
+            // TODO: Delay here
+            // There was an error reading so start re-connecting
+            readInfo->Transport->Start(readInfo->Connection, NULL, readInfo->RequestInfo->Data);
+            return;
+        }
+        else
+        {
+            readInfo->Connection->OnError(*error);
         }
     }
     else

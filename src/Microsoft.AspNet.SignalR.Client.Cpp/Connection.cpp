@@ -38,14 +38,25 @@ void Connection::Send(string data, CONNECTION_SEND_CALLBACK callback, void* stat
     callback(this, NULL, state);
 }
 
-void Connection::ChangeState(State old_state, State new_state)
+bool Connection::ChangeState(State oldState, State newState)
 {
-    if(mState == old_state)
+    if(mState == oldState)
     {
-        mState = new_state;
+        mState = newState;
 
-        mHandler->OnStateChanged(old_state, new_state);
+        mHandler->OnStateChanged(oldState, oldState);
+
+        return true;
     }
+
+    return false;
+}
+
+bool Connection::EnsureReconnecting()
+{
+    ChangeState(State::Connected, State::Reconnecting);
+            
+    return mState == State::Reconnecting;
 }
 
 void Connection::SetConnectionState(NegotiateResponse negotiateResponse)
