@@ -17,7 +17,7 @@ void Connection::OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exce
         else
         {
             connection->SetConnectionState(*negotiateResponse);
-            connection->GetTransport()->Start(connection, Connection::OnTransportStartComplete, connection);
+            connection->GetTransport()->Start(connection, Connection::OnTransportStartComplete, "", connection);
         }
     }
     else 
@@ -112,6 +112,16 @@ string Connection::GetUrl()
 string Connection::GetConnectionToken()
 {
     return mConnectionToken;
+}
+
+string Connection::GetGroupsToken()
+{
+    return mGroupsToken;
+}
+
+string Connection::GetMessageId()
+{
+    return mMessageId;
 }
 
 void Connection::Stop() 
