@@ -15,6 +15,8 @@ public:
 
     static void GetNegotiationResponse(IHttpClient* httpClient, Connection* connnection, IClientTransport::NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL);
     static string GetReceiveQueryString(Connection* connection, string data, string transport);
+    static void ProcessMessages(Connection* connection, string raw, bool* timedOut, bool* disconnected);
+
 private:
     struct NegotiationRequestInfo
     {
