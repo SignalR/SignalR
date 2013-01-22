@@ -1,4 +1,4 @@
-﻿QUnit.module("Ping Server Facts", testUtilities.longPollingEnabled);
+﻿QUnit.module("Transports Common - Ping Server Facts", testUtilities.longPollingEnabled);
 
 QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
@@ -29,7 +29,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testU
     };
 });
 
-QUnit.module("Ping Server Facts", testUtilities.foreverFrameEnabled);
+QUnit.module("Transports Common - Ping Server Facts", testUtilities.foreverFrameEnabled);
 
 QUnit.asyncTimeoutTest("Forever Frame transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
@@ -60,7 +60,7 @@ QUnit.asyncTimeoutTest("Forever Frame transport can initiate Ping Server.", test
     };
 });
 
-QUnit.module("Ping Server Facts", testUtilities.serverSentEventsEnabled);
+QUnit.module("Transports Common - Ping Server Facts", testUtilities.serverSentEventsEnabled);
 
 QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
@@ -91,7 +91,7 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.",
     };
 });
 
-QUnit.module("Ping Server Facts", testUtilities.webSocketsEnabled);
+QUnit.module("Transports Common - Ping Server Facts", testUtilities.webSocketsEnabled);
 
 QUnit.asyncTimeoutTest("Web Sockets transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
     var connection = testUtilities.createHubConnection(),
