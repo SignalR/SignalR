@@ -29,3 +29,12 @@ tests/Microsoft.AspNet.SignalR.Client.JS.Tests/CommandLineBridge.js
 *.vspx
 signalr.log.txt
 /tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/
+*.tlog
+*.idb
+*.pdb
+*.obj
+*.lastbuildstate
+*.sdf
+Microsoft.AspNet.SignalR.opensdf
+/Debug/Microsoft.AspNet.SignalR.Client.Cpp.exe
+*.ilk
