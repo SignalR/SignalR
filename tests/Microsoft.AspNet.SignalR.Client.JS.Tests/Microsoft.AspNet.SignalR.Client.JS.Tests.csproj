@@ -89,9 +89,9 @@
     <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSESendFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionStateFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSSendFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSConnectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSConnectionStateFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSSendFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
     <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
