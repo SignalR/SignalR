@@ -58,7 +58,7 @@ private:
     IClientTransport* mTransport;
     IConnectionHandler* mHandler;
 
-    static void OnTransportStartComplete(exception* error, void* state);
+    static void OnTransportStartCompleted(exception* error, void* state);
     static void OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exception* error, void* state);
 };
 

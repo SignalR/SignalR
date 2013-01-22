@@ -1,46 +1,6 @@
 #include "Connection.h"
 #include "IConnectionHandler.h"
-
 #include <string>
-
-void Connection::OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exception* error, void* state) 
-{	
-    auto connection = (Connection*)state;
-
-    if(error == NULL) 
-    {
-        if(negotiateResponse->ProtocolVersion != "1.2")
-        {
-            connection->OnError(exception("Invalid protocol version"));
-            connection->Stop();
-        }
-        else
-        {
-            connection->SetConnectionState(*negotiateResponse);
-            connection->GetTransport()->Start(connection, Connection::OnTransportStartComplete, "", connection);
-        }
-    }
-    else 
-    {
-        connection->OnError(exception("Negotiation failed"));
-        connection->Stop();
-    }
-}
-
-void Connection::OnTransportStartComplete(exception* error, void* state) 
-{
-    auto connection = (Connection*)state;
-
-    if(NULL != error)
-    {
-        connection->ChangeState(State::Connecting, State::Connected);
-    }
-    else 
-    {
-        connection->OnError(*error);
-        connection->Stop();
-    }
-}
 
 Connection::Connection(const string url, IConnectionHandler* handler)
 {
@@ -126,6 +86,44 @@ string Connection::GetMessageId()
 
 void Connection::Stop() 
 {
+}
+void Connection::OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exception* error, void* state) 
+{	
+    auto connection = (Connection*)state;
+
+    if(error == NULL) 
+    {
+        if(negotiateResponse->ProtocolVersion != "1.2")
+        {
+            connection->OnError(exception("Invalid protocol version"));
+            connection->Stop();
+        }
+        else
+        {
+            connection->SetConnectionState(*negotiateResponse);
+            connection->GetTransport()->Start(connection, Connection::OnTransportStartCompleted, "", connection);
+        }
+    }
+    else 
+    {
+        connection->OnError(exception("Negotiation failed"));
+        connection->Stop();
+    }
+}
+
+void Connection::OnTransportStartCompleted(exception* error, void* state) 
+{
+    auto connection = (Connection*)state;
+
+    if(NULL != error)
+    {
+        connection->ChangeState(State::Connecting, State::Connected);
+    }
+    else 
+    {
+        connection->OnError(*error);
+        connection->Stop();
+    }
 }
 
 Connection::~Connection()
