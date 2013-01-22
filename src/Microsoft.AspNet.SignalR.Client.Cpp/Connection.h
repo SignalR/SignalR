@@ -21,7 +21,7 @@ public:
         Disconnected,
     };
 
-    typedef void (*CONNECTION_SEND_CALLBACK)(Connection* connection, void* state);
+    typedef void (*CONNECTION_SEND_CALLBACK)(Connection* connection, exception* error, void* state);
 
 
     Connection(string url, IConnectionHandler* handler);
@@ -31,7 +31,7 @@ public:
     void Start(IClientTransport* tranport);
     void Start(IHttpClient* client);
     void Stop();
-    bool Send(string data, CONNECTION_SEND_CALLBACK callback, void* state = NULL);
+    void Send(string data, CONNECTION_SEND_CALLBACK callback, void* state = NULL);
     
     State GetState();
     string GetConnectionId();
