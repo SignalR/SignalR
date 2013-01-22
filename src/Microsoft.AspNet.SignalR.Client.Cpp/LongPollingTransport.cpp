@@ -25,7 +25,7 @@ void LongPollingTransport::Start(Connection* connection, START_CALLBACK startCal
     url += TransportHelper::GetReceiveQueryString(connection, data, "longPolling");
 
     auto info = new PollHttpRequestInfo();
-    info->UserState = state;
+    info->CallbackState = state;
     info->Transport = this;
     info->Callback = startCallback;
     info->Connection = connection;
@@ -45,7 +45,7 @@ void LongPollingTransport::OnPollHttpResponse(IHttpResponse* httpResponse, excep
     {
         if(pollInfo->Callback != NULL)
         {
-            pollInfo->Callback(NULL, pollInfo->UserState);
+            pollInfo->Callback(NULL, pollInfo->CallbackState);
         }
         
         TransportHelper::ProcessMessages(pollInfo->Connection, httpResponse->GetResponseBody(), &timedOut, &disconnected);
@@ -54,7 +54,7 @@ void LongPollingTransport::OnPollHttpResponse(IHttpResponse* httpResponse, excep
     {
         if(pollInfo->Callback != NULL) 
         {
-            pollInfo->Callback(error, pollInfo->UserState);
+            pollInfo->Callback(error, pollInfo->CallbackState);
         }
         else
         {
