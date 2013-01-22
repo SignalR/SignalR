@@ -6,16 +6,6 @@ using namespace std;
 #include "FakeHttpClient.h"
 
 
-void on_send_complete(Connection* connection, exception* error, void* state) 
-{
-    connection->Stop();
-}
-
-void OnReadLine(string line, exception* error, void* state)
-{
-
-}
-
 int main() {
 
     // Playing with API patterns
@@ -27,11 +17,9 @@ int main() {
     
     connection.Start(client);
     
-    connection.Send("hello", &on_send_complete);
-    connection.Send("bar", &on_send_complete);
+    connection.Send("hello");
+    connection.Send("bar");
 
-    IHttpResponse* response = NULL;
-
-    response->ReadLine(OnReadLine);
+    connection.Stop();
 }
 
