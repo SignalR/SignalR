@@ -20,20 +20,50 @@ void HttpBasedTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK ne
 void HttpBasedTransport::Send(Connection* connection, string data)
 {
     auto url = connection->GetUrl() + 
-        "send?transport=serverSentEvents&connectionToken=" + 
-        connection->GetConnectionToken();
+               "send?transport=serverSentEvents&connectionToken=" + 
+               connection->GetConnectionToken();
 
-    auto postData = map<string, string>();
-    postData["data"] = data;
+        auto postData = map<string, string>();
+        postData["data"] = data;
 
-    // TODO: Queue requests so that we don't send fire the next request off until the previous one is finished
-    // This logic should probably be in another class
-    mHttpClient->Post(url, postData, &HttpBasedTransport::OnSendHttpResponse, this);
+    if(mSending)
+    {
+        auto queueItem = new SendQueueItem();
+        queueItem->Connection = connection;
+        queueItem->Url = url;
+        queueItem->PostData = postData;
+        mSendQueue.push(queueItem);
+    }
+    else
+    {
+        mHttpClient->Post(url, postData, &HttpBasedTransport::OnSendHttpResponse, this);
+    }
+}
+
+void HttpBasedTransport::TryDequeueNextWorkItem()
+{
+    // If the queue is empty then we are free to send
+    mSending = mSendQueue.size() > 0;
+
+    if(mSending)
+    {
+        // Grab the next work item from the queue
+        SendQueueItem* workItem = mSendQueue.front();
+        
+        // Nuke the work item
+        mSendQueue.pop();
+
+        mHttpClient->Post(workItem->Url, workItem->PostData, &HttpBasedTransport::OnSendHttpResponse, this);
+
+        delete workItem;
+    }
 }
 
 void HttpBasedTransport::OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
-{
+{    
+    auto transport = (HttpBasedTransport*)state;
 
+    transport->TryDequeueNextWorkItem();
 }
 
 void HttpBasedTransport::Stop(Connection* connection)
