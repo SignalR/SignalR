@@ -5,6 +5,7 @@
         ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0);
 
     testUtilities = {
+        transportNames: ["longPolling","foreverFrame","serverSentEvents","webSockets"],
         defaultTestTimeout: (function () {
             var defaultTestTimeout = window.location.href.match(/#defaultTestTimeout=\d+/g);
             
