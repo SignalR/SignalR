@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
@@ -379,14 +380,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         }
 #endif
 
-        private static T Convert<T>(JToken obj)
+        private static T Convert<T>(JToken obj, JsonSerializer jsonSerializer)
         {
             if (obj == null)
             {
                 return default(T);
             }
 
-            return obj.ToObject<T>();
+            return obj.ToObject<T>(jsonSerializer);
         }
     }
 }

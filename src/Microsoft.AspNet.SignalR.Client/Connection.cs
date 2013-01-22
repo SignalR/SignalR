@@ -121,7 +121,13 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
+            JsonSerializer = new JsonSerializer();
         }
+
+        /// <summary>
+        /// Gets or sets the JsonSerializer for the connection;
+        /// </summary>
+        public JsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
