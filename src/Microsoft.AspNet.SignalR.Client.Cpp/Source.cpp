@@ -6,12 +6,19 @@ using namespace std;
 #include "FakeHttpClient.h"
 
 
-void on_send_complete(Connection* connection, void* state) 
+void on_send_complete(Connection* connection, exception* error, void* state) 
 {
     connection->Stop();
 }
 
+void OnReadLine(string line, exception* error, void* state)
+{
+
+}
+
 int main() {
+
+    // Playing with API patterns
 
     IConnectionHandler* handler = new MyConnectionHandler();
     IHttpClient* client = new FakeHttpClient();
@@ -20,11 +27,11 @@ int main() {
     
     connection.Start(client);
     
-    bool completed_synchronously = connection.Send("hello", &on_send_complete);
+    connection.Send("hello", &on_send_complete);
+    connection.Send("bar", &on_send_complete);
 
-    if(completed_synchronously)
-    {	
-        connection.Stop();
-    }
+    IHttpResponse* response = NULL;
+
+    response->ReadLine(OnReadLine);
 }
 

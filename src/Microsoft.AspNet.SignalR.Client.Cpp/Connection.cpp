@@ -70,14 +70,12 @@ void Connection::Start(IClientTransport* transport)
     transport->Negotiate(this, &Connection::OnNegotiateCompleted, this);
 }
 
-bool Connection::Send(string data, CONNECTION_SEND_CALLBACK callback, void* state)
+void Connection::Send(string data, CONNECTION_SEND_CALLBACK callback, void* state)
 {
     // TODO: Add callback here
     mTransport->Send(this, data);
 
-    callback(this, state);
-
-    return true;
+    callback(this, NULL, state);
 }
 
 void Connection::ChangeState(State old_state, State new_state)
