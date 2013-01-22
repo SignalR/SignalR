@@ -104,6 +104,16 @@ IClientTransport* Connection::GetTransport()
     return mTransport;
 }
 
+string Connection::GetUrl()
+{
+    return mUrl;
+}
+
+string Connection::GetConnectionToken()
+{
+    return mConnectionToken;
+}
+
 void Connection::Stop() 
 {
 }

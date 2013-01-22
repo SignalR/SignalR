@@ -38,6 +38,7 @@ public:
     string GetConnectionToken();
     string GetGroupsToken();
     IClientTransport* GetTransport();
+    string GetUrl();
 
     // Transport API
     void ChangeState(State old_state, State new_state);
