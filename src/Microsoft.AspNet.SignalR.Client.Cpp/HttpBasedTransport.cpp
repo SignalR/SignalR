@@ -20,11 +20,11 @@ void HttpBasedTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK ne
 void HttpBasedTransport::Send(Connection* connection, string data)
 {
     auto url = connection->GetUrl() + 
-               "send?transport=serverSentEvents&connectionToken=" + 
-               connection->GetConnectionToken();
+        "send?transport=serverSentEvents&connectionToken=" + 
+        connection->GetConnectionToken();
 
-        auto postData = map<string, string>();
-        postData["data"] = data;
+    auto postData = map<string, string>();
+    postData["data"] = data;
 
     if(mSending)
     {
@@ -49,7 +49,7 @@ void HttpBasedTransport::TryDequeueNextWorkItem()
     {
         // Grab the next work item from the queue
         SendQueueItem* workItem = mSendQueue.front();
-        
+
         // Nuke the work item
         mSendQueue.pop();
 
