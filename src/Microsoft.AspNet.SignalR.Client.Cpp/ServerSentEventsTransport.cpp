@@ -1,15 +1,61 @@
 #include "ServerSentEventsTransport.h"
 
-void ServerSentEventsTransport::OnReadLine(string data, exception* error, void* state)
+ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* client)
 {
-    // if data starts with "data:"
-    auto readInfo = (ReadInfo*)state;
+    mHttpClient = client;
+}
 
-    // SomeHelper::ProcessMessages(data, readInfo->Connection);
+ServerSentEventsTransport::~ServerSentEventsTransport(void)
+{
+    delete mHttpClient;
+}
 
-    readInfo->Transport->ReadLoop(readInfo->HttpResponse, readInfo->Connection);
+void ServerSentEventsTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state)
+{
+    TransportHelper::GetNegotiationResponse(mHttpClient, connection, negotiateCallback, state);
+}
 
-    delete readInfo;
+void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
+{
+    string url = connection->GetUrl() + TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
+
+    auto info = new StartHttpRequestInfo();
+    info->UserState = state;
+    info->Transport = this;
+    info->Callback = startCallback;
+    info->Connection = connection;
+
+    mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, info);
+}
+
+void ServerSentEventsTransport::Send(Connection* connection, string data)
+{
+    auto url = connection->GetUrl() + 
+               "send?transport=serverSentEvents&connectionToken=" + 
+               connection->GetConnectionToken();
+
+    auto postData = map<string, string>();
+    postData["data"] = data;
+
+    // TODO: Queue requests so that we don't send fire the next request off until the previous one is finished
+    // This logic should probably be in another class
+    mHttpClient->Post(url, postData, &ServerSentEventsTransport::OnSendHttpResponse, this);
+}
+
+void ServerSentEventsTransport::Stop(Connection* connection)
+{
+
+}
+
+
+void ServerSentEventsTransport::Abort(Connection* connection)
+{
+
+}
+
+void ServerSentEventsTransport::OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
+{
+
 }
 
 void ServerSentEventsTransport::OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
@@ -39,75 +85,14 @@ void ServerSentEventsTransport::ReadLoop(IHttpResponse* httpResponse, Connection
     httpResponse->ReadLine(&ServerSentEventsTransport::OnReadLine, readInfo);
 }
 
-void ServerSentEventsTransport::OnNegotiateHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
+void ServerSentEventsTransport::OnReadLine(string data, exception* error, void* state)
 {
-    auto negotiateInfo = (NegotiationRequestInfo*)state;
+    // if data starts with "data:"
+    auto readInfo = (ReadInfo*)state;
 
-    string raw = httpResponse->GetResponseBody();
+    // SomeHelper::ProcessMessages(data, readInfo->Connection);
 
-    // TODO: Parse using some kind of JSON library into a Negotiate response
-    auto response = NegotiateResponse();
-    response.ConnectionId = "";
-    response.ConnectionToken = "";
-    response.ProtocolVersion = "1.2";
+    readInfo->Transport->ReadLoop(readInfo->HttpResponse, readInfo->Connection);
 
-    negotiateInfo->Callback(&response, NULL, negotiateInfo->UserState);
-
-    delete negotiateInfo;
-}
-
-ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* client)
-{
-    mHttpClient = client;
-}
-
-ServerSentEventsTransport::~ServerSentEventsTransport(void)
-{
-    delete mHttpClient;
-}
-
-void ServerSentEventsTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state)
-{
-    string url = connection->GetUrl() + "/negotiate";
-
-    auto info = new NegotiationRequestInfo();
-    info->UserState = state;
-    info->Transport = this;
-    info->Callback = negotiateCallback;
-
-    mHttpClient->Get(url, &ServerSentEventsTransport::OnNegotiateHttpResponse, info);
-}
-
-void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, void* state)
-{
-    string url = connection->GetUrl() + 
-                 "?connctionToken=" + 
-                 connection->GetConnectionToken() + 
-                 "&transport=serverSentEvents"; 
-
-    auto info = new StartHttpRequestInfo();
-    info->UserState = state;
-    info->Transport = this;
-    info->Callback = startCallback;
-    info->Connection = connection;
-
-    mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, info);
-}
-
-void ServerSentEventsTransport::Send(Connection* connection, string data)
-{
-    auto postData = map<string, string>();
-    postData["data"] = data;
-    // mHttpClient->Post(url, postData, 
-}
-
-void ServerSentEventsTransport::Stop(Connection* connection)
-{
-
-}
-
-
-void ServerSentEventsTransport::Abort(Connection* connection)
-{
-
+    delete readInfo;
 }

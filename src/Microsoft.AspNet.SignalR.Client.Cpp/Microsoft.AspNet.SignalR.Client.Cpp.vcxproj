@@ -72,6 +72,7 @@
     <ClCompile Include="MyConnectionHandler.cpp" />
     <ClCompile Include="ServerSentEventsTransport.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="TransportHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h" />
@@ -84,6 +85,7 @@
     <ClInclude Include="MyConnectionHandler.h" />
     <ClInclude Include="NegotiateResponse.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />
+    <ClInclude Include="TransportHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
