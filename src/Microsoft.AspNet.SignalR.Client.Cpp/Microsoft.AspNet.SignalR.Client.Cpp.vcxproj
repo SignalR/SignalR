@@ -64,6 +64,7 @@
   <ItemGroup>
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="FakeHttpClient.cpp" />
+    <ClCompile Include="HttpBasedTransport.cpp" />
     <ClCompile Include="IClientTransport.cpp" />
     <ClCompile Include="IConnectionHandler.cpp" />
     <ClCompile Include="IHttpClient.cpp" />
@@ -77,6 +78,7 @@
   <ItemGroup>
     <ClInclude Include="Connection.h" />
     <ClInclude Include="FakeHttpClient.h" />
+    <ClInclude Include="HttpBasedTransport.h" />
     <ClInclude Include="IClientTransport.h" />
     <ClInclude Include="IConnectionHandler.h" />
     <ClInclude Include="IHttpClient.h" />
