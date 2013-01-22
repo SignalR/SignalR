@@ -28,4 +28,13 @@ PublishProfiles/
 *.vspx
 *.log.txt
 /tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/
+*.tlog
+*.idb
+*.pdb
+*.obj
+*.lastbuildstate
+*.sdf
+Microsoft.AspNet.SignalR.opensdf
+/Debug/Microsoft.AspNet.SignalR.Client.Cpp.exe
+*.ilk
 /samples/Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples/bld/
