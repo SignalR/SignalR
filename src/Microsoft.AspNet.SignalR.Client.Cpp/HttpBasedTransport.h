@@ -4,6 +4,7 @@
 #include "Connection.h"
 #include "IHttpClient.h"
 #include "TransportHelper.h"
+#include <queue>
 
 class HttpBasedTransport :
     public IClientTransport
@@ -21,7 +22,18 @@ public:
     void Stop(Connection* connection);
     void Abort(Connection* connection);
 
-private:
+    void TryDequeueNextWorkItem();
+private:    
+    
+    struct SendQueueItem
+    {
+        Connection* Connection;
+        string Url;
+        map<string, string> PostData;
+    };
+    
+    queue<SendQueueItem*> mSendQueue;
+    bool mSending;
     static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
 };
 
