@@ -17,6 +17,7 @@ public:
     {
         Connecting,
         Connected,
+        Reconnecting,
         Disconnecting,
         Disconnected,
     };
