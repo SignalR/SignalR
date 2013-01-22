@@ -39,6 +39,7 @@ public:
     string GetGroupsToken();
     IClientTransport* GetTransport();
     string GetUrl();
+    string GetMessageId();
 
     // Transport API
     void ChangeState(State old_state, State new_state);
@@ -52,6 +53,7 @@ private:
     string mConnectionId;
     string mConnectionToken;
     string mGroupsToken;
+    string mMessageId;
     State mState;
     IClientTransport* mTransport;
     IConnectionHandler* mHandler;
