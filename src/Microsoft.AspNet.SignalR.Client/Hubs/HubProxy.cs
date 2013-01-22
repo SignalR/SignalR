@@ -42,6 +42,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             }
         }
 
+        public JsonSerializer JsonSerializer
+        {
+            get { return _connection.JsonSerializer; }
+        }
+
         public Subscription Subscribe(string eventName)
         {
             if (eventName == null)
@@ -106,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
                             if (result.Result != null)
                             {
-                                tcs.TrySetResult(result.Result.ToObject<T>());
+                                tcs.TrySetResult(result.Result.ToObject<T>(_connection.JsonSerializer));
                             }
                             else
                             {
@@ -158,12 +163,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return tcs.Task;
         }
 
-        public void InvokeEvent(string eventName, IList<JToken> args)
+        public void InvokeEvent(string eventName, JToken[] args)
         {
-            Subscription subscription;
-            if (_subscriptions.TryGetValue(eventName, out subscription))
+            Subscription eventObj;
+            if (_subscriptions.TryGetValue(eventName, out eventObj))
             {
-                subscription.OnReceived(args);
+                eventObj.OnData(args);
             }
         }
     }
