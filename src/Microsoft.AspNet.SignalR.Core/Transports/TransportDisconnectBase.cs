@@ -118,7 +118,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual bool IsAlive
         {
-            get { return !(CancellationToken.IsCancellationRequested || _requestReleased == 1); }
+            get
+            {
+                // If the CTS is tripped of the request has ended then the connection isn't alive
+                return !(CancellationToken.IsCancellationRequested || _requestReleased == 1);
+            }
         }
 
         protected CancellationToken ConnectionEndToken
@@ -255,9 +259,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 _hostRegistration.Dispose();
             }
-
-            // Ensure the request is released if we're ending everything
-            ((ITrackingConnection)this).ReleaseRequest();
         }
 
         void ITrackingConnection.ReleaseRequest()
@@ -284,6 +285,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 Completed.TrySetResult(null);
             }
 
+            // Mark the request as released
             Interlocked.Exchange(ref _requestReleased, 1);
         }
 

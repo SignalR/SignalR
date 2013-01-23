@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IPerformanceCounterManager _counters;
-        private TaskCompletionSource<object> _requestTcs;
 
         // This should be ok to do since long polling request never hang around too long
         // so we won't bloat memory
@@ -121,15 +120,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<Task> Reconnected { get; set; }
 
-        protected override void InitializePersistentState()
-        {
-            _requestTcs = new TaskCompletionSource<object>();
-
-            _requestTcs.Task.ContinueWith(_ => CompleteRequest(), TaskContinuationOptions.ExecuteSynchronously);
-
-            base.InitializePersistentState();
-        }
-
         public Task ProcessRequest(ITransportConnection connection)
         {
             Connection = connection;
@@ -168,23 +158,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 if (task != null)
                 {
-                    task.ContinueWith(_requestTcs);
-
-                    return _requestTcs.Task;
+                    // Mark the request as completed once it's done
+                    return task.ContinueWith(_ => CompleteRequest(), 
+                                             TaskContinuationOptions.ExecuteSynchronously);
                 }
             }
 
             return null;
-        }
-
-        protected override void ReleaseRequest()
-        {
-            // Drain pending writes
-            WriteQueue.Drain().Catch().ContinueWith(task =>
-            {
-                // End the request
-                _requestTcs.TrySetResult(null);
-            });
         }
 
         public Task Send(PersistentResponse response)
