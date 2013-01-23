@@ -76,6 +76,7 @@
     <Content Include="Scripts\_references.js" />
     <Content Include="Tests\FunctionalTests\Common\AjaxAbortFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\AjaxSendFacts.js" />
+    <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\PingServerFacts.js" />
@@ -93,6 +94,7 @@
     <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSSendFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
+    <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
     <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
