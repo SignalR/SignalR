@@ -93,6 +93,7 @@
     <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\WebSockets\WSSendFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
+    <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
     <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
     <Content Include="Tests\UnitTests\Common\UrlFacts.js" />
