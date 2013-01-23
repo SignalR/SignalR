@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             Heartbeat.RemoveConnection(this);
-            
+
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
                 // End the connection
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Ensure the request is released if we're ending everything
             ((ITrackingConnection)this).ReleaseRequest();
         }
-        
+
         void ITrackingConnection.ReleaseRequest()
         {
             if (Interlocked.Exchange(ref _requestReleased, 1) == 0)
@@ -273,14 +273,18 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected virtual void ReleaseRequest()
         {
         }
-       
+
         public void CompleteRequest()
         {
             // REVIEW: We can get rid of this when we clean up the Interleave code.
             if (Completed != null)
             {
+                Trace.TraceInformation("CompleteRequest(" + ConnectionId + ")");
+
                 Completed.TrySetResult(null);
             }
+
+            Interlocked.Exchange(ref _requestReleased, 1);
         }
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
@@ -301,7 +305,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = new SafeCancellationTokenSource();            
+            _connectionEndTokenSource = new SafeCancellationTokenSource();
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips
