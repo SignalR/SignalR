@@ -5,10 +5,10 @@ QUnit.module("Server Sent Events Facts");
 
 QUnit.test("Availability", function () {
     var con = $.connection;
-    ok(con.transports.serverSentEvents, "Verifies Server Sent Events transport exists.");
+    QUnit.ok(con.transports.serverSentEvents, "Verifies Server Sent Events transport exists.");
 });
 
 QUnit.test("Named Correctly", function () {
     var con = $.connection;
-    equal(con.transports.serverSentEvents.name, "serverSentEvents", "Verifies Server Sent Events is named correctly.");
+    QUnit.equal(con.transports.serverSentEvents.name, "serverSentEvents", "Verifies Server Sent Events is named correctly.");
 });
