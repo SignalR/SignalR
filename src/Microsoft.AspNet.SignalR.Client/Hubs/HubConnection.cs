@@ -33,6 +33,16 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// Initializes a new instance of the <see cref="HubConnection"/> class.
         /// </summary>
         /// <param name="url">The url to connect to.</param>
+        /// <param name="serializerSettings">The JsonSerializerSettings to use for the JsonSerializer.</param>
+        public HubConnection(string url, JsonSerializerSettings serializerSettings)
+            : base(GetUrl(url, true), (string)null, serializerSettings)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnection"/> class.
+        /// </summary>
+        /// <param name="url">The url to connect to.</param>
         /// <param name="useDefaultUrl">Determines if the default "/signalr" path should be appended to the specified url.</param>
         public HubConnection(string url, bool useDefaultUrl)
             : base(GetUrl(url, useDefaultUrl))
@@ -86,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (message["I"] != null)
             {
-                var result = message.ToObject<HubResult>();
+                var result = message.ToObject<HubResult>(JsonSerializer);
                 Action<HubResult> callback;
 
                 lock (_callbacks)
@@ -108,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             }
             else
             {
-                var invocation = message.ToObject<HubInvocation>();
+                var invocation = message.ToObject<HubInvocation>(JsonSerializer);
                 HubProxy hubProxy;
                 if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
                 {

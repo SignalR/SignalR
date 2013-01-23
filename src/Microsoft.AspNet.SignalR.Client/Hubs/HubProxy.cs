@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             var tokenifiedArguments = new JToken[args.Length];
             for (int i = 0; i < tokenifiedArguments.Length; i++)
             {
-                tokenifiedArguments[i] = JToken.FromObject(args[i]);
+                tokenifiedArguments[i] = JToken.FromObject(args[i], _connection.JsonSerializer);
             }
 
             var tcs = new TaskCompletionSource<T>();
