@@ -97,6 +97,7 @@
     <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
     <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />
+    <Content Include="Tests\UnitTests\Common\UtilityFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
     <Content Include="Tests\UnitTests\Common\UrlFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
