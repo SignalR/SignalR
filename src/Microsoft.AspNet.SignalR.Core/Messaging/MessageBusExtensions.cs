@@ -71,9 +71,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     if (Interlocked.Exchange(ref resultSet, 1) == 0)
                     {
                         result = map(messageResult);
-
-                        // Dispose of the cancellation token subscription
-                        registration.Dispose();
                     }
 
                     if (messageResult.Terminal)
@@ -82,6 +79,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                         // Set the result
                         tcs.TrySetResult(result);
+
+                        // Dispose of the cancellation token subscription
+                        registration.Dispose();
                     }
 
                     return TaskAsyncHelper.False;
