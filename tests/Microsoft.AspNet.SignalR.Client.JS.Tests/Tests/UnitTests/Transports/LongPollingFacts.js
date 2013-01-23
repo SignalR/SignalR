@@ -5,10 +5,10 @@ QUnit.module("Long Polling Facts");
 
 QUnit.test("Availability", function () {
     var con = $.connection;
-    ok(con.transports.longPolling, "Verifies Long Polling transport exists.");
+    QUnit.ok(con.transports.longPolling, "Verifies Long Polling transport exists.");
 });
 
 QUnit.test("Named Correctly", function () {
     var con = $.connection;
-    equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
+    QUnit.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
 });

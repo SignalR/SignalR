@@ -5,10 +5,10 @@ QUnit.module("Web Sockets Facts");
 
 QUnit.test("Availability", function () {
     var con = $.connection;
-    ok(con.transports.webSockets, "Verifies Web Sockets transport exists.");
+    QUnit.ok(con.transports.webSockets, "Verifies Web Sockets transport exists.");
 });
 
 QUnit.test("Named Correctly", function () {
     var con = $.connection;
-    equal(con.transports.webSockets.name, "webSockets", "Verifies Web Sockets is named correctly.");
+    QUnit.equal(con.transports.webSockets.name, "webSockets", "Verifies Web Sockets is named correctly.");
 });
