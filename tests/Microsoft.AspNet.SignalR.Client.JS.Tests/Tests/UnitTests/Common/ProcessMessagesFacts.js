@@ -40,7 +40,7 @@ QUnit.test("Updates keep alive data on any message retrieval.", function () {
 
     lastKeepAlive = connection.keepAliveData.lastKeepAlive;
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(connection.keepAliveData.lastKeepAlive !== lastKeepAlive, "Sent valid data, the last keep alive time (" + connection.keepAliveData.lastKeepAlive + ") should be different than " + lastKeepAlive)
+    QUnit.ok(connection.keepAliveData.lastKeepAlive !== lastKeepAlive, "Sent valid data, the last keep alive time (" + connection.keepAliveData.lastKeepAlive + ") should be different than " + lastKeepAlive);
 });
 
 QUnit.test("Noop's on keep alive", function () {
@@ -53,7 +53,7 @@ QUnit.test("Noop's on keep alive", function () {
     $.signalR.transports._logic.maximizePersistentResponse = function () {
         QUnit.ok(false, "Tried to maximize a message on keep alive.");
         failed = true;
-    }
+    };
 
     $.signalR.transports._logic.processMessages(connection);
 
@@ -79,7 +79,7 @@ QUnit.test("Handles disconnect command correctly", function () {
         QUnit.ok(!async, "Disconnect commands should not be asynchronous.");
         QUnit.ok(!notifyServer, "Disconnect commands should not notify the server.");
         QUnit.ok(true, "Disconnect command should result in the connection trying to be stopped.");
-    }
+    };
 
     $.signalR.transports._logic.processMessages(connection, response);
 });

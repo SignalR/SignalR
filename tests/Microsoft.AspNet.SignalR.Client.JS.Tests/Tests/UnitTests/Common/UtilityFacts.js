@@ -10,8 +10,8 @@ QUnit.test("Validate ensureReconnectingState functionality.", function () {
     });
 
     connection.stateChanged(function (state) {
-        QUnit.equal(state.oldState, $.signalR.connectionState.connected, "State changed called with connected as the old state.")
-        QUnit.equal(state.newState, $.signalR.connectionState.reconnecting, "State changed called with reconnecting as the new state.")
+        QUnit.equal(state.oldState, $.signalR.connectionState.connected, "State changed called with connected as the old state.");
+        QUnit.equal(state.newState, $.signalR.connectionState.reconnecting, "State changed called with reconnecting as the new state.");
         stateChangedCalled = true;
     });
 

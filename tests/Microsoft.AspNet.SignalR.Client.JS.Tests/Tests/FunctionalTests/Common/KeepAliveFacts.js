@@ -11,7 +11,7 @@ QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", test
 
     return function () {
         connection.stop();
-    }
+    };
 });
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.foreverFrameEnabled);
@@ -27,7 +27,7 @@ QUnit.asyncTimeoutTest("Forever Frame transport attempts to check keep alive.", 
 
     return function () {
         connection.stop();
-    }
+    };
 });
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.serverSentEventsEnabled);
@@ -43,7 +43,7 @@ QUnit.asyncTimeoutTest("Server Sent Events transport attempts to check keep aliv
 
     return function () {
         connection.stop();
-    }
+    };
 });
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.webSocketsEnabled);
@@ -60,7 +60,7 @@ QUnit.asyncTimeoutTest("Web Sockets transport attempts to check keep alive.", te
     // Cleanup
     return function () {
         connection.stop();
-    }
+    };
 });
 
 QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", testUtilities.defaultTestTimeout, function (end, assert) {
@@ -102,5 +102,5 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
     return function () {
         $.signalR.transports._logic.updateKeepAlive = savedUpdateKeepAlive;
         $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
-    }
+    };
 });
