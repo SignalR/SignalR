@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                // If the CTS is tripped of the request has ended then the connection isn't alive
+                // If the CTS is tripped or the request has ended then the connection isn't alive
                 return !(CancellationToken.IsCancellationRequested || _requestReleased == 1);
             }
         }
