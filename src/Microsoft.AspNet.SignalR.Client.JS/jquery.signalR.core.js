@@ -232,7 +232,7 @@
 
         reconnectDelay: 2000,
 
-        disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
+        disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
