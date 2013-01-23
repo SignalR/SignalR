@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Client
         CookieContainer CookieContainer { get; set; }
 
         JsonSerializer JsonSerializer { get; }
+        JsonSerializerSettings SerializerSettings { get; }
 
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop();

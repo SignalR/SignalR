@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 hubData.State = _state;
             }
 
-            var value = JsonConvert.SerializeObject(hubData);
+            var value = JsonConvert.SerializeObject(hubData, _connection.SerializerSettings);
 
             _connection.Send(value).ContinueWith(task =>
             {
