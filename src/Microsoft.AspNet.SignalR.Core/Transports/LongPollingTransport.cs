@@ -125,6 +125,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _requestTcs = new TaskCompletionSource<object>();
 
+            _requestTcs.Task.ContinueWith(_ => CompleteRequest(), TaskContinuationOptions.ExecuteSynchronously);
+
             base.InitializePersistentState();
         }
 

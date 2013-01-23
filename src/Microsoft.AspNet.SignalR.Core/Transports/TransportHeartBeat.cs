@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (oldMetadata != null)
             {
-                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.CancellationToken, oldMetadata.Connection.Url, connection.Url);
+                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Do nothing if the connection isn't alive
-            if (connection.CancellationToken.IsCancellationRequested)
+            if (!connection.IsAlive)
             {
                 return;
             }
@@ -205,16 +205,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 foreach (var metadata in _connections.Values)
                 {
-                    if (metadata.Connection.CancellationToken.IsCancellationRequested)
+                    if (metadata.Connection.IsAlive)
                     {
-                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
-                        
-                        // Check if we need to disconnect this connection
-                        CheckDisconnect(metadata);
+                        CheckTimeoutAndKeepAlive(metadata);
                     }
                     else
                     {
-                        CheckTimeoutAndKeepAlive(metadata);
+                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+
+                        // Check if we need to disconnect this connection
+                        CheckDisconnect(metadata);
                     }
                 }
             }
