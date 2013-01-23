@@ -938,7 +938,7 @@
                 $(connection).unbind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
 
                 // Clear all the keep alive data
-                keepAliveData = {};
+                connection.keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive");
             }
         },
