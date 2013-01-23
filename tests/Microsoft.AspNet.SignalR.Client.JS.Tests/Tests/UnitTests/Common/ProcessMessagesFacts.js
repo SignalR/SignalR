@@ -149,7 +149,7 @@ QUnit.test("Message ID is set on connection ID when set.", function () {
 
     // No message ID set
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(typeof (connection.messageId) === "undefined", "No message Id is set if there is no message Id in the message.");
+    QUnit.isNotSet(connection.messageId, "No message Id is set if there is no message Id in the message.");
 
     response.C = 1234;
     $.signalR.transports._logic.processMessages(connection, response);

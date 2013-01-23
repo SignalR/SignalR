@@ -33,7 +33,7 @@ QUnit.test("updateGroups copies over token correctly", function () {
         groupsToken = "SignalR is Awesome";
 
     $.signalR.transports._logic.updateGroups(connection);
-    QUnit.ok(typeof(connection.groupsToken) === "undefined", "The connections groupsToken is not set if we pass an invalid groupsToken to updateGroups.");
+    QUnit.isNotSet(connection.groupsToken, "The connections groupsToken is not set if we pass an invalid groupsToken to updateGroups.");
 
     $.signalR.transports._logic.updateGroups(connection, groupsToken);
     QUnit.ok(connection.groupsToken === groupsToken, "The connections groupsToken property is set to the correctly passed groupsToken.");
