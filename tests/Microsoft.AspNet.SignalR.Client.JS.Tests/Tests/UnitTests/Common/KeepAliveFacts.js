@@ -25,7 +25,7 @@ QUnit.test("Only starts monitoring keep alive if not already monitoring.", funct
 
     $.signalR.transports._logic.monitorKeepAlive(connection);
     // Reset the last keep alive to false so we can determine if we try and monitor it again
-    connection.keepAliveData.lastKeepAlive = false
+    connection.keepAliveData.lastKeepAlive = false;
 
     $.signalR.transports._logic.monitorKeepAlive(connection);
 
@@ -67,7 +67,7 @@ QUnit.test("UpdateKeepAlive binding is triggered on reconnect", function () {
     
     $.signalR.transports._logic.monitorKeepAlive(connection);
     // Reset the last keep alive to false so we can determine if our saved updateKeepAlive binding is executed on reconnect
-    connection.keepAliveData.lastKeepAlive = false
+    connection.keepAliveData.lastKeepAlive = false;
 
     $(connection).triggerHandler($.signalR.events.onReconnect);
 
@@ -90,10 +90,10 @@ QUnit.test("Stop monitoring handles monitoring flag appropriately.", function ()
 
     // Start monitoring so we can stop
     $.signalR.transports._logic.monitorKeepAlive(connection);
-    QUnit.ok(connection.keepAliveData.monitoring === true, "Keep alive monitoring flag set to true after monitorKeepAlive.")
+    QUnit.ok(connection.keepAliveData.monitoring === true, "Keep alive monitoring flag set to true after monitorKeepAlive.");
 
     $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
-    QUnit.isNotSet(connection.keepAliveData.monitoring, "Does not noop if monitor flag was enabled.")
+    QUnit.isNotSet(connection.keepAliveData.monitoring, "Does not noop if monitor flag was enabled.");
 });
 
 QUnit.test("Stop monitoring unbinds reconnect flag.", function () {
@@ -106,7 +106,7 @@ QUnit.test("Stop monitoring unbinds reconnect flag.", function () {
 
     $.signalR.transports._logic.monitorKeepAlive(connection);
     // Reset the last keep alive to false so we can determine if our saved updateKeepAlive binding is executed on reconnect
-    connection.keepAliveData.lastKeepAlive = false
+    connection.keepAliveData.lastKeepAlive = false;
 
     $(connection).triggerHandler($.signalR.events.onReconnect);
 
@@ -117,7 +117,7 @@ QUnit.test("Stop monitoring unbinds reconnect flag.", function () {
     QUnit.isNotSet(connection.keepAliveData.lastKeepAlive, "Last keep alive gets unset on stop monitoring of keep alive.");
 
     $(connection).triggerHandler($.signalR.events.onReconnect);
-    QUnit.isNotSet(connection.keepAliveData.lastKeepAlive, "Last keep alive is still unset after triggering the reconnect event because it was unbound in stop monitoring.")
+    QUnit.isNotSet(connection.keepAliveData.lastKeepAlive, "Last keep alive is still unset after triggering the reconnect event because it was unbound in stop monitoring.");
 });
 
 QUnit.test("Check if alive triggers OnConnectionSlow when keep out warning threshold is surpassed.", function () {
