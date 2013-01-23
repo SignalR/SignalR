@@ -139,7 +139,6 @@ QUnit.test("Triggeres received handler for each message.", function () {
 
 QUnit.test("Message ID is set on connection ID when set.", function () {
     var connection = testUtilities.createHubConnection(),
-        demo = connection.createHubProxies().demo,
         response = {
             M: false,
             L: 1337,
