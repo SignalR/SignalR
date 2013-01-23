@@ -159,8 +159,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (task != null)
                 {
                     // Mark the request as completed once it's done
-                    return task.ContinueWith(_ => CompleteRequest(), 
-                                             TaskContinuationOptions.ExecuteSynchronously);
+                    return task.Finally(() => CompleteRequest());
                 }
             }
 

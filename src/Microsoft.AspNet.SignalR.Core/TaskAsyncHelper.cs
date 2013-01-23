@@ -542,6 +542,34 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task Finally(this Task task, Action next)
+        {
+            try
+            {
+                switch (task.Status)
+                {
+                    case TaskStatus.Faulted:
+                        next();
+                        return FromError(task.Exception);
+
+                    case TaskStatus.Canceled:
+                        next();
+                        return Canceled();
+
+                    case TaskStatus.RanToCompletion:
+                        return FromMethod(next);
+
+                    default:
+                        return RunTaskSynchronously(task, next, onlyOnSuccess: false);
+                }
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task RunSynchronously(this Task task, Action successor)
         {
             switch (task.Status)
@@ -817,30 +845,40 @@ namespace Microsoft.AspNet.SignalR
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        private static Task RunTaskSynchronously(Task task, Action successor)
+        private static Task RunTaskSynchronously(Task task, Action next, bool onlyOnSuccess = true)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(); 
             task.ContinueWith(t =>
             {
-                if (t.IsFaulted)
+                try
                 {
-                    tcs.SetUnwrappedException(t.Exception);
-                }
-                else if (t.IsCanceled)
-                {
-                    tcs.SetCanceled();
-                }
-                else
-                {
-                    try
+                    if (t.IsFaulted)
                     {
-                        successor();
+                        if (!onlyOnSuccess)
+                        {
+                            next();
+                        }
+
+                        tcs.SetUnwrappedException(t.Exception);
+                    }
+                    else if (t.IsCanceled)
+                    {
+                        if (!onlyOnSuccess)
+                        {
+                            next();
+                        }
+
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        next();
                         tcs.SetResult(null);
                     }
-                    catch (Exception ex)
-                    {
-                        tcs.SetUnwrappedException(ex);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetUnwrappedException(ex);
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
