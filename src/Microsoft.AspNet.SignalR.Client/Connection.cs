@@ -134,20 +134,21 @@ namespace Microsoft.AspNet.SignalR.Client
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
 
-            _serializerSettings = serializerSettings;
-            JsonSerializer = JsonSerializer.Create(serializerSettings);            
+            if (serializerSettings == null)
+            {
+                _serializerSettings = new JsonSerializerSettings();
+            }
+            else
+            {
+                _serializerSettings = serializerSettings;
+            }
         }
 
         readonly JsonSerializerSettings _serializerSettings = null;
-        public JsonSerializerSettings SerializerSettings
+        public JsonSerializerSettings GetCurrentJsonSerializerSettings()
         {
-            get { return _serializerSettings; }
+            return _serializerSettings;
         }
-
-        /// <summary>
-        /// Gets or sets the JsonSerializer for the connection;
-        /// </summary>
-        public JsonSerializer JsonSerializer { get; private set; }        
 
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
@@ -437,7 +438,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(JsonConvert.SerializeObject(value, SerializerSettings));
+            return Send(JsonConvert.SerializeObject(value, GetCurrentJsonSerializerSettings()));
         }
         
 

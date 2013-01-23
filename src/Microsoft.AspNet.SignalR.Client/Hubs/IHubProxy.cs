@@ -43,8 +43,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         Subscription Subscribe(string eventName);
 
         /// <summary>
-        /// Gets the JsonSerializer to use.
+        /// Gets the JsonSerializerSettings the connecition is using.
         /// </summary>
-        JsonSerializer JsonSerializer { get; }
+        /// <returns>A <see cref="JsonSerializerSettings"/>.</returns>
+        JsonSerializerSettings GetCurrentJsonSerializerSettings();
     }
 }

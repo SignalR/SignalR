@@ -28,8 +28,7 @@ namespace Microsoft.AspNet.SignalR.Client
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
 
-        JsonSerializer JsonSerializer { get; }
-        JsonSerializerSettings SerializerSettings { get; }
+        JsonSerializerSettings GetCurrentJsonSerializerSettings();
 
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop();

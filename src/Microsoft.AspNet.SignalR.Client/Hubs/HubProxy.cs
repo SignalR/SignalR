@@ -42,9 +42,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             }
         }
 
-        public JsonSerializer JsonSerializer
+        public JsonSerializerSettings GetCurrentJsonSerializerSettings()
         {
-            get { return _connection.JsonSerializer; }
+            return _connection.GetCurrentJsonSerializerSettings();
         }
 
         public Subscription Subscribe(string eventName)
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             var tokenifiedArguments = new JToken[args.Length];
             for (int i = 0; i < tokenifiedArguments.Length; i++)
             {
-                tokenifiedArguments[i] = JToken.FromObject(args[i], _connection.JsonSerializer);
+                tokenifiedArguments[i] = JToken.FromObject(args[i], JsonSerializer.Create(_connection.GetCurrentJsonSerializerSettings()));
             }
 
             var tcs = new TaskCompletionSource<T>();
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
                             if (result.Result != null)
                             {
-                                tcs.TrySetResult(result.Result.ToObject<T>(_connection.JsonSerializer));
+                                tcs.TrySetResult(result.Result.ToObject<T>(JsonSerializer.Create(_connection.GetCurrentJsonSerializerSettings())));
                             }
                             else
                             {
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 hubData.State = _state;
             }
 
-            var value = JsonConvert.SerializeObject(hubData, _connection.SerializerSettings);
+            var value = JsonConvert.SerializeObject(hubData, _connection.GetCurrentJsonSerializerSettings());
 
             _connection.Send(value).ContinueWith(task =>
             {

@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 throw new ArgumentNullException("name");
             }
 
-            return Convert<T>(proxy[name], proxy.JsonSerializer);
+            return Convert<T>(proxy[name], JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings()));
         }
 
         /// <summary>
@@ -100,7 +100,8 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T>(args[0], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T>(args[0], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -136,8 +137,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                       Convert<T2>(args[1], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -173,9 +175,10 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                       Convert<T2>(args[1], proxy.JsonSerializer),
-                       Convert<T3>(args[2], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -211,10 +214,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                       Convert<T2>(args[1], proxy.JsonSerializer),
-                       Convert<T3>(args[2], proxy.JsonSerializer),
-                       Convert<T4>(args[3], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -263,11 +267,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                       Convert<T2>(args[1], proxy.JsonSerializer),
-                       Convert<T3>(args[2], proxy.JsonSerializer),
-                       Convert<T4>(args[3], proxy.JsonSerializer),
-                       Convert<T5>(args[4], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer),
+                       Convert<T5>(args[4], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -303,12 +308,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                       Convert<T2>(args[1], proxy.JsonSerializer),
-                       Convert<T3>(args[2], proxy.JsonSerializer),
-                       Convert<T4>(args[3], proxy.JsonSerializer),
-                       Convert<T5>(args[4], proxy.JsonSerializer),
-                       Convert<T6>(args[5], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer),
+                       Convert<T5>(args[4], jsonSerializer),
+                       Convert<T6>(args[5], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -344,13 +350,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                       Convert<T2>(args[1], proxy.JsonSerializer),
-                       Convert<T3>(args[2], proxy.JsonSerializer),
-                       Convert<T4>(args[3], proxy.JsonSerializer),
-                       Convert<T5>(args[4], proxy.JsonSerializer),
-                       Convert<T6>(args[5], proxy.JsonSerializer),
-                       Convert<T7>(args[6], proxy.JsonSerializer));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer),
+                       Convert<T5>(args[4], jsonSerializer),
+                       Convert<T6>(args[5], jsonSerializer),
+                       Convert<T7>(args[6], jsonSerializer));
             };
 
             subscription.Received += handler;
