@@ -78,6 +78,7 @@
     <Compile Include="Infrastructure\ListHelper.cs" />
     <Compile Include="Infrastructure\PrefixHelper.cs" />
     <Compile Include="Infrastructure\Purposes.cs" />
+    <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="Infrastructure\StringMinifier.cs" />
     <Compile Include="Messaging\Subscription.cs" />
     <Compile Include="Messaging\Topic.cs" />
+    <Compile Include="Messaging\TopicLookup.cs" />
     <Compile Include="Messaging\TopicState.cs" />
     <Compile Include="Messaging\Volatile.cs" />
     <Compile Include="Infrastructure\PersistentConnectionContext.cs" />
