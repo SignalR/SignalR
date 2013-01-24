@@ -22,6 +22,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         internal const string ConnectionIdPrefix = "c-";
         internal const string AckPrefix = "ack-";
 
+        public static bool HasGroupPrefix(string value)
+        {
+            return value.StartsWith(HubGroupPrefix, StringComparison.Ordinal) ||
+                   value.StartsWith(PersistentConnectionGroupPrefix, StringComparison.Ordinal);
+        }
 
         public static string GetConnectionId(string connectionId)
         {
