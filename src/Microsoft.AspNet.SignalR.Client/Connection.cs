@@ -4,9 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
@@ -129,7 +132,13 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
+            JsonSerializer = new JsonSerializer();
         }
+
+        /// <summary>
+        /// Gets or sets the serializer used by the connection
+        /// </summary>
+        public JsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
         /// Object to store the various keep alive timeout values
@@ -453,7 +462,36 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(JsonConvert.SerializeObject(value));
+            return Send(JsonSerializeObject(value));
+        }
+
+        /// <summary>
+        /// Serializes an object to a json string using the JsonSerializer set on the connection.
+        /// </summary>
+        /// <param name="value">The value to serialize.</param>
+        /// <returns>The object as a json string.</returns>
+        public string JsonSerializeObject(object value)
+        {
+            StringBuilder sb = new StringBuilder(0x100);
+            StringWriter stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture);
+            using (JsonTextWriter jsonWriter = new JsonTextWriter(stringWriter))
+            {
+                jsonWriter.Formatting = JsonSerializer.Formatting;
+                JsonSerializer.Serialize(jsonWriter, value);
+            }
+            return stringWriter.ToString();
+        }
+
+        /// <summary>
+        /// Deserializes a json string to an object.
+        /// </summary>
+        /// <typeparam name="T">The type to u</typeparam>
+        /// <param name="jsonValue">The json string to deserialize.</param>
+        /// <returns>The deserialized object.</returns>
+        public T JsonDeserializeObject<T>(string jsonValue)
+        {
+            StringReader reader = new StringReader(jsonValue);
+            return (T)JsonSerializer.Deserialize(new JsonTextReader(reader), typeof(T));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
