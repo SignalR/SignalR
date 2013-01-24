@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             _connection = connection;
             _hubName = hubName;
+
+            if (_connection.JsonSerializer == null)
+            {
+                throw new ArgumentException("The connection must have a JsonSerializer set.", "connection");
+            }
         }
 
         public JToken this[string name]
@@ -40,6 +45,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                     _state[name] = value;
                 }
             }
+        }
+
+        public JsonSerializer JsonSerializer
+        {
+            get { return _connection.JsonSerializer; }
         }
 
         public Subscription Subscribe(string eventName)
@@ -80,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             var tokenifiedArguments = new JToken[args.Length];
             for (int i = 0; i < tokenifiedArguments.Length; i++)
             {
-                tokenifiedArguments[i] = JToken.FromObject(args[i]);
+                tokenifiedArguments[i] = JToken.FromObject(args[i], JsonSerializer);
             }
 
             var tcs = new TaskCompletionSource<T>();
@@ -106,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
                             if (result.Result != null)
                             {
-                                tcs.TrySetResult(result.Result.ToObject<T>());
+                                tcs.TrySetResult(result.Result.ToObject<T>(JsonSerializer));
                             }
                             else
                             {
@@ -140,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 hubData.State = _state;
             }
 
-            var value = JsonConvert.SerializeObject(hubData);
+            var value = _connection.JsonSerializeObject(hubData);
 
             _connection.Send(value).ContinueWith(task =>
             {

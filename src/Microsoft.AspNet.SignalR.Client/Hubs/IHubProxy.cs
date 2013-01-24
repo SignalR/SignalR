@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
@@ -40,5 +41,10 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <param name="eventName">The name of the event</param>
         /// <returns>A <see cref="Subscription"/>.</returns>
         Subscription Subscribe(string eventName);
+
+        /// <summary>
+        /// Gets the serializer used by the connection.
+        /// </summary>
+        JsonSerializer JsonSerializer { get; }
     }
 }

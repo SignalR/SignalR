@@ -6,8 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -37,5 +38,8 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnReconnecting();
         void OnReconnected();
         void PrepareRequest(IRequest request);
+
+        JsonSerializer JsonSerializer { get; set; }
+        string JsonSerializeObject(object value);
     }
 }

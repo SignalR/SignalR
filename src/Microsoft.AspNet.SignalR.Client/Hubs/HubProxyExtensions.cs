@@ -2,9 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 throw new ArgumentNullException("name");
             }
 
-            return Convert<T>(proxy[name]);
+            return Convert<T>(proxy[name], proxy.JsonSerializer);
         }
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T>(args[0]));
+                onData(Convert<T>(args[0], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -135,8 +136,8 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]));
+                onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                       Convert<T2>(args[1], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -172,9 +173,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]));
+                onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                       Convert<T2>(args[1], proxy.JsonSerializer),
+                       Convert<T3>(args[2], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -210,10 +211,10 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]));
+                onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                       Convert<T2>(args[1], proxy.JsonSerializer),
+                       Convert<T3>(args[2], proxy.JsonSerializer),
+                       Convert<T4>(args[3], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -262,11 +263,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]),
-                       Convert<T5>(args[4]));
+                onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                       Convert<T2>(args[1], proxy.JsonSerializer),
+                       Convert<T3>(args[2], proxy.JsonSerializer),
+                       Convert<T4>(args[3], proxy.JsonSerializer),
+                       Convert<T5>(args[4], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -302,12 +303,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]),
-                       Convert<T5>(args[4]),
-                       Convert<T6>(args[5]));
+                onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                       Convert<T2>(args[1], proxy.JsonSerializer),
+                       Convert<T3>(args[2], proxy.JsonSerializer),
+                       Convert<T4>(args[3], proxy.JsonSerializer),
+                       Convert<T5>(args[4], proxy.JsonSerializer),
+                       Convert<T6>(args[5], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -343,13 +344,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]),
-                       Convert<T5>(args[4]),
-                       Convert<T6>(args[5]),
-                       Convert<T7>(args[6]));
+                onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                       Convert<T2>(args[1], proxy.JsonSerializer),
+                       Convert<T3>(args[2], proxy.JsonSerializer),
+                       Convert<T4>(args[3], proxy.JsonSerializer),
+                       Convert<T5>(args[4], proxy.JsonSerializer),
+                       Convert<T6>(args[5], proxy.JsonSerializer),
+                       Convert<T7>(args[6], proxy.JsonSerializer));
             };
 
             subscription.Received += handler;
@@ -379,7 +380,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         }
 #endif
 
-        private static T Convert<T>(JToken obj)
+        private static T Convert<T>(JToken obj, JsonSerializer serializer)
         {
             if (obj == null)
             {
