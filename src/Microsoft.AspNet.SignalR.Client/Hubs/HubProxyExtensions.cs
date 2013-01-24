@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Client.Hubs
 {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 throw new ArgumentNullException("name");
             }
 
-            return Convert<T>(proxy[name]);
+            return Convert<T>(proxy[name], JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings()));
         }
 
         /// <summary>
@@ -99,7 +100,8 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T>(args[0]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T>(args[0], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -135,8 +137,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -172,9 +175,10 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -210,10 +214,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -262,11 +267,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]),
-                       Convert<T5>(args[4]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer),
+                       Convert<T5>(args[4], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -302,12 +308,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]),
-                       Convert<T5>(args[4]),
-                       Convert<T6>(args[5]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer),
+                       Convert<T5>(args[4], jsonSerializer),
+                       Convert<T6>(args[5], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -343,13 +350,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData(Convert<T1>(args[0]),
-                       Convert<T2>(args[1]),
-                       Convert<T3>(args[2]),
-                       Convert<T4>(args[3]),
-                       Convert<T5>(args[4]),
-                       Convert<T6>(args[5]),
-                       Convert<T7>(args[6]));
+                var jsonSerializer = JsonSerializer.Create(proxy.GetCurrentJsonSerializerSettings());
+                onData(Convert<T1>(args[0], jsonSerializer),
+                       Convert<T2>(args[1], jsonSerializer),
+                       Convert<T3>(args[2], jsonSerializer),
+                       Convert<T4>(args[3], jsonSerializer),
+                       Convert<T5>(args[4], jsonSerializer),
+                       Convert<T6>(args[5], jsonSerializer),
+                       Convert<T7>(args[6], jsonSerializer));
             };
 
             subscription.Received += handler;
@@ -379,14 +387,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         }
 #endif
 
-        private static T Convert<T>(JToken obj)
+        private static T Convert<T>(JToken obj, JsonSerializer jsonSerializer)
         {
             if (obj == null)
             {
                 return default(T);
             }
 
-            return obj.ToObject<T>();
+            return obj.ToObject<T>(jsonSerializer);
         }
     }
 }

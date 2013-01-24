@@ -100,6 +100,18 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="url">The url to connect to.</param>
         /// <param name="queryString">The query string data to pass to the server.</param>
         public Connection(string url, string queryString)
+            : this(url, queryString, new JsonSerializerSettings())
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Connection"/> class.
+        /// </summary>
+        /// <param name="url">The url to connect to.</param>
+        /// <param name="queryString">The query string data to pass to the server.</param>
+        /// <param name="serializerSettings">The JsonSerializerSettings to use for the JsonSerializer.</param>
+        public Connection(string url, string queryString, JsonSerializerSettings serializerSettings)
         {
             if (url == null)
             {
@@ -121,6 +133,21 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
+
+            if (serializerSettings == null)
+            {
+                _serializerSettings = new JsonSerializerSettings();
+            }
+            else
+            {
+                _serializerSettings = serializerSettings;
+            }
+        }
+
+        readonly JsonSerializerSettings _serializerSettings = null;
+        public JsonSerializerSettings GetCurrentJsonSerializerSettings()
+        {
+            return _serializerSettings;
         }
 
         /// <summary>
@@ -411,10 +438,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(JsonConvert.SerializeObject(value));
+            return Send(JsonConvert.SerializeObject(value, GetCurrentJsonSerializerSettings()));
         }
-
-
+        
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)

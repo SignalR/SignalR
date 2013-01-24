@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public static IObservable<T> AsObservable<T>(this Connection connection)
         {
-            return connection.AsObservable(value => JsonConvert.DeserializeObject<T>(value));
+            return connection.AsObservable(value => JsonConvert.DeserializeObject<T>(value, connection.GetCurrentJsonSerializerSettings()));
         }
 
         public static IObservable<T> AsObservable<T>(this Connection connection, Func<string, T> selector)
