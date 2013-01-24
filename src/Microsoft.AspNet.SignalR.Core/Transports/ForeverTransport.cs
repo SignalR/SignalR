@@ -157,10 +157,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            Context.Response.ContentType = JsonUtility.MimeType;
-
             return EnqueueOperation(() =>
             {
+                Context.Response.ContentType = JsonUtility.MimeType;
+
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();
 
