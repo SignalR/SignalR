@@ -53,10 +53,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             return base.InitializeResponse(connection)
                        .Then(() =>
                        {
-                           Context.Response.ContentType = "text/event-stream";
-
                            return EnqueueOperation(() =>
                            {
+                               Context.Response.ContentType = "text/event-stream";
+
                                // "data: initialized\n\n"
                                OutputWriter.Write("data: initialized");
                                OutputWriter.WriteLine();
