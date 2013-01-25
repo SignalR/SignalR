@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 return default(T);
             }
 
-            return obj.ToObject<T>();
+            return obj.ToObject<T>(serializer);
         }
     }
 }
