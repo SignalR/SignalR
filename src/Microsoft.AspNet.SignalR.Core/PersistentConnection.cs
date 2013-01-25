@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.SignalR
     public abstract class PersistentConnection
     {
         private const string WebSocketsTransportName = "webSockets";
+        private static readonly char[] SplitChars = new[] { ':' };
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
@@ -140,7 +141,6 @@ namespace Microsoft.AspNet.SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
         public virtual Task ProcessRequest(HostContext context)
         {
             if (context == null)
@@ -177,21 +177,7 @@ namespace Microsoft.AspNet.SignalR
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken));
             }
 
-            string connectionId = null;
-
-            try
-            {
-                connectionId = ProtectedData.Unprotect(connectionToken, Purposes.ConnectionId);
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceInformation("Failed to process connectionToken {0}: {1}", connectionToken, ex);
-            }
-
-            if (connectionId == null)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
-            }
+            string connectionId = GetConnectionId(context, connectionToken);
 
             // Set the transport's connection id to the unprotected one
             Transport.ConnectionId = connectionId;
@@ -239,6 +225,39 @@ namespace Microsoft.AspNet.SignalR
             };
 
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
+        internal string GetConnectionId(HostContext context, string connectionToken)
+        {
+            string unprotectedConnectionToken = null;
+
+            try
+            {
+                unprotectedConnectionToken = ProtectedData.Unprotect(connectionToken, Purposes.ConnectionToken);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("Failed to process connectionToken {0}: {1}", connectionToken, ex);
+            }
+
+            if (String.IsNullOrEmpty(unprotectedConnectionToken))
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
+            }
+
+            var tokens = unprotectedConnectionToken.Split(SplitChars, 2);
+
+            string connectionId = tokens[0];
+            string tokenUserName = tokens.Length > 1 ? tokens[1] : String.Empty;
+            string userName = GetUserIdentity(context);
+
+            if (!String.Equals(tokenUserName, userName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
+            }
+
+            return connectionId;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
@@ -409,11 +428,12 @@ namespace Microsoft.AspNet.SignalR
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
             var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
+            string connectionToken = connectionId + ':' + GetUserIdentity(context);
 
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionToken = ProtectedData.Protect(connectionId, Purposes.ConnectionId),
+                ConnectionToken = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken),
                 ConnectionId = connectionId,
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
@@ -429,6 +449,15 @@ namespace Microsoft.AspNet.SignalR
 
             context.Response.ContentType = JsonUtility.MimeType;
             return context.Response.End(JsonSerializer.Stringify(payload));
+        }
+
+        private static string GetUserIdentity(HostContext context)
+        {
+            if (context.Request.User != null && context.Request.User.Identity.IsAuthenticated)
+            {
+                return context.Request.User.Identity.Name ?? String.Empty;
+            }
+            return String.Empty;
         }
 
         private Task ProcessJsonpRequest(HostContext context, object payload)

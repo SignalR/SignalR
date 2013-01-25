@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 {
     public class MachineKeyProtectedData : IProtectedData
     {
-        private const uint ConnectionIdMagicHeader = 0x855d4ec9;
+        private const uint ConnectionTokenMagicHeader = 0x855d4ec9;
         private const uint GroupsMagicHeader = 0x85c8b45a;
 
         private static readonly UTF8Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
@@ -38,8 +38,8 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
         {
             switch (purpose)
             {
-                case Purposes.ConnectionId:
-                    return new MachineKeyProtectedData40(ConnectionIdMagicHeader);
+                case Purposes.ConnectionToken:
+                    return new MachineKeyProtectedData40(ConnectionTokenMagicHeader);
                 case Purposes.Groups:
                     return new MachineKeyProtectedData40(GroupsMagicHeader);
             }

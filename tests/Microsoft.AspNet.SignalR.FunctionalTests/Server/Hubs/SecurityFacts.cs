@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         private string GetUrl(IProtectedData protectedData, Client.Connection connection)
         {
             // Generate a valid token
-            string token = protectedData.Protect(Guid.NewGuid().ToString("d"), Purposes.ConnectionId);
+            string token = protectedData.Protect(Guid.NewGuid().ToString("d") + ':', Purposes.ConnectionToken);
             string groupsToken = protectedData.Protect(JsonConvert.SerializeObject(new[] { connection.ConnectionToken }), Purposes.Groups);
 
             var sb = new StringBuilder("http://memoryhost/echo/");
