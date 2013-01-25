@@ -123,13 +123,23 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
-            JsonSerializer = new JsonSerializer();
         }
 
+        JsonSerializer _jsonSerializer = new JsonSerializer();
         /// <summary>
         /// Gets or sets the serializer used by the connection
         /// </summary>
-        public JsonSerializer JsonSerializer { get; set; }
+        public JsonSerializer JsonSerializer
+        {
+            get { return _jsonSerializer; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
@@ -426,29 +436,21 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Serializes an object to a json string using the JsonSerializer set on the connection.
         /// </summary>
         /// <param name="value">The value to serialize.</param>
-        /// <returns>The object as a json string.</returns>
+
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonWriter will not dispose the stringWriter")]
         public string JsonSerializeObject(object value)
         {
-            StringBuilder sb = new StringBuilder(0x100);
-            StringWriter stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture);
-            using (JsonTextWriter jsonWriter = new JsonTextWriter(stringWriter))
+            var sb = new StringBuilder(0x100);
+            using (var stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture))
             {
-                jsonWriter.Formatting = JsonSerializer.Formatting;
-                JsonSerializer.Serialize(jsonWriter, value);
-            }
-            return stringWriter.ToString();
-        }
+                using (var jsonWriter = new JsonTextWriter(stringWriter))
+                {
+                    jsonWriter.Formatting = JsonSerializer.Formatting;
+                    JsonSerializer.Serialize(jsonWriter, value);
+                }
 
-        /// <summary>
-        /// Deserializes a json string to an object.
-        /// </summary>
-        /// <typeparam name="T">The type to u</typeparam>
-        /// <param name="jsonValue">The json string to deserialize.</param>
-        /// <returns>The deserialized object.</returns>
-        public T JsonDeserializeObject<T>(string jsonValue)
-        {
-            StringReader reader = new StringReader(jsonValue);
-            return (T)JsonSerializer.Deserialize(new JsonTextReader(reader), typeof(T));
+                return stringWriter.ToString();
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
