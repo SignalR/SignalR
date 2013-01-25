@@ -2,7 +2,7 @@
 {
     public static class Purposes
     {
-        public const string ConnectionId = "SignalR.ConnectionId";
+        public const string ConnectionToken = "SignalR.ConnectionToken";
         public const string Groups = "SignalR.Groups";
     }
 }
