@@ -177,10 +177,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Send(object value)
         {
-            Context.Response.ContentType = IsJsonp ? JsonUtility.JsonpMimeType : JsonUtility.MimeType;
-
             return EnqueueOperation(() =>
             {
+                Context.Response.ContentType = IsJsonp ? JsonUtility.JsonpMimeType : JsonUtility.MimeType;
+
                 if (IsJsonp)
                 {
                     OutputWriter.Write(JsonpCallback);

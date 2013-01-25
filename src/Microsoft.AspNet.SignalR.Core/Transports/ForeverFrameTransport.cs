@@ -96,10 +96,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             return base.InitializeResponse(connection)
                 .Then(initScript =>
                 {
-                    Context.Response.ContentType = "text/html";
-
                     return EnqueueOperation(() =>
                     {
+                        Context.Response.ContentType = "text/html";
+
                         HTMLOutputWriter.WriteRaw(initScript);
                         HTMLOutputWriter.Flush();
 
