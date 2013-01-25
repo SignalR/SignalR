@@ -147,7 +147,15 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     throw new ArgumentNullException("value");
                 }
-
+        public JsonSerializer JsonSerializer
+        {
+            get { return _jsonSerializer; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
                 _jsonSerializer = value;
             }
         }
