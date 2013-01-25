@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,11 +21,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             _connection = connection;
             _hubName = hubName;
-
-            if (_connection.JsonSerializer == null)
-            {
-                throw new ArgumentException("The connection must have a JsonSerializer set.", "connection");
-            }
         }
 
         public JToken this[string name]

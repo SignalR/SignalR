@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -29,6 +31,23 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 
             return default(T);
+        }
+
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonTextReader will not dispose the stringReader")]
+        public static T JsonDeserializeObject<T>(this IConnection connection, string jsonValue)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            using (var stringReader = new StringReader(jsonValue))
+            {
+                using (var jsonTextReader = new JsonTextReader(stringReader))
+                {
+                    return (T)connection.JsonSerializer.Deserialize(jsonTextReader, typeof(T));
+                }
+            }
         }
 
         public static bool EnsureReconnecting(this IConnection connection)
