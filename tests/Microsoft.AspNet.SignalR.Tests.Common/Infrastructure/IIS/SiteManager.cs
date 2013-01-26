@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         {
             var tempDirectory = Environment.GetEnvironmentVariable("TEMP");
             // TODO: Read this from the applicationHost.config
-            var compressionDirectoryPath = tempDirectory + @"\iisexpress\IIS Temporary Compressed Files";
+            var compressionDirectoryPath = Path.Combine(tempDirectory, "iisexpress", "IIS Temporary Compressed Files");
             Directory.CreateDirectory(compressionDirectoryPath);
         }
 
