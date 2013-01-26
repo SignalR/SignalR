@@ -138,12 +138,21 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             Process oldProcess = Interlocked.CompareExchange(ref _iisExpressProcess, CreateIISExpressProcess(), null);
             if (oldProcess == null)
             {
+                EnsureIISExpressCompressionDirectory();
                 _iisExpressProcess.Start();
 
                 // Give it a little time to start up the webserver
                 Thread.Sleep(250);
                 return;
             }
+        }
+
+        private void EnsureIISExpressCompressionDirectory()
+        {
+            var tempDirectory = Environment.GetEnvironmentVariable("TEMP");
+            // TODO: Read this from the applicationHost.config
+            var compressionDirectoryPath = tempDirectory + @"\iisexpress\IIS Temporary Compressed Files";
+            Directory.CreateDirectory(compressionDirectoryPath);
         }
 
         private bool TryGetRunningIIsExpress()
