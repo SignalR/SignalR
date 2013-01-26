@@ -1,7 +1,7 @@
 ﻿QUnit.module("Transports Common - Ping Server Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "longPolling").done(function() {
                 // Successful ping
@@ -31,8 +31,8 @@ QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testU
 
 QUnit.module("Transports Common - Ping Server Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Forever Frame transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Forever Frame transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "foreverFrame").done(function () {
                 // Successful ping
@@ -62,8 +62,8 @@ QUnit.asyncTimeoutTest("Forever Frame transport can initiate Ping Server.", test
 
 QUnit.module("Transports Common - Ping Server Facts", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "serverSentEvents").done(function () {
                 // Successful ping
@@ -93,8 +93,8 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.",
 
 QUnit.module("Transports Common - Ping Server Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Web Sockets transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Web Sockets transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "webSockets").done(function () {
                 // Successful ping

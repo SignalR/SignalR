@@ -1,7 +1,7 @@
 ﻿QUnit.module("Forever Frame Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             connection.transport.lostConnection(connection);
@@ -12,7 +12,7 @@ QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtiliti
 
     assert.equal($.signalR.connectionState.disconnected, connection.state, "SignalR state is disconnected prior to start.");
 
-    connection.start({ transport: 'foreverFrame' }).done(function () {
+    connection.start({ transport: "foreverFrame" }).done(function () {
         assert.equal($.signalR.connectionState.connected, connection.state, "SignalR state is connected once start callback is called.");
 
         // Wire up the state changed (while connected) to detect if we shift into reconnecting
@@ -38,8 +38,8 @@ QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtiliti
     };
 });
 
-QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             connection.transport.lostConnection(connection);
@@ -67,7 +67,7 @@ QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state"
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.foo = function () { };
 
-    connection.start({ transport: 'foreverFrame' }).done(function () {
+    connection.start({ transport: "foreverFrame" }).done(function () {
         tryReconnect();
     }).fail(function (reason) {
         assert.ok(false, "Failed to initiate signalr connection");

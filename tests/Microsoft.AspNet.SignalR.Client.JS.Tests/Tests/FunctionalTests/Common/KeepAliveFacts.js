@@ -1,7 +1,7 @@
 ﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection();
+QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName);
 
     connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected.");
@@ -16,8 +16,8 @@ QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", test
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Forever Frame transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection();
+QUnit.asyncTimeoutTest("Forever Frame transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName);
 
     connection.start({ transport: "foreverFrame" }).done(function () {
         assert.ok(true, "Connected.");
@@ -32,8 +32,8 @@ QUnit.asyncTimeoutTest("Forever Frame transport attempts to check keep alive.", 
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Server Sent Events transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection();
+QUnit.asyncTimeoutTest("Server Sent Events transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName);
 
     connection.start({ transport: "serverSentEvents" }).done(function () {
         assert.ok(true, "Connected.");
@@ -48,8 +48,8 @@ QUnit.asyncTimeoutTest("Server Sent Events transport attempts to check keep aliv
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Web Sockets transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection();
+QUnit.asyncTimeoutTest("Web Sockets transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName);
 
     connection.start({ transport: "webSockets" }).done(function () {
         assert.ok(true, "Connected.");
@@ -63,8 +63,8 @@ QUnit.asyncTimeoutTest("Web Sockets transport attempts to check keep alive.", te
     };
 });
 
-QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         savedUpdateKeepAlive = $.signalR.transports._logic.updateKeepAlive,
         failed = true;
 

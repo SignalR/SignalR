@@ -1,8 +1,8 @@
 ﻿QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection1 = testUtilities.createHubConnection(),
-        connection2 = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Long Polling transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection1 = testUtilities.createHubConnection(testName),
+        connection2 = testUtilities.createHubConnection(testName),
         statushub1 = connection1.createHubProxies().StatusHub,
         statushub2 = connection2.createHubProxies().StatusHub,
         transport = { transport: "longPolling" };
@@ -37,9 +37,9 @@ QUnit.asyncTimeoutTest("Long Polling transport can trigger abort on server via a
 
 QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Forever Frame transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection1 = testUtilities.createHubConnection(),
-        connection2 = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Forever Frame transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection1 = testUtilities.createHubConnection(testName),
+        connection2 = testUtilities.createHubConnection(testName),
         statushub1 = connection1.createHubProxies().StatusHub,
         statushub2 = connection2.createHubProxies().StatusHub,
         transport = { transport: "foreverFrame" };
@@ -74,9 +74,9 @@ QUnit.asyncTimeoutTest("Forever Frame transport can trigger abort on server via 
 
 QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Server Sent Events transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection1 = testUtilities.createHubConnection(),
-        connection2 = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Server Sent Events transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection1 = testUtilities.createHubConnection(testName),
+        connection2 = testUtilities.createHubConnection(testName),
         statushub1 = connection1.createHubProxies().StatusHub,
         statushub2 = connection2.createHubProxies().StatusHub,
         transport = { transport: "serverSentEvents" };

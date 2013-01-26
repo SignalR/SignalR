@@ -1,9 +1,9 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection();
+QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName);
 
-    connection.start({ transport: 'longPolling' }).done(function () {
+    connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         end();
     }).fail(function (reason) {
@@ -17,8 +17,8 @@ QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, functio
     };
 });
 
-QUnit.asyncTimeoutTest("Can receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createConnection('multisend'),
+QUnit.asyncTimeoutTest("Can receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createConnection("multisend", testName),
         values = [];
 
     connection.received(function (data) {
@@ -31,7 +31,7 @@ QUnit.asyncTimeoutTest("Can receive messages on connect.", testUtilities.default
         }
     });
 
-    connection.start({ transport: 'longPolling' }).fail(function (reason) {
+    connection.start({ transport: "longPolling" }).fail(function (reason) {
         assert.ok(false, "Failed to initiate signalr connection");
         end();
     });

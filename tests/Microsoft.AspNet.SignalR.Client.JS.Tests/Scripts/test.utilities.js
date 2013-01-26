@@ -22,26 +22,28 @@
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function () {
-            var connection;
+        createHubConnection: function (testName) {
+            var connection,
+                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
             if (window.document.testUrl !== 'auto') {
-                connection = $.hubConnection(window.document.testUrl);
+                connection = $.hubConnection(window.document.testUrl, { qs: qs });
             } else {
-                connection = $.hubConnection('signalr', { useDefaultPath: false });
+                connection = $.hubConnection('signalr', { useDefaultPath: false, qs: qs });
             }
 
             connection.logging = true;
 
             return connection;
         },
-        createConnection: function (url) {
-            var connection;
+        createConnection: function (url, testName) {
+            var connection,
+                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
             if (window.document.testUrl !== 'auto') {
-                connection = $.connection(window.document.testUrl + '/' + url);
+                connection = $.connection(window.document.testUrl + '/' + url, qs);
             } else {
-                connection = $.connection(url);
+                connection = $.connection(url, qs);
             }
 
             connection.logging = true;

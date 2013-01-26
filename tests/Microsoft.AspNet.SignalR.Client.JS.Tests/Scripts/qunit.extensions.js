@@ -108,7 +108,7 @@
                     end();
                 }, timeout);
 
-                testCleanup = test(end, assert) || $.noop;
+                testCleanup = test(end, assert, name) || $.noop;
 
                 if (!$.isFunction(testCleanup)) {
                     throw new Error("Return value of test must be falsey or a function");

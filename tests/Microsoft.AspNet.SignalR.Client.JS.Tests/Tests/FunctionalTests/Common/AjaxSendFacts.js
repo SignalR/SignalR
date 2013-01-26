@@ -1,7 +1,7 @@
 ﻿QUnit.module("Transports Common - Ajax Send Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Long Polling transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Long Polling transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo;
 
     // Must subscribe to at least one method on client
@@ -40,8 +40,8 @@ QUnit.asyncTimeoutTest("Long Polling transport can trigger method on server via 
 
 QUnit.module("Transports Common - Ajax Send Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Forever Frame transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Forever Frame transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo;
 
     // Must subscribe to at least one method on client
@@ -80,8 +80,8 @@ QUnit.asyncTimeoutTest("Forever Frame transport can trigger method on server via
 
 QUnit.module("Transports Common - Ajax Send Facts", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Server Sent Events transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Server Sent Events transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo;
 
     // Must subscribe to at least one method on client

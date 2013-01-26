@@ -1,7 +1,7 @@
 ﻿QUnit.module("Forever Frame Facts", testUtilities.foreverFrameEnabled);
 
-QUnit.asyncTimeoutTest("Can send ", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Can send ", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;
 

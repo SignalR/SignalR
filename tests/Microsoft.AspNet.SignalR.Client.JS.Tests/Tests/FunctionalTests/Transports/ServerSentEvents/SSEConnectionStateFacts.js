@@ -1,7 +1,7 @@
 ﻿QUnit.module("Server Sent Event Facts", testUtilities.serverSentEventsEnabled);
 
-QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             connection.transport.lostConnection(connection);
@@ -39,8 +39,8 @@ QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtiliti
 });
 
 
-QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             connection.transport.lostConnection(connection);

@@ -1,7 +1,7 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.longPollingEnabled);
 
-QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             // Verify that the polling connection is instantiated before trying to abort it. We want
@@ -32,7 +32,7 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
         tryReconnect();
     };
 
-    connection.start({ transport: 'longPolling' }).done(function () {
+    connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
@@ -47,8 +47,8 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
     };
 });
 
-QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             // Verify that the polling connection is instantiated before trying to abort it. We want
@@ -79,7 +79,7 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
         tryReconnect();
     };
 
-    connection.start({ transport: 'longPolling' }).done(function () {
+    connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
@@ -94,8 +94,8 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
     };
 });
 
-QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             // Verify that the polling connection is instantiated before trying to abort it. We want
@@ -124,7 +124,7 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
         tryReconnect();
     };
 
-    connection.start({ transport: 'longPolling' }).done(function () {
+    connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
@@ -139,8 +139,8 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
     };
 });
 
-QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         tryReconnect = function () {
             // Verify that the polling connection is instantiated before trying to abort it. We want
@@ -169,7 +169,7 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
         tryReconnect();
     };
 
-    connection.start({ transport: 'longPolling' }).done(function () {
+    connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
@@ -184,8 +184,8 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
     };
 });
 
-QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         demo = connection.createHubProxies().demo,
         // Trigger disconnect timeout after X second of trying to reconnect.  This has to be a unique value because
         // we'll be using it to check if we've triggered the disconnect timeout.
@@ -236,7 +236,7 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
         }
     };
 
-    connection.start({ transport: 'longPolling' }).done(function () {
+    connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         connection.disconnectTimeout = disconnectTimeout;
 

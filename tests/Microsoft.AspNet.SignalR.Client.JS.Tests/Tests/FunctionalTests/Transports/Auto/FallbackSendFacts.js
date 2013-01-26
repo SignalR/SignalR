@@ -1,7 +1,7 @@
 ﻿QUnit.module("Fallback Facts");
 
-QUnit.asyncTimeoutTest("Default transports fall back and are able to send data.", testUtilities.defaultTestTimeout, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Default transports fall back and are able to send data.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;
 
