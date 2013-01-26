@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/ErrorsAreFun");
+                    var connection = CreateConnection(host.Url + "/ErrorsAreFun");
 
                     // Expecting 404
                     var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/fall-back");
+                    var connection = CreateConnection(host.Url + "/fall-back");
                     
                     connection.Start(host.Transport).Wait();
 
@@ -76,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize();
-                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var connection = CreateHubConnection(host);
                     int timesStopped = 0;
 
                     connection.Closed += () =>
@@ -110,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(disconnectTimeout: 6);
-                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var connection = CreateHubConnection(host);
                     var reconnectWh = new ManualResetEventSlim();
                     var disconnectWh = new ManualResetEventSlim();
 
@@ -148,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     connectionTimeout: 2,
                                     disconnectTimeout: 6);
 
-                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var connection = CreateHubConnection(host);
                     var reconnectingWh = new ManualResetEventSlim();
                     var reconnectedWh = new ManualResetEventSlim();
 

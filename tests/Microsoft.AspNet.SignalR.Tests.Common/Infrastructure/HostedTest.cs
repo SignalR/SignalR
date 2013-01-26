@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
@@ -34,6 +40,31 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             }
 
             return host;
+        }
+
+        protected HubConnection CreateHubConnection(ITestHost host)
+        {
+            var query = new Dictionary<string, string>();
+            query["test"] = GetTestName();
+            return new HubConnection(host.Url, query);
+        }
+
+        protected Client.Connection CreateConnection(string url)
+        {
+            var query = new Dictionary<string, string>();
+            query["test"] = GetTestName();
+            return new Client.Connection(url, query);
+        }
+
+        private string GetTestName()
+        {
+            var stackTrace = new StackTrace();
+            return (from f in stackTrace.GetFrames()
+                    select f.GetMethod() into m
+                    let anyFactsAttributes = m.GetCustomAttributes(typeof(FactAttribute), true).Length > 0
+                    let anyTheories = m.GetCustomAttributes(typeof(TheoryAttribute), true).Length > 0
+                    where anyFactsAttributes || anyTheories
+                    select m.Name).First();
         }
 
         protected IClientTransport CreateTransport(TransportType transportType)
