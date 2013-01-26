@@ -28,7 +28,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can trigger method on server via 
 
         $.signalR.transports._logic.ajaxSend(connection,JSON.stringify(data));
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -68,7 +68,7 @@ QUnit.asyncTimeoutTest("Forever Frame transport can trigger method on server via
 
         $.signalR.transports._logic.ajaxSend(connection, JSON.stringify(data));
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -108,7 +108,7 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can trigger method on serve
 
         $.signalR.transports._logic.ajaxSend(connection, JSON.stringify(data));
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -118,4 +118,4 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can trigger method on serve
     };
 });
 
-// Web Sockets uses a duplex stream for sending content, thus does not use the ajax methods
+// WebSockets uses a duplex stream for sending content, thus does not use the ajax methods

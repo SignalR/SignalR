@@ -26,7 +26,7 @@ QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtiliti
 
         tryReconnect();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -71,7 +71,7 @@ QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state"
     connection.start({ transport: 'serverSentEvents' }).done(function () {
         tryReconnect();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

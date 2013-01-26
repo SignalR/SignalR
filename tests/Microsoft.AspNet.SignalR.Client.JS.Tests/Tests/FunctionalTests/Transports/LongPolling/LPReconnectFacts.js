@@ -37,7 +37,7 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -84,7 +84,7 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -129,7 +129,7 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -174,7 +174,7 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -243,7 +243,7 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

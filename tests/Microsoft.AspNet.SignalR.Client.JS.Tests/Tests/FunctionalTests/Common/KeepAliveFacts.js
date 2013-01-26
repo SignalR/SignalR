@@ -48,12 +48,12 @@ QUnit.asyncTimeoutTest("Server Sent Events transport attempts to check keep aliv
 
 QUnit.module("Transports Common - Keep Alive Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Web Sockets transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("WebSockets transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName);
 
     connection.start({ transport: "webSockets" }).done(function () {
         assert.ok(true, "Connected.");
-        assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the web sockets transport.");
+        assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the WebSockets transport.");
         end();
     });
 

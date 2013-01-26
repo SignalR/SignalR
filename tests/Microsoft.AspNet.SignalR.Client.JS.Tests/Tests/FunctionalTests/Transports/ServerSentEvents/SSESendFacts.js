@@ -14,7 +14,7 @@ QUnit.asyncTimeoutTest("Can send ", testUtilities.defaultTestTimeout, function (
             end();
         });
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

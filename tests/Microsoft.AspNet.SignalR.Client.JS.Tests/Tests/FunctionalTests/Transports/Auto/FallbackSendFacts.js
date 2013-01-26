@@ -12,7 +12,7 @@ QUnit.asyncTimeoutTest("Default transports fall back and are able to send data."
             end();
         });
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

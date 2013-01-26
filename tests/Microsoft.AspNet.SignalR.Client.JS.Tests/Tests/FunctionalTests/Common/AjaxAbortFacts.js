@@ -20,11 +20,11 @@ QUnit.asyncTimeoutTest("Long Polling transport can trigger abort on server via a
         connection2.start(transport).done(function () {
             $.signalR.transports._logic.ajaxAbort(connection1);
         }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate signalr connection2");
+            assert.ok(false, "Failed to initiate SignalR connection2");
             end();
         });
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection1");
+        assert.ok(false, "Failed to initiate SignalR connection1");
         end();
     });
 
@@ -57,11 +57,11 @@ QUnit.asyncTimeoutTest("Forever Frame transport can trigger abort on server via 
         connection2.start(transport).done(function () {
             $.signalR.transports._logic.ajaxAbort(connection1);
         }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate signalr connection2");
+            assert.ok(false, "Failed to initiate SignalR connection2");
             end();
         });
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection1");
+        assert.ok(false, "Failed to initiate SignalR connection1");
         end();
     });
 
@@ -94,11 +94,11 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can trigger abort on server
         connection2.start(transport).done(function () {
             $.signalR.transports._logic.ajaxAbort(connection1);
         }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate signalr connection2");
+            assert.ok(false, "Failed to initiate SignalR connection2");
             end();
         });
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection1");
+        assert.ok(false, "Failed to initiate SignalR connection1");
         end();
     });
 

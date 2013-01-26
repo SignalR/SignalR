@@ -7,7 +7,7 @@ QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, functio
         assert.ok(true, "Connected");
         end();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -32,7 +32,7 @@ QUnit.asyncTimeoutTest("Can receive messages on connect.", testUtilities.default
     });
 
     connection.start({ transport: "longPolling" }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

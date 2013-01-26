@@ -1,4 +1,4 @@
-﻿QUnit.module("Web Sockets Facts", testUtilities.webSocketsEnabled);
+﻿QUnit.module("WebSockets Facts", testUtilities.webSocketsEnabled);
 
 QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),
@@ -26,7 +26,7 @@ QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtiliti
 
         tryReconnect();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -71,7 +71,7 @@ QUnit.asyncTimeoutTest("Connection StateChanged event is called for every state"
     connection.start({ transport: 'webSockets' }).done(function () {
         tryReconnect();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

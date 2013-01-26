@@ -7,7 +7,7 @@ QUnit.asyncTimeoutTest("Default transports fall back and connect.", testUtilitie
         assert.ok(true, "Connected");
         end();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

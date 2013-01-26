@@ -1,4 +1,4 @@
-﻿QUnit.module("Web Sockets Facts", testUtilities.webSocketsEnabled);
+﻿QUnit.module("WebSockets Facts", testUtilities.webSocketsEnabled);
 
 QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName);
@@ -7,7 +7,7 @@ QUnit.asyncTimeoutTest("Can connect.", testUtilities.defaultTestTimeout, functio
         assert.ok(true, "Connected");
         end();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

@@ -19,7 +19,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", testU
         connection.stop();
         testPingServer();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -50,7 +50,7 @@ QUnit.asyncTimeoutTest("Forever Frame transport can initiate Ping Server.", test
         connection.stop();
         testPingServer();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -81,7 +81,7 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.",
         connection.stop();
         testPingServer();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
@@ -93,15 +93,15 @@ QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.",
 
 QUnit.module("Transports Common - Ping Server Facts", testUtilities.webSocketsEnabled);
 
-QUnit.asyncTimeoutTest("Web Sockets transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("WebSockets transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),
         testPingServer = function () {
             $.signalR.transports._logic.pingServer(connection, "webSockets").done(function () {
                 // Successful ping
-                assert.ok(true, "Successful ping with Web Sockets");
+                assert.ok(true, "Successful ping with WebSockets");
                 end();
             }).fail(function () {
-                assert.ok(false, "Failed to ping server with Web Sockets");
+                assert.ok(false, "Failed to ping server with WebSockets");
                 end();
             });
         };
@@ -112,7 +112,7 @@ QUnit.asyncTimeoutTest("Web Sockets transport can initiate Ping Server.", testUt
         connection.stop();
         testPingServer();
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 
