@@ -104,21 +104,31 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 // If there's any hubs then perform the auth check
                 if (clientHubInfo != null && clientHubInfo.Any())
                 {
+                    var hubCache = new Dictionary<string, HubDescriptor>(StringComparer.OrdinalIgnoreCase);
+
                     foreach (var hubInfo in clientHubInfo)
                     {
+                        HubDescriptor hubDescriptor;
+                        if (hubCache.TryGetValue(hubInfo.Name, out hubDescriptor))
+                        {
+                            throw new InvalidOperationException(Resources.Error_DuplicateHubs);
+                        }
+
                         // Try to find the associated hub type
-                        HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
-                            _counters.ErrorsHubResolutionTotal,
-                            _counters.ErrorsHubResolutionPerSec,
-                            _counters.ErrorsAllTotal,
-                            _counters.ErrorsAllPerSec);
+                        hubDescriptor = _manager.EnsureHub(hubInfo.Name,
+                                                    _counters.ErrorsHubResolutionTotal,
+                                                    _counters.ErrorsHubResolutionPerSec,
+                                                    _counters.ErrorsAllTotal,
+                                                    _counters.ErrorsAllPerSec);
 
                         if (_pipelineInvoker.AuthorizeConnect(hubDescriptor, request))
                         {
                             // Add this to the list of hub descriptors this connection is interested in
-                            _hubs.Add(hubDescriptor);
+                            hubCache.Add(hubDescriptor.Name, hubDescriptor);
                         }
                     }
+
+                    _hubs.AddRange(hubCache.Values);
 
                     // If we have any hubs in the list then we're authorized
                     return _hubs.Count > 0;
