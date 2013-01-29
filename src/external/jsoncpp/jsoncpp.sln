@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jsoncpp", "jsoncpp\jsoncpp.vcxproj", "{A3B70FAC-DE48-40F4-AE9D-CB82BB377F36}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_jsoncpp", "test_jsoncpp\test_jsoncpp.vcxproj", "{633A4BDA-829F-4722-B375-9B081D40FE49}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A3B70FAC-DE48-40F4-AE9D-CB82BB377F36}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A3B70FAC-DE48-40F4-AE9D-CB82BB377F36}.Debug|Win32.Build.0 = Debug|Win32
+		{A3B70FAC-DE48-40F4-AE9D-CB82BB377F36}.Release|Win32.ActiveCfg = Release|Win32
+		{A3B70FAC-DE48-40F4-AE9D-CB82BB377F36}.Release|Win32.Build.0 = Release|Win32
+		{633A4BDA-829F-4722-B375-9B081D40FE49}.Debug|Win32.ActiveCfg = Debug|Win32
+		{633A4BDA-829F-4722-B375-9B081D40FE49}.Debug|Win32.Build.0 = Debug|Win32
+		{633A4BDA-829F-4722-B375-9B081D40FE49}.Release|Win32.ActiveCfg = Release|Win32
+		{633A4BDA-829F-4722-B375-9B081D40FE49}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
