@@ -10,33 +10,45 @@
     <form id="main">
         <div id="qunit"></div>
         <script>
-            function queryString(variable) {
-                var query = window.location.search.substring(1),
-                    vars = query.split('&'),
-                    pair, i;
-
-                if (!query || !vars || vars.length === 0) {
-                    return;
+            (function () {
+                // Use a custom function since IE 8 doesn't define Array.prototype.indexOf
+                function inArray (arr, obj) {
+                    for (var i = 0; i < arr.length; i++) {
+                        if (arr[i] === obj) {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
 
-                for (i = 0; i < vars.length; i++) {
-                    pair = vars[i].split('=');
-                    if (decodeURIComponent(pair[0]) === variable) {
-                        return decodeURIComponent(pair[1]);
+                function queryString(variable) {
+                    var query = window.location.search.substring(1),
+                        vars = query.split('&'),
+                        pair, i;
+
+                    if (!query || !vars || vars.length === 0) {
+                        return;
+                    }
+
+                    for (i = 0; i < vars.length; i++) {
+                        pair = vars[i].split('=');
+                        if (decodeURIComponent(pair[0]) === variable) {
+                            return decodeURIComponent(pair[1]);
+                        }
                     }
                 }
-            }
 
-            // Dynamically write out the jQuery script tag using version from querystring
-            // if it's defined, otherwise default to minimum supported version.
-            var scriptTagHtml = '<script src="Scripts/jquery-{ver}.js"><\/script>',
-                jQueryVersion = queryString('jquery') || '1.6.4';
+                // Dynamically write out the jQuery script tag using version from querystring
+                // if it's defined, otherwise default to minimum supported version.
+                var scriptTagHtml = '<script src="Scripts/jquery-{ver}.js"><\/script>',
+                    jQueryVersion = queryString('jquery') || '1.6.4';
 
-            if (['1.6.4', '1.7.2', '1.8.3', '1.9.0'].indexOf(jQueryVersion) < 0) {
-                throw new Error(jQueryVersion + ' is not a supported jQuery version.');
-            } else {
-                document.write(scriptTagHtml.replace('{ver}', jQueryVersion));
-            }
+                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.0'], jQueryVersion)) {
+                    throw new Error(jQueryVersion + ' is not a supported jQuery version.');
+                } else {
+                    document.write(scriptTagHtml.replace('{ver}', jQueryVersion));
+                }
+            })();
         </script>
         <script src="Scripts/qunit.js"></script>
         <script src="Scripts/qunit.extensions.js"></script>        
