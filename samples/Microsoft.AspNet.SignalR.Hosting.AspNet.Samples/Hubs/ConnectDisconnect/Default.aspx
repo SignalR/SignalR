@@ -10,6 +10,8 @@
         <h2>Connection Status <small>Handling client connection state</small></h2>
         <p>Demonstrates how to handle the events that are raised when connections connect, reconnect and disconnect from the Hub API.</p>
     </div>
+    <button id="connectionStop">STOP</button>
+    <button id="connectionStart">START</button>
 
     <button id="connectionStart">START</button>
     <button id="connectionStop">STOP</button>    

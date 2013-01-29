@@ -1,5 +1,91 @@
 # SignalR Release Notes
 
+# 1.0rc2
+
+### Notable Commits
+* Removed checks for the GAC and dynamic assemblies. ([2cb4491fc6](https://github.com/SignalR/SignalR/commit/2cb4491fc647c9816896093b394baf4eaa33df67))
+* Modified KeepAlive to be an integer instead of a TimeSpan. ([a27f41f327](https://github.com/SignalR/SignalR/commit/a27f41f3271d67ce08fb6e82741d77e637bf7753))
+* Added total topics performance counter. ([ece78b804c](https://github.com/SignalR/SignalR/commit/ece78b804cf44a7348560d403282e77832ae9164))
+* Changing default message size to 1000. ([88f7134b8e](https://github.com/SignalR/SignalR/commit/88f7134b8e0a80758dc763116b5f25b36d977551))
+* Exposed GetHttpContext extension method from SystemWeb assembly. ([6ea4b20e87](https://github.com/SignalR/SignalR/commit/6ea4b20e872d8116113791c15a52dbda68d27b07))
+* Remove ServerVariables from IRequest. ([7f4969c6a8](https://github.com/SignalR/SignalR/commit/7f4969c6a8fb32b4c1216efec9d44550c5171f02))
+* Fix some issues with SignalR's owin request impl on mono. ([b5c05bc6bf](https://github.com/SignalR/SignalR/commit/b5c05bc6bfee3ed590633a8f71c9a3e8038ab034))
+
+### Features
+
+* Added support for windows phone 8.
+* Add websocket support for the .NET client. ([#985](https://github.com/SignalR/SignalR/issues/985))
+* Ability to prevent auto generated Javascript proxies. ([#978](https://github.com/SignalR/SignalR/issues/978))
+* Remove the Mode parameter from AuthorizeAttribute. ([#956](https://github.com/SignalR/SignalR/issues/956))
+
+### Breaking Changes
+* Moved several types into different namespaces. ([524e606e7f](https://github.com/SignalR/SignalR/commit/524e606e7f9f18e8a7b40d62d590c904a94eb30e))
+* MapHubs and MapConnection no longer take route parameters. They are just prefixes. ([b7b1371a2a](https://github.com/SignalR/SignalR/commit/b7b1371a2aa0d002ff33138bb0d20115c7f49da6))
+
+### Bugs
+
+* Validate that connection IDs are in correct format in PersistentConnection on all requests. ([#1298](https://github.com/SignalR/SignalR/issues/1298))
+* Remove "Async" from all member names. ([#1276](https://github.com/SignalR/SignalR/issues/1276))
+* WebSocket transport: Unclean disconnects are being treated as clean disconnects. ([#1254](https://github.com/SignalR/SignalR/issues/1254))
+* JS client longPolling can't reconnect when server process restarts except after the first rebuild. ([#1246](https://github.com/SignalR/SignalR/issues/1246))
+* Registry exception. ([#1244](https://github.com/SignalR/SignalR/issues/1244))
+* JS Client: LongPolling OnConnected message doesn't make it to client. ([#1241](https://github.com/SignalR/SignalR/issues/1241))
+* In JS client, Group names are not encoded in the querystring when a transport reconnects. ([#1233](https://github.com/SignalR/SignalR/issues/1233))
+* SL5 client is not working. it fails to load json.net. ([#1223](https://github.com/SignalR/SignalR/issues/1223))
+* Interval between keep alive missed and notifying transport seems to small. ([#1211](https://github.com/SignalR/SignalR/issues/1211))
+* "+" sign in a string gets transformed to a space. ([#1194](https://github.com/SignalR/SignalR/issues/1194))
+* LP: Clients cannot receive messages on client if message is sent right after start. ([#1185](https://github.com/SignalR/SignalR/issues/1185))
+* Fix issues with growing number of dead connections consuming too much memory. ([#1177](https://github.com/SignalR/SignalR/issues/1177))
+* JS Client: Base events (reconnecting, connected, received etc.) are not unique to connection objects. ([#1173](https://github.com/SignalR/SignalR/issues/1173))
+* PerformanceCounterCategory.Exists hangs. ([#1158](https://github.com/SignalR/SignalR/issues/1158))
+* JS client function isCrossDomain returns true for same website /host url. ([#1156](https://github.com/SignalR/SignalR/issues/1156))
+* Waiting on multiple commands in OnConnectedAsync causes a TaskCanceledException in ForeverTransports (SSE, FF, WS). ([#1155](https://github.com/SignalR/SignalR/issues/1155))
+* JS client can't receive messages after reconnected for network disconnect and re-connected. ([#1144](https://github.com/SignalR/SignalR/issues/1144))
+* .NET client fails auto-negotiation fallback. ([#1125](https://github.com/SignalR/SignalR/issues/1125))
+* Deadlock in .NET client websocket stop logic. ([#1120](https://github.com/SignalR/SignalR/issues/1120))
+* Remove MozWebSocket check in javascript websocket transport. ([#1119](https://github.com/SignalR/SignalR/issues/1119))
+* OutOfMemoryException after sending a lot of huge messages. ([#1114](https://github.com/SignalR/SignalR/issues/1114))
+* Don't create topics when publishing. ([#1071](https://github.com/SignalR/SignalR/issues/1071))
+* Unseal AuthorizeAttribute. ([#1050](https://github.com/SignalR/SignalR/issues/1050))
+* Topic objects remain in Active state and never clean up after all clients disconnected. ([#1001](https://github.com/SignalR/SignalR/issues/1001))
+* Remove the Mode parameter from AuthorizeAttribute. ([#956](https://github.com/SignalR/SignalR/issues/956))
+* on IE10/9 foreverFrame transport connection can't receive message after network disconnect time and network re-connect. ([#820](https://github.com/SignalR/SignalR/issues/820))
+
+
+# 1.0rc1
+* Drain pending writes before ending the request to avoid AVs. ([010c4f6750](https://github.com/SignalR/SignalR/commit/010c4f675039bcf06bde9b8e68f8178f86501de4))
+* Bubble canceled tasks via hubs back to the client. ([c1e8e6834b](https://github.com/SignalR/SignalR/commit/c1e8e6834b9ddb182d751a04c5ea382d1e3c8668))
+* Expose Request to the HubCallerContext. ([5ec61eb37c](https://github.com/SignalR/SignalR/commit/5ec61eb37c16369976ba66f4d5262a0bf345acfc))
+* Removed Hosting.Common altogether. ([acebe530a4](https://github.com/SignalR/SignalR/commit/acebe530a4502303ffb6b669dce0a73bf2ef172d))
+* Fixed deadlock in ForeverTransport. ([11da5b71a3](https://github.com/SignalR/SignalR/commit/11da5b71a3d89d5947d6797f7a0176d6d7e688e9))
+* Drop silverlight4 package from build. ([33cc5e06d9](https://github.com/SignalR/SignalR/commit/33cc5e06d952d3d242de13f3728ea6843964dcd5))
+* Change the default keep alive to 15 seconds. ([6741075e63](https://github.com/SignalR/SignalR/commit/6741075e630e96f8a4d96c336da19dd886b27f15))
+* Server configured DisconnectTimeout is not honored by JavaScript client. ([#1086](https://github.com/SignalR/SignalR/issues/1086))
+* RegisterHubs hangs for a while. ([#1063](https://github.com/SignalR/SignalR/issues/1063))
+* Firefox 5 fails when stopping forever frame. ([#1060](https://github.com/SignalR/SignalR/issues/1060))
+* Connection never disconnects if data is being sent to it. ([#1046](https://github.com/SignalR/SignalR/issues/1046))
+* Unable to distribute to groups if transport is longpolling and HubName attribute is used. ([#1039](https://github.com/SignalR/SignalR/issues/1039))
+* When an invalid transport is specified $.connection.hub.start() will auto negotiate. It should throw an error and stop the connection. ([#1037](https://github.com/SignalR/SignalR/issues/1037))
+* When reconnecting, don't trigger on error for longpolling. ([#1036](https://github.com/SignalR/SignalR/issues/1036))
+* Consider removing IRequestCookieCollection. ([#1034](https://github.com/SignalR/SignalR/issues/1034))
+* Expose generic items bag on IRequest. ([#1033](https://github.com/SignalR/SignalR/issues/1033))
+* The CancellationTokenSource has been disposed. ([#1020](https://github.com/SignalR/SignalR/issues/1020))
+* MessageBusExtensions.cs disposer.Dispose() throws ObjectDisposedException. ([#1005](https://github.com/SignalR/SignalR/issues/1005))
+* Remove dynamic support from .NET client. ([#996](https://github.com/SignalR/SignalR/issues/996))
+* Add Version Property in JS Library. ([#994](https://github.com/SignalR/SignalR/issues/994))
+* .Net Client Send() task hangs when server operation throws. ([#991](https://github.com/SignalR/SignalR/issues/991))
+* Remove BOM encoding from output streams. ([#982](https://github.com/SignalR/SignalR/issues/982))
+* Fix script escaping script files in forever frame. ([#950](https://github.com/SignalR/SignalR/issues/950))
+* If no messages received after connection joins group and then disconnect, the connection won't be in the group. ([#938](https://github.com/SignalR/SignalR/issues/938))
+* We do not escape the Message Id Parameter on the JS client. ([#937](https://github.com/SignalR/SignalR/issues/937))
+* Joining group with hash in the name fails ([#935](https://github.com/SignalR/SignalR/issues/935))
+* Optimized message format ([#887](https://github.com/SignalR/SignalR/issues/887))
+* IE throws 'Access denied' on foreverFrame ([#873](https://github.com/SignalR/SignalR/issues/873))
+* Native heap corruption while flushing from ForeverFrameTransport.KeepAlive ([#854](https://github.com/SignalR/SignalR/issues/854))
+* First chance exception when webSockets connection closes. ([#821](https://github.com/SignalR/SignalR/issues/821))
+* Use OWIN host exclusivly. ([9f9a18089f](https://github.com/SignalR/SignalR/commit/9f9a18089f8564926ace3a3a656efc4de51d0793))
+* WebSocket closes ungracefully with no error when trying to call hub method with wrong name or parameters. ([#440](https://github.com/SignalR/SignalR/issues/440))
+
 # 0.5.3 (Official Release)
 * Improve logging for hubs in js client. ([#505](https://github.com/SignalR/SignalR/issues/505))
 * Can't pass querystring when creating HubConnection. ([#581](https://github.com/SignalR/SignalR/issues/581))
