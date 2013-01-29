@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -119,6 +116,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Response.CancellationToken; }
         }
 
+        public virtual bool IsAlive
+        {
+            get
+            {
+                // If the CTS is tripped or the request has ended then the connection isn't alive
+                return !(CancellationToken.IsCancellationRequested || _requestReleased == 1);
+            }
+        }
+
         protected CancellationToken ConnectionEndToken
         {
             get
@@ -202,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             Heartbeat.RemoveConnection(this);
-            
+
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
                 // End the connection
@@ -254,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _hostRegistration.Dispose();
             }
         }
-        
+
         void ITrackingConnection.ReleaseRequest()
         {
             if (Interlocked.Exchange(ref _requestReleased, 1) == 0)
@@ -268,19 +274,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected virtual void ReleaseRequest()
         {
         }
-       
+
         public void CompleteRequest()
         {
             // REVIEW: We can get rid of this when we clean up the Interleave code.
             if (Completed != null)
             {
+                Trace.TraceInformation("CompleteRequest(" + ConnectionId + ")");
+
                 Completed.TrySetResult(null);
             }
+
+            // Mark the request as released
+            Interlocked.Exchange(ref _requestReleased, 1);
         }
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
         {
-            if (CancellationToken.IsCancellationRequested)
+            if (!IsAlive)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -296,7 +307,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = new SafeCancellationTokenSource();            
+            _connectionEndTokenSource = new SafeCancellationTokenSource();
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips

@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             _topicTtl = configurationManager.TopicTtl();
 
-            Topics = new ConcurrentDictionary<string, Topic>();
+            Topics = new TopicLookup();
         }
 
         private TraceSource Trace
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        protected internal ConcurrentDictionary<string, Topic> Topics { get; private set; }
+        protected internal TopicLookup Topics { get; private set; }
         protected IPerformanceCounterManager Counters { get; private set; }
 
         public int AllocatedWorkers
@@ -436,8 +436,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void DestroyTopicCore(string key, Topic topic)
         {
-            Topic dummy;
-            Topics.TryRemove(key, out dummy);
+            Topics.TryRemove(key);
             _stringMinifier.RemoveUnminified(key);
 
             Counters.MessageBusTopicsCurrent.Decrement();

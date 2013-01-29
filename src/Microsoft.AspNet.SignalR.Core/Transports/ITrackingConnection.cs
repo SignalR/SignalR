@@ -23,6 +23,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         CancellationToken CancellationToken { get; }
 
         /// <summary>
+        /// Gets a value that represents if the connection is alive.
+        /// </summary>
+        bool IsAlive { get; }
+
+        /// <summary>
         /// Gets a value that represents if the connection is timed out.
         /// </summary>
         bool IsTimedOut { get; }

@@ -8,6 +8,13 @@
         },
         runModule = true;
 
+    QUnit.isSet = function (actual, message) {
+        return QUnit.notEqual(typeof (actual), "undefined", message);
+    };
+    QUnit.isNotSet = function (actual, message) {
+        return QUnit.equal(typeof (actual), "undefined", message);
+    };    
+
     QUnit.asyncTimeoutTest = function (name, timeout, test) {
         /// <summary>Runs an async test with a specified timeout.</summary>
         /// <param name="name" type="String">The name of the test.</param>
@@ -73,6 +80,16 @@
                         throws: function (block, expected, message) {
                             if (!hasFinished) {
                                 QUnit.throws(block, expected, message);
+                            }
+                        },
+                        isSet: function (actual, message) {
+                            if (!hasFinished) {
+                                QUnit.isSet(actual, message);
+                            }
+                        },
+                        isNotSet: function (actual, message) {
+                            if (!hasFinished) {
+                                QUnit.isNotSet(actual, message);
                             }
                         }
                     };
