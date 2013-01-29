@@ -55,6 +55,9 @@ namespace Microsoft.AspNet.SignalR.Owin
                 }
             }
 
+            // Add the nosniff header for all responses to prevent IE from trying to sniff mime type from contents
+            serverResponse.ResponseHeaders.SetHeader("X-Content-Type-Options", "nosniff");
+
             hostContext.Items[HostConstants.SupportsWebSockets] = LazyInitializer.EnsureInitialized(
                 ref _supportWebSockets,
                 ref _supportWebSocketsInitialized,
