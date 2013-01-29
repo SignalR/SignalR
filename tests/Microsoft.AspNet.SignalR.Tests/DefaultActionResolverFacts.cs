@@ -1,24 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Hubs;
 using Xunit;
-using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
     public class DefaultActionResolverFacts
     {
         [Fact]
-        public void ResolveActionExcludeHubMethods()
+        public void ResolveActionExcludesHubMethods()
         {
             var resolver = new ReflectedMethodDescriptorProvider();
             MethodDescriptor actionInfo1;
             MethodDescriptor actionInfo2;
-            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "AddToGroup", out actionInfo1, new[] { JTokenify("admin") });
-            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(TestHub), Name = "TestHub" }, "RemoveFromGroup", out actionInfo2, new[] { JTokenify("admin") });
+            MethodDescriptor actionInfo3;
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides), Name = "TestHub" }, "OnDisconnected", out actionInfo1, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides), Name = "TestHub" }, "OnReconnected", out actionInfo2, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides), Name = "TestHub" }, "OnConnected", out actionInfo3, new IJsonValue[] { });
+
+            Assert.Null(actionInfo1);
+            Assert.Null(actionInfo2);
+            Assert.Null(actionInfo3);
+        }
+
+        [Fact]
+        public void ResolveActionExcludesIHubMethods()
+        {
+            var resolver = new ReflectedMethodDescriptorProvider();
+            MethodDescriptor actionInfo1;
+            MethodDescriptor actionInfo2;
+            MethodDescriptor actionInfo3;
+            MethodDescriptor actionInfo4;
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides2), Name = "TestHub" }, "OnDisconnected", out actionInfo1, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides2), Name = "TestHub" }, "OnReconnected", out actionInfo2, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides2), Name = "TestHub" }, "OnConnected", out actionInfo3, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(HubWithOverrides2), Name = "TestHub" }, "Dispose", out actionInfo4, new IJsonValue[] { });
+
+            Assert.Null(actionInfo1);
+            Assert.Null(actionInfo2);
+            Assert.Null(actionInfo3);
+            Assert.Null(actionInfo4);
+        }
+
+        [Fact]
+        public void ResolveActionExcludesObjectMethods()
+        {
+            var resolver = new ReflectedMethodDescriptorProvider();
+            MethodDescriptor actionInfo1;
+            MethodDescriptor actionInfo2;
+            MethodDescriptor actionInfo3;
+            MethodDescriptor actionInfo4;
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(MyHubWithObjectMethods), Name = "TestHub" }, "GetHashCode", out actionInfo1, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(MyHubWithObjectMethods), Name = "TestHub" }, "Equals", out actionInfo2, new IJsonValue[] { JTokenify("test") });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(MyHubWithObjectMethods), Name = "TestHub" }, "ToString", out actionInfo3, new IJsonValue[] { });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(MyHubWithObjectMethods), Name = "TestHub" }, "Dispose", out actionInfo4, new IJsonValue[] { JTokenify(false) });
+
+            Assert.Null(actionInfo1);
+            Assert.Null(actionInfo2);
+            Assert.Null(actionInfo3);
+            Assert.Null(actionInfo4);
+        }
+
+        [Fact]
+        public void ResolveActionExcludesEvents()
+        {
+            var resolver = new ReflectedMethodDescriptorProvider();
+            MethodDescriptor actionInfo1;
+            MethodDescriptor actionInfo2;
+
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(MyHubWithEvents), Name = "TestHub" }, "add_MyEvent", out actionInfo1, new IJsonValue[] { JTokenify("x") });
+            resolver.TryGetMethod(new HubDescriptor { HubType = typeof(MyHubWithEvents), Name = "TestHub" }, "remove_MyEvent", out actionInfo2, new IJsonValue[] { JTokenify("x") });
 
             Assert.Null(actionInfo1);
             Assert.Null(actionInfo2);
@@ -231,11 +286,125 @@ namespace Microsoft.AspNet.SignalR.Tests
             return new JTokenValue(JToken.Parse(JsonConvert.SerializeObject(value)));
         }
 
+        private class HubWithOverrides2 : IHub
+        {
+
+            public HubCallerContext Context
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public HubConnectionContext Clients
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public IGroupManager Groups
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public System.Threading.Tasks.Task OnConnected()
+            {
+                throw new NotImplementedException();
+            }
+
+            public System.Threading.Tasks.Task OnReconnected()
+            {
+                throw new NotImplementedException();
+            }
+
+            public System.Threading.Tasks.Task OnDisconnected()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class HubWithOverrides : Hub
+        {
+            public override System.Threading.Tasks.Task OnConnected()
+            {
+                return base.OnConnected();
+            }
+
+            public override System.Threading.Tasks.Task OnDisconnected()
+            {
+                return base.OnDisconnected();
+            }
+
+            public override System.Threading.Tasks.Task OnReconnected()
+            {
+                return base.OnReconnected();
+            }
+        }
+
         private class TestDerivedHub : TestHub
         {
             public void FooDerived()
             {
                 Foo();
+            }
+        }
+
+        private class MyHubWithEvents : Hub
+        {
+            public event EventHandler MyEvent
+            {
+                add
+                {
+                }
+                remove
+                {
+                }
+            }
+        }
+
+        private class MyHubWithObjectMethods : Hub
+        {
+            protected override void Dispose(bool disposing)
+            {
+                base.Dispose(disposing);
+            }
+
+            public override string ToString()
+            {
+                return base.ToString();
+            }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                return base.Equals(obj);
             }
         }
 
