@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             request.Setup(m => m.QueryString).Returns(qs);
-            qs["connectionData"] = @"[{name: ""foo""}, {name: ""foo""}]";
+            qs["connectionData"] = @"[{name: ""foo""}, {name: ""Foo""}]";
 
             var mockHub = new Mock<IHub>();
             var mockHubManager = new Mock<IHubManager>();

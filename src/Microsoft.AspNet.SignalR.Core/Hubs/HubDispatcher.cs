@@ -108,18 +108,17 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                     foreach (var hubInfo in clientHubInfo)
                     {
-                        HubDescriptor hubDescriptor;
-                        if (hubCache.TryGetValue(hubInfo.Name, out hubDescriptor))
+                        if (hubCache.ContainsKey(hubInfo.Name))
                         {
                             throw new InvalidOperationException(Resources.Error_DuplicateHubs);
                         }
 
                         // Try to find the associated hub type
-                        hubDescriptor = _manager.EnsureHub(hubInfo.Name,
-                                                    _counters.ErrorsHubResolutionTotal,
-                                                    _counters.ErrorsHubResolutionPerSec,
-                                                    _counters.ErrorsAllTotal,
-                                                    _counters.ErrorsAllPerSec);
+                        HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
+                                                        _counters.ErrorsHubResolutionTotal,
+                                                        _counters.ErrorsHubResolutionPerSec,
+                                                        _counters.ErrorsAllTotal,
+                                                        _counters.ErrorsAllPerSec);
 
                         if (_pipelineInvoker.AuthorizeConnect(hubDescriptor, request))
                         {
