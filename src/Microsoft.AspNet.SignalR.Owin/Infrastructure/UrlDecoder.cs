@@ -48,37 +48,17 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 }
                 else if (ch == '%' && pos < count - 2)
                 {
-                    if (value[pos + 1] == 'u' && pos < count - 5)
-                    {
-                        int h1 = HexToInt(value[pos + 2]);
-                        int h2 = HexToInt(value[pos + 3]);
-                        int h3 = HexToInt(value[pos + 4]);
-                        int h4 = HexToInt(value[pos + 5]);
+                    int h1 = HexToInt(value[pos + 1]);
+                    int h2 = HexToInt(value[pos + 2]);
 
-                        if (h1 >= 0 && h2 >= 0 && h3 >= 0 && h4 >= 0)
-                        {   // valid 4 hex chars
-                            ch = (char)((h1 << 12) | (h2 << 8) | (h3 << 4) | h4);
-                            pos += 5;
+                    if (h1 >= 0 && h2 >= 0)
+                    {     // valid 2 hex chars
+                        byte b = (byte)((h1 << 4) | h2);
+                        pos += 2;
 
-                            // only add as char
-                            helper.AddChar(ch);
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        int h1 = HexToInt(value[pos + 1]);
-                        int h2 = HexToInt(value[pos + 2]);
-
-                        if (h1 >= 0 && h2 >= 0)
-                        {     // valid 2 hex chars
-                            byte b = (byte)((h1 << 4) | h2);
-                            pos += 2;
-
-                            // don't add as char
-                            helper.AddByte(b);
-                            continue;
-                        }
+                        // don't add as char
+                        helper.AddByte(b);
+                        continue;
                     }
                 }
 
