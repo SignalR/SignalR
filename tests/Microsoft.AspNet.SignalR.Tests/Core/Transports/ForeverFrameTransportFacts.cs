@@ -7,6 +7,7 @@ using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests.Core
 {
@@ -25,11 +26,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             AssertEscaped(fft, response, "<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e");
         }
 
-        [Fact]
-        public void ForeverFrameTransportThrowsOnInvalidFrameId()
+        [Theory]
+        [InlineData("invalid")]
+        [InlineData("-100")]
+        [InlineData("1,000")]
+        public void ForeverFrameTransportThrowsOnInvalidFrameId(string frameId)
         {
             var request = new Mock<IRequest>();
-            var qs = new NameValueCollection { { "frameId", "invalid" } };
+            var qs = new NameValueCollection { { "frameId", frameId } };
             request.Setup(r => r.QueryString).Returns(qs);
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
