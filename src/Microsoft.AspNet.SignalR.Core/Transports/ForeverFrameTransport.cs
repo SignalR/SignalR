@@ -95,8 +95,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected internal override Task InitializeResponse(ITransportConnection connection)
         {
-            int frameId;
-            if (!Int32.TryParse(Context.Request.QueryString["frameId"], out frameId))
+            uint frameId;
+            if (!UInt32.TryParse(Context.Request.QueryString["frameId"], NumberStyles.None, CultureInfo.InvariantCulture, out frameId))
             {
                 // Invalid frameId passed in
                 throw new InvalidOperationException(Resources.Error_InvalidForeverFrameId);
