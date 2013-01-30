@@ -30,6 +30,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         [InlineData("invalid")]
         [InlineData("-100")]
         [InlineData("1,000")]
+        [InlineData(" ")]
+        [InlineData("")]
+        [InlineData(null)]
         public void ForeverFrameTransportThrowsOnInvalidFrameId(string frameId)
         {
             var request = new Mock<IRequest>();
