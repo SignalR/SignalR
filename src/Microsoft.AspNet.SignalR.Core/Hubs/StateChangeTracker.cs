@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -12,16 +13,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// </summary>
     public class StateChangeTracker
     {
-        private readonly IDictionary<string, object> _values;
+        private readonly JObject _values;
         // Keep track of everyting that changed since creation
         private readonly IDictionary<string, object> _oldValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         public StateChangeTracker()
         {
-            _values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            _values = new JObject();
         }
 
-        public StateChangeTracker(IDictionary<string, object> values)
+        public StateChangeTracker(JObject values)
         {
             _values = values;
         }
@@ -30,20 +31,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             get
             {
-                object result;
-                _values.TryGetValue(key, out result);
-                return result;
+                JToken result;
+                _values.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out result);
+                return result == null ? null : result.Value<object>();
             }
             set
             {
                 if (!_oldValues.ContainsKey(key))
                 {
-                    object oldValue;
-                    _values.TryGetValue(key, out oldValue);
-                    _oldValues[key] = oldValue;
+                    JToken oldValue;
+                    _values.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out oldValue);
+                    _oldValues[key] = oldValue == null ? null : oldValue.Value<object>();
                 }
 
-                _values[key] = value;
+                _values[key] = JToken.FromObject(value);
             }
         }
 
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                            select new
                            {
                                Key = key,
-                               Value = newValue
+                               Value = newValue.Value<object>()
                            }).ToDictionary(p => p.Key, p => p.Value);
 
             return changes.Count > 0 ? changes : null;

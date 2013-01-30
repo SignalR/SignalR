@@ -20,10 +20,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             request.Hub = rawRequest.Value<string>("H");
             request.Method = rawRequest.Value<string>("M");
             request.Id = rawRequest.Value<string>("I");
-
-            var rawState = rawRequest["S"];
-            request.State = rawState == null ? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase) :
-                                       rawState.ToObject<IDictionary<string, object>>();
+            request.State = rawRequest["S"] as JObject ?? new JObject();
 
             var rawArgs = rawRequest["A"];
             request.ParameterValues = rawArgs == null ? _emptyArgs :
