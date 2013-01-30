@@ -16,13 +16,13 @@
 
     testUtilities = {
         transportNames: ["longPolling", "foreverFrame", "serverSentEvents", "webSockets"],
-        runWithAllTransports: function (test) {
-            this.runWithTransports(this.transportNames, test);
+        runWithAllTransports: function (fn) {
+            this.runWithTransports(this.transportNames, fn);
         },
-        runWithTransports: function (transports, test) {
+        runWithTransports: function (transports, fn) {
             $.each(transports, function (_, transport) {
                 if (transportEnabled(transport)) {
-                    test(transport);
+                    fn(transport);
                 }
             });
         },
