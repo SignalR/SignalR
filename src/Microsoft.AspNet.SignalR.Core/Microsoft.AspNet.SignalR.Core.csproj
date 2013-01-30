@@ -101,11 +101,9 @@
     <Compile Include="Hubs\Pipeline\IHubPipelineInvoker.cs" />
     <Compile Include="Hubs\Pipeline\HubInvokerContext.cs" />
     <Compile Include="Hubs\HubRequest.cs" />
-    <Compile Include="Hubs\HubRequestParser.cs" />
     <Compile Include="Hubs\HubResponse.cs" />
     <Compile Include="Hubs\IClientProxy.cs" />
     <Compile Include="IHubContext.cs" />
-    <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />
     <Compile Include="Hubs\StateChangeTracker.cs" />
