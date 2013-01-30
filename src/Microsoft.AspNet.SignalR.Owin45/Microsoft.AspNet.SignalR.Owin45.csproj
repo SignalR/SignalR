@@ -79,6 +79,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\ParamDictionary.cs">
       <Link>Infrastructure\ParamDictionary.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\PrefixMatcher.cs">
+      <Link>Infrastructure\PrefixMatcher.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\UrlDecoder.cs">
       <Link>Infrastructure\UrlDecoder.cs</Link>
     </Compile>

@@ -62,6 +62,7 @@
     <Compile Include="Handlers\CallHandler.cs" />
     <Compile Include="Handlers\PersistentConnectionHandler.cs" />
     <Compile Include="Handlers\HubDispatcherHandler.cs" />
+    <Compile Include="Infrastructure\PrefixMatcher.cs" />
     <Compile Include="Infrastructure\UrlDecoder.cs" />
     <Compile Include="RequestExtensions.cs" />
     <Compile Include="Resources.Designer.cs">
