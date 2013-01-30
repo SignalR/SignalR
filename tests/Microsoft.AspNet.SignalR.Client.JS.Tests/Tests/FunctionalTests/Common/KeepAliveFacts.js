@@ -1,4 +1,4 @@
-﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.longPolling.enabled);
+﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.longPollingEnabled);
 
 QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName);
@@ -14,53 +14,22 @@ QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", test
     };
 });
 
-QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.foreverFrame.enabled);
+QUnit.module("Transports Common - Keep Alive Facts");
 
-QUnit.asyncTimeoutTest("Forever Frame transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName);
+testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
+    QUnit.asyncTimeoutTest(transport + " transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(testName);
 
-    connection.start({ transport: "foreverFrame" }).done(function () {
-        assert.ok(true, "Connected.");
-        assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the forever frame transport.");
-        end();
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected.");
+            assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the " + transport + " transport.");
+            end();
+        });
+
+        return function () {
+            connection.stop();
+        };
     });
-
-    return function () {
-        connection.stop();
-    };
-});
-
-QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.serverSentEvents.enabled);
-
-QUnit.asyncTimeoutTest("Server Sent Events transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName);
-
-    connection.start({ transport: "serverSentEvents" }).done(function () {
-        assert.ok(true, "Connected.");
-        assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the server sent events transport.");
-        end();
-    });
-
-    return function () {
-        connection.stop();
-    };
-});
-
-QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.webSockets.enabled);
-
-QUnit.asyncTimeoutTest("WebSockets transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName);
-
-    connection.start({ transport: "webSockets" }).done(function () {
-        assert.ok(true, "Connected.");
-        assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the WebSockets transport.");
-        end();
-    });
-
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
 });
 
 QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -73,7 +42,7 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
 
     connection.connectionSlow(function () {
         connection.keepAliveData.lastKeepAlive = new Date(); // Set the lastKeepAlive to current date (we recovered!);
-    });    
+    });
 
     connection.keepAliveData = {
         timeoutWarning: 1000, // We should warn if the time difference between now and the last keep alive is greater than 1 second
