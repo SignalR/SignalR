@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             });
         }
 
-        protected virtual Task InitializeResponse(ITransportConnection connection)
+        protected internal virtual Task InitializeResponse(ITransportConnection connection)
         {
             return TaskAsyncHelper.Empty;
         }
