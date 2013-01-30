@@ -39,6 +39,22 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             Assert.Throws(typeof(InvalidOperationException), () => fft.InitializeResponse(connection.Object));
         }
 
+        [Fact]
+        public void ForeverFrameTransportSetsCorrectContentType()
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection { { "frameId", "1" } };
+            request.Setup(r => r.QueryString).Returns(qs);
+            var response = new CustomResponse();
+            var context = new HostContext(request.Object, response);
+            var connection = new Mock<ITransportConnection>();
+            var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
+
+            fft.InitializeResponse(connection.Object).Wait();
+
+            Assert.Equal("text/html; charset=UTF-8", response.ContentType);
+        }
+
         private static void AssertEscaped(ForeverFrameTransport fft, CustomResponse response, string input, string expectedOutput)
         {
             fft.Send(input).Wait();

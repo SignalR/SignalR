@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     return EnqueueOperation(() =>
                     {
-                        Context.Response.ContentType = "text/html";
+                        Context.Response.ContentType = "text/html; charset=UTF-8";
 
                         HTMLOutputWriter.WriteRaw(initScript);
                         HTMLOutputWriter.Flush();
