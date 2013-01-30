@@ -14,7 +14,10 @@ namespace Microsoft.AspNet.SignalR.Json
     /// </summary>
     public static class JsonUtility
     {
-        private static readonly string[] _jsKeywords = new[] { "abstract", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "volatile", "void", "while", "with", "NaN", "Infinity", "undefined" };
+        // JavaScript keywords taken from http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
+        //   Sections: 7.6.1.1, 7.6.1.2
+        // Plus the implicity globals "NaN", "undefined", "Infinity"
+        private static readonly string[] _jsKeywords = new[] { "break", "do", "instanceof", "typeof", "case", "else", "new", "var", "catch", "finally", "return", "void", "continue", "for", "switch", "while", "debugger", "function", "this", "with", "default", "if", "hrow", "delete", "in", "try", "class", "enum", "extends", "super", "const", "export", "import", "implements", "let", "private", "public", "yield", "interface", "package", "protected", "static", "NaN", "undefined", "Infinity" };
 
         /// <summary>
         /// Converts the specified name to camel case.
