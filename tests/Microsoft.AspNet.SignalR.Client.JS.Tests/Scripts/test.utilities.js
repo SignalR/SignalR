@@ -7,8 +7,8 @@
         transportEnabled = function (transport) {
             var property = transport + "Enabled";
 
-            if (typeof (this[property]) !== "undefined") {
-                return this[property];
+            if (typeof (testUtilities[property]) !== "undefined") {
+                return testUtilities[property];
             }
 
             throw new Error("Invalid Transport");
