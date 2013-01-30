@@ -2,10 +2,30 @@
 
 (function ($, window) {
     var ios = !!((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))),
-        ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0);
+        ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0),
+        // Checks if the transport (string) is enabled
+        transportEnabled = function (transport) {
+            var property = transport + "Enabled";
+
+            if (typeof (this[property]) !== "undefined") {
+                return this[property];
+            }
+
+            throw new Error("Invalid Transport");
+        };
 
     testUtilities = {
-        transportNames: ["longPolling","foreverFrame","serverSentEvents","webSockets"],
+        transportNames: ["longPolling", "foreverFrame", "serverSentEvents", "webSockets"],
+        runWithAllTransports: function (test) {
+            this.runWithTransports(this.transportNames, test);
+        },
+        runWithTransports: function (transports, test) {
+            $.each(transports, function (_, transport) {
+                if (transportEnabled(transport)) {
+                    test(transport);
+                }
+            });
+        },
         defaultTestTimeout: (function () {
             var defaultTestTimeout = window.location.href.match(/#defaultTestTimeout=\d+/g);
             
