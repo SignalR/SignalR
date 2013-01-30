@@ -288,6 +288,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             }
         }
 
+        [Fact]
+        public void DuplicateHubNamesThrows()
+        {
+            // Arrange
+            var dispatcher = new HubDispatcher(new HubConfiguration());
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection();
+            request.Setup(m => m.QueryString).Returns(qs);
+            qs["connectionData"] = @"[{name: ""foo""}, {name: ""Foo""}]";
+
+            var mockHub = new Mock<IHub>();
+            var mockHubManager = new Mock<IHubManager>();
+            mockHubManager.Setup(m => m.GetHub("foo")).Returns(new HubDescriptor { Name = "foo", HubType = mockHub.Object.GetType() });
+
+            var dr = new DefaultDependencyResolver();
+            dr.Register(typeof(IHubManager), () => mockHubManager.Object);
+
+            dispatcher.Initialize(dr, new HostContext(null, null));
+            Assert.Throws<InvalidOperationException>(() => dispatcher.Authorize(request.Object));
+        }
+
         private static Mock<IRequest> GetRequestForUrl(string url)
         {
             var request = new Mock<IRequest>();

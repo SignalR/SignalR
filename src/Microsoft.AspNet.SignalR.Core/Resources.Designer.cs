@@ -142,6 +142,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate hub names found..
+        /// </summary>
+        internal static string Error_DuplicateHubs {
+            get {
+                return ResourceManager.GetString("Error_DuplicateHubs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error creating Hub {0}. .
         /// </summary>
         internal static string Error_ErrorCreatingHub {
