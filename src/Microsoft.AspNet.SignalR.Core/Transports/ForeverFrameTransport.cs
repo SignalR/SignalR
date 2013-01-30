@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -91,8 +93,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             });
         }
 
-        protected override Task InitializeResponse(ITransportConnection connection)
+        protected internal override Task InitializeResponse(ITransportConnection connection)
         {
+            int frameId;
+            if (!Int32.TryParse(Context.Request.QueryString["frameId"], out frameId))
+            {
+                // Invalid frameId passed in
+                throw new InvalidOperationException(Resources.Error_InvalidForeverFrameId);
+            }
+
             return base.InitializeResponse(connection)
                 .Then(initScript =>
                 {
@@ -106,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         return Context.Response.Flush();
                     });
                 },
-                _initPrefix + Context.Request.QueryString["frameId"] + _initSuffix);
+                _initPrefix + frameId.ToString(CultureInfo.InvariantCulture) + _initSuffix);
         }
 
         private class HTMLTextWriter : StreamWriter

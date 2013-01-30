@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             AssertEscaped(fft, response, "</sCRiPT>", "\\u003c/sCRiPT\\u003e");
             AssertEscaped(fft, response, "</SCRIPT dosomething='false'>", "\\u003c/SCRIPT dosomething='false'\\u003e");
             AssertEscaped(fft, response, "<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e");
+        }
+
+        [Fact]
+        public void ForeverFrameTransportThrowsOnInvalidFrameId()
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection { { "frameId", "invalid" } };
+            request.Setup(r => r.QueryString).Returns(qs);
+            var response = new CustomResponse();
+            var context = new HostContext(request.Object, response);
+            var connection = new Mock<ITransportConnection>();
+            var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
+            
+            Assert.Throws(typeof(InvalidOperationException), () => fft.InitializeResponse(connection.Object));
         }
 
         private static void AssertEscaped(ForeverFrameTransport fft, CustomResponse response, string input, string expectedOutput)

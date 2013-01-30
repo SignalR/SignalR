@@ -178,6 +178,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The supplied frameId is in the incorrect format..
+        /// </summary>
+        internal static string Error_InvalidForeverFrameId {
+            get {
+                return ResourceManager.GetString("Error_InvalidForeverFrameId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a {1}..
         /// </summary>
         internal static string Error_IsNotA {
