@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             });
         }
 
-        protected override Task InitializeResponse(ITransportConnection connection)
+        protected internal override Task InitializeResponse(ITransportConnection connection)
         {
             return base.InitializeResponse(connection)
                        .Then(() =>
