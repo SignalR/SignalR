@@ -88,6 +88,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         [InlineData("1ۄۺڹ")]
         [InlineData("enum")]
         [InlineData("bar.class.foo")]
+        [InlineData("foo.")]
+        [InlineData("foo.bar.")]
+        [InlineData("foo.bar.baz.")]
         public void InvalidJavaScriptCallback(string callback)
         {
             // Act
