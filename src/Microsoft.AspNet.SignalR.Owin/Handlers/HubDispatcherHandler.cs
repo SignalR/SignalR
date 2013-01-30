@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Owin.Handlers
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Handlers
         public Task Invoke(IDictionary<string, object> environment)
         {
             var path = environment.Get<string>(OwinConstants.RequestPath);
-            if (path == null || !path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
+            if (path == null || !PrefixMatcher.IsMatch(_path, path))
             {
                 return _next(environment);
             }
