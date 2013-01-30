@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             uint frameId;
             string rawFrameId = Context.Request.QueryString["frameId"];
-            if (String.IsNullOrWhiteSpace(null) || !UInt32.TryParse(rawFrameId, NumberStyles.None, CultureInfo.InvariantCulture, out frameId))
+            if (String.IsNullOrWhiteSpace(rawFrameId) || !UInt32.TryParse(rawFrameId, NumberStyles.None, CultureInfo.InvariantCulture, out frameId))
             {
                 // Invalid frameId passed in
                 throw new InvalidOperationException(Resources.Error_InvalidForeverFrameId);
