@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNet.SignalR.Json;
 using Newtonsoft.Json;
@@ -30,6 +31,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return request;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "This type is used for deserialzation")]
         private class HubInvocation
         {
             [JsonProperty("H")]
