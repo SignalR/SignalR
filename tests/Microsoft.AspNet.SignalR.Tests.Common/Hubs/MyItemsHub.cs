@@ -30,12 +30,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Hubs
             if (request.Items.TryGetValue("owin.environment", out owinEnv))
             {
                 var env = (IDictionary<string, object>)owinEnv;
+                var responseHeaders = (Dictionary<string, string[]>)env["owin.ResponseHeaders"];
                 return Clients.All.update(new
                 {
                     method = method,
                     count = env.Count,
                     owinKeys = env.Keys,
-                    keys = request.Items.Keys
+                    keys = request.Items.Keys,
+                    xContentTypeOptions = responseHeaders["X-Content-Type-Options"][0]
                 });
             }
 
@@ -45,6 +47,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Hubs
                 count = 0,
                 keys = new string[0],
                 owinKeys = new string[0],
+                xContentTypeOptions = ""
             });
         }
     }

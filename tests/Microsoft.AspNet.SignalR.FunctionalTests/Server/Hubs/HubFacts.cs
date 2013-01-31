@@ -123,6 +123,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.Equal("OnConnected", results[0].Method);
                 Assert.Equal(1, results[0].Keys.Length);
                 Assert.Equal("owin.environment", results[0].Keys[0]);
+                Assert.Equal("nosniff", results[0].XContentTypeOptions);
                 Assert.Equal("GetItems", results[1].Method);
                 Assert.Equal(1, results[1].Keys.Length);
                 Assert.Equal("owin.environment", results[1].Keys[0]);

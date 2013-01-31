@@ -104,21 +104,30 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 // If there's any hubs then perform the auth check
                 if (clientHubInfo != null && clientHubInfo.Any())
                 {
+                    var hubCache = new Dictionary<string, HubDescriptor>(StringComparer.OrdinalIgnoreCase);
+
                     foreach (var hubInfo in clientHubInfo)
                     {
+                        if (hubCache.ContainsKey(hubInfo.Name))
+                        {
+                            throw new InvalidOperationException(Resources.Error_DuplicateHubs);
+                        }
+
                         // Try to find the associated hub type
                         HubDescriptor hubDescriptor = _manager.EnsureHub(hubInfo.Name,
-                            _counters.ErrorsHubResolutionTotal,
-                            _counters.ErrorsHubResolutionPerSec,
-                            _counters.ErrorsAllTotal,
-                            _counters.ErrorsAllPerSec);
+                                                        _counters.ErrorsHubResolutionTotal,
+                                                        _counters.ErrorsHubResolutionPerSec,
+                                                        _counters.ErrorsAllTotal,
+                                                        _counters.ErrorsAllPerSec);
 
                         if (_pipelineInvoker.AuthorizeConnect(hubDescriptor, request))
                         {
                             // Add this to the list of hub descriptors this connection is interested in
-                            _hubs.Add(hubDescriptor);
+                            hubCache.Add(hubDescriptor.Name, hubDescriptor);
                         }
                     }
+
+                    _hubs.AddRange(hubCache.Values);
 
                     // If we have any hubs in the list then we're authorized
                     return _hubs.Count > 0;
@@ -233,8 +242,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 string hubUrl = normalized.Substring(0, normalized.Length - HubsSuffix.Length);
 
                 // Generate the proxy
-                context.Response.ContentType = "application/x-javascript";
-                return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl, includeDocComments: true));
+                context.Response.ContentType = JsonUtility.JavaScriptMimeType;
+                return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl));
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();

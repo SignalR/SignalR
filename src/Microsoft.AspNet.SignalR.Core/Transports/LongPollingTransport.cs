@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             return EnqueueOperation(() =>
             {
-                Context.Response.ContentType = IsJsonp ? JsonUtility.JsonpMimeType : JsonUtility.MimeType;
+                Context.Response.ContentType = IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
 
                 if (IsJsonp)
                 {

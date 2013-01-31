@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
-            Assert.Equal("application/x-javascript", contentType);
+            Assert.Equal("application/javascript; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.NotNull(buffer[0]);
             Assert.False(buffer[0].StartsWith("throw new Error("));
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
-            Assert.Equal("application/x-javascript", contentType);
+            Assert.Equal("application/javascript; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.NotNull(buffer[0]);
             Assert.False(buffer[0].StartsWith("throw new Error("));
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
-            Assert.Equal("application/x-javascript", contentType);
+            Assert.Equal("application/javascript; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.True(buffer[0].StartsWith("throw new Error("));
         }
@@ -286,6 +286,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
                 var hubResponse = (HubResponse)json.Deserialize(reader, typeof(HubResponse));
                 Assert.Equal("Custom Error from task.", hubResponse.Error);
             }
+        }
+
+        [Fact]
+        public void DuplicateHubNamesThrows()
+        {
+            // Arrange
+            var dispatcher = new HubDispatcher(new HubConfiguration());
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection();
+            request.Setup(m => m.QueryString).Returns(qs);
+            qs["connectionData"] = @"[{name: ""foo""}, {name: ""Foo""}]";
+
+            var mockHub = new Mock<IHub>();
+            var mockHubManager = new Mock<IHubManager>();
+            mockHubManager.Setup(m => m.GetHub("foo")).Returns(new HubDescriptor { Name = "foo", HubType = mockHub.Object.GetType() });
+
+            var dr = new DefaultDependencyResolver();
+            dr.Register(typeof(IHubManager), () => mockHubManager.Object);
+
+            dispatcher.Initialize(dr, new HostContext(null, null));
+            Assert.Throws<InvalidOperationException>(() => dispatcher.Authorize(request.Object));
         }
 
         private static Mock<IRequest> GetRequestForUrl(string url)
