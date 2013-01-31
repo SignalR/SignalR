@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             value = JsonConvert.SerializeObject(value);
 
-            // Remove the first quote
+            // Remove the quotes
             return value.Substring(1, value.Length - 2);
         }
     }
