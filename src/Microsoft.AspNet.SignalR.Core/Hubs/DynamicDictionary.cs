@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -26,13 +27,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 _obj[key] = Unwrap(value);
             }
         }
-        
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             result = this[binder.Name];
             return true;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "The compiler generates calls to invoke this")]
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             this[binder.Name] = value;
