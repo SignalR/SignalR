@@ -15,6 +15,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
+using Newtonsoft.Json.Linq;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
@@ -44,6 +45,48 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var result = hub.InvokeWithTimeout<string>("ReadStateValue");
 
                 Assert.Equal("test", result);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ReadingComplexState(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                hub["state"] = JToken.FromObject(new
+                {
+                    Name = "David",
+                    Address = new
+                    {
+                        Street = "St"
+                    }
+                });
+
+                connection.Start(host.Transport).Wait();
+
+                var result = hub.InvokeWithTimeout<dynamic>("ReadAnyState");
+                dynamic state2 = hub["state2"];
+                dynamic addy = hub["addy"];
+
+                Assert.NotNull(result);
+                Assert.NotNull(state2);
+                Assert.NotNull(addy);
+                Assert.Equal("David", (string)result.Name);
+                Assert.Equal("St", (string)result.Address.Street);
+                Assert.Equal("David", (string)state2.Name);
+                Assert.Equal("St", (string)state2.Address.Street);
+                Assert.Equal("St", (string)addy.Street);
 
                 connection.Stop();
             }

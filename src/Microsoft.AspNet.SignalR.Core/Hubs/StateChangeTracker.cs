@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 object result;
                 _values.TryGetValue(key, out result);
-                return result;
+                return DynamicDictionary.Wrap(result);
             }
             set
             {
