@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class EmptyJavaScriptProxyGenerator : IJavaScriptProxyGenerator
     {
-        public string GenerateProxy(string serviceUrl, bool includeDocComments)
+        public string GenerateProxy(string serviceUrl)
         {
             return String.Format(CultureInfo.InvariantCulture, "throw new Error('{0}');", Resources.Error_JavaScriptProxyDisabled);
         }
