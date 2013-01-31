@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                 // Generate the proxy
                 context.Response.ContentType = "application/x-javascript";
-                return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl, includeDocComments: true));
+                return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl));
             }
 
             _isDebuggingEnabled = context.IsDebuggingEnabled();
