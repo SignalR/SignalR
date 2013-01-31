@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -23,13 +24,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private const string HubsSuffix = "/hubs";
 
+        private static readonly IJsonValue[] _emptyArgs = new IJsonValue[0];
+
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly bool _enableJavaScriptProxies;
         private readonly bool _enableDetailedErrors;
 
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
-        private IHubRequestParser _requestParser;
         private IParameterResolver _binder;
         private IHubPipelineInvoker _pipelineInvoker;
         private IPerformanceCounterManager _counters;
@@ -85,7 +87,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
-            _requestParser = resolver.Resolve<IHubRequestParser>();
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
@@ -142,7 +143,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
-            HubRequest hubRequest = _requestParser.Parse(data);
+            var hubRequest = JsonSerializer.Parse<HubRequest>(data);
+            hubRequest.ParameterValues = hubRequest.ParameterValues ?? _emptyArgs;
+            hubRequest.State = hubRequest.State ?? new JObject();
 
             // Create the hub
             HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub,

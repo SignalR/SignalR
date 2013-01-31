@@ -95,9 +95,6 @@ namespace Microsoft.AspNet.SignalR
             var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
             Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);
 
-            var requestParser = new Lazy<HubRequestParser>();
-            Register(typeof(IHubRequestParser), () => requestParser.Value);
-
             var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
             Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
 
