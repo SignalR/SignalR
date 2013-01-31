@@ -250,6 +250,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unexpected end when reading object..
+        /// </summary>
+        internal static string Error_ParseObjectFailed {
+            get {
+                return ResourceManager.GetString("Error_ParseObjectFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Protocol error: Missing connection token..
         /// </summary>
         internal static string Error_ProtocolErrorMissingConnectionToken {

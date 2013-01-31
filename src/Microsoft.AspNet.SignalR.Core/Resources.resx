@@ -180,6 +180,9 @@
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
   </data>
+  <data name="Error_ParseObjectFailed" xml:space="preserve">
+    <value>Unexpected end when reading object.</value>
+  </data>
   <data name="Error_ProtocolErrorMissingConnectionToken" xml:space="preserve">
     <value>Protocol error: Missing connection token.</value>
   </data>
