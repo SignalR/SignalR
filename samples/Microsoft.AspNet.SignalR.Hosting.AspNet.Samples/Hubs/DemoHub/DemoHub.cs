@@ -139,6 +139,13 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             return Clients.Caller.Company;
         }
 
+        public object ReadAnyState()
+        {
+            Clients.Caller.state2 = Clients.Caller.state;
+
+            return Clients.Caller.state;
+        }
+
         public void ComplexArray(Person[] people)
         {
 
