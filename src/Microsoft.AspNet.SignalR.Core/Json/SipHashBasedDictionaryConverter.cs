@@ -94,6 +94,9 @@ namespace Microsoft.AspNet.SignalR.Json
                         break;
                     case JsonToken.EndObject:
                         return obj;
+                    default:
+                        throw new JsonSerializationException(Resources.Error_ParseObjectFailed);
+                        
                 }
             }
 

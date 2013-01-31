@@ -277,6 +277,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to State has exceeded the maximum length of 4096 bytes..
+        /// </summary>
+        internal static string Error_StateExceededMaximumLength {
+            get {
+                return ResourceManager.GetString("Error_StateExceededMaximumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to add module. The HubPipeline has already been invoked..
         /// </summary>
         internal static string Error_UnableToAddModulePiplineAlreadyInvoked {
