@@ -59,6 +59,7 @@
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
+    <Compile Include="Hubs\DynamicDictionary.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\GroupProxy.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />

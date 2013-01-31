@@ -77,13 +77,16 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var result = hub.InvokeWithTimeout<dynamic>("ReadAnyState");
                 dynamic state2 = hub["state2"];
+                dynamic addy = hub["addy"];
 
                 Assert.NotNull(result);
                 Assert.NotNull(state2);
+                Assert.NotNull(addy);
                 Assert.Equal("David", (string)result.Name);
                 Assert.Equal("St", (string)result.Address.Street);
                 Assert.Equal("David", (string)state2.Name);
                 Assert.Equal("St", (string)state2.Address.Street);
+                Assert.Equal("St", (string)addy.Street);
 
                 connection.Stop();
             }
