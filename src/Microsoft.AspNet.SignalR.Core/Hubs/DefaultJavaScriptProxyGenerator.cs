@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -39,6 +40,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public string GenerateProxy(string serviceUrl)
         {
+            serviceUrl = JavaScriptEncode(serviceUrl);
+
             var template = _compiledTemplate.Value;
 
             return template.Replace("{serviceUrl}", serviceUrl);
@@ -46,6 +49,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public string GenerateProxy(string serviceUrl, bool includeDocComments)
         {
+            serviceUrl = JavaScriptEncode(serviceUrl);
+
             string script = GenerateProxy(_manager, _javaScriptMinifier, includeDocComments);
 
             return script.Replace("{serviceUrl}", serviceUrl);
@@ -195,6 +200,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 var reader = new StreamReader(resourceStream);
                 return reader.ReadToEnd();
             }
+        }
+
+        private static string JavaScriptEncode(string value)
+        {
+            return JsonConvert.SerializeObject(value).Trim('"');
         }
     }
 }
