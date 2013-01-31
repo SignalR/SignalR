@@ -419,7 +419,7 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = JsonUtility.MimeType;
+            context.Response.ContentType = JsonUtility.JsonMimeType;
             return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
@@ -447,7 +447,7 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = JsonUtility.MimeType;
+            context.Response.ContentType = JsonUtility.JsonMimeType;
             return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
@@ -462,7 +462,7 @@ namespace Microsoft.AspNet.SignalR
 
         private Task ProcessJsonpRequest(HostContext context, object payload)
         {
-            context.Response.ContentType = JsonUtility.JsonpMimeType;
+            context.Response.ContentType = JsonUtility.JavaScriptMimeType;
             var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
             return context.Response.End(data);

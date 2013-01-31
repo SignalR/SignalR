@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             return EnqueueOperation(() =>
             {
-                Context.Response.ContentType = JsonUtility.MimeType;
+                Context.Response.ContentType = JsonUtility.JsonMimeType;
 
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();

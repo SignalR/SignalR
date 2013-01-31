@@ -35,19 +35,19 @@ namespace Microsoft.AspNet.SignalR.Json
         }
 
         /// <summary>
-        /// Gets a string that returns JSON mime type "application/json".
+        /// Gets a string that returns JSON mime type "application/json; charset=UTF-8".
         /// </summary>
-        public static string MimeType
+        public static string JsonMimeType
         {
             get { return "application/json; charset=UTF-8"; }
         }
 
         /// <summary>
-        /// Gets a string that returns JSONP mime type "text/javascript".
+        /// Gets a string that returns JSONP mime type "application/javascript; charset=UTF-8".
         /// </summary>
-        public static string JsonpMimeType
+        public static string JavaScriptMimeType
         {
-            get { return "text/javascript; charset=UTF-8"; }
+            get { return "application/javascript; charset=UTF-8"; }
         }
 
         public static string CreateJsonpCallback(string callback, string payload)

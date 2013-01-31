@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 string hubUrl = normalized.Substring(0, normalized.Length - HubsSuffix.Length);
 
                 // Generate the proxy
-                context.Response.ContentType = "application/x-javascript";
+                context.Response.ContentType = JsonUtility.JavaScriptMimeType;
                 return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl));
             }
 

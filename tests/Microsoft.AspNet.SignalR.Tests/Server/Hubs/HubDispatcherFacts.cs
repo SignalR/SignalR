@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
-            Assert.Equal("application/x-javascript", contentType);
+            Assert.Equal("application/javascript; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.NotNull(buffer[0]);
             Assert.False(buffer[0].StartsWith("throw new Error("));
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
-            Assert.Equal("application/x-javascript", contentType);
+            Assert.Equal("application/javascript; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.NotNull(buffer[0]);
             Assert.False(buffer[0].StartsWith("throw new Error("));
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
-            Assert.Equal("application/x-javascript", contentType);
+            Assert.Equal("application/javascript; charset=UTF-8", contentType);
             Assert.Equal(1, buffer.Count);
             Assert.True(buffer[0].StartsWith("throw new Error("));
         }

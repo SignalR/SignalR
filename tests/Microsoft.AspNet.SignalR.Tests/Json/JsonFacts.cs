@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         public void MimeTypeReturnsJsonMimeType()
         {
             // Act
-            string mimeType = JsonUtility.MimeType;
+            string mimeType = JsonUtility.JsonMimeType;
 
             // Assert
             Assert.Equal("application/json; charset=UTF-8", mimeType);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         public void JsonPMimeTypeReturnsJsonPMimeType()
         {
             // Act
-            string mimeType = JsonUtility.JsonpMimeType;
+            string mimeType = JsonUtility.JavaScriptMimeType;
 
             // Assert
             Assert.Equal("text/javascript; charset=UTF-8", mimeType);
