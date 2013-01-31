@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator
     {
-        private static readonly Lazy<string> _template = new Lazy<string>(GetTemplate);
+        private static readonly Lazy<string> _templateFromResource = new Lazy<string>(GetTemplateFromResource);
 
         private static readonly Type[] _numberTypes = new[] { typeof(byte), typeof(short), typeof(int), typeof(long), typeof(float), typeof(decimal), typeof(double) };
         private static readonly Type[] _dateTypes = new[] { typeof(DateTime), typeof(DateTimeOffset) };
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private readonly IHubManager _manager;
         private readonly IJavaScriptMinifier _javaScriptMinifier;
-        private readonly Lazy<string> _compiledTemplate;
+        private readonly Lazy<string> _generatedTemplate;
 
         public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
             this(resolver.Resolve<IHubManager>(),
@@ -35,30 +35,30 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             _manager = manager;
             _javaScriptMinifier = javaScriptMinifier ?? NullJavaScriptMinifier.Instance;
-            _compiledTemplate = new Lazy<string>(() => GenerateProxy(_manager, _javaScriptMinifier, includeDocComments: false));
+            _generatedTemplate = new Lazy<string>(() => GenerateProxy(_manager, _javaScriptMinifier, includeDocComments: false));
         }
 
         public string GenerateProxy(string serviceUrl)
         {
             serviceUrl = JavaScriptEncode(serviceUrl);
 
-            var template = _compiledTemplate.Value;
+            var generateProxy = _generatedTemplate.Value;
 
-            return template.Replace("{serviceUrl}", serviceUrl);
+            return generateProxy.Replace("{serviceUrl}", serviceUrl);
         }
 
         public string GenerateProxy(string serviceUrl, bool includeDocComments)
         {
             serviceUrl = JavaScriptEncode(serviceUrl);
 
-            string script = GenerateProxy(_manager, _javaScriptMinifier, includeDocComments);
+            string generateProxy = GenerateProxy(_manager, _javaScriptMinifier, includeDocComments);
 
-            return script.Replace("{serviceUrl}", serviceUrl);
+            return generateProxy.Replace("{serviceUrl}", serviceUrl);
         }
 
         private static string GenerateProxy(IHubManager hubManager, IJavaScriptMinifier javaScriptMinifier, bool includeDocComments)
         {
-            string script = _template.Value;
+            string script = _templateFromResource.Value;
 
             var hubs = new StringBuilder();
             var first = true;
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return String.Join(", ", values.Select(selector));
         }
 
-        private static string GetTemplate()
+        private static string GetTemplateFromResource()
         {
             using (Stream resourceStream = typeof(DefaultJavaScriptProxyGenerator).Assembly.GetManifestResourceStream(ScriptResource))
             {
@@ -204,7 +204,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private static string JavaScriptEncode(string value)
         {
-            return JsonConvert.SerializeObject(value).Trim('"');
+            value = JsonConvert.SerializeObject(value);
+
+            // Remove the first quote
+            return value.Substring(1, value.Length - 2);
         }
     }
 }
