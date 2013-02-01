@@ -52,6 +52,16 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public string InstanceName { get; set; }
 
+        public Task<IClientResponse> Get(string url, bool disableWrites = false)
+        {
+            return ProcessRequest(url, req => { }, null, disableWrites);
+        }
+
+        public Task<IClientResponse> Post(string url, IDictionary<string, string> postData)
+        {
+            return ((IHttpClient)this).Post(url, req => { }, postData);
+        }
+
         Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest)
         {
             return ProcessRequest(url, prepareRequest, postData: null);
@@ -62,13 +72,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return ProcessRequest(url, prepareRequest, postData);
         }
 
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
+        private Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
         {
             return ProcessRequest(url, prepareRequest, postData, disableWrites: false);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The cancellation token is disposed when the request ends")]
-        public Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool disableWrites)
+        private Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool disableWrites)
         {
             if (url == null)
             {

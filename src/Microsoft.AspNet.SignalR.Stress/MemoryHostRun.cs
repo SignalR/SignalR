@@ -77,13 +77,13 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private static Task ProcessRequest(MemoryHost host, string transport, string connectionToken)
         {
-            return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken, request => { }, null, disableWrites: true);
+            return host.Get("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken, disableWrites: true);
         }
 
         private static Task ProcessSendRequest(MemoryHost host, string transport, string connectionToken, string data)
         {
             var postData = new Dictionary<string, string> { { "data", data } };
-            return host.ProcessRequest("http://foo/echo/send?transport=" + transport + "&connectionToken=" + connectionToken, request => { }, postData);
+            return host.Post("http://foo/echo/send?transport=" + transport + "&connectionToken=" + connectionToken, postData);
         }
 
         private static void LongPollingLoop(MemoryHost host, string connectionId)
