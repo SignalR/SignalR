@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public Task<IClientResponse> Get(string url, bool disableWrites = false)
         {
-            return ProcessRequest(url, req => { }, null, disableWrites);
+            return ProcessRequest("GET", url, req => { }, null, disableWrites);
         }
 
         public Task<IClientResponse> Post(string url, IDictionary<string, string> postData)
@@ -64,21 +64,16 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest)
         {
-            return ProcessRequest(url, prepareRequest, postData: null);
+            return ProcessRequest("GET", url, prepareRequest, postData: null);
         }
 
         Task<IClientResponse> IHttpClient.Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
         {
-            return ProcessRequest(url, prepareRequest, postData);
-        }
-
-        private Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
-        {
-            return ProcessRequest(url, prepareRequest, postData, disableWrites: false);
+            return ProcessRequest("POST", url, prepareRequest, postData);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The cancellation token is disposed when the request ends")]
-        private Task<IClientResponse> ProcessRequest(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool disableWrites)
+        private Task<IClientResponse> ProcessRequest(string httpMethod, string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool disableWrites = false)
         {
             if (url == null)
             {
@@ -112,8 +107,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             var uri = new Uri(url);
 
             env[OwinConstants.CallCancelled] = clientTokenSource.Token;
-            string method = postData == null ? "GET" : "POST";
-            env[OwinConstants.RequestMethod] = method;
+            env[OwinConstants.RequestMethod] = httpMethod;
             env[OwinConstants.RequestPathBase] = String.Empty;
             env[OwinConstants.RequestPath] = uri.LocalPath;
             env[OwinConstants.RequestQueryString] = uri.Query.Length > 0 ? uri.Query.Substring(1) : String.Empty;
@@ -122,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             var headers = new Dictionary<string, string[]>();
             env[OwinConstants.RequestHeaders] = headers;
 
-            if (method == "POST")
+            if (httpMethod == "POST")
             {
                 headers.SetHeader("Content-Type", "application/x-www-form-urlencoded");
             }
