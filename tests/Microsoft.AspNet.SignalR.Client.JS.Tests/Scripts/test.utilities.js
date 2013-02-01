@@ -25,7 +25,7 @@
         },
         runWithTransports: function (transports, fn) {
             $.each(transports, function (_, transport) {
-                if (transportEnabled(transport)) {
+                if (testUtilities.transports[transport].enabled) {
                     fn(transport);
                 }
             });
