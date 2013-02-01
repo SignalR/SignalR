@@ -1,4 +1,4 @@
-﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.longPollingEnabled);
+﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName);
