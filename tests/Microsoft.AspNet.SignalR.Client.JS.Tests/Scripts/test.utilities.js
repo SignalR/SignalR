@@ -5,7 +5,31 @@
         ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0);
 
     testUtilities = {
-        transportNames: ["longPolling","foreverFrame","serverSentEvents","webSockets"],
+        transports: {
+            longPolling: {
+                enabled: true
+            },
+            foreverFrame: {
+                enabled: !window.EventSource && !window.document.commandLineTest && navigator.appName === "Microsoft Internet Explorer"
+            },
+            serverSentEvents: {
+                enabled: !!window.EventSource
+            },
+            webSockets: {
+                enabled: !!(window.WebSocket && !window.document.commandLineTest && (!ios || ios6))
+            }
+        },
+        transportNames: null, // This is set after the initial creation
+        runWithAllTransports: function (fn) {
+            this.runWithTransports(this.transportNames, fn);
+        },
+        runWithTransports: function (transports, fn) {
+            $.each(transports, function (_, transport) {
+                if (testUtilities.transports[transport].enabled) {
+                    fn(transport);
+                }
+            });
+        },
         defaultTestTimeout: (function () {
             var defaultTestTimeout = window.location.href.match(/#defaultTestTimeout=\d+/g);
             
@@ -49,24 +73,11 @@
             connection.logging = true;
 
             return connection;
-        },
-        webSocketsEnabled: (function () {
-            var validPlatform = true;
-
-            if (ios && !ios6) {
-                validPlatform = false;
-            }
-
-            return !!(window.WebSocket && !window.document.commandLineTest && validPlatform);
-        })(),
-        foreverFrameEnabled: (function () {
-            return !window.EventSource && !window.document.commandLineTest && navigator.appName === "Microsoft Internet Explorer";
-        })(),
-        serverSentEventsEnabled: (function () {
-            return !!window.EventSource;
-        })(),
-        longPollingEnabled: (function () {
-            return true;
-        })()
+        }
     };
+
+    // Create the transport names based off of the transport list
+    testUtilities.transportNames = $.map(testUtilities.transports, function (_, transportName) {
+        return transportName;
+    });
 })($, window);
