@@ -1,4 +1,4 @@
-﻿QUnit.module("Server Sent Event Facts", testUtilities.serverSentEventsEnabled);
+﻿QUnit.module("Server Sent Event Facts", testUtilities.transports.serverSentEvents.enabled);
 
 QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),
