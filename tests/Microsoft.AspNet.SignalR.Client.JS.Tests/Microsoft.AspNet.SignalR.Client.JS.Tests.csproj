@@ -82,8 +82,6 @@
     <Content Include="Tests\FunctionalTests\Transports\Fallback\FallbackConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Fallback\FallbackSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubProxyFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\PingServerFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js" />
