@@ -1,4 +1,4 @@
-﻿QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.longPollingEnabled);
+﻿QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Long Polling transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection1 = testUtilities.createHubConnection(testName),
@@ -35,7 +35,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can trigger abort on server via a
     };
 });
 
-QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.foreverFrameEnabled);
+QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.transports.foreverFrame.enabled);
 
 QUnit.asyncTimeoutTest("Forever Frame transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection1 = testUtilities.createHubConnection(testName),
@@ -72,7 +72,7 @@ QUnit.asyncTimeoutTest("Forever Frame transport can trigger abort on server via 
     };
 });
 
-QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.serverSentEventsEnabled);
+QUnit.module("Transports Common - Ajax Abort Facts", testUtilities.transports.serverSentEvents.enabled);
 
 QUnit.asyncTimeoutTest("Server Sent Events transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection1 = testUtilities.createHubConnection(testName),

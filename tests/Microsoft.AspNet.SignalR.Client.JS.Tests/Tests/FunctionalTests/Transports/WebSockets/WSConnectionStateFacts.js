@@ -1,4 +1,4 @@
-﻿QUnit.module("WebSockets Facts", testUtilities.webSocketsEnabled);
+﻿QUnit.module("WebSockets Facts", testUtilities.transports.webSockets.enabled);
 
 QUnit.asyncTimeoutTest("Connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),

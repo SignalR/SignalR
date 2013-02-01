@@ -1,4 +1,4 @@
-﻿QUnit.module("Transports Common - Ajax Send Facts", testUtilities.longPollingEnabled);
+﻿QUnit.module("Transports Common - Ajax Send Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Long Polling transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),
@@ -38,7 +38,7 @@ QUnit.asyncTimeoutTest("Long Polling transport can trigger method on server via 
     };
 });
 
-QUnit.module("Transports Common - Ajax Send Facts", testUtilities.foreverFrameEnabled);
+QUnit.module("Transports Common - Ajax Send Facts", testUtilities.transports.foreverFrame.enabled);
 
 QUnit.asyncTimeoutTest("Forever Frame transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),
@@ -78,7 +78,7 @@ QUnit.asyncTimeoutTest("Forever Frame transport can trigger method on server via
     };
 });
 
-QUnit.module("Transports Common - Ajax Send Facts", testUtilities.serverSentEventsEnabled);
+QUnit.module("Transports Common - Ajax Send Facts", testUtilities.transports.serverSentEvents.enabled);
 
 QUnit.asyncTimeoutTest("Server Sent Events transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(testName),
