@@ -127,7 +127,7 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest("Manually restarted client maintains consistent state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(testName),
             demo = connection.createHubProxies().demo,
-            transport = { transport: transport },
+            activeTransport = { transport: transport },
             tryReconnect;
 
         // LongPolling does not support "lostConnection" so we have to trigger reconnect in a different fashion
@@ -156,7 +156,7 @@ testUtilities.runWithAllTransports(function (transport) {
         // Need to have at least one client function in order to be subscribed to a hub
         demo.client.foo = function () { };
 
-        connection.start(transport).done(function () {
+        connection.start(activeTransport).done(function () {
             setTimeout(function () {
                 // Synchronously stop
                 connection.stop(false);
@@ -165,7 +165,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
                 assert.equal($.signalR.connectionState.disconnected, connection.state, "SignalR state is disconnected prior to (re)start.");
 
-                connection.start(transport).done(function () {
+                connection.start(activeTransport).done(function () {
                     assert.equal($.signalR.connectionState.connected, connection.state, "SignalR state is connected once start callback is called.");
 
                     // Wire up the state changed (while connected) to detect if we shift into reconnecting
