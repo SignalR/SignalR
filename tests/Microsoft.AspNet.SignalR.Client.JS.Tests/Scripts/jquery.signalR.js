@@ -1995,5 +1995,5 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 (function ($) {
-    $.signalR.version = "1.1.0-Alpha1";
+    $.signalR.version = "1.1.0-alpha1";
 }(window.jQuery));
