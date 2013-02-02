@@ -52,7 +52,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public string InstanceName { get; set; }
 
-        public Task<IClientResponse> Get(string url, bool disableWrites = false)
+        public Task<IClientResponse> Get(string url)
+        {
+            return Get(url, disableWrites: false);
+        }
+
+        public Task<IClientResponse> Get(string url, bool disableWrites)
         {
             return ProcessRequest("GET", url, req => { }, null, disableWrites);
         }
