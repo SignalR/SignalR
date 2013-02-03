@@ -2,7 +2,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -31,6 +33,22 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 
             return default(T);
+        }
+
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonWriter will not dispose the stringWriter")]
+        public static string JsonSerializeObject(this IConnection connection, object value)
+        {
+            var sb = new StringBuilder(0x100);
+            using (var stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture))
+            {
+                using (var jsonWriter = new JsonTextWriter(stringWriter))
+                {
+                    jsonWriter.Formatting = connection.JsonSerializer.Formatting;
+                    connection.JsonSerializer.Serialize(jsonWriter, value);
+                }
+
+                return stringWriter.ToString();
+            }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonTextReader will not dispose the stringReader")]

@@ -45,6 +45,5 @@ namespace Microsoft.AspNet.SignalR.Client
         void UpdateLastKeepAlive();
 
         JsonSerializer JsonSerializer { get; set; }
-        string JsonSerializeObject(object value);
     }
 }
