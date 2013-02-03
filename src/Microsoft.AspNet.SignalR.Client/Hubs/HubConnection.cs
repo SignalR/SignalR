@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 Name = p.Key
             });
 
-            return JsonSerializeObject(data);
+            return this.JsonSerializeObject(data);
         }
 
         /// <summary>

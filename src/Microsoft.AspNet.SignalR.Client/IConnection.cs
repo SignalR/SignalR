@@ -40,6 +40,5 @@ namespace Microsoft.AspNet.SignalR.Client
         void PrepareRequest(IRequest request);
 
         JsonSerializer JsonSerializer { get; set; }
-        string JsonSerializeObject(object value);
     }
 }

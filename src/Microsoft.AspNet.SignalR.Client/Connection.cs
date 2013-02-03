@@ -46,6 +46,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
+        //The json serializer for the connections
+        private JsonSerializer _jsonSerializer = new JsonSerializer();
+
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
         /// </summary>
@@ -125,7 +128,6 @@ namespace Microsoft.AspNet.SignalR.Client
             State = ConnectionState.Disconnected;
         }
 
-        JsonSerializer _jsonSerializer = new JsonSerializer();
         /// <summary>
         /// Gets or sets the serializer used by the connection
         /// </summary>
@@ -431,29 +433,8 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(JsonSerializeObject(value));
-        }
-
-        /// <summary>
-        /// Serializes an object to a json string using the JsonSerializer set on the connection.
-        /// </summary>
-        /// <param name="value">The value to serialize.</param>
-
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonWriter will not dispose the stringWriter")]
-        public string JsonSerializeObject(object value)
-        {
-            var sb = new StringBuilder(0x100);
-            using (var stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture))
-            {
-                using (var jsonWriter = new JsonTextWriter(stringWriter))
-                {
-                    jsonWriter.Formatting = JsonSerializer.Formatting;
-                    JsonSerializer.Serialize(jsonWriter, value);
-                }
-
-                return stringWriter.ToString();
-            }
-        }
+            return Send(ConnectionExtensions.JsonSerializeObject(this, value));
+        }        
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
