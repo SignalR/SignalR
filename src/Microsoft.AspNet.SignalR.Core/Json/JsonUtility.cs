@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Json
         // JavaScript keywords taken from http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
         //   Sections: 7.6.1.1, 7.6.1.2
         // Plus the implicity globals "NaN", "undefined", "Infinity"
-        private static readonly string[] _jsKeywords = new[] { "break", "do", "instanceof", "typeof", "case", "else", "new", "var", "catch", "finally", "return", "void", "continue", "for", "switch", "while", "debugger", "function", "this", "with", "default", "if", "hrow", "delete", "in", "try", "class", "enum", "extends", "super", "const", "export", "import", "implements", "let", "private", "public", "yield", "interface", "package", "protected", "static", "NaN", "undefined", "Infinity" };
+        private static readonly string[] _jsKeywords = new[] { "break", "do", "instanceof", "typeof", "case", "else", "new", "var", "catch", "finally", "return", "void", "continue", "for", "switch", "while", "debugger", "function", "this", "with", "default", "if", "throw", "delete", "in", "try", "class", "enum", "extends", "super", "const", "export", "import", "implements", "let", "private", "public", "yield", "interface", "package", "protected", "static", "NaN", "undefined", "Infinity" };
 
         /// <summary>
         /// Converts the specified name to camel case.

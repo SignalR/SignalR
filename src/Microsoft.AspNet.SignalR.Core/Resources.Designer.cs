@@ -259,6 +259,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unexpected end when reading object..
+        /// </summary>
+        internal static string Error_ParseObjectFailed {
+            get {
+                return ResourceManager.GetString("Error_ParseObjectFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Protocol error: Missing connection token..
         /// </summary>
         internal static string Error_ProtocolErrorMissingConnectionToken {
@@ -273,6 +282,15 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_ProtocolErrorUnknownTransport {
             get {
                 return ResourceManager.GetString("Error_ProtocolErrorUnknownTransport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State has exceeded the maximum length of 4096 bytes..
+        /// </summary>
+        internal static string Error_StateExceededMaximumLength {
+            get {
+                return ResourceManager.GetString("Error_StateExceededMaximumLength", resourceCulture);
             }
         }
         

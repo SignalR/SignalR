@@ -139,6 +139,30 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             return Clients.Caller.Company;
         }
 
+        public object ReadAnyState()
+        {
+            Clients.Caller.state2 = Clients.Caller.state;
+            Clients.Caller.addy = Clients.Caller.state.Address;
+
+            string name = Clients.Caller.state["Name"];
+            string street = Clients.Caller.state["Address"]["Street"];
+
+            string dname = Clients.Caller.state.Name;
+            string dstreet = Clients.Caller.state.Address.Street;
+
+            if (!name.Equals(dname))
+            {
+                throw new InvalidOperationException("Fail");
+            }
+
+            if (!street.Equals(dstreet))
+            {
+                throw new InvalidOperationException("Fail");
+            }
+
+            return Clients.Caller.state;
+        }
+
         public void ComplexArray(Person[] people)
         {
 

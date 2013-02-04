@@ -59,6 +59,7 @@
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
+    <Compile Include="Hubs\DynamicDictionary.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\GroupProxy.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
+    <Compile Include="Json\SipHashBasedDictionaryConverter.cs" />
     <Compile Include="Messaging\CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
@@ -128,7 +130,7 @@
     <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
-    <Compile Include="Json\JTokenValue.cs" />
+    <Compile Include="Json\JRawValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
