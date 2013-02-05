@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action AfterReceive;
         internal Action BeforeCancellationTokenCallbackRegistered;
         internal Action BeforeReceive;
-        internal Action AfterRequestEnd;
+        internal Action<Exception> AfterRequestEnd;
 
         protected override void InitializePersistentState()
         {
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 if (AfterRequestEnd != null)
                 {
-                    AfterRequestEnd();
+                    AfterRequestEnd(ex);
                 }
             };
 
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;
-            IDisposable registration = null;
+            var disposer = new Disposer();
 
             if (BeforeReceive != null)
             {
@@ -312,7 +312,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         // Send the response before removing any connection data
                         return Send(response).Then(() =>
                         {
-                            registration.Dispose();
+                            disposer.Dispose();
 
                             // Remove connection without triggering disconnect
                             Heartbeat.RemoveConnection(this);
@@ -326,12 +326,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                              response.Aborted ||
                              ConnectionEndToken.IsCancellationRequested)
                     {
-                        // If this is null it's because the cancellation token tripped
-                        // before we setup the registration at all.
-                        if (registration != null)
-                        {
-                            registration.Dispose();
-                        }
+                        disposer.Dispose();
 
                         if (response.Aborted)
                         {
@@ -384,13 +379,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // This has to be done last incase it runs synchronously.
-            registration = ConnectionEndToken.SafeRegister(state =>
+            IDisposable registration = ConnectionEndToken.SafeRegister(state =>
             {
                 Trace.TraceInformation("Cancel(" + ConnectionId + ")");
 
                 state.Dispose();
             },
             subscription);
+
+            disposer.Set(registration);
         }
     }
 }
