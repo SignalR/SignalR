@@ -227,20 +227,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
             transport.Setup(m => m.Send(It.IsAny<PersistentResponse>())).Returns(TaskAsyncHelper.Empty);
 
-            var wh = new ManualResetEventSlim();
+            bool ended = false;
 
             transport.Object.AfterRequestEnd = (ex) =>
             {
                 Assert.Null(ex);
-                wh.Set();
+                ended = true;
             };
 
             // Act
             transport.Object.ProcessRequest(transportConnection.Object);
 
             // Assert
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(2)), "Hang detected");
-            
+            Assert.True(ended);
         }
 
         public void RunWithPostReceive(Func<Task> postReceive)
