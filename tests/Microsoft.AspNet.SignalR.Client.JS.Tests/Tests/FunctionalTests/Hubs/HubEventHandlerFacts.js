@@ -4,15 +4,13 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
             echoHub = connection.createHubProxies().echoHub,
-            handler;
+            handler = function (value) {
+                assert.ok(true, "Successful call handler");
+                end();
+            };
 
         echoHub.client.echo = function (value) {
             assert.equal(value, "hello", "Successful received message");
-        };
-
-        handler = function (value) {
-            assert.ok(true, "Successful call handler");
-            end();
         };
 
         echoHub.on('echo', handler);
@@ -34,15 +32,13 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler can be removed.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
             echoHub = connection.createHubProxies().echoHub,
-            handler;
+            handler = function (value) {
+                assert.ok(false, "Failed to remove handler");
+                end();
+            };
 
         echoHub.client.echo = function (value) {
             assert.equal(value, "hello", "Successful received message");
-        };
-
-        handler = function (value) {
-            assert.ok(false, "Failed to remove handler");
-            end();
         };
 
         echoHub.on('echo', handler);
@@ -70,15 +66,13 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Hub Event can be removed.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
             echoHub = connection.createHubProxies().echoHub,
-            handler;
+            handler = function (value) {
+                assert.ok(false, "Failed to remove handler");
+                end();
+            };
 
         echoHub.client.echo = function (value) {
             assert.ok(false, "Failed to remove event");
-            end();
-        };
-
-        handler = function (value) {
-            assert.ok(false, "Failed to remove handler");
             end();
         };
 
@@ -109,15 +103,13 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.skip.asyncTimeoutTest(transport + ": Hub Event Handler can be removed after multiple adds.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
             echoHub = connection.createHubProxies().echoHub,
-            handler;
+            handler = function (value) {
+                assert.ok(false, "Failed to remove handler");
+                end();
+            };
 
         echoHub.client.echo = function (value) {
             assert.equal(value, "hello", "Successful received message");
-        };
-
-        handler = function (value) {
-            assert.ok(false, "Failed to remove handler");
-            end();
         };
 
         echoHub.on('echo', handler);
@@ -148,15 +140,13 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.skip.asyncTimeoutTest(transport + ": Hub Event can be removed after handler added again.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
             echoHub = connection.createHubProxies().echoHub,
-            handler;
+            handler = function (value) {
+                assert.ok(false, "Failed to remove handler");
+                end();
+            };
 
         echoHub.client.echo = function (value) {
             assert.ok(false, "Failed to remove event");
-            end();
-        };
-
-        handler = function (value) {
-            assert.ok(false, "Failed to remove handler");
             end();
         };
 
