@@ -139,4 +139,48 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    // This will run successfully after #1259 is completed (remove skip once it runs successfully)
+    QUnit.skip.asyncTimeoutTest(transport + ": Hub Event can be removed after handler added again.", testUtilities.defaultTestTimeout, function (end, assert) {
+        var connection = testUtilities.createHubConnection(),
+            echoHub = connection.createHubProxies().echoHub;
+
+        echoHub.client.echo = function (value) {
+            assert.ok(false, "Failed to remove event");
+            end();
+        };
+
+        handler = function (value) {
+            assert.ok(false, "Failed to remove handler");
+            end();
+        };
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            echoHub.on('echo', handler);
+            echoHub.on('echo', handler);
+            echoHub.on('echo', handler);
+            echoHub.off('echo', handler);
+            echoHub.off('echo');
+            echoHub.on('echo', handler);
+            echoHub.on('echo', handler);
+            echoHub.on('echo', handler);
+            echoHub.off('echo', handler);
+            echoHub.off('echo');
+            echoHub.server.echoCallback("hello");
+
+            setTimeout(function () {
+                assert.ok(true, "Handler was not called, success!");
+                end();
+            }, 2000);
+        }).fail(function (reason) {
+            assert.ok(false, "Failed to initiate signalr connection");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 });
