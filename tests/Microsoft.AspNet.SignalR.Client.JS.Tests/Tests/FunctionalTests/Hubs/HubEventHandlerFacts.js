@@ -3,7 +3,8 @@
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
-            echoHub = connection.createHubProxies().echoHub;
+            echoHub = connection.createHubProxies().echoHub,
+            handler;
 
         echoHub.client.echo = function (value) {
             assert.equal(value, "hello", "Successful received message");
@@ -32,7 +33,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler can be removed.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
-            echoHub = connection.createHubProxies().echoHub;
+            echoHub = connection.createHubProxies().echoHub,
+            handler;
 
         echoHub.client.echo = function (value) {
             assert.equal(value, "hello", "Successful received message");
@@ -67,7 +69,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
     QUnit.asyncTimeoutTest(transport + ": Hub Event can be removed.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
-            echoHub = connection.createHubProxies().echoHub;
+            echoHub = connection.createHubProxies().echoHub,
+            handler;
 
         echoHub.client.echo = function (value) {
             assert.ok(false, "Failed to remove event");
@@ -105,7 +108,8 @@ testUtilities.runWithAllTransports(function (transport) {
     // This will run successfully after #1260 is completed (remove skip once it runs successfully)
     QUnit.skip.asyncTimeoutTest(transport + ": Hub Event Handler can be removed after multiple adds.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
-            echoHub = connection.createHubProxies().echoHub;
+            echoHub = connection.createHubProxies().echoHub,
+            handler;
 
         echoHub.client.echo = function (value) {
             assert.equal(value, "hello", "Successful received message");
@@ -143,7 +147,8 @@ testUtilities.runWithAllTransports(function (transport) {
     // This will run successfully after #1259 is completed (remove skip once it runs successfully)
     QUnit.skip.asyncTimeoutTest(transport + ": Hub Event can be removed after handler added again.", testUtilities.defaultTestTimeout, function (end, assert) {
         var connection = testUtilities.createHubConnection(),
-            echoHub = connection.createHubProxies().echoHub;
+            echoHub = connection.createHubProxies().echoHub,
+            handler;
 
         echoHub.client.echo = function (value) {
             assert.ok(false, "Failed to remove event");
