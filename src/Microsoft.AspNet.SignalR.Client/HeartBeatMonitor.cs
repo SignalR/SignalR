@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
     public class HeartbeatMonitor : IDisposable
     {
+#if !NETFX_CORE
         // Timer to determine when to notify the user and reconnect if required
         private Timer _timer;
+#endif
 
         // Keep track of whether we have already disposed
         private bool _disposed;
@@ -39,12 +42,17 @@ namespace Microsoft.AspNet.SignalR.Client
             _disposed = false;
             UserNotified = false;
             Reconnecting = false;
+#if !NETFX_CORE
             _timer = new Timer(_ => Beat(), state: null, dueTime: _connection.KeepAliveData.CheckInterval, period: _connection.KeepAliveData.CheckInterval);
+#endif
         }
 
         /// <summary>
         /// Callback function for the timer which determines if we need to notify the user or attempt to reconnect
         /// </summary>
+#if NETFX_CORE
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Timer is not implemented on WinRT")]
+#endif
         private void Beat()
         {
             TimeSpan timeElapsed = DateTime.UtcNow - _connection.KeepAliveData.LastKeepAlive;
@@ -106,15 +114,17 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 if (disposing)
                 {
+#if !NETFX_CORE
                     if (_timer != null)
                     {
                         _timer.Dispose();
-                    }
+                        _timer = null;
+                    }                    
+#endif
                 }
 
                 // Indicate that the instance has been disposed
                 _disposed = true;
-                _timer = null;
             }
         }
     }
