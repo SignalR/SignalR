@@ -79,6 +79,7 @@
     <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\All\HubConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\SendFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Fallback\FallbackConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\Fallback\FallbackSendFacts.js" />
