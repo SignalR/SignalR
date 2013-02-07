@@ -36,6 +36,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return _transport;
             }
         }
+        
+        /// <summary>
+        /// Property for the Keep alive Property
+        /// </summary>
+        public bool SupportsKeepAlive { get; set; }
 
         protected IHttpClient HttpClient
         {
@@ -126,5 +131,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return TransportHelper.GetReceiveQueryString(connection, data, _transport);
         }
 
+        public abstract void LostConnection(IConnection connection);
     }
 }
