@@ -58,6 +58,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionState.cs">
       <Link>ConnectionState.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
+      <Link>HeartBeatMonitor.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
       <Link>Http\DefaultHttpClient.cs</Link>
     </Compile>
@@ -114,6 +117,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
+      <Link>KeepAliveData.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>

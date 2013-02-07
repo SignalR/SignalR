@@ -119,6 +119,11 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
       <Link>Resources.Designer.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
+      <Link>HeartBeatMonitor.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
+      <Link>KeepAliveData.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>

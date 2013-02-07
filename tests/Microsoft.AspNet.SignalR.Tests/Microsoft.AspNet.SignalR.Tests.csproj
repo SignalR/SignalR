@@ -86,6 +86,7 @@
     <Compile Include="Hosting\ResponseExtensionsFacts.cs" />
     <Compile Include="Json\JsonFacts.cs" />
     <Compile Include="Json\JsonNetSerializerFacts.cs" />
+    <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Owin\ServerRequestFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />
@@ -118,17 +119,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
-      <Project>{EB46B9C6-EE37-48F9-835E-E49580E40E0A}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
+      <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client45</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
-      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
-      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj">
+      <Project>{2b8c6dad-4d85-41b1-83fd-248d9f347522}</Project>
+      <Name>Microsoft.AspNet.SignalR.Owin</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
