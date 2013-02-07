@@ -61,6 +61,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
             RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
 
+            RouteTable.Routes.MapConnection<ReconnectionSuccesfulTestConnection>("timeout-recon", "timeout-recon");
             // End point to hit to verify the webserver is up
             RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));
         }

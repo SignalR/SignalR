@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public WebSocketTransport(IHttpClient client)
         {
+            SupportsKeepAlive = true;
             _client = client;
             _disconnectToken = CancellationToken.None;
 
@@ -36,6 +37,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// The time to wait after a connection drops to try reconnecting.
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
+
+        /// <summary>
+        /// Property for the Keep alive Property
+        /// </summary>
+        public bool SupportsKeepAlive { get; set; }
 
         /// <summary>
         /// The name of the transport.
@@ -172,6 +178,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 Connection = connection;
                 Data = data;
             }
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            Abort(connection);
         }
     }
 }

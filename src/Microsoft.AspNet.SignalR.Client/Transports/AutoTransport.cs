@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public AutoTransport(IHttpClient httpClient)
         {
+            SupportsKeepAlive = true;
             _httpClient = httpClient;
             _transports = new IClientTransport[] { 
 #if NET45
@@ -32,6 +33,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 new LongPollingTransport(httpClient) 
             };
         }
+
+        /// <summary>
+        /// Property for the Keep alive Property
+        /// </summary>
+        public bool SupportsKeepAlive { get; set; }
 
         public string Name
         {
@@ -131,6 +137,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 _transport.Abort(connection);
             }
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            _transport.LostConnection(connection);
         }
     }
 }

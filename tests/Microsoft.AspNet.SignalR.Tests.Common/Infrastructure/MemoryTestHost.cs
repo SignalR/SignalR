@@ -78,6 +78,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
                 app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
                 app.MapConnection<UnusableProtectedConnection>("/protected", config);
+                app.MapConnection<ReconnectionSuccesfulTestConnection>("/timeout-recon", config);
             });
         }
 
