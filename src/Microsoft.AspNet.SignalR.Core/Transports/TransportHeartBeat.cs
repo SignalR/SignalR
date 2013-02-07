@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (oldMetadata != null)
             {
-                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
+                Trace.TraceInformation("Connection {0} exists. Closing previous connection.", oldMetadata.Connection.ConnectionId);
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else
             {
-                Trace.TraceInformation("Connection is New=({0}).", connection.Url);
+                Trace.TraceInformation("Connection {0} is New.", connection.ConnectionId);
             }
 
             lock (_counterLock)
