@@ -2,8 +2,6 @@
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
