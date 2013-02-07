@@ -209,11 +209,6 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["PlainTask"], $.makeArray(arguments)));
              },
 
-            readAnyState: function () {
-            /// <summary>Calls the ReadAnyState method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-                return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReadAnyState"], $.makeArray(arguments)));
-             },
-
             readStateValue: function () {
             /// <summary>Calls the ReadStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
