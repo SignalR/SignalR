@@ -23,7 +23,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public AutoTransport(IHttpClient httpClient)
         {
-            SupportsKeepAlive = true;
             _httpClient = httpClient;
             _transports = new IClientTransport[] { 
 #if NET45
@@ -35,9 +34,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         /// <summary>
-        /// Property for the Keep alive Property
+        /// Indicates whether or not the active transport supports keep alive
         /// </summary>
-        public bool SupportsKeepAlive { get; set; }
+        public bool SupportsKeepAlive { get; private set; }
 
         public string Name
         {
@@ -117,6 +116,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     // Set the active transport
                     _transport = transport;
+
+                    // Sets SupportsKeepAlive based on the active transport
+                    if (_transport.Name.Equals("webSockets", StringComparison.OrdinalIgnoreCase) || _transport.Name.Equals("serverSentEvents", StringComparison.OrdinalIgnoreCase))
+                    {
+                        SupportsKeepAlive = true;
+                    }
+                    else
+                    {
+                        SupportsKeepAlive = false;
+                    }
 
                     // Complete the process
                     tcs.SetResult(null);
