@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public TimeSpan ConnectDelay { get; set; }
 
+
         public LongPollingTransport()
             : this(new DefaultHttpClient())
         {
@@ -38,11 +39,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public LongPollingTransport(IHttpClient httpClient)
             : base(httpClient, "longPolling")
         {
-
-            SupportsKeepAlive = false;
             ReconnectDelay = TimeSpan.FromSeconds(5);
             ErrorDelay = TimeSpan.FromSeconds(2);
             ConnectDelay = TimeSpan.FromSeconds(2);
+        }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public override bool SupportsKeepAlive
+        {
+            get
+            {
+                return false;
+            }
         }
 
         protected override void OnStart(IConnection connection,

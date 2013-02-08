@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private HeartbeatMonitor _monitor;
 
         // Object to store the various keep alive timeout values
-        public KeepAliveData KeepAliveData { get; set; }
+        public KeepAliveData KeepAliveData { get; private set; }
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
