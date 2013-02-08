@@ -56,6 +56,8 @@
             }
         },
 
+        // This is used to ensure that users using JQuery >= 1.9.0 get the same parsed JSON as in < JQuery 1.9.0
+        // See: https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
         parseAjaxResponse = function (connection, data) {
             if (connection.ajaxDataType === "text") {
                 data = data ? $.parseJSON(data) : null;

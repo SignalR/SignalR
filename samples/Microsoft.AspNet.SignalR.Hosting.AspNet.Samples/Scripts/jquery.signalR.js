@@ -57,6 +57,16 @@
             }
         },
 
+        // This is used to ensure that users using JQuery >= 1.9.0 get the same parsed JSON as in < JQuery 1.9.0
+        // See: https://github.com/jquery/jquery-migrate/blob/master/warnings.md#jqmigrate-jqueryparsejson-requires-a-valid-json-string
+        parseAjaxResponse = function (connection, data) {
+            if (connection.ajaxDataType === "text") {
+                data = data ? $.parseJSON(data) : null;
+            }
+
+            return data;
+        },
+
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
@@ -333,7 +343,7 @@
                 }
             }
 
-            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -403,6 +413,8 @@
                 },
                 success: function (res) {
                     var keepAliveData = connection.keepAliveData;
+
+                    res = connection.parseAjaxResponse(connection, res);
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
@@ -627,6 +639,9 @@
 
         log: function (msg) {
             log(msg, this.logging);
+        },
+        parseAjaxResponse: function (connection, data) {
+            return parseAjaxResponse(connection, data);
         }
     };
 
@@ -722,6 +737,8 @@
                 data: {},
                 dataType: connection.ajaxDataType,
                 success: function (data) {
+                    data = connection.parseAjaxResponse(connection, data);
+
                     if (data.Response === "pong") {
                         deferral.resolve();
                     }
@@ -812,6 +829,8 @@
                     data: data
                 },
                 success: function (result) {
+                    result = connection.parseAjaxResponse(connection, result);
+
                     if (result) {
                         $(connection).triggerHandler(events.onReceived, [result]);
                     }
@@ -1565,6 +1584,8 @@
                             success: function (minData) {
                                 var delay = 0,
                                     data;
+
+                                minData = instance.parseAjaxResponse(instance, minData);
 
                                 fireConnect();
 
