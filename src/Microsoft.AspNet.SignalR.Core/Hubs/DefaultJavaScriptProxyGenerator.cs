@@ -2,20 +2,19 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class DefaultJavaScriptProxyGenerator : IJavaScriptProxyGenerator
     {
-        private static readonly Lazy<string> _template = new Lazy<string>(GetTemplate);
-        private static readonly ConcurrentDictionary<string, string> _scriptCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Lazy<string> _templateFromResource = new Lazy<string>(GetTemplateFromResource);
 
         private static readonly Type[] _numberTypes = new[] { typeof(byte), typeof(short), typeof(int), typeof(long), typeof(float), typeof(decimal), typeof(double) };
         private static readonly Type[] _dateTypes = new[] { typeof(DateTime), typeof(DateTimeOffset) };
@@ -24,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private readonly IHubManager _manager;
         private readonly IJavaScriptMinifier _javaScriptMinifier;
+        private readonly Lazy<string> _generatedTemplate;
 
         public DefaultJavaScriptProxyGenerator(IDependencyResolver resolver) :
             this(resolver.Resolve<IHubManager>(),
@@ -35,25 +35,34 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             _manager = manager;
             _javaScriptMinifier = javaScriptMinifier ?? NullJavaScriptMinifier.Instance;
+            _generatedTemplate = new Lazy<string>(() => GenerateProxy(_manager, _javaScriptMinifier, includeDocComments: false));
         }
 
-        public bool IsDebuggingEnabled { get; set; }
+        public string GenerateProxy(string serviceUrl)
+        {
+            serviceUrl = JavaScriptEncode(serviceUrl);
+
+            var generateProxy = _generatedTemplate.Value;
+
+            return generateProxy.Replace("{serviceUrl}", serviceUrl);
+        }
 
         public string GenerateProxy(string serviceUrl, bool includeDocComments)
         {
-            string script;
-            if (_scriptCache.TryGetValue(serviceUrl, out script))
-            {
-                return script;
-            }
+            serviceUrl = JavaScriptEncode(serviceUrl);
 
-            var template = _template.Value;
+            string generateProxy = GenerateProxy(_manager, _javaScriptMinifier, includeDocComments);
 
-            script = template.Replace("{serviceUrl}", serviceUrl);
+            return generateProxy.Replace("{serviceUrl}", serviceUrl);
+        }
+
+        private static string GenerateProxy(IHubManager hubManager, IJavaScriptMinifier javaScriptMinifier, bool includeDocComments)
+        {
+            string script = _templateFromResource.Value;
 
             var hubs = new StringBuilder();
             var first = true;
-            foreach (var descriptor in _manager.GetHubs().OrderBy(h => h.Name))
+            foreach (var descriptor in hubManager.GetHubs().OrderBy(h => h.Name))
             {
                 if (!first)
                 {
@@ -61,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     hubs.AppendLine();
                     hubs.Append("    ");
                 }
-                GenerateType(hubs, descriptor, includeDocComments);
+                GenerateType(hubManager, hubs, descriptor, includeDocComments);
                 first = false;
             }
 
@@ -69,22 +78,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 hubs.Append(";");
             }
+
             script = script.Replace("/*hubs*/", hubs.ToString());
 
-            if (!IsDebuggingEnabled)
-            {
-                script = _javaScriptMinifier.Minify(script);
-            }
-
-            _scriptCache.TryAdd(serviceUrl, script);
+            javaScriptMinifier.Minify(script);
 
             return script;
         }
 
-        private void GenerateType(StringBuilder sb, HubDescriptor descriptor, bool includeDocComments)
+        private static void GenerateType(IHubManager hubManager, StringBuilder sb, HubDescriptor descriptor, bool includeDocComments)
         {
             // Get only actions with minimum number of parameters.
-            var methods = GetMethods(descriptor);
+            var methods = GetMethods(hubManager, descriptor);
             var hubName = GetDescriptorName(descriptor);
 
             sb.AppendFormat("    proxies.{0} = this.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
@@ -99,14 +104,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 {
                     sb.Append(",").AppendLine();
                 }
-                this.GenerateMethod(sb, method, includeDocComments, hubName);
+                GenerateMethod(sb, method, includeDocComments, hubName);
                 first = false;
             }
             sb.AppendLine();
             sb.Append("        }");
         }
 
-        protected virtual string GetDescriptorName(Descriptor descriptor)
+        private static string GetDescriptorName(Descriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -124,9 +129,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return name;
         }
 
-        private IEnumerable<MethodDescriptor> GetMethods(HubDescriptor descriptor)
+        private static IEnumerable<MethodDescriptor> GetMethods(IHubManager manager, HubDescriptor descriptor)
         {
-            return from method in _manager.GetHubMethods(descriptor.Name)
+            return from method in manager.GetHubMethods(descriptor.Name)
                    group method by method.Name into overloads
                    let oload = (from overload in overloads
                                 orderby overload.Parameters.Count
@@ -135,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                    select oload;
         }
 
-        private void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments, string hubName)
+        private static void GenerateMethod(StringBuilder sb, MethodDescriptor method, bool includeDocComments, string hubName)
         {
             var parameterNames = method.Parameters.Select(p => p.Name).ToList();
             sb.AppendLine();
@@ -188,13 +193,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return String.Join(", ", values.Select(selector));
         }
 
-        private static string GetTemplate()
+        private static string GetTemplateFromResource()
         {
             using (Stream resourceStream = typeof(DefaultJavaScriptProxyGenerator).Assembly.GetManifestResourceStream(ScriptResource))
             {
                 var reader = new StreamReader(resourceStream);
                 return reader.ReadToEnd();
             }
+        }
+
+        private static string JavaScriptEncode(string value)
+        {
+            value = JsonConvert.SerializeObject(value);
+
+            // Remove the quotes
+            return value.Substring(1, value.Length - 2);
         }
     }
 }

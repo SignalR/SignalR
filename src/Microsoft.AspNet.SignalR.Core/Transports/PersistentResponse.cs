@@ -70,19 +70,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         public bool TimedOut { get; set; }
 
         /// <summary>
-        /// True if the AddedGroups should be diffed against an empty set of groups, i.e. client groups should equal AddedGroups.
+        /// Signed token representing the list of groups. Updates on change.
         /// </summary>
-        public bool ResetGroups { get; set; }
-
-        /// <summary>
-        /// Groups added to the connection since the last PersistentResponse.
-        /// </summary>
-        public IEnumerable<string> AddedGroups { get; set; }
-
-        /// <summary>
-        /// Groups removed from the connection since the last PersistentResponse.
-        /// </summary>
-        public IEnumerable<string> RemovedGroups { get; set; }
+        public string GroupsToken { get; set; }
 
         /// <summary>
         /// The time the long polling client should wait before reestablishing a connection if no data is received.
@@ -113,24 +103,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 jsonWriter.WritePropertyName("T");
                 jsonWriter.WriteValue(1);
             }
-
-            if (AddedGroups != null)
+            
+            if (GroupsToken != null)
             {
-                if (ResetGroups)
-                {
-                    jsonWriter.WritePropertyName("R");
-                }
-                else
-                {
-                    jsonWriter.WritePropertyName("G");
-                }
-                WriteJsonArray(jsonWriter, AddedGroups);
-            }
-
-            if (RemovedGroups != null)
-            {
-                jsonWriter.WritePropertyName("g");
-                WriteJsonArray(jsonWriter, RemovedGroups);
+                jsonWriter.WritePropertyName("G");
+                jsonWriter.WriteValue(GroupsToken);
             }
 
             if (LongPollDelay.HasValue)
@@ -147,16 +124,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
-        }
-
-        private static void WriteJsonArray<T>(JsonTextWriter writer, IEnumerable<T> items)
-        {
-            writer.WriteStartArray();
-            foreach (var item in items)
-            {
-                writer.WriteValue(item);
-            }
-            writer.WriteEndArray();
         }
     }
 }

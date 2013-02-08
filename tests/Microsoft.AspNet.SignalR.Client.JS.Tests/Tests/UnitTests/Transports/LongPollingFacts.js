@@ -3,12 +3,12 @@
 
 QUnit.module("Long Polling Facts");
 
-QUnit.test("Long Polling Availability", function () {
+QUnit.test("Availability", function () {
     var con = $.connection;
-    ok(con.transports.longPolling, "Verifies Long Polling transport exists.");
+    QUnit.ok(con.transports.longPolling, "Verifies Long Polling transport exists.");
 });
 
-QUnit.test("Long Polling Named Correctly", function () {
+QUnit.test("Named Correctly", function () {
     var con = $.connection;
-    equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
+    QUnit.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
 });

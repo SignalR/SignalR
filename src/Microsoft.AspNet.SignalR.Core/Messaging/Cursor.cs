@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             : this(key, id, Escape(key))
         {
         }
-        
+
         public Cursor(string key, ulong id, string minifiedKey)
         {
             Key = key;
@@ -169,6 +169,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public static Cursor[] GetCursors(string cursor, Func<string, string> keyMaximizer)
         {
+            // Technically GetCursors should never be called with a null value, so this is extra cautious
+            if (String.IsNullOrEmpty(cursor))
+            {
+                throw new FormatException(Resources.Error_InvalidCursorFormat);
+            }
+
+            var signals = new HashSet<string>();
             var cursors = new List<Cursor>();
             string currentKey = null;
             string currentEscapedKey = null;
@@ -180,40 +187,66 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             foreach (var ch in cursor)
             {
+                // escape can only be true if we are consuming the key
                 if (escape)
                 {
-                    sb.Append(ch);
-                    if (consumingKey)
+                    if (ch != '\\' && ch != ',' && ch != '|')
                     {
-                        sbEscaped.Append(ch);
+                        throw new FormatException(Resources.Error_InvalidCursorFormat);
                     }
+
+                    sb.Append(ch);
+                    sbEscaped.Append(ch);
                     escape = false;
                 }
                 else
                 {
                     if (ch == '\\')
                     {
-                        if (consumingKey)
+                        if (!consumingKey)
                         {
-                            sbEscaped.Append('\\');
+                            throw new FormatException(Resources.Error_InvalidCursorFormat);
                         }
+
+                        sbEscaped.Append('\\');
                         escape = true;
                     }
                     else if (ch == ',')
                     {
-                        currentEscapedKey = sbEscaped.ToString();
+                        if (!consumingKey)
+                        {
+                            throw new FormatException(Resources.Error_InvalidCursorFormat);
+                        }
+
+                        // For now String.Empty is an acceptable key, but this should change once we verify
+                        // that empty keys cannot be created legitimately.
                         currentKey = keyMaximizer(sb.ToString());
+
                         // If the keyMap cannot find a key, we cannot create an array of cursors.
+                        // This most likely means there was an AppDomain restart or a misbehaving client.
                         if (currentKey == null)
                         {
                             return null;
                         }
+                        // Don't allow duplicate keys
+                        if (!signals.Add(currentKey))
+                        {
+                            throw new FormatException(Resources.Error_InvalidCursorFormat);
+                        }
+
+                        currentEscapedKey = sbEscaped.ToString();
+
                         sb.Clear();
                         sbEscaped.Clear();
                         consumingKey = false;
                     }
                     else if (ch == '|')
                     {
+                        if (consumingKey)
+                        {
+                            throw new FormatException(Resources.Error_InvalidCursorFormat);
+                        }
+
                         currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                         cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
                         sb.Clear();
@@ -230,11 +263,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            if (sb.Length > 0)
+            if (consumingKey)
             {
-                currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+                throw new FormatException(Resources.Error_InvalidCursorFormat);
             }
+
+            currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
 
             return cursors.ToArray();
         }

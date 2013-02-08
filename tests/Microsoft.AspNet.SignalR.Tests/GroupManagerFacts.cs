@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Setup(m => m.Send(It.IsAny<ConnectionMessage>()))
                           .Callback<ConnectionMessage>(m =>
                           {
-                              Assert.Equal("1", m.Signal);
+                              Assert.Equal("c-1", m.Signal);
                               Assert.NotNull(m.Value);
                               var command = m.Value as Command;
                               Assert.NotNull(command);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Setup(m => m.Send(It.IsAny<ConnectionMessage>()))
                           .Callback<ConnectionMessage>(m =>
                           {
-                              Assert.Equal("1", m.Signal);
+                              Assert.Equal("c-1", m.Signal);
                               Assert.NotNull(m.Value);
                               var command = m.Value as Command;
                               Assert.NotNull(command);
@@ -140,8 +140,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                           {
                               Assert.Equal("Prefix.MyGroup", m.Signal);
                               Assert.Equal("some value", m.Value);
-                              Assert.True(m.ExcludedSignals.Contains("x"));
-                              Assert.True(m.ExcludedSignals.Contains("y"));
+                              Assert.True(m.ExcludedSignals.Contains("c-x"));
+                              Assert.True(m.ExcludedSignals.Contains("c-y"));
                           });
 
                 var groupManager = new GroupManager(connection.Object, "Prefix");

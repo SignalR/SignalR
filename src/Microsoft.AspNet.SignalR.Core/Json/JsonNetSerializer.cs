@@ -33,6 +33,8 @@ namespace Microsoft.AspNet.SignalR.Json
                 throw new ArgumentNullException("settings");
             }
 
+            // Just override it anyways (we're saving the user)
+            settings.MaxDepth = 20;
             _serializer = JsonSerializer.Create(settings);
         }
 

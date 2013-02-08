@@ -85,7 +85,11 @@
 
                 connection.reconnecting(function () {
                     var connection = this;
-                    stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+
+                    // Guard against state changing in a previous user defined even handler
+                    if (connection.state === signalR.connectionState.reconnecting) {
+                        stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+                    }
                 });
 
                 connection.stateChanged(function (data) {
@@ -224,15 +228,11 @@
 
         state: signalR.connectionState.disconnected,
 
-        groups: {},
-
         keepAliveData: {},
 
         reconnectDelay: 2000,
 
-        disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
-
-        keepAliveTimeoutCount: 3,
+        disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -405,6 +405,7 @@
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
+                    connection.token = res.ConnectionToken;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
@@ -413,15 +414,12 @@
                     
 
                     // If we have a keep alive
-                    if (res.KeepAlive) {
-                        // Convert to milliseconds
-                        res.KeepAlive *= 1000;
-
+                    if (res.KeepAliveTimeout) {
                         // Register the keep alive data as activated
                         keepAliveData.activated = true;
 
-                        // Timeout to designate when to force the connection into reconnecting
-                        keepAliveData.timeout = res.KeepAlive * connection.keepAliveTimeoutCount;
+                        // Timeout to designate when to force the connection into reconnecting converted to milliseconds
+                        keepAliveData.timeout = res.KeepAliveTimeout * 1000;
 
                         // Timeout to designate when to warn the developer that the connection may be dead or is hanging.
                         keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
@@ -433,7 +431,7 @@
                         keepAliveData.activated = false;
                     }
 
-                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.1") {
+                    if (!res.ProtocolVersion || res.ProtocolVersion !== "1.2") {
                         $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
                         deferred.reject("SignalR: Incompatible protocol version.");
                         return;
@@ -613,7 +611,7 @@
                 $(connection).triggerHandler(events.onDisconnect);
 
                 delete connection.messageId;
-                delete connection.groups;
+                delete connection.groupsToken;
 
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;

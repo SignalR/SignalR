@@ -15,6 +15,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
+using Newtonsoft.Json.Linq;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -44,6 +45,48 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var result = hub.InvokeWithTimeout<string>("ReadStateValue");
 
                 Assert.Equal("test", result);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ReadingComplexState(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                var connection = new Client.Hubs.HubConnection(host.Url);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                hub["state"] = JToken.FromObject(new
+                {
+                    Name = "David",
+                    Address = new
+                    {
+                        Street = "St"
+                    }
+                });
+
+                connection.Start(host.Transport).Wait();
+
+                var result = hub.InvokeWithTimeout<dynamic>("ReadAnyState");
+                dynamic state2 = hub["state2"];
+                dynamic addy = hub["addy"];
+
+                Assert.NotNull(result);
+                Assert.NotNull(state2);
+                Assert.NotNull(addy);
+                Assert.Equal("David", (string)result.Name);
+                Assert.Equal("St", (string)result.Address.Street);
+                Assert.Equal("David", (string)state2.Name);
+                Assert.Equal("St", (string)state2.Address.Street);
+                Assert.Equal("St", (string)addy.Street);
 
                 connection.Stop();
             }
@@ -61,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 host.Start<BasicAuthApplication>();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -89,8 +132,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
+                HubConnection connection2 = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("MyItemsHub");
                 var hub1 = connection2.CreateHubProxy("MyItemsHub");
@@ -123,6 +166,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.Equal("OnConnected", results[0].Method);
                 Assert.Equal(1, results[0].Keys.Length);
                 Assert.Equal("owin.environment", results[0].Keys[0]);
+                Assert.Equal("nosniff", results[0].XContentTypeOptions);
                 Assert.Equal("GetItems", results[1].Method);
                 Assert.Equal(1, results[1].Keys.Length);
                 Assert.Equal("owin.environment", results[1].Keys[0]);
@@ -143,7 +187,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
                 connection.Start(host.Transport).Wait();
@@ -165,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<object>();
 
                 var hub = connection.CreateHubProxy("demo");
@@ -195,7 +239,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<object>();
 
                 var hub = connection.CreateHubProxy("demo");
@@ -226,7 +270,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -248,7 +292,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -271,7 +315,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -289,12 +333,39 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void DetailedErrorsAreDisabledByDefault(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                connection.Start(host.Transport).Wait();
+
+                connection.Start(host.Transport).Wait();
+
+                var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
+
+                Assert.IsType<InvalidOperationException>(ex.GetBaseException());
+                Assert.DoesNotContain("System.Exception", ex.GetBaseException().Message);
+                Assert.Contains("demo.TaskWithException", ex.GetBaseException().Message);
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -316,7 +387,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -340,7 +411,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("echoHub");
 
@@ -363,7 +434,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("echoHub");
                 var tcs = new TaskCompletionSource<string>();
@@ -389,7 +460,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -416,7 +487,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/foo", config);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
+                var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrl" } });
 
 
                 var hub = connection.CreateHubProxy("demo");
@@ -447,7 +518,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrlAspNet" } });
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -476,7 +547,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -520,7 +591,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -564,7 +635,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 string callback = @"!!!|\CallMeBack,,,!!!";
 
@@ -592,7 +663,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 try
                 {
@@ -618,7 +689,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 int max = 10;
 
                 var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var proxy = connection.CreateHubProxy("MultGroupHub");
 
                 proxy.On<User>("onRoomJoin", user =>
@@ -643,64 +714,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void HubGroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
-        {
-            using (var host = CreateHost(hostType, transportType))
-            {
-                host.Initialize(keepAlive: 0,
-                                connectionTimeout: 1,
-                                hearbeatInterval: 1);
-
-                int max = 10;
-
-                var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
-                var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
-                var connection = new Client.Hubs.HubConnection(host.Url);
-                var proxy = connection.CreateHubProxy("MultGroupHub");
-
-                proxy.On<User>("onRoomJoin", u =>
-                {
-                    if (u.Index < max)
-                    {
-                        Assert.True(countDown.Mark(u.Index));
-                    }
-                    else
-                    {
-                        Assert.True(countDownAfterReconnect.Mark(u.Index));
-                    }
-                });
-
-                connection.Start(host.Transport).Wait();
-
-                var user = new User { Name = "tester" };
-                proxy.InvokeWithTimeout("login", user);
-
-                for (int i = 0; i < max; i++)
-                {
-                    user.Index = i;
-                    proxy.InvokeWithTimeout("joinRoom", user);
-                }
-
-                // Force Reconnect
-                Thread.Sleep(TimeSpan.FromSeconds(3));
-
-                for (int i = max; i < 2 * max; i++)
-                {
-                    user.Index = i;
-                    proxy.InvokeWithTimeout("joinRoom", user);
-                }
-
-                Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-                Assert.True(!countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)) && countDownAfterReconnect.Count == max);
-
-                connection.Stop();
-            }
-        }
-
-        [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
@@ -709,16 +722,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(keepAlive: 0,
-                                connectionTimeout: 5,
-                                hearbeatInterval: 2,
+                host.Initialize(keepAlive: null,
+                                disconnectTimeout: 6,
+                                connectionTimeout: 1,
                                 enableAutoRejoiningGroups: true);
 
                 int max = 10;
 
                 var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
                 var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var proxy = connection.CreateHubProxy("MultGroupHub");
 
                 proxy.On<User>("onRoomJoin", u =>
@@ -777,9 +790,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     config.Resolver.Resolve<IHubPipeline>().AddModule(logRejoiningGroups);
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                    configuration.KeepAlive = 0;
-                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    // The following sets the heartbeat to 1 s
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+                    configuration.KeepAlive = null;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                 });
 
                 var connection = new Client.Hubs.HubConnection("http://foo");
@@ -823,7 +837,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url, "a=b");
+                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=CustomQueryStringRaw");
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 
@@ -848,6 +862,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
                 var qs = new Dictionary<string, string>();
                 qs["a"] = "b";
+                qs["test"] = "CustomQueryString";
                 var connection = new Client.Hubs.HubConnection(host.Url, qs);
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
@@ -879,11 +894,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     app.MapHubs("/signalr", config);
-                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                    configuration.KeepAlive = 0;
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    // The below effectively sets the heartbeat interval to one second.
+                    configuration.KeepAlive = TimeSpan.FromSeconds(2);
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
 
@@ -915,12 +929,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     app.MapHubs("/signalr", config);
-                    config.Resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                    configuration.KeepAlive = 0;
-                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(1);
+                    // The following sets the heartbeat to 1 s
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+                    configuration.KeepAlive = null;
+                    configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
 
@@ -1003,8 +1017,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1038,8 +1052,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1076,8 +1090,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1111,8 +1125,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1258,7 +1272,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(enableAutoRejoiningGroups: true);
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var wh = new ManualResetEventSlim();
 
                 var hub = connection.CreateHubProxy("groupChat");
@@ -1373,7 +1387,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public Dictionary<string, List<string>> GroupsRejoined = new Dictionary<string, List<string>>();
 
-            public override Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups)
+            public override Func<HubDescriptor, IRequest, IList<string>, IList<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IList<string>, IList<string>> rejoiningGroups)
             {
                 return (hubDescriptor, request, groups) =>
                 {

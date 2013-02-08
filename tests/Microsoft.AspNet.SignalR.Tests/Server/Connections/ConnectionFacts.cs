@@ -1,69 +1,90 @@
-﻿using Moq;
+﻿using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using System;
-using System.Net;
-using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Json;
+using Microsoft.AspNet.SignalR.Transports;
+using Moq;
 using Xunit;
-using System.Threading;
 
-namespace Microsoft.AspNet.SignalR.Client.Tests
+namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class ConnectionFacts
+    public class ServerConnectionFacts
     {
-        public class Start
+        public class PopulateResponseState
         {
             [Fact]
-            public void FailsIfProtocolVersionIsNull()
+            public void GroupTokenIsNullWhenNoGroups()
             {
-                var connection = new Connection("http://test");
-                var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection)).Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
-                {
-                    ProtocolVersion = null
-                }));
+                var response = new PersistentResponse();
+                var groupSet = new DiffSet<string>(new string[] { });
+                var serializer = new JsonNetSerializer();
+                var protectedData = new Mock<IProtectedData>();
+                protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
+                    .Returns<string, string>((value, purpose) => value);
 
-                var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
-                var ex = aggEx.Unwrap();
-                Assert.IsType(typeof(InvalidOperationException), ex);
-                Assert.Equal("Incompatible protocol version.", ex.Message);
+                protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
+                             .Returns<string, string>((value, purpose) => value);
+
+                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object);
+
+                Assert.Null(response.GroupsToken);
             }
 
             [Fact]
-            public void FailedNegotiateShouldNotBeActive()
+            public void GroupTokenIsNullWhenNoNewGroups()
             {
-                var connection = new Connection("http://test");
-                var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
-                         .Returns(TaskAsyncHelper.FromError<NegotiationResponse>(new InvalidOperationException("Something failed.")));
+                var response = new PersistentResponse();
+                var groupSet = new DiffSet<string>(new string[] { "a", "b", "c" });
 
-                var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
-                var ex = aggEx.Unwrap();
-                Assert.IsType(typeof(InvalidOperationException), ex);
-                Assert.Equal("Something failed.", ex.Message);
-                Assert.Equal(ConnectionState.Disconnected, connection.State);
+                // Get the first diff
+                groupSet.GetDiff();
+
+                var serializer = new JsonNetSerializer();
+                var protectedData = new Mock<IProtectedData>();
+                protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
+                    .Returns<string, string>((value, purpose) => value);
+
+                protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
+                             .Returns<string, string>((value, purpose) => value);
+
+                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object);
+
+                Assert.Null(response.GroupsToken);
             }
 
             [Fact]
-            public void FailedStartShouldNotBeActive()
+            public void GroupTokenIsNotNullWhenGroupsChange()
             {
-                var connection = new Connection("http://test");
-                var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
-                         .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
-                         {
-                             ProtocolVersion = "1.1",
-                             ConnectionId = "Something"
-                         }));
+                var response = new PersistentResponse();
+                var groupSet = new DiffSet<string>(new string[] { "a", "b", "c", "d" });
 
-                transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
-                         .Returns(TaskAsyncHelper.FromError(new InvalidOperationException("Something failed.")));
+                groupSet.GetDiff();
 
-                var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
-                var ex = aggEx.Unwrap();
-                Assert.IsType(typeof(InvalidOperationException), ex);
-                Assert.Equal("Something failed.", ex.Message);
-                Assert.Equal(ConnectionState.Disconnected, connection.State);
+                groupSet.Add("g");
+
+                var serializer = new Mock<IJsonSerializer>();
+                HashSet<string> results = null;
+                serializer.Setup(m => m.Serialize(It.IsAny<object>(), It.IsAny<TextWriter>()))
+                          .Callback<object, TextWriter>((obj, tw) => {
+                              results = new HashSet<string>((IEnumerable<string>)obj);
+                              var jsonNet = new JsonNetSerializer();
+                              jsonNet.Serialize(obj, tw);
+                          });
+                var protectedData = new Mock<IProtectedData>();
+                protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
+                    .Returns<string, string>((value, purpose) => value);
+
+                protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
+                             .Returns<string, string>((value, purpose) => value);
+
+                Connection.PopulateResponseState(response, groupSet, serializer.Object, protectedData.Object);
+
+                Assert.NotNull(response.GroupsToken);
+                Assert.True(results.Contains("a"));
+                Assert.True(results.Contains("b"));
+                Assert.True(results.Contains("c"));
+                Assert.True(results.Contains("d"));
+                Assert.True(results.Contains("g"));
             }
         }
     }

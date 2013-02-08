@@ -33,6 +33,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
         }
 
+        /// <summary>
+        /// Indicates whether or not the active transport supports keep alive
+        /// </summary>
+        public bool SupportsKeepAlive { get; private set; }
+
         public string Name
         {
             get
@@ -112,11 +117,22 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // Set the active transport
                     _transport = transport;
 
+                    // Sets SupportsKeepAlive based on the active transport
+                    if (_transport.Name.Equals("webSockets", StringComparison.OrdinalIgnoreCase) || _transport.Name.Equals("serverSentEvents", StringComparison.OrdinalIgnoreCase))
+                    {
+                        SupportsKeepAlive = true;
+                    }
+                    else
+                    {
+                        SupportsKeepAlive = false;
+                    }
+
                     // Complete the process
                     tcs.SetResult(null);
                 }
 
-            });
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public Task Send(IConnection connection, string data)
@@ -130,6 +146,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 _transport.Abort(connection);
             }
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            _transport.LostConnection(connection);
         }
     }
 }

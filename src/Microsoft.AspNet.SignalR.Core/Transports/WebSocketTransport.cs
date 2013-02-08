@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -43,6 +44,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        public override CancellationToken CancellationToken
+        {
+            get
+            {
+                return CancellationToken.None;
+            }
+        }
+
         public override Task KeepAlive()
         {
             return Send(new object());
@@ -64,6 +73,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 socket.OnClose = clean =>
                 {
+                    Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
+
                     // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
                     // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
                     // HeartBeat clean it up.  This is to maintain consistency across the transports.

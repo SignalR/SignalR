@@ -4,14 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
+using Owin;
 using Xunit;
 using Xunit.Extensions;
-using Owin;
-using Microsoft.AspNet.SignalR.Configuration;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -30,6 +31,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             Resolver = new DefaultDependencyResolver()
                         };
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
                     });
 
@@ -61,6 +65,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             Resolver = new DefaultDependencyResolver()
                         };
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
                     });
 
@@ -81,32 +88,64 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            private static Task ProcessRequest(MemoryHost host, string transport, string connectionId)
+            private static Task ProcessRequest(MemoryHost host, string transport, string connectionToken)
             {
-                return host.ProcessRequest("http://foo/echo/connect?transport=" + transport + "&connectionId=" + connectionId, request => { }, null);
+                return host.Get("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken);
+            }
+
+            [Fact]
+            public void SendToGroupFromOutsideOfConnection()
+            {
+                using (var host = new MemoryHost())
+                {
+                    IPersistentConnectionContext connectionContext = null;
+                    host.Configure(app =>
+                    {
+                        var configuration = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<FilteredConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                    });
+
+                    var connection1 = new Client.Connection("http://foo/echo");
+
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+
+                    connection1.Start(host).Wait();
+
+                    connection1.Received += data =>
+                    {
+                        Assert.Equal("yay", data);
+                        wh1.Set();
+                    };
+
+                    connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                    connectionContext.Groups.Send("Foo", "yay");
+
+                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+
+                    connection1.Stop();
+                }
             }
 
             [Theory]
+            [InlineData(HostType.Memory, TransportType.Auto)]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void GroupsAreNotReadOnConnectedAsync(HostType hostType, TransportType transportType)
+            [InlineData(HostType.IISExpress, TransportType.Auto)]
+            public void UnableToConnectToProtectedConnection(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
+                    var wh = new ManualResetEventSlim();
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/group-echo");
-                    ((Client.IConnection)connection).Groups.Add(typeof(MyGroupEchoConnection).FullName + ".test");
-                    connection.Received += data =>
-                    {
-                        Assert.False(true, "Unexpectedly received data");
-                    };
+                    var connection = CreateConnection(host.Url + "/protected");
 
-                    connection.Start(host.Transport).Wait();
-
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
 
                     connection.Stop();
                 }
@@ -124,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var wh = new ManualResetEventSlim();
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/add-group");
+                    var connection = CreateConnection(host.Url + "/add-group");
                     connection.Received += data =>
                     {
                         Assert.Equal("hey", data);
@@ -152,7 +191,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/multisend");
+                    var connection = CreateConnection(host.Url + "/multisend");
                     var results = new List<string>();
                     connection.Received += data =>
                     {
@@ -188,7 +227,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/multisend");
+                    var connection = CreateConnection(host.Url + "/multisend");
                     var results = new List<string>();
                     connection.Received += data =>
                     {
@@ -230,7 +269,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/my-reconnect");
+                    var connection = CreateConnection(host.Url + "/my-reconnect");
                     connection.Start(host.Transport).Wait();
 
                     host.Shutdown();
@@ -260,9 +299,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         app.MapConnection<MyReconnect>("/endpoint", config);
                         var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                        configuration.KeepAlive = 0;
-                        configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                        configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                        configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+                        configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
+                        configuration.KeepAlive = null;
 
                         config.Resolver.Register(typeof(MyReconnect), () => conn);
                     });
@@ -271,7 +310,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var transport = CreateTransport(transportType, host);
                     connection.Start(transport).Wait();
 
-                    Thread.Sleep(TimeSpan.FromSeconds(15));
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -292,7 +331,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/groups");
+                    var connection = CreateConnection(host.Url + "/groups");
                     var list = new List<string>();
                     connection.Received += data =>
                     {
@@ -324,48 +363,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            public void GroupsDontRejoinByDefault(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 2,
-                                    hearbeatInterval: 2);
-
-                    var connection = new Client.Connection(host.Url + "/groups");
-                    var list = new List<string>();
-                    connection.Received += data =>
-                    {
-                        list.Add(data);
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Join the group
-                    connection.SendWithTimeout(new { type = 1, group = "test" });
-
-                    // Sent a message
-                    connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
-
-                    // Force Reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    // Send a message
-                    connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
-
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    connection.Stop();
-
-                    Assert.Equal(1, list.Count);
-                    Assert.Equal("hello to group test", list[0]);
-                }
-            }
-
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
@@ -374,11 +371,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 2,
-                                    hearbeatInterval: 2);
+                    host.Initialize(keepAlive: null,
+                                    disconnectTimeout: 6,
+                                    connectionTimeout: 2);
 
-                    var connection = new Client.Connection(host.Url + "/rejoin-groups");
+                    var connection = CreateConnection(host.Url + "/rejoin-groups");
 
                     var list = new List<string>();
                     connection.Received += data =>
@@ -409,99 +406,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.Equal("goodbye to group test", list[1]);
                 }
             }
-
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ClientGroupsSyncWithServerGroupsOnReconnect(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 5,
-                                    hearbeatInterval: 2);
-
-                    var connection = new Client.Connection(host.Url + "/rejoin-groups");
-                    var inGroupOnReconnect = new List<bool>();
-                    var wh = new ManualResetEventSlim();
-
-                    connection.Received += message =>
-                    {
-                        Assert.Equal("Reconnected", message);
-                        wh.Set();
-                    };
-
-                    connection.Reconnected += () =>
-                    {
-                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyRejoinGroupsConnection).FullName + ".test"));
-
-                        connection.SendWithTimeout(new { type = 3, group = "test", message = "Reconnected" });
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Join the group
-                    connection.SendWithTimeout(new { type = 1, group = "test" });
-
-                    // Force reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
-
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
-                    Assert.True(inGroupOnReconnect.Count > 0);
-                    Assert.True(inGroupOnReconnect.All(b => b));
-
-                    connection.Stop();
-                }
-            }
-
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            public void ClientGroupsSyncWithServerGroupsOnReconnectWhenNotRejoiningGroups(HostType hostType, TransportType transportType)
-            {
-                using (var host = CreateHost(hostType, transportType))
-                {
-                    host.Initialize(keepAlive: 0,
-                                    connectionTimeout: 5,
-                                    hearbeatInterval: 2);
-
-                    var connection = new Client.Connection(host.Url + "/groups");
-                    var inGroupOnReconnect = new List<bool>();
-                    var wh = new ManualResetEventSlim();
-
-                    connection.Received += message =>
-                    {
-                        Assert.Equal("Reconnected", message);
-                        inGroupOnReconnect.Add(!connection.Groups.Contains(typeof(MyGroupConnection).FullName + ".test"));
-                        inGroupOnReconnect.Add(connection.Groups.Contains(typeof(MyGroupConnection).FullName + ".test2"));
-                        wh.Set();
-                    };
-
-                    connection.Reconnected += () =>
-                    {
-                        connection.SendWithTimeout(new { type = 1, group = "test2" });
-                        connection.SendWithTimeout(new { type = 3, group = "test2", message = "Reconnected" });
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Join the group
-                    connection.SendWithTimeout(new { type = 1, group = "test" });
-
-                    // Force reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)), "Client didn't receive message sent to test group.");
-                    Assert.True(inGroupOnReconnect.Count > 0);
-                    Assert.True(inGroupOnReconnect.All(b => b));
-
-                    connection.Stop();
-                }
-            }
         }
 
         public class SendFacts : HostedTest
@@ -518,8 +422,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection1 = new Client.Connection(host.Url + "/filter");
-                    var connection2 = new Client.Connection(host.Url + "/filter");
+                    var connection1 = CreateConnection(host.Url + "/filter");
+                    var connection2 = CreateConnection(host.Url + "/filter");
 
                     var wh1 = new ManualResetEventSlim(initialState: false);
                     var wh2 = new ManualResetEventSlim(initialState: false);
@@ -551,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/sync-error");
+                    var connection = CreateConnection(host.Url + "/sync-error");
 
                     connection.Start(host.Transport).Wait();
 
@@ -573,8 +477,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/items");
-                    var connection2 = new Client.Connection(host.Url + "/items");
+                    var connection = CreateConnection(host.Url + "/items");
+                    var connection2 = CreateConnection(host.Url + "/items");
 
                     var results = new List<RequestItemsResponse>();
                     connection2.Received += data =>

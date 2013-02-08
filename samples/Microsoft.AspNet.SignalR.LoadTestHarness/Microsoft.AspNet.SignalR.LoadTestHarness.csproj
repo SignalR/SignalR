@@ -51,6 +51,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.1.0.0-rc2-130118\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -58,6 +62,9 @@
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin">
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -200,10 +207,6 @@
     <None Include="Properties\PublishProfiles\Profile1.pubxml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
-      <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>
-      <Name>Microsoft.Owin.Host.SystemWeb45</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>

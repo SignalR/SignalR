@@ -11,7 +11,13 @@ $files =
 
 $versionHolder = "##VERSION##"
 $versionInfo = ([xml](Get-Content -Path "..\..\build\Microsoft.AspNet.SignalR.versions.targets")).Project.PropertyGroup
-$version = %{'{0}.{1}.{2}.{3}' -f $versionInfo.MajorVersion, $versionInfo.MinorVersion, $versionInfo.PatchVersion, $versionInfo.BuildQuality}
+
+If($versionInfo.BuildQuality -ne "")
+{
+	$versionInfo.BuildQuality = "-" + $versionInfo.BuildQuality;
+}
+
+$version = %{'{0}.{1}.{2}{3}' -f $versionInfo.MajorVersion, $versionInfo.MinorVersion, $versionInfo.PatchVersion, $versionInfo.BuildQuality}
 
 # Run JSHint against files
 Write-Host "Running JSHint..." -ForegroundColor Yellow

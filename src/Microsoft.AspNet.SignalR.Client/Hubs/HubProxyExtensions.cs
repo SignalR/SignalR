@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -60,14 +61,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData();
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -96,14 +97,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T>(args[0]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -132,15 +133,15 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -169,16 +170,16 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
                        Convert<T3>(args[2]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -207,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -215,9 +216,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T4>(args[3]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NET35
@@ -259,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -268,9 +269,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T5>(args[4]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -299,7 +300,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -309,9 +310,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T6>(args[5]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -340,7 +341,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Subscription subscription = proxy.Subscribe(eventName);
 
-            Action<JToken[]> handler = args =>
+            Action<IList<JToken>> handler = args =>
             {
                 onData(Convert<T1>(args[0]),
                        Convert<T2>(args[1]),
@@ -351,9 +352,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                        Convert<T7>(args[6]));
             };
 
-            subscription.Data += handler;
+            subscription.Received += handler;
 
-            return new DisposableAction(() => subscription.Data -= handler);
+            return new DisposableAction(() => subscription.Received -= handler);
         }
 
         /// <summary>
@@ -362,7 +363,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// <param name="proxy">The <see cref="IHubProxy"/></param>
         /// <param name="eventName">The name of the event.</param>
         /// <returns>An <see cref="T:IObservable{object[]}"/>.</returns>
-        public static IObservable<JToken[]> Observe(this IHubProxy proxy, string eventName)
+        public static IObservable<IList<JToken>> Observe(this IHubProxy proxy, string eventName)
         {
             if (proxy == null)
             {

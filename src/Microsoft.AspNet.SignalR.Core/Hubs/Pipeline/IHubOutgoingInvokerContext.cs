@@ -29,6 +29,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// The signals (ConnectionId, hub type name or hub type name + "." + group name) belonging to clients that should
         /// not receive the method invocation regardless of the <see cref="IHubOutgoingInvokerContext.Signal"/>. 
         /// </summary>
-        IEnumerable<string> ExcludedSignals { get; }
+        IList<string> ExcludedSignals { get; }
     }
 }

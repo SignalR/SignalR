@@ -5,13 +5,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -19,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionId={1}{2}";
+        private const string _sendQueryString = "?transport={0}&connectionToken={1}{2}";
 
         // The transport name
         private readonly string _transport;
@@ -39,6 +36,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return _transport;
             }
         }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public abstract bool SupportsKeepAlive { get; }
 
         protected IHttpClient HttpClient
         {
@@ -75,7 +77,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             string url = connection.Url + "send";
             string customQueryString = String.IsNullOrEmpty(connection.QueryString) ? String.Empty : "&" + connection.QueryString;
 
-            url += String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, customQueryString);
+            url += String.Format(CultureInfo.InvariantCulture,
+                                _sendQueryString,
+                                _transport,
+                                Uri.EscapeDataString(connection.ConnectionToken),
+                                customQueryString);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }
@@ -102,7 +108,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, _sendQueryString, _transport, connection.ConnectionId, null);
+            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
+                                                                  _sendQueryString,
+                                                                  _transport,
+                                                                  Uri.EscapeDataString(connection.ConnectionToken),
+                                                                  null);
 
             try
             {
@@ -121,5 +131,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return TransportHelper.GetReceiveQueryString(connection, data, _transport);
         }
 
+        public abstract void LostConnection(IConnection connection);
     }
 }

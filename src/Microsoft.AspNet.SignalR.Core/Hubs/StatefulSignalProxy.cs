@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -12,8 +13,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly StateChangeTracker _tracker;
 
-        public StatefulSignalProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string signal, string hubName, StateChangeTracker tracker)
-            : base(send, signal, hubName)
+        public StatefulSignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, string prefix, StateChangeTracker tracker)
+            : base(send, signal, prefix, hubName, ListHelper<string>.Empty)
         {
             _tracker = tracker;
         }

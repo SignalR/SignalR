@@ -19,7 +19,6 @@
     <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <DisableSigning>true</DisableSigning>
   </PropertyGroup>
   <!-- This property group is only here to support building this project using the 
        MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
@@ -67,11 +66,17 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionState.cs">
       <Link>ConnectionState.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
+      <Link>HeartBeatMonitor.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\IHubConnection.cs">
       <Link>Hubs\IHubConnection.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ExceptionHelper.cs">
       <Link>Infrastructure\ExceptionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
+      <Link>KeepAliveData.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
       <Link>Resources.Designer.cs</Link>
@@ -214,7 +219,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
-      <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
       <Link>Resources.resx</Link>
     </EmbeddedResource>
   </ItemGroup>

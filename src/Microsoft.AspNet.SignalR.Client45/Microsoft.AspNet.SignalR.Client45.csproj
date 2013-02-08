@@ -7,7 +7,7 @@
     <ProjectGuid>{50F8A174-695E-498C-B105-BDBE6B398646}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Client45</RootNamespace>
+    <RootNamespace>Microsoft.AspNet.SignalR.Client</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -57,6 +57,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionState.cs">
       <Link>ConnectionState.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
+      <Link>HeartBeatMonitor.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
       <Link>Http\DefaultHttpClient.cs</Link>
@@ -114,6 +117,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
+      <Link>KeepAliveData.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
@@ -214,7 +220,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Client\Resources.resx">
-      <LogicalName>Microsoft.AspNet.SignalR.Client.Resources.resources</LogicalName>
       <Link>Resources.resx</Link>
     </EmbeddedResource>
   </ItemGroup>

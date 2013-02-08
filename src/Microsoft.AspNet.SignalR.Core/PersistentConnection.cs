@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNet.SignalR
     public abstract class PersistentConnection
     {
         private const string WebSocketsTransportName = "webSockets";
+        private static readonly char[] SplitChars = new[] { ':' };
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
@@ -51,12 +53,18 @@ namespace Microsoft.AspNet.SignalR
             TraceManager = resolver.Resolve<ITraceManager>();
             Counters = resolver.Resolve<IPerformanceCounterManager>();
             AckHandler = resolver.Resolve<IAckHandler>();
+            ProtectedData = resolver.Resolve<IProtectedData>();
 
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
 
             _initialized = true;
+        }
+
+        public bool Authorize(IRequest request)
+        {
+            return AuthorizeRequest(request);
         }
 
         protected virtual TraceSource Trace
@@ -66,6 +74,8 @@ namespace Microsoft.AspNet.SignalR
                 return TraceManager["SignalR.PersistentConnection"];
             }
         }
+
+        protected IProtectedData ProtectedData { get; private set; }
 
         protected IMessageBus MessageBus { get; private set; }
 
@@ -101,7 +111,23 @@ namespace Microsoft.AspNet.SignalR
         {
             get
             {
+                return PrefixHelper.GetPersistentConnectionName(DefaultSignalRaw);
+            }
+        }
+
+        private string DefaultSignalRaw
+        {
+            get
+            {
                 return GetType().FullName;
+            }
+        }
+
+        internal virtual string GroupPrefix
+        {
+            get
+            {
+                return PrefixHelper.PersistentConnectionGroupPrefix;
             }
         }
 
@@ -143,27 +169,27 @@ namespace Microsoft.AspNet.SignalR
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
-            string connectionId = Transport.ConnectionId;
+            string connectionToken = context.Request.QueryString["connectionToken"];
 
             // If there's no connection id then this is a bad request
-            if (String.IsNullOrEmpty(connectionId))
+            if (String.IsNullOrEmpty(connectionToken))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionId));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken));
             }
 
-            Guid id;
-            if (!Guid.TryParse(connectionId, out id))
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
-            }
+            string connectionId = GetConnectionId(context, connectionToken);
 
-            IEnumerable<string> signals = GetSignals(connectionId);
-            IEnumerable<string> groups = OnRejoiningGroups(context.Request, Transport.Groups, connectionId);
+            // Set the transport's connection id to the unprotected one
+            Transport.ConnectionId = connectionId;
+
+            IList<string> signals = GetSignals(connectionId);
+            IList<string> groups = AppendGroupPrefixes(context, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
 
             Connection = connection;
-            Groups = new GroupManager(connection, DefaultSignal);
+            string groupName = PrefixHelper.GetPersistentConnectionGroupName(DefaultSignalRaw);
+            Groups = new GroupManager(connection, groupName);
 
             Transport.TransportConnected = () =>
             {
@@ -201,7 +227,77 @@ namespace Microsoft.AspNet.SignalR
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
-        private Connection CreateConnection(string connectionId, IEnumerable<string> signals, IEnumerable<string> groups)
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
+        internal string GetConnectionId(HostContext context, string connectionToken)
+        {
+            string unprotectedConnectionToken = null;
+
+            try
+            {
+                unprotectedConnectionToken = ProtectedData.Unprotect(connectionToken, Purposes.ConnectionToken);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("Failed to process connectionToken {0}: {1}", connectionToken, ex);
+            }
+
+            if (String.IsNullOrEmpty(unprotectedConnectionToken))
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
+            }
+
+            var tokens = unprotectedConnectionToken.Split(SplitChars, 2);
+
+            string connectionId = tokens[0];
+            string tokenUserName = tokens.Length > 1 ? tokens[1] : String.Empty;
+            string userName = GetUserIdentity(context);
+
+            if (!String.Equals(tokenUserName, userName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
+            }
+
+            return connectionId;
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
+        internal IList<string> VerifyGroups(HostContext context)
+        {
+            string groupsToken = context.Request.QueryString["groupsToken"];
+
+            if (String.IsNullOrEmpty(groupsToken))
+            {
+                Trace.TraceInformation("The groups token is missing");
+
+                return ListHelper<string>.Empty;
+            }
+
+            string groupsValue = null;
+
+            try
+            {
+                groupsValue = ProtectedData.Unprotect(groupsToken, Purposes.Groups);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("Failed to process groupsToken {0}: {1}", groupsToken, ex);
+            }
+
+            if (String.IsNullOrEmpty(groupsValue))
+            {
+                return ListHelper<string>.Empty;
+            }
+
+            return JsonSerializer.Parse<string[]>(groupsValue);
+        }
+
+        private IList<string> AppendGroupPrefixes(HostContext context, string connectionId)
+        {
+            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context), connectionId)
+                    select GroupPrefix + g).ToList();
+        }
+
+        private Connection CreateConnection(string connectionId, IList<string> signals, IList<string> groups)
         {
             return new Connection(MessageBus,
                                   JsonSerializer,
@@ -211,7 +307,8 @@ namespace Microsoft.AspNet.SignalR
                                   groups,
                                   TraceManager,
                                   AckHandler,
-                                  Counters);
+                                  Counters,
+                                  ProtectedData);
         }
 
         /// <summary>
@@ -219,7 +316,7 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The default signals for this <see cref="PersistentConnection"/>.</returns>
-        private IEnumerable<string> GetDefaultSignals(string connectionId)
+        private IList<string> GetDefaultSignals(string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
@@ -228,8 +325,8 @@ namespace Microsoft.AspNet.SignalR
 
             return new string[] {
                 DefaultSignal,
-                connectionId,
-                "ACK_" + connectionId
+                PrefixHelper.GetConnectionId(connectionId),
+                PrefixHelper.GetAck(connectionId)
             };
         }
 
@@ -238,9 +335,19 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
-        protected virtual IEnumerable<string> GetSignals(string connectionId)
+        protected virtual IList<string> GetSignals(string connectionId)
         {
             return GetDefaultSignals(connectionId);
+        }
+
+        /// <summary>
+        /// Called before every request and gives the user a authorize the user.
+        /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
+        /// <returns>A boolean value that represents if the request is authorized.</returns>
+        protected virtual bool AuthorizeRequest(IRequest request)
+        {
+            return true;
         }
 
         /// <summary>
@@ -250,9 +357,9 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="groups">The groups the calling connection claims to be part of.</param>
         /// <param name="connectionId">The id of the reconnecting client.</param>
         /// <returns>A collection of group names that should be joined on reconnect</returns>
-        protected virtual IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
+        protected virtual IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)
         {
-            return Enumerable.Empty<string>();
+            return groups;
         }
 
         /// <summary>
@@ -312,23 +419,27 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = JsonUtility.MimeType;
+            context.Response.ContentType = JsonUtility.JsonMimeType;
             return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
-            // Convert the keepAlive value to seconds based on the HeartBeat interval
-            var keepAlive = _configurationManager.KeepAlive * _configurationManager.HeartbeatInterval.TotalSeconds;
+            // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
+            var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
+            string connectionId = Guid.NewGuid().ToString("d");
+            string connectionToken = connectionId + ':' + GetUserIdentity(context);
+
             var payload = new
             {
                 Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionId = Guid.NewGuid().ToString("d"),
-                KeepAlive = (keepAlive != 0) ? keepAlive : (double?)null,
+                ConnectionToken = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken),
+                ConnectionId = connectionId,
+                KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
                 WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.1"
+                ProtocolVersion = "1.2"
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
@@ -336,13 +447,22 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = JsonUtility.MimeType;
+            context.Response.ContentType = JsonUtility.JsonMimeType;
             return context.Response.End(JsonSerializer.Stringify(payload));
+        }
+
+        private static string GetUserIdentity(HostContext context)
+        {
+            if (context.Request.User != null && context.Request.User.Identity.IsAuthenticated)
+            {
+                return context.Request.User.Identity.Name ?? String.Empty;
+            }
+            return String.Empty;
         }
 
         private Task ProcessJsonpRequest(HostContext context, object payload)
         {
-            context.Response.ContentType = JsonUtility.JsonpMimeType;
+            context.Response.ContentType = JsonUtility.JavaScriptMimeType;
             var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
             return context.Response.End(data);

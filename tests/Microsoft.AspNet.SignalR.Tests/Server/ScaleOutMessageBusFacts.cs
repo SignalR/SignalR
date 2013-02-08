@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -181,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return Send(messages);
             }
 
-            protected override Task Send(Message[] messages)
+            protected override Task Send(IList<Message> messages)
             {
                 foreach (var g in messages.GroupBy(m => m.Source))
                 {

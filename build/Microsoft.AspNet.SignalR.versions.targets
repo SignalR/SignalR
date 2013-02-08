@@ -3,11 +3,11 @@
   <PropertyGroup>
     <MajorVersion>1</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>0</PatchVersion>
+    <PatchVersion>1</PatchVersion>
 
     <!-- Change this to set the build quality of the project. Use values like "alpha", "beta", "rc1", "rtm", etc. -->
     <!-- These values are used in SemVer, so make sure to always increase these alphabetically. -->
-    <BuildQuality>rc1</BuildQuality>
+    <BuildQuality></BuildQuality>
 
     <!-- Ensure that we come up with a new version every 65535 years -->
     <VersionStartYear>2012</VersionStartYear>

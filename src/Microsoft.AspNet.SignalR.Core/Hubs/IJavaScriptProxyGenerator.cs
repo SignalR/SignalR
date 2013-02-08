@@ -4,6 +4,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public interface IJavaScriptProxyGenerator
     {
-        string GenerateProxy(string serviceUrl, bool includeDocComments);
+        string GenerateProxy(string serviceUrl);
     }
 }

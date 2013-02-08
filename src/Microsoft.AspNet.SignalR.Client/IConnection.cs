@@ -1,25 +1,28 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using Microsoft.AspNet.SignalR.Client.Http;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
     public interface IConnection
     {
+        KeepAliveData KeepAliveData { get; }
         string MessageId { get; set; }
-        ICollection<string> Groups { get; }
+        string GroupsToken { get; set; }
         IDictionary<string, object> Items { get; }
         string ConnectionId { get; }
+        string ConnectionToken { get; }
         string Url { get; }
         string QueryString { get; }
         ConnectionState State { get; }
+        IClientTransport Transport { get; }
 
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
@@ -35,6 +38,8 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnError(Exception ex);
         void OnReconnecting();
         void OnReconnected();
+        void OnTimeoutWarning();
         void PrepareRequest(IRequest request);
+        void UpdateLastKeepAlive();
     }
 }

@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Owin.Hosting">
+      <HintPath>..\..\packages\Microsoft.Owin.Hosting.0.18.0-alpha\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -67,6 +70,9 @@
     <Reference Include="xunit">
       <HintPath>..\..\packages\xunit.1.9.1\lib\net20\xunit.dll</HintPath>
     </Reference>
+    <Reference Include="xunit.extensions">
+      <HintPath>..\..\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\AdminAuthHub.cs">
@@ -90,6 +96,9 @@
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\UserAndRoleAuthHub.cs">
       <Link>Hubs\UserAndRoleAuthHub.cs</Link>
     </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\ConnectDisconnect\Status.cs">
+      <Link>Hubs\Status.cs</Link>
+    </Compile>
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\demohub\DemoHub.cs">
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
@@ -106,13 +115,16 @@
     <Compile Include="Connections\MyReconnect.cs" />
     <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
     <Compile Include="Connections\MySendingConnection.cs" />
+    <Compile Include="Connections\ReconnectionSuccesfulTestConnection.cs" />
     <Compile Include="Connections\SyncErrorConnection.cs" />
+    <Compile Include="Connections\UnusableProtectedConnection.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
+    <Compile Include="Infrastructure\EmptyProtectedData.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />
     <Compile Include="Infrastructure\IISExpressTestHost.cs" />
@@ -126,14 +138,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
-      <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>
-      <Name>Microsoft.Owin.Host.SystemWeb45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Hosting\Microsoft.Owin.Hosting.csproj">
-      <Project>{c225eb2e-e7a7-463f-b058-1705f204978e}</Project>
-      <Name>Microsoft.Owin.Hosting</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>

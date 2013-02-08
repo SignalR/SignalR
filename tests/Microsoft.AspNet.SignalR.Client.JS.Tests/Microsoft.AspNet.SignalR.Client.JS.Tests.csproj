@@ -68,26 +68,30 @@
     <Content Include="Build\teamCityIntegration.js" />
     <Content Include="default.html" />
     <Content Include="Scripts\jquery-1.6.4.js" />
+    <Content Include="Scripts\jquery-1.7.2.js" />
+    <Content Include="Scripts\jquery-1.8.3.js" />
+    <Content Include="Scripts\jquery-1.9.0.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
-    <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\Auto\FallbackSendFacts.js" />
+    <Content Include="Scripts\_references.js" />
+    <Content Include="Tests\FunctionalTests\Common\AjaxAbortFacts.js" />
+    <Content Include="Tests\FunctionalTests\Common\AjaxSendFacts.js" />
+    <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\All\ConnectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\All\SendFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\Fallback\FallbackConnectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\Fallback\FallbackSendFacts.js" />
+    <Content Include="Tests\FunctionalTests\Hubs\HubProxyFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\PingServerFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\FFConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\FFConnectionStateFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\FFSendFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPConnectionStateFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPSendFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEConnectionStateFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSESendFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSConnectionStateFacts.js" />
-    <Content Include="Tests\FunctionalTests\Transports\WebSocketFacts\WSSendFacts.js" />
-    <Content Include="Tests\UnitTests\Common\ConnectionUtilityFacts.js" />
-    <Content Include="Tests\UnitTests\Common\TransportUtilityFacts.js" />
+    <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
+    <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
+    <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
+    <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />
+    <Content Include="Tests\UnitTests\Common\UtilityFacts.js" />
+    <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
+    <Content Include="Tests\UnitTests\Common\UrlFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
     <Content Include="Styles\qunit.css" />
     <Content Include="Scripts\qunit.js" />
@@ -139,10 +143,6 @@
     <ProjectReference Include="../Microsoft.AspNet.SignalR.Tests.Common/Microsoft.AspNet.SignalR.Tests.Common.csproj">
       <Project>{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb45.csproj">
-      <Project>{9f0c72d8-e43f-4f01-9deb-9e8fe0ae179e}</Project>
-      <Name>Microsoft.Owin.Host.SystemWeb45</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj">
       <Project>{69771af9-1bee-48e6-98bc-78864231e239}</Project>

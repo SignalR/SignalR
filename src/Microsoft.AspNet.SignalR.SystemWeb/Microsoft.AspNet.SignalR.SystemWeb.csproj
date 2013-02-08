@@ -34,6 +34,14 @@
     <DocumentationFile>bin\Release\Microsoft.AspNet.SignalR.SystemWeb.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.1.0.0-rc2-130118\lib\net40\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -50,15 +58,12 @@
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
     <Compile Include="Infrastructure\BuildManagerAssemblyLocator.cs" />
+    <Compile Include="Infrastructure\MachineKeyProtectedData.cs" />
     <Compile Include="RequestExtensions.cs" />
-    <Compile Include="RouteExtensions.cs" />
+    <Compile Include="SignalRRouteExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\katana\src\Microsoft.Owin.Host.SystemWeb\Microsoft.Owin.Host.SystemWeb.csproj">
-      <Project>{E31826E6-C29A-4F08-BD4F-E17ACA793BBC}</Project>
-      <Name>Microsoft.Owin.Host.SystemWeb</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj">
       <Project>{2B8C6DAD-4D85-41B1-83FD-248D9F347522}</Project>
       <Name>Microsoft.AspNet.SignalR.Owin</Name>

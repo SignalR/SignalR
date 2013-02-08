@@ -28,10 +28,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public Func<IClientTransport> TransportFactory { get; set; }
 
-        public void Initialize(int keepAlive,
+        public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
-                               int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
             var dr = new DefaultDependencyResolver();
@@ -39,8 +38,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _host.Configure(app =>
             {
                 var configuration = dr.Resolve<IConfigurationManager>();
-
-                configuration.KeepAlive = keepAlive;
 
                 if (connectionTimeout != null)
                 {
@@ -52,17 +49,18 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
                 }
 
-                if (hearbeatInterval != null)
+                if (!keepAlive.HasValue)
                 {
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(hearbeatInterval.Value);
+                    configuration.KeepAlive = null;
+                }
+                // Set only if the keep-alive was changed from the default value.
+                else if (keepAlive.Value != -1)
+                {
+                    configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
                 }
 
-                if (enableAutoRejoiningGroups)
-                {
-                    dr.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
-                }
-
-                app.MapHubs("/signalr", new HubConfiguration { Resolver = dr });
+                app.MapHubs("/signalr2/test", new HubConfiguration());
+                app.MapHubs("/signalr", new HubConfiguration { EnableDetailedErrors = true, Resolver = dr });
 
                 var config = new ConnectionConfiguration
                 {
@@ -79,6 +77,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 app.MapConnection<SyncErrorConnection>("/sync-error", config);
                 app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
                 app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
+                app.MapConnection<UnusableProtectedConnection>("/protected", config);
+                app.MapConnection<ReconnectionSuccesfulTestConnection>("/timeout-recon", config);
             });
         }
 

@@ -33,11 +33,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapHubs(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-                configuration.KeepAlive = 1;
-
-                var pipeline = config.Resolver.Resolve<IHubPipeline>();
-                pipeline.EnableAutoRejoiningGroups();
+                // The below effectively sets the heartbeat interval to five seconds.
+                configuration.KeepAlive = TimeSpan.FromSeconds(10);
             });
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
@@ -99,8 +96,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapHubs(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
-                configuration.DisconnectTimeout = TimeSpan.FromSeconds(10);
+                // The below effectively sets the heartbeat interval to five seconds.
+                configuration.KeepAlive = TimeSpan.FromSeconds(10);
 
                 var connectionManager = config.Resolver.Resolve<IConnectionManager>();
                 context = connectionManager.GetHubContext("EchoHub");
@@ -264,9 +261,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 app.MapConnection<MyRejoinGroupConnection>("/groups", config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
-                configuration.KeepAlive = 0;
-                configuration.ConnectionTimeout = TimeSpan.FromSeconds(5);
-                configuration.HeartbeatInterval = TimeSpan.FromSeconds(2);
+                configuration.KeepAlive = null;
+                configuration.ConnectionTimeout = TimeSpan.FromSeconds(1);
             });
 
             var connection = new Client.Connection("http://foo/groups");
@@ -281,15 +277,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             connection.Reconnected += () =>
             {
-                var inGroup = connection.Groups.Contains(typeof(MyRejoinGroupConnection).FullName + ".test");
-
-                if (!inGroup)
-                {
-                    Debugger.Break();
-                }
-
-                inGroupOnReconnect.Add(inGroup);
-
                 connection.Send(new { type = 3, group = "test", message = "Reconnected" }).Wait();
             };
 
@@ -430,10 +417,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public class MyRejoinGroupConnection : MyGroupConnection
         {
-            protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
-            {
-                return groups;
-            }
         }
 
     }

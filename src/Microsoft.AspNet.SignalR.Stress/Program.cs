@@ -38,16 +38,16 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             ThreadPool.SetMinThreads(32, 32);
 
-            // int connections = 5000;
-            // int senders = 1;
-            // string payload = GetPayload();
+            int connections = 5000;
+            int senders = 1;
+            string payload = GetPayload();
 
             // return MessageBusRun.Run(connections, senders, payload);
             // return ConnectionRun.LongRunningSubscriptionRun(connections, senders, payload);
             // return ConnectionRun.ReceiveLoopRun(connections, senders, payload);
-            // return MemoryHostRun.Run(connections, senders, payload, "serverSentEvents");
+            return MemoryHostRun.Run(connections, senders, payload, "serverSentEvents");
             // return StressRuns.RunConnectDisconnect(connections);
-            return StressRuns.ManyUniqueGroups(concurrency: 4);
+            // return StressRuns.ManyUniqueGroups(concurrency: 4);
             //return StressRuns.BrodcastFromServer();
         }
 

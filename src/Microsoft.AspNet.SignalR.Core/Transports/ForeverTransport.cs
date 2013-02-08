@@ -11,11 +11,14 @@ using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The disposer is an optimization")]
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private readonly IPerformanceCounterManager _counters;
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
+        private Disposer _requestDisposer;
+        private int _requestEnded;
 
         private const int MaxMessages = 10;
 
@@ -33,11 +36,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                                    ITransportHeartbeat heartbeat,
                                    IPerformanceCounterManager performanceCounterWriter,
                                    ITraceManager traceManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterWriter, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
-
         }
 
         protected string LastMessageId
@@ -82,14 +84,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action AfterReceive;
         internal Action BeforeCancellationTokenCallbackRegistered;
         internal Action BeforeReceive;
-        internal Action AfterRequestEnd;
+        internal Action<Exception> AfterRequestEnd;
 
         protected override void InitializePersistentState()
         {
-            // PersistentConnection.OnConnectedAsync must complete before we can write to the output stream,
+            // PersistentConnection.OnConnected must complete before we can write to the output stream,
             // so clients don't indicate the connection has started too early.
             InitializeTcs = new TaskCompletionSource<object>();
             WriteQueue = new TaskQueue(InitializeTcs.Task);
+
+            _requestDisposer = new Disposer();
 
             base.InitializePersistentState();
         }
@@ -153,10 +157,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            Context.Response.ContentType = JsonUtility.MimeType;
-
             return EnqueueOperation(() =>
             {
+                Context.Response.ContentType = JsonUtility.JsonMimeType;
+
                 JsonSerializer.Serialize(value, OutputWriter);
                 OutputWriter.Flush();
 
@@ -164,7 +168,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             });
         }
 
-        protected virtual Task InitializeResponse(ITransportConnection connection)
+        protected internal virtual Task InitializeResponse(ITransportConnection connection)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -183,6 +187,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             return TaskAsyncHelper.Empty;
+        }
+
+        protected override void ReleaseRequest()
+        {
+            _requestDisposer.Dispose();
         }
 
         private Task ProcessSendRequest()
@@ -239,6 +248,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             Action<Exception> endRequest = (ex) =>
             {
+                // Only do this once
+                if (Interlocked.Exchange(ref _requestEnded, 1) == 1)
+                {
+                    return;
+                }
+
                 Trace.TraceInformation("DrainWrites(" + ConnectionId + ")");
 
                 // Drain the task queue for pending write operations so we don't end the request and then try to write
@@ -262,11 +277,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 if (AfterRequestEnd != null)
                 {
-                    AfterRequestEnd();
+                    AfterRequestEnd(ex);
                 }
             };
 
             ProcessMessages(connection, postReceive, endRequest);
+
+            _requestDisposer.Set(() => endRequest(null));
 
             return tcs.Task;
         }
@@ -276,7 +293,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;
-            IDisposable registration = null;
+            var disposer = new Disposer();
 
             if (BeforeReceive != null)
             {
@@ -295,7 +312,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         // Send the response before removing any connection data
                         return Send(response).Then(() =>
                         {
-                            registration.Dispose();
+                            disposer.Dispose();
 
                             // Remove connection without triggering disconnect
                             Heartbeat.RemoveConnection(this);
@@ -309,12 +326,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                              response.Aborted ||
                              ConnectionEndToken.IsCancellationRequested)
                     {
-                        // If this is null it's because the cancellation token tripped
-                        // before we setup the registration at all.
-                        if (registration != null)
-                        {
-                            registration.Dispose();
-                        }
+                        disposer.Dispose();
 
                         if (response.Aborted)
                         {
@@ -367,13 +379,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // This has to be done last incase it runs synchronously.
-            registration = ConnectionEndToken.SafeRegister(state =>
+            IDisposable registration = ConnectionEndToken.SafeRegister(state =>
             {
                 Trace.TraceInformation("Cancel(" + ConnectionId + ")");
 
                 state.Dispose();
             },
             subscription);
+
+            disposer.Set(registration);
         }
     }
 }

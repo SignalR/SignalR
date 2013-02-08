@@ -2,6 +2,7 @@
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.AspNet.SignalR.Messaging;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             this.bus = new TopicMessageBus(connectionString, partitionCount, nodeCount, nodeId, topicPrefix, OnReceived);
         }
 
-        protected override Task Send(Message[] messages)
+        protected override Task Send(IList<Message> messages)
         {
             return this.bus.SendAsync(messages);
         }

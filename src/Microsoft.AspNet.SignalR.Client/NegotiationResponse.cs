@@ -8,9 +8,11 @@ namespace Microsoft.AspNet.SignalR.Client
     public class NegotiationResponse
     {
         public string ConnectionId { get; set; }
+        public string ConnectionToken { get; set; }
         public string Url { get; set; }
         public string ProtocolVersion { get; set; }
         public double DisconnectTimeout { get; set; }
         public bool TryWebSockets { get; set; }
+        public double? KeepAliveTimeout { get; set; }
     }
 }

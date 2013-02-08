@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class DefaultAssemblyLocator : IAssemblyLocator
     {
-        public virtual IEnumerable<Assembly> GetAssemblies()
+        public virtual IList<Assembly> GetAssemblies()
         {
             return AppDomain.CurrentDomain.GetAssemblies();
         }

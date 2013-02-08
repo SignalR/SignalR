@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
                                     ITraceManager traceManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return TimeSpan.FromMilliseconds(LongPollDelay); }
         }
 
-        protected override bool IsConnectRequest
+        public override bool IsConnectRequest
         {
             get
             {
@@ -136,9 +136,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 InitializePersistentState();
 
+                Task task = null;
+
                 if (IsConnectRequest)
                 {
-                    return ProcessConnectRequest(connection);
+                    task = ProcessConnectRequest(connection);
                 }
                 else if (MessageId != null)
                 {
@@ -146,17 +148,25 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         // Return a task that completes when the reconnected event task & the receive loop task are both finished
                         Func<Task> reconnected = () => Reconnected().Then(() => _counters.ConnectionsReconnected.Increment());
-                        return TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
+                        task = TaskAsyncHelper.Interleave(ProcessReceiveRequest, reconnected, connection, Completed);
                     }
+                    else
+                    {
+                        task = ProcessReceiveRequest(connection);
+                    }
+                }
 
-                    return ProcessReceiveRequest(connection);
+                if (task != null)
+                {
+                    // Mark the request as completed once it's done
+                    return task.Finally(() => CompleteRequest());
                 }
             }
 
             return null;
         }
 
-        public virtual Task Send(PersistentResponse response)
+        public Task Send(PersistentResponse response)
         {
             Heartbeat.MarkConnection(this);
 
@@ -165,12 +175,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send((object)response);
         }
 
-        public virtual Task Send(object value)
+        public Task Send(object value)
         {
-            Context.Response.ContentType = IsJsonp ? JsonUtility.JsonpMimeType : JsonUtility.MimeType;
-
             return EnqueueOperation(() =>
             {
+                Context.Response.ContentType = IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
+
                 if (IsJsonp)
                 {
                     OutputWriter.Write(JsonpCallback);

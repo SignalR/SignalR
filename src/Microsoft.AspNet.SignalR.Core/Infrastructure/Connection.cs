@@ -27,16 +27,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private bool _aborted;
         private readonly Lazy<TraceSource> _traceSource;
         private readonly IAckHandler _ackHandler;
+        private readonly IProtectedData _protectedData;
 
         public Connection(IMessageBus newMessageBus,
                           IJsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
-                          IEnumerable<string> signals,
-                          IEnumerable<string> groups,
+                          IList<string> signals,
+                          IList<string> groups,
                           ITraceManager traceManager,
                           IAckHandler ackHandler,
-                          IPerformanceCounterManager performanceCounterManager)
+                          IPerformanceCounterManager performanceCounterManager,
+                          IProtectedData protectedData)
         {
             _bus = newMessageBus;
             _serializer = jsonSerializer;
@@ -47,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
+            _protectedData = protectedData;
         }
 
         public string DefaultSignal
@@ -206,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                                   // just trip it
                                                   if (!_ackHandler.TriggerAck(message.CommandId))
                                                   {
-                                                      _bus.Ack(_connectionId, message.Key, message.CommandId).Catch();
+                                                      _bus.Ack(_connectionId, message.CommandId).Catch();
                                                   }
                                               }
                                           }
@@ -250,18 +253,30 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            var groupDiff = _groups.GetDiff();
+            PopulateResponseState(response, _groups, _serializer, _protectedData);
+        }
 
-            response.ResetGroups = groupDiff.Reset;
+        internal static void PopulateResponseState(PersistentResponse response, 
+                                                   DiffSet<string> groupSet, 
+                                                   IJsonSerializer serializer, 
+                                                   IProtectedData protectedData)
+        {
+            DiffPair<string> groupDiff = groupSet.GetDiff();
 
-            if (groupDiff.Added.Count > 0)
+            if (groupDiff.AnyChanges)
             {
-                response.AddedGroups = groupDiff.Added;
-            }
+                // Create a protected payload of the sorted list
+                IEnumerable<string> groups = groupSet.GetSnapshot();
 
-            if (groupDiff.Removed.Count > 0)
-            {
-                response.RemovedGroups = groupDiff.Removed;
+                // No groups so do nothing
+                if (groups.Any())
+                {
+                    // Remove group prefixes before any thing goes over the wire
+                    string groupsString = serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups));
+
+                    // The groups token
+                    response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);
+                }
             }
         }
     }

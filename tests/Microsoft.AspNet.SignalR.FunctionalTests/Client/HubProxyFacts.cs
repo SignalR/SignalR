@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var hubConnection = new HubConnection(host.Url);
+                HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("ChatHub");
                 var wh = new ManualResetEvent(false);
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var hubConnection = new HubConnection(host.Url);
+                HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("chatHub");
                 var wh = new ManualResetEvent(false);
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var hubConnection = new HubConnection(host.Url);
+                HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
 
                 hubConnection.Start(host.Transport).Wait();

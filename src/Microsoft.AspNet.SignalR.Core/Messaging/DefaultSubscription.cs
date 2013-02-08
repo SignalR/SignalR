@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public DefaultSubscription(string identity,
                                    IEnumerable<string> eventKeys,
-                                   IDictionary<string, Topic> topics,
+                                   TopicLookup topics,
                                    string cursor,
                                    Func<MessageResult, Task<bool>> callback,
                                    int maxMessages,
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
-        protected override void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state)
+        protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             var cursors = new List<Cursor>();
             totalCount = 0;
@@ -172,13 +172,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, IDictionary<string, Topic> topics)
+        private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, TopicLookup topics)
         {
             return from key in eventKeys
                    select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
         }
 
-        private static ulong GetMessageId(IDictionary<string, Topic> topics, string key)
+        private static ulong GetMessageId(TopicLookup topics, string key)
         {
             Topic topic;
             if (topics.TryGetValue(key, out topic))

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -25,9 +26,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
-        public Task Send(Message[] messages)
+        public Task Send(IList<Message> messages)
         {
-            if (messages == null || messages.Length == 0)
+            if (messages == null || messages.Count == 0)
             {
                 return TaskAsyncHelper.Empty;
             }

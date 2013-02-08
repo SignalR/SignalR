@@ -34,7 +34,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                             new AckHandler(completeAcksOnTimeout: false, 
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
-                                            counters);
+                                            counters,
+                                            new Mock<IProtectedData>().Object);
 
             connection.Send("a", new Command
             {

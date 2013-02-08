@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -21,7 +18,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly HostContext _context;
         private readonly ITransportHeartbeat _heartbeat;
-        private readonly IJsonSerializer _jsonSerializer;
         private TextWriter _outputWriter;
 
         private TraceSource _trace;
@@ -29,8 +25,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _isDisconnected;
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
-        private string _connectionId;
         private int _ended;
+        private int _requestReleased;
 
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
@@ -41,16 +37,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
 
-        protected TransportDisconnectBase(HostContext context, IJsonSerializer jsonSerializer, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
+        protected TransportDisconnectBase(HostContext context, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
-            }
-
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException("jsonSerializer");
             }
 
             if (heartbeat == null)
@@ -69,7 +60,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             _context = context;
-            _jsonSerializer = jsonSerializer;
             _heartbeat = heartbeat;
             _counters = performanceCounterManager;
 
@@ -89,15 +79,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public string ConnectionId
         {
-            get
-            {
-                if (_connectionId == null)
-                {
-                    _connectionId = _context.Request.QueryString["connectionId"];
-                }
-
-                return _connectionId;
-            }
+            get;
+            set;
         }
 
         public virtual TextWriter OutputWriter
@@ -126,31 +109,20 @@ namespace Microsoft.AspNet.SignalR.Transports
             set;
         }
 
-        public IEnumerable<string> Groups
-        {
-            get
-            {
-                if (IsConnectRequest)
-                {
-                    return Enumerable.Empty<string>();
-                }
-
-                string groupValue = Context.Request.QueryString["groups"];
-
-                if (String.IsNullOrEmpty(groupValue))
-                {
-                    return Enumerable.Empty<string>();
-                }
-
-                return _jsonSerializer.Parse<string[]>(groupValue);
-            }
-        }
-
         public Func<Task> Disconnected { get; set; }
+
+        public virtual CancellationToken CancellationToken
+        {
+            get { return _context.Response.CancellationToken; }
+        }
 
         public virtual bool IsAlive
         {
-            get { return _context.Response.IsClientConnected; }
+            get
+            {
+                // If the CTS is tripped or the request has ended then the connection isn't alive
+                return !(CancellationToken.IsCancellationRequested || _requestReleased == 1);
+            }
         }
 
         protected CancellationToken ConnectionEndToken
@@ -182,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return TimeSpan.FromSeconds(5); }
         }
 
-        protected virtual bool IsConnectRequest
+        public virtual bool IsConnectRequest
         {
             get
             {
@@ -236,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             Heartbeat.RemoveConnection(this);
-            
+
             if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
             {
                 // End the connection
@@ -289,13 +261,32 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        void ITrackingConnection.ReleaseRequest()
+        {
+            if (Interlocked.Exchange(ref _requestReleased, 1) == 0)
+            {
+                Trace.TraceInformation("ReleaseRequest(" + ConnectionId + ")");
+
+                ReleaseRequest();
+            }
+        }
+
+        protected virtual void ReleaseRequest()
+        {
+        }
+
         public void CompleteRequest()
         {
             // REVIEW: We can get rid of this when we clean up the Interleave code.
             if (Completed != null)
             {
+                Trace.TraceInformation("CompleteRequest(" + ConnectionId + ")");
+
                 Completed.TrySetResult(null);
             }
+
+            // Mark the request as released
+            Interlocked.Exchange(ref _requestReleased, 1);
         }
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
@@ -316,7 +307,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Completed = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
-            _connectionEndTokenSource = new SafeCancellationTokenSource();            
+            _connectionEndTokenSource = new SafeCancellationTokenSource();
             _connectionEndToken = _connectionEndTokenSource.Token;
 
             // Handle the shutdown token's callback so we can end our token if it trips

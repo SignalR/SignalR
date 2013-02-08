@@ -115,11 +115,38 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DisconnectTimeout cannot be configured after the KeepAlive..
+        /// </summary>
+        internal static string Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive {
+            get {
+                return ResourceManager.GetString("Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DisconnectTimeout must be at least six seconds..
+        /// </summary>
+        internal static string Error_DisconnectTimeoutMustBeAtLeastSixSeconds {
+            get {
+                return ResourceManager.GetString("Error_DisconnectTimeoutMustBeAtLeastSixSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not read RequireOutgoing. Use protected _requireOutgoing instead..
         /// </summary>
         internal static string Error_DoNotReadRequireOutgoing {
             get {
                 return ResourceManager.GetString("Error_DoNotReadRequireOutgoing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate hub names found..
+        /// </summary>
+        internal static string Error_DuplicateHubs {
+            get {
+                return ResourceManager.GetString("Error_DuplicateHubs", resourceCulture);
             }
         }
         
@@ -142,6 +169,33 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There was an error invoking Hub method &apos;{0}.{1}&apos;..
+        /// </summary>
+        internal static string Error_HubInvocationFailed {
+            get {
+                return ResourceManager.GetString("Error_HubInvocationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid cursor..
+        /// </summary>
+        internal static string Error_InvalidCursorFormat {
+            get {
+                return ResourceManager.GetString("Error_InvalidCursorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The supplied frameId is in the incorrect format..
+        /// </summary>
+        internal static string Error_InvalidForeverFrameId {
+            get {
+                return ResourceManager.GetString("Error_InvalidForeverFrameId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a {1}..
         /// </summary>
         internal static string Error_IsNotA {
@@ -160,11 +214,20 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep Alive value must be greater than zero..
+        ///   Looks up a localized string similar to Keep Alive value must be greater than two seconds..
         /// </summary>
-        internal static string Error_KeepAliveMustBeGreaterThanZero {
+        internal static string Error_KeepAliveMustBeGreaterThanTwoSeconds {
             get {
-                return ResourceManager.GetString("Error_KeepAliveMustBeGreaterThanZero", resourceCulture);
+                return ResourceManager.GetString("Error_KeepAliveMustBeGreaterThanTwoSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep Alive value must be no more than a third of the DisconnectTimeout..
+        /// </summary>
+        internal static string Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout {
+            get {
+                return ResourceManager.GetString("Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout", resourceCulture);
             }
         }
         
@@ -196,11 +259,20 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Protocol error: Missing connection id..
+        ///   Looks up a localized string similar to Unexpected end when reading object..
         /// </summary>
-        internal static string Error_ProtocolErrorMissingConnectionId {
+        internal static string Error_ParseObjectFailed {
             get {
-                return ResourceManager.GetString("Error_ProtocolErrorMissingConnectionId", resourceCulture);
+                return ResourceManager.GetString("Error_ParseObjectFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Protocol error: Missing connection token..
+        /// </summary>
+        internal static string Error_ProtocolErrorMissingConnectionToken {
+            get {
+                return ResourceManager.GetString("Error_ProtocolErrorMissingConnectionToken", resourceCulture);
             }
         }
         
@@ -210,6 +282,15 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_ProtocolErrorUnknownTransport {
             get {
                 return ResourceManager.GetString("Error_ProtocolErrorUnknownTransport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State has exceeded the maximum length of 4096 bytes..
+        /// </summary>
+        internal static string Error_StateExceededMaximumLength {
+            get {
+                return ResourceManager.GetString("Error_StateExceededMaximumLength", resourceCulture);
             }
         }
         
