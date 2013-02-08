@@ -12,8 +12,8 @@ testUtilities.runWithAllTransports(function (transport) {
             if (values.length === 4) {
                 assert.equal(values[0], "OnConnectedAsync1", "Received OnConnectedAsync1");
                 assert.equal(values[1], "OnConnectedAsync2", "Received OnConnectedAsync2");
-                assert.equal(values[2], "OnConnectedAsync1", "Received OnConnectedAsync1");
-                assert.equal(values[3], "OnConnectedAsync2", "Received OnConnectedAsync2");
+                assert.equal(values[2], "OnReceivedAsync1", "Received OnReceivedAsync1");
+                assert.equal(values[3], "OnReceivedAsync2", "Received OnReceivedAsync2");
                 end();
             }
         });
