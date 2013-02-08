@@ -30,11 +30,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public TimeSpan ConnectDelay { get; set; }
 
-        /// <summary>
-        /// Property for the Keep aplive Property
-        /// </summary>
-        //public bool SupportsKeepAlive { get; set; }
-
         public LongPollingTransport()
             : this(new DefaultHttpClient())
         {
