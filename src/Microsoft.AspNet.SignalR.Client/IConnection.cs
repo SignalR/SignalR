@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Client
     public interface IConnection
     {
         KeepAliveData KeepAliveData { get; set; }
-        void UpdateLastKeepAlive();
         string MessageId { get; set; }
         string GroupsToken { get; set; }
         IDictionary<string, object> Items { get; }
@@ -41,5 +40,6 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnReconnected();
         void OnTimeoutWarning();
         void PrepareRequest(IRequest request);
+        void UpdateLastKeepAlive();
     }
 }

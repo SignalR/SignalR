@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             monitor.Beat(TimeSpan.FromSeconds(5));
 
             // Assert
-            Assert.True(monitor.UserNotified);
+            Assert.True(monitor.HasBeenWarned);
             connection.Verify(m => m.OnTimeoutWarning(), Times.Once());
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             // Assert
             Assert.False(monitor.Reconnecting);
-            Assert.False(monitor.UserNotified);
+            Assert.False(monitor.HasBeenWarned);
         }
     }
 }

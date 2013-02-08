@@ -51,9 +51,6 @@ namespace Microsoft.AspNet.SignalR.Client
         // Object to store the various keep alive timeout values
         public KeepAliveData KeepAliveData { get; set; }
 
-        // The connection state for the underlying transport
-        public ConnectionState TransportState { get; set; }
-
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
         /// </summary>
@@ -288,7 +285,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     KeepAliveData = new KeepAliveData();
 
                     // Timeout to designate when to force the connection into reconnecting
-                    KeepAliveData.Timeout = TimeSpan.FromSeconds((double)negotiationResponse.KeepAliveTimeout);
+                    KeepAliveData.Timeout = TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value);
 
                     // Timeout to designate when to warn the developer that the connection may be dead or is hanging.
                     KeepAliveData.TimeoutWarning = TimeSpan.FromMilliseconds(KeepAliveData.Timeout.TotalMilliseconds * _keepAliveWarnAt);
@@ -340,7 +337,7 @@ namespace Microsoft.AspNet.SignalR.Client
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 // Start the monitor to check for Keep Alive Messages
+                                 // Start the monitor to check for server activity
                                  _monitor.Start();
                              });
         }

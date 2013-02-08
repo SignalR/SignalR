@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.SignalR.Client
         private bool _disposed;
 
         // Connection variable
-        private IConnection _connection;
+        private readonly IConnection _connection;
 
         // To keep track of whether the user has been notified
-        public bool UserNotified { get; private set; }
+        public bool HasBeenWarned { get; private set; }
 
         // To keep track of whether the client is already reconnecting
         public bool Reconnecting { get; private set; }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             _connection.UpdateLastKeepAlive();
             _disposed = false;
-            UserNotified = false;
+            HasBeenWarned = false;
             Reconnecting = false;
 #if !NETFX_CORE
             _timer = new Timer(_ => Beat(), state: null, dueTime: _connection.KeepAliveData.CheckInterval, period: _connection.KeepAliveData.CheckInterval);
@@ -79,17 +79,17 @@ namespace Microsoft.AspNet.SignalR.Client
                 }
                 else if (timeElapsed >= _connection.KeepAliveData.TimeoutWarning)
                 {
-                    if (!UserNotified)
+                    if (!HasBeenWarned)
                     {
                         // Inform user and set UserNotified to true
                         Debug.WriteLine("Connection Timeout Warning : Notifying user {0}", DateTime.UtcNow);
-                        UserNotified = true;
+                        HasBeenWarned = true;
                         _connection.OnTimeoutWarning();
                     }
                 }
                 else
                 {
-                    UserNotified = false;
+                    HasBeenWarned = false;
                     Reconnecting = false;
                 }
             }

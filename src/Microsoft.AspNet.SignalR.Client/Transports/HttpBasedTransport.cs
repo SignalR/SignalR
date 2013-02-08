@@ -37,9 +37,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
         
-        /// <summary>
-        /// Property for the Keep alive Property
-        /// </summary>
         public bool SupportsKeepAlive { get; set; }
 
         protected IHttpClient HttpClient
