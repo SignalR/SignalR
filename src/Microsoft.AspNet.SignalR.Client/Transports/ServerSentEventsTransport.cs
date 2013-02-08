@@ -24,9 +24,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public ServerSentEventsTransport(IHttpClient httpClient)
             : base(httpClient, "serverSentEvents")
         {
-            SupportsKeepAlive = true;
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectionTimeout = TimeSpan.FromSeconds(2);
+        }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public override bool SupportsKeepAlive
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>

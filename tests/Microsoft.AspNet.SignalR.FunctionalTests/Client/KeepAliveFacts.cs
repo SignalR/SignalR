@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEvent(false);
+                var mre = new ManualResetEventSlim(false);
                 host.Initialize();
                 var connection = CreateConnection(host.Url + "/timeout-recon");
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.KeepAliveData.Timeout = TimeSpan.FromSeconds(1);
                 
                 // Assert
-                Assert.True(mre.WaitOne(TimeSpan.FromSeconds(10)));
+                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
 
                 // Clean-up
                 mre.Dispose();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEvent(false);
+                var mre = new ManualResetEventSlim(false);
                 host.Initialize();
                 var connection = CreateConnection(host.Url + "/timeout-recon");
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.KeepAliveData.Timeout = TimeSpan.FromSeconds(5);
 
                 // Assert
-                Assert.True(mre.WaitOne(TimeSpan.FromSeconds(10)));
+                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
 
                 // Clean-up
                 mre.Dispose();

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client
 {
     public interface IConnection
     {
-        KeepAliveData KeepAliveData { get; set; }
+        KeepAliveData KeepAliveData { get; }
         string MessageId { get; set; }
         string GroupsToken { get; set; }
         IDictionary<string, object> Items { get; }
