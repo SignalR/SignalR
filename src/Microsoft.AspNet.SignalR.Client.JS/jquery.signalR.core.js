@@ -56,6 +56,14 @@
             }
         },
 
+        parseAjaxResponse = function (connection, data) {
+            if (connection.ajaxDataType === "text") {
+                data = data ? $.parseJSON(data) : null;
+            }
+
+            return data;
+        },
+
         changeState = function (connection, expectedState, newState) {
             if (expectedState === connection.state) {
                 connection.state = newState;
@@ -332,7 +340,7 @@
                 }
             }
 
-            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -402,6 +410,8 @@
                 },
                 success: function (res) {
                     var keepAliveData = connection.keepAliveData;
+
+                    res = connection.parseAjaxResponse(connection, res);
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
@@ -626,6 +636,9 @@
 
         log: function (msg) {
             log(msg, this.logging);
+        },
+        parseAjaxResponse: function (connection, data) {
+            return parseAjaxResponse(connection, data);
         }
     };
 
