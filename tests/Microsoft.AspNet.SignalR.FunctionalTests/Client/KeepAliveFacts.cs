@@ -17,25 +17,22 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                bool reconnected = false;
                 var mre = new ManualResetEvent(false);
                 host.Initialize();
                 var connection = CreateConnection(host.Url + "/timeout-recon");
-                connection.Start(host.Transport).Wait();
 
                 connection.Reconnected += () =>
                 {
-                    reconnected = true;
                     mre.Set();
                 };
 
+                connection.Start(host.Transport).Wait();
                 connection.KeepAliveData.LastKeepAlive = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(2));
                 connection.KeepAliveData.TimeoutWarning = TimeSpan.FromSeconds(0.5);
                 connection.KeepAliveData.Timeout = TimeSpan.FromSeconds(1);
                 
                 // Assert
-                mre.WaitOne();
-                Assert.True(reconnected);
+                Assert.True(mre.WaitOne(TimeSpan.FromSeconds(10)));
 
                 // Clean-up
                 mre.Dispose();
@@ -52,25 +49,23 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                bool warningThrown = false;
                 var mre = new ManualResetEvent(false);
                 host.Initialize();
                 var connection = CreateConnection(host.Url + "/timeout-recon");
-                connection.Start(host.Transport).Wait();
 
                 connection.TimeoutWarning += () =>
                 {
-                    warningThrown = true;
                     mre.Set();
                 };
+
+                connection.Start(host.Transport).Wait();
 
                 connection.KeepAliveData.LastKeepAlive = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(2));
                 connection.KeepAliveData.TimeoutWarning = TimeSpan.FromSeconds(1);
                 connection.KeepAliveData.Timeout = TimeSpan.FromSeconds(5);
 
                 // Assert
-                mre.WaitOne();
-                Assert.True(warningThrown);
+                Assert.True(mre.WaitOne(TimeSpan.FromSeconds(10)));
 
                 // Clean-up
                 mre.Dispose();
