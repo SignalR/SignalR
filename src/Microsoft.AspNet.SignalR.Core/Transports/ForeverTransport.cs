@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -254,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     return;
                 }
 
-                Trace.TraceInformation("DrainWrites(" + ConnectionId + ")");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "DrainWrites(" + ConnectionId + ")");
 
                 // Drain the task queue for pending write operations so we don't end the request and then try to write
                 // to a corrupted request object.
@@ -344,7 +345,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                              .Catch(IncrementErrorCounters)
                                              .Catch(ex =>
                                              {
-                                                 Trace.TraceInformation("Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                                                 Trace.TraceEvent(TraceEventType.Error, 0, "Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
                                              });
                     }
                 },
@@ -369,7 +370,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                          .Catch(ex => endRequest(ex))
                          .Catch(ex =>
                          {
-                             Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                             Trace.TraceEvent(TraceEventType.Error, 0, "Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
                          })
                          .ContinueWith(InitializeTcs);
 
@@ -381,7 +382,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // This has to be done last incase it runs synchronously.
             IDisposable registration = ConnectionEndToken.SafeRegister(state =>
             {
-                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "Cancel(" + ConnectionId + ")");
 
                 state.Dispose();
             },

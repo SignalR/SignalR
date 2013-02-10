@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     }
                     else
                     {
-                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+                        Trace.TraceEvent(TraceEventType.Verbose, 0, metadata.Connection.ConnectionId + " is dead");
 
                         // Check if we need to disconnect this connection
                         CheckDisconnect(metadata);
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("SignalR error during transport heart beat on background thread: {0}", ex);
+                Trace.TraceEvent(TraceEventType.Error, 0, "SignalR error during transport heart beat on background thread: {0}", ex);
             }
             finally
             {
@@ -257,12 +257,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
-                    Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
                     metadata.Connection.KeepAlive()
                                        .Catch(ex =>
                                        {
-                                           Trace.TraceInformation("Failed to send keep alive: " + ex.GetBaseException());
+                                           Trace.TraceEvent(TraceEventType.Error, 0, "Failed to send keep alive: " + ex.GetBaseException());
                                        });
                 }
 
@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             catch (Exception ex)
             {
                 // Swallow exceptions that might happen during disconnect
-                Trace.TraceInformation("Raising Disconnect failed: {0}", ex);
+                Trace.TraceEvent(TraceEventType.Error, 0, "Raising Disconnect failed: {0}", ex);
             }
         }
 

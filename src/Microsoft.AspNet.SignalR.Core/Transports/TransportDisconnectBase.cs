@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     return disconnected().Catch(ex =>
                     {
-                        Trace.TraceInformation("Failed to raise disconnect: " + ex.GetBaseException());
+                        Trace.TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
                     })
                     .Then(() => _counters.ConnectionsDisconnected.Increment());
                 }
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // REVIEW: We can get rid of this when we clean up the Interleave code.
             if (Completed != null)
             {
-                Trace.TraceInformation("CompleteRequest(" + ConnectionId + ")");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "CompleteRequest(" + ConnectionId + ")");
 
                 Completed.TrySetResult(null);
             }
