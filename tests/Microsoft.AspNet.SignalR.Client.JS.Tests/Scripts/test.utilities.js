@@ -1,8 +1,16 @@
 ﻿var testUtilities;
 
 (function ($, window) {
-    var ios = !!((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))),
-        ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0);
+    var ios = !!navigator.userAgent.match(/Mobile.* Safari/),
+        rfcWebSockets = !!window.WebSocket,
+        iosMatch;
+
+    if (ios && rfcWebSockets) {
+        iosMatch = navigator.userAgent.match(/OS (\d+)/);
+        if (iosMatch.length === 2) {
+            rfcWebSockets = parseInt(iosMatch[1], 10) >= 6;
+        }
+    }
 
     testUtilities = {
         transports: {
@@ -16,7 +24,7 @@
                 enabled: !!window.EventSource
             },
             webSockets: {
-                enabled: !!(window.WebSocket && !window.document.commandLineTest && (!ios || ios6))
+                enabled: !!(rfcWebSockets && !window.document.commandLineTest)
             }
         },
         transportNames: null, // This is set after the initial creation
@@ -31,7 +39,7 @@
             });
         },
         defaultTestTimeout: (function () {
-            var defaultTestTimeout = window.location.href.match(/#defaultTestTimeout=\d+/g);
+            var defaultTestTimeout = window.location.search.match(/defaultTestTimeout=(\d+)/);
             
             // There is no default test timeout parameter
             if (!defaultTestTimeout) {
@@ -39,10 +47,10 @@
                 return 10000;
             }
             
-            // Match returns an array, so we need to take the first element (string).
-            defaultTestTimeout = defaultTestTimeout[0].match(/\d+/g);
+            // Match returns an array, so we need to take the second element (string).
+            defaultTestTimeout = defaultTestTimeout[1];
             // Convert to integer and translate to milliseconds
-            defaultTestTimeout = parseInt(defaultTestTimeout) * 1000;
+            defaultTestTimeout = parseInt(defaultTestTimeout, 10) * 1000;
 
             return defaultTestTimeout;
         })(),
