@@ -39,7 +39,7 @@
             });
         },
         defaultTestTimeout: (function () {
-            var defaultTestTimeout = window.location.href.match(/#defaultTestTimeout=\d+/g);
+            var defaultTestTimeout = window.location.search.match(/defaultTestTimeout=(\d+)/);
             
             // There is no default test timeout parameter
             if (!defaultTestTimeout) {
@@ -47,10 +47,10 @@
                 return 10000;
             }
             
-            // Match returns an array, so we need to take the first element (string).
-            defaultTestTimeout = defaultTestTimeout[0].match(/\d+/g);
+            // Match returns an array, so we need to take the second element (string).
+            defaultTestTimeout = defaultTestTimeout[1];
             // Convert to integer and translate to milliseconds
-            defaultTestTimeout = parseInt(defaultTestTimeout) * 1000;
+            defaultTestTimeout = parseInt(defaultTestTimeout, 10) * 1000;
 
             return defaultTestTimeout;
         })(),
