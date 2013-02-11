@@ -1,8 +1,16 @@
 ﻿var testUtilities;
 
 (function ($, window) {
-    var ios = !!((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))),
-        ios6 = !!(ios && navigator.userAgent.indexOf("OS 6_0") >= 0);
+    var ios = !!navigator.userAgent.match(/Mobile.* Safari/),
+        rfcWebSockets = !!window.WebSocket,
+        iosMatch;
+
+    if (ios && rfcWebSockets) {
+        iosMatch = navigator.userAgent.match(/OS (\d+)/);
+        if (iosMatch.length === 2) {
+            rfcWebSockets = parseInt(iosMatch[1], 10) >= 6;
+        }
+    }
 
     testUtilities = {
         transports: {
@@ -16,7 +24,7 @@
                 enabled: !!window.EventSource
             },
             webSockets: {
-                enabled: !!(window.WebSocket && !window.document.commandLineTest && (!ios || ios6))
+                enabled: !!(rfcWebSockets && !window.document.commandLineTest)
             }
         },
         transportNames: null, // This is set after the initial creation
