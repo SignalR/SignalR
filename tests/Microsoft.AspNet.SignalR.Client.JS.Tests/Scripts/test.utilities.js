@@ -3,12 +3,12 @@
 (function ($, window) {
     var ios = !!navigator.userAgent.match(/Mobile.* Safari/),
         rfcWebSockets = !!window.WebSocket,
-        iosMatch;
+        iosVersion;
 
     if (ios && rfcWebSockets) {
-        iosMatch = navigator.userAgent.match(/OS (\d+)/);
-        if (iosMatch.length === 2) {
-            rfcWebSockets = parseInt(iosMatch[1], 10) >= 6;
+        iosVersion = navigator.userAgent.match(/OS (\d+)/);
+        if (iosVersion.length === 2) {
+            rfcWebSockets = parseInt(iosVersion[1], 10) >= 6;
         }
     }
 
