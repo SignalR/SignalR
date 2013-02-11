@@ -90,6 +90,8 @@
                                 var delay = 0,
                                     data;
 
+                                minData = instance.parseAjaxResponse(instance, minData);
+
                                 fireConnect();
 
                                 if (minData) {

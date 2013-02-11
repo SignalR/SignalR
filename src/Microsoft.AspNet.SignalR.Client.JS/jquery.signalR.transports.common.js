@@ -71,6 +71,8 @@
                 data: {},
                 dataType: connection.ajaxDataType,
                 success: function (data) {
+                    data = connection.parseAjaxResponse(connection, data);
+
                     if (data.Response === "pong") {
                         deferral.resolve();
                     }
@@ -161,6 +163,8 @@
                     data: data
                 },
                 success: function (result) {
+                    result = connection.parseAjaxResponse(connection, result);
+
                     if (result) {
                         $(connection).triggerHandler(events.onReceived, [result]);
                     }
