@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNet.SignalR.Client;
+﻿using System;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
-using System;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
     public class KeepAliveFacts
-    {
+    {  
         /// <summary>
         /// Test to check if the user is warned of a potential connection loss
         /// </summary>
@@ -17,14 +17,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Arrange
             var connection = new Mock<Client.IConnection>();
             var monitor = new HeartbeatMonitor(connection.Object);
-            var keepAliveData = new KeepAliveData();
 
-            // Setting the values such that a warning is thrown almost instantly
-            keepAliveData.TimeoutWarning = TimeSpan.FromSeconds(1);
-
-            // Keeping this sufficiently large so that timeout doesn't occur
-            keepAliveData.Timeout = TimeSpan.FromSeconds(20);
-
+            // Setting the values such that a warning is thrown almost instantly and a timeout doesn't occur
+            var keepAliveData = new KeepAliveData (                
+                lastKeepAlive : DateTime.UtcNow,
+                timeoutWarning : TimeSpan.FromSeconds(1),
+                timeout : TimeSpan.FromSeconds(20),
+                checkInterval : TimeSpan.FromSeconds(2)
+            );
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
 
@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             // Assert
             Assert.True(monitor.HasBeenWarned);
-            connection.Verify(m => m.OnTimeoutWarning(), Times.Once());
+            Assert.False(monitor.TimedOut);
+            connection.Verify(m => m.OnConnectionSlow(), Times.Once());
         }
 
         /// <summary>
@@ -47,11 +48,13 @@ namespace Microsoft.AspNet.SignalR.Tests
             var monitor = new HeartbeatMonitor(connection.Object);
             var transport = new Mock<IClientTransport>();
 
-            var keepAliveData = new KeepAliveData();
-
             // Setting the values such that a timeout happens almost instantly
-            keepAliveData.TimeoutWarning = TimeSpan.FromSeconds(0.5);
-            keepAliveData.Timeout = TimeSpan.FromSeconds(1);
+            var keepAliveData = new KeepAliveData ( 
+                lastKeepAlive : DateTime.UtcNow,
+                timeoutWarning : TimeSpan.FromSeconds(10),
+                timeout : TimeSpan.FromSeconds(1),
+                checkInterval : TimeSpan.FromSeconds(2)
+            );
 
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
@@ -61,7 +64,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             monitor.Beat(TimeSpan.FromSeconds(5));
 
             // Assert
-            Assert.True(monitor.Reconnecting);
+            Assert.True(monitor.TimedOut);
+            Assert.False(monitor.HasBeenWarned);
             transport.Verify(m => m.LostConnection(connection.Object), Times.Once());
         }
 
@@ -76,11 +80,13 @@ namespace Microsoft.AspNet.SignalR.Tests
             var monitor = new HeartbeatMonitor(connection.Object);
             var transport = new Mock<IClientTransport>();
 
-            var keepAliveData = new KeepAliveData();
-
             // Setting the values such that a timeout or timeout warning isn't issued
-            keepAliveData.TimeoutWarning = TimeSpan.FromSeconds(5);
-            keepAliveData.Timeout = TimeSpan.FromSeconds(10);
+            var keepAliveData = new KeepAliveData(
+                lastKeepAlive : DateTime.UtcNow,
+                timeoutWarning : TimeSpan.FromSeconds(5),                
+                timeout : TimeSpan.FromSeconds(10),
+                checkInterval : TimeSpan.FromSeconds(2)
+            );
 
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
@@ -90,8 +96,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             monitor.Beat(TimeSpan.FromSeconds(2));
 
             // Assert
-            Assert.False(monitor.Reconnecting);
+            Assert.False(monitor.TimedOut);
             Assert.False(monitor.HasBeenWarned);
-        }
+        } 
     }
 }

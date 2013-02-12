@@ -100,12 +100,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            // Update the LastKeepAlive Value
-            if (connection.KeepAliveData != null)
-            {
-                connection.UpdateLastKeepAlive();
-                Debug.WriteLine("Received Message from the Server : {0}", DateTime.UtcNow);
-            }
+            connection.UpdateLastKeepAlive();
+            Debug.WriteLine("Received Message from the Server : {0}", DateTime.UtcNow);
 
             timedOut = false;
             disconnected = false;
@@ -152,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         catch (Exception ex)
                         {
 #if NET35
-                                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
+                            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
 #else
                             Debug.WriteLine("Failed to process message: {0}", ex);
 #endif
@@ -167,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             catch (Exception ex)
             {
 #if NET35
-                    Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
+                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
 #else
                 Debug.WriteLine("Failed to response: {0}", ex);
 #endif

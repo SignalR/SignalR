@@ -12,9 +12,6 @@ namespace Microsoft.AspNet.SignalR.Client
         private Timer _timer;
 #endif
 
-        // Keep track of whether we have already disposed
-        private bool _disposed;
-
         // Connection variable
         private readonly IConnection _connection;
 
@@ -22,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Client
         public bool HasBeenWarned { get; private set; }
 
         // To keep track of whether the client is already reconnecting
-        public bool Reconnecting { get; private set; }
+        public bool TimedOut { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the HeartBeatMonitor Class 
@@ -39,9 +36,8 @@ namespace Microsoft.AspNet.SignalR.Client
         public void Start()
         {
             _connection.UpdateLastKeepAlive();
-            _disposed = false;
             HasBeenWarned = false;
-            Reconnecting = false;
+            TimedOut = false;
 #if !NETFX_CORE
             _timer = new Timer(_ => Beat(), state: null, dueTime: _connection.KeepAliveData.CheckInterval, period: _connection.KeepAliveData.CheckInterval);
 #endif
@@ -69,11 +65,11 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 if (timeElapsed >= _connection.KeepAliveData.Timeout)
                 {
-                    if (!Reconnecting)
+                    if (!TimedOut)
                     {
                         // Connection has been lost
-                        Debug.WriteLine("Connection Timed-out : Reconnecting {0}", DateTime.UtcNow);
-                        Reconnecting = true;
+                        Debug.WriteLine("Connection Timed-out : Transport Lost Connection {0}", DateTime.UtcNow);
+                        TimedOut = true;
                         _connection.Transport.LostConnection(_connection);
                     }
                 }
@@ -81,16 +77,16 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     if (!HasBeenWarned)
                     {
-                        // Inform user and set UserNotified to true
+                        // Inform user and set HasBeenWarned to true
                         Debug.WriteLine("Connection Timeout Warning : Notifying user {0}", DateTime.UtcNow);
                         HasBeenWarned = true;
-                        _connection.OnTimeoutWarning();
+                        _connection.OnConnectionSlow();
                     }
                 }
                 else
                 {
                     HasBeenWarned = false;
-                    Reconnecting = false;
+                    TimedOut = false;
                 }
             }
         }
@@ -110,22 +106,20 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (disposing)
             {
-                if (disposing)
-                {
 #if !NETFX_CORE
+                lock (_timer)
+                {
                     if (_timer != null)
                     {
                         _timer.Dispose();
                         _timer = null;
-                    }                    
-#endif
+                    }
                 }
-
-                // Indicate that the instance has been disposed
-                _disposed = true;
+#endif
             }
         }
     }
 }
+

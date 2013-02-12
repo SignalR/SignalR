@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private EventSourceStreamReader _eventSource;
+
         public ServerSentEventsTransport()
             : this(new DefaultHttpClient())
         {
@@ -139,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     _eventSource.Opened = () =>
                     {
-                        //if we are reconnecting - we do not need to worry about the callback being invoked
+                        // If we're not reconnecting, then we're starting the transport for the first time. Trigger callback only on first start.
                         if (!reconnecting)
                         {
                             callbackInvoker.Invoke(initializeCallback);

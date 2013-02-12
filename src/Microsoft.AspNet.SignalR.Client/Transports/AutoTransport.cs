@@ -36,7 +36,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// <summary>
         /// Indicates whether or not the active transport supports keep alive
         /// </summary>
-        public bool SupportsKeepAlive { get; private set; }
+        public bool SupportsKeepAlive
+        {
+            get
+            {
+                return _transport != null ? _transport.SupportsKeepAlive : false;
+            }
+        }
 
         public string Name
         {
@@ -116,16 +122,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     // Set the active transport
                     _transport = transport;
-
-                    // Sets SupportsKeepAlive based on the active transport
-                    if (_transport.Name.Equals("webSockets", StringComparison.OrdinalIgnoreCase) || _transport.Name.Equals("serverSentEvents", StringComparison.OrdinalIgnoreCase))
-                    {
-                        SupportsKeepAlive = true;
-                    }
-                    else
-                    {
-                        SupportsKeepAlive = false;
-                    }
 
                     // Complete the process
                     tcs.SetResult(null);

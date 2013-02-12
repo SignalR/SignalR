@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.Infrastructure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,6 +8,12 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -39,17 +39,13 @@ namespace Microsoft.AspNet.SignalR.Client
         // The default connection state is disconnected
         private ConnectionState _state;
 
+        private KeepAliveData _keepAliveData;
+
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
-        // Determines when we warn the developer that the connection may be lost
-        private double _keepAliveWarnAt = 2.0 / 3.0;
-
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
-
-        // Object to store the various keep alive timeout values
-        public KeepAliveData KeepAliveData { get; private set; }
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -84,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Occurs when the <see cref="Connection"/> is about to timeout
         /// </summary>
-        public event Action TimeoutWarning;
+        public event Action ConnectionSlow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Connection"/> class.
@@ -135,6 +131,22 @@ namespace Microsoft.AspNet.SignalR.Client
             State = ConnectionState.Disconnected;
         }
 
+        /// <summary>
+        /// Object to store the various keep alive timeout values
+        /// </summary>
+        KeepAliveData IConnection.KeepAliveData
+        {
+            get
+            {
+                return _keepAliveData;
+            }
+
+            set
+            {
+                _keepAliveData = value;
+            }
+        }
+ 
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
         /// </summary>
@@ -249,13 +261,13 @@ namespace Microsoft.AspNet.SignalR.Client
         public Task Start(IClientTransport transport)
         {
             _disconnectCts = new SafeCancellationTokenSource();
-            _monitor = new HeartbeatMonitor(this);
 
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
                 return TaskAsyncHelper.Empty;
             }
 
+            _monitor = new HeartbeatMonitor(this);
             _transport = transport;
 
             return Negotiate(transport);
@@ -282,17 +294,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 // If we have a keep alive
                 if (negotiationResponse.KeepAliveTimeout != null)
                 {
-                    KeepAliveData = new KeepAliveData();
-
-                    // Timeout to designate when to force the connection into reconnecting
-                    KeepAliveData.Timeout = TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value);
-
-                    // Timeout to designate when to warn the developer that the connection may be dead or is hanging.
-                    KeepAliveData.TimeoutWarning = TimeSpan.FromMilliseconds(KeepAliveData.Timeout.TotalMilliseconds * _keepAliveWarnAt);
-
-                    // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
-                    KeepAliveData.CheckInterval = TimeSpan.FromMilliseconds((KeepAliveData.Timeout.TotalMilliseconds - KeepAliveData.TimeoutWarning.TotalMilliseconds) / 3);
-                }
+                    _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+               }
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -497,13 +500,15 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 Reconnected();
             }
+
+            ((IConnection)this).UpdateLastKeepAlive();
         }
 
-        void IConnection.OnTimeoutWarning()
+        void IConnection.OnConnectionSlow()
         {
-            if (TimeoutWarning != null)
+            if (ConnectionSlow != null)
             {
-                TimeoutWarning();
+                ConnectionSlow();
             }
         }
 
@@ -512,7 +517,10 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         void IConnection.UpdateLastKeepAlive()
         {
-            KeepAliveData.LastKeepAlive = DateTime.UtcNow;
+            if (_keepAliveData != null)
+            {
+                _keepAliveData.LastKeepAlive = DateTime.UtcNow;
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
