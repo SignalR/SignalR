@@ -178,4 +178,65 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called after stop and start.", testUtilities.defaultTestTimeout * 2, function (end, assert) {
+        var connection = testUtilities.createHubConnection(),
+            echoHub = connection.createHubProxies().echoHub,
+            run;
+
+        run = function (echo, connection) {
+            var deferred = $.Deferred(),
+                complete = false,
+                messageCount = 0,
+                echoHandler = function (value, from) {
+                    assert.equal(value, echo, "Successfuly received message " + echo + " via " + from);
+
+                    if (messageCount++ >= 2) {
+                        assert.ok(false, "Event called more times than expected");
+                    }
+
+                    if (messageCount === 2) {
+                        // Give some time for any extra messages to come through (if any more do come, this test will fail)
+                        setTimeout(function () {
+                            echoHub.off("echo");
+                            deferred.resolve();
+                        }, 1000);
+                    }
+                };
+
+            echoHub.client.echo = function (value) {
+                echoHandler(value, "(Dynamic)");
+            }
+
+            echoHub.on('echo', function (value) {
+                echoHandler(value, "(On)");
+            });
+
+            connection.start({ transport: transport }).done(function () {
+                echoHub.server.echoCallback(echo).done(function () {
+                    assert.ok(true, "Successfuly called server method");
+                });
+            }).fail(function (reason) {
+                assert.ok(false, "Failed to initiate signalr connection");
+                end();
+            });
+
+            return deferred.promise();
+        };
+
+        run("hello", connection).done(function () {
+            connection.stop();
+            setTimeout(function () {
+
+                run("hello2", connection).done(function () {
+                    setTimeout(end, 500);
+                });
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 });
