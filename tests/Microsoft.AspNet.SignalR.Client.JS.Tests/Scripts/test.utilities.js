@@ -1,13 +1,13 @@
 ﻿var testUtilities;
 
 (function ($, window) {
-    var ios = !!navigator.userAgent.match(/Mobile.* Safari/),
+    var ios = !!navigator.userAgent.match(/iPod|iPhone|iPad/),
         rfcWebSockets = !!window.WebSocket,
         iosVersion;
 
     if (ios && rfcWebSockets) {
         iosVersion = navigator.userAgent.match(/OS (\d+)/);
-        if (iosVersion.length === 2) {
+        if (iosVersion && iosVersion.length === 2) {
             rfcWebSockets = parseInt(iosVersion[1], 10) >= 6;
         }
     }
