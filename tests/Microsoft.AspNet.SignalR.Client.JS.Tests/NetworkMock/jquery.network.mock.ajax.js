@@ -1,5 +1,5 @@
 ﻿// Ajax network mock
-(function ($, window, network) {
+(function ($, window) {
     var savedAjax = $.ajax,
 		ajaxData = {},
 		ajaxIds = 0,
@@ -71,4 +71,4 @@
             disconnect(soft);
         }
     };
-})($, window, network);
+})($, window);

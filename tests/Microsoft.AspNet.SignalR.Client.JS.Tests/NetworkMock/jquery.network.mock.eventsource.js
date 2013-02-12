@@ -1,3 +1,3 @@
 ﻿// Event Source network mock
-(function ($, window, network) {
-})($, window, network);
+(function ($, window) {
+})($, window);

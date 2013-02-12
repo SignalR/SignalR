@@ -1,5 +1,10 @@
 ﻿// Network core
-var network = {};
+(function ($, window) {
+    var network = {
+        disconnect: function () {
 
-(function ($, window, network) {
-})($, window, network);
+        }
+    };
+
+    $.network = network;
+})($, window);
