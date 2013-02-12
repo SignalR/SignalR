@@ -67,6 +67,11 @@
     <Content Include="Build\disableCrossDomain.js" />
     <Content Include="Build\teamCityIntegration.js" />
     <Content Include="default.html" />
+    <Content Include="NetworkMock\jquery.network.mock.ajax.js" />
+    <Content Include="NetworkMock\jquery.network.mock.core.js" />
+    <Content Include="NetworkMock\jquery.network.mock.eventsource.js" />
+    <Content Include="NetworkMock\jquery.network.mock.iframe.js" />
+    <Content Include="NetworkMock\jquery.network.mock.websocket.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.8.3.js" />
