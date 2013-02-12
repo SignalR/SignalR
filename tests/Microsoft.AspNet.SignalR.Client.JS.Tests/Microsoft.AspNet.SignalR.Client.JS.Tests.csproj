@@ -227,9 +227,10 @@
     <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
     <!-- Update the default.html file with tests that need to run. -->
     <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\Build\build.ps1" Condition=" '$(OS)' == 'Windows_NT'" />
-    <Copy SourceFiles="$(ProjectDir)\bin\jquery.network.mock.js" DestinationFiles="Scripts\jquery.network.mock.js" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Copy SourceFiles="$(ProjectDir)\bin\jquery.network.mock.min.js" DestinationFiles="Scripts\jquery.network.mock.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1" WorkingDirectory="$(ProjectDir)\Build" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Copy SourceFiles="$(ProjectDir)\bin\jquery.network.mock.js" DestinationFiles="$(ProjectDir)\Scripts\jquery.network.mock.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy SourceFiles="$(ProjectDir)\bin\jquery.network.mock.min.js" DestinationFiles="$(ProjectDir)\Scripts\jquery.network.mock.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!--
