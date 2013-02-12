@@ -1300,6 +1300,7 @@
         stop: function (connection) {
             if (connection && connection.eventSource) {
                 connection.log("EventSource calling close()");
+                connection.eventSource.ID = null;
                 connection.eventSource.close();
                 connection.eventSource = null;
                 delete connection.eventSource;
