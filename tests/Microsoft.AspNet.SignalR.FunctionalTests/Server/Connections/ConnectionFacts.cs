@@ -146,6 +146,31 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void StoppingDoesntRaiseErrorEvent(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+                    var connection = CreateHubConnection(host);
+
+                    var tcs = new TaskCompletionSource<object>();
+                    connection.Error += ex =>
+                    {
+                        tcs.TrySetException(ex);
+                    };
+
+                    connection.Start(host.Transport).Wait();
+
+                    connection.Stop();
+
+                    tcs.Task.Wait(TimeSpan.FromSeconds(5));
+                }
+            }
+
+            [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
