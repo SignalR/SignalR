@@ -101,7 +101,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             connection.UpdateLastKeepAlive();
-            Debug.WriteLine("Received Message from the Server : {0}", DateTime.UtcNow);
 
             timedOut = false;
             disconnected = false;

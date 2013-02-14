@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.Client
         // Timer to determine when to notify the user and reconnect if required
         private Timer _timer;
 #endif
+        // Variable to prevent race conditions with the timer
+        private int _beatActive;
 
         // Connection variable
         private readonly IConnection _connection;
@@ -61,6 +63,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="timeElapsed"></param>
         public void Beat(TimeSpan timeElapsed)
         {
+            if (Interlocked.Exchange(ref _beatActive, 1) == 1)
+            {
+                return;
+            }
+
             if (_connection.State == ConnectionState.Connected)
             {
                 if (timeElapsed >= _connection.KeepAliveData.Timeout)
@@ -89,6 +96,8 @@ namespace Microsoft.AspNet.SignalR.Client
                     TimedOut = false;
                 }
             }
+
+            _beatActive = 0;
         }
 
         /// <summary>
@@ -109,13 +118,10 @@ namespace Microsoft.AspNet.SignalR.Client
             if (disposing)
             {
 #if !NETFX_CORE
-                lock (_timer)
+                if (_timer != null)
                 {
-                    if (_timer != null)
-                    {
-                        _timer.Dispose();
-                        _timer = null;
-                    }
+                    _timer.Dispose();
+                    _timer = null;
                 }
 #endif
             }
