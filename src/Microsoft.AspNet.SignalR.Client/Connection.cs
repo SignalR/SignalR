@@ -140,7 +140,6 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 return _keepAliveData;
             }
-
             set
             {
                 _keepAliveData = value;
@@ -340,8 +339,11 @@ namespace Microsoft.AspNet.SignalR.Client
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 // Start the monitor to check for server activity
-                                 _monitor.Start();
+                                 if(_keepAliveData != null)
+                                 {
+                                    // Start the monitor to check for server activity
+                                    _monitor.Start();
+                                 }
                              });
         }
 
