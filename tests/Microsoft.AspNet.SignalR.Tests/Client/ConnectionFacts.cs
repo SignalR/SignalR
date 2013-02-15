@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
                 var ex = aggEx.Unwrap();
                 Assert.IsType(typeof(InvalidOperationException), ex);
-                Assert.Equal("Incompatible protocol version.", ex.Message);
+                Assert.Equal("You are using a version of the client that isn't compatible with the server. Client version 1.1, server version null." , ex.Message);
             }
 
             [Fact]
