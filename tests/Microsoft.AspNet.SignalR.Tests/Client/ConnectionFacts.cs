@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
                 var ex = aggEx.Unwrap();
                 Assert.IsType(typeof(InvalidOperationException), ex);
-                Assert.Equal("You are using a version of the client that isn't compatible with the server. Client version 1.1, server version null." , ex.Message);
+                Assert.Equal("You are using a version of the client that isn't compatible with the server. Client version 1.2, server version null." , ex.Message);
             }
 
             [Fact]

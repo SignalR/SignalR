@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private static void VerifyProtocolVersion(string versionString)
         {
-            Version version = null;
+            Version version;
 
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
                                                                   Resources.Error_IncompatibleProtocolVersion,
-                                                                  "1.1",
+                                                                  "1.2",
                                                                   versionString ?? "null"));
             }
         }
