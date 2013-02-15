@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Samples
             // dependencyResolver.UseRedis("127.0.0.1", 6379, "", new[] { "SignalRSamples" }); 
 
             hubPipeline.AddModule(new SamplePipelineModule());
-            hubPipeline.EnableAutoRejoiningGroups();
         }
 
         private class SamplePipelineModule : HubPipelineModule

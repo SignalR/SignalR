@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         public const string LocalIpAddress = "server.LocalIpAddress";
         public const string LocalPort = "server.LocalPort";
 
+        public const string DisableRequestCompression = "systemweb.DisableResponseCompression";
         public const string DisableRequestBuffering = "server.DisableRequestBuffering";
         public const string DisableResponseBuffering = "server.DisableResponseBuffering";
 

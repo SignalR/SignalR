@@ -58,9 +58,10 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\RequestExtensions.cs">
       <Link>RequestExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\RouteExtensions.cs">
-      <Link>RouteExtensions.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\SignalRRouteExtensions.cs">
+      <Link>SignalRRouteExtensions.cs</Link>
     </Compile>
+    <Compile Include="Infrastructure\MachineKeyProtectedData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

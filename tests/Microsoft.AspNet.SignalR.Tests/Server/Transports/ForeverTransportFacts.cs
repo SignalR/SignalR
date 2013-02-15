@@ -55,7 +55,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         {
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
-            qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/abort"));
             string abortedConnectionId = null;
@@ -81,9 +80,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 CallBase = true
             };
 
+            transport.Object.ConnectionId = "1";
             transport.Object.ProcessRequest(transportConnection.Object).Wait();
 
-            Assert.Equal("1", abortedConnectionId);
+            Assert.Equal("c-1", abortedConnectionId);
         }
 
         [Fact]
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 CallBase = true
             };
 
-            transport.Setup(m => m.IsAlive).Returns(true);
+            transport.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
 
             var tcs = new TaskCompletionSource<bool>();
 

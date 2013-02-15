@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Owin;
 using Xunit;
 using Xunit.Extensions;
 
@@ -56,12 +58,90 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     host.Initialize();
 
                     var connection = new Client.Connection(host.Url + "/fall-back");
-                    
+
                     connection.Start(host.Transport).Wait();
 
                     Assert.Equal(connection.Transport.Name, "longPolling");
 
                     connection.Stop();
+                }
+            }
+
+            [Fact]
+            public void PrefixMatchingIsNotGreedy()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        app.MapConnection<MyConnection>("/echo");
+                        app.MapConnection<MyConnection2>("/echo2");
+                    });
+
+                    var tcs = new TaskCompletionSource<string>();
+                    var connection = new Connection("http://foo/echo2");
+
+                    connection.Received += data =>
+                    {
+                        tcs.TrySetResult(data);
+                    };
+
+                    connection.Start(host).Wait();
+                    connection.Send("");
+
+                    Assert.Equal("MyConnection2", tcs.Task.Result);
+                }
+            }
+
+            [Fact]
+            public void PrefixMatchingIsNotGreedyNotStartingWithSlashes()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        app.MapConnection<MyConnection>("echo");
+                        app.MapConnection<MyConnection2>("echo2");
+                    });
+
+                    var tcs = new TaskCompletionSource<string>();
+                    var connection = new Connection("http://foo/echo2");
+
+                    connection.Received += data =>
+                    {
+                        tcs.TrySetResult(data);
+                    };
+
+                    connection.Start(host).Wait();
+                    connection.Send("");
+
+                    Assert.Equal("MyConnection2", tcs.Task.Result);
+                }
+            }
+
+            [Fact]
+            public void PrefixMatchingIsNotGreedyExactMatch()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        app.MapConnection<MyConnection>("echo");
+                        app.MapConnection<MyConnection2>("echo2");
+                    });
+
+                    var tcs = new TaskCompletionSource<string>();
+                    var connection = new Connection("http://foo/echo");
+
+                    connection.Received += data =>
+                    {
+                        tcs.TrySetResult(data);
+                    };
+
+                    connection.Start(host).Wait();
+                    connection.Send("");
+
+                    Assert.Equal("MyConnection", tcs.Task.Result);
                 }
             }
 
@@ -109,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 1, disconnectTimeout: 2);
+                    host.Initialize(disconnectTimeout: 6);
                     var connection = new Client.Hubs.HubConnection(host.Url);
                     var reconnectWh = new ManualResetEventSlim();
                     var disconnectWh = new ManualResetEventSlim();
@@ -130,7 +210,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     host.Shutdown();
 
                     Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)));
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)));
                 }
             }
 
@@ -144,10 +224,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(keepAlive: 0,
+                    host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
-                                    hearbeatInterval: 2,
-                                    disconnectTimeout: 10);
+                                    disconnectTimeout: 6);
 
                     var connection = new Client.Hubs.HubConnection(host.Url);
                     var reconnectingWh = new ManualResetEventSlim();
@@ -177,6 +256,22 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     connection.Stop();
                 }
+            }
+        }
+
+        private class MyConnection : PersistentConnection
+        {
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Connection.Send(connectionId, "MyConnection");
+            }
+        }
+
+        private class MyConnection2 : PersistentConnection
+        {
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Connection.Send(connectionId, "MyConnection2");
             }
         }
     }

@@ -8,12 +8,6 @@ namespace Microsoft.AspNet.SignalR.Samples.Streaming
         {
             return base.OnConnected(request, connectionId);
         }
-
-        protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
-        {
-            return groups;
-        }
-
         protected override System.Threading.Tasks.Task OnDisconnected(IRequest request, string connectionId)
         {
             return base.OnDisconnected(request, connectionId);

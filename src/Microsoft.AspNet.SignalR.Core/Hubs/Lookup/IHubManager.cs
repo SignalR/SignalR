@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="method">Name of the method to find.</param>
         /// <param name="parameters">Method parameters to match.</param>
         /// <returns>Descriptor of the method, if found. Null otherwise.</returns>
-        MethodDescriptor GetHubMethod(string hubName, string method, params IJsonValue[] parameters);
+        MethodDescriptor GetHubMethod(string hubName, string method, IList<IJsonValue> parameters);
 
         /// <summary>
         /// Gets all methods available to call on a given hub.

@@ -8,24 +8,6 @@ namespace Microsoft.AspNet.SignalR
     public static class HubPipelineExtensions
     {
         /// <summary>
-        /// By default, clients that are reconnecting to the server will be removed from all groups they may have previously been a member of.
-        /// Enabling AutoRejoiningGroups allows all clients to rejoin the all of the hub groups the claim to be a member of automatically
-        /// on connect and reconnect.
-        /// Enabling this module may be insecure because untrusted clients may claim to be a member of groups they were never authorized to join.
-        /// </summary>
-        /// <param name="pipeline">The <see cref="IHubPipeline" /> to which the <see cref="AutoRejoiningGroupsModule" /> will be added.</param>
-        public static void EnableAutoRejoiningGroups(this IHubPipeline pipeline)
-        {
-            if (pipeline == null)
-            {
-                throw new ArgumentNullException("pipeline");
-            }
-
-            pipeline.AddModule(new AutoRejoiningGroupsModule());
-        }
-
-
-        /// <summary>
         /// Requiring Authentication adds an <see cref="AuthorizeModule"/> to the <see cref="IHubPipeline" /> with <see cref="IAuthorizeHubConnection"/>
         /// and <see cref="IAuthorizeHubMethodInvocation"/> authorizers that will be applied globally to all hubs and hub methods.
         /// These authorizers require that the <see cref="System.Security.Principal.IPrincipal"/>'s <see cref="System.Security.Principal.IIdentity"/> 

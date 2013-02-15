@@ -169,6 +169,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public static Cursor[] GetCursors(string cursor, Func<string, string> keyMaximizer)
         {
+            var signals = new HashSet<string>();
             var cursors = new List<Cursor>();
             string currentKey = null;
             string currentEscapedKey = null;
@@ -214,8 +215,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     else if (ch == '|')
                     {
-                        currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                        cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+                        if (signals.Add(currentKey))
+                        {
+                            currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                            cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+                        }
                         sb.Clear();
                         consumingKey = true;
                     }
@@ -232,8 +236,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             if (sb.Length > 0)
             {
-                currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+                if (signals.Add(currentKey))
+                {
+                    currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+                }
             }
 
             return cursors.ToArray();

@@ -5,16 +5,17 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class ClientProxy : DynamicObject, IClientProxy
     {
-        private readonly Func<string, ClientHubInvocation, IEnumerable<string>, Task> _send;
+        private readonly Func<string, ClientHubInvocation, IList<string>, Task> _send;
         private readonly string _hubName;
-        private readonly string[] _exclude;
-        
-        public ClientProxy(Func<string, ClientHubInvocation, IEnumerable<string>, Task> send, string hubName, params string[] exclude)
+        private readonly IList<string> _exclude;
+
+        public ClientProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string hubName, IList<string> exclude)
         {
             _send = send;
             _hubName = hubName;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Args = args
             };
 
-            return _send(_hubName, invocation, _exclude);
+            return _send(PrefixHelper.GetHubName(_hubName), invocation, _exclude);
         }
     }
 }

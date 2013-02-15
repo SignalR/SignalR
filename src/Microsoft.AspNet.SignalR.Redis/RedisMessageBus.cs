@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             });
         }
 
-        protected override Task Send(Message[] messages)
+        protected override Task Send(IList<Message> messages)
         {
             return _connectTask.Then(msgs =>
             {

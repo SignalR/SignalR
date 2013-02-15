@@ -10,9 +10,9 @@ namespace Microsoft.AspNet.SignalR.SystemWeb.Infrastructure
 {
     public class BuildManagerAssemblyLocator : DefaultAssemblyLocator
     {
-        public override IEnumerable<Assembly> GetAssemblies()
+        public override IList<Assembly> GetAssemblies()
         {
-            return BuildManager.GetReferencedAssemblies().Cast<Assembly>();
+            return BuildManager.GetReferencedAssemblies().Cast<Assembly>().ToList();
         }
     }
 }

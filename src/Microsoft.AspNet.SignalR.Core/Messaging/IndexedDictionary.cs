@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     // TODO: This structure grows infinitely so we need to bound it
-    public class Linktionary<TKey, TValue>
+    public class IndexedDictionary<TKey, TValue>
     {
         private readonly ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _lookup = new ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
         private readonly LinkedList<KeyValuePair<TKey, TValue>> _list = new LinkedList<KeyValuePair<TKey, TValue>>();

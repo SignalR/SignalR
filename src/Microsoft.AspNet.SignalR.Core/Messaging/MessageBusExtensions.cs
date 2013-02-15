@@ -31,10 +31,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return bus.Publish(new Message(source, key, value));
         }
 
-        internal static Task Ack(this IMessageBus bus, string source, string eventKey, string commandId)
+        internal static Task Ack(this IMessageBus bus, string connectionId, string commandId)
         {
             // Prepare the ack
-            var message = new Message(source, AckPrefix(eventKey), null);
+            var message = new Message(connectionId, PrefixHelper.GetAck(connectionId), null);
             message.CommandId = commandId;
             message.IsAck = true;
             return bus.Publish(message);
@@ -71,9 +71,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     if (Interlocked.Exchange(ref resultSet, 1) == 0)
                     {
                         result = map(messageResult);
-
-                        // Dispose of the cancellation token subscription
-                        registration.Dispose();
                     }
 
                     if (messageResult.Terminal)
@@ -82,6 +79,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                         // Set the result
                         tcs.TrySetResult(result);
+
+                        // Dispose of the cancellation token subscription
+                        registration.Dispose();
                     }
 
                     return TaskAsyncHelper.False;
@@ -148,11 +148,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                 }
             }
-        }
-
-        private static string AckPrefix(string eventKey)
-        {
-            return "ACK_" + eventKey;
         }
     }
 }

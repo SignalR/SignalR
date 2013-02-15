@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
                                null,
-                               _configurationManager.HeartbeatInterval,
-                               _configurationManager.HeartbeatInterval);
+                               _configurationManager.HeartbeatInterval(),
+                               _configurationManager.HeartbeatInterval());
         }
 
         private TraceSource Trace
@@ -104,8 +104,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
-                oldMetadata.Connection.End();
-
+                EndConnection(oldMetadata);
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
             }
@@ -121,6 +120,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
+
+            // Register for disconnect cancellation
+            newMetadata.Registration = connection.CancellationToken.SafeRegister(OnConnectionEnded, newMetadata);
 
             return isNewConnection;
         }
@@ -192,6 +194,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return;
             }
 
+            lock (_counterLock)
+            {
+                _counters.ConnectionsCurrent.RawValue = _connections.Count;
+            }
+
             try
             {
                 _heartbeatCount++;
@@ -221,17 +228,27 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        private void OnConnectionEnded(ConnectionMetadata metadata)
+        {
+            Trace.TraceInformation("OnConnectionEnded({0})", metadata.Connection.ConnectionId);
+
+            // Release the request
+            metadata.Connection.ReleaseRequest();
+
+            if (metadata.Registration != null)
+            {
+                metadata.Registration.Dispose();
+            }
+        }
+
         private void CheckTimeoutAndKeepAlive(ConnectionMetadata metadata)
         {
             if (RaiseTimeout(metadata))
             {
-                RemoveConnection(metadata.Connection);
-
-                // If we're past the expiration time then just timeout the connection                            
+                // If we're past the expiration time then just timeout the connection
                 metadata.Connection.Timeout();
 
-                // End the connection
-                metadata.Connection.End();
+                EndConnection(metadata);
             }
             else
             {
@@ -289,17 +306,17 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private bool RaiseKeepAlive(ConnectionMetadata metadata)
         {
-            int keepAlive = _configurationManager.KeepAlive;
+            var keepAlive = _configurationManager.KeepAlive;
 
             // Don't raise keep alive if it's set to 0 or the transport doesn't support
             // keep alive
-            if (keepAlive == 0 || !metadata.Connection.SupportsKeepAlive)
+            if (keepAlive == null || !metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
 
             // Raise keep alive if the keep alive value has passed
-            return _heartbeatCount % (ulong)keepAlive == 0;
+            return _heartbeatCount % (ulong)ConfigurationExtensions.HeartBeatsPerKeepAlive == 0;
         }
 
         private bool RaiseTimeout(ConnectionMetadata metadata)
@@ -310,10 +327,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return false;
             }
 
-            int keepAlive = _configurationManager.KeepAlive;
+            var keepAlive = _configurationManager.KeepAlive;
             // If keep alive is configured and the connection supports keep alive
             // don't ever time out
-            if (keepAlive != 0 && metadata.Connection.SupportsKeepAlive)
+            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
             {
                 return false;
             }
@@ -339,7 +356,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     ConnectionMetadata metadata;
                     if (_connections.TryGetValue(pair.Key, out metadata))
                     {
-                        metadata.Connection.End();
+                        EndConnection(metadata);
                     }
                 }
             }
@@ -348,6 +365,18 @@ namespace Microsoft.AspNet.SignalR.Transports
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        private static void EndConnection(ConnectionMetadata metadata)
+        {
+            // End the connection
+            metadata.Connection.End();
+
+            // Dispose of the registration
+            if (metadata.Registration != null)
+            {
+                metadata.Registration.Dispose();
+            }
         }
 
         private class ConnectionMetadata
@@ -367,6 +396,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // The initial connection time of the connection
             public DateTime Initial { get; set; }
+
+            // The cancellation token registration
+            public IDisposable Registration { get; set; }
         }
     }
 }

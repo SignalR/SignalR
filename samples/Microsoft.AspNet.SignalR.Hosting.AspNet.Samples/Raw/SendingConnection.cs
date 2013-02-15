@@ -17,10 +17,5 @@ namespace Microsoft.AspNet.SignalR.Samples
             tcs.TrySetResult(null);
             return tcs.Task;
         }
-
-        protected override IEnumerable<string> OnRejoiningGroups(IRequest request, IEnumerable<string> groups, string connectionId)
-        {
-            return groups;
-        }
     }
 }

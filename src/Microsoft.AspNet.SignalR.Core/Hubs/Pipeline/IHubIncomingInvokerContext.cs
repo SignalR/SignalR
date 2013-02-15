@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// The arguments to be passed to the invoked method.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This represents an ordered list of parameter values")]
-        object[] Args { get; }
+        IList<object> Args { get; }
 
         /// <summary>
         /// A key-value store representing the hub state on the client at the time of the invocation.

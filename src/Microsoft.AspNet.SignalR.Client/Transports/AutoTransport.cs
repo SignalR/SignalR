@@ -116,7 +116,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     tcs.SetResult(null);
                 }
 
-            });
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public Task Send(IConnection connection, string data)

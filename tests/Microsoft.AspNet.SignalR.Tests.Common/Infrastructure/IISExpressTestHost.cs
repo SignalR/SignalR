@@ -39,10 +39,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public Func<IClientTransport> TransportFactory { get; set; }
 
-        public void Initialize(int keepAlive,
+        public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
-                               int? hearbeatInterval,
                                bool enableAutoRejoiningGroups)
         {
             Url = _siteManager.GetSiteUrl();
@@ -52,7 +51,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                            keepAlive,
                                            connectionTimeout,
                                            disconnectTimeout,
-                                           hearbeatInterval,
                                            enableAutoRejoiningGroups);
 
             File.WriteAllText(_webConfigPath, content);

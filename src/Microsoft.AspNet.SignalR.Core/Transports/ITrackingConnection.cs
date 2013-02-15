@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -15,6 +16,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// Gets the id of the connection.
         /// </summary>
         string ConnectionId { get; }
+
+        /// <summary>
+        /// Gets a cancellation token that represents the connection's lifetime.
+        /// </summary>
+        CancellationToken CancellationToken { get; }
 
         /// <summary>
         /// Gets a value that represents if the connection is alive.
@@ -61,5 +67,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "Ends the connction thus the name is appropriate.")]
         void End();
+
+        /// <summary>
+        /// Releases the http request associated with the connection (if any).
+        /// </summary>
+        void ReleaseRequest();
     }
 }

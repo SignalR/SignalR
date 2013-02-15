@@ -11,7 +11,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void Symmetric()
         {
-            var cursors = new[] {
+            var cursors = new[]
+            {
                 new Cursor(@"\foo|1,4,\|\\\,", 10),
                 new Cursor("", 0),
                 new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u13A1", 0xffffffffffffffff)
@@ -41,8 +42,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void SymmetricWithManyCursors()
         {
-            var repeatedCursor = new Cursor(Guid.NewGuid().ToString(), 0xffffffffffffffff);
-            var manyCursors = Enumerable.Repeat(repeatedCursor, 8192).ToList();
+            var manyCursors = new List<Cursor>();
+            for (var i = 0; i < 8192; i++)
+            {
+                manyCursors.Add(new Cursor(Guid.NewGuid().ToString(), 0xffffffffffffffff));
+            }
 
             var serialized = Cursor.MakeCursor(manyCursors);
             var deserializedCursors = Cursor.GetCursors(serialized);
@@ -50,8 +54,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.Equal(deserializedCursors.Length, 8192);
             for (var i = 0; i < 8192; i++)
             {
-                Assert.Equal(repeatedCursor.Id, deserializedCursors[i].Id);
-                Assert.Equal(repeatedCursor.Key, deserializedCursors[i].Key);
+                Assert.Equal(manyCursors[i].Id, deserializedCursors[i].Id);
+                Assert.Equal(manyCursors[i].Key, deserializedCursors[i].Key);
             }
         }
 
@@ -78,7 +82,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             };
             Func<string, string> inverseMap = s => inverseDict[s];
 
-            var cursors = new[] {
+            var cursors = new[]
+            {
                 new Cursor(@"\foo|1,4,\|\\\,", 10, map(@"\foo|1,4,\|\\\,")),
                 new Cursor("", 0, map("")),
                 new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u13A1", 0xffffffffffffffff, map("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u13A1"))
@@ -98,8 +103,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void GetCursorsReturnsNullIfKeyMapReturnsNull()
         {
             Func<string, string> sometimesReturnsNull = s => s != "" ? s : null;
-            
-            var cursors = new[] {
+
+            var cursors = new[]
+            {
                 new Cursor(@"\foo|1,4,\|\\\,", 10),
                 new Cursor("", 0),
                 new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1", 0xffffffffffffffff)
@@ -109,6 +115,42 @@ namespace Microsoft.AspNet.SignalR.Tests
             var deserializedCursors = Cursor.GetCursors(serialized, sometimesReturnsNull);
 
             Assert.Null(deserializedCursors);
+        }
+
+        [Fact]
+        public void GetCursorsRemovesDuplicates()
+        {
+            // The serialized cursors were generated with the following code:
+            //var cursors = new[]
+            //{
+            //    new Cursor(@"\foo|1,4,\|\\\,", 10),
+            //    new Cursor(@"\foo|1,4,\|\\\,", 0),
+            //    new Cursor(@"\foo|1,4,\|\\\,", 0xffffffffffffffff),
+            //    new Cursor("", 0),
+            //    new Cursor("", 0),
+            //    new Cursor("only non dup", 0),
+            //    new Cursor("", 100),
+            //    new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1", 0xffffffffffffffff),
+            //    new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1", 0xffffffffffffffff),
+            //    new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1", 0),
+            //    new Cursor(@"\foo|1,4,\|\\\,", 0),
+            //};
+            //var serializedCursors = Cursor.MakeCursor(cursors);
+
+            var serializedCursors = @"\\foo\|1\,4\,\\\|\\\\\\\,,A|\\foo\|1\,4\,\\\|\\\\\\\,,0|\\foo\|1\,4\,\\\|\\\\\\\,,FFFFFFFFFFFFFFFF|,0|,0|"
+                                  + @"only non dup,0|,64|ΣιγναλΡ,FFFFFFFFFFFFFFFF|ΣιγναλΡ,FFFFFFFFFFFFFFFF|ΣιγναλΡ,0|\\foo\|1\,4\,\\\|\\\\\\\,,0";
+
+            var distinctSignals = new[]
+            {
+                @"\foo|1,4,\|\\\,",
+                "",
+                "only non dup",
+                "\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1",
+            };
+            var deserializedCursors = Cursor.GetCursors(serializedCursors);
+
+            Assert.Equal(distinctSignals.Length, deserializedCursors.Length);
+            Assert.True(deserializedCursors.All(c => distinctSignals.Contains(c.Key)));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.AspNet.SignalR
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+namespace Microsoft.AspNet.SignalR
 {
     public class ConnectionConfiguration
     {
@@ -13,5 +15,10 @@
             get { return _resolver ?? GlobalHost.DependencyResolver; }
             set { _resolver = value; }
         }
+
+        /// <summary>
+        /// Determines if browsers can make cross domain requests to SignalR endpoints.
+        /// </summary>
+        public bool EnableCrossDomain { get; set; }
     }
 }

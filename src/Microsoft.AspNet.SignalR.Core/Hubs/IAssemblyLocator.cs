@@ -9,6 +9,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public interface IAssemblyLocator
     {
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Might be expensive.")]
-        IEnumerable<Assembly> GetAssemblies();
+        IList<Assembly> GetAssemblies();
     }
 }

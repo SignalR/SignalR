@@ -12,13 +12,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> _streams;
+        private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams;
         private List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
                                     IEnumerable<string> eventKeys,
                                     string cursor,
-                                    ConcurrentDictionary<string, Linktionary<ulong, ScaleoutMapping>> streamMappings,
+                                    ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> streamMappings,
                                     Func<MessageResult, Task<bool>> callback,
                                     int maxMessages,
                                     IPerformanceCounterManager counters)
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The list needs to be populated")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
-        protected override void PerformWork(List<ArraySegment<Message>> items, out int totalCount, out object state)
+        protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
             var cursors = new List<Cursor>();
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             foreach (var stream in _streams)
             {
                 // Get the mapping for this stream
-                Linktionary<ulong, ScaleoutMapping> mapping = stream.Value;
+                IndexedDictionary<ulong, ScaleoutMapping> mapping = stream.Value;
 
                 // See if we have a cursor for this key
                 Cursor cursor = null;
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private ulong GetCursorId(string key)
         {
-            Linktionary<ulong, ScaleoutMapping> mapping;
+            IndexedDictionary<ulong, ScaleoutMapping> mapping;
             if (_streams.TryGetValue(key, out mapping))
             {
                 return mapping.MaxKey;

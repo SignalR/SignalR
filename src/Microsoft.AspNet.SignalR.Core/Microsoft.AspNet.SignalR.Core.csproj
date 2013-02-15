@@ -43,6 +43,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -54,13 +55,18 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>
     </Compile>
+    <Compile Include="Configuration\ConfigurationExtensions.cs" />
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="HubConfiguration.cs" />
+    <Compile Include="Hubs\ConnectionIdProxy.cs" />
+    <Compile Include="Hubs\DynamicDictionary.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
+    <Compile Include="Hubs\GroupProxy.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
+    <Compile Include="Infrastructure\DefaultProtectedData.cs" />
     <Compile Include="Infrastructure\DiffPair.cs" />
     <Compile Include="Infrastructure\DiffSet.cs" />
     <Compile Include="GlobalHost.cs" />
@@ -69,9 +75,15 @@
     <Compile Include="Hosting\HostContextExtensions.cs" />
     <Compile Include="Cookie.cs" />
     <Compile Include="Hosting\IWebSocketRequest.cs" />
+    <Compile Include="Infrastructure\IProtectedData.cs" />
+    <Compile Include="Infrastructure\ListHelper.cs" />
+    <Compile Include="Infrastructure\PrefixHelper.cs" />
+    <Compile Include="Infrastructure\Purposes.cs" />
+    <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
+    <Compile Include="Json\SipHashBasedDictionaryConverter.cs" />
     <Compile Include="Messaging\CommandType.cs" />
     <Compile Include="Hosting\IWebSocket.cs" />
     <Compile Include="Hosting\ResponseExtensions.cs" />
@@ -80,7 +92,6 @@
     <Compile Include="Hubs\NullClientProxy.cs" />
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeModule.cs" />
     <Compile Include="AuthorizeAttribute.cs" />
-    <Compile Include="Hubs\Pipeline\AutoRejoiningGroupsModule.cs" />
     <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />
     <Compile Include="Hubs\ClientHubInvocation.cs" />
     <Compile Include="Hubs\HubContext.cs" />
@@ -119,7 +130,7 @@
     <Compile Include="Infrastructure\TaskQueue.cs" />
     <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
-    <Compile Include="Json\JTokenValue.cs" />
+    <Compile Include="Json\JRawValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
@@ -145,7 +156,7 @@
     <Compile Include="Messaging\Cursor.cs" />
     <Compile Include="Infrastructure\IStringMinifier.cs" />
     <Compile Include="Messaging\ISubscription.cs" />
-    <Compile Include="Messaging\Linktionary.cs" />
+    <Compile Include="Messaging\IndexedDictionary.cs" />
     <Compile Include="Messaging\LocalEventKeyInfo.cs" />
     <Compile Include="Messaging\MessageBroker.cs" />
     <Compile Include="Messaging\ScaleoutMapping.cs" />
@@ -162,6 +173,7 @@
     <Compile Include="Infrastructure\StringMinifier.cs" />
     <Compile Include="Messaging\Subscription.cs" />
     <Compile Include="Messaging\Topic.cs" />
+    <Compile Include="Messaging\TopicLookup.cs" />
     <Compile Include="Messaging\TopicState.cs" />
     <Compile Include="Messaging\Volatile.cs" />
     <Compile Include="Infrastructure\PersistentConnectionContext.cs" />

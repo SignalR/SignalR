@@ -29,34 +29,32 @@ namespace Microsoft.AspNet.SignalR.Tests
             var request = new Mock<IRequest>();
             var response = new Mock<IResponse>();
             var qs = new NameValueCollection();
-            qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
-            bool isConnected = true;
-            response.Setup(m => m.IsClientConnected).Returns(() => isConnected);
+            var cts = new CancellationTokenSource();
+            response.Setup(m => m.CancellationToken).Returns(cts.Token);
             response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             var resolver = new DefaultDependencyResolver();
             var config = resolver.Resolve<IConfigurationManager>();
             var hostContext = new HostContext(request.Object, response.Object);
-            config.DisconnectTimeout = TimeSpan.Zero;
-            config.HeartbeatInterval = TimeSpan.FromSeconds(3);
+            config.DisconnectTimeout = TimeSpan.FromSeconds(6);
             var transport = new Mock<ForeverTransport>(hostContext, resolver)
             {
                 CallBase = true
             };
-
+            transport.Object.ConnectionId = "1";
             transport.Setup(m => m.Send(It.IsAny<PersistentResponse>()))
                      .Returns(() =>
                      {
                          var task = TaskAsyncHelper.FromError(new Exception());
-                         isConnected = false;
+                         cts.Cancel();
                          return task;
                      });
 
             var connectionManager = new ConnectionManager(resolver);
-            var connection = connectionManager.GetConnection("Foo");
+            var connection = connectionManager.GetConnectionCore("Foo");
             var wh = new ManualResetEventSlim();
 
             transport.Object.ProcessRequest(connection).ContinueWith(task =>
@@ -66,7 +64,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             connection.Broadcast("Some message");
 
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+            // 6 second disconnect timeout + 5 second disconnect threshold
+            // + up to 1 second for the heartbeat to check + 3 second leeway
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(15)));
         }
 
         [Fact]
@@ -88,15 +88,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     app.MapConnection<MyConnection>("/echo", config);
 
-                    configuration.DisconnectTimeout = TimeSpan.Zero;
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
                     dr.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
                 });
                 var connection = new Client.Connection("http://foo/echo");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -127,8 +126,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     app.MapHubs("/signalr", config);
 
-                    configuration.DisconnectTimeout = TimeSpan.Zero;
-                    configuration.HeartbeatInterval = TimeSpan.FromSeconds(5);
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
                     dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
                 });
 
@@ -137,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.CreateHubProxy("MyHub");
 
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
-                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval.Ticks * 3);
+                var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
                 connection.Start(host).Wait();
 
@@ -168,8 +166,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 foreach (var node in nodes)
                 {
                     var config = node.Resolver.Resolve<IConfigurationManager>();
-                    config.HeartbeatInterval = timeout;
-                    config.DisconnectTimeout = TimeSpan.Zero;
+                    config.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
                     IDependencyResolver resolver = node.Resolver;
                     node.Server.Configure(app =>

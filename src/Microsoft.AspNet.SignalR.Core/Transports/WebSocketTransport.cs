@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -40,6 +41,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 return _isAlive;
+            }
+        }
+
+        public override CancellationToken CancellationToken
+        {
+            get
+            {
+                return CancellationToken.None;
             }
         }
 

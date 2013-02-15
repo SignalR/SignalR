@@ -71,6 +71,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// The list of groups belonging to the relevant hub that the client claims to have been a member of before the reconnect.
         /// </param>
         /// <returns>A list of groups the client is allowed to rejoin.</returns>
-        IEnumerable<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IEnumerable<string> groups);
+        IList<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IList<string> groups);
     }
 }

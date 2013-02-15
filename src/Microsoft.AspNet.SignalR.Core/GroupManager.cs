@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -37,9 +36,9 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="groupName">The name of the group.</param>
         /// <param name="value">The value to send.</param>
-        /// <param name="exclude"></param>
+        /// <param name="excludeConnectionIds">The list of connection ids to exclude</param>
         /// <returns>A task that represents when send is complete.</returns>
-        public Task Send(string groupName, object value, params string[] exclude)
+        public Task Send(string groupName, object value, params string[] excludeConnectionIds)
         {
             if (groupName == null)
             {
@@ -47,10 +46,9 @@ namespace Microsoft.AspNet.SignalR
             }
 
             var qualifiedName = CreateQualifiedName(groupName);
-            var message = new ConnectionMessage(qualifiedName, value)
-            {
-                ExcludedSignals = exclude
-            };
+            var message = new ConnectionMessage(qualifiedName, 
+                                                value, 
+                                                PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return _connection.Send(message);
         }

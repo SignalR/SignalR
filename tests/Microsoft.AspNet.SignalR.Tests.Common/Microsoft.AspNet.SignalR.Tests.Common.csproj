@@ -107,12 +107,14 @@
     <Compile Include="Connections\MyRejoinGroupsConnection.cs" />
     <Compile Include="Connections\MySendingConnection.cs" />
     <Compile Include="Connections\SyncErrorConnection.cs" />
+    <Compile Include="Connections\UnusableProtectedConnection.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
+    <Compile Include="Infrastructure\EmptyProtectedData.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />
     <Compile Include="Infrastructure\IISExpressTestHost.cs" />

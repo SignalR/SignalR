@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -42,9 +43,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
-
-        // The groups the connection is currently subscribed to
-        private readonly HashSet<string> _groups;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -120,7 +118,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
             Url = url;
             QueryString = queryString;
-            _groups = new HashSet<string>();
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
@@ -144,22 +141,6 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
 
         /// <summary>
-        /// Gets a mutable collection of groups for the connection.
-        /// </summary>
-        ICollection<string> IConnection.Groups
-        {
-            get { return _groups; }
-        }
-
-        /// <summary>
-        /// Gets the groups for the connection.
-        /// </summary>
-        public IEnumerable<string> Groups
-        {
-            get { return _groups; }
-        }
-
-        /// <summary>
         /// Gets the url for the connection.
         /// </summary>
         public string Url { get; private set; }
@@ -173,6 +154,16 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Gets or sets the connection id for the connection.
         /// </summary>
         public string ConnectionId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the connection token for the connection.
+        /// </summary>
+        public string ConnectionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the groups token for the connection.
+        /// </summary>
+        public string GroupsToken { get; set; }
 
         /// <summary>
         /// Gets a dictionary for storing state for a the connection.
@@ -271,6 +262,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
                 ConnectionId = negotiationResponse.ConnectionId;
+                ConnectionToken = negotiationResponse.ConnectionToken;
+
                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
 
                 var data = OnSending();
@@ -312,7 +305,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private Task StartTransport(string data)
         {
             return _transport.Start(this, data, _disconnectCts.Token)
-                             .Then(() =>
+                             .RunSynchronously(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
                              });
@@ -344,7 +337,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Version version;
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                !(version.Major == 1 && version.Minor == 1))
+                !(version.Major == 1 && version.Minor == 2))
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_IncompatibleProtocolVersion));
             }

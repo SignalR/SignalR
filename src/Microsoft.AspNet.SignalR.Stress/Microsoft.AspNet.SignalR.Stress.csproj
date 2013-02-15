@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="ConnectionRun.cs" />
     <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="EmptyProtectedData.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\HubWithGroups.cs" />
     <Compile Include="Infrastructure\Utility.cs" />

@@ -16,48 +16,39 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
-            string heartbeatIntervalRaw = ConfigurationManager.AppSettings["heartbeatInterval"];
-            string enableRejoiningGroupsRaw = ConfigurationManager.AppSettings["enableRejoiningGroups"];
-
-            int keepAlive;
-            if (Int32.TryParse(keepAliveRaw, out keepAlive))
-            {
-                GlobalHost.Configuration.KeepAlive = keepAlive;
-            }
-            else
-            {
-                GlobalHost.Configuration.KeepAlive = 0;
-            }
 
             int connectionTimeout;
             if (Int32.TryParse(connectionTimeoutRaw, out connectionTimeout))
             {
                 GlobalHost.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout);
             }
-            
+
             int disconnectTimeout;
             if (Int32.TryParse(disconnectTimeoutRaw, out disconnectTimeout))
             {
                 GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout);
             }
 
-            int heartbeatInterval;
-            if (Int32.TryParse(heartbeatIntervalRaw, out heartbeatInterval))
+            int keepAlive;
+            if (String.IsNullOrEmpty(keepAliveRaw))
             {
-                GlobalHost.Configuration.HeartbeatInterval = TimeSpan.FromSeconds(heartbeatInterval);
+                GlobalHost.Configuration.KeepAlive = null;
+            }
+            // Set only if the keep-alive was changed from the default value.
+            else if (Int32.TryParse(keepAliveRaw, out keepAlive) && keepAlive != -1)
+            {
+                GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
             }
 
-            bool enableRejoiningGroups;
-            if (Boolean.TryParse(enableRejoiningGroupsRaw, out enableRejoiningGroups) &&
-                enableRejoiningGroups)
+            var config = new HubConfiguration
             {
-                GlobalHost.HubPipeline.EnableAutoRejoiningGroups();
-            }
+                EnableCrossDomain = true,
+                EnableDetailedErrors = true
+            };
 
+            RouteTable.Routes.MapHubs("signalr.hubs2", "signalr2/test", new HubConfiguration());
+            RouteTable.Routes.MapHubs(config);
 
-            RouteTable.Routes.MapHubs();
-
-            RouteTable.Routes.MapHubs("signalr.hubs2", "/signalr2/test", new HubConfiguration());
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend");
@@ -68,6 +59,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<ConnectionThatUsesItems>("items", "items");
             RouteTable.Routes.MapConnection<SyncErrorConnection>("sync-error", "sync-error");
             RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
+            RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
 
             // End point to hit to verify the webserver is up
             RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));

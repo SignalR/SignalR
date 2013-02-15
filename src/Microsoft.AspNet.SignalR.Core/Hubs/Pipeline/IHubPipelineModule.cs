@@ -83,6 +83,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="rejoiningGroups">A function that determines which groups the client should be allowed to rejoin.</param>
         /// <returns>A wrapped function that determines which groups the client should be allowed to rejoin.</returns>
-        Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IEnumerable<string>, IEnumerable<string>> rejoiningGroups);
+        Func<HubDescriptor, IRequest, IList<string>, IList<string>> BuildRejoiningGroups(Func<HubDescriptor, IRequest, IList<string>, IList<string>> rejoiningGroups);
     }
 }
