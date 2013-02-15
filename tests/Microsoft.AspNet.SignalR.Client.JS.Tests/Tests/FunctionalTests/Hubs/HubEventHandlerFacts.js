@@ -189,9 +189,10 @@ testUtilities.runWithAllTransports(function (transport) {
                 complete = false,
                 messageCount = 0,
                 echoHandler = function (value, from) {
+                    messageCount++;
                     assert.equal(value, echo, "Successfuly received message " + echo + " via " + from);
 
-                    if (messageCount++ >= 2) {
+                    if (messageCount > 2) {
                         assert.ok(false, "Event called more times than expected");
                     }
 
@@ -226,12 +227,9 @@ testUtilities.runWithAllTransports(function (transport) {
 
         run("hello", connection).done(function () {
             connection.stop();
-            setTimeout(function () {
-
-                run("hello2", connection).done(function () {
-                    setTimeout(end, 500);
-                });
-            }, 1000);
+            run("hello2", connection).done(function () {
+                end();
+            });
         });
 
         // Cleanup

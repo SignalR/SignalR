@@ -63,6 +63,9 @@ testUtilities.runWithAllTransports(function (transport) {
                 assert.ok(value === "hello", "Successful received message from group after reconnected");
                 end();
             }
+            else if (value === "TryToReconnect") {
+                tryReconnect();
+            }
         };
 
         connection.reconnected(function () {
@@ -81,11 +84,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 assert.ok(true, "Successful call to join group");
 
                 // We must get a value back from the server in order to instantiate our message ID so longPolling is able to reconnect.
-                groupChat.server.send("group++1", "foo").done(function () {
-                    setTimeout(function () {
-                        tryReconnect();
-                    }, 200);
-                });
+                groupChat.server.send("group++1", "TryToReconnect");
             });
 
         }).fail(function (reason) {
