@@ -50,13 +50,15 @@ testUtilities.runWithAllTransports(function (transport) {
             oldConnectionToken = connection.token;
 
             connection.stop();
+
+            // Because of #1529
             setTimeout(function () {
                 run("hello2", connection).done(function () {
-                    assert.ok(!(oldConnectionID === connection.id), "Connection.id has new value after stop and start");
-                    assert.ok(!(oldConnectionToken === connection.token), "Connection.token has new value after stop and start");
-                    setTimeout(end, 500);
+                    assert.notEqual(oldConnectionID, connection.id, "Connection.id has new value after stop and start");
+                    assert.notEqual(oldConnectionToken, connection.token, "Connection.token has new value after stop and start");
+                    end();
                 });
-            })
+            }, 0);
         });
 
         // Cleanup
