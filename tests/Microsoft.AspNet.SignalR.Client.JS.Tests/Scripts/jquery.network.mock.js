@@ -130,7 +130,7 @@
             // Used to not trigger any methods from a resultant web socket completion event.
             sleeping = true;
             data.close();
-            sleeping = false
+            sleeping = false;
 
             data.onclose({});
         };
@@ -141,6 +141,7 @@
                 that = this,
                 id = webSocketIds++;
 
+            // These are usually set after creating a WebSocket
             that.onmessage;
             that.onclose;
             that.onopen;
@@ -154,6 +155,7 @@
                     return ws.send.apply(ws, arguments)
                 }
                 else {
+                    // If we're trying ot send while the network is down then we need to fail.
                     // Act async for failure of request
                     setTimeout(function () {
                         fail(webSocketData[id]);
@@ -164,7 +166,7 @@
 
             webSocketData[id] = that;
 
-            // Letting current setting context finish before building the websocket.
+            // Letting current running context finish before building the websocket.
             // This way we can patch every function that was set.
             setTimeout(function () {
                 ws = new savedWebSocket(url, webSocketInit);
@@ -359,7 +361,7 @@
                     // Used to not trigger any methods from a resultant event source completion event.
                     sleeping = true;
                     data.close();
-                    sleeping = false
+                    sleeping = false;
                 }
             }
             else {
