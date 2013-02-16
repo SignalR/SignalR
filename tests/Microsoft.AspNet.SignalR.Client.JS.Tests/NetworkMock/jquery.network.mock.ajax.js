@@ -1,32 +1,27 @@
 ﻿// Ajax network mock
 (function ($, window) {
     var savedAjax = $.ajax,
+        network = $.network,
 		ajaxData = {},
 		ajaxIds = 0,
         sleeping = false,
-        // Used to not trigger any methods from a resultant ajax completion event.
-        silentCall = function (fn) {
+        fail = function (data, soft) {
+            // We must close the request prior to calling error so that we can pass our own
+            // reason for failing the request.
             sleeping = true;
-            fn();
+            data.Request.abort();
             sleeping = false;
-        },
-		disconnect = function (soft) {
-		    for (var key in ajaxData) {
-		        var data = ajaxData[key];
 
-		        silentCall(function () { data.Request.abort(); });
-
-		        if (!soft) {
-		            data.Settings.error(ajaxData[key], "error");
-		        }
-		    }
-		};
+            if (!soft) {
+                data.Settings.error(data, "error");
+            }
+        };
 
     $.ajax = function (url, settings) {
         var request,
 			savedSuccess,
 			savedError,
-			id = ajaxIds;
+			id = ajaxIds++;
 
         if (!settings) {
             settings = url;
@@ -58,17 +53,35 @@
         }
 
         request = savedAjax.apply(this, [url, settings]);
-        ajaxData[ajaxIds++] = {
+        ajaxData[id] = {
             Request: request,
             Settings: settings
         };
+
+        // If we're trying to make an ajax request while the network is down
+        if (sleeping) {
+            // Act async for failure of request
+            setTimeout(function () {
+                fail(ajaxData[id], false);
+            }, 0);
+        }
 
         return request;
     };
 
     network.ajax = {
         disconnect: function (soft) {
-            disconnect(soft);
+            /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
+            /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
+            for (var key in ajaxData) {
+                var data = ajaxData[key];
+
+                fail(data, soft);
+            }
+        },
+        connect: function () {
+            /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
+            sleeping = false;
         }
     };
 })($, window);
