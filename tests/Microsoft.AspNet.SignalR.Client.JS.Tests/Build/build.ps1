@@ -9,14 +9,14 @@ $files =
     "jquery.network.mock.core.js",
     "jquery.network.mock.ajax.js",
     "jquery.network.mock.websocket.js",
-    "jquery.network.mock.eventsource.js",
-    "jquery.network.mock.iframe.js"
+	"jquery.network.mock.mask.js",
+    "jquery.network.mock.eventsource.js"    
 
-if (!(Test-Path -path "bin")) {
-	New-Item "bin" -Type Directory | Out-Null
+if (!(Test-Path -path "../bin")) {
+	New-Item "../bin" -Type Directory | Out-Null
 }
 
-Write-Host "Building bin\jquery.network.mock.js... " -NoNewline -ForegroundColor Yellow
+Write-Host "Building bin/jquery.network.mock.js... " -NoNewline -ForegroundColor Yellow
 
 $destinationFile = "../bin/jquery.network.mock.js"
 Remove-Item $destinationFile -Force -ErrorAction SilentlyContinue
