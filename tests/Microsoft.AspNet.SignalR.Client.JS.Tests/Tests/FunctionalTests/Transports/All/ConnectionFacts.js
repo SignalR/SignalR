@@ -60,4 +60,30 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in onReceived.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createConnection("multisend", testName),
+            onerror = window.onerror;
+
+        window.onerror = function (errorMessage) {
+            assert.ok(errorMessage.match(/onReceived error/));
+            end();
+            return true;
+        }
+
+        connection.received(function (data) {
+            throw new Error("onReceived error");
+        });
+
+        connection.start({ transport: transport }).fail(function (reason) {
+            assert.ok(false, "Failed to initiate SignalR connection");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            window.onerror = onerror;
+            connection.stop();
+        };
+    });
 });
