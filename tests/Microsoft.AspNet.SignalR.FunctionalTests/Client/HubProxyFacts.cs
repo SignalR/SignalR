@@ -89,6 +89,42 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ConnectionErrorCapturesExceptionsThrownInClientHubMethod(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                var wh = new ManualResetEventSlim();
+                Exception thrown = new Exception(),
+                          caught = null;
+
+                host.Initialize();
+
+                var connection = CreateHubConnection(host);
+                var proxy = connection.CreateHubProxy("ChatHub");
+
+                proxy.On("addMessage", () =>
+                {
+                    throw thrown;
+                });
+
+                connection.Error += e =>
+                {
+                    caught = e;
+                    wh.Set();
+                };
+
+                connection.Start(host.Transport).Wait();
+                proxy.Invoke("Send", "");
+
+                Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                Assert.Equal(thrown, caught);
+            }
+        }
+
         public class MyHub2 : Hub
         {
             public MyHub2(int n)
