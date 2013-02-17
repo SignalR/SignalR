@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
@@ -95,6 +96,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             public override void Flush()
             {
                 _flush();
+            }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                Flush();
+                return TaskAsyncHelper.Empty;
             }
 
             public override long Length
