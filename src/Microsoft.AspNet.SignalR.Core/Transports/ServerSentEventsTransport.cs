@@ -37,10 +37,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return base.InitializeResponse(connection)
-                       .Then(s => InitializeResponse(s), this);
+                       .Then(s => Initialize(s), this);
         }
 
-        private static Task InitializeResponse(object state)
+        private static Task Initialize(object state)
         {
             var transport = (ServerSentEventsTransport)state;
 

@@ -30,16 +30,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private HTMLTextWriter _htmlOutputWriter;
 
-        private readonly Func<object, Task> _send;
-        private readonly Func<object, Task> _writeInit;
-        private readonly Func<string, Task> _initializeResponse;
-
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
-            _send = PerformSend;
-            _writeInit = WriteInit;
-            _initializeResponse = InitializeResponse;
         }
 
         /// <summary>
@@ -82,7 +75,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             OnSendingResponse(response);
 
-            return EnqueueOperation(_send, response);
+            var context = new ForeverFrameTransportContext(this, response);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return EnqueueOperation(s => PerformSend(s), context);
         }
 
         protected internal override Task InitializeResponse(ITransportConnection connection)
@@ -99,32 +95,44 @@ namespace Microsoft.AspNet.SignalR.Transports
                                 frameId.ToString(CultureInfo.InvariantCulture) +
                                 _initSuffix;
 
-            return base.InitializeResponse(connection).Then(_initializeResponse, initScript);
+            var context = new ForeverFrameTransportContext(this, initScript);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return base.InitializeResponse(connection).Then(s => Initialize(s), context);
         }
 
-        private Task InitializeResponse(string initScript)
+        private static Task Initialize(object state)
         {
-            return EnqueueOperation(_writeInit, initScript);
+            var context = (ForeverFrameTransportContext)state;
+
+            var initContext = new ForeverFrameTransportContext(context.Transport, context.State);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return context.Transport.EnqueueOperation(s => WriteInit(s), initContext);
         }
 
-        private Task WriteInit(object state)
+        private static Task WriteInit(object state)
         {
-            Context.Response.ContentType = "text/html; charset=UTF-8";
+            var context = (ForeverFrameTransportContext)state;
 
-            HTMLOutputWriter.WriteRaw((string)state);
-            HTMLOutputWriter.Flush();
+            context.Transport.Context.Response.ContentType = "text/html; charset=UTF-8";
 
-            return Context.Response.Flush();
+            context.Transport.HTMLOutputWriter.WriteRaw((string)context.State);
+            context.Transport.HTMLOutputWriter.Flush();
+
+            return context.Transport.Context.Response.Flush();
         }
 
-        private Task PerformSend(object state)
+        private static Task PerformSend(object state)
         {
-            HTMLOutputWriter.WriteRaw("<script>r(c, ");
-            JsonSerializer.Serialize(state, HTMLOutputWriter);
-            HTMLOutputWriter.WriteRaw(");</script>\r\n");
-            HTMLOutputWriter.Flush();
+            var context = (ForeverFrameTransportContext)state;
 
-            return Context.Response.Flush();
+            context.Transport.HTMLOutputWriter.WriteRaw("<script>r(c, ");
+            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.HTMLOutputWriter);
+            context.Transport.HTMLOutputWriter.WriteRaw(");</script>\r\n");
+            context.Transport.HTMLOutputWriter.Flush();
+
+            return context.Transport.Context.Response.Flush();
         }
 
         private static Task PerformKeepAlive(object state)
@@ -137,6 +145,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             transport.HTMLOutputWriter.Flush();
 
             return transport.Context.Response.Flush();
+        }
+
+        private class ForeverFrameTransportContext
+        {
+            public ForeverFrameTransport Transport;
+            public object State;
+
+            public ForeverFrameTransportContext(ForeverFrameTransport transport, object state)
+            {
+                Transport = transport;
+                State = state;
+            }
         }
 
         private class HTMLTextWriter : StreamWriter
