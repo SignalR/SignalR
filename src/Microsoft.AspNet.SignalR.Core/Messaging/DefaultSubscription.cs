@@ -21,11 +21,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                    IEnumerable<string> eventKeys,
                                    TopicLookup topics,
                                    string cursor,
-                                   Func<MessageResult, Task<bool>> callback,
+                                   Func<MessageResult, object, Task<bool>> callback,
                                    int maxMessages,
                                    IStringMinifier stringMinifier,
-                                   IPerformanceCounterManager counters) :
-            base(identity, eventKeys, callback, maxMessages, counters)
+                                   IPerformanceCounterManager counters,
+                                   object state) :
+            base(identity, eventKeys, callback, maxMessages, counters, state)
         {
             _stringMinifier = stringMinifier;
 

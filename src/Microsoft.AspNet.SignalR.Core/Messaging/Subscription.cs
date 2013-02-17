@@ -12,7 +12,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public abstract class Subscription : ISubscription, IDisposable
     {
-        private readonly Func<MessageResult, Task<bool>> _callback;
+        private readonly Func<MessageResult, object, Task<bool>> _callback;
+        private readonly object _callbackState;
         private readonly IPerformanceCounterManager _counters;
 
         private int _state;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public IDisposable Disposable { get; set; }
 
-        protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
+        protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters, object state)
         {
             if (String.IsNullOrEmpty(identity))
             {
@@ -66,6 +67,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             EventKeys = new HashSet<string>(eventKeys);
             MaxMessages = maxMessages;
             _counters = counters;
+            _callbackState = state;
 
             _counters.MessageBusSubscribersTotal.Increment();
             _counters.MessageBusSubscribersCurrent.Increment();
@@ -95,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             beforeInvoke(state);
 
-            return _callback.Invoke(result).ContinueWith(task =>
+            return _callback.Invoke(result, _callbackState).ContinueWith(task =>
             {
                 // Go from invoking callback to idle
                 Interlocked.CompareExchange(ref _subscriptionState,

@@ -120,13 +120,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _subscription = _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages);
+            _subscription = _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages, state: null);
         }
 
-        private Task<bool> HandleServerCommands(MessageResult result)
+        private Task<bool> HandleServerCommands(MessageResult result, object state)
         {
             result.Messages.Enumerate<object>(m => ServerSignal.Equals(m.Key),
-                                              (state, m) =>
+                                              (s, m) =>
                                               {
                                                   var command = _serializer.Parse<ServerCommand>(m.Value);
                                                   OnCommand(command);

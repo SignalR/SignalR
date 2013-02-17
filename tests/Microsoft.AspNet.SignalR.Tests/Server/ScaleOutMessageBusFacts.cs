@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     bus.SendMany(firstMessages);
 
-                    subscription = bus.Subscribe(subscriber, null, result =>
+                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
                         if (!result.Terminal)
                         {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.False;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.SendMany(new[] { new Message("test1", "key", "x"), 
                                      new Message("test1", "key", "y") });
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", result =>
+                    subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.SendMany(new[] { new Message("test", "key", "5") });
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, null, result =>
+                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
                         if (!result.Terminal)
                         {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.SendMany(new[] { new Message("test", "key", "connected") });
 

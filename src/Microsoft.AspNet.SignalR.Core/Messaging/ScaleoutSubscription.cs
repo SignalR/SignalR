@@ -19,10 +19,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     IEnumerable<string> eventKeys,
                                     string cursor,
                                     ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> streamMappings,
-                                    Func<MessageResult, Task<bool>> callback,
+                                    Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
-                                    IPerformanceCounterManager counters)
-            : base(identity, eventKeys, callback, maxMessages, counters)
+                                    IPerformanceCounterManager counters,
+                                    object state)
+            : base(identity, eventKeys, callback, maxMessages, counters, state)
         {
             if (streamMappings == null)
             {

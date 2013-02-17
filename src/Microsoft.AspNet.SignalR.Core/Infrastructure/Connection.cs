@@ -151,12 +151,20 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state)
         {
-            return _bus.Subscribe(this, messageId, result =>
-            {
-                PersistentResponse response = GetResponse(result);
-                return callback(response, state);
-            },
-            maxMessages);
+            var receiveContext = new ReceiveContext(this, callback, state);
+
+            return _bus.Subscribe(this,
+                                  messageId,
+                                  (result, s) => MessageBusCallback(result, s),
+                                  maxMessages,
+                                  receiveContext);
+        }
+
+        private static Task<bool> MessageBusCallback(MessageResult result, object state)
+        {
+            var context = (ReceiveContext)state;
+
+            return context.InvokeCallback(result);
         }
 
         private PersistentResponse GetResponse(MessageResult result)
@@ -289,6 +297,26 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     // The groups token
                     response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);
                 }
+            }
+        }
+
+        private class ReceiveContext
+        {
+            private readonly Connection _connection;
+            private readonly Func<PersistentResponse, object, Task<bool>> _callback;
+            private readonly object _callbackState;
+
+            public ReceiveContext(Connection connection, Func<PersistentResponse, object, Task<bool>> callback, object callbackState)
+            {
+                _connection = connection;
+                _callback = callback;
+                _callbackState = callbackState;
+            }
+
+            public Task<bool> InvokeCallback(MessageResult result)
+            {
+                var response = _connection.GetResponse(result);
+                return _callback(response, _callbackState);
             }
         }
     }

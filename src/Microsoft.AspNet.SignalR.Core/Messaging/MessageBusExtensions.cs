@@ -59,13 +59,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             registration = cancel.SafeRegister(state =>
             {
-               ((Disposer)state).Dispose();
+                ((Disposer)state).Dispose();
             },
             disposer);
 
             try
             {
-                subscription = bus.Subscribe(subscriber, cursor, messageResult =>
+                subscription = bus.Subscribe(subscriber, cursor, (messageResult, state) =>
                 {
                     // Mark the flag as set so we only set the result once
                     if (Interlocked.Exchange(ref resultSet, 1) == 0)
@@ -86,7 +86,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     return TaskAsyncHelper.False;
                 },
-                maxMessages);
+                maxMessages,
+                null);
             }
             catch (Exception ex)
             {

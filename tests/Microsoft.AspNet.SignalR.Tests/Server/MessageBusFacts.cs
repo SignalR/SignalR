@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 {
                     bus.Publish("test", "key", "1").Wait();
 
-                    subscription = bus.Subscribe(subscriber, null, result =>
+                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
                         if (!result.Terminal)
                         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.False;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.Publish("test", "key", "value").Wait();
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, null, result => TaskAsyncHelper.True, 10);
+                    subscription = bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null);
 
                     Assert.Equal(1, bus.Topics.Count);
                     Topic topic;
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 var subscriber = new TestSubscriber(new[] { "key" });
 
                 // Make sure the topic is in the no subs state
-                bus.Subscribe(subscriber, null, _ => TaskAsyncHelper.True, 10)
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                    .Dispose();
 
                 Topic topic = bus.GetTopic("key");
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 var subscriber = new TestSubscriber(new[] { "key" });
                 int retries = 0;
                 // Make sure the topic is in the no subs state
-                bus.Subscribe(subscriber, null, _ => TaskAsyncHelper.True, 10)
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                    .Dispose();
 
                 bus.BeforeTopicMarked = (key, t) =>
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 IDisposable subscription = null;
 
                 // Pretend like we had an initial subscription
-                bus.Subscribe(subscriber, null, _ => TaskAsyncHelper.True, 10)
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                    .Dispose();
 
                 bus.Publish("test", "key", "1").Wait();
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "key,00000001", result =>
+                    subscription = bus.Subscribe(subscriber, "key,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.Publish("test", "key", "5");
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 IDisposable subscription = null;
 
                 // Pretend like we had an initial subscription
-                bus.Subscribe(subscriber, null, result => TaskAsyncHelper.True, 10)
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                     .Dispose();
 
                 // This simulates a reconnect
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "key,00000001|key2,00000000", result =>
+                    subscription = bus.Subscribe(subscriber, "key,00000001|key2,00000000", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.Publish("test", "key", "5");
                     bus.Publish("test", "key2", "10");
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "key,00000001", result =>
+                    subscription = bus.Subscribe(subscriber, "key,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -326,7 +326,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.Publish("test", "key", "value");
 
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, null, result =>
+                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                         }
 
                         return TaskAsyncHelper.True;
-                    }, 10);
+                    }, 10, null);
 
                     for (int i = 0; i < max; i++)
                     {
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             try
             {
-                subscription = bus.Subscribe(subscriber, null, result =>
+                subscription = bus.Subscribe(subscriber, null, (result, state) =>
                 {
                     if (!result.Terminal)
                     {
@@ -414,7 +414,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     return TaskAsyncHelper.False;
 
-                }, 10);
+                }, 10, null);
 
                 bus.Publish("test", "key", "value").Wait();
 

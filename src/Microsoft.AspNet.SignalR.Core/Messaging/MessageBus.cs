@@ -205,9 +205,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <param name="maxMessages"></param>
+        /// <param name="state"></param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable object is returned to the caller")]
-        public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages)
+        public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int maxMessages, object state)
         {
             if (subscriber == null)
             {
@@ -219,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("callback");
             }
 
-            Subscription subscription = CreateSubscription(subscriber, cursor, callback, maxMessages);
+            Subscription subscription = CreateSubscription(subscriber, cursor, callback, maxMessages, state);
 
             // Set the subscription for this subscriber
             subscriber.Subscription = subscription;
@@ -262,9 +263,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
+        protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
-            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters);
+            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters, state);
         }
 
         protected void ScheduleEvent(string eventKey)
