@@ -102,17 +102,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
-            Func<PersistentResponse, Task<bool>> callback = null;
+            Func<PersistentResponse, object, Task<bool>> callback = null;
+            object state = null;
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
-                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
-                                                     It.IsAny<int>())).Callback<string, Func<PersistentResponse, Task<bool>>, int>((id, cb, max) =>
+                                                     It.IsAny<Func<PersistentResponse, object, Task<bool>>>(),
+                                                     It.IsAny<int>(),
+                                                     It.IsAny<object>())).Callback<string, Func<PersistentResponse, object, Task<bool>>, int, object>((id, cb, max, st) =>
                                                      {
                                                          callback = cb;
+                                                         state = st;
                                                      })
                                                      .Returns(new DisposableAction(() =>
                                                      {
-                                                         callback(new PersistentResponse());
+                                                         callback(new PersistentResponse(), state);
                                                      }));
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
@@ -155,8 +158,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
-                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
-                                                     It.IsAny<int>())).Throws(new InvalidOperationException());
+                                                     It.IsAny<Func<PersistentResponse, object, Task<bool>>>(),
+                                                     It.IsAny<int>(),
+                                                     It.IsAny<object>())).Throws(new InvalidOperationException());
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
@@ -213,10 +217,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
-                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
-                                                     It.IsAny<int>())).Callback<string, Func<PersistentResponse, Task<bool>>, int>((id, cb, max) =>
+                                                     It.IsAny<Func<PersistentResponse, object, Task<bool>>>(),
+                                                     It.IsAny<int>(),
+                                                     It.IsAny<object>())).Callback<string, Func<PersistentResponse, object, Task<bool>>, int, object>((id, cb, max, state) =>
                                                      {
-                                                         cb(new PersistentResponse() { Disconnect = true });
+                                                         cb(new PersistentResponse() { Disconnect = true }, state);
                                                      })
                                                      .Returns(DisposableAction.Empty);
 
@@ -258,8 +263,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
-                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
-                                                     It.IsAny<int>())).Returns(DisposableAction.Empty);
+                                                     It.IsAny<Func<PersistentResponse, object, Task<bool>>>(),
+                                                     It.IsAny<int>(),
+                                                     It.IsAny<object>())).Returns(DisposableAction.Empty);
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
@@ -316,17 +322,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
-            Func<PersistentResponse, Task<bool>> callback = null;
+            Func<PersistentResponse, object, Task<bool>> callback = null;
+            object state = null;
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
-                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
-                                                     It.IsAny<int>())).Callback<string, Func<PersistentResponse, Task<bool>>, int>((id, cb, max) =>
+                                                     It.IsAny<Func<PersistentResponse, object, Task<bool>>>(),
+                                                     It.IsAny<int>(),
+                                                     It.IsAny<object>())).Callback<string, Func<PersistentResponse, object, Task<bool>>, int, object>((id, cb, max, st) =>
                                                      {
                                                          callback = cb;
+                                                         state = st;
                                                      })
                                                      .Returns(new DisposableAction(() =>
                                                      {
-                                                         callback(new PersistentResponse());
+                                                         callback(new PersistentResponse(), state);
                                                      }));
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)

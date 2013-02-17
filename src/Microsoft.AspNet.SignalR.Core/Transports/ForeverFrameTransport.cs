@@ -30,9 +30,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private HTMLTextWriter _htmlOutputWriter;
 
+        private readonly Func<object, Task> _send;
+        private readonly Func<object, Task> _writeInit;
+        private readonly Func<string, Task> _initializeResponse;
+
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
+            _send = PerformSend;
+            _writeInit = WriteInit;
+            _initializeResponse = InitializeResponse;
         }
 
         /// <summary>
@@ -67,30 +74,15 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            return EnqueueOperation(() =>
-            {
-                HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
-                HTMLOutputWriter.WriteLine();
-                HTMLOutputWriter.WriteLine();
-                HTMLOutputWriter.Flush();
-
-                return Context.Response.Flush();
-            });
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return EnqueueOperation(state => PerformKeepAlive(state), this);
         }
 
         public override Task Send(PersistentResponse response)
         {
             OnSendingResponse(response);
 
-            return EnqueueOperation(() =>
-            {
-                HTMLOutputWriter.WriteRaw("<script>r(c, ");
-                JsonSerializer.Serialize(response, HTMLOutputWriter);
-                HTMLOutputWriter.WriteRaw(");</script>\r\n");
-                HTMLOutputWriter.Flush();
-
-                return Context.Response.Flush();
-            });
+            return EnqueueOperation(_send, response);
         }
 
         protected internal override Task InitializeResponse(ITransportConnection connection)
@@ -103,20 +95,48 @@ namespace Microsoft.AspNet.SignalR.Transports
                 throw new InvalidOperationException(Resources.Error_InvalidForeverFrameId);
             }
 
-            return base.InitializeResponse(connection)
-                .Then(initScript =>
-                {
-                    return EnqueueOperation(() =>
-                    {
-                        Context.Response.ContentType = "text/html; charset=UTF-8";
+            string initScript = _initPrefix +
+                                frameId.ToString(CultureInfo.InvariantCulture) +
+                                _initSuffix;
 
-                        HTMLOutputWriter.WriteRaw(initScript);
-                        HTMLOutputWriter.Flush();
+            return base.InitializeResponse(connection).Then(_initializeResponse, initScript);
+        }
 
-                        return Context.Response.Flush();
-                    });
-                },
-                _initPrefix + frameId.ToString(CultureInfo.InvariantCulture) + _initSuffix);
+        private Task InitializeResponse(string initScript)
+        {
+            return EnqueueOperation(_writeInit, initScript);
+        }
+
+        private Task WriteInit(object state)
+        {
+            Context.Response.ContentType = "text/html; charset=UTF-8";
+
+            HTMLOutputWriter.WriteRaw((string)state);
+            HTMLOutputWriter.Flush();
+
+            return Context.Response.Flush();
+        }
+
+        private Task PerformSend(object state)
+        {
+            HTMLOutputWriter.WriteRaw("<script>r(c, ");
+            JsonSerializer.Serialize(state, HTMLOutputWriter);
+            HTMLOutputWriter.WriteRaw(");</script>\r\n");
+            HTMLOutputWriter.Flush();
+
+            return Context.Response.Flush();
+        }
+
+        private static Task PerformKeepAlive(object state)
+        {
+            var transport = (ForeverFrameTransport)state;
+
+            transport.HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
+            transport.HTMLOutputWriter.WriteLine();
+            transport.HTMLOutputWriter.WriteLine();
+            transport.HTMLOutputWriter.Flush();
+
+            return transport.Context.Response.Flush();
         }
 
         private class HTMLTextWriter : StreamWriter

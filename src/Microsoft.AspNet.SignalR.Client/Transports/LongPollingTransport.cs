@@ -204,12 +204,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
             });
 
-            var requestCancellationRegistration = disconnectToken.SafeRegister(req =>
+            var requestCancellationRegistration = disconnectToken.SafeRegister(state =>
             {
-                if (req != null)
+                if (state != null)
                 {
                     // This will no-op if the request is already finished.
-                    req.Abort();
+                   ((IRequest)state).Abort();
                 }
 
                 // Prevent the connection state from switching to the reconnected state.

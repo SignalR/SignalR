@@ -34,6 +34,24 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
+        public Task Enqueue(Func<object, Task> taskFunc, object state)
+        {
+            // Lock the object for as short amount of time as possible
+            lock (_lockObj)
+            {
+                if (_drained)
+                {
+                    return _lastQueuedTask;
+                }
+
+                Task newTask = _lastQueuedTask.Then((next, nextState) => next(nextState), taskFunc, state);
+                _lastQueuedTask = newTask;
+                return newTask;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
         public Task Enqueue(Func<Task> taskFunc)
         {
             // Lock the object for as short amount of time as possible

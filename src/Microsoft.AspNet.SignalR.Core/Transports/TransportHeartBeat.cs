@@ -89,26 +89,21 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             var newMetadata = new ConnectionMetadata(connection);
-            ConnectionMetadata oldMetadata = null;
             bool isNewConnection = true;
 
             _connections.AddOrUpdate(connection.ConnectionId, newMetadata, (key, old) =>
             {
-                oldMetadata = old;
+                Trace.TraceInformation("Connection {0} exists. Closing previous connection.", old.Connection.ConnectionId);
+                // Kick out the older connection. This should only happen when 
+                // a previous connection attempt fails on the client side (e.g. transport fallback).
+                EndConnection(old);
+                // If we have old metadata this isn't a new connection
+                isNewConnection = false;
+
                 return newMetadata;
             });
 
-            if (oldMetadata != null)
-            {
-                Trace.TraceInformation("Connection {0} exists. Closing previous connection.", oldMetadata.Connection.ConnectionId);
-
-                // Kick out the older connection. This should only happen when 
-                // a previous connection attempt fails on the client side (e.g. transport fallback).
-                EndConnection(oldMetadata);
-                // If we have old metadata this isn't a new connection
-                isNewConnection = false;
-            }
-            else
+            if (isNewConnection)
             {
                 Trace.TraceInformation("Connection {0} is New.", connection.ConnectionId);
             }
@@ -121,8 +116,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
 
+            var context = new TransportHeartBeatContext(this, newMetadata);
+
             // Register for disconnect cancellation
-            newMetadata.Registration = connection.CancellationToken.SafeRegister(OnConnectionEnded, newMetadata);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            newMetadata.Registration = connection.CancellationToken.SafeRegister(state => OnConnectionEnded(state), context);
 
             return isNewConnection;
         }
@@ -228,9 +227,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private void OnConnectionEnded(ConnectionMetadata metadata)
+        private static void OnConnectionEnded(object state)
         {
-            Trace.TraceInformation("OnConnectionEnded({0})", metadata.Connection.ConnectionId);
+            var context = (TransportHeartBeatContext)state;
+            var metadata = (ConnectionMetadata)context.State;
+
+            context.Heartbeat.Trace.TraceInformation("OnConnectionEnded({0})", metadata.Connection.ConnectionId);
 
             // Release the request
             metadata.Connection.ReleaseRequest();
@@ -259,11 +261,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     Trace.TraceEvent(TraceEventType.Verbose, 0, "KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
-                    metadata.Connection.KeepAlive()
-                                       .Catch(ex =>
-                                       {
-                                           Trace.TraceEvent(TraceEventType.Error, 0, "Failed to send keep alive: " + ex.GetBaseException());
-                                       });
+                    // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                    metadata.Connection.KeepAlive().Catch((ex, state) => OnKeepAliveError(ex, state), Trace);
                 }
 
                 MarkConnection(metadata.Connection);
@@ -377,6 +376,23 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 metadata.Registration.Dispose();
             }
+        }
+
+        private static void OnKeepAliveError(AggregateException ex, object state)
+        {
+            ((TraceSource)state).TraceEvent(TraceEventType.Error, 0, "Failed to send keep alive: " + ex.GetBaseException());
+        }
+
+        private class TransportHeartBeatContext
+        {
+            public TransportHeartBeatContext(TransportHeartbeat transportHeartbeat, ConnectionMetadata newMetadata)
+            {
+                Heartbeat = transportHeartbeat;
+                State = newMetadata;
+            }
+
+            public TransportHeartbeat Heartbeat { get; set; }
+            public object State { get; private set; }
         }
 
         private class ConnectionMetadata

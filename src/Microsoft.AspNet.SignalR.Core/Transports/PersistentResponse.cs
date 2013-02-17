@@ -120,7 +120,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             jsonWriter.WriteStartArray();
 
             Messages.Enumerate(m => !m.IsCommand && !ExcludeFilter(m),
-                               m => jsonWriter.WriteRawValue(m.Value));
+                               (w, m) => w.WriteRawValue(m.Value),
+                               jsonWriter);
 
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();

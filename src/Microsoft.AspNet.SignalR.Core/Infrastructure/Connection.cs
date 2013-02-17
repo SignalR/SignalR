@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private bool _disconnected;
         private bool _aborted;
-        private readonly Lazy<TraceSource> _traceSource;
+        private readonly TraceSource _traceSource;
         private readonly IAckHandler _ackHandler;
         private readonly IProtectedData _protectedData;
 
@@ -40,13 +41,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                           IPerformanceCounterManager performanceCounterManager,
                           IProtectedData protectedData)
         {
+            if (traceManager == null)
+            {
+                throw new ArgumentNullException("traceManager");
+            }
+
             _bus = newMessageBus;
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
             _signals = new HashSet<string>(signals, StringComparer.OrdinalIgnoreCase);
             _groups = new DiffSet<string>(groups);
-            _traceSource = new Lazy<TraceSource>(() => traceManager["SignalR.Connection"]);
+            _traceSource = traceManager["SignalR.Connection"];
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
             _protectedData = protectedData;
@@ -68,9 +74,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        public event Action<string> EventKeyAdded;
+        public event Action<ISubscriber, string> EventKeyAdded;
 
-        public event Action<string> EventKeyRemoved;
+        public event Action<ISubscriber, string> EventKeyRemoved;
 
         public Func<string> GetCursor { get; set; }
 
@@ -90,13 +96,19 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Used for debugging purposes.")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Used for debugging purposes.")]
         private TraceSource Trace
         {
             get
             {
-                return _traceSource.Value;
+                return _traceSource;
             }
+        }
+
+        public Subscription Subscription
+        {
+            get;
+            set;
         }
 
         public Task Send(ConnectionMessage message)
@@ -137,12 +149,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return _bus.Receive<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
         }
 
-        public IDisposable Receive(string messageId, Func<PersistentResponse, Task<bool>> callback, int maxMessages)
+        public IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state)
         {
             return _bus.Subscribe(this, messageId, result =>
             {
                 PersistentResponse response = GetResponse(result);
-                return callback(response);
+                return callback(response, state);
             },
             maxMessages);
         }
@@ -190,30 +202,30 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void ProcessResults(MessageResult result)
         {
-            result.Messages.Enumerate(message => message.IsAck || message.IsCommand,
-                                      message =>
-                                      {
-                                          if (message.IsAck)
-                                          {
-                                              _ackHandler.TriggerAck(message.CommandId);
-                                          }
-                                          else if (message.IsCommand)
-                                          {
-                                              var command = _serializer.Parse<Command>(message.Value);
-                                              ProcessCommand(command);
-
-                                              // Only send the ack if this command is waiting for it
-                                              if (message.WaitForAck)
+            result.Messages.Enumerate<object>(message => message.IsAck || message.IsCommand,
+                                              (state, message) =>
                                               {
-                                                  // If we're on the same box and there's a pending ack for this command then
-                                                  // just trip it
-                                                  if (!_ackHandler.TriggerAck(message.CommandId))
+                                                  if (message.IsAck)
                                                   {
-                                                      _bus.Ack(_connectionId, message.CommandId).Catch();
+                                                      _ackHandler.TriggerAck(message.CommandId);
                                                   }
-                                              }
-                                          }
-                                      });
+                                                  else if (message.IsCommand)
+                                                  {
+                                                      var command = _serializer.Parse<Command>(message.Value);
+                                                      ProcessCommand(command);
+
+                                                      // Only send the ack if this command is waiting for it
+                                                      if (message.WaitForAck)
+                                                      {
+                                                          // If we're on the same box and there's a pending ack for this command then
+                                                          // just trip it
+                                                          if (!_ackHandler.TriggerAck(message.CommandId))
+                                                          {
+                                                              _bus.Ack(_connectionId, message.CommandId).Catch();
+                                                          }
+                                                      }
+                                                  }
+                                              }, null);
         }
 
         private void ProcessCommand(Command command)
@@ -227,7 +239,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                         if (EventKeyAdded != null)
                         {
                             _groups.Add(name);
-                            EventKeyAdded(name);
+                            EventKeyAdded(this, name);
                         }
                     }
                     break;
@@ -238,7 +250,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                         if (EventKeyRemoved != null)
                         {
                             _groups.Remove(name);
-                            EventKeyRemoved(name);
+                            EventKeyRemoved(this, name);
                         }
                     }
                     break;
@@ -256,9 +268,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             PopulateResponseState(response, _groups, _serializer, _protectedData);
         }
 
-        internal static void PopulateResponseState(PersistentResponse response, 
-                                                   DiffSet<string> groupSet, 
-                                                   IJsonSerializer serializer, 
+        internal static void PopulateResponseState(PersistentResponse response,
+                                                   DiffSet<string> groupSet,
+                                                   IJsonSerializer serializer,
                                                    IProtectedData protectedData)
         {
             DiffPair<string> groupDiff = groupSet.GetDiff();

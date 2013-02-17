@@ -157,8 +157,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 var ar = new AsyncResult<int>(callback, state);
 
-                IDisposable registration = CancellationToken.SafeRegister(asyncResult =>
+                IDisposable registration = CancellationToken.SafeRegister(cancelState =>
                 {
+                    var asyncResult = (AsyncResult<int>)cancelState;
                     lock (_completedLock)
                     {
                         if (!asyncResult.IsCompleted)

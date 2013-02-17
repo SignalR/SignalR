@@ -16,17 +16,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
         public string Identity { get; private set; }
 
-        public event Action<string> EventKeyAdded;
+        public event Action<ISubscriber, string> EventKeyAdded;
 
-        public event Action<string> EventKeyRemoved;
+        public event Action<ISubscriber, string> EventKeyRemoved;
 
         public Func<string> GetCursor { get; set; }
+
+        public Subscription Subscription { get; set; }
 
         public void AddEvent(string eventName)
         {
             if (EventKeyAdded != null)
             {
-                EventKeyAdded(eventName);
+                EventKeyAdded(this, eventName);
             }
         }
 
@@ -34,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             if (EventKeyRemoved != null)
             {
-                EventKeyRemoved(eventName);
+                EventKeyRemoved(this, eventName);
             }
         }
     }

@@ -67,15 +67,20 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return TaskAsyncHelper.Empty;
             }
 
-            return _sendQueue.Enqueue(() =>
+            var sendContext = new SendContext(this, message, messageType);
+
+            return _sendQueue.Enqueue(state =>
             {
-                if (_isClosed)
+                var context = (SendContext)state;
+
+                if (context.Handler._isClosed)
                 {
                     return TaskAsyncHelper.Empty;
                 }
 
-                return WebSocket.SendAsync(new ArraySegment<byte>(message), messageType, true /* endOfMessage */, CancellationToken.None);
-            });
+                return context.Handler.WebSocket.SendAsync(new ArraySegment<byte>(context.Message), context.MessageType, true /* endOfMessage */, CancellationToken.None);
+            }, 
+            sendContext);
         }
 
         // Gracefully closes the connection
@@ -91,16 +96,21 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return TaskAsyncHelper.Empty;
             }
 
-            return _sendQueue.Enqueue(() =>
+            var closeContext = new CloseContext(this);
+
+            return _sendQueue.Enqueue(state =>
             {
-                if (_isClosed)
+                var context = (CloseContext)state;
+
+                if (context.Handler._isClosed)
                 {
                     return TaskAsyncHelper.Empty;
                 }
 
-                _isClosed = true;
-                return WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-            });
+                context.Handler._isClosed = true;
+                return context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            },
+            closeContext);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared code")]
@@ -154,10 +164,18 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
 
             byte[] buffer = new byte[_receiveLoopBufferSize];
-            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize, disconnectToken));
+            var receiveContext = new ReceiveContext(webSocket, disconnectToken, MaxIncomingMessageSize, buffer);
+
+            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, state =>
+            {
+                var context = (ReceiveContext)state;
+
+                return WebSocketMessageReader.ReadMessageAsync(context.WebSocket, context.Buffer, context.MaxIncomingMessageSize, context.DisconnectToken);
+            }, 
+            receiveContext);
         }
 
-        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<Task<WebSocketMessage>> messageRetriever)
+        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<object, Task<WebSocketMessage>> messageRetriever, object state)
         {
             bool cleanClose = true;
             try
@@ -171,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 // dispatch incoming messages
                 while (!disconnectToken.IsCancellationRequested)
                 {
-                    WebSocketMessage incomingMessage = await messageRetriever();
+                    WebSocketMessage incomingMessage = await messageRetriever(state);
                     switch (incomingMessage.MessageType)
                     {
                         case WebSocketMessageType.Binary:
@@ -250,6 +268,46 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             // unknown exception; treat as fatal
             return true;
+        }
+
+        private class CloseContext
+        {
+            public CloseContext(WebSocketHandler webSocketHandler)
+            {
+                Handler = webSocketHandler;
+            }
+
+            public WebSocketHandler Handler { get; private set; }
+        }
+
+        private class SendContext
+        {
+            public SendContext(WebSocketHandler webSocketHandler, byte[] message, WebSocketMessageType messageType)
+            {
+                Handler = webSocketHandler;
+                Message = message;
+                MessageType = messageType;
+            }
+
+            public WebSocketHandler Handler { get; private set; }
+            public byte[] Message { get; private set; }
+            public WebSocketMessageType MessageType { get; private set; }
+        }
+
+        private class ReceiveContext
+        {
+            public ReceiveContext(WebSocket webSocket, CancellationToken disconnectToken, int maxIncomingMessageSize, byte[] buffer)
+            {
+                WebSocket = webSocket;
+                DisconnectToken = disconnectToken;
+                MaxIncomingMessageSize = maxIncomingMessageSize;
+                Buffer = buffer;
+            }
+
+            public WebSocket WebSocket { get; private set; }
+            public CancellationToken DisconnectToken { get; private set; }
+            public int MaxIncomingMessageSize { get; private set; }
+            public byte[] Buffer { get; private set; }
         }
     }
 }
