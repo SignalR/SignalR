@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_htmlOutputWriter == null)
                 {
-                    _htmlOutputWriter = new HTMLTextWriter(Context.Response.AsStream(), new UTF8Encoding());
+                    _htmlOutputWriter = new HTMLTextWriter(Context.Response);
                     _htmlOutputWriter.NewLine = "\n";
                 }
 
@@ -159,10 +160,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private class HTMLTextWriter : StreamWriter
+        private class HTMLTextWriter : ResponseWriter
         {
-            public HTMLTextWriter(Stream stream, Encoding encoding)
-                : base(stream, encoding)
+            public HTMLTextWriter(IResponse response)
+                : base(response)
             {
             }
 

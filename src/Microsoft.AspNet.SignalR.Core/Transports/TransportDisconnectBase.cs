@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.AsStream(), new UTF8Encoding());
+                    _outputWriter = new ResponseWriter(Context.Response);
                     _outputWriter.NewLine = "\n";
                 }
 
@@ -344,6 +344,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private void OnDisconnectComplete()
         {
             _counters.ConnectionsDisconnected.Increment();
-        }
+        }        
     }
 }
