@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 {
     internal static class WebSocketMessageReader
     {
+        private static readonly ArraySegment<byte> _emptyArraySegment = new ArraySegment<byte>(new byte[0]);
+
         private static byte[] BufferSliceToByteArray(byte[] buffer, int count)
         {
             byte[] newArray = new byte[count];
@@ -23,11 +25,23 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return Encoding.UTF8.GetString(buffer, 0, count);
         }
 
-        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, byte[] buffer, int maxMessageSize, CancellationToken disconnectToken)
+        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, int bufferSize, int maxMessageSize, CancellationToken disconnectToken)
         {
+            // Read the first time with an empty array
+            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(_emptyArraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+
+            // special-case close messages since they might not have the EOF flag set
+            if (receiveResult.MessageType == WebSocketMessageType.Close)
+            {
+                return new WebSocketMessage(null, WebSocketMessageType.Close);
+            }
+
+            var buffer = new byte[bufferSize];
+
+            // Now read with the real buffer
             var arraySegment = new ArraySegment<byte>(buffer);
 
-            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+            receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
 
             // special-case close messages since they might not have the EOF flag set
             if (receiveResult.MessageType == WebSocketMessageType.Close)

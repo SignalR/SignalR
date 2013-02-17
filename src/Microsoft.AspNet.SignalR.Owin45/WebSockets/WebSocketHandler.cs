@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,36 +12,29 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 {
     public class WebSocketHandler
     {
-        private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250); // wait 250 ms before giving up on a Close
-        private const int _receiveLoopBufferSize = 8 * 1024; // 8K default fragment size (we expect most messages to be very short)
+        // Wait 250 ms before giving up on a Close
+        private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250);
 
-        private int _maxIncomingMessageSize = 4 * 1024 * 1024; // 4MB default max incoming message size
-        private readonly TaskQueue _sendQueue = new TaskQueue(); // queue for sending messages
+        // 4K default fragment size (we expect most messages to be very short)
+        private const int _receiveLoopBufferSize = 4 * 1024;
+
+        // 4MB default max incoming message size
+        private int _maxIncomingMessageSize = 4 * 1024 * 1024;
+
+        // Queue for sending messages
+        private readonly TaskQueue _sendQueue = new TaskQueue();
 
         private volatile bool _isClosed;
 
-        /*
-         * USER OVERRIDES
-         */
-
-        // First method to be called when the socket becomes active; invoked 1 time per socket
         public virtual void OnOpen() { }
 
-        // Called when a text or binary message is received; invoked 0+ times per socket
-        // The developer must override the appropriate overload(s) depending on the type of message he anticipates, else the connection will close
         public virtual void OnMessage(string message) { throw new NotImplementedException(); }
-        public virtual void OnMessage(byte[] message) { throw new NotImplementedException(); }
 
-        // Called when a fault occurs on the socket; invoked 0 or 1 time per socket
-        // The developer can look at the Error property to get the exception
+        public virtual void OnMessage(byte[] message) { throw new NotImplementedException(); }
+        
         public virtual void OnError() { }
 
-        // Called when the socket is closed; invoked 1 time per socket
         public virtual void OnClose(bool clean) { }
-
-        /*
-         * NON-VIRTUAL HELPER METHODS
-         */
 
         // Sends a text message to the client
         public Task Send(string message)
@@ -79,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 }
 
                 return context.Handler.WebSocket.SendAsync(new ArraySegment<byte>(context.Message), context.MessageType, true /* endOfMessage */, CancellationToken.None);
-            }, 
+            },
             sendContext);
         }
 
@@ -113,30 +105,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             closeContext);
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared code")]
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to swallow exceptions that may have been thrown already")]
-        internal void Abort()
-        {
-            try
-            {
-                // Drain the queue
-                _sendQueue.Drain().Wait();
-            }
-            catch
-            {
-                // Swallow exceptions draining the queue
-            }
-            finally
-            {
-                // Then abort the socket
-                WebSocket.Abort();
-            }
-        }
-
-        /*
-         * CONFIGURATION PROPERTIES
-         */
-
         public int MaxIncomingMessageSize
         {
             get
@@ -144,17 +112,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return _maxIncomingMessageSize;
             }
         }
-
-        /*
-         * MISC PROPERTIES
-         */
-
+ 
         public WebSocket WebSocket { get; set; }
-        public Exception Error { get; set; }
 
-        /*
-         * IMPLEMENTATION
-         */
+        public Exception Error { get; set; }
 
         public Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken)
         {
@@ -163,15 +124,14 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 throw new ArgumentNullException("webSocket");
             }
 
-            byte[] buffer = new byte[_receiveLoopBufferSize];
-            var receiveContext = new ReceiveContext(webSocket, disconnectToken, MaxIncomingMessageSize, buffer);
+            var receiveContext = new ReceiveContext(webSocket, disconnectToken, MaxIncomingMessageSize, _receiveLoopBufferSize);
 
             return ProcessWebSocketRequestAsync(webSocket, disconnectToken, state =>
             {
                 var context = (ReceiveContext)state;
 
-                return WebSocketMessageReader.ReadMessageAsync(context.WebSocket, context.Buffer, context.MaxIncomingMessageSize, context.DisconnectToken);
-            }, 
+                return WebSocketMessageReader.ReadMessageAsync(context.WebSocket, context.BufferSize, context.MaxIncomingMessageSize, context.DisconnectToken);
+            },
             receiveContext);
         }
 
@@ -272,42 +232,42 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         private class CloseContext
         {
+            public WebSocketHandler Handler;
+
             public CloseContext(WebSocketHandler webSocketHandler)
             {
                 Handler = webSocketHandler;
             }
-
-            public WebSocketHandler Handler { get; private set; }
         }
 
         private class SendContext
         {
+            public WebSocketHandler Handler;
+            public byte[] Message;
+            public WebSocketMessageType MessageType;
+
             public SendContext(WebSocketHandler webSocketHandler, byte[] message, WebSocketMessageType messageType)
             {
                 Handler = webSocketHandler;
                 Message = message;
                 MessageType = messageType;
             }
-
-            public WebSocketHandler Handler { get; private set; }
-            public byte[] Message { get; private set; }
-            public WebSocketMessageType MessageType { get; private set; }
         }
 
         private class ReceiveContext
         {
-            public ReceiveContext(WebSocket webSocket, CancellationToken disconnectToken, int maxIncomingMessageSize, byte[] buffer)
+            public WebSocket WebSocket;
+            public CancellationToken DisconnectToken;
+            public int MaxIncomingMessageSize;
+            public int BufferSize;
+
+            public ReceiveContext(WebSocket webSocket, CancellationToken disconnectToken, int maxIncomingMessageSize, int bufferSize)
             {
                 WebSocket = webSocket;
                 DisconnectToken = disconnectToken;
                 MaxIncomingMessageSize = maxIncomingMessageSize;
-                Buffer = buffer;
+                BufferSize = bufferSize;
             }
-
-            public WebSocket WebSocket { get; private set; }
-            public CancellationToken DisconnectToken { get; private set; }
-            public int MaxIncomingMessageSize { get; private set; }
-            public byte[] Buffer { get; private set; }
         }
     }
 }
