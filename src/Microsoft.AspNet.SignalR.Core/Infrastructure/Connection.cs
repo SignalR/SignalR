@@ -281,9 +281,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                                    IJsonSerializer serializer,
                                                    IProtectedData protectedData)
         {
-            DiffPair<string> groupDiff = groupSet.GetDiff();
+            bool anyChanges = groupSet.DetectChanges();
 
-            if (groupDiff.AnyChanges)
+            if (anyChanges)
             {
                 // Create a protected payload of the sorted list
                 IEnumerable<string> groups = groupSet.GetSnapshot();
