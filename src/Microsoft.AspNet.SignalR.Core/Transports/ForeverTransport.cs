@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                      response.Aborted ||
                      context.Transport.ConnectionEndToken.IsCancellationRequested)
             {
-                context.Disposer.Dispose();
+                context.Subscription.Dispose();
 
                 if (response.Aborted)
                 {
@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private static void OnDisconnectMessage(MessageContext context)
         {
-            context.Disposer.Dispose();
+            context.Subscription.Dispose();
 
             // Remove connection without triggering disconnect
             context.Transport.Heartbeat.RemoveConnection(context.Transport);
@@ -409,13 +409,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class MessageContext
         {
-            public Disposer Disposer;
+            public Disposer Subscription;
             public RequestLifetime Lifetime;
             public ForeverTransport Transport;
 
-            public MessageContext(Disposer disposer, RequestLifetime lifetime, ForeverTransport transport)
+            public MessageContext(Disposer subscription, RequestLifetime lifetime, ForeverTransport transport)
             {
-                Disposer = disposer;
+                Subscription = subscription;
                 Lifetime = lifetime;
                 Transport = transport;
             }
@@ -483,7 +483,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                     {
                         _lifetimeTcs.TrySetResult(null);
                     }
-
                 }
             }
         }
