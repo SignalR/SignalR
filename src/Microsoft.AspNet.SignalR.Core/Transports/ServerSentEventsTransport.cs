@@ -1,25 +1,15 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
-using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
     public class ServerSentEventsTransport : ForeverTransport
     {
-        private readonly Func<object, Task> _send;
-        private readonly Func<Task> _writeInit;
-        private readonly Func<Task> _initializeResponse;
-
         public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
             : base(context, resolver)
         {
-            _send = PerfomSend;
-            _writeInit = WriteInit;
-            _initializeResponse = InitializeResponse;
         }
 
         public override Task KeepAlive()
@@ -37,18 +27,25 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             OnSendingResponse(response);
 
-            return EnqueueOperation(_send, response);
+            var context = new SendContext(this, response);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return EnqueueOperation(state => PerformSend(state), context);
         }
 
         protected internal override Task InitializeResponse(ITransportConnection connection)
         {
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return base.InitializeResponse(connection)
-                       .Then(_initializeResponse);
+                       .Then(s => InitializeResponse(s), this);
         }
 
-        private Task InitializeResponse()
+        private static Task InitializeResponse(object state)
         {
-            return EnqueueOperation(_writeInit);
+            var transport = (ServerSentEventsTransport)state;
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return transport.EnqueueOperation(s => WriteInit(s), state);
         }
 
         private static Task PerformKeepAlive(object state)
@@ -63,28 +60,44 @@ namespace Microsoft.AspNet.SignalR.Transports
             return transport.Context.Response.Flush();
         }
 
-        private Task PerfomSend(object state)
+        private static Task PerformSend(object state)
         {
-            OutputWriter.Write("data: ");
-            JsonSerializer.Serialize(state, OutputWriter);
-            OutputWriter.WriteLine();
-            OutputWriter.WriteLine();
-            OutputWriter.Flush();
+            var context = (SendContext)state;
 
-            return Context.Response.Flush();
+            context.Transport.OutputWriter.Write("data: ");
+            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+            context.Transport.OutputWriter.WriteLine();
+            context.Transport.OutputWriter.WriteLine();
+            context.Transport.OutputWriter.Flush();
+
+            return context.Transport.Context.Response.Flush();
         }
 
-        private Task WriteInit()
+        private static Task WriteInit(object state)
         {
-            Context.Response.ContentType = "text/event-stream";
+            var transport = (ServerSentEventsTransport)state;
+
+            transport.Context.Response.ContentType = "text/event-stream";
 
             // "data: initialized\n\n"
-            OutputWriter.Write("data: initialized");
-            OutputWriter.WriteLine();
-            OutputWriter.WriteLine();
-            OutputWriter.Flush();
+            transport.OutputWriter.Write("data: initialized");
+            transport.OutputWriter.WriteLine();
+            transport.OutputWriter.WriteLine();
+            transport.OutputWriter.Flush();
 
-            return Context.Response.Flush();
+            return transport.Context.Response.Flush();
+        }
+
+        private class SendContext
+        {
+            public ServerSentEventsTransport Transport;
+            public object State;
+
+            public SendContext(ServerSentEventsTransport transport, object state)
+            {
+                Transport = transport;
+                State = state;
+            }
         }
     }
 }
