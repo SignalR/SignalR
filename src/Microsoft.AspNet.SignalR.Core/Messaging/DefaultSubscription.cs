@@ -121,20 +121,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
-            var cursors = new List<Cursor>();
             totalCount = 0;
 
             lock (_lockObj)
             {
+                var cursors = new ulong[_cursors.Count];
                 for (int i = 0; i < _cursors.Count; i++)
                 {
-                    Cursor cursor = Cursor.Clone(_cursors[i]);
-                    cursors.Add(cursor);
-
-                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(cursor.Id, MaxMessages);
-                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
-
-                    cursor.Id = next;
+                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
+                    cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
                     if (storeResult.Messages.Count > 0)
                     {
@@ -153,7 +148,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Update the list of cursors before invoking anything
             lock (_lockObj)
             {
-                _cursors = (List<Cursor>)state;
+                var nextCursors = (ulong[])state;
+                for (int i = 0; i < _cursors.Count; i++)
+                {
+                    _cursors[i].Id = nextCursors[i];
+                }
             }
         }
 
