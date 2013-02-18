@@ -78,7 +78,6 @@
     <Content Include="Scripts\jquery-1.8.3.js" />
     <Content Include="Scripts\jquery-1.9.0.js" />
     <Content Include="Scripts\jquery.network.mock.js" />
-    <Content Include="Scripts\jquery.network.mock.min.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
     <Content Include="Scripts\_references.js" />

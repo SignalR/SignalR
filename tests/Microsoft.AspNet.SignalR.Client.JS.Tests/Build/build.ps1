@@ -29,9 +29,3 @@ Foreach($file in $files)
 }
 
 Write-Host "done" -ForegroundColor Green
-
-# Minify to jquery.signalR.min.js
-Write-Host "Building bin\jquery.network.mock.min.js... " -NoNewline -ForegroundColor Yellow
-& "..\..\..\tools\ajaxmin\AjaxMin.exe" ..\bin\jquery.network.mock.js -out ..\bin\jquery.network.mock.min.js -clobber
-
-Write-Host "done" -ForegroundColor Green
