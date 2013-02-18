@@ -4,13 +4,13 @@
         network = $.network,
 		ajaxData = {},
 		ajaxIds = 0,
-        sleeping = false,
+        ignoringMessages = false,
         fail = function (data, soft) {
             // We must close the request prior to calling error so that we can pass our own
             // reason for failing the request.
-            sleeping = true;
+            ignoringMessages = true;
             data.Request.abort();
-            sleeping = false;
+            ignoringMessages = false;
 
             if (!soft) {
                 data.Settings.error(data, "error");
@@ -31,8 +31,8 @@
         savedError = settings.error;
 
         settings.success = function () {
-            // We only want to execute methods if the request is not sleeping, we sleep to swallow jquery related actions
-            if (sleeping === false) {
+            // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
+            if (ignoringMessages === false) {
                 if (savedSuccess) {
                     savedSuccess.apply(this, arguments);
                 }
@@ -42,8 +42,8 @@
         }
 
         settings.error = function () {
-            // We only want to execute methods if the request is not sleeping, we sleep to swallow jquery related actions
-            if (sleeping === false) {
+            // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
+            if (ignoringMessages === false) {
                 if (savedError) {
                     savedError.apply(this, arguments);
                 }
@@ -59,7 +59,7 @@
         };
 
         // If we're trying to make an ajax request while the network is down
-        if (sleeping) {
+        if (ignoringMessages) {
             // Act async for failure of request
             setTimeout(function () {
                 fail(ajaxData[id], false);
@@ -81,7 +81,7 @@
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);

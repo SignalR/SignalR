@@ -5,12 +5,12 @@
         network = $.network,
         webSocketData = {},
         webSocketIds = 0,
-        sleeping = false,
+        ignoringMessages = false,
         fail = function (data) {
             // Used to not trigger any methods from a resultant web socket completion event.
-            sleeping = true;
+            ignoringMessages = true;
             data.close();
-            sleeping = false;
+            ignoringMessages = false;
 
             data.onclose({});
         };
@@ -31,7 +31,7 @@
             };
 
             that.send = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return ws.send.apply(ws, arguments)
                 }
                 else {
@@ -51,17 +51,17 @@
             setTimeout(function () {
                 ws = new savedWebSocket(url, webSocketInit);
                 ws.onopen = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return that.onopen.apply(that, arguments);
                     }
                 };
                 ws.onmessage = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return that.onmessage.apply(that, arguments);
                     }
                 };
                 ws.onclose = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return that.onclose.apply(that, arguments);
                     }
 
@@ -87,12 +87,12 @@
                 }
             }
             else {
-                sleeping = true;
+                ignoringMessages = true;
             }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);

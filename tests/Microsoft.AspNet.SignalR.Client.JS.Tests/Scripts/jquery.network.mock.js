@@ -36,13 +36,13 @@
         network = $.network,
 		ajaxData = {},
 		ajaxIds = 0,
-        sleeping = false,
+        ignoringMessages = false,
         fail = function (data, soft) {
             // We must close the request prior to calling error so that we can pass our own
             // reason for failing the request.
-            sleeping = true;
+            ignoringMessages = true;
             data.Request.abort();
-            sleeping = false;
+            ignoringMessages = false;
 
             if (!soft) {
                 data.Settings.error(data, "error");
@@ -63,8 +63,8 @@
         savedError = settings.error;
 
         settings.success = function () {
-            // We only want to execute methods if the request is not sleeping, we sleep to swallow jquery related actions
-            if (sleeping === false) {
+            // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
+            if (ignoringMessages === false) {
                 if (savedSuccess) {
                     savedSuccess.apply(this, arguments);
                 }
@@ -74,8 +74,8 @@
         }
 
         settings.error = function () {
-            // We only want to execute methods if the request is not sleeping, we sleep to swallow jquery related actions
-            if (sleeping === false) {
+            // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
+            if (ignoringMessages === false) {
                 if (savedError) {
                     savedError.apply(this, arguments);
                 }
@@ -91,7 +91,7 @@
         };
 
         // If we're trying to make an ajax request while the network is down
-        if (sleeping) {
+        if (ignoringMessages) {
             // Act async for failure of request
             setTimeout(function () {
                 fail(ajaxData[id], false);
@@ -113,7 +113,7 @@
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);
@@ -125,12 +125,12 @@
         network = $.network,
         webSocketData = {},
         webSocketIds = 0,
-        sleeping = false,
+        ignoringMessages = false,
         fail = function (data) {
             // Used to not trigger any methods from a resultant web socket completion event.
-            sleeping = true;
+            ignoringMessages = true;
             data.close();
-            sleeping = false;
+            ignoringMessages = false;
 
             data.onclose({});
         };
@@ -151,7 +151,7 @@
             };
 
             that.send = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return ws.send.apply(ws, arguments)
                 }
                 else {
@@ -171,17 +171,17 @@
             setTimeout(function () {
                 ws = new savedWebSocket(url, webSocketInit);
                 ws.onopen = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return that.onopen.apply(that, arguments);
                     }
                 };
                 ws.onmessage = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return that.onmessage.apply(that, arguments);
                     }
                 };
                 ws.onclose = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return that.onclose.apply(that, arguments);
                     }
 
@@ -207,12 +207,12 @@
                 }
             }
             else {
-                sleeping = true;
+                ignoringMessages = true;
             }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);
@@ -222,7 +222,7 @@
     var network = $.network,
         maskData = {},
         maskIds = 0,
-        sleeping = false;
+        ignoringMessages = false;
 
     network.mask = {
         create: function (maskBase, onErrorProperty, onMessageProperty, destroyOnError) {
@@ -240,7 +240,7 @@
             }
 
             maskBase[onErrorProperty] = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return savedOnError.apply(this, arguments);
                 }
 
@@ -253,7 +253,7 @@
             };
 
             maskBase[onMessageProperty] = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return savedOnMessage.apply(this, arguments);
                 }
             };
@@ -273,7 +273,7 @@
             var savedFunction = maskBase[functionName];
 
             maskBase[functionName] = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return savedFunction.apply(this, arguments);
                 }
                 else if (onBadAttempt) {
@@ -298,12 +298,12 @@
                 }
             }
             else {
-                sleeping = true;
+                ignoringMessages = true;
             }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);
@@ -315,7 +315,7 @@
         network = $.network,
         eventSourceData = {},
         eventSourceIds = 0,
-        sleeping = false;
+        ignoringMessages = false;
 
     if (enabled) {
         function CustomEventSource(url, eventSourceInit) {
@@ -327,7 +327,7 @@
 
             that.addEventListener = function (name, event) {
                 var fn = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return event.apply(this, arguments);
                     }
                 };
@@ -359,18 +359,18 @@
                     data._events["error"].call(data, savedEventSource.CLOSED);
 
                     // Used to not trigger any methods from a resultant event source completion event.
-                    sleeping = true;
+                    ignoringMessages = true;
                     data.close();
-                    sleeping = false;
+                    ignoringMessages = false;
                 }
             }
             else {
-                sleeping = true;
+                ignoringMessages = true;
             }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);

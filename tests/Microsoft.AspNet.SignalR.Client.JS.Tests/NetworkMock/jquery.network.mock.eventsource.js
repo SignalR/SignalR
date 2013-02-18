@@ -5,7 +5,7 @@
         network = $.network,
         eventSourceData = {},
         eventSourceIds = 0,
-        sleeping = false;
+        ignoringMessages = false;
 
     if (enabled) {
         function CustomEventSource(url, eventSourceInit) {
@@ -17,7 +17,7 @@
 
             that.addEventListener = function (name, event) {
                 var fn = function () {
-                    if (!sleeping) {
+                    if (!ignoringMessages) {
                         return event.apply(this, arguments);
                     }
                 };
@@ -49,18 +49,18 @@
                     data._events["error"].call(data, savedEventSource.CLOSED);
 
                     // Used to not trigger any methods from a resultant event source completion event.
-                    sleeping = true;
+                    ignoringMessages = true;
                     data.close();
-                    sleeping = false;
+                    ignoringMessages = false;
                 }
             }
             else {
-                sleeping = true;
+                ignoringMessages = true;
             }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);

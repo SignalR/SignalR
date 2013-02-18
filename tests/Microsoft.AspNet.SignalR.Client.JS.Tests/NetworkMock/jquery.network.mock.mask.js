@@ -3,7 +3,7 @@
     var network = $.network,
         maskData = {},
         maskIds = 0,
-        sleeping = false;
+        ignoringMessages = false;
 
     network.mask = {
         create: function (maskBase, onErrorProperty, onMessageProperty, destroyOnError) {
@@ -21,7 +21,7 @@
             }
 
             maskBase[onErrorProperty] = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return savedOnError.apply(this, arguments);
                 }
 
@@ -34,7 +34,7 @@
             };
 
             maskBase[onMessageProperty] = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return savedOnMessage.apply(this, arguments);
                 }
             };
@@ -54,7 +54,7 @@
             var savedFunction = maskBase[functionName];
 
             maskBase[functionName] = function () {
-                if (!sleeping) {
+                if (!ignoringMessages) {
                     return savedFunction.apply(this, arguments);
                 }
                 else if (onBadAttempt) {
@@ -79,12 +79,12 @@
                 }
             }
             else {
-                sleeping = true;
+                ignoringMessages = true;
             }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-            sleeping = false;
+            ignoringMessages = false;
         }
     };
 })($, window);
