@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Management;
@@ -15,8 +16,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private readonly string _appHostConfigPath;
         private readonly ServerManager _serverManager;
 
-        private static Process _iisExpressProcess;
-        private static int? _existingIISExpressProcessId;
+        private Process _iisExpressProcess;
+        private Process _debuggerProcess;
 
         private static readonly string IISExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                                                                      "IIS Express",
@@ -40,23 +41,31 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             if (site == null)
             {
-                if (TryGetRunningIIsExpress())
-                {
-                    // Kill existing IIS Express process mapping to this application
-                    KillProcess();
-                }
-
                 site = _serverManager.Sites.Add(TestSiteName, "http", "*:" + TestSitePort + ":localhost", _path);
                 site.TraceFailedRequestsLogging.Enabled = true;
 
                 _serverManager.CommitChanges();
             }
 
-            EnsureIISExpressProcess();
+            EnsureNewIISExpressProcess();
+
+            Attach();
 
             PingServerUrl();
 
             return TestSiteUrl;
+        }
+
+        private void Attach()
+        {
+            var windbgPath = ConfigurationManager.AppSettings["windbgPath"];
+
+            if (String.IsNullOrEmpty(windbgPath))
+            {
+                return;
+            }
+
+            _debuggerProcess = Process.Start(windbgPath, "-g -p " + _iisExpressProcess.Id);
         }
 
         private void PingServerUrl()
@@ -92,95 +101,63 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         public void StopSite()
         {
-            KillProcess();
+            KillRunningIIsExpress();
         }
 
-        private void KillProcess()
+        private bool KillRunningIIsExpress()
         {
-            Process process = _iisExpressProcess;
-            if (process == null)
-            {
-                if (_existingIISExpressProcessId == null)
-                {
-                    return;
-                }
+            try
+            {                
+                KillProcess(_debuggerProcess);
 
-                try
-                {
-                    process = Process.GetProcessById(_existingIISExpressProcessId.Value);
-                }
-                catch (ArgumentException)
-                {
-                    return;
-                }
-                catch (InvalidOperationException)
-                {
-                    return;
-                }
+                return KillProcess(_iisExpressProcess);
             }
-
-            if (process != null)
+            finally
             {
-                process.Kill();
-
-                // Sleep a little 
-                Thread.Sleep(500);
+                _iisExpressProcess = null;
             }
         }
 
-        private void EnsureIISExpressProcess()
+        private void EnsureNewIISExpressProcess()
         {
-            if (TryGetRunningIIsExpress())
+            if (_iisExpressProcess != null)
             {
-                return;
+                if (!KillRunningIIsExpress())
+                {
+                    Debug.WriteLine("Failed to kill running iis express instance ({0})", _iisExpressProcess.Id);
+                }
+            }
+            else
+            {
+                int iisExpressPid;
+                if (TryGetRunningIIsExpress(out iisExpressPid))
+                {
+                    if (!KillProcess(iisExpressPid))
+                    {
+                        Debug.WriteLine("Failed to kill iis express instance ({0})", iisExpressPid);
+                    }
+                }
             }
 
-            Process oldProcess = Interlocked.CompareExchange(ref _iisExpressProcess, CreateIISExpressProcess(), null);
-            if (oldProcess == null)
-            {
-                EnsureIISExpressCompressionDirectory();
-                _iisExpressProcess.Start();
+            EnsureIISExpressCompressionDirectory();
+            Process iisExpressProcess = CreateIISExpressProcess();
+            iisExpressProcess.Start();
 
-                // Give it a little time to start up the webserver
-                Thread.Sleep(250);
-                return;
-            }
+            _iisExpressProcess = iisExpressProcess;
         }
 
         private void EnsureIISExpressCompressionDirectory()
         {
             var tempDirectory = Environment.GetEnvironmentVariable("TEMP");
+
             // TODO: Read this from the applicationHost.config
             var compressionDirectoryPath = Path.Combine(tempDirectory, "iisexpress", "IIS Temporary Compressed Files");
             Directory.CreateDirectory(compressionDirectoryPath);
         }
 
-        private bool TryGetRunningIIsExpress()
+        private bool TryGetRunningIIsExpress(out int iisExpressId)
         {
-            // If we have a cached IISExpress id then just use it
-            if (_existingIISExpressProcessId != null)
-            {
-                try
-                {
-                    var process = Process.GetProcessById(_existingIISExpressProcessId.Value);
-
-                    // Make sure it's iis express (Can process ids be reused?)
-                    if (process.ProcessName.Equals("iisexpress"))
-                    {
-                        return true;
-                    }
-                }
-                catch (ArgumentException)
-                {
-                    // The process specified by the processId parameter is not running. The identifier might be expired.
-                }
-                catch (InvalidOperationException)
-                {
-                    // The process ended
-                }
-
-                _existingIISExpressProcessId = null;
-            }
+            iisExpressId = -1;
 
             foreach (Process process in Process.GetProcessesByName("iisexpress"))
             {
@@ -195,7 +172,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                                 (commandLine.Contains(_appHostConfigPath) ||
                                  commandLine.Contains("/site:" + TestSiteName)))
                             {
-                                _existingIISExpressProcessId = process.Id;
+                                iisExpressId = process.Id;
                                 return true;
                             }
                         }
@@ -225,14 +202,56 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             iisExpressProcess.StartInfo.CreateNoWindow = true;
             iisExpressProcess.StartInfo.UseShellExecute = false;
             iisExpressProcess.EnableRaisingEvents = true;
-            iisExpressProcess.Exited += OnIIsExpressQuit;
 
             return iisExpressProcess;
         }
 
-        private void OnIIsExpressQuit(object sender, EventArgs e)
+        private static bool KillProcess(int pid)
         {
-            Interlocked.Exchange(ref _iisExpressProcess, null);
+            return KillProcess(GetProcess(pid));
+        }
+
+        private static bool KillProcess(Process process)
+        {
+            if (process == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                process.Kill();
+
+                process.WaitForExit();
+
+                return GetProcess(process.Id) == null;
+            }
+            catch (Win32Exception)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        private static Process GetProcess(int pid)
+        {
+            try
+            {
+                return Process.GetProcessById(pid);
+            }
+            catch (ArgumentException)
+            {
+                // The process specified by the processId parameter is not running. The identifier might be expired.
+                return null;
+            }
+            catch (InvalidOperationException)
+            {
+                // The process ended
+                return null;
+            }
         }
     }
 }
