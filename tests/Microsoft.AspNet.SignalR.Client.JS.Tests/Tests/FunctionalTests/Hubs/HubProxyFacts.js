@@ -24,7 +24,8 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
 });
 
 if (!window.document.commandLineTest) {
-    testUtilities.runWithAllTransports(function (transport) {
+    // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
+    testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
         QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in invocation callbacks.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connection = testUtilities.createHubConnection(testName),
                 demo = connection.createHubProxies().demo,
