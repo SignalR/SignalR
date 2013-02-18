@@ -82,6 +82,7 @@
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="config\applicationhost.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
