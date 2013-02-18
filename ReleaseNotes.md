@@ -1,5 +1,88 @@
 # SignalR Release Notes
 
+# 1.0
+
+### Breaking Changes
+
+* Disable CORS by default ([#1306](https://github.com/SignalR/SignalR/issues/1306))
+
+```csharp
+var config = new HubConfiguration 
+{ 
+    EnableCrossDomain = true
+} 
+RouteTable.Routes.MapHubs(config);
+```
+
+* Don't return error text by default for hub errors ([#923](https://github.com/SignalR/SignalR/issues/923))
+  - This means that exception messages are turned off by default
+
+```csharp
+var config = new HubConfiguration 
+{ 
+    EnableDetailedErrors = true
+} 
+
+RouteTable.Routes.MapHubs(config); 
+```
+
+### Bugs
+
+* Send nosniff header for all SignalR responses ([#1450](https://github.com/SignalR/SignalR/issues/1450))
+* Hub state and args are placed into a dictionary directly from user input from the URL ([#1449](https://github.com/SignalR/SignalR/issues/1449))
+  - JSON.NET 20 is the limit of recursion
+  - 4096 KB is maxium size JSON payload
+* HubDispatcher allows duplicate hub names in connectionData ([#1448](https://github.com/SignalR/SignalR/issues/1448))
+  - If you have duplicate HubNames in your HubConnection, you will get an exception Duplicate hub names found
+* ForeverFrame transport should validate frameId passed through the URL ([#1446](https://github.com/SignalR/SignalR/issues/1446))
+* Route matching for the Owin hub dispatcher handler is too agressive ([#1445](https://github.com/SignalR/SignalR/issues/1445))
+* JSONP callback method should be validated as valid JS identifier ([#1444](https://github.com/SignalR/SignalR/issues/1444))
+* Hub method discovery includes methods it shouldn't ([#1443](https://github.com/SignalR/SignalR/issues/1443))
+* Add CSRF protection for SignalR requests ([#1413](https://github.com/SignalR/SignalR/issues/1413))
+* AV at Microsoft.Owin.Host.SystemWeb.OwinCallContext.StartOnce ([#1402](https://github.com/SignalR/SignalR/issues/1402))
+* WebSocket leak HttpContext even though DefaultWebSocketHandler is closed ([#1387](https://github.com/SignalR/SignalR/issues/1387))
+* Bug with same origin check behind reverse proxies/load balancers etc. ([#1363](https://github.com/SignalR/SignalR/issues/1363))
+* Add summary in public AuthorizeAttribute class ([#1353](https://github.com/SignalR/SignalR/issues/1353))
+* Infer hubs path from the url ([#1346](https://github.com/SignalR/SignalR/issues/1346))
+* Sign the groups ([#1328](https://github.com/SignalR/SignalR/issues/1328))
+* End the request, not connection as soon as cancellation token trips. ([#1327](https://github.com/SignalR/SignalR/issues/1327))
+* Prefix for group from PersistentConnectionContext is not right ([#1326](https://github.com/SignalR/SignalR/issues/1326))
+* Throw in ASP.NET 4 if the purpose isn't connection id and groups. ([#1325](https://github.com/SignalR/SignalR/issues/1325))
+* Prevent connections from subscribing to a group that's actually a valid connection ID or Hub name ([#1320](https://github.com/SignalR/SignalR/issues/1320))
+* Ensure that we don't allow clients to provide duplicate signals in cursors ([#1312](https://github.com/SignalR/SignalR/issues/1312))
+* Add Authorize method to PersistentConnection. ([#1308](https://github.com/SignalR/SignalR/issues/1308))
+  - Added Authorize and AuthorizeRequest method to PersistentConnection. 
+  - This is the place in the pipeline to authorize requests. If a request fails authorization then a 403 is returned.
+* Consider signing the connection id ([#1305](https://github.com/SignalR/SignalR/issues/1305))
+* Change LongPollingTransport.Send to be non-virtual ([#1292](https://github.com/SignalR/SignalR/issues/1292))
+* Change TopicMessageBus use of array to IList<T> ([#1291](https://github.com/SignalR/SignalR/issues/1291))
+* Change Subscription.PerformWork to take a IList instead of List ([#1290](https://github.com/SignalR/SignalR/issues/1290))
+* Change Linktionary to IndexedDictionary ([#1289](https://github.com/SignalR/SignalR/issues/1289))
+* Investigate changing all uses of IEnumerable<T> in the API to IList<T> ([#1288](https://github.com/SignalR/SignalR/issues/1288))
+* Change IHubIncomingInvokerContext.Args to IList<object> ([#1287](https://github.com/SignalR/SignalR/issues/1287))
+* Change DefaultJavaScriptProxyGenerator.GetDescriptorName to non-vritual ([#1286](https://github.com/SignalR/SignalR/issues/1286))
+* Change Subscription.Data to Received in .NET client ([#1285](https://github.com/SignalR/SignalR/issues/1285))
+* Change .NET Client uses of arrays to IList ([#1284](https://github.com/SignalR/SignalR/issues/1284))
+* Change IConnection.Groups to IList<T> ([#1282](https://github.com/SignalR/SignalR/issues/1282))
+* Change ConnectionMessage.ExcludedSignals to IList<string> ([#1278](https://github.com/SignalR/SignalR/issues/1278))
+* Add overloads for methods with params array on hot paths ([#1277](https://github.com/SignalR/SignalR/issues/1277))
+* Client webSockts and SSE transports, after reconnected, Disconnect Command from server causes the reconnected connection to disconnect ([#1273](https://github.com/SignalR/SignalR/issues/1273))
+* Loading Resources in Windows Ph8/Windows Store applications ([#1232](https://github.com/SignalR/SignalR/issues/1232))
+* Long Polling leaking requests sometimes ([#1164](https://github.com/SignalR/SignalR/issues/1164))
+* Signalr.exe to generate hub proxy only works for webapplication projects
+* jquery.signalr.1.0.0.js file has the version specified as 1.0.0.rc1. The version is actually 1.0.0
+
+* **Groups**
+  - EnableAutoRejoining has been removed from HubPipeline. This feature is turned on by default.
+
+
+* **ScaleOut with Redis/Service Bus**
+  - Scale Out with SignalR using ServiceBus or Redis
+  - Scaleout using Azure Service Bus or Redis is still under development. If you are using 1.0.0-RC2 versions of the ScaleOut packages then please upgrade to 1.0.0-RC3 if you want to use SignalR 1.0.0
+
+### Known Issues
+* JS client with jQuery 1.9.1 / 1.9.0 raises connection error for all sends on persistent connection API ([#1437](https://github.com/SignalR/SignalR/issues/1437)
+
 # 1.0rc2
 
 ### Notable Commits
