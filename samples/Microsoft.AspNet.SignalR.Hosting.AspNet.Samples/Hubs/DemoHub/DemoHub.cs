@@ -25,11 +25,6 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             Clients.Caller.groupAdded();
         }
 
-        public void DoSomethingAndCallError()
-        {
-            Clients.All.errorInCallback();
-        }
-
         public Task DynamicTask()
         {
             return Clients.All.signal(Guid.NewGuid());
