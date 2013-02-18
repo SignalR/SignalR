@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Owin;
@@ -282,6 +285,91 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.Stop();
                 }
             }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    var errorsCaught = 0;
+                    var wh = new ManualResetEventSlim();
+                    Exception thrown = new Exception(),
+                              caught = null;
+
+                    host.Initialize();
+
+                    var connection = new Connection(host.Url + "/multisend");
+
+                    connection.Received += _ =>
+                    {
+                        throw thrown;
+                    };
+
+                    connection.Error += e =>
+                    {
+                        caught = e;
+                        if (Interlocked.Increment(ref errorsCaught) == 2)
+                        {
+                            wh.Set();
+                        }
+                    };
+
+                    connection.Start(host.Transport).Wait();
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.Equal(thrown, caught);
+                }
+            }
+
+            [Fact]
+            public void ConnectionErrorCapturesExceptionsThrownWhenReceivingResponseFromSend()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        app.MapConnection<TransportResponse>("/transport-response");
+                    });
+
+                    var transports = new List<IClientTransport>()
+                    {
+                        new ServerSentEventsTransport(host),
+                        new LongPollingTransport(host)
+                    };
+
+                    foreach (var transport in transports)
+                    {
+                        Debug.WriteLine("Transport: {0}", (object)transport.Name);
+
+                        var wh = new ManualResetEventSlim();
+                        Exception thrown = new Exception(),
+                                  caught = null;
+
+                        var connection = new Connection("http://foo/transport-response");
+
+                        connection.Received += data =>
+                        {
+                            throw thrown;
+                        };
+
+                        connection.Error += e =>
+                        {
+                            caught = e;
+                            wh.Set();
+                        };
+
+                        connection.Start(transport).Wait();
+                        connection.Send("");
+
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.IsType(typeof(AggregateException), caught);
+                        Assert.Equal(thrown, caught.InnerException);
+                    }
+                }
+            }
         }
 
         private class MyConnection : PersistentConnection
@@ -297,6 +385,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Send(connectionId, "MyConnection2");
+            }
+        }
+
+        private class TransportResponse : PersistentConnection
+        {
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Transport.Send(new object());
             }
         }
     }

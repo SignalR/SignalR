@@ -1,7 +1,7 @@
 ﻿QUnit.module("Transports Common - Process Messages Facts");
 
 QUnit.test("Noop's on missing transport", function () {
-    var connection = testUtilities.createHubConnection(),
+    var connection = testUtilities.createConnection(),
         lastKeepAlive = false;
 
     // Ensure the connection can utilize the keep alive features
@@ -15,7 +15,7 @@ QUnit.test("Noop's on missing transport", function () {
 });
 
 QUnit.test("Updates keep alive data on any message retrieval.", function () {
-    var connection = testUtilities.createHubConnection(),
+    var connection = testUtilities.createConnection(),
         response = {
             C: 1234,
             M: [{ uno: 1, dos: 2 }, { tres: 3, quatro: 4 }],
@@ -44,7 +44,7 @@ QUnit.test("Updates keep alive data on any message retrieval.", function () {
 });
 
 QUnit.test("Noop's on keep alive", function () {
-    var connection = testUtilities.createHubConnection(),
+    var connection = testUtilities.createConnection(),
         savedMaximizePersistentResponse = $.signalR.transports._logic.maximizePersistentResponse,
         failed = false;
 
@@ -65,7 +65,7 @@ QUnit.test("Noop's on keep alive", function () {
 });
 
 QUnit.test("Handles disconnect command correctly", function () {
-    var connection = testUtilities.createHubConnection(),
+    var connection = testUtilities.createConnection(),
         response = {
             C: 1234,
             M: [{ uno: 1, dos: 2 }, { tres: 3, quatro: 4 }],
@@ -85,7 +85,7 @@ QUnit.test("Handles disconnect command correctly", function () {
 });
 
 QUnit.test("Updates group on message retrieval.", function () {
-    var connection = testUtilities.createHubConnection(),
+    var connection = testUtilities.createConnection(),
         response = {
             C: 1234,
             M: [{ uno: 1, dos: 2 }, { tres: 3, quatro: 4 }],
@@ -115,7 +115,7 @@ QUnit.test("Updates group on message retrieval.", function () {
     $.signalR.transports._logic.updateGroups = savedUpdateGroups;
 });
 
-QUnit.test("Triggeres received handler for each message.", function () {
+QUnit.test("Triggers received handler for each message.", function () {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         response = {
@@ -138,7 +138,7 @@ QUnit.test("Triggeres received handler for each message.", function () {
 });
 
 QUnit.test("Message ID is set on connection ID when set.", function () {
-    var connection = testUtilities.createHubConnection(),
+    var connection = testUtilities.createConnection(),
         response = {
             M: false,
             L: 1337,
@@ -154,4 +154,44 @@ QUnit.test("Message ID is set on connection ID when set.", function () {
     response.C = 1234;
     $.signalR.transports._logic.processMessages(connection, response);
     QUnit.ok(connection.messageId === 1234, "The connection's messageId property is set when a message contains a messageId");
+});
+
+QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function () {
+    var connection = testUtilities.createConnection(),
+        hubConnection = testUtilities.createHubConnection(),
+        demo = hubConnection.createHubProxies().demo,
+        response = {
+            C: 1234,
+            M: [{ H: "demo", M: "foo", A: [], S: { value: 555 } }, { H: "demo", M: "foo", A: [], S: { value: 782 } }],
+            L: 1337,
+            G: "foo"
+        },
+        error = new Error(),
+        hubError = new Error();
+
+    connection.transport = {};
+    hubConnection.transport = {};
+
+    connection.received(function () {
+        throw error;
+    });
+    demo.client.foo = function () {
+        throw hubError;
+    };
+
+    try {
+        $.signalR.transports._logic.processMessages(connection, response);
+        QUnit.ok(false, "Error in onReceived handlers shouldn't be caught");
+    } catch (e) {
+        QUnit.equal(e, error);
+    }
+
+    $(hubConnection).triggerHandler($.signalR.events.onStarting);
+
+    try {
+        $.signalR.transports._logic.processMessages(hubConnection, response);
+        QUnit.ok(false, "Error in onReceived handlers shouldn't be caught");
+    } catch (e) {
+        QUnit.equal(e, hubError);
+    }
 });
