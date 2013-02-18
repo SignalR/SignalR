@@ -187,6 +187,7 @@ QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function
     }
 
     $(hubConnection).triggerHandler($.signalR.events.onStarting);
+
     try {
         $.signalR.transports._logic.processMessages(hubConnection, response);
         QUnit.ok(false, "Error in onReceived handlers shouldn't be caught");
