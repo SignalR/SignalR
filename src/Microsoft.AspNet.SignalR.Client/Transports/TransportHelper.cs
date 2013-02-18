@@ -100,6 +100,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
+            connection.UpdateLastKeepAlive();
+
             timedOut = false;
             disconnected = false;
 
@@ -167,6 +169,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 connection.OnError(ex);
             }
         }
+
 
         private static void UpdateGroups(IConnection connection, JToken groupsToken)
         {

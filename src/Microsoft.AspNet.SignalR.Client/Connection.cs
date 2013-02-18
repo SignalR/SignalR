@@ -2,13 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
@@ -22,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client
     /// <summary>
     /// Provides client connections for SignalR services.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification="_disconnectCts is disposed on disconnect.")]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
         private static Version _assemblyVersion;
@@ -41,8 +39,13 @@ namespace Microsoft.AspNet.SignalR.Client
         // The default connection state is disconnected
         private ConnectionState _state;
 
+        private KeepAliveData _keepAliveData;
+
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
+
+        // Keeps track of when the last keep alive from the server was received
+        private HeartbeatMonitor _monitor;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -73,6 +76,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Occurs when the <see cref="Connection"/> state changes.
         /// </summary>
         public event Action<StateChange> StateChanged;
+
+        /// <summary>
+        /// Occurs when the <see cref="Connection"/> is about to timeout
+        /// </summary>
+        public event Action ConnectionSlow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Connection"/> class.
@@ -124,6 +132,21 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
+        /// Object to store the various keep alive timeout values
+        /// </summary>
+        KeepAliveData IConnection.KeepAliveData
+        {
+            get
+            {
+                return _keepAliveData;
+            }
+            set
+            {
+                _keepAliveData = value;
+            }
+        }
+ 
+        /// <summary>
         /// Gets or sets the cookies associated with the connection.
         /// </summary>
         public CookieContainer CookieContainer { get; set; }
@@ -154,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Gets or sets the connection id for the connection.
         /// </summary>
         public string ConnectionId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the connection token for the connection.
         /// </summary>
@@ -237,11 +260,13 @@ namespace Microsoft.AspNet.SignalR.Client
         public Task Start(IClientTransport transport)
         {
             _disconnectCts = new SafeCancellationTokenSource();
+
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
                 return TaskAsyncHelper.Empty;
             }
 
+            _monitor = new HeartbeatMonitor(this);
             _transport = transport;
 
             return Negotiate(transport);
@@ -263,8 +288,13 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 ConnectionId = negotiationResponse.ConnectionId;
                 ConnectionToken = negotiationResponse.ConnectionToken;
-
                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
+
+                // If we have a keep alive
+                if (negotiationResponse.KeepAliveTimeout != null)
+                {
+                    _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+               }
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -308,6 +338,12 @@ namespace Microsoft.AspNet.SignalR.Client
                              .RunSynchronously(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
+
+                                 if(_keepAliveData != null)
+                                 {
+                                    // Start the monitor to check for server activity
+                                    _monitor.Start();
+                                 }
                              });
         }
 
@@ -365,6 +401,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         /// <summary>
         /// Stops the <see cref="Connection"/> without sending an abort message to the server.
+        /// This function is called after we receive a disconnect message from the server.
         /// </summary>
         public void Disconnect()
         {
@@ -376,6 +413,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
+                    _monitor.Dispose();
 
                     State = ConnectionState.Disconnected;
 
@@ -418,8 +456,6 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(JsonConvert.SerializeObject(value));
         }
 
-
-
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
         {
@@ -450,7 +486,6 @@ namespace Microsoft.AspNet.SignalR.Client
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
             _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
-
             if (Reconnecting != null)
             {
                 Reconnecting();
@@ -466,6 +501,27 @@ namespace Microsoft.AspNet.SignalR.Client
             if (Reconnected != null)
             {
                 Reconnected();
+            }
+
+            ((IConnection)this).UpdateLastKeepAlive();
+        }
+
+        void IConnection.OnConnectionSlow()
+        {
+            if (ConnectionSlow != null)
+            {
+                ConnectionSlow();
+            }
+        }
+
+        /// <summary>
+        /// Sets LastKeepAlive to the current time 
+        /// </summary>
+        void IConnection.UpdateLastKeepAlive()
+        {
+            if (_keepAliveData != null)
+            {
+                _keepAliveData.LastKeepAlive = DateTime.UtcNow;
             }
         }
 

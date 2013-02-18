@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _client = client;
             _disconnectToken = CancellationToken.None;
-
             ReconnectDelay = TimeSpan.FromSeconds(2);
         }
 
@@ -36,6 +35,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// The time to wait after a connection drops to try reconnecting.
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public bool SupportsKeepAlive
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// The name of the transport.
@@ -172,6 +182,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 Connection = connection;
                 Data = data;
             }
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            Abort(connection);
         }
     }
 }

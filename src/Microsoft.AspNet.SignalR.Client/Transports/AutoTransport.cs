@@ -33,6 +33,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
         }
 
+        /// <summary>
+        /// Indicates whether or not the active transport supports keep alive
+        /// </summary>
+        public bool SupportsKeepAlive
+        {
+            get
+            {
+                return _transport != null ? _transport.SupportsKeepAlive : false;
+            }
+        }
+
         public string Name
         {
             get
@@ -131,6 +142,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 _transport.Abort(connection);
             }
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            _transport.LostConnection(connection);
         }
     }
 }

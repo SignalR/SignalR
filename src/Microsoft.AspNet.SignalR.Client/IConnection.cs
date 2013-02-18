@@ -4,15 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
     public interface IConnection
     {
+        KeepAliveData KeepAliveData { get; set; }
         string MessageId { get; set; }
         string GroupsToken { get; set; }
         IDictionary<string, object> Items { get; }
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client
         string Url { get; }
         string QueryString { get; }
         ConnectionState State { get; }
+        IClientTransport Transport { get; }
 
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
@@ -36,6 +38,8 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnError(Exception ex);
         void OnReconnecting();
         void OnReconnected();
+        void OnConnectionSlow();
         void PrepareRequest(IRequest request);
+        void UpdateLastKeepAlive();
     }
 }
