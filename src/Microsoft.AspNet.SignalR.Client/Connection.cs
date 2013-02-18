@@ -433,7 +433,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(ConnectionExtensions.JsonSerializeObject(this, value));
+            return Send(this.JsonSerializeObject(value));
         }        
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
