@@ -334,7 +334,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         app.MapConnection<TransportResponse>("/transport-response");
                     });
 
-                    foreach (var transport in new List<IClientTransport>() { new ServerSentEventsTransport(host), new LongPollingTransport(host) })
+                    var transports = new List<IClientTransport>()
+                    {
+                        new ServerSentEventsTransport(host),
+                        new LongPollingTransport(host)
+                    };
+
+                    foreach (var transport in transports)
                     {
                         Debug.WriteLine("Transport: {0}", (object)transport.Name);
 

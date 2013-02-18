@@ -55,9 +55,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 wh.Set();
             });
 
-            var longPollingTransport = new LongPollingTransport(httpClient.Object);
+            var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
+            {
+                CallBase = true
+            };
 
-            var sendTask = longPollingTransport.Send(connection.Object, "");
+            var sendTask = httpBasedTransport.Object.Send(connection.Object, "");
 
             Assert.True(sendTask.IsFaulted);
             Assert.IsType(typeof(AggregateException), sendTask.Exception);
