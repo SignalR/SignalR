@@ -126,6 +126,7 @@
     <Compile Include="Infrastructure\EmptyProtectedData.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />
+    <Compile Include="Infrastructure\HttpSysEtwWrapper.cs" />
     <Compile Include="Infrastructure\IISExpressTestHost.cs" />
     <Compile Include="Infrastructure\IIS\SiteManager.cs" />
     <Compile Include="Infrastructure\ITestHost.cs" />
