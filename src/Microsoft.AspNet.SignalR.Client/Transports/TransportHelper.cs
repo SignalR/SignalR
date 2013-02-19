@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             try
             {
                 var result = JValue.Parse(response);
-
+                
                 if (!result.HasValues)
                 {
                     return;
@@ -123,8 +123,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
+#if IOS
+                timedOut = (int?)result["T"] == 1;
+                disconnected = (int?)result["D"] == 1;
+#else
                 timedOut = result.Value<int>("T") == 1;
                 disconnected = result.Value<int>("D") == 1;
+#endif
 
                 if (disconnected)
                 {
@@ -154,7 +159,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                     }
 
+#if IOS
+                    connection.MessageId = (string)result["C"];
+#else
                     connection.MessageId = result["C"].Value<string>();
+#endif
                 }
             }
             catch (Exception ex)
@@ -172,7 +181,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (groupsToken != null)
             {
+#if IOS
+                connection.GroupsToken = (string)groupsToken;
+#else
                 connection.GroupsToken = groupsToken.Value<string>();
+#endif
             }
         }
 
