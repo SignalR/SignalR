@@ -10,7 +10,7 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 
 ## Get it on NuGet!
 
-    Install-Package Microsoft.AspNet.SignalR -pre
+    Install-Package Microsoft.AspNet.SignalR
 
 ## Get a sample on NuGet, straight into your app!
 
