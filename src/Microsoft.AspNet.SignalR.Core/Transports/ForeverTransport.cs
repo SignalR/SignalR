@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -19,9 +18,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private IJsonSerializer _jsonSerializer;
         private string _lastMessageId;
         private Disposer _requestDisposer;
-
-        private readonly Func<object, Task> _send;
-        private readonly Action<AggregateException> _sendError;
 
         private const int MaxMessages = 10;
 
@@ -43,9 +39,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
-
-            _send = PerformSend;
-            _sendError = OnSendError;
         }
 
         protected string LastMessageId
@@ -163,7 +156,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task Send(object value)
         {
-            return EnqueueOperation(_send, value);
+            var context = new ForeverTransportContext(this, value);
+
+            return EnqueueOperation(state => PerformSend(state), context);
         }
 
         protected internal virtual Task InitializeResponse(ITransportConnection connection)
@@ -352,8 +347,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.False;
             }
 
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return context.Transport.Send(response).Then(() => TaskAsyncHelper.True)
-                                                   .Catch(context.Transport._sendError);
+                                                   .Catch((ex, s) => OnSendError(ex, s), context.Transport);
         }
 
         private static void OnDisconnectMessage(MessageContext context)
@@ -366,21 +362,26 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Lifetime.Complete();
         }
 
-        private Task PerformSend(object state)
+        private static Task PerformSend(object state)
         {
-            Context.Response.ContentType = JsonUtility.JsonMimeType;
+            var context = (ForeverTransportContext)state;
 
-            JsonSerializer.Serialize(state, OutputWriter);
-            OutputWriter.Flush();
+            context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
 
-            return Context.Response.End().Catch(IncrementErrors);
+            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+            context.Transport.OutputWriter.Flush();
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return context.Transport.Context.Response.End().Catch((ex, s) => OnSendError(ex, s), context.Transport);
         }
 
-        private void OnSendError(AggregateException ex)
+        private static void OnSendError(AggregateException ex, object state)
         {
-            IncrementErrors(ex);
+            var transport = (ForeverTransport)state;
 
-            Trace.TraceEvent(TraceEventType.Error, 0, "Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
+            transport.IncrementErrors(ex);
+
+            transport.Trace.TraceEvent(TraceEventType.Error, 0, "Send failed for {0} with: {1}", transport.ConnectionId, ex.GetBaseException());
         }
 
         private static void OnPostReceiveError(AggregateException ex, object state)
