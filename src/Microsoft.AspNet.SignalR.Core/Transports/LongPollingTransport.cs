@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (task != null)
                 {
                     // Mark the request as completed once it's done
-                    return task.Finally(() => CompleteRequest());
+                    return task.Finally(state => CompleteRequest(), null);
                 }
             }
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Send(object value)
         {
-            return EnqueueOperation(() =>
+            return EnqueueOperation(state =>
             {
                 Context.Response.ContentType = IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     OutputWriter.Write("(");
                 }
 
-                _jsonSerializer.Serialize(value, OutputWriter);
+                _jsonSerializer.Serialize(state, OutputWriter);
 
                 if (IsJsonp)
                 {
@@ -197,12 +197,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 OutputWriter.Flush();
                 return Context.Response.End()
-                                       .Catch(IncrementErrorCounters)
+                                       .Catch(IncrementErrors)
                                        .Catch(ex =>
                                        {
                                            Trace.TraceEvent(TraceEventType.Error, 0, "Failed EndAsync() for {0} with: {1}", ConnectionId, ex.GetBaseException());
                                        });
-            });
+            },
+            value);
         }
 
         private Task ProcessSendRequest()
@@ -256,30 +257,34 @@ namespace Microsoft.AspNet.SignalR.Transports
                               connection.Receive(null, ConnectionEndToken, MaxMessages) :
                               connection.Receive(MessageId, ConnectionEndToken, MaxMessages);
 
-
-            return TaskAsyncHelper.Series(() =>
+            var series = new Func<object, Task>[]
             {
-                if (postReceive != null)
+                state =>
                 {
-                    return postReceive();
-                }
-                return TaskAsyncHelper.Empty;
-            },
-            () =>
-            {
-                return receiveTask.Then(response =>
-                {
-                    response.TimedOut = IsTimedOut;
-
-                    if (response.Aborted)
+                    if (state != null)
                     {
-                        // If this was a clean disconnect then raise the event
-                        OnDisconnect();
+                        return ((Func<Task>)state).Invoke();
                     }
+                    return TaskAsyncHelper.Empty;
+                },
+                state =>
+                {
+                    return ((Task<PersistentResponse>)state).Then(response =>
+                    {
+                        response.TimedOut = IsTimedOut;
 
-                    return Send(response);
-                });
-            });
+                        if (response.Aborted)
+                        {
+                            // If this was a clean disconnect then raise the event
+                            OnDisconnect();
+                        }
+
+                        return Send(response);
+                    });
+                }
+            };
+
+            return TaskAsyncHelper.Series(series, new object[] { postReceive, receiveTask });
         }
 
         private static void AddTransportData(PersistentResponse response)

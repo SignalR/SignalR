@@ -7,41 +7,86 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal static class CancellationTokenExtensions
     {
-        public static IDisposable SafeRegister<T>(this CancellationToken cancellationToken, Action<T> callback, T state)
+        public static IDisposable SafeRegister(this CancellationToken cancellationToken, Action<object> callback, object state)
         {
-            var callbackInvoked = 0;
+            var callbackWrapper = new CancellationCallbackWrapper(callback, state);
 
             try
             {
-                CancellationTokenRegistration registration = cancellationToken.Register(callbackState =>
-                {
-                    if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
-                    {
-                        callback((T)callbackState);
-                    }
-                },
-                state,
-                useSynchronizationContext: false);
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                CancellationTokenRegistration registration = cancellationToken.Register(s => Cancel(s),
+                                                                                        callbackWrapper,
+                                                                                        useSynchronizationContext: false);
 
-                return new DisposableAction(() =>
-                {
-                    // This normally waits until the callback is finished invoked but we don't care
-                    if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
-                    {
-                        registration.Dispose();
-                    }
-                });
+                var disposeCancellationState = new DiposeCancellationState(callbackWrapper, registration);
+
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                return new DisposableAction(s => Dispose(s), disposeCancellationState);
             }
             catch (ObjectDisposedException)
             {
-                if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
-                {
-                    callback(state);
-                }
+                callbackWrapper.TryInvoke();
             }
 
             // Noop
-            return new DisposableAction(() => { });
+            return DisposableAction.Empty;
+        }
+
+        private static void Cancel(object state)
+        {
+            ((CancellationCallbackWrapper)state).TryInvoke();
+        }
+
+        private static void Dispose(object state)
+        {
+            ((DiposeCancellationState)state).TryDispose();
+        }
+
+        private class DiposeCancellationState
+        {
+            private readonly CancellationCallbackWrapper _callbackWrapper;
+            private readonly CancellationTokenRegistration _registration;
+
+            public DiposeCancellationState(CancellationCallbackWrapper callbackWrapper, CancellationTokenRegistration registration)
+            {
+                _callbackWrapper = callbackWrapper;
+                _registration = registration;
+            }
+
+            public void TryDispose()
+            {
+                if (_callbackWrapper.TrySetInvoked())
+                {
+                    // This normally waits until the callback is finished invoked but we don't care
+                    _registration.Dispose();
+                }
+            }
+        }
+
+        private class CancellationCallbackWrapper
+        {
+            private readonly Action<object> _callback;
+            private readonly object _state;
+            private int _callbackInvoked;
+
+            public CancellationCallbackWrapper(Action<object> callback, object state)
+            {
+                _callback = callback;
+                _state = state;
+            }
+
+            public bool TrySetInvoked()
+            {
+                return Interlocked.Exchange(ref _callbackInvoked, 1) == 0;
+            }
+
+            public void TryInvoke()
+            {
+                if (TrySetInvoked())
+                {
+                    _callback(_state);
+                }
+            }
         }
     }
 }

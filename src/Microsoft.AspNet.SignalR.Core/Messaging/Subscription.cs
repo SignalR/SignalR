@@ -12,7 +12,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public abstract class Subscription : ISubscription, IDisposable
     {
-        private readonly Func<MessageResult, Task<bool>> _callback;
+        private readonly Func<MessageResult, object, Task<bool>> _callback;
+        private readonly object _callbackState;
         private readonly IPerformanceCounterManager _counters;
 
         private int _state;
@@ -32,9 +33,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public int MaxMessages { get; private set; }
 
-        public Action DisposedCallback { get; set; }
+        public IDisposable Disposable { get; set; }
 
-        protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters)
+        protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters, object state)
         {
             if (String.IsNullOrEmpty(identity))
             {
@@ -66,6 +67,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             EventKeys = new HashSet<string>(eventKeys);
             MaxMessages = maxMessages;
             _counters = counters;
+            _callbackState = state;
 
             _counters.MessageBusSubscribersTotal.Increment();
             _counters.MessageBusSubscribersCurrent.Increment();
@@ -74,17 +76,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public virtual Task<bool> Invoke(MessageResult result)
         {
-            return Invoke(result, () => { });
+            return Invoke(result, state => { }, state: null);
         }
 
-        private Task<bool> Invoke(MessageResult result, Action beforeInvoke)
+        private Task<bool> Invoke(MessageResult result, Action<object> beforeInvoke, object state)
         {
             // Change the state from idle to invoking callback
-            var state = Interlocked.CompareExchange(ref _subscriptionState,
-                                                    SubscriptionState.InvokingCallback,
-                                                    SubscriptionState.Idle);
+            var prevState = Interlocked.CompareExchange(ref _subscriptionState,
+                                                        SubscriptionState.InvokingCallback,
+                                                        SubscriptionState.Idle);
 
-            if (state == SubscriptionState.Disposed)
+            if (prevState == SubscriptionState.Disposed)
             {
                 // Only allow terminal messages after dispose
                 if (!result.Terminal)
@@ -93,9 +95,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            beforeInvoke();
+            beforeInvoke(state);
 
-            return _callback.Invoke(result).ContinueWith(task =>
+            return _callback.Invoke(result, _callbackState).ContinueWith(task =>
             {
                 // Go from invoking callback to idle
                 Interlocked.CompareExchange(ref _subscriptionState,
@@ -175,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (items.Count > 0)
             {
                 var messageResult = new MessageResult(items, totalCount);
-                Task<bool> callbackTask = Invoke(messageResult, () => BeforeInvoke(state));
+                Task<bool> callbackTask = Invoke(messageResult, s => BeforeInvoke(s), state);
 
                 if (callbackTask.IsCompleted)
                 {
@@ -302,9 +304,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         }
 
                         // Raise the disposed callback
-                        if (DisposedCallback != null)
+                        if (Disposable != null)
                         {
-                            DisposedCallback();
+                            Disposable.Dispose();
                         }
 
                         break;

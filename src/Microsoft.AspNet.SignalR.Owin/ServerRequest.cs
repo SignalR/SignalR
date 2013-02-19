@@ -147,9 +147,8 @@ namespace Microsoft.AspNet.SignalR.Owin
                 throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
             }
 
-            var options = new Dictionary<string, object>();
             var handler = new OwinWebSocketHandler(callback);
-            accept(options, handler.ProcessRequestAsync);
+            accept(null, handler.ProcessRequestAsync);
             return TaskAsyncHelper.Empty;
         }
 #endif

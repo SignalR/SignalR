@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             set;
         }
 
-        event Action<string> ISubscriber.EventKeyAdded
+        event Action<ISubscriber, string> ISubscriber.EventKeyAdded
         {
             add
             {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
         }
 
-        event Action<string> ISubscriber.EventKeyRemoved
+        event Action<ISubscriber, string> ISubscriber.EventKeyRemoved
         {
             add
             {
@@ -43,6 +43,8 @@ namespace Microsoft.AspNet.SignalR.Stress
         }
 
         public Func<string> GetCursor { get; set; }
+
+        public Subscription Subscription { get; set; }
 
         public string Identity
         {

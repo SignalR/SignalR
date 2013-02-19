@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        event Action<string> ISubscriber.EventKeyAdded
+        event Action<ISubscriber, string> ISubscriber.EventKeyAdded
         {
             add
             {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        event Action<string> ISubscriber.EventKeyRemoved
+        event Action<ISubscriber, string> ISubscriber.EventKeyRemoved
         {
             add
             {
@@ -84,6 +84,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             {
                 return _serverIdManager.ServerId;
             }
+        }
+        
+        public Subscription Subscription
+        {
+            get;
+            set;
         }
 
         public Task SendCommand(ServerCommand command)
@@ -114,17 +120,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private void ProcessMessages()
         {
             // Process messages that come from the bus for servers
-            _subscription = _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages);
+            _subscription = _messageBus.Subscribe(this, cursor: null, callback: HandleServerCommands, maxMessages: MaxMessages, state: null);
         }
 
-        private Task<bool> HandleServerCommands(MessageResult result)
+        private Task<bool> HandleServerCommands(MessageResult result, object state)
         {
-            result.Messages.Enumerate(m => ServerSignal.Equals(m.Key),
-                                      m =>
-                                      {
-                                          var command = _serializer.Parse<ServerCommand>(m.Value);
-                                          OnCommand(command);
-                                      });
+            result.Messages.Enumerate<object>(m => ServerSignal.Equals(m.Key),
+                                              (s, m) =>
+                                              {
+                                                  var command = _serializer.Parse<ServerCommand>(m.Value);
+                                                  OnCommand(command);
+                                              },
+                                              state: null);
 
             return TaskAsyncHelper.True;
         }

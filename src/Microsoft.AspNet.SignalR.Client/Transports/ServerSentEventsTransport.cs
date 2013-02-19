@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (!disconnectToken.IsCancellationRequested && connection.EnsureReconnecting())
                 {
                     // Now attempt a reconnect
-                    OpenConnection(connection, data,  disconnectToken, initializeCallback: null, errorCallback: null);
+                    OpenConnection(connection, data, disconnectToken, initializeCallback: null, errorCallback: null);
                 }
             });
         }
@@ -118,10 +118,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var eventSource = new EventSourceStreamReader(stream);
                     bool retry = true;
 
-                    var esCancellationRegistration = disconnectToken.SafeRegister(es =>
+                    var esCancellationRegistration = disconnectToken.SafeRegister(state =>
                     {
                         retry = false;
-                        es.Close();
+                        ((EventSourceStreamReader)state).Close();
                     }, eventSource);
 
                     eventSource.Opened = () =>
@@ -193,12 +193,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
             });
 
-            var requestCancellationRegistration = disconnectToken.SafeRegister(req =>
+            var requestCancellationRegistration = disconnectToken.SafeRegister(state =>
             {
-                if (req != null)
+                if (state != null)
                 {
                     // This will no-op if the request is already finished.
-                    req.Abort();
+                    ((IRequest)state).Abort();
                 }
 
                 if (errorCallback != null)

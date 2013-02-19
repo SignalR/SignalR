@@ -61,6 +61,17 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return _items.GetSnapshot();
         }
 
+        public bool DetectChanges()
+        {
+            lock (_lock)
+            {
+                bool anyChanges = _addedItems.Count > 0 || _removedItems.Count > 0;
+                _addedItems.Clear();
+                _removedItems.Clear();
+                return anyChanges;
+            }
+        }
+
         public DiffPair<T> GetDiff()
         {
             lock (_lock)
@@ -75,5 +86,5 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 return pair;
             }
         }
-}
+    }
 }

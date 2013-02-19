@@ -51,6 +51,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private const int DefaultMaxTopicsWithNoSubscriptions = 5000;
 
+        private readonly Func<string, Topic> _createTopic;
+
         /// <summary>
         /// 
         /// </summary>
@@ -121,6 +123,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _messageStoreSize = (uint)configurationManager.DefaultMessageBufferSize;
 
             _topicTtl = configurationManager.TopicTtl();
+            _createTopic = CreateTopic;
 
             Topics = new TopicLookup();
         }
@@ -202,12 +205,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <param name="maxMessages"></param>
+        /// <param name="state"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Failure to invoke the callback should be ignored")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable object is returned to the caller")]
-        public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages)
+        public virtual IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int maxMessages, object state)
         {
-            Subscription subscription = CreateSubscription(subscriber, cursor, callback, maxMessages);
+            if (subscriber == null)
+            {
+                throw new ArgumentNullException("subscriber");
+            }
+
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
+            Subscription subscription = CreateSubscription(subscriber, cursor, callback, maxMessages, state);
+
+            // Set the subscription for this subscriber
+            subscriber.Subscription = subscription;
 
             var topics = new HashSet<Topic>();
 
@@ -221,22 +237,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 topics.Add(topic);
             }
 
-            Action<string> eventAdded = eventKey =>
-            {
-                Topic topic = GetTopic(eventKey);
-
-                // Add or update the cursor (in case it already exists)
-                subscription.AddEvent(eventKey, topic);
-
-                // Add it to the list of subs
-                topic.AddSubscription(subscription);
-            };
-
-            Action<string> eventRemoved = eventKey => RemoveEvent(subscription, eventKey);
-
-            subscriber.EventKeyAdded += eventAdded;
-            subscriber.EventKeyRemoved += eventRemoved;
-            subscriber.GetCursor += subscription.GetCursor;
+            subscriber.EventKeyAdded += AddEvent;
+            subscriber.EventKeyRemoved += RemoveEvent;
+            subscriber.GetCursor = subscription.GetCursor;
 
             // Add the subscription when it's all set and can be scheduled
             // for work
@@ -245,34 +248,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 topic.AddSubscription(subscription);
             }
 
-            var disposable = new DisposableAction(() =>
-            {
-                // This will stop work from continuting to happen
-                subscription.Dispose();
-
-                try
-                {
-                    // Invoke the terminal callback
-                    subscription.Invoke(MessageResult.TerminalMessage).Wait();
-                }
-                catch
-                {
-                    // We failed to talk to the subscriber because they are already gone
-                    // so the terminal message isn't required.
-                }
-
-                subscriber.EventKeyAdded -= eventAdded;
-                subscriber.EventKeyRemoved -= eventRemoved;
-                subscriber.GetCursor -= subscription.GetCursor;
-
-                foreach (var eventKey in subscriber.EventKeys)
-                {
-                    RemoveEvent(subscription, eventKey);
-                }
-            });
+            var disposable = new DisposableAction(DisposeSubscription, subscriber);
 
             // When the subscription itself is disposed then dispose it
-            subscription.DisposedCallback = disposable.Dispose;
+            subscription.Disposable = disposable;
 
             // If there's a cursor then schedule work for this subscription
             if (!String.IsNullOrEmpty(cursor))
@@ -284,9 +263,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int messageBufferSize)
+        protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
-            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters);
+            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters, state);
         }
 
         protected void ScheduleEvent(string eventKey)
@@ -451,8 +430,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         internal Topic GetTopic(string key)
         {
-            Func<string, Topic> factory = _ => CreateTopic(key);
-
             while (true)
             {
                 if (BeforeTopicCreated != null)
@@ -460,7 +437,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     BeforeTopicCreated(key);
                 }
 
-                Topic topic = Topics.GetOrAdd(key, factory);
+                Topic topic = Topics.GetOrAdd(key, _createTopic);
 
                 if (BeforeTopicMarked != null)
                 {
@@ -486,13 +463,53 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private void RemoveEvent(Subscription subscription, string eventKey)
+        private void AddEvent(ISubscriber subscriber, string eventKey)
+        {
+            Topic topic = GetTopic(eventKey);
+
+            // Add or update the cursor (in case it already exists)
+            subscriber.Subscription.AddEvent(eventKey, topic);
+
+            // Add it to the list of subs
+            topic.AddSubscription(subscriber.Subscription);
+        }
+
+        private void RemoveEvent(ISubscriber subscriber, string eventKey)
         {
             Topic topic;
             if (Topics.TryGetValue(eventKey, out topic))
             {
-                topic.RemoveSubscription(subscription);
-                subscription.RemoveEvent(eventKey);
+                topic.RemoveSubscription(subscriber.Subscription);
+                subscriber.Subscription.RemoveEvent(eventKey);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Failure to invoke the callback should be ignored")]
+        private void DisposeSubscription(object state)
+        {
+            var subscriber = (ISubscriber)state;
+
+            // This will stop work from continuting to happen
+            subscriber.Subscription.Dispose();
+
+            try
+            {
+                // Invoke the terminal callback
+                subscriber.Subscription.Invoke(MessageResult.TerminalMessage).Wait();
+            }
+            catch
+            {
+                // We failed to talk to the subscriber because they are already gone
+                // so the terminal message isn't required.
+            }
+
+            subscriber.EventKeyAdded -= AddEvent;
+            subscriber.EventKeyRemoved -= RemoveEvent;
+            subscriber.GetCursor = null;
+
+            foreach (var eventKey in subscriber.EventKeys)
+            {
+                RemoveEvent(subscriber, eventKey);
             }
         }
     }

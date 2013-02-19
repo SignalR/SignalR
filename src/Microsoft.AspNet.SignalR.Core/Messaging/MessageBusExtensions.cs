@@ -59,13 +59,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             registration = cancel.SafeRegister(state =>
             {
-                state.Dispose();
+                ((Disposer)state).Dispose();
             },
             disposer);
 
             try
             {
-                subscription = bus.Subscribe(subscriber, cursor, messageResult =>
+                subscription = bus.Subscribe(subscriber, cursor, (messageResult, state) =>
                 {
                     // Mark the flag as set so we only set the result once
                     if (Interlocked.Exchange(ref resultSet, 1) == 0)
@@ -86,7 +86,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     return TaskAsyncHelper.False;
                 },
-                maxMessages);
+                maxMessages,
+                null);
             }
             catch (Exception ex)
             {
@@ -115,10 +116,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("onMessage");
             }
 
-            Enumerate(messages, message => true, onMessage);
+            Enumerate<object>(messages, message => true, (state, message) => onMessage(message), state: null);
         }
 
-        public static void Enumerate(this IList<ArraySegment<Message>> messages, Func<Message, bool> filter, Action<Message> onMessage)
+        public static void Enumerate<T>(this IList<ArraySegment<Message>> messages, Func<Message, bool> filter, Action<T, Message> onMessage, T state)
         {
             if (messages == null)
             {
@@ -144,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     if (filter(message))
                     {
-                        onMessage(message);
+                        onMessage(state, message);
                     }
                 }
             }

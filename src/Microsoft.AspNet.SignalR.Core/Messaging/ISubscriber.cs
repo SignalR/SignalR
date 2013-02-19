@@ -13,8 +13,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         string Identity { get; }
 
-        event Action<string> EventKeyAdded;
+        event Action<ISubscriber, string> EventKeyAdded;
 
-        event Action<string> EventKeyRemoved;
+        event Action<ISubscriber, string> EventKeyRemoved;
+
+        Subscription Subscription { get; set; }
     }
 }

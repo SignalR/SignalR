@@ -37,6 +37,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
 
+        private readonly Action<AggregateException> _disconnectError;
+        private readonly Action _incrementDisconnectCounter;
+        private readonly Action<AggregateException> _incrementErrors;
+
         protected TransportDisconnectBase(HostContext context, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
             if (context == null)
@@ -67,6 +71,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             WriteQueue = new TaskQueue();
 
             _trace = traceManager["SignalR.Transports." + GetType().Name];
+
+            _disconnectError = OnDisconnectError;
+            _incrementDisconnectCounter = OnDisconnectComplete;
+            _incrementErrors = IncrementErrorCounters;
         }
 
         protected TraceSource Trace
@@ -89,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.AsStream(), new UTF8Encoding());
+                    _outputWriter = new ResponseWriter(Context.Response);
                     _outputWriter.NewLine = "\n";
                 }
 
@@ -187,7 +195,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Request.Url; }
         }
 
-        protected void IncrementErrorCounters(Exception exception)
+        protected Action<AggregateException> IncrementErrors
+        {
+            get
+            {
+                return _incrementErrors;
+            }
+        }
+
+        private void IncrementErrorCounters(AggregateException exception)
         {
             _counters.ErrorsTransportTotal.Increment();
             _counters.ErrorsTransportPerSec.Increment();
@@ -217,11 +233,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 var disconnected = Disconnected; // copy before invoking event to avoid race
                 if (disconnected != null)
                 {
-                    return disconnected().Catch(ex =>
-                    {
-                        Trace.TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
-                    })
-                    .Then(() => _counters.ConnectionsDisconnected.Increment());
+                    return disconnected().Catch(_disconnectError)
+                                         .Then(_incrementDisconnectCounter);
                 }
             }
 
@@ -291,13 +304,18 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
         {
+            return EnqueueOperation(state => ((Func<Task>)state).Invoke(), writeAsync);
+        }
+
+        protected virtual internal Task EnqueueOperation(Func<object, Task> writeAsync, object state)
+        {
             if (!IsAlive)
             {
                 return TaskAsyncHelper.Empty;
             }
 
             // Only enqueue new writes if the connection is alive
-            return WriteQueue.Enqueue(writeAsync);
+            return WriteQueue.Enqueue(writeAsync, state);
         }
 
         protected virtual void InitializePersistentState()
@@ -313,9 +331,19 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Handle the shutdown token's callback so we can end our token if it trips
             _hostRegistration = _hostShutdownToken.SafeRegister(state =>
             {
-                state.Cancel();
+                ((SafeCancellationTokenSource)state).Cancel();
             },
             _connectionEndTokenSource);
         }
+
+        private void OnDisconnectError(AggregateException ex)
+        {
+            Trace.TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
+        }
+
+        private void OnDisconnectComplete()
+        {
+            _counters.ConnectionsDisconnected.Increment();
+        }        
     }
 }

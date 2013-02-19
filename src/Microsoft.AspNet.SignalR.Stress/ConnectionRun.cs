@@ -97,8 +97,9 @@ namespace Microsoft.AspNet.SignalR.Stress
             {
                 var transportConnection = (ITransportConnection)context.Connection;
                 var subscription = transportConnection.Receive(messageId: null,
-                                                               callback: _ => TaskAsyncHelper.True,
-                                                               maxMessages: 10);
+                                                               callback: (_, __) => TaskAsyncHelper.True,
+                                                               maxMessages: 10,
+                                                               state: null);
                 subscriptions.Add(subscription);
             }
 

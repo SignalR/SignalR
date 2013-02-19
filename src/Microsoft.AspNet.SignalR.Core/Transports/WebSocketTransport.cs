@@ -16,6 +16,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         private IWebSocket _socket;
         private bool _isAlive = true;
 
+        private readonly Action<string> _message;
+        private readonly Action<bool> _closed;
+
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
             : this(context,
@@ -34,6 +37,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             : base(context, serializer, heartbeat, performanceCounterWriter, traceManager)
         {
             _context = context;
+            _message = OnMessage;
+            _closed = OnClosed;
         }
 
         public override bool IsAlive
@@ -70,29 +75,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             return webSocketRequest.AcceptWebSocketRequest(socket =>
             {
                 _socket = socket;
-
-                socket.OnClose = clean =>
-                {
-                    Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
-
-                    // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
-                    // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
-                    // HeartBeat clean it up.  This is to maintain consistency across the transports.
-                    if (clean)
-                    {
-                        OnDisconnect();
-                    }
-
-                    _isAlive = false;
-                };
-
-                socket.OnMessage = message =>
-                {
-                    if (Received != null)
-                    {
-                        Received(message).Catch();
-                    }
-                };
+                socket.OnClose = _closed;
+                socket.OnMessage = _message;
 
                 return ProcessRequestCore(connection);
             });
@@ -104,12 +88,35 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             OnSending(data);
 
-            return _socket.Send(data).Catch(IncrementErrorCounters);
+            return _socket.Send(data).Catch(IncrementErrors);
         }
 
         public override Task Send(PersistentResponse response)
         {
             return Send((object)response);
+        }
+
+        private void OnMessage(string message)
+        {
+            if (Received != null)
+            {
+                Received(message).Catch();
+            }
+        }
+
+        private void OnClosed(bool clean)
+        {
+            Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
+
+            // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
+            // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
+            // HeartBeat clean it up.  This is to maintain consistency across the transports.
+            if (clean)
+            {
+                OnDisconnect();
+            }
+
+            _isAlive = false;
         }
     }
 }
