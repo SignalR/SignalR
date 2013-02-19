@@ -147,6 +147,11 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["ComplexType"], $.makeArray(arguments)));
              },
 
+            doSomethingAndCallError: function () {
+            /// <summary>Calls the DoSomethingAndCallError method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["DoSomethingAndCallError"], $.makeArray(arguments)));
+             },
+
             dynamicInvoke: function (method) {
             /// <summary>Calls the DynamicInvoke method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"method\" type=\"String\">Server side type is System.String</param>
