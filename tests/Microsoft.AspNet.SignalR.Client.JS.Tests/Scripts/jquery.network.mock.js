@@ -356,7 +356,7 @@
                 for (var key in eventSourceData) {
                     var data = eventSourceData[key];
 
-                    data._events["error"].call(data, savedEventSource.CLOSED);
+                    data._events.error.call(data, savedEventSource.CLOSED);
 
                     // Used to not trigger any methods from a resultant event source completion event.
                     ignoringMessages = true;
