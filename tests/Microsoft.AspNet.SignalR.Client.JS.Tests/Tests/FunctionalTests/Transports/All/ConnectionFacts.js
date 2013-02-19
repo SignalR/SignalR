@@ -60,8 +60,11 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+});
 
-    if (!window.document.commandLineTest) {
+if (!window.document.commandLineTest) {
+    // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
+    testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
         QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in onReceived.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connection = testUtilities.createConnection("multisend", testName),
                 onerror = window.onerror;
@@ -87,5 +90,5 @@ testUtilities.runWithAllTransports(function (transport) {
                 connection.stop();
             };
         });
-    }
-});
+    });
+}
