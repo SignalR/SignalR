@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Client
             var sb = new StringBuilder(0x100);
             using (var stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture))
             {
-                using (var jsonWriter = new JsonTextWriter(stringWriter))
+                using (var jsonWriter = new JsonTextWriter(stringWriter) { CloseOutput = false })
                 {
                     jsonWriter.Formatting = connection.JsonSerializer.Formatting;
                     connection.JsonSerializer.Serialize(jsonWriter, value);
@@ -54,14 +54,9 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonTextReader will not dispose the stringReader")]
         public static T JsonDeserializeObject<T>(this IConnection connection, string jsonValue)
         {
-            if (connection == null)
-            {
-                throw new ArgumentNullException("connection");
-            }
-
             using (var stringReader = new StringReader(jsonValue))
             {
-                using (var jsonTextReader = new JsonTextReader(stringReader))
+                using (var jsonTextReader = new JsonTextReader(stringReader) { CloseInput = false })
                 {
                     return (T)connection.JsonSerializer.Deserialize(jsonTextReader, typeof(T));
                 }
