@@ -68,6 +68,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
+    <Compile Include="ArrayTextReaderFacts.cs" />
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="Client\TransportFacts.cs" />
