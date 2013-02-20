@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// we don't need to write to a long lived buffer. This saves massive amounts of memory
     /// as the number of connections grows.
     /// </summary>
-    internal class ResponseWriter : TextWriter
+    internal class ResponseWriter : TextWriter, IBinaryWriter
     {
         // Max chars to buffer before writing to the response
         private const int MaxChars = 1024;
@@ -90,6 +90,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
+        public void Write(ArraySegment<byte> data)
+        {
+            _response.Write(data);
+        }
+
         private class ChunkedWriter
         {
             private int _charPos;
@@ -146,6 +151,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     _response.Write(new ArraySegment<byte>(_byteBuffer, 0, count));
                 }
             }
-        }
+        }        
     }
 }
