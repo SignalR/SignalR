@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         }
 
         // Gracefully closes the connection
-        public void Close()
+        public virtual void Close()
         {
             CloseAsync();
         }
@@ -193,8 +193,14 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 try
                 {
-                    Close();
-                    OnClose(cleanClose);
+                    try
+                    {
+                        Close();
+                    }
+                    finally
+                    {
+                        OnClose(cleanClose);
+                    }
                 }
                 finally
                 {

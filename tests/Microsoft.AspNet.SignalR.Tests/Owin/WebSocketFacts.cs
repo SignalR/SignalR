@@ -34,5 +34,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             webSocketHandler.Verify(wsh => wsh.OnError(), Times.AtLeastOnce());
             webSocketHandler.Verify(wsh => wsh.OnClose(It.IsAny<bool>()), Times.AtLeastOnce());
         }
+
+        [Fact]
+        public void ThrowingErrorOnCloseRaisesOnClosed()
+        {
+            var webSocketHandler = new Mock<WebSocketHandler>();
+            var webSocket = new Mock<WebSocket>();
+            var cts = new CancellationTokenSource(); 
+            webSocketHandler.Setup(wsh => wsh.Close()).Throws(new Exception("It's disconnected"));
+
+            cts.Cancel();
+            webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, cts.Token);
+
+            webSocketHandler.Verify(wsh => wsh.OnClose(It.IsAny<bool>()), Times.AtLeastOnce());
+        }
     }
 }
