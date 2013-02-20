@@ -2,11 +2,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
-    [Serializable]
     public class Message
     {
         private static readonly byte[] _zeroByteBuffer = new byte[0];
@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             get
             {
-                return CommandId != null;
+                return !String.IsNullOrEmpty(CommandId);
             }
         }
 
@@ -110,6 +110,35 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             return Encoding.GetString(Value.Array, Value.Offset, Value.Count);
+        }
+
+        public void WriteTo(Stream stream)
+        {
+            var binaryWriter = new BinaryWriter(stream);
+            binaryWriter.Write(Source);
+            binaryWriter.Write(Key);
+            binaryWriter.Write(Value.Count);
+            binaryWriter.Write(Value.Array ?? new byte[0], Value.Offset, Value.Count);
+            binaryWriter.Write(CommandId ?? String.Empty);
+            binaryWriter.Write(WaitForAck);
+            binaryWriter.Write(IsAck);
+            binaryWriter.Write(Filter ?? String.Empty);
+        }
+
+        public static Message ReadFrom(Stream stream)
+        {
+            var message = new Message();
+            var binaryReader = new BinaryReader(stream);
+            message.Source = binaryReader.ReadString();
+            message.Key = binaryReader.ReadString();
+            int bytes = binaryReader.ReadInt32();
+            message.Value = new ArraySegment<byte>(binaryReader.ReadBytes(bytes));
+            message.CommandId = binaryReader.ReadString();
+            message.WaitForAck = binaryReader.ReadBoolean();
+            message.IsAck = binaryReader.ReadBoolean();
+            message.Filter = binaryReader.ReadString();
+
+            return message;
         }
     }
 }

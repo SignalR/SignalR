@@ -1,49 +1,46 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     public static class ServiceBusMessage
     {
-        private static readonly JsonSerializer _serializer = GetSerializer();
-
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The stream is returned to the caller of ths method")]
         public static Stream ToStream(IList<Message> messages)
         {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream)
+            if (messages == null)
             {
-                AutoFlush = true
-            };
-            _serializer.Serialize(writer, messages);
-            stream.Seek(0, SeekOrigin.Begin);
-            return stream;
+                throw new ArgumentNullException("messages");
+            }
+
+            var ms = new MemoryStream();
+            var binaryWriter = new BinaryWriter(ms);
+            binaryWriter.Write(messages.Count);
+            for (int i = 0; i < messages.Count; i++)
+            {
+                messages[i].WriteTo(ms);
+            }
+
+            return ms;
         }
 
         public static IList<Message> FromStream(Stream stream)
         {
-            var streamReader = new StreamReader(stream);
-            using (var jsonReader = new JsonTextReader(streamReader))
+            var binaryReader = new BinaryReader(stream);
+            int count = binaryReader.ReadInt32();
+
+            var messages = new List<Message>();
+            for (int i = 0; i < count; i++)
             {
-                return _serializer.Deserialize<Message[]>(jsonReader);
+                messages.Add(Message.ReadFrom(stream));
             }
-        }
 
-        private static JsonSerializer GetSerializer()
-        {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                MaxDepth = 20
-            };
-
-            return JsonSerializer.Create(settings);
+            return messages;
         }
     }
 }

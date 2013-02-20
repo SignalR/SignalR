@@ -1,38 +1,37 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
-using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
     public class RedisMessage
     {
-        private static readonly JsonSerializer _serializer = GetSerializer();
+        public long Id { get; private set; }
 
-        public RedisMessage(long id, IList<Message> messages)
-        {
-            Id = id;
-            Messages = messages;
-        }
-
-        [JsonProperty("I")]
-        public long Id { get; set; }
-
-        [JsonProperty("M")]
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Type is used for serialization")]
-        public IList<Message> Messages { get; set; }
+        public IList<Message> Messages { get; private set; }
 
         public static byte[] ToBytes(long id, IList<Message> messages)
         {
-            using (var writer = new StringWriter(CultureInfo.InvariantCulture))
+            if (messages == null)
             {
-                _serializer.Serialize(writer, new RedisMessage(id, messages));
-                return Encoding.UTF8.GetBytes(writer.ToString());
+                throw new ArgumentNullException("messages");
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                var binaryWriter = new BinaryWriter(ms);
+
+                binaryWriter.Write(id);
+                binaryWriter.Write(messages.Count);
+                for (int i = 0; i < messages.Count; i++)
+                {
+                    messages[i].WriteTo(ms);
+                }
+
+                return ms.ToArray();
             }
         }
 
@@ -40,22 +39,18 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             using (var stream = new MemoryStream(data))
             {
-                var streamReader = new StreamReader(stream);
-                var jsonReader = new JsonTextReader(streamReader);
-                return _serializer.Deserialize<RedisMessage>(jsonReader);
+                var binaryReader = new BinaryReader(stream);
+                var message = new RedisMessage();
+                message.Id = binaryReader.ReadInt64();
+                message.Messages = new List<Message>();
+                int count = binaryReader.ReadInt32();
+                for (int i = 0; i < count; i++)
+                {
+                    message.Messages.Add(Message.ReadFrom(stream));
+                }
+
+                return message;
             }
-        }
-
-        private static JsonSerializer GetSerializer()
-        {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                MaxDepth = 20
-            };
-
-            return JsonSerializer.Create(settings);
         }
     }
 }
