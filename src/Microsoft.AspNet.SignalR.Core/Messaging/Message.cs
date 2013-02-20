@@ -9,17 +9,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
     [Serializable]
     public class Message
     {
+        private static readonly byte[] _zeroByteBuffer = new byte[0];
+
         public Message()
         {
             Encoding = new UTF8Encoding();
         }
 
         public Message(string source, string key, string value)
-            : this(source, key, value, new UTF8Encoding())
-        {
-        }
-
-        public Message(string source, string key, string value, Encoding encoding)
         {
             if (source == null)
             {
@@ -31,15 +28,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("key");
             }
 
-            if (encoding == null)
-            {
-                throw new ArgumentNullException("encoding");
-            }
-
             Source = source;
             Key = key;
-            Value = value == null ? new ArraySegment<byte>() : new ArraySegment<byte>(encoding.GetBytes(value));
-            Encoding = encoding;
+            Encoding = new UTF8Encoding();
+            Value = value == null ? new ArraySegment<byte>(_zeroByteBuffer) : new ArraySegment<byte>(Encoding.GetBytes(value));
         }
 
         public Message(string source, string key, ArraySegment<byte> value)
