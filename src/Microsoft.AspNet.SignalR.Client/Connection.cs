@@ -47,12 +47,11 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
-        //The json serializer for the connections
-        
+        //The json serializer for the connections        
         private JsonSerializer _jsonSerializer = new JsonSerializer();
+
 		// Keeps track of when the last keep alive from the server was received        
 		private HeartbeatMonitor _monitor;
-
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
