@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             : base(httpClient, "serverSentEvents")
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
-            ConnectionTimeout = TimeSpan.FromSeconds(2);
+            ConnectionTimeout = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #else
             Debug.WriteLine("SSE: GET {0}", (object)url);
 #endif
-
+            var timeoutCancellation = new CancellationTokenSource();
             HttpClient.Get(url, req =>
             {
                 request = req;
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     }
                     requestDisposer.Dispose();
                 }
-                else
+                else if (!timeoutCancellation.IsCancellationRequested)  // Make sure it did not timeout
                 {
                     IResponse response = task.Result;
                     Stream stream = response.GetResponseStream();
@@ -220,6 +220,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
                 {
+                    timeoutCancellation.Cancel();
                     callbackInvoker.Invoke((conn, cb) =>
                     {
                         // Connection timeout occurred
