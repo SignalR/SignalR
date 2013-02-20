@@ -6,9 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Newtonsoft.Json;
-using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
