@@ -27,5 +27,5 @@ PublishProfiles/
 tests/Microsoft.AspNet.SignalR.Client.JS.Tests/temp/*
 tests/Microsoft.AspNet.SignalR.Client.JS.Tests/CommandLineBridge.js
 *.vspx
-signalr.log.txt
+*.log.txt
 /tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/

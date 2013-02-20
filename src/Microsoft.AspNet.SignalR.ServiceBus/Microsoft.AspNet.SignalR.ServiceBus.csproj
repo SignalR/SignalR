@@ -49,6 +49,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Microsoft.WindowsAzure.ServiceRuntime.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -68,37 +72,23 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="AsyncResult.cs" />
-    <Compile Include="AsyncSemaphore.cs" />
-    <Compile Include="DbConnectionStringBuilderExtentionMethods.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
+      <Link>Infrastructure\DisposableAction.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
+      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
     <Compile Include="DependencyResolverExtensions.cs" />
-    <Compile Include="FastMessageSerializer.cs" />
-    <Compile Include="CallbackException.cs" />
-    <Compile Include="HashCode.cs" />
-    <Compile Include="CompletedAsyncResult.cs" />
-    <Compile Include="InputQueue.cs" />
-    <Compile Include="InternalMessage.cs" />
-    <Compile Include="IOThreadScheduler.cs" />
-    <Compile Include="IOThreadTimer.cs" />
-    <Compile Include="IteratorAsyncResult.cs" />
-    <Compile Include="MessageConverter.cs" />
-    <Compile Include="MessageDispatcher.cs" />
+    <Compile Include="Infrastructure\ServiceBusTaskExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Log.cs" />
+    <Compile Include="ServiceBusMessage.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ServiceBusConnection.cs" />
     <Compile Include="ServiceBusMessageBus.cs" />
-    <Compile Include="TaskAsyncResult.cs" />
-    <Compile Include="TopicMessageBus.cs" />
-    <Compile Include="MessagePump.cs" />
-    <Compile Include="Md5Hash.cs" />
-    <Compile Include="Ticks.cs" />
-    <Compile Include="TimeoutHelper.cs" />
-    <Compile Include="TraceEventTypeExtentionMethods.cs" />
-    <Compile Include="UnsafeNativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">

@@ -147,6 +147,9 @@
   <data name="Error_DuplicateHubs" xml:space="preserve">
     <value>Duplicate hub names found.</value>
   </data>
+  <data name="Error_DuplicatePayloadsForStream" xml:space="preserve">
+    <value>Duplicate payload id detected for stream '{0}'.</value>
+  </data>
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating Hub {0}. </value>
   </data>

@@ -322,6 +322,10 @@
       <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
       <Name>Microsoft.AspNet.SignalR.Redis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj">
+      <Project>{3da5e69c-ba4c-4ec1-9fde-688a1bc34b17}</Project>
+      <Name>Microsoft.AspNet.SignalR.ServiceBus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
       <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
       <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>

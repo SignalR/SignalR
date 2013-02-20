@@ -3,8 +3,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
@@ -14,10 +18,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>>();
+        private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
+        }
+
+        protected virtual int StreamCount
+        {
+            get
+            {
+                return 1;
+            }
         }
 
         /// <summary>
@@ -25,7 +38,68 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         /// <param name="messages"></param>
         /// <returns></returns>
-        protected abstract Task Send(IList<Message> messages);
+        protected virtual Task Send(IList<Message> messages)
+        {
+            // If we're only using a single stream then just send
+            if (StreamCount == 1)
+            {
+                return Send(0, messages);
+            }
+
+            var taskCompletionSource = new TaskCompletionSource<object>();
+
+            // Group messages by source (connection id)
+            var messagesBySource = messages.GroupBy(m => m.Source);
+
+            SendImpl(messagesBySource.GetEnumerator(), taskCompletionSource);
+
+            return taskCompletionSource.Task;
+        }
+
+        protected virtual Task Send(int streamIndex, IList<Message> messages)
+        {
+            throw new NotImplementedException();
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We return a faulted tcs")]
+        private void SendImpl(IEnumerator<IGrouping<string, Message>> enumerator, TaskCompletionSource<object> taskCompletionSource)
+        {
+        send:
+
+            if (!enumerator.MoveNext())
+            {
+                taskCompletionSource.TrySetResult(null);
+            }
+            else
+            {
+                IGrouping<string, Message> group = enumerator.Current;
+
+                // Get the channel index we're going to use for this message
+                int index = _sipHashBasedComparer.GetHashCode(group.Key) % StreamCount;
+
+                Task sendTask = Send(index, group.ToArray()).Catch();
+
+                if (sendTask.IsCompleted)
+                {
+                    try
+                    {
+                        sendTask.Wait();
+
+                        goto send;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        taskCompletionSource.SetUnwrappedException(ex);
+                    }
+                }
+                else
+                {
+                    sendTask.Then((enumer, tcs) => SendImpl(enumer, tcs), enumerator, taskCompletionSource)
+                            .ContinueWithNotComplete(taskCompletionSource);
+                }
+            }
+        }
 
         /// <summary>
         /// Invoked when a payload is received from the backplane. There should only be one active call at any time.
@@ -38,6 +112,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
         {
+            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
+
             // Create a local dictionary for this payload
             var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
 
@@ -63,7 +139,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var stream = _streams.GetOrAdd(streamId, _ => new IndexedDictionary<ulong, ScaleoutMapping>());
 
             // Publish only after we've setup the mapping fully
-            stream.Add(id, mapping);
+            if (!stream.TryAdd(id, mapping))
+            {
+                Trace.TraceEvent(TraceEventType.Error, 0, Resources.Error_DuplicatePayloadsForStream, streamId);
+
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePayloadsForStream, streamId));
+            }
 
             // Schedule after we're done
             foreach (var eventKey in dictionary.Keys)

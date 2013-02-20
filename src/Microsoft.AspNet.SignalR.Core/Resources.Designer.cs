@@ -151,6 +151,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate payload id detected for stream &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_DuplicatePayloadsForStream {
+            get {
+                return ResourceManager.GetString("Error_DuplicatePayloadsForStream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error creating Hub {0}. .
         /// </summary>
         internal static string Error_ErrorCreatingHub {

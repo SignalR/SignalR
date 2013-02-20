@@ -12,9 +12,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _lookup = new ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
         private readonly LinkedList<KeyValuePair<TKey, TValue>> _list = new LinkedList<KeyValuePair<TKey, TValue>>();
 
-        public void Add(TKey key, TValue value)
+        public bool TryAdd(TKey key, TValue value)
         {
-            _lookup.TryAdd(key, _list.AddLast(new KeyValuePair<TKey, TValue>(key, value)));
+            return _lookup.TryAdd(key, _list.AddLast(new KeyValuePair<TKey, TValue>(key, value)));
         }
 
         public TKey MinKey

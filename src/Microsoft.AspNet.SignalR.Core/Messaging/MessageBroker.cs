@@ -103,18 +103,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     _counters.MessageBusAllocatedWorkers.RawValue = Interlocked.Increment(ref _allocatedWorkers);
 
-                    Trace.TraceInformation("Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Creating a worker, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
 
                     ThreadPool.QueueUserWorkItem(ProcessWork);
                 }
                 else
                 {
-                    Trace.TraceInformation("No need to add a worker because all allocated workers are not busy, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "No need to add a worker because all allocated workers are not busy, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
                 }
             }
             else
             {
-                Trace.TraceInformation("Already at max workers, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "Already at max workers, allocated={0}, busy={1}", _allocatedWorkers, _busyWorkers);
             }
         }
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("Failed to process work - " + ex.GetBaseException());
+                Trace.TraceEvent(TraceEventType.Error, 0, "Failed to process work - " + ex.GetBaseException());
             }
             finally
             {
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (task.IsFaulted)
                 {
-                    Trace.TraceInformation("Failed to process work - " + task.Exception.GetBaseException());
+                    Trace.TraceEvent(TraceEventType.Error, 0, "Failed to process work - " + task.Exception.GetBaseException());
                 }
             });
         }
@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 _counters.MessageBusBusyWorkers.RawValue = Interlocked.Increment(ref _busyWorkers);
-                Trace.TraceInformation("Work(" + subscription.Identity + ")");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "Work(" + subscription.Identity + ")");
                 Task workTask = subscription.Work();
 
                 if (workTask.IsCompleted)
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     catch (Exception ex)
                     {
-                        Trace.TraceInformation("Work failed for " + subscription.Identity + ": " + ex.GetBaseException());
+                        Trace.TraceEvent(TraceEventType.Error, 0, "Work failed for " + subscription.Identity + ": " + ex.GetBaseException());
 
                         goto Process;
                     }
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (task.IsFaulted)
                 {
-                    Trace.TraceInformation("Work failed for " + subscription.Identity + ": " + task.Exception.GetBaseException());
+                    Trace.TraceEvent(TraceEventType.Error, 0, "Work failed for " + subscription.Identity + ": " + task.Exception.GetBaseException());
                 }
 
                 if (moreWork && !task.IsFaulted)
@@ -293,12 +293,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     _disposed = true;
 
-                    Trace.TraceInformation("Dispoing the broker");
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Dispoing the broker");
 
                     // Wait for all threads to stop working
                     WaitForDrain();
 
-                    Trace.TraceInformation("Disposed the broker");
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Disposed the broker");
                 }
             }
         }
