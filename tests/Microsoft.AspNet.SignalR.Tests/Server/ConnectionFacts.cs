@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                             new[] { "a", "signal", "connectionid" },
                                             new string[] { },
                                             traceManager.Object,
-                                            new AckHandler(completeAcksOnTimeout: false, 
+                                            new AckHandler(completeAcksOnTimeout: false,
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
                                             counters,
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Assert.NotNull(message);
             Assert.True(message.IsCommand);
-            var command = serializer.Parse<Command>(message.Value);
+            var command = serializer.Parse<Command>(message.Value, message.Encoding);
             Assert.Equal(CommandType.AddToGroup, command.CommandType);
             Assert.Equal("foo", command.Value);
         }

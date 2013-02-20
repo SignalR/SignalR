@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                                   }
                                                   else if (message.IsCommand)
                                                   {
-                                                      var command = _serializer.Parse<Command>(message.Value);
+                                                      var command = _serializer.Parse<Command>(message.Value, message.Encoding);
                                                       ProcessCommand(command);
 
                                                       // Only send the ack if this command is waiting for it

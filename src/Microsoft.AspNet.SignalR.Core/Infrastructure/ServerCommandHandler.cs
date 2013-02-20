@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             result.Messages.Enumerate<object>(m => ServerSignal.Equals(m.Key),
                                               (s, m) =>
                                               {
-                                                  var command = _serializer.Parse<ServerCommand>(m.Value);
+                                                  var command = _serializer.Parse<ServerCommand>(m.Value, m.Encoding);
                                                   OnCommand(command);
                                               },
                                               state: null);

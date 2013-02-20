@@ -10,11 +10,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly Encoding _encoding;
         private int _offset;
 
-        public ArraySegmentTextReader(ArraySegment<byte> buffer)
-            : this(buffer, new UTF8Encoding())
-        {
-        }
-
         public ArraySegmentTextReader(ArraySegment<byte> buffer, Encoding encoding)
         {
             _buffer = buffer;

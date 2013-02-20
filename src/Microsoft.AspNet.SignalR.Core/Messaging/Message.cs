@@ -9,11 +9,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
     [Serializable]
     public class Message
     {
-        private readonly Encoding _encoding;
- 
         public Message()
         {
-            _encoding = new UTF8Encoding();
+            Encoding = new UTF8Encoding();
         }
 
         public Message(string source, string key, string value)
@@ -41,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Source = source;
             Key = key;
             Value = value == null ? new ArraySegment<byte>() : new ArraySegment<byte>(encoding.GetBytes(value));
-            _encoding = encoding;
+            Encoding = encoding;
         }
 
         public Message(string source, string key, ArraySegment<byte> value)
@@ -96,6 +94,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         public string Filter { get; set; }
 
+        /// <summary>
+        /// The encoding of the message
+        /// </summary>
+        public Encoding Encoding { get; private set; }
+
         public bool IsCommand
         {
             get
@@ -108,12 +111,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public string GetString()
         {
             // If there's no encoding this is a raw binary payload
-            if (_encoding == null)
+            if (Encoding == null)
             {
                 throw new NotSupportedException();
             }
 
-            return _encoding.GetString(Value.Array, Value.Offset, Value.Count);
+            return Encoding.GetString(Value.Array, Value.Offset, Value.Count);
         }
     }
 }

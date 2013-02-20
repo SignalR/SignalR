@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Json
@@ -38,15 +39,16 @@ namespace Microsoft.AspNet.SignalR.Json
         /// <param name="serializer">The serializer</param>
         /// <typeparam name="T">The <see cref="System.Type"/> of object being deserialized.</typeparam>
         /// <param name="jsonBuffer">The JSON buffer to deserialize</param>
+        /// <param name="encoding">The encoding to use.</param>
         /// <returns>The deserialized object from the JSON string.</returns>
-        public static T Parse<T>(this IJsonSerializer serializer, ArraySegment<byte> jsonBuffer)
+        public static T Parse<T>(this IJsonSerializer serializer, ArraySegment<byte> jsonBuffer, Encoding encoding)
         {
             if (serializer == null)
             {
                 throw new ArgumentNullException("serializer");
             }
 
-            using (var reader = new ArraySegmentTextReader(jsonBuffer))
+            using (var reader = new ArraySegmentTextReader(jsonBuffer, encoding))
             {
                 return (T)serializer.Parse(reader, typeof(T));
             }
