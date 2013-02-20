@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new ResponseWriter(Context.Response);
+                    _outputWriter = CreateResponseWriter();
                     _outputWriter.NewLine = "\n";
                 }
 
@@ -201,6 +201,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 return _incrementErrors;
             }
+        }
+
+        protected virtual TextWriter CreateResponseWriter()
+        {
+            return new ResponseWriter(Context.Response);
         }
 
         private void IncrementErrorCounters(AggregateException exception)

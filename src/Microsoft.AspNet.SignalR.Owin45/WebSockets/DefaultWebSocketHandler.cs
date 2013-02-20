@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 
@@ -9,6 +10,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
     internal class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
     {
         private volatile bool _raiseEvent = true;
+        private static readonly byte[] _zeroByteBuffer = new byte[0];
 
         public override void OnClose(bool clean)
         {
@@ -75,6 +77,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         Task IWebSocket.Send(string value)
         {
             return Send(value);
+        }
+
+        public Task SendChunk(ArraySegment<byte> message)
+        {
+            return SendAsync(message, WebSocketMessageType.Text, endOfMessage: false);
+        }
+
+        public Task Flush()
+        {
+            return SendAsync(new ArraySegment<byte>(_zeroByteBuffer), WebSocketMessageType.Text, endOfMessage: true);
         }
     }
 }

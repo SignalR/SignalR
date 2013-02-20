@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -82,18 +83,33 @@ namespace Microsoft.AspNet.SignalR.Transports
             });
         }
 
+        protected override TextWriter CreateResponseWriter()
+        {
+            return new ResponseWriter(_socket);
+        }
+
         public override Task Send(object value)
         {
-            var data = JsonSerializer.Stringify(value);
+            var context = new WebSocketTransportContext(this, value);
 
-            OnSending(data);
-
-            return _socket.Send(data).Catch(IncrementErrors);
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return EnqueueOperation(state => PerformSend(state), context);
         }
 
         public override Task Send(PersistentResponse response)
         {
+            OnSendingResponse(response);
+
             return Send((object)response);
+        }
+
+        private static Task PerformSend(object state)
+        {
+            var context = (WebSocketTransportContext)state;
+
+            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+
+            return context.Transport._socket.Flush();
         }
 
         private void OnMessage(string message)
@@ -117,6 +133,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             _isAlive = false;
+        }
+
+        private class WebSocketTransportContext
+        {
+            public WebSocketTransport Transport;
+            public object State;
+
+            public WebSocketTransportContext(WebSocketTransport transport, object state)
+            {
+                Transport = transport;
+                State = state;
+            }
         }
     }
 }

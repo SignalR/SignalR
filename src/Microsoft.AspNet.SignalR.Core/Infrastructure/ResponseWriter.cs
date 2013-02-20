@@ -21,18 +21,32 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private readonly Encoding _encoding = new UTF8Encoding();
 
-        private readonly IResponse _response;
+        private readonly Action<ArraySegment<byte>, object> _write;
+        private readonly object _writeState;
 
         private static readonly byte[] _colonBytes = new byte[] { 58 };
         private static readonly byte[] _doubleQuoteBytes = new byte[] { 34 };
         private static readonly byte[] _singleQuoteBytes = new byte[] { 39 };
         private static readonly byte[] _newLineBytes = new byte[] { 10 };
         private static readonly byte[] _commaBytes = new byte[] { 44 };
-        
-        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.TextWriter.#ctor", Justification = "It won't be used")]
-        public ResponseWriter(IResponse response)
+
+        public ResponseWriter(IResponse response) :
+            this((data, state) => ((IResponse)state).Write(data), response)
         {
-            _response = response;
+
+        }
+
+        public ResponseWriter(IWebSocket socket) :
+            this((data, state) => ((IWebSocket)state).SendChunk(data), socket)
+        {
+
+        }
+
+        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.TextWriter.#ctor", Justification = "It won't be used")]
+        public ResponseWriter(Action<ArraySegment<byte>, object> write, object state)
+        {
+            _write = write;
+            _writeState = state;
         }
 
         public override Encoding Encoding
@@ -55,22 +69,22 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             switch (value)
             {
                 case ':':
-                    _response.Write(new ArraySegment<byte>(_colonBytes));
+                    Write(new ArraySegment<byte>(_colonBytes));
                     break;
                 case '"':
-                    _response.Write(new ArraySegment<byte>(_doubleQuoteBytes));
+                    Write(new ArraySegment<byte>(_doubleQuoteBytes));
                     break;
                 case '\'':
-                    _response.Write(new ArraySegment<byte>(_singleQuoteBytes));
+                    Write(new ArraySegment<byte>(_singleQuoteBytes));
                     break;
                 case '\n':
-                    _response.Write(new ArraySegment<byte>(_newLineBytes));
+                    Write(new ArraySegment<byte>(_newLineBytes));
                     break;
                 case ',':
-                    _response.Write(new ArraySegment<byte>(_commaBytes));
+                    Write(new ArraySegment<byte>(_commaBytes));
                     break;
                 default:
-                    _response.Write(new ArraySegment<byte>(Encoding.GetBytes(new[] { value })));
+                    Write(new ArraySegment<byte>(Encoding.GetBytes(new[] { value })));
                     break;
             }
         }
@@ -81,18 +95,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             if (byteCount >= MaxBytes)
             {
-                var writer = new ChunkedWriter(_response, MaxChars, Encoding);
+                var writer = new ChunkedWriter(_write, _writeState, MaxChars, Encoding);
                 writer.Write(value);
             }
             else
             {
-                _response.Write(new ArraySegment<byte>(Encoding.GetBytes(value)));
+                Write(new ArraySegment<byte>(Encoding.GetBytes(value)));
             }
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            _response.Write(data);
+            _write(data, _writeState);
         }
 
         private class ChunkedWriter
@@ -103,15 +117,17 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             private readonly Encoding _encoding;
             private readonly char[] _charBuffer;
             private readonly byte[] _byteBuffer;
-            private readonly IResponse _response;
+            private readonly Action<ArraySegment<byte>, object> _write;
+            private readonly object _writeState;
 
-            public ChunkedWriter(IResponse response, int chunkSize, Encoding encoding)
+            public ChunkedWriter(Action<ArraySegment<byte>, object> write, object state, int chunkSize, Encoding encoding)
             {
                 _encoding = encoding;
                 _charLen = chunkSize;
                 _charBuffer = new char[chunkSize];
                 _byteBuffer = new byte[_encoding.GetMaxByteCount(chunkSize)];
-                _response = response;
+                _write = write;
+                _writeState = state;
             }
 
             public void Write(string value)
@@ -148,9 +164,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 if (count > 0)
                 {
-                    _response.Write(new ArraySegment<byte>(_byteBuffer, 0, count));
+                    _write(new ArraySegment<byte>(_byteBuffer, 0, count), _writeState);
                 }
             }
-        }        
+        }
     }
 }
