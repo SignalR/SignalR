@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         public Message(string source, string key, ArraySegment<byte> value)
+            : this()
         {
             if (source == null)
             {

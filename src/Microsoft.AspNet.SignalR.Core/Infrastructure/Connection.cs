@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Json;
@@ -132,7 +134,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private Message CreateMessage(string key, object value)
         {
             var command = value as Command;
-            var message = new Message(_connectionId, key, _serializer.Stringify(value));
+
+            ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
+
+            var message = new Message(_connectionId, key, messageBuffer);
 
             if (command != null)
             {
@@ -142,6 +147,28 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
 
             return message;
+        }
+
+        private ArraySegment<byte> GetMessageBuffer(object value)
+        {            
+            using (var stream = new MemoryStream(128))
+            {
+                var bufferWriter = new BufferTextWriter((buffer, state) =>
+                {
+                    ((MemoryStream)state).Write(buffer.Array, buffer.Offset, buffer.Count);
+                },
+                stream,
+                reuseBuffers: true,
+                bufferSize: 1024);
+
+                using (bufferWriter)
+                {
+                    _serializer.Serialize(value, bufferWriter);
+                    bufferWriter.Flush();
+
+                    return new ArraySegment<byte>(stream.ToArray());
+                }
+            }
         }
 
         public Task<PersistentResponse> Receive(string messageId, CancellationToken cancel, int maxMessages)

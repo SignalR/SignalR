@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual TextWriter CreateResponseWriter()
         {
-            return new ResponseWriter(Context.Response);
+            return new BufferTextWriter(Context.Response);
         }
 
         private void IncrementErrorCounters(AggregateException exception)

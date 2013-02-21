@@ -81,7 +81,7 @@
     <Compile Include="Infrastructure\ListHelper.cs" />
     <Compile Include="Infrastructure\PrefixHelper.cs" />
     <Compile Include="Infrastructure\Purposes.cs" />
-    <Compile Include="Infrastructure\ResponseWriter.cs" />
+    <Compile Include="Infrastructure\BufferTextWriter.cs" />
     <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\IResponse.cs" />

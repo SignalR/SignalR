@@ -7,19 +7,19 @@ using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class ResponseWriterFacts
+    public class BufferTextWriterFacts
     {
         [Fact]
         public void CanEncodingSurrogatePairsCorrectly()
         {
             var bytes = new List<byte>();
-            var writer = new ResponseWriter((buffer, state) =>
+            var writer = new BufferTextWriter((buffer, state) =>
             {
                 for (int i = buffer.Offset; i < buffer.Count; i++)
                 {
                     bytes.Add(buffer.Array[i]);
                 }
-            }, null, reuseBuffers: true);
+            }, null, reuseBuffers: true, bufferSize: 128);
 
             writer.Write("\U00024B62"[0]);
             writer.Write("\U00024B62"[1]);
@@ -34,11 +34,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void WriteNewBufferIsUsedForWritingChunksIfReuseBuffersFalse()
         {
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new ResponseWriter((buffer, state) =>
+            var writer = new BufferTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
-            null, reuseBuffers: false);
+            null, reuseBuffers: false, bufferSize: 128);
 
             writer.Write(new string('C', 10000));
             writer.Flush();
@@ -55,11 +55,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void WriteSameBufferIsUsedForWritingChunksIfReuseBuffersTrue()
         {
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new ResponseWriter((buffer, state) =>
+            var writer = new BufferTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
-            null, reuseBuffers: true);
+            null, reuseBuffers: true, bufferSize: 128);
 
             writer.Write(new string('C', 10000));
             writer.Flush();
@@ -75,19 +75,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void WritesInChunks()
         {
+            int bufferSize = 500;
+            int size = 3000;
+
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new ResponseWriter((buffer, state) =>
+            var writer = new BufferTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
-            null, reuseBuffers: true);
-
-            int size = 3000;
+            null, reuseBuffers: true, bufferSize: bufferSize);
 
             writer.Write(new string('C', size));
             writer.Flush();
 
-            var expected = GetChunks(size, ResponseWriter.MaxChars).ToArray();
+            var expected = GetChunks(size, bufferSize).ToArray();
 
             Assert.NotEmpty(buffers);
             Assert.Equal(expected.Length, buffers.Count);
@@ -120,11 +121,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void CanInterleaveStringsAndRawBinary()
         {
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new ResponseWriter((buffer, state) =>
+            var writer = new BufferTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
-            null, reuseBuffers: true);
+            null, reuseBuffers: true, bufferSize: 128);
 
             var encoding = new UTF8Encoding();
 

@@ -11,11 +11,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// we don't need to write to a long lived buffer. This saves massive amounts of memory
     /// as the number of connections grows.
     /// </summary>
-    internal unsafe class ResponseWriter : TextWriter, IBinaryWriter
+    internal unsafe class BufferTextWriter : TextWriter, IBinaryWriter
     {
-        // Max chars to buffer before writing to the response
-        internal const int MaxChars = 128;
-
         private readonly Encoding _encoding;
 
         private readonly Action<ArraySegment<byte>, object> _write;
@@ -23,26 +20,28 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly bool _reuseBuffers;
 
         private ChunkedWriter _writer;
+        private int _bufferSize;
 
-        public ResponseWriter(IResponse response) :
-            this((data, state) => ((IResponse)state).Write(data), response, reuseBuffers: true)
+        public BufferTextWriter(IResponse response) :
+            this((data, state) => ((IResponse)state).Write(data), response, reuseBuffers: true, bufferSize: 128)
         {
 
         }
 
-        public ResponseWriter(IWebSocket socket) :
-            this((data, state) => ((IWebSocket)state).SendChunk(data), socket, reuseBuffers: false)
+        public BufferTextWriter(IWebSocket socket) :
+            this((data, state) => ((IWebSocket)state).SendChunk(data), socket, reuseBuffers: false, bufferSize: 128)
         {
 
         }
 
         [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.TextWriter.#ctor", Justification = "It won't be used")]
-        public ResponseWriter(Action<ArraySegment<byte>, object> write, object state, bool reuseBuffers)
+        public BufferTextWriter(Action<ArraySegment<byte>, object> write, object state, bool reuseBuffers, int bufferSize)
         {
             _write = write;
             _writeState = state;
             _encoding = new UTF8Encoding();
             _reuseBuffers = reuseBuffers;
+            _bufferSize = bufferSize;
         }
 
         private ChunkedWriter Writer
@@ -51,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             {
                 if (_writer == null)
                 {
-                    _writer = new ChunkedWriter(_write, _writeState, MaxChars, _encoding, _reuseBuffers);
+                    _writer = new ChunkedWriter(_write, _writeState, _bufferSize, _encoding, _reuseBuffers);
                 }
 
                 return _writer;
