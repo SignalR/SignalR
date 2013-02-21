@@ -93,6 +93,7 @@
     <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="PersistentResponseFacts.cs" />
     <Compile Include="PrefixMatcherFacts.cs" />
+    <Compile Include="ResponseWriterFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\DiffSetFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />

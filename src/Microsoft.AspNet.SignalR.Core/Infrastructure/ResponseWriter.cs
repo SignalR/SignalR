@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// we don't need to write to a long lived buffer. This saves massive amounts of memory
     /// as the number of connections grows.
     /// </summary>
-    internal class ResponseWriter : TextWriter, IBinaryWriter
+    internal unsafe class ResponseWriter : TextWriter, IBinaryWriter
     {
         // Max chars to buffer before writing to the response
         private const int MaxChars = 1024;
@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         // Max bytes we allow allocating before we start chunking
         private const int MaxBytes = 2048;
 
-        private readonly Encoding _encoding = new UTF8Encoding();
+        private readonly Encoding _encoding;
+        private readonly Encoder _encoder;
 
         private readonly Action<ArraySegment<byte>, object> _write;
         private readonly object _writeState;
@@ -47,6 +48,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             _write = write;
             _writeState = state;
+            _encoding = new UTF8Encoding();
+            _encoder = _encoding.GetEncoder();
         }
 
         public override Encoding Encoding
@@ -84,7 +87,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     Write(new ArraySegment<byte>(_commaBytes));
                     break;
                 default:
-                    Write(new ArraySegment<byte>(Encoding.GetBytes(new[] { value })));
+                    char* charBuffer = &value;
+                    Write(charBuffer, 1);
                     break;
             }
         }
@@ -100,7 +104,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
             else
             {
-                Write(new ArraySegment<byte>(Encoding.GetBytes(value)));
+                fixed (char* charBuffer = value)
+                {
+                    Write(charBuffer, value.Length, byteCount);
+                }
             }
         }
 
@@ -109,12 +116,25 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _write(data, _writeState);
         }
 
+        private void Write(char* charBuffer, int charCount, int? byteCount = null)
+        {
+            byteCount = byteCount ?? _encoder.GetByteCount(charBuffer, charCount, flush: true);
+
+            var buffer = new byte[Math.Max(1, byteCount.Value)];
+
+            fixed (byte* byteBuffer = buffer)
+            {
+                int count = _encoder.GetBytes(charBuffer, charCount, byteBuffer, byteCount.Value, flush: false);
+                Write(new ArraySegment<byte>(buffer, 0, count));
+            }
+        }
+
         private class ChunkedWriter
         {
             private int _charPos;
             private int _charLen;
 
-            private readonly Encoding _encoding;
+            private readonly Encoder _encoder;
             private readonly char[] _charBuffer;
             private readonly byte[] _byteBuffer;
             private readonly Action<ArraySegment<byte>, object> _write;
@@ -122,12 +142,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             public ChunkedWriter(Action<ArraySegment<byte>, object> write, object state, int chunkSize, Encoding encoding)
             {
-                _encoding = encoding;
                 _charLen = chunkSize;
                 _charBuffer = new char[chunkSize];
-                _byteBuffer = new byte[_encoding.GetMaxByteCount(chunkSize)];
+                _byteBuffer = new byte[encoding.GetMaxByteCount(chunkSize)];
                 _write = write;
                 _writeState = state;
+                _encoder = encoding.GetEncoder();
             }
 
             public void Write(string value)
@@ -159,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             private void Flush()
             {
-                int count = _encoding.GetBytes(_charBuffer, 0, _charPos, _byteBuffer, 0);
+                int count = _encoder.GetBytes(_charBuffer, 0, _charPos, _byteBuffer, 0, flush: true);
                 _charPos = 0;
 
                 if (count > 0)
