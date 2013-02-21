@@ -87,7 +87,7 @@
         },
 
         addQs: function (url, connection) {
-            var appender = url.match(/\?.+=/) ? "&" : "?";
+            var appender = url.indexOf("?") !== -1 ? "&" : "?";
 
             if (!connection.qs) {
                 return url;
