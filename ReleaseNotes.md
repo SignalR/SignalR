@@ -25,6 +25,9 @@ var config = new HubConfiguration
 
 RouteTable.Routes.MapHubs(config); 
 ```
+* **EnableAutoRejoiningGroups** has been removed from HubPipeline. This feature is turned on by default. The groups payload is signed to the client
+  cannot spoof groups anymore.
+
 
 ### Bugs
 
@@ -71,10 +74,6 @@ RouteTable.Routes.MapHubs(config);
 * Long Polling leaking requests sometimes ([#1164](https://github.com/SignalR/SignalR/issues/1164))
 * Signalr.exe to generate hub proxy only works for webapplication projects
 * jquery.signalr.1.0.0.js file has the version specified as 1.0.0.rc1. The version is actually 1.0.0
-
-* **Groups**
-  - EnableAutoRejoining has been removed from HubPipeline. This feature is turned on by default.
-
 
 * **ScaleOut with Redis/Service Bus**
   - Scale Out with SignalR using ServiceBus or Redis
