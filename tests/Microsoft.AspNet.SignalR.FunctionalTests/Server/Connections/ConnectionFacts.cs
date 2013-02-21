@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
@@ -51,20 +52,36 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 }
             }
 
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.Auto)]
-            // [InlineData(HostType.IISExpress, TransportType.Auto)]
-            public void FallbackToLongPollingWorks(HostType hostType, TransportType transportType)
+            [Fact]
+            public void FallbackToLongPollingIIS()
             {
-                using (var host = CreateHost(hostType, transportType))
+                using (ITestHost host = new IISExpressTestHost())
                 {
                     host.Initialize();
 
                     var connection = CreateConnection(host.Url + "/fall-back");
-                    
-                    connection.Start(host.Transport).Wait();
+                    var tcs = new TaskCompletionSource<object>();
+
+                    connection.StateChanged += change =>
+                    {
+                        if (change.NewState == ConnectionState.Reconnecting)
+                        {
+                            tcs.TrySetException(new Exception("The connection should not be reconnecting"));
+                        }
+                    };
+
+                    var transports = new IClientTransport[]  {
+                        new ServerSentEventsTransport(),
+                        new LongPollingTransport()
+                    };
+
+                    var transport = new AutoTransport(new DefaultHttpClient(), transports);
+
+                    connection.Start(transport).Wait();
 
                     Assert.Equal(connection.Transport.Name, "longPolling");
+
+                    Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
 
                     connection.Stop();
                 }

@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     {
                         if (!asyncResult.IsCompleted)
                         {
-                            asyncResult.SetAsCompleted(0, false);
+                            asyncResult.SetAsCompleted(new OperationCanceledException(), completedSynchronously: false);
                         }
                     }
                 },
