@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             binaryWriter.Write(Source);
             binaryWriter.Write(Key);
             binaryWriter.Write(Value.Count);
-            binaryWriter.Write(Value.Array ?? new byte[0], Value.Offset, Value.Count);
+            binaryWriter.Write(Value.Array, Value.Offset, Value.Count);
             binaryWriter.Write(CommandId ?? String.Empty);
             binaryWriter.Write(WaitForAck);
             binaryWriter.Write(IsAck);
