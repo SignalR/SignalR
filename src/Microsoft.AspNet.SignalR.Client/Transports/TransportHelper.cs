@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 string raw = response.ReadAsString();
 
-                if (raw == null)
+                if (String.IsNullOrEmpty(raw))
                 {
                     throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                 }
