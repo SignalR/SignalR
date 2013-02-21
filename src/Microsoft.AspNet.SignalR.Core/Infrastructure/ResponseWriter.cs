@@ -7,31 +7,22 @@ using Microsoft.AspNet.SignalR.Hosting;
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
-    /// TextWriter implementation over IResponse optimized for writing in small chunks
+    /// TextWriter implementation over a write delegate optimized for writing in small chunks
     /// we don't need to write to a long lived buffer. This saves massive amounts of memory
     /// as the number of connections grows.
     /// </summary>
     internal unsafe class ResponseWriter : TextWriter, IBinaryWriter
     {
         // Max chars to buffer before writing to the response
-        private const int MaxChars = 1024;
-
-        // Max bytes we allow allocating before we start chunking
-        private const int MaxBytes = 2048;
+        internal const int MaxChars = 128;
 
         private readonly Encoding _encoding;
-        private readonly Encoder _encoder;
 
         private readonly Action<ArraySegment<byte>, object> _write;
         private readonly object _writeState;
-
-        private static readonly byte[] _colonBytes = new byte[] { 58 };
-        private static readonly byte[] _doubleQuoteBytes = new byte[] { 34 };
-        private static readonly byte[] _singleQuoteBytes = new byte[] { 39 };
-        private static readonly byte[] _newLineBytes = new byte[] { 10 };
-        private static readonly byte[] _commaBytes = new byte[] { 44 };
-
         private readonly bool _reuseBuffers;
+
+        private ChunkedWriter _writer;
 
         public ResponseWriter(IResponse response) :
             this((data, state) => ((IResponse)state).Write(data), response, reuseBuffers: true)
@@ -51,8 +42,20 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _write = write;
             _writeState = state;
             _encoding = new UTF8Encoding();
-            _encoder = _encoding.GetEncoder();
             _reuseBuffers = reuseBuffers;
+        }
+
+        private ChunkedWriter Writer
+        {
+            get
+            {
+                if (_writer == null)
+                {
+                    _writer = new ChunkedWriter(_write, _writeState, MaxChars, _encoding, _reuseBuffers);
+                }
+
+                return _writer;
+            }
         }
 
         public override Encoding Encoding
@@ -62,74 +65,27 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public override void Write(string value)
         {
-            WriteToResponse(value);
+            Writer.Write(value);
         }
 
         public override void WriteLine(string value)
         {
-            WriteToResponse(value);
+            Writer.Write(value);
         }
 
         public override void Write(char value)
         {
-            switch (value)
-            {
-                case ':':
-                    Write(new ArraySegment<byte>(_colonBytes));
-                    break;
-                case '"':
-                    Write(new ArraySegment<byte>(_doubleQuoteBytes));
-                    break;
-                case '\'':
-                    Write(new ArraySegment<byte>(_singleQuoteBytes));
-                    break;
-                case '\n':
-                    Write(new ArraySegment<byte>(_newLineBytes));
-                    break;
-                case ',':
-                    Write(new ArraySegment<byte>(_commaBytes));
-                    break;
-                default:
-                    char* charBuffer = &value;
-                    Write(charBuffer, 1);
-                    break;
-            }
-        }
-
-        private void WriteToResponse(string value)
-        {
-            var byteCount = Encoding.GetByteCount(value);
-
-            if (byteCount >= MaxBytes)
-            {
-                var writer = new ChunkedWriter(_write, _writeState, MaxChars, Encoding, _reuseBuffers);
-                writer.Write(value);
-            }
-            else
-            {
-                fixed (char* charBuffer = value)
-                {
-                    Write(charBuffer, value.Length, byteCount);
-                }
-            }
+            Writer.Write(value);
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            _write(data, _writeState);
+            Writer.Write(data);
         }
 
-        private void Write(char* charBuffer, int charCount, int? byteCount = null)
+        public override void Flush()
         {
-            byteCount = byteCount ?? _encoder.GetByteCount(charBuffer, charCount, flush: true);
-
-            var buffer = new byte[Math.Max(1, byteCount.Value)];
-
-            fixed (byte* byteBuffer = buffer)
-            {
-                int count = _encoder.GetBytes(charBuffer, charCount, byteBuffer, byteCount.Value, flush: false);
-                Write(new ArraySegment<byte>(buffer, 0, count));
-            }
+            Writer.Flush();
         }
 
         private class ChunkedWriter
@@ -157,6 +113,16 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 }
             }
 
+            public void Write(char value)
+            {
+                if (_charPos == _charLen)
+                {
+                    Flush(flushEncoder: false);
+                }
+
+                _charBuffer[_charPos++] = value;
+            }
+
             public void Write(string value)
             {
                 int length = value.Length;
@@ -166,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 {
                     if (_charPos == _charLen)
                     {
-                        Flush();
+                        Flush(flushEncoder: false);
                     }
 
                     int count = _charLen - _charPos;
@@ -180,29 +146,38 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     sourceIndex += count;
                     length -= count;
                 }
-
-                Flush();
             }
 
-            private void Flush()
+            public void Write(ArraySegment<byte> data)
+            {
+                Flush();
+                _write(data, _writeState);
+            }
+
+            public void Flush()
+            {
+                Flush(flushEncoder: true);
+            }
+
+            private void Flush(bool flushEncoder)
             {
                 // If it's safe to reuse the buffer then do so
                 if (_byteBuffer != null)
                 {
-                    Flush(_byteBuffer);
+                    Flush(_byteBuffer, flushEncoder);
                 }
                 else
                 {
                     // Allocate a byte array of the right size for this char buffer
                     int byteCount = _encoder.GetByteCount(_charBuffer, 0, _charPos, flush: false);
                     var byteBuffer = new byte[byteCount];
-                    Flush(byteBuffer);
+                    Flush(byteBuffer, flushEncoder);
                 }
             }
 
-            private void Flush(byte[] byteBuffer)
+            private void Flush(byte[] byteBuffer, bool flushEncoder)
             {
-                int count = _encoder.GetBytes(_charBuffer, 0, _charPos, byteBuffer, 0, flush: true);
+                int count = _encoder.GetBytes(_charBuffer, 0, _charPos, byteBuffer, 0, flush: flushEncoder);
 
                 _charPos = 0;
 

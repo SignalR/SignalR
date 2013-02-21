@@ -108,6 +108,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             var context = (WebSocketTransportContext)state;
 
             context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+            context.Transport.OutputWriter.Flush();
 
             return context.Transport._socket.Flush();
         }

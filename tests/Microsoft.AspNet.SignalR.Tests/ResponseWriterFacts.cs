@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Xunit;
 
@@ -21,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             writer.Write("\U00024B62"[0]);
             writer.Write("\U00024B62"[1]);
+            writer.Flush();
 
             var expected = new byte[] { 0xF0, 0xA4, 0xAD, 0xA2 };
 
@@ -38,6 +41,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             null, reuseBuffers: false);
 
             writer.Write(new string('C', 10000));
+            writer.Flush();
 
             Assert.True(buffers.Count > 1);
             var underlyingBuffer = buffers[0].Array;
@@ -58,6 +62,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             null, reuseBuffers: true);
 
             writer.Write(new string('C', 10000));
+            writer.Flush();
 
             Assert.True(buffers.Count > 1);
             var underlyingBuffer = buffers[0].Array;
@@ -65,6 +70,77 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 Assert.Same(underlyingBuffer, buffers[i].Array);
             }
+        }
+
+        [Fact]
+        public void WritesInChunks()
+        {
+            var buffers = new List<ArraySegment<byte>>();
+            var writer = new ResponseWriter((buffer, state) =>
+            {
+                buffers.Add(buffer);
+            },
+            null, reuseBuffers: true);
+
+            int size = 3000;
+
+            writer.Write(new string('C', size));
+            writer.Flush();
+
+            var expected = GetChunks(size, ResponseWriter.MaxChars).ToArray();
+
+            Assert.NotEmpty(buffers);
+            Assert.Equal(expected.Length, buffers.Count);
+
+            for (int i = 0; i < buffers.Count; i++)
+            {
+                Assert.Equal(expected[i], buffers[i].Count);
+            }
+        }
+
+        private IEnumerable<int> GetChunks(int size, int bufferSize)
+        {
+            int num = size / bufferSize;
+            int last = size % bufferSize;
+            var chunks = Enumerable.Range(0, num)
+                             .Select(i => bufferSize);
+
+            foreach (var chunk in chunks)
+            {
+                yield return chunk;
+            }
+
+            if (last != 0)
+            {
+                yield return last;
+            }
+        }
+
+        [Fact]
+        public void CanInterleaveStringsAndRawBinary()
+        {
+            var buffers = new List<ArraySegment<byte>>();
+            var writer = new ResponseWriter((buffer, state) =>
+            {
+                buffers.Add(buffer);
+            },
+            null, reuseBuffers: true);
+
+            var encoding = new UTF8Encoding();
+
+            writer.Write('H');
+            writer.Write('e');
+            writer.Write("llo ");
+            writer.Write(new ArraySegment<byte>(encoding.GetBytes("World")));
+            writer.Flush();
+
+            Assert.Equal(2, buffers.Count);
+            var s = "";
+            foreach (var buffer in buffers)
+            {
+                s += encoding.GetString(buffer.Array, buffer.Offset, buffer.Count);
+            }
+            Assert.Equal("Hello World", s);
         }
     }
 }
