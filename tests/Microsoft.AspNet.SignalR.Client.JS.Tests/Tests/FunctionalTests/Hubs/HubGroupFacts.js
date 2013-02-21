@@ -44,6 +44,11 @@ testUtilities.runWithAllTransports(function (transport) {
             }
         };
 
+        connection.reconnecting(function () {
+            assert.ok(true, "Connection is now attempting to reconnect");
+            $.network.connect();
+        });
+
         connection.reconnected(function () {
             assert.ok(true, "Successfuly raised reconnected event ");
 
