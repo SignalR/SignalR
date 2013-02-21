@@ -202,15 +202,15 @@ QUnit.test("addQs handles qs correctly", function () {
     QUnit.ok($.signalR.transports._logic.addQs(url, connection) === url, "The url does not change if there is no connection.qs property.");
 
     connection.qs = "bar"
-    QUnit.ok($.signalR.transports._logic.addQs(url, connection) === "foo&bar", "When connection.qs is a string it is appended to the url.");
+    QUnit.ok($.signalR.transports._logic.addQs(url, connection) === "foo?bar", "When connection.qs is a string it is appended to the url.");
 
     connection.qs = {
         one: 1,
         three: [1, 2, 3],
         goodluck: '$&+,/:;=?@ "<>#%{}|\^[]`'
     };
-    QUnit.ok($.signalR.transports._logic.addQs(url, connection) === "foo&one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
+    QUnit.ok($.signalR.transports._logic.addQs(url, connection) === "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
 
     connection.qs = 1337;
-    QUnit.ok($.signalR.transports._logic.addQs(url, connection) === "foo&1337", "When connection.qs is not a string or an object it is stringified and encoded.");
+    QUnit.ok($.signalR.transports._logic.addQs(url, connection) === "foo?1337", "When connection.qs is not a string or an object it is stringified and encoded.");
 });
