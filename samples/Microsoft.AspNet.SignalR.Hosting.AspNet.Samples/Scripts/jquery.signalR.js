@@ -387,6 +387,9 @@
             };
 
             var url = connection.url + "/negotiate";
+
+            url = signalR.transports._logic.addQs(url, connection);
+
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
@@ -738,19 +741,21 @@
         },
 
         addQs: function (url, connection) {
+            var appender = url.match(/\?.+=/) ? "&" : "?";
+
             if (!connection.qs) {
                 return url;
             }
 
             if (typeof (connection.qs) === "object") {
-                return url + "&" + $.param(connection.qs);
+                return url + appender + $.param(connection.qs);
             }
 
             if (typeof (connection.qs) === "string") {
-                return url + "&" + connection.qs;
+                return url + appender + connection.qs;
             }
 
-            return url + "&" + window.encodeURIComponent(connection.qs.toString());
+            return url + appender + window.encodeURIComponent(connection.qs.toString());
         },
 
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
