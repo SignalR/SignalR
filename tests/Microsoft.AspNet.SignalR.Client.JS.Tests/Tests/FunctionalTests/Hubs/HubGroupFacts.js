@@ -32,31 +32,7 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Hub Rejoin Group after reconnect.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(testName),
             groupChat = connection.createHubProxies().groupChat,
-            readyToEnd = false,
-            tryReconnect;
-
-        // LongPolling does not support "lostConnection" so we have to trigger reconnect in a different fashion
-        if (transport !== "longPolling") {
-            tryReconnect = function () {
-                connection.transport.lostConnection(connection);
-            };
-        }
-        else {
-            tryReconnect = function () {
-                // Verify that the polling connection is instantiated before trying to abort it. We want
-                // to cause the transport to error so it must be instantiated first.
-                if (connection.pollXhr.readyState !== 1) {
-                    setTimeout(tryReconnect, 200);
-                }
-                else {
-                    // Passing "foo" forces the longPolling's ajax connection to error and pass "foo" as the 
-                    // reason, the default error (empty) is "abort" which we handle as do not attempt to 
-                    // reconnect. So by passing foo we mimic the behavior of an unintended error occurring, 
-                    // forcing the transport into reconnecting.
-                    connection.pollXhr.abort("foo");
-                }
-            };
-        }
+            readyToEnd = false;
 
         groupChat.client.send = function (value) {
             if (readyToEnd) {
@@ -64,9 +40,14 @@ testUtilities.runWithAllTransports(function (transport) {
                 end();
             }
             else if (value === "TryToReconnect") {
-                tryReconnect();
+                $.network.disconnect();
             }
         };
+
+        connection.reconnecting(function () {
+            assert.ok(true, "Connection is now attempting to reconnect");
+            $.network.connect();
+        });
 
         connection.reconnected(function () {
             assert.ok(true, "Successfuly raised reconnected event ");
@@ -95,6 +76,7 @@ testUtilities.runWithAllTransports(function (transport) {
         // Cleanup
         return function () {
             connection.stop();
+            $.network.connect();
         };
     });
 
