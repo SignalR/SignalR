@@ -31,25 +31,28 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private static readonly byte[] _newLineBytes = new byte[] { 10 };
         private static readonly byte[] _commaBytes = new byte[] { 44 };
 
+        private readonly bool _reuseBuffers;
+
         public ResponseWriter(IResponse response) :
-            this((data, state) => ((IResponse)state).Write(data), response)
+            this((data, state) => ((IResponse)state).Write(data), response, reuseBuffers: true)
         {
 
         }
 
         public ResponseWriter(IWebSocket socket) :
-            this((data, state) => ((IWebSocket)state).SendChunk(data), socket)
+            this((data, state) => ((IWebSocket)state).SendChunk(data), socket, reuseBuffers: false)
         {
 
         }
 
         [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.IO.TextWriter.#ctor", Justification = "It won't be used")]
-        public ResponseWriter(Action<ArraySegment<byte>, object> write, object state)
+        public ResponseWriter(Action<ArraySegment<byte>, object> write, object state, bool reuseBuffers)
         {
             _write = write;
             _writeState = state;
             _encoding = new UTF8Encoding();
             _encoder = _encoding.GetEncoder();
+            _reuseBuffers = reuseBuffers;
         }
 
         public override Encoding Encoding
@@ -99,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             if (byteCount >= MaxBytes)
             {
-                var writer = new ChunkedWriter(_write, _writeState, MaxChars, Encoding);
+                var writer = new ChunkedWriter(_write, _writeState, MaxChars, Encoding, _reuseBuffers);
                 writer.Write(value);
             }
             else
@@ -140,14 +143,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             private readonly Action<ArraySegment<byte>, object> _write;
             private readonly object _writeState;
 
-            public ChunkedWriter(Action<ArraySegment<byte>, object> write, object state, int chunkSize, Encoding encoding)
+            public ChunkedWriter(Action<ArraySegment<byte>, object> write, object state, int chunkSize, Encoding encoding, bool reuseBuffers)
             {
                 _charLen = chunkSize;
                 _charBuffer = new char[chunkSize];
-                _byteBuffer = new byte[encoding.GetMaxByteCount(chunkSize)];
                 _write = write;
                 _writeState = state;
                 _encoder = encoding.GetEncoder();
+
+                if (reuseBuffers)
+                {
+                    _byteBuffer = new byte[encoding.GetMaxByteCount(chunkSize)];
+                }
             }
 
             public void Write(string value)
@@ -179,12 +186,29 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             private void Flush()
             {
-                int count = _encoder.GetBytes(_charBuffer, 0, _charPos, _byteBuffer, 0, flush: true);
+                // If it's safe to reuse the buffer then do so
+                if (_byteBuffer != null)
+                {
+                    Flush(_byteBuffer);
+                }
+                else
+                {
+                    // Allocate a byte array of the right size for this char buffer
+                    int byteCount = _encoder.GetByteCount(_charBuffer, 0, _charPos, flush: false);
+                    var byteBuffer = new byte[byteCount];
+                    Flush(byteBuffer);
+                }
+            }
+
+            private void Flush(byte[] byteBuffer)
+            {
+                int count = _encoder.GetBytes(_charBuffer, 0, _charPos, byteBuffer, 0, flush: true);
+
                 _charPos = 0;
 
                 if (count > 0)
                 {
-                    _write(new ArraySegment<byte>(_byteBuffer, 0, count), _writeState);
+                    _write(new ArraySegment<byte>(byteBuffer, 0, count), _writeState);
                 }
             }
         }
