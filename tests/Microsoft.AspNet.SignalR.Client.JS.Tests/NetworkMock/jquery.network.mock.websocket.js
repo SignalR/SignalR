@@ -19,7 +19,17 @@
         function CustomWebSocket(url, webSocketInit) {
             var ws,
                 that = this,
-                id = webSocketIds++;
+                id = webSocketIds++,
+                queued = [],
+                tryExecute = function (fn) {
+                    // If we haven't created the websocket yet, we need to queue the execution.
+                    if (!ws) {
+                        queued.push(fn);
+                    }
+                    else {
+                        fn();
+                    }
+                };
 
             // These are usually set after creating a WebSocket
             that.onmessage;
@@ -27,21 +37,27 @@
             that.onopen;
 
             that.close = function () {
-                return ws.close();
+                tryExecute(function () {
+                    delete webSocketData[id];
+                    return ws.close();
+                });
             };
 
             that.send = function () {
-                if (!ignoringMessages) {
-                    return ws.send.apply(ws, arguments)
-                }
-                else {
-                    // If we're trying ot send while the network is down then we need to fail.
-                    // Act async for failure of request
-                    setTimeout(function () {
-                        fail(webSocketData[id]);
-                    }, 0);
-                }
+                var args = arguments;
 
+                tryExecute(function () {
+                    if (!ignoringMessages) {
+                        return ws.send.apply(ws, args)
+                    }
+                    else {
+                        // If we're trying ot send while the network is down then we need to fail.
+                        // Act async for failure of request
+                        setTimeout(function () {
+                            fail(webSocketData[id]);
+                        }, 0);
+                    }
+                });
             };
 
             webSocketData[id] = that;
@@ -69,6 +85,11 @@
                 };
 
                 webSocketData[id] = that;
+
+                // Cycle through queued commands and execute them all
+                while(queued.length > 0) {
+                    queued.shift()();
+                }
             }, 0);
         };
 
