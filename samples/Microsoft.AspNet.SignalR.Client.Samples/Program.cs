@@ -14,11 +14,14 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             // RunInMemoryHost();
 #endif
 
+            var chatClient = new ChatClient();
+            chatClient.Start();
+
             // var hubConnection = new HubConnection("http://localhost:40476/");
 
             // RunDemoHub(hubConnection);
 
-            RunStreamingSample();
+            // RunStreamingSample();
 
             Console.ReadKey();
         }

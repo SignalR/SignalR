@@ -340,6 +340,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 throw new NotImplementedException();
             }
 
+            public System.Threading.Tasks.Task OnMethodExecuted(string methodName, IJsonValue[] parameters)
+            {
+                throw new NotImplementedException();
+            }
+
+            public System.Threading.Tasks.Task OnMethodMissing(string methodName, IJsonValue[] parameters)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Dispose()
             {
                 throw new NotImplementedException();

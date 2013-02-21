@@ -250,6 +250,7 @@
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
     <Compile Include="Hubs\Auth\AuthorizeClaimsAttribute.cs" />
+    <Compile Include="Hubs\DemoHub\ChatHub.cs" />
     <Compile Include="Hubs\DemoHub\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

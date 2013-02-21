@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -168,6 +168,15 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             Subscription subscription;
             if (_subscriptions.TryGetValue(eventName, out subscription))
+            {
+                subscription.OnReceived(args);
+
+                if (_subscriptions.TryGetValue("*", out subscription))
+                {
+                    subscription.OnReceived(args);
+                }
+            }
+            else if (_subscriptions.TryGetValue("!", out subscription))
             {
                 subscription.OnReceived(args);
             }

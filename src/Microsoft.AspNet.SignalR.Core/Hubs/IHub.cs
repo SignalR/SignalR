@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -37,6 +38,23 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Called when a connection is disconnected from the <see cref="IHub"/>.
         /// </summary>
         Task OnDisconnected();
+
+        /// <summary>
+        /// Called when a method not defined on the hub is called
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        Task OnMethodMissing(string methodName, IJsonValue[] parameters);
+        // Task OnMethodMissing();
+
+        /// <summary>
+        /// Called when any method defined on the hub is called
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        Task OnMethodExecuted(string methodName, IJsonValue[] parameters);
     }
 }
 

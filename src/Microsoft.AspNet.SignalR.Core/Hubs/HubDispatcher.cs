@@ -156,25 +156,39 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Resolve the method
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
 
+            // Resolving the actual state object
+            var tracker = new StateChangeTracker(hubRequest.State);
+            var hub = CreateHub(request, descriptor, connectionId, tracker, throwIfFailedToCreate: true);
+
             if (methodDescriptor == null)
             {
                 _counters.ErrorsHubInvocationTotal.Increment();
                 _counters.ErrorsHubInvocationPerSec.Increment();
-
+                return hub.OnMethodMissing(hubRequest.Method, parameterValues).
+                    ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+                /*
                 // Empty (noop) method descriptor
                 // Use: Forces the hub pipeline module to throw an error.  This error is encapsulated in the HubDispatcher.
                 //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
                 //      Specifically this allows us to return a faulted task (call .fail on client) and to not cause the
                 //      transport to unintentionally fail.
                 methodDescriptor = new NullMethodDescriptor(hubRequest.Method);
+                    
+                    Invoker = (hub, parameters) =>
+                    {
+                        throw new Exception();
+                    },
+                    
+                    Parameters = new List<ParameterDescriptor>() 
+                };*/
             }
 
-            // Resolving the actual state object
-            var tracker = new StateChangeTracker(hubRequest.State);
-            var hub = CreateHub(request, descriptor, connectionId, tracker, throwIfFailedToCreate: true);
-
-            return InvokeHubPipeline(hub, parameterValues, methodDescriptor, hubRequest, tracker)
-                .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+            else
+            {
+                return InvokeHubPipeline(hub, parameterValues, methodDescriptor, hubRequest, tracker)
+                    .ContinueWith(task => hub.OnMethodExecuted(hubRequest.Method, parameterValues), TaskContinuationOptions.ExecuteSynchronously)
+                 .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller.")]

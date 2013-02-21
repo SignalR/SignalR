@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -65,6 +66,16 @@ namespace Microsoft.AspNet.SignalR
 
         protected virtual void Dispose(bool disposing)
         {
+        }
+
+        public virtual Task OnMethodMissing(string methodName, IJsonValue[] parameters)
+        {
+            return TaskAsyncHelper.Empty;
+        }
+
+        public virtual Task OnMethodExecuted(string methodName, IJsonValue[] parameters)
+        {
+            return TaskAsyncHelper.Empty;
         }
 
         public void Dispose()
