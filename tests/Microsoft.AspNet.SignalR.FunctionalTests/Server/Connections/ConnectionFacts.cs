@@ -70,18 +70,19 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         }
                     };
 
+                    var client = new DefaultHttpClient();
                     var transports = new IClientTransport[]  {
-                        new ServerSentEventsTransport(),
-                        new LongPollingTransport()
+                        new ServerSentEventsTransport(client) { ConnectionTimeout = TimeSpan.Zero },
+                        new LongPollingTransport(client)
                     };
 
-                    var transport = new AutoTransport(new DefaultHttpClient(), transports);
+                    var transport = new AutoTransport(client, transports);
 
                     connection.Start(transport).Wait();
 
                     Assert.Equal(connection.Transport.Name, "longPolling");
 
-                    Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
 
                     connection.Stop();
                 }

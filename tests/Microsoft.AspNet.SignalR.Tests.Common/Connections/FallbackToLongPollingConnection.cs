@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 
             if (transport != "longPolling")
             {
-                await Task.Delay(7000);
+                await Task.Delay(3000);
             }
 
             await base.OnConnected(request, connectionId);
