@@ -84,6 +84,7 @@
     <Content Include="Tests\FunctionalTests\Common\AjaxAbortFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\AjaxSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
+    <Content Include="Tests\FunctionalTests\Core\NegotiateFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubGroupFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionFacts.js" />
