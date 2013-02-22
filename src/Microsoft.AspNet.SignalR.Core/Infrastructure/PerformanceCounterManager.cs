@@ -26,9 +26,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private volatile bool _initialized;
         private object _initLocker = new object();
 
-        // REVIEW: Is this long enough to determine if it *would* hang forever?
-        private readonly static TimeSpan _performanceCounterWaitTimeout = TimeSpan.FromSeconds(2);
-
         /// <summary>
         /// Creates a new instance.
         /// </summary>
