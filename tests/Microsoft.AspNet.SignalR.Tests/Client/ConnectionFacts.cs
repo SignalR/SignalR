@@ -25,6 +25,23 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.True(((Client.IConnection)connection).ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting));
         }
 
+        [Fact]
+        public void VerifyThatChangingTheJsonSerializerWorks()
+        {
+            var connection = new Client.Connection("http://test");
+
+            var firstInstance = connection.JsonSerializer;
+            
+            connection.JsonSerializer = new Newtonsoft.Json.JsonSerializer
+            {
+                TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All
+            };
+            
+            var secondInstance = connection.JsonSerializer;
+
+            Assert.NotSame(firstInstance, secondInstance);
+        }
+
         public class Start
         {
             [Fact]
