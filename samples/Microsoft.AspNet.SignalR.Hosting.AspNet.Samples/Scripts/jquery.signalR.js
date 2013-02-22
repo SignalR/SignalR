@@ -755,7 +755,7 @@
                 return url + appender + connection.qs;
             }
 
-            return url + appender + window.encodeURIComponent(connection.qs.toString());
+            throw new Error("Connections query string property must be either a string or object.");
         },
 
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
