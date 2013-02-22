@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         public virtual void OnMessage(string message) { throw new NotImplementedException(); }
 
         public virtual void OnMessage(byte[] message) { throw new NotImplementedException(); }
-        
+
         public virtual void OnError() { }
 
         public virtual void OnClose(bool clean) { }
@@ -49,17 +49,18 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(string message)
         {
-            return SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text);
+            var buffer = Encoding.UTF8.GetBytes(message);
+            return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
         }
 
-        internal Task SendAsync(byte[] message, WebSocketMessageType messageType)
+        internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
             if (_isClosed)
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            var sendContext = new SendContext(this, message, messageType);
+            var sendContext = new SendContext(this, message, messageType, endOfMessage);
 
             return _sendQueue.Enqueue(state =>
             {
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                     return TaskAsyncHelper.Empty;
                 }
 
-                return context.Handler.WebSocket.SendAsync(new ArraySegment<byte>(context.Message), context.MessageType, true /* endOfMessage */, CancellationToken.None);
+                return context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
             },
             sendContext);
         }
@@ -112,7 +113,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return _maxIncomingMessageSize;
             }
         }
- 
+
         public WebSocket WebSocket { get; set; }
 
         public Exception Error { get; set; }
@@ -249,14 +250,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         private class SendContext
         {
             public WebSocketHandler Handler;
-            public byte[] Message;
+            public ArraySegment<byte> Message;
             public WebSocketMessageType MessageType;
+            public bool EndOfMessage;
 
-            public SendContext(WebSocketHandler webSocketHandler, byte[] message, WebSocketMessageType messageType)
+            public SendContext(WebSocketHandler webSocketHandler, ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage)
             {
                 Handler = webSocketHandler;
                 Message = message;
                 MessageType = messageType;
+                EndOfMessage = endOfMessage;
             }
         }
 

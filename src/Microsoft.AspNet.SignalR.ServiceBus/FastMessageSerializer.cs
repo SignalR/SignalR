@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     yield return BitConverter.GetBytes(MessageMarker);
 
-                    string[] itemList = new string[] { message.Source, message.Key, message.Value, message.CommandId, message.WaitForAck.ToString(), message.IsAck.ToString(), message.Filter };
+                    string[] itemList = new string[] { message.Source, message.Key, message.GetString(), message.CommandId, message.WaitForAck.ToString(), message.IsAck.ToString(), message.Filter };
 
                     foreach (string item in itemList)
                     {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Newtonsoft.Json;
@@ -119,12 +120,49 @@ namespace Microsoft.AspNet.SignalR.Transports
             jsonWriter.WritePropertyName("M");
             jsonWriter.WriteStartArray();
 
-            Messages.Enumerate(m => !m.IsCommand && !ExcludeFilter(m),
-                               (w, m) => w.WriteRawValue(m.Value),
-                               jsonWriter);
+            WriteMessages(writer, jsonWriter);
 
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
+        }
+
+        private void WriteMessages(TextWriter writer, JsonTextWriter jsonWriter)
+        {
+            // If the writer is a binary writer then write to the underlying writer directly
+            var binaryWriter = writer as IBinaryWriter;
+
+            bool first = true;
+
+            for (int i = 0; i < Messages.Count; i++)
+            {
+                ArraySegment<Message> segment = Messages[i];
+                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
+                {
+                    Message message = segment.Array[j];
+
+                    if (!message.IsCommand && !ExcludeFilter(message))
+                    {
+                        if (binaryWriter != null)
+                        {
+                            if (!first)
+                            {
+                                // We need to write the array separator manually
+                                writer.Write(',');
+                            }
+
+                            // If we can write binary then just write it
+                            binaryWriter.Write(message.Value);
+
+                            first = false;
+                        }
+                        else
+                        {
+                            // Write the raw JSON value
+                            jsonWriter.WriteRawValue(message.GetString());
+                        }
+                    }
+                }
+            }
         }
     }
 }

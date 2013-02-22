@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private class HTMLTextWriter : ResponseWriter
+        private class HTMLTextWriter : BufferTextWriter
         {
             public HTMLTextWriter(IResponse response)
                 : base(response)

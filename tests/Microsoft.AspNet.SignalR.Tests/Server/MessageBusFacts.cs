@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                             var m = result.GetMessages().Single();
 
                             Assert.Equal("key", m.Key);
-                            Assert.Equal("value", m.Value);
+                            Assert.Equal("value", m.GetString());
 
                             wh.Set();
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     {
                         foreach (var m in result.GetMessages())
                         {
-                            int n = Int32.Parse(m.Value);
+                            int n = Int32.Parse(m.GetString());
                             Assert.True(cd.Mark(n));
                         }
 
@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     {
                         foreach (var m in result.GetMessages())
                         {
-                            int n = Int32.Parse(m.Value);
+                            int n = Int32.Parse(m.GetString());
                             if (m.Key == "key")
                             {
                                 Assert.True(cdKey.Mark(n));
@@ -320,7 +320,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                         foreach (var m in result.GetMessages())
                         {
                             Assert.Equal("key", m.Key);
-                            Assert.Equal("value", m.Value);
+                            Assert.Equal("value", m.GetString());
                             wh.Set();
                         }
 
@@ -360,7 +360,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     {
                         foreach (var m in result.GetMessages())
                         {
-                            int n = Int32.Parse(m.Value);
+                            int n = Int32.Parse(m.GetString());
                             Assert.True(prev < n, "out of order");
                             prev = n;
                             Assert.True(cd.Mark(n));
@@ -405,7 +405,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                         var m = result.GetMessages().Single();
 
                         Assert.Equal("key", m.Key);
-                        Assert.Equal("value", m.Value);
+                        Assert.Equal("value", m.GetString());
 
                         wh.Set();
 

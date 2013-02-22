@@ -68,6 +68,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
+    <Compile Include="ArrayTextReaderFacts.cs" />
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="Client\TransportFacts.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="PersistentResponseFacts.cs" />
     <Compile Include="PrefixMatcherFacts.cs" />
+    <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\DiffSetFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />
