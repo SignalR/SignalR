@@ -14,28 +14,40 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class TransportFacts
     {
         [Theory]
-        [InlineData("bob=12345")]
-        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk")]
-        public void GetReceiveQueryStringAppendsConnectionQueryString(string connectionQs)
+        [InlineData("bob=12345", "&bob=12345")]
+        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "&bob=12345&foo=leet&baz=laskjdflsdk")]
+        [InlineData("", "")]
+        [InlineData(null, "?transport=&connectionToken=")]
+        [InlineData("?foo=bar", "?foo=bar")]
+        [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
+        [InlineData("&foo=bar", "&foo=bar")]
+        [InlineData("&foo=bar&baz=bear", "&foo=bar&baz=bear")]
+        public void GetReceiveQueryStringAppendsConnectionQueryString(string connectionQs, string expected)
         {
             var connection = new Connection("http://foo.com", connectionQs);
             connection.ConnectionToken = "";
 
             var urlQs = TransportHelper.GetReceiveQueryString(connection, null, "");
 
-            Assert.NotEqual(urlQs.IndexOf(connectionQs), -1);
+            Assert.True(urlQs.EndsWith(expected));
         }
 
         [Theory]
-        [InlineData("bob=12345")]
-        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk")]
-        public void BuildCustomQueryStringAppendsConnectionQueryString(string connectionQs)
+        [InlineData("bob=12345", "?bob=12345")]
+        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "?bob=12345&foo=leet&baz=laskjdflsdk")]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        [InlineData("?foo=bar", "?foo=bar")]
+        [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
+        [InlineData("&foo=bar", "&foo=bar")]
+        [InlineData("&foo=bar&baz=bear", "&foo=bar&baz=bear")]
+        public void AppendCustomQueryStringAppendsConnectionQueryString(string connectionQs, string expected)
         {
             var connection = new Connection("http://foo.com", connectionQs);
 
-            var urlQs = TransportHelper.BuildCustomQueryString(connection, "http://foo.com");
+            var urlQs = TransportHelper.AppendCustomQueryString(connection, "http://foo.com");
 
-            Assert.Equal(urlQs, "?" + connectionQs);
+            Assert.Equal(urlQs, expected);
         }
 
         [Fact]
