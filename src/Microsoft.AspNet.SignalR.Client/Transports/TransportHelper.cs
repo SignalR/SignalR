@@ -93,6 +93,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
+            if (baseUrl == null)
+            {
+                baseUrl = "";
+            }
+
             string appender = "",
                    customQuery = connection.QueryString,
                    qs = "";            
