@@ -55,10 +55,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             public void TryDispose()
             {
+                // This normally waits until the callback is finished invoked but we don't care
                 if (_callbackWrapper.TrySetInvoked())
                 {
-                    // This normally waits until the callback is finished invoked but we don't care
-                    _registration.Dispose();
+                    try
+                    {
+                        _registration.Dispose();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Bug #1549, .NET 4.0 has a bug where this throws if the CTS
+                        // has been disposed
+                    }
                 }
             }
         }
