@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -13,10 +15,56 @@ using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class ConnectionFacts
     {
         public class Start : HostedTest
         {
+            [Fact]
+            public void ConnectionCanStartWithAuthenicatedUserAndQueryString()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        Func<AppFunc, AppFunc> middleware = (next) =>
+                        {
+                            return env =>
+                            {
+                                if (((string)env["owin.RequestQueryString"]).IndexOf("access_token") == -1)
+                                {
+                                    return next(env);
+                                }
+
+                                var user = new CustomPrincipal
+                                {
+                                    Name = "Bob",
+                                    IsAuthenticated = true,
+                                    Roles = new[] { "User" }
+                                };
+
+                                env["server.User"] = user;
+
+                                return next(env);
+                            };
+                        };
+
+                        app.Use(middleware);
+                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", new ConnectionConfiguration());
+
+                    });
+
+                    var connection = new Connection("http://foo/authenticatedConnection", "access_token=1234");
+
+                    connection.Start(host).Wait();
+
+                    Assert.Equal(connection.State, ConnectionState.Connected);
+
+                    connection.Stop();
+                }
+            }
+
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
@@ -411,6 +459,41 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Transport.Send(new object());
+            }
+        }
+
+        private class CustomPrincipal : IIdentity, IPrincipal
+        {
+            public string AuthenticationType
+            {
+                get { return "Forms"; }
+            }
+
+            public bool IsAuthenticated { get; set; }
+
+            public string Name { get; set; }
+            public string[] Roles { get; set; }
+
+            public IIdentity Identity
+            {
+                get { return this; }
+            }
+
+            public bool IsInRole(string role)
+            {
+                return Roles != null && Roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        public class MyAuthenticatedConnection : PersistentConnection
+        {
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Task.Run(() =>
+                {
+                    GlobalHost.ConnectionManager.GetConnectionContext<MyAuthenticatedConnection>()
+                        .Connection.Send(connectionId, data);
+                });
             }
         }
     }
