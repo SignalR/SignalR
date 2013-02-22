@@ -741,8 +741,9 @@
         },
 
         addQs: function (url, connection) {
-            var appender = url.indexOf("?") !== -1 ? "&" : "?";
-
+            var appender = url.indexOf("?") !== -1 ? "&" : "?",
+                firstChar;
+            
             if (!connection.qs) {
                 return url;
             }
@@ -752,10 +753,16 @@
             }
 
             if (typeof (connection.qs) === "string") {
+                firstChar = connection.qs.charAt(0);
+
+                if (firstChar === "?" || firstChar === "&") {
+                    appender = "";
+                }
+
                 return url + appender + connection.qs;
             }
 
-            return url + appender + window.encodeURIComponent(connection.qs.toString());
+            throw new Error("Connections query string property must be either a string or object.");
         },
 
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
