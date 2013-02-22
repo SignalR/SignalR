@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (message["I"] != null)
             {
-                var result = message.ToObject<HubResult>();
+                var result = message.ToObject<HubResult>(JsonSerializer);
                 Action<HubResult> callback;
 
                 lock (_callbacks)
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             }
             else
             {
-                var invocation = message.ToObject<HubInvocation>();
+                var invocation = message.ToObject<HubInvocation>(JsonSerializer);
                 HubProxy hubProxy;
                 if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
                 {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 Name = p.Key
             });
 
-            return JsonConvert.SerializeObject(data);
+            return JsonSerializeObject(data);
         }
 
         /// <summary>
