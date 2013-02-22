@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             prepareRequest(new Request(env, clientTokenSource.Cancel));
 
             Response response = null;
-            response = new Response(disableWrites, () => tcs.TrySetResult(response));
+            response = new Response(disableWrites, () => tcs.TrySetResult(response), clientTokenSource.Token);
             env[OwinConstants.ResponseBody] = response.GetResponseStream();
             env[OwinConstants.ResponseHeaders] = new Dictionary<string, string[]>();
 
