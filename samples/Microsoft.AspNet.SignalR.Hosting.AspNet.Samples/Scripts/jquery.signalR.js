@@ -717,6 +717,8 @@
                 url = baseUrl + connection.appRelativeUrl + "/ping",
                 deferral = $.Deferred();
 
+            url = this.addQs(url, connection);
+
             $.ajax({
                 url: url,
                 global: false,
@@ -741,8 +743,9 @@
         },
 
         addQs: function (url, connection) {
-            var appender = url.indexOf("?") !== -1 ? "&" : "?";
-
+            var appender = url.indexOf("?") !== -1 ? "&" : "?",
+                firstChar;
+            
             if (!connection.qs) {
                 return url;
             }
@@ -752,6 +755,12 @@
             }
 
             if (typeof (connection.qs) === "string") {
+                firstChar = connection.qs.charAt(0);
+
+                if (firstChar === "?" || firstChar === "&") {
+                    appender = "";
+                }
+
                 return url + appender + connection.qs;
             }
 

@@ -717,6 +717,8 @@
                 url = baseUrl + connection.appRelativeUrl + "/ping",
                 deferral = $.Deferred();
 
+            url = this.addQs(url, connection);
+
             $.ajax({
                 url: url,
                 global: false,
