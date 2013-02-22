@@ -476,7 +476,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(ConnectionExtensions.JsonSerializeObject(this, value));
+            return Send(this.JsonSerializeObject(value));
         }        
 
 
