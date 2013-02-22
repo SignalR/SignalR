@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 qsBuilder.Append("&connectionData=" + data);
             }
 
-            string customQuery = AppendCustomQueryString(connection, qsBuilder.ToString());
+            string customQuery = connection.QueryString;
 
             qsBuilder.Append(customQuery);
 
