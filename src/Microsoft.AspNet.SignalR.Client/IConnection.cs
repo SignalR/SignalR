@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -44,5 +45,7 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnConnectionSlow();
         void PrepareRequest(IRequest request);
         void UpdateLastKeepAlive();
+
+        JsonSerializer JsonSerializer { get; }
     }
 }
