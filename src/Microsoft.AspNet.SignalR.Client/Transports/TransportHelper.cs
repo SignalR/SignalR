@@ -78,7 +78,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             string customQuery = connection.QueryString;
 
-            qsBuilder.Append(customQuery);
+            if (!String.IsNullOrEmpty(customQuery))
+            {
+                qsBuilder.Append("&").Append(customQuery);
+            }
 
 #if SILVERLIGHT || WINDOWS_PHONE
             qsBuilder.Append("&").Append(GetNoCacheUrlParam());
