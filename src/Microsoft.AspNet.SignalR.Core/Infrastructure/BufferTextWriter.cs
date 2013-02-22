@@ -85,6 +85,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public override void Flush()
         {
             Writer.Flush();
+            _writer = null;
         }
 
         private class ChunkedWriter
