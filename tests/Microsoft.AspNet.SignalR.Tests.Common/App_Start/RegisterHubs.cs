@@ -60,6 +60,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<SyncErrorConnection>("sync-error", "sync-error");
             RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
             RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
+            RouteTable.Routes.MapConnection<FallbackToLongPollingConnection>("fall-back", "/fall-back");
 
             // End point to hit to verify the webserver is up
             RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));

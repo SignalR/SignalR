@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private int _startIndex = 0;
 
         // List of transports in fallback order
-        private readonly IClientTransport[] _transports;
+        private readonly IList<IClientTransport> _transports;
 
         public AutoTransport(IHttpClient httpClient)
         {
@@ -31,6 +32,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 new ServerSentEventsTransport(httpClient), 
                 new LongPollingTransport(httpClient) 
             };
+        }
+
+        public AutoTransport(IHttpClient httpClient, IList<IClientTransport> transports)
+        {
+            _httpClient = httpClient;
+            _transports = transports;
         }
 
         /// <summary>
@@ -107,7 +114,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;
-                    if (next < _transports.Length)
+                    if (next < _transports.Count)
                     {
                         // Try the next transport
                         ResolveTransport(connection, data, disconnectToken, tcs, next);

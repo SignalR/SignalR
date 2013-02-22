@@ -75,7 +75,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 app.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups", config);
                 app.MapConnection<FilteredConnection>("/filter", config);
                 app.MapConnection<SyncErrorConnection>("/sync-error", config);
-                app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
                 app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
                 app.MapConnection<UnusableProtectedConnection>("/protected", config);
             });

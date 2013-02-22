@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             : base(httpClient, "serverSentEvents")
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
-            ConnectionTimeout = TimeSpan.FromSeconds(2);
+            ConnectionTimeout = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>
@@ -237,6 +237,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     callbackInvoker.Invoke((conn, cb) =>
                     {
+                        // Abort the request before cancelling
+                        request.Abort();
+
                         // Connection timeout occurred
                         cb(new TimeoutException());
                     },

@@ -78,8 +78,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Wraps a function that determines which of the groups belonging to the hub described by the <see cref="HubDescriptor"/>
         /// the client should be allowed to rejoin.
-        /// By default, clients that are reconnecting to the server will be removed from all groups they may have previously been
-        /// a member of, because untrusted clients may claim to be a member of groups they were never authorized to join.
+        /// By default, clients will rejoin all the groups they were in prior to reconnecting.
         /// </summary>
         /// <param name="rejoiningGroups">A function that determines which groups the client should be allowed to rejoin.</param>
         /// <returns>A wrapped function that determines which groups the client should be allowed to rejoin.</returns>
