@@ -12,9 +12,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 
         public class Point
         {
-            public int X { get; set; }
-            public int Y { get; set; }
+            public double X { get; set; }
+            public double Y { get; set; }
         }
+
         public class Line
         {
             public Point From { get; set; }
