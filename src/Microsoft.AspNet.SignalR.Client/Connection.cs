@@ -135,6 +135,7 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         JsonSerializer _jsonSerializer = new JsonSerializer();
+
         /// <summary>
         /// Object to store the various keep alive timeout values
         /// </summary>
@@ -150,7 +151,6 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
  
-
         /// <summary>
         /// Gets or sets the serializer used by the connection
         /// </summary>
@@ -163,9 +163,10 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     throw new ArgumentNullException("value");
                 }
+
+                _jsonSerializer = value;
             }
         }
-
 
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
