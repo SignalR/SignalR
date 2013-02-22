@@ -169,6 +169,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public static Cursor[] GetCursors(string cursor, Func<string, string> keyMaximizer)
         {
+            return GetCursors(cursor, (key, state) => ((Func<string, string>)state).Invoke(key), keyMaximizer);
+        }
+
+        public static Cursor[] GetCursors(string cursor, Func<string, object, string> keyMaximizer, object state)
+        {
             // Technically GetCursors should never be called with a null value, so this is extra cautious
             if (String.IsNullOrEmpty(cursor))
             {
@@ -220,7 +225,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                         // For now String.Empty is an acceptable key, but this should change once we verify
                         // that empty keys cannot be created legitimately.
-                        currentKey = keyMaximizer(sb.ToString());
+                        currentKey = keyMaximizer(sb.ToString(), state);
 
                         // If the keyMap cannot find a key, we cannot create an array of cursors.
                         // This most likely means there was an AppDomain restart or a misbehaving client.

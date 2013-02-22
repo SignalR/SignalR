@@ -52,6 +52,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private const int DefaultMaxTopicsWithNoSubscriptions = 5000;
 
         private readonly Func<string, Topic> _createTopic;
+        private readonly Action<ISubscriber, string> _addEvent;
+        private readonly Action<ISubscriber, string> _removeEvent;
+        private readonly Action<object> _disposeSubscription;
 
         /// <summary>
         /// 
@@ -124,6 +127,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             _topicTtl = configurationManager.TopicTtl();
             _createTopic = CreateTopic;
+            _addEvent = AddEvent;
+            _removeEvent = RemoveEvent;
+            _disposeSubscription = DisposeSubscription;
 
             Topics = new TopicLookup();
         }
@@ -237,8 +243,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 topics.Add(topic);
             }
 
-            subscriber.EventKeyAdded += AddEvent;
-            subscriber.EventKeyRemoved += RemoveEvent;
+            subscriber.EventKeyAdded += _addEvent;
+            subscriber.EventKeyRemoved += _removeEvent;
             subscriber.GetCursor = subscription.GetCursor;
 
             // Add the subscription when it's all set and can be scheduled
@@ -248,7 +254,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 topic.AddSubscription(subscription);
             }
 
-            var disposable = new DisposableAction(DisposeSubscription, subscriber);
+            var disposable = new DisposableAction(_disposeSubscription, subscriber);
 
             // When the subscription itself is disposed then dispose it
             subscription.Disposable = disposable;
@@ -503,8 +509,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // so the terminal message isn't required.
             }
 
-            subscriber.EventKeyAdded -= AddEvent;
-            subscriber.EventKeyRemoved -= RemoveEvent;
+            subscriber.EventKeyAdded -= _addEvent;
+            subscriber.EventKeyRemoved -= _removeEvent;
             subscriber.GetCursor = null;
 
             foreach (var eventKey in subscriber.EventKeys)

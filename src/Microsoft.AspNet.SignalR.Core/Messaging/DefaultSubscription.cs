@@ -37,7 +37,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
             else
             {
-                cursors = Cursor.GetCursors(cursor, stringMinifier.Unminify) ?? GetCursorsFromEventKeys(EventKeys, topics);
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                cursors = Cursor.GetCursors(cursor, (k, s) => UnminifyCursor(k, s), stringMinifier) ?? GetCursorsFromEventKeys(EventKeys, topics);
             }
 
             _cursors = new List<Cursor>(cursors);
@@ -66,6 +67,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 _cursorTopics.Add(null);
             }
+        }
+
+        private static string UnminifyCursor(string key, object state)
+        {
+            return ((IStringMinifier)state).Unminify(key);
         }
 
         public override bool AddEvent(string eventKey, Topic topic)
