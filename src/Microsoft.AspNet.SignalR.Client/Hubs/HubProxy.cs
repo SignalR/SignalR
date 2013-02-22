@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -40,6 +41,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                     _state[name] = value;
                 }
             }
+        }
+
+        public JsonSerializer JsonSerializer
+        {
+            get { return _connection.JsonSerializer; }
         }
 
         public Subscription Subscribe(string eventName)
@@ -80,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             var tokenifiedArguments = new JToken[args.Length];
             for (int i = 0; i < tokenifiedArguments.Length; i++)
             {
-                tokenifiedArguments[i] = JToken.FromObject(args[i]);
+                tokenifiedArguments[i] = JToken.FromObject(args[i], JsonSerializer);
             }
 
             var tcs = new TaskCompletionSource<T>();
@@ -106,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
                             if (result.Result != null)
                             {
-                                tcs.TrySetResult(result.Result.ToObject<T>());
+                                tcs.TrySetResult(result.Result.ToObject<T>(JsonSerializer));
                             }
                             else
                             {
@@ -140,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 hubData.State = _state;
             }
 
-            var value = JsonConvert.SerializeObject(hubData);
+            var value = _connection.JsonSerializeObject(hubData);
 
             _connection.Send(value).ContinueWith(task =>
             {

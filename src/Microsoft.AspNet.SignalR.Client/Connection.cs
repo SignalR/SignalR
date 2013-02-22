@@ -4,9 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
@@ -46,6 +49,9 @@ namespace Microsoft.AspNet.SignalR.Client
 
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
+
+        //The json serializer for the connections
+        private JsonSerializer _jsonSerializer = new JsonSerializer();
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -146,6 +152,23 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
  
+        /// <summary>
+        /// Gets or sets the serializer used by the connection
+        /// </summary>
+        public JsonSerializer JsonSerializer
+        {
+            get { return _jsonSerializer; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _jsonSerializer = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
         /// </summary>
@@ -453,8 +476,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the data has been sent.</returns>
         public Task Send(object value)
         {
-            return Send(JsonConvert.SerializeObject(value));
-        }
+            return Send(this.JsonSerializeObject(value));
+        }        
+
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
