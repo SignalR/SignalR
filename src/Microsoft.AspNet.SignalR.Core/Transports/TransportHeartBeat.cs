@@ -104,7 +104,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
-                EndConnection(oldMetadata);
+
+                // Don't bother disposing the registration here since the token source
+                // gets disposed after the request has ended
+                EndConnection(oldMetadata, disposeRegistration: false);
+
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
             }
@@ -367,16 +371,19 @@ namespace Microsoft.AspNet.SignalR.Transports
             Dispose(true);
         }
 
-        private static void EndConnection(ConnectionMetadata metadata)
+        private static void EndConnection(ConnectionMetadata metadata, bool disposeRegistration = true)
         {
+            if (disposeRegistration)
+            {
+                // Dispose of the registration
+                if (metadata.Registration != null)
+                {
+                    metadata.Registration.Dispose();
+                }
+            }
+
             // End the connection
             metadata.Connection.End();
-
-            // Dispose of the registration
-            if (metadata.Registration != null)
-            {
-                metadata.Registration.Dispose();
-            }
         }
 
         private class ConnectionMetadata
