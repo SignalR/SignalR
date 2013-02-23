@@ -174,7 +174,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
             catch (OperationCanceledException ex)
             {
-                if (!ex.CancellationToken.IsCancellationRequested)
+                // ex.CancellationToken never has the token that was actually cancelled
+                if (!disconnectToken.IsCancellationRequested)
                 {
                     Error = ex;
                     OnError();
