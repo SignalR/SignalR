@@ -386,6 +386,9 @@
             };
 
             var url = connection.url + "/negotiate";
+
+            url = signalR.transports._logic.addQs(url, connection);
+
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
