@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #else
             string negotiateUrl = connection.Url + "negotiate";
 #endif
-
-
+            negotiateUrl += BuildCustomQueryString(connection, negotiateUrl);
+            
             return httpClient.Get(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
@@ -76,18 +76,38 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 qsBuilder.Append("&connectionData=" + data);
             }
 
-            string customQuery = connection.QueryString;
+            qsBuilder.Append(BuildCustomQueryString(connection, qsBuilder.ToString()));
 
-            if (!String.IsNullOrEmpty(customQuery))
-            {
-                qsBuilder.Append("&")
-                         .Append(customQuery);
-            }
+            string customQuery = connection.QueryString;
 
 #if SILVERLIGHT || WINDOWS_PHONE
             qsBuilder.Append("&").Append(GetNoCacheUrlParam());
 #endif
             return qsBuilder.ToString();
+        }
+
+        public static string BuildCustomQueryString(IConnection connection, string baseUrl)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            string appender = "?",
+                   customQuery = connection.QueryString,
+                   qs = "";
+
+            if (!String.IsNullOrEmpty(customQuery))
+            {
+                if (baseUrl.Contains("?"))
+                {
+                    appender = "&";
+                }
+
+                qs += appender + customQuery;
+            }
+
+            return qs;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
