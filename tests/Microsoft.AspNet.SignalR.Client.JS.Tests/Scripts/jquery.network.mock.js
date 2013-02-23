@@ -121,7 +121,7 @@
 // Web Socket network mock
 (function ($, window) {
     var enabled = !!window.WebSocket,
-        savedWebSocket = enabled ? WebSocket : {},
+        savedWebSocket = window.WebSocket,
         network = $.network,
         webSocketData = {},
         webSocketIds = 0,
@@ -185,7 +185,7 @@
             // Letting current running context finish before building the websocket.
             // This way we can patch every function that was set.
             setTimeout(function () {
-                ws = new savedWebSocket(url, webSocketInit);
+                ws = new savedWebSocket(url, webSocketInit || []);
                 ws.onopen = function () {
                     if (!ignoringMessages) {
                         return that.onopen.apply(that, arguments);
@@ -213,7 +213,7 @@
             }, 0);
         };
 
-        WebSocket = CustomWebSocket;
+        window.WebSocket = CustomWebSocket;
     }
 
     network.websocket = {
@@ -332,7 +332,7 @@
 // Event Source network mock
 (function ($, window) {
     var enabled = !!window.EventSource,
-        savedEventSource = enabled ? EventSource : {},
+        savedEventSource = window.EventSource,
         network = $.network,
         eventSourceData = {},
         eventSourceIds = 0,
@@ -340,7 +340,7 @@
 
     if (enabled) {
         function CustomEventSource(url, eventSourceInit) {
-            var es = new savedEventSource(url, eventSourceInit),
+            var es = new savedEventSource(url, eventSourceInit || {}),
                 that = this,
                 id = eventSourceIds++;
 
@@ -366,7 +366,7 @@
             eventSourceData[id] = that;
         };
 
-        EventSource = CustomEventSource;
+        window.EventSource = CustomEventSource;
     }
 
     network.eventsource = {

@@ -1,7 +1,7 @@
 ﻿// Event Source network mock
 (function ($, window) {
     var enabled = !!window.EventSource,
-        savedEventSource = enabled ? EventSource : {},
+        savedEventSource = window.EventSource,
         network = $.network,
         eventSourceData = {},
         eventSourceIds = 0,
@@ -9,7 +9,7 @@
 
     if (enabled) {
         function CustomEventSource(url, eventSourceInit) {
-            var es = new savedEventSource(url, eventSourceInit),
+            var es = new savedEventSource(url, eventSourceInit || {}),
                 that = this,
                 id = eventSourceIds++;
 
@@ -35,7 +35,7 @@
             eventSourceData[id] = that;
         };
 
-        EventSource = CustomEventSource;
+        window.EventSource = CustomEventSource;
     }
 
     network.eventsource = {
