@@ -19,6 +19,10 @@ See the [documentation](https://github.com/SignalR/SignalR/wiki)
 ## LICENSE
 [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
 
+## Contributing
+
+See the [contribution  guidelines](https://github.com/SignalR/SignalR/blob/master/CONTRIBUTING.md)
+
 ## Building the source
 
 ```
