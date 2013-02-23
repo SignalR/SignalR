@@ -1,5 +1,5 @@
 ﻿// Web Socket network mock
-(function ($, window) {
+(function ($, window, undefined) {
     var enabled = !!window.WebSocket,
         savedWebSocket = window.WebSocket,
         network = $.network,
@@ -65,7 +65,12 @@
             // Letting current running context finish before building the websocket.
             // This way we can patch every function that was set.
             setTimeout(function () {
-                ws = new savedWebSocket(url, webSocketInit);
+                if (webSocketInit === undefined) {
+                    ws = new savedWebSocket(url);
+                } else {
+                    ws = new savedWebSocket(url, webSocketInit);
+                }
+
                 ws.onopen = function () {
                     if (!ignoringMessages) {
                         return that.onopen.apply(that, arguments);

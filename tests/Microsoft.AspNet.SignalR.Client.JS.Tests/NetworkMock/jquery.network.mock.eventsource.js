@@ -1,5 +1,5 @@
 ﻿// Event Source network mock
-(function ($, window) {
+(function ($, window, undefined) {
     var enabled = !!window.EventSource,
         savedEventSource = window.EventSource,
         network = $.network,
@@ -9,9 +9,15 @@
 
     if (enabled) {
         function CustomEventSource(url, eventSourceInit) {
-            var es = new savedEventSource(url, eventSourceInit || {}),
+            var es,
                 that = this,
                 id = eventSourceIds++;
+
+            if (eventSourceInit === undefined) {
+                es = new savedEventSource(url);
+            } else {
+                es = new savedEventSource(url, eventSourceInit);
+            }
 
             that._events = {};
 
