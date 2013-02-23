@@ -34,11 +34,46 @@ The master branch always matches the current release on [nuget.org](http://nuget
 When the end of a milestone is coming up, we create a branch called **release** to stabilize the build for the upcoming release.
 The release is then merged into master and deleted and the cycle continues until the end of the next milestone.
 
+### Issue management
+
+**Tag Format**
+
+- **Bug** – A Bug
+- **Feature** - A Feature
+- **Task** – Has no effect on product code
+
+**States**
+
+- **Ready** – Bug/Feature ready to be worked on
+- **Working** – In process of development
+- **Review** – Bug/Feature is coded and now needs to be reviewed before being "accepted" as final
+- **Done** (Open) – Bug/Feature has been "accepted" as final and is ready for verification (pushed to source)
+- **Done** (Closed) – Bug/Feature has been "accepted" as final and has resolved the corresponding issue
+
 ### Submitting Pull requests
+
+You will need to submit a [Contributor License Agreement](http://www.microsoft.com/web/webpi/eula/MSOpenTech_CLA.rtf) form before submitting your pull request. This needs to only be done once for any Microsoft OSS project. Download the Contributor License Agreement (CLA). Please fill in, sign, scan and email it to msopentech-cla@microsoft.com.
 
 Make sure you can build the code. Familiarize yourself with the project workflow and our coding conventions. If you don't know what a pull request is
 read this https://help.github.com/articles/using-pull-requests.
 
 Before submitting a feature or substantial code contribution please discuss it with the team and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed and tested by the ASP.NET SignalR Team, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.
 
-You will need to submit a [Contributor License Agreement](http://www.microsoft.com/web/webpi/eula/MSOpenTech_CLA.rtf) form before submitting your pull request. This needs to only be done once for any Microsoft OSS project. Download the Contributor License Agreement (CLA). Please fill in, sign, scan and email it to msopentech-cla@microsoft.com.
+Here's a few things you should always do when making changes to the SignalR code base:
+
+**Commit/Pull Request Format**
+
+```
+Summary of the changes (Less than 80 chars)
+ - Detail 1
+ - Detail 2
+
+#bugnumber (in this specific format)
+```
+
+**Tests**
+
+-  Tests need to be provided for every bug/feature that is completed.
+-  Tests only need to be present for issues that need to be verified by QA (e.g. not tasks)
+-  If there is a scenario that is far too hard to test there does not need to be a test for it.
+   - "Too hard" is determined by the team as a whole.
