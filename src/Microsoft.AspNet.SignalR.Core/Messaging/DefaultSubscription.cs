@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -15,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private List<Topic> _cursorTopics;
 
         private readonly IStringMinifier _stringMinifier;
-        private readonly object _lockObj = new object();
 
         public DefaultSubscription(string identity,
                                    IEnumerable<string> eventKeys,
@@ -30,18 +28,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             _stringMinifier = stringMinifier;
 
-            IEnumerable<Cursor> cursors;
             if (cursor == null)
             {
-                cursors = GetCursorsFromEventKeys(EventKeys, topics);
+                _cursors = GetCursorsFromEventKeys(EventKeys, topics);
             }
             else
             {
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                cursors = Cursor.GetCursors(cursor, (k, s) => UnminifyCursor(k, s), stringMinifier) ?? GetCursorsFromEventKeys(EventKeys, topics);
+                _cursors = Cursor.GetCursors(cursor, (k, s) => UnminifyCursor(k, s), stringMinifier) ?? GetCursorsFromEventKeys(EventKeys, topics);
             }
 
-            _cursors = new List<Cursor>(cursors);
             _cursorTopics = new List<Topic>();
 
             if (!String.IsNullOrEmpty(cursor))
@@ -76,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override bool AddEvent(string eventKey, Topic topic)
         {
-            lock (_lockObj)
+            lock (_cursors)
             {
                 // O(n), but small n and it's not common
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
@@ -95,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void RemoveEvent(string eventKey)
         {
-            lock (_lockObj)
+            lock (_cursors)
             {
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
                 if (index != -1)
@@ -108,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void SetEventTopic(string eventKey, Topic topic)
         {
-            lock (_lockObj)
+            lock (_cursors)
             {
                 // O(n), but small n and it's not common
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
@@ -129,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             totalCount = 0;
 
-            lock (_lockObj)
+            lock (_cursors)
             {
                 var cursors = new ulong[_cursors.Count];
                 for (int i = 0; i < _cursors.Count; i++)
@@ -152,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void BeforeInvoke(object state)
         {
             // Update the list of cursors before invoking anything
-            lock (_lockObj)
+            lock (_cursors)
             {
                 var nextCursors = (ulong[])state;
                 for (int i = 0; i < _cursors.Count; i++)
@@ -164,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private bool UpdateCursor(string key, ulong id)
         {
-            lock (_lockObj)
+            lock (_cursors)
             {
                 // O(n), but small n and it's not common
                 var index = _cursors.FindIndex(c => c.Key == key);
@@ -178,10 +174,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, TopicLookup topics)
+        private List<Cursor> GetCursorsFromEventKeys(HashSet<string> eventKeys, TopicLookup topics)
         {
-            return from key in eventKeys
-                   select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
+            var list = new List<Cursor>(eventKeys.Count);
+            foreach (var eventKey in eventKeys)
+            {
+                var cursor = new Cursor(eventKey, GetMessageId(topics, eventKey), _stringMinifier.Minify(eventKey));
+                list.Add(cursor);
+            }
+
+            return list;
         }
 
         private static ulong GetMessageId(TopicLookup topics, string key)

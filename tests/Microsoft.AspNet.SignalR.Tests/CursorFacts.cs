@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var serialized = Cursor.MakeCursor(manyCursors);
             var deserializedCursors = Cursor.GetCursors(serialized);
 
-            Assert.Equal(deserializedCursors.Length, 8192);
+            Assert.Equal(deserializedCursors.Count, 8192);
             for (var i = 0; i < 8192; i++)
             {
                 Assert.Equal(manyCursors[i].Id, deserializedCursors[i].Id);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var serializedCursors = @",A";
             var deserializedCursors = Cursor.GetCursors(serializedCursors);
 
-            Assert.Equal(1, deserializedCursors.Length);
+            Assert.Equal(1, deserializedCursors.Count);
             Assert.Equal("", deserializedCursors[0].Key);
             Assert.Equal(10UL, deserializedCursors[0].Id);
         }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var serializedCursor = new StringBuilder().Append(cursorChars).ToString();
             var cursors = Cursor.GetCursors(serializedCursor);
 
-            Assert.Equal(1, cursors.Length);
+            Assert.Equal(1, cursors.Count);
             Assert.Equal(3, cursors[0].Key.Length);
             Assert.Equal(10UL, cursors[0].Id);
 

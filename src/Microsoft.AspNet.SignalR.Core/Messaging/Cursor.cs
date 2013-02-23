@@ -162,17 +162,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return sb.ToString();
         }
 
-        public static Cursor[] GetCursors(string cursor)
+        public static List<Cursor> GetCursors(string cursor)
         {
             return GetCursors(cursor, s => s);
         }
 
-        public static Cursor[] GetCursors(string cursor, Func<string, string> keyMaximizer)
+        public static List<Cursor> GetCursors(string cursor, Func<string, string> keyMaximizer)
         {
             return GetCursors(cursor, (key, state) => ((Func<string, string>)state).Invoke(key), keyMaximizer);
         }
 
-        public static Cursor[] GetCursors(string cursor, Func<string, object, string> keyMaximizer, object state)
+        public static List<Cursor> GetCursors(string cursor, Func<string, object, string> keyMaximizer, object state)
         {
             // Technically GetCursors should never be called with a null value, so this is extra cautious
             if (String.IsNullOrEmpty(cursor))
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
 
-            return cursors.ToArray();
+            return cursors;
         }
 
         public override string ToString()
