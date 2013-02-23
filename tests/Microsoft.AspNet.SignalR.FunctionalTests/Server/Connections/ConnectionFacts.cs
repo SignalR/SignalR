@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         };
 
                         app.Use(middleware);
-                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", new ConnectionConfiguration { EnableCrossDomain = true });
+                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", new ConnectionConfiguration());
 
                     });
 

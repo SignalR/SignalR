@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #else
             string negotiateUrl = connection.Url + "negotiate";
 #endif
-            negotiateUrl += BuildCustomQueryString(connection, negotiateUrl);
-            
+            negotiateUrl += AppendCustomQueryString(connection, negotiateUrl);
+
             return httpClient.Get(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
@@ -76,9 +76,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 qsBuilder.Append("&connectionData=" + data);
             }
 
-            qsBuilder.Append(BuildCustomQueryString(connection, qsBuilder.ToString()));
+            string customQuery = AppendCustomQueryString(connection, qsBuilder.ToString());
 
-            string customQuery = connection.QueryString;
+            qsBuilder.Append(customQuery);
 
 #if SILVERLIGHT || WINDOWS_PHONE
             qsBuilder.Append("&").Append(GetNoCacheUrlParam());
@@ -86,22 +86,31 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return qsBuilder.ToString();
         }
 
-        public static string BuildCustomQueryString(IConnection connection, string baseUrl)
+        public static string AppendCustomQueryString(IConnection connection, string baseUrl)
         {
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
             }
 
-            string appender = "?",
+            string appender = "",
                    customQuery = connection.QueryString,
-                   qs = "";
+                   qs = "";            
 
             if (!String.IsNullOrEmpty(customQuery))
             {
-                if (baseUrl.Contains("?"))
+                char firstChar = customQuery[0];
+
+                // If the custom query string already starts with an ampersand or question mark
+                // then we dont have to use any appender, it can be empty.
+                if (firstChar != '?' && firstChar != '&')
                 {
-                    appender = "&";
+                    appender = "?";
+
+                    if (baseUrl.Contains(appender))
+                    {
+                        appender = "&";
+                    }
                 }
 
                 qs += appender + customQuery;
