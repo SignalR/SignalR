@@ -1,16 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class TransportFacts 
+    public class TransportFacts
     {
+        [Theory]
+        [InlineData("bob=12345")]
+        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk")]
+        public void GetReceiveQueryStringAppendsConnectionQueryString(string connectionQs)
+        {
+            var connection = new Connection("http://foo.com", connectionQs);
+            connection.ConnectionToken = "";
+
+            var urlQs = TransportHelper.GetReceiveQueryString(connection, null, "");
+
+            Assert.NotEqual(urlQs.IndexOf(connectionQs), -1);
+        }
+
+        [Theory]
+        [InlineData("bob=12345")]
+        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk")]
+        public void BuildCustomQueryStringAppendsConnectionQueryString(string connectionQs)
+        {
+            var connection = new Connection("http://foo.com", connectionQs);
+
+            var urlQs = TransportHelper.BuildCustomQueryString(connection, "http://foo.com");
+
+            Assert.Equal(urlQs, "?" + connectionQs);
+        }
+
         [Fact]
         public void ProcessResponseCapturesOnReceivedExceptions()
         {
