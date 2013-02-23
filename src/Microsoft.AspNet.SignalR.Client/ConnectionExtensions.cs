@@ -38,6 +38,11 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "jsonWriter will not dispose the stringWriter")]
         public static string JsonSerializeObject(this IConnection connection, object value)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
             var sb = new StringBuilder(0x100);
             using (var stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture))
             {
