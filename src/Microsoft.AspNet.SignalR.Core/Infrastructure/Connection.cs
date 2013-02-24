@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public event Action<ISubscriber, string> EventKeyRemoved;
 
-        public Func<string> GetCursor { get; set; }
+        public Action<TextWriter> WriteCursor { get; set; }
 
         public string Identity
         {
@@ -191,14 +191,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             // Do a single sweep through the results to process commands and extract values
             ProcessResults(result);
 
-            Debug.Assert(GetCursor != null, "Unable to resolve the cursor since the method is null");
+            Debug.Assert(WriteCursor != null, "Unable to resolve the cursor since the method is null");
 
-            // Resolve the cursor
-            string id = GetCursor();
-
-            var response = new PersistentResponse(ExcludeMessage)
+            var response = new PersistentResponse(ExcludeMessage, WriteCursor)
             {
-                MessageId = id,
                 Messages = result.Messages,
                 Disconnect = _disconnected,
                 Aborted = _aborted,

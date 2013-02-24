@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             subscriber.EventKeyAdded += _addEvent;
             subscriber.EventKeyRemoved += _removeEvent;
-            subscriber.GetCursor = subscription.GetCursor;
+            subscriber.WriteCursor = subscription.WriteCursor;
 
             // Add the subscription when it's all set and can be scheduled
             // for work
@@ -511,7 +511,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             subscriber.EventKeyAdded -= _addEvent;
             subscriber.EventKeyRemoved -= _removeEvent;
-            subscriber.GetCursor = null;
+            subscriber.WriteCursor = null;
 
             for (int i = subscriber.EventKeys.Count - 1; i >= 0; i--)
             {

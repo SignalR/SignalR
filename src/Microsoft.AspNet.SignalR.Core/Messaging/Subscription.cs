@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -325,8 +326,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Dispose(true);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "")]
-        public abstract string GetCursor();
+        public abstract void WriteCursor(TextWriter textWriter);
 
         private static class State
         {

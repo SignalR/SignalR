@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -47,9 +48,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _cursors = new List<Cursor>(cursors);
         }
 
-        public override string GetCursor()
+        public override void WriteCursor(TextWriter textWriter)
         {
-            return Cursor.MakeCursor(_cursors);
+            Cursor.WriteCursors(textWriter, _cursors);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The list needs to be populated")]

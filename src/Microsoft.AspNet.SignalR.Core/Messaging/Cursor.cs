@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
+using System.IO;
 using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -34,98 +34,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _escapedKey = minifiedKey;
         }
 
-        public static string MakeCursor(IList<Cursor> cursors)
+        public static void WriteCursors(TextWriter textWriter, IList<Cursor> cursors)
         {
-            return MakeCursorFast(cursors) ?? MakeCursorSlow(cursors);
-        }
-
-        private static string MakeCursorSlow(IList<Cursor> cursors)
-        {
-            var serialized = new string[cursors.Count];
             for (int i = 0; i < cursors.Count; i++)
             {
-                serialized[i] = cursors[i]._escapedKey + ',' + cursors[i].Id.ToString("X", CultureInfo.InvariantCulture);
-            }
-
-            return String.Join("|", serialized);
-        }
-
-        private static string MakeCursorFast(IList<Cursor> cursors)
-        {
-            checked
-            {
-                const int MAX_CHARS = 8 * 1024;
-                char* pChars = stackalloc char[MAX_CHARS];
-                char* pNextChar = pChars;
-                int numCharsInBuffer = 0;
-
-                // Start shoving data into the buffer
-                for (int i = 0; i < cursors.Count; i++)
+                if (i > 0)
                 {
-                    Cursor cursor = cursors[i];
-                    string escapedKey = cursor._escapedKey;
-
-                    // comma + up to 16-char hex Id + pipe
-                    numCharsInBuffer += escapedKey.Length + 18;
-
-                    if (numCharsInBuffer > MAX_CHARS)
-                    {
-                        return null; // we will overrun the buffer
-                    }
-
-                    for (int j = 0; j < escapedKey.Length; j++)
-                    {
-                        *pNextChar++ = escapedKey[j];
-                    }
-
-                    *pNextChar++ = ',';
-                    int hexLength = WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
-
-                    // Since we reserved 16 chars for the hex value, update numCharsInBuffer to reflect the actual number of
-                    // characters written by WriteUlongAsHexToBuffer.
-                    numCharsInBuffer += hexLength - 16;
-                    pNextChar += hexLength;
-                    *pNextChar++ = '|';
+                    textWriter.Write('|');
                 }
 
-                return (numCharsInBuffer == 0) ? String.Empty : new String(pChars, 0, numCharsInBuffer - 1); // -1 for final pipe
+                textWriter.Write(cursors[i]._escapedKey);
+                textWriter.Write(',');
+                textWriter.Write(cursors[i].Id.ToString("X", CultureInfo.InvariantCulture));
             }
-        }
-
-        private static int WriteUlongAsHexToBuffer(ulong value, char* pBuffer)
-        {
-            // This tracks the length of the output and serves as the index for the next character to be written into the pBuffer.
-            // The length could reach up to 16 characters, so at least that much space should remain in the pBuffer.
-            int length = 0;
-
-            // Write the hex value from left to right into the buffer without zero padding.
-            for (int i = 0; i < 16; i++)
-            {
-                // Convert the first 4 bits of the value to a valid hex character.
-                pBuffer[length] = Int32ToHex((int)(value >> 60));
-                value <<= 4;
-
-                // Don't increment length if it would just add zero padding
-                if (length != 0 || pBuffer[length] != '0')
-                {
-                    length++;
-                }
-            }
-
-            // The final length will be 0 iff the original value was 0. In this case we want to add 1 character, '0', to pBuffer
-            // '0' will have already been written to pBuffer[0] 16 times, so it is safe to simply return that 1 character was
-            // written to the output.
-            if (length == 0)
-            {
-                return 1;
-            }
-
-            return length;
-        }
-
-        private static char Int32ToHex(int value)
-        {
-            return (value < 10) ? (char)(value + '0') : (char)(value - 10 + 'A');
         }
 
         private static string Escape(string value)

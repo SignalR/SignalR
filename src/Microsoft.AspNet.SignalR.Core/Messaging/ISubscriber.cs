@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         IList<string> EventKeys { get; }
 
-        Func<string> GetCursor { get; set; }
+        Action<TextWriter> WriteCursor { get; set; }
 
         string Identity { get; }
 

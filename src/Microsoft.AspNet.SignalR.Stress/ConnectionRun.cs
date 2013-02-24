@@ -75,10 +75,10 @@ namespace Microsoft.AspNet.SignalR.Stress
                 return;
             }
 
-            connection.Receive(messageId, cancellationToken, maxMessages: 5000).Then(r =>
-            {
-                ReceiveLoop(connectionCountDown, connection, r.MessageId, cancellationToken);
-            });
+            //connection.Receive(messageId, cancellationToken, maxMessages: 5000).Then(r =>
+            //{
+            //    ReceiveLoop(connectionCountDown, connection, r.MessageId, cancellationToken);
+            //});
         }
 
         internal static IDisposable LongRunningSubscriptionRun(int connections, int senders, string payload)

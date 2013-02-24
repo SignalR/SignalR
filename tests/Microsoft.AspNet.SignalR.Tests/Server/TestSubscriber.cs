@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
         public event Action<ISubscriber, string> EventKeyRemoved;
 
-        public Func<string> GetCursor { get; set; }
+        public Action<TextWriter> WriteCursor { get; set; }
 
         public Subscription Subscription { get; set; }
 
