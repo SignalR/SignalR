@@ -281,7 +281,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private Task Receive(ITransportConnection connection, string messageId, CancellationToken cancel, Func<Task> postReceive)
         {
             IDisposable subscription = null;
-            int handled = 0;
             var disposer = new Disposer();
 
             IDisposable registration = cancel.SafeRegister(state =>
@@ -294,36 +293,20 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 var requestLifeTimeTcs = new TaskCompletionSource<object>();
 
-                subscription = connection.Receive(messageId, (response, state) =>
-                {
-                    if (Interlocked.Exchange(ref handled, 1) == 1)
-                    {
-                        requestLifeTimeTcs.TrySetResult(null);
+                var requestLifetime = new RequestLifetime(registration, requestLifeTimeTcs);
 
-                        // Dispose of the cancellation token subscription
-                        registration.Dispose();
+                var messageContext = new MessageContext(this, requestLifetime);
 
-                        return TaskAsyncHelper.False;
-                    }
-
-                    response.TimedOut = IsTimedOut;
-
-                    if (response.Aborted)
-                    {
-                        // If this was a clean disconnect then raise the event
-                        OnDisconnect();
-                    }
-
-                    // Send the response and return false
-                    return Send(response).Then(() => TaskAsyncHelper.False);
-                },
-                MaxMessages,
-                null);
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                subscription = connection.Receive(messageId,
+                                                 (response, state) => OnMessageReceived(response, state),
+                                                  MaxMessages,
+                                                  messageContext);
 
                 // Set the disposable
                 disposer.Set(subscription);
 
-                postReceive().Catch(ex => requestLifeTimeTcs.TrySetException(ex));
+                postReceive().Catch((ex, state) => OnPostReceiveError(ex, state), messageContext);
 
                 return requestLifeTimeTcs.Task;
             }
@@ -340,6 +323,103 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (LongPollDelay > 0)
             {
                 response.LongPollDelay = LongPollDelay;
+            }
+        }
+
+        private static void OnPostReceiveError(Exception ex, object state)
+        {
+            var context = (MessageContext)state;
+
+            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Failed post receive for {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
+
+            context.Lifetime.Complete(ex);
+
+            context.Transport._counters.ErrorsAllTotal.Increment();
+            context.Transport._counters.ErrorsAllPerSec.Increment();
+        }
+
+        private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
+        {
+            var context = (MessageContext)state;
+            var requestLifetime = (RequestLifetime)context.Lifetime;
+
+            response.TimedOut = context.Transport.IsTimedOut;
+
+            if (response.Aborted)
+            {
+                // If this was a clean disconnect then raise the event
+                context.Transport.OnDisconnect();
+            }
+
+            if (response.Terminal)
+            {
+                // If the response wasn't sent, send it before ending the request
+                if (!context.ResponseSent)
+                {
+                    return context.Transport.Send(response)
+                                            .Then(() =>
+                                            {
+                                                requestLifetime.Complete();
+
+                                                return TaskAsyncHelper.False;
+                                            });
+                }
+
+                requestLifetime.Complete();
+
+                return TaskAsyncHelper.False;
+            }
+
+            // Mark the response as sent
+            context.ResponseSent = true;
+
+            // Send the response and return false
+            return context.Transport.Send(response).Then(() => TaskAsyncHelper.False);
+        }
+
+        private class MessageContext
+        {
+            public LongPollingTransport Transport;
+            public RequestLifetime Lifetime;
+            public bool ResponseSent;
+
+            public MessageContext(LongPollingTransport longPollingTransport, RequestLifetime requestLifetime)
+            {
+                Transport = longPollingTransport;
+                Lifetime = requestLifetime;
+            }
+        }
+
+        private class RequestLifetime
+        {
+            private readonly TaskCompletionSource<object> _requestLifeTimeTcs;
+            private readonly IDisposable _registration;
+
+            public RequestLifetime(IDisposable registration, TaskCompletionSource<object> requestLifeTimeTcs)
+            {
+                _registration = registration;
+                _requestLifeTimeTcs = requestLifeTimeTcs;
+            }
+
+            public void Complete()
+            {
+                Complete(exception: null);
+            }
+
+            public void Complete(Exception exception)
+            {
+                // End the request
+                if (exception == null)
+                {
+                    _requestLifeTimeTcs.TrySetResult(null);
+                }
+                else
+                {
+                    _requestLifeTimeTcs.TrySetUnwrappedException(exception);
+                }
+
+                // Dispose of the cancellation token subscription
+                _registration.Dispose();
             }
         }
     }

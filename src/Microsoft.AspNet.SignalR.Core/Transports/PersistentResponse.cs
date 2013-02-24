@@ -43,6 +43,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This type is only used for serialization")]
         public IList<ArraySegment<Message>> Messages { get; set; }
 
+        public bool Terminal { get; set; }
+
         /// <summary>
         /// The total count of the messages sent the receiving connection.
         /// </summary>

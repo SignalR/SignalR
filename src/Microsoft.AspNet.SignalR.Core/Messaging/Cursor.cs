@@ -69,6 +69,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     length++;
                 }
             }
+
+            if (length == 0)
+            {
+                textWriter.Write('0');
+            }
         }
 
         private static char Int32ToHex(int value)

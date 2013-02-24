@@ -190,6 +190,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             var response = new PersistentResponse(ExcludeMessage, WriteCursor)
             {
+                Terminal = result.Terminal,
                 Messages = result.Messages,
                 Disconnect = _disconnected,
                 Aborted = _aborted,
