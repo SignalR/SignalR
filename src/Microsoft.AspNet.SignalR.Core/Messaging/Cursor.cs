@@ -42,11 +42,38 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     textWriter.Write('|');
                 }
-
-                textWriter.Write(cursors[i]._escapedKey);
+                Cursor cursor = cursors[i];
+                textWriter.Write(cursor._escapedKey);
                 textWriter.Write(',');
-                textWriter.Write(cursors[i].Id.ToString("X", CultureInfo.InvariantCulture));
+                WriteUlongAsHexToBuffer(cursor.Id, textWriter);
             }
+        }
+
+        private static void WriteUlongAsHexToBuffer(ulong value, TextWriter textWriter)
+        {
+            // This tracks the length of the output and serves as the index for the next character to be written into the pBuffer.
+            // The length could reach up to 16 characters, so at least that much space should remain in the pBuffer.
+            int length = 0;
+
+            // Write the hex value from left to right into the buffer without zero padding.
+            for (int i = 0; i < 16; i++)
+            {
+                // Convert the first 4 bits of the value to a valid hex character.
+                char hexChar = Int32ToHex((int)(value >> 60));
+                value <<= 4;
+
+                // Don't increment length if it would just add zero padding
+                if (length != 0 || hexChar != '0')
+                {
+                    textWriter.Write(hexChar);
+                    length++;
+                }
+            }
+        }
+
+        private static char Int32ToHex(int value)
+        {
+            return (value < 10) ? (char)(value + '0') : (char)(value - 10 + 'A');
         }
 
         private static string Escape(string value)
