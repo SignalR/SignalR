@@ -59,9 +59,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter ConnectionsCurrent { get; private set; }
 
         /// <summary>
-        /// Gets the performance counter representing the toal number of messages received by connections (server to client) since the application was started.
+        /// Gets the performance counter representing the total number of messages received by connections (server to client) since the application was started.
         /// </summary>
-        [PerformanceCounter(Name = "Connection Messages Received Total", Description = "The toal number of messages received by connections (server to client) since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
+        [PerformanceCounter(Name = "Connection Messages Received Total", Description = "The total number of messages received by connections (server to client) since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
         public IPerformanceCounter ConnectionMessagesReceivedTotal { get; private set; }
 
         /// <summary>
@@ -81,6 +81,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// </summary>
         [PerformanceCounter(Name = "Connection Messages Sent/Sec", Description = "The number of messages sent by connections (client to server) per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ConnectionMessagesSentPerSec { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the total number of messages received by subscribers since the application was started.
+        /// </summary>
+        [PerformanceCounter(Name = "Message Bus Messages Received Total", Description = "The total number of messages received by subscribers since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
+        public IPerformanceCounter MessageBusMessagesReceivedTotal { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of messages received by a subscribers per second.
+        /// </summary>
+        [PerformanceCounter(Name = "Message Bus Messages Received/Sec", Description = "The number of messages received by subscribers per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        public IPerformanceCounter MessageBusMessagesReceivedPerSec { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the total number of messages published to the message bus since the application was started.

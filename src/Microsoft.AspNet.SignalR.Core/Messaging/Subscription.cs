@@ -97,6 +97,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             beforeInvoke(state);
 
+            _counters.MessageBusMessagesReceivedTotal.IncrementBy(result.TotalCount);
+            _counters.MessageBusMessagesReceivedPerSec.IncrementBy(result.TotalCount);
+
             return _callback.Invoke(result, _callbackState).ContinueWith(task =>
             {
                 // Go from invoking callback to idle
