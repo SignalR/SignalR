@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly IJsonSerializer _serializer;
         private readonly string _baseSignal;
         private readonly string _connectionId;
-        private readonly HashSet<string> _signals;
+        private readonly IList<string> _signals;
         private readonly DiffSet<string> _groups;
         private readonly IPerformanceCounterManager _counters;
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
             _connectionId = connectionId;
-            _signals = new HashSet<string>(signals, StringComparer.OrdinalIgnoreCase);
+            _signals = new List<string>(signals.Concat(groups));
             _groups = new DiffSet<string>(groups);
             _traceSource = traceManager["SignalR.Connection"];
             _ackHandler = ackHandler;
@@ -68,11 +68,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        IEnumerable<string> ISubscriber.EventKeys
+        IList<string> ISubscriber.EventKeys
         {
             get
             {
-                return Signals;
+                return _signals;
             }
         }
 
@@ -87,14 +87,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             get
             {
                 return _connectionId;
-            }
-        }
-
-        private IEnumerable<string> Signals
-        {
-            get
-            {
-                return _signals.Concat(_groups.GetSnapshot());
             }
         }
 

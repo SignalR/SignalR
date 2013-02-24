@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly IStringMinifier _stringMinifier;
 
         public DefaultSubscription(string identity,
-                                   IEnumerable<string> eventKeys,
+                                   IList<string> eventKeys,
                                    TopicLookup topics,
                                    string cursor,
                                    Func<MessageResult, object, Task<bool>> callback,
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private List<Cursor> GetCursorsFromEventKeys(HashSet<string> eventKeys, TopicLookup topics)
+        private List<Cursor> GetCursorsFromEventKeys(IList<string> eventKeys, TopicLookup topics)
         {
             var list = new List<Cursor>(eventKeys.Count);
             foreach (var eventKey in eventKeys)

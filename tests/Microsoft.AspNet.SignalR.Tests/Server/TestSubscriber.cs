@@ -6,13 +6,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 {
     public class TestSubscriber : ISubscriber
     {
-        public TestSubscriber(IEnumerable<string> keys)
+        public TestSubscriber(IList<string> keys)
         {
-            EventKeys = keys;
+            EventKeys = new List<string>(keys);
             Identity = Guid.NewGuid().ToString();
         }
 
-        public IEnumerable<string> EventKeys { get; private set; }
+        public IList<string> EventKeys { get; private set; }
 
         public string Identity { get; private set; }
 

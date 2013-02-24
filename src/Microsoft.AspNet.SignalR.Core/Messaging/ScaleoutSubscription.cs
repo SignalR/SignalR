@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
-                                    IEnumerable<string> eventKeys,
+                                    IList<string> eventKeys,
                                     string cursor,
                                     ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> streamMappings,
                                     Func<MessageResult, object, Task<bool>> callback,

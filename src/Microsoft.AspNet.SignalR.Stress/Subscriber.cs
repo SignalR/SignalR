@@ -10,13 +10,13 @@ namespace Microsoft.AspNet.SignalR.Stress
 {
     public class Subscriber : ISubscriber
     {
-        public Subscriber(string id, IEnumerable<string> eventKeys)
+        public Subscriber(string id, IList<string> eventKeys)
         {
             Identity = id;
-            EventKeys = eventKeys;
+            EventKeys = new List<string>(eventKeys);
         }
 
-        public IEnumerable<string> EventKeys
+        public IList<string> EventKeys
         {
             get;
             set;

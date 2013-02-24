@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
 
-        public IEnumerable<string> EventKeys
+        public IList<string> EventKeys
         {
             get
             {

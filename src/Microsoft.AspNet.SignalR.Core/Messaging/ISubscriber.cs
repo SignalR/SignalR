@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public interface ISubscriber
     {
-        IEnumerable<string> EventKeys { get; }
+        IList<string> EventKeys { get; }
 
         Func<string> GetCursor { get; set; }
 

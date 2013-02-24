@@ -513,8 +513,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             subscriber.EventKeyRemoved -= _removeEvent;
             subscriber.GetCursor = null;
 
-            foreach (var eventKey in subscriber.EventKeys)
+            for (int i = subscriber.EventKeys.Count - 1; i >= 0; i--)
             {
+                string eventKey = subscriber.EventKeys[i];
                 RemoveEvent(subscriber, eventKey);
             }
         }

@@ -29,13 +29,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public string Identity { get; private set; }
 
-        public HashSet<string> EventKeys { get; private set; }
+        public IList<string> EventKeys { get; private set; }
 
         public int MaxMessages { get; private set; }
 
         public IDisposable Disposable { get; set; }
 
-        protected Subscription(string identity, IEnumerable<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters, object state)
+        protected Subscription(string identity, IList<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters, object state)
         {
             if (String.IsNullOrEmpty(identity))
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             Identity = identity;
             _callback = callback;
-            EventKeys = new HashSet<string>(eventKeys);
+            EventKeys = eventKeys;
             MaxMessages = maxMessages;
             _counters = counters;
             _callbackState = state;
@@ -106,13 +106,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Interlocked.CompareExchange(ref _subscriptionState,
                                             SubscriptionState.Idle,
                                             SubscriptionState.InvokingCallback);
-
-                if (task.IsFaulted)
-                {
-                    return TaskAsyncHelper.FromError<bool>(task.Exception);
-                }
-
-                return TaskAsyncHelper.FromResult(task.Result);
+                return task;
             },
             TaskContinuationOptions.ExecuteSynchronously).FastUnwrap();
         }
@@ -259,7 +253,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (EventKeys)
             {
-                return EventKeys.Add(key);
+                if (EventKeys.Contains(key))
+                {
+                    return false;
+                }
+
+                EventKeys.Add(key);
+                return true;
             }
         }
 
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (EventKeys)
             {
-                EventKeys.Add(key);
+                AddEvent(key, topic);
             }
         }
 
