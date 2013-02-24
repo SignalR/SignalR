@@ -188,15 +188,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             Debug.Assert(WriteCursor != null, "Unable to resolve the cursor since the method is null");
 
-            var response = new PersistentResponse(ExcludeMessage, WriteCursor)
-            {
-                Terminal = result.Terminal,
-                Messages = result.Messages,
-                Disconnect = _disconnected,
-                Aborted = _aborted,
-                TotalCount = result.TotalCount,
-            };
+            var response = new PersistentResponse(ExcludeMessage, WriteCursor);
+            response.Terminal = result.Terminal;
 
+            if (!result.Terminal)
+            {
+                // Only set these properties if the message isn't terminal
+                response.Messages = result.Messages;
+                response.Disconnect = _disconnected;
+                response.Aborted = _aborted;
+                response.TotalCount = result.TotalCount;
+            }
+            
             PopulateResponseState(response);
 
             _counters.ConnectionMessagesReceivedTotal.IncrementBy(result.TotalCount);
@@ -327,6 +330,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             public Task<bool> InvokeCallback(MessageResult result)
             {
                 var response = _connection.GetResponse(result);
+
                 return _callback(response, _callbackState);
             }
         }

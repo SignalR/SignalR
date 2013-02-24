@@ -345,10 +345,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             response.TimedOut = context.Transport.IsTimedOut;
 
+            Task task = TaskAsyncHelper.Empty;
+
             if (response.Aborted)
             {
                 // If this was a clean disconnect then raise the event
-                context.Transport.OnDisconnect();
+                task = context.Transport.OnDisconnect();
             }
 
             if (response.Terminal)
@@ -356,25 +358,29 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // If the response wasn't sent, send it before ending the request
                 if (!context.ResponseSent)
                 {
-                    return context.Transport.Send(response)
-                                            .Then(() =>
-                                            {
-                                                requestLifetime.Complete();
+                    return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
+                               .Then(() =>
+                               {
+                                   requestLifetime.Complete();
 
-                                                return TaskAsyncHelper.False;
-                                            });
+                                   return TaskAsyncHelper.False;
+                               });
                 }
 
-                requestLifetime.Complete();
+                return task.Then(() =>
+                {
+                    requestLifetime.Complete();
 
-                return TaskAsyncHelper.False;
+                    return TaskAsyncHelper.False;
+                });
             }
 
             // Mark the response as sent
             context.ResponseSent = true;
 
             // Send the response and return false
-            return context.Transport.Send(response).Then(() => TaskAsyncHelper.False);
+            return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
+                       .Then(() => TaskAsyncHelper.False);
         }
 
         private class MessageContext
