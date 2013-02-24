@@ -163,11 +163,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        public Task<PersistentResponse> Receive(string messageId, CancellationToken cancel, int maxMessages)
-        {
-            return _bus.Receive<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
-        }
-
         public IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state)
         {
             var receiveContext = new ReceiveContext(this, callback, state);

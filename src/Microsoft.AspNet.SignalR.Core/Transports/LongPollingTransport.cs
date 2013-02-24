@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -247,44 +248,91 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Func<Task> postReceive = null)
         {
-            if (TransportConnected != null)
+            postReceive = postReceive ?? new Func<Task>(() => TaskAsyncHelper.Empty);
+
+            Func<Task> afterReceive = () =>
             {
-                TransportConnected().Catch();
-            }
+                var series = new Func<object, Task>[] 
+                { 
+                    OnTransportConnected,
+                    state => ((Func<Task>)state).Invoke()
+                };
 
-            // Receive() will async wait until a message arrives then return
-            var receiveTask = IsConnectRequest ?
-                              connection.Receive(null, ConnectionEndToken, MaxMessages) :
-                              connection.Receive(MessageId, ConnectionEndToken, MaxMessages);
-
-            var series = new Func<object, Task>[]
-            {
-                state =>
-                {
-                    if (state != null)
-                    {
-                        return ((Func<Task>)state).Invoke();
-                    }
-                    return TaskAsyncHelper.Empty;
-                },
-                state =>
-                {
-                    return ((Task<PersistentResponse>)state).Then(response =>
-                    {
-                        response.TimedOut = IsTimedOut;
-
-                        if (response.Aborted)
-                        {
-                            // If this was a clean disconnect then raise the event
-                            OnDisconnect();
-                        }
-
-                        return Send(response);
-                    });
-                }
+                return TaskAsyncHelper.Series(series, new object[] { null, postReceive });
             };
 
-            return TaskAsyncHelper.Series(series, new object[] { postReceive, receiveTask });
+            string messageId = IsConnectRequest ? null : MessageId;
+
+            return Receive(connection, messageId, ConnectionEndToken, afterReceive);
+        }
+
+        private Task OnTransportConnected(object state)
+        {
+            if (TransportConnected != null)
+            {
+                return TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
+            }
+
+            return TaskAsyncHelper.Empty;
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The subscription is disposed in the callback")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is captured in a task")]
+        private Task Receive(ITransportConnection connection, string messageId, CancellationToken cancel, Func<Task> postReceive)
+        {
+            IDisposable subscription = null;
+            int handled = 0;
+            var disposer = new Disposer();
+
+            IDisposable registration = cancel.SafeRegister(state =>
+            {
+                ((Disposer)state).Dispose();
+            },
+            disposer);
+
+            try
+            {
+                var requestLifeTimeTcs = new TaskCompletionSource<object>();
+
+                subscription = connection.Receive(messageId, (response, state) =>
+                {
+                    if (Interlocked.Exchange(ref handled, 1) == 1)
+                    {
+                        requestLifeTimeTcs.TrySetResult(null);
+
+                        // Dispose of the cancellation token subscription
+                        registration.Dispose();
+
+                        return TaskAsyncHelper.False;
+                    }
+
+                    response.TimedOut = IsTimedOut;
+
+                    if (response.Aborted)
+                    {
+                        // If this was a clean disconnect then raise the event
+                        OnDisconnect();
+                    }
+
+                    // Send the response and return false
+                    return Send(response).Then(() => TaskAsyncHelper.False);
+                },
+                MaxMessages,
+                null);
+
+                // Set the disposable
+                disposer.Set(subscription);
+
+                postReceive().Catch(ex => requestLifeTimeTcs.TrySetException(ex));
+
+                return requestLifeTimeTcs.Task;
+            }
+            catch (Exception ex)
+            {
+                registration.Dispose();
+
+                return TaskAsyncHelper.FromError(ex);
+            }
         }
 
         private static void AddTransportData(PersistentResponse response)
