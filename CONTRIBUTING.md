@@ -58,6 +58,7 @@ Make sure you can build the code. Familiarize yourself with the project workflow
 read this https://help.github.com/articles/using-pull-requests.
 
 Before submitting a feature or substantial code contribution please discuss it with the team and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed and tested by the ASP.NET SignalR Team, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.
+[Don't "Push" Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/)
 
 Here's a few things you should always do when making changes to the SignalR code base:
 
