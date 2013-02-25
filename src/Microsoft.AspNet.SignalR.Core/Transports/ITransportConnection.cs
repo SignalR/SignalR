@@ -10,8 +10,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state);
 
-        Task<PersistentResponse> Receive(string messageId, CancellationToken cancel, int maxMessages);
-
         Task Send(ConnectionMessage message);
     }
 }

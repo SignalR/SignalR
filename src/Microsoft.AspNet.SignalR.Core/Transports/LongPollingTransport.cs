@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -196,12 +197,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 OutputWriter.Flush();
-                return Context.Response.End()
-                                       .Catch(IncrementErrors)
-                                       .Catch(ex =>
-                                       {
-                                           Trace.TraceEvent(TraceEventType.Error, 0, "Failed EndAsync() for {0} with: {1}", ConnectionId, ex.GetBaseException());
-                                       });
+                return Context.Response.End();
             },
             value);
         }
@@ -247,44 +243,75 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private Task ProcessReceiveRequestWithoutTracking(ITransportConnection connection, Func<Task> postReceive = null)
         {
-            if (TransportConnected != null)
+            postReceive = postReceive ?? new Func<Task>(() => TaskAsyncHelper.Empty);
+
+            Func<Task> afterReceive = () =>
             {
-                TransportConnected().Catch();
-            }
+                var series = new Func<object, Task>[] 
+                { 
+                    OnTransportConnected,
+                    state => ((Func<Task>)state).Invoke()
+                };
 
-            // Receive() will async wait until a message arrives then return
-            var receiveTask = IsConnectRequest ?
-                              connection.Receive(null, ConnectionEndToken, MaxMessages) :
-                              connection.Receive(MessageId, ConnectionEndToken, MaxMessages);
-
-            var series = new Func<object, Task>[]
-            {
-                state =>
-                {
-                    if (state != null)
-                    {
-                        return ((Func<Task>)state).Invoke();
-                    }
-                    return TaskAsyncHelper.Empty;
-                },
-                state =>
-                {
-                    return ((Task<PersistentResponse>)state).Then(response =>
-                    {
-                        response.TimedOut = IsTimedOut;
-
-                        if (response.Aborted)
-                        {
-                            // If this was a clean disconnect then raise the event
-                            OnDisconnect();
-                        }
-
-                        return Send(response);
-                    });
-                }
+                return TaskAsyncHelper.Series(series, new object[] { null, postReceive });
             };
 
-            return TaskAsyncHelper.Series(series, new object[] { postReceive, receiveTask });
+            string messageId = IsConnectRequest ? null : MessageId;
+
+            return Receive(connection, messageId, ConnectionEndToken, afterReceive);
+        }
+
+        private Task OnTransportConnected(object state)
+        {
+            if (TransportConnected != null)
+            {
+                return TransportConnected().Catch(_counters.ErrorsAllTotal, _counters.ErrorsAllPerSec);
+            }
+
+            return TaskAsyncHelper.Empty;
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The subscription is disposed in the callback")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is captured in a task")]
+        private Task Receive(ITransportConnection connection, string messageId, CancellationToken cancel, Func<Task> postReceive)
+        {
+            IDisposable subscription = null;
+            var disposer = new Disposer();
+
+            IDisposable registration = cancel.SafeRegister(state =>
+            {
+                ((Disposer)state).Dispose();
+            },
+            disposer);
+
+            try
+            {
+                var requestLifeTimeTcs = new TaskCompletionSource<object>();
+
+                var requestLifetime = new RequestLifetime(registration, requestLifeTimeTcs);
+
+                var messageContext = new MessageContext(this, requestLifetime);
+
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                subscription = connection.Receive(messageId,
+                                                 (response, state) => OnMessageReceived(response, state),
+                                                  MaxMessages,
+                                                  messageContext);
+
+                // Set the disposable
+                disposer.Set(subscription);
+
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                postReceive().Catch((ex, state) => OnError(ex, state), messageContext);
+
+                return requestLifeTimeTcs.Task;
+            }
+            catch (Exception ex)
+            {
+                registration.Dispose();
+
+                return TaskAsyncHelper.FromError(ex);
+            }
         }
 
         private static void AddTransportData(PersistentResponse response)
@@ -292,6 +319,117 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (LongPollDelay > 0)
             {
                 response.LongPollDelay = LongPollDelay;
+            }
+        }
+
+        private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
+        {
+            var context = (MessageContext)state;
+            var requestLifetime = (RequestLifetime)context.Lifetime;
+
+            response.TimedOut = context.Transport.IsTimedOut;
+
+            Task task = TaskAsyncHelper.Empty;
+
+            if (response.Aborted)
+            {
+                // If this was a clean disconnect then raise the event
+                task = context.Transport.OnDisconnect();
+            }
+
+            if (response.Terminal)
+            {
+                // If the response wasn't sent, send it before ending the request
+                if (!context.ResponseSent)
+                {
+                    // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                    return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
+                               .Catch((ex, s) => OnError(ex, s), context)
+                               .Then(() =>
+                               {
+                                   requestLifetime.Complete();
+
+                                   return TaskAsyncHelper.False;
+                               });
+                }
+
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                return task.Catch((ex, s) => OnError(ex, s), context)
+                           .Then(() =>
+                           {
+                               requestLifetime.Complete();
+
+                               return TaskAsyncHelper.False;
+                           });
+            }
+
+            // Mark the response as sent
+            context.ResponseSent = true;
+
+            // Send the response and return false
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
+                       .Catch((ex, s) => OnError(ex, s), context)
+                       .Then(() => TaskAsyncHelper.False);
+        }
+
+        private static void OnError(AggregateException ex, object state)
+        {
+            var context = (MessageContext)state;
+
+            context.Transport.IncrementErrors(ex);
+
+            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Error on connection {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
+
+            context.Lifetime.Complete(ex);
+
+            context.Transport._counters.ErrorsAllTotal.Increment();
+            context.Transport._counters.ErrorsAllPerSec.Increment();
+        }
+
+        private class MessageContext
+        {
+            public LongPollingTransport Transport;
+            public RequestLifetime Lifetime;
+            public bool ResponseSent;
+
+            public MessageContext(LongPollingTransport longPollingTransport, RequestLifetime requestLifetime)
+            {
+                Transport = longPollingTransport;
+                Lifetime = requestLifetime;
+            }
+        }
+
+        private class RequestLifetime
+        {
+            private readonly TaskCompletionSource<object> _requestLifeTimeTcs;
+            private readonly IDisposable _registration;
+
+            public RequestLifetime(IDisposable registration, TaskCompletionSource<object> requestLifeTimeTcs)
+            {
+                _registration = registration;
+                _requestLifeTimeTcs = requestLifeTimeTcs;
+            }
+
+            public void Complete()
+            {
+                Complete(exception: null);
+            }
+
+            public void Complete(Exception exception)
+            {
+                // End the request
+                if (exception == null)
+                {
+                    _requestLifeTimeTcs.TrySetResult(null);
+                }
+                else
+                {
+                    _requestLifeTimeTcs.TrySetUnwrappedException(exception);
+                }
+
+                // Dispose of the cancellation token subscription
+                _registration.Dispose();
             }
         }
     }

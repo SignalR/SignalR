@@ -330,18 +330,21 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return context.Transport.Send(response).Then(c => OnDisconnectMessage(c), context)
                                         .Then(() => TaskAsyncHelper.False);
             }
-            else if (response.TimedOut ||
-                     response.Aborted ||
-                     context.Transport.ConnectionEndToken.IsCancellationRequested)
+            else if (response.TimedOut || response.Aborted)
             {
-                context.Subscription.Dispose();
+                context.Registration.Dispose();
 
                 if (response.Aborted)
                 {
                     // If this was a clean disconnect raise the event.
-                    context.Transport.OnDisconnect();
+                    return context.Transport.OnDisconnect()
+                                            .Then(() => TaskAsyncHelper.False);
                 }
-
+            }
+            
+            if (response.Terminal)
+            {
+                // End the request on the terminal response
                 context.Lifetime.Complete();
 
                 return TaskAsyncHelper.False;
@@ -354,12 +357,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private static void OnDisconnectMessage(MessageContext context)
         {
-            context.Subscription.Dispose();
+            context.Registration.Dispose();
 
             // Remove connection without triggering disconnect
             context.Transport.Heartbeat.RemoveConnection(context.Transport);
-
-            context.Lifetime.Complete();
         }
 
         private static Task PerformSend(object state)
@@ -410,13 +411,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class MessageContext
         {
-            public Disposer Subscription;
+            public Disposer Registration;
             public RequestLifetime Lifetime;
             public ForeverTransport Transport;
 
-            public MessageContext(Disposer subscription, RequestLifetime lifetime, ForeverTransport transport)
+            public MessageContext(Disposer registration, RequestLifetime lifetime, ForeverTransport transport)
             {
-                Subscription = subscription;
+                Registration = registration;
                 Lifetime = lifetime;
                 Transport = transport;
             }

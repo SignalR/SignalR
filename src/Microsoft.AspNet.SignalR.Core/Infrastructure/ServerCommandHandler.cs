@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        public Func<string> GetCursor { get; set; }
+        public Action<TextWriter> WriteCursor { get; set; }
 
         public string Identity
         {

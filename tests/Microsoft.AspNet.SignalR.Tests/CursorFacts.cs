@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u13A1", 0xffffffffffffffff)
             };
 
-            var serialized = Cursor.MakeCursor(cursors);
+            var serialized = MakeCursor(cursors);
             var deserializedCursors = Cursor.GetCursors(serialized);
 
             for (var i = 0; i < cursors.Length; i++)
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             var cursors = new[] { new Cursor("", 0) };
 
-            var serialized = Cursor.MakeCursor(cursors);
+            var serialized = MakeCursor(cursors);
             var deserializedCursors = Cursor.GetCursors(serialized);
 
             Assert.Equal(cursors[0].Id, deserializedCursors[0].Id);
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 manyCursors.Add(new Cursor(Guid.NewGuid().ToString(), 0xffffffffffffffff));
             }
 
-            var serialized = Cursor.MakeCursor(manyCursors);
+            var serialized = MakeCursor(manyCursors);
             var deserializedCursors = Cursor.GetCursors(serialized);
 
             Assert.Equal(deserializedCursors.Count, 8192);
@@ -80,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u13A1", 0xffffffffffffffff, map("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u13A1"))
             };
 
-            var serialized = Cursor.MakeCursor(cursors);
+            var serialized = MakeCursor(cursors);
             var deserializedCursors = Cursor.GetCursors(serialized, inverseMap);
 
             for (var i = 0; i < cursors.Length; i++)
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 new Cursor("\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1", 0xffffffffffffffff)
             };
 
-            var serialized = Cursor.MakeCursor(cursors);
+            var serialized = MakeCursor(cursors);
             var deserializedCursors = Cursor.GetCursors(serialized, sometimesReturnsNull);
 
             Assert.Null(deserializedCursors);
@@ -230,6 +231,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void CursorWithInvalidCharactersInIds(string serializedCursor)
         {
             Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));
+        }
+
+        private static unsafe string MakeCursor(IList<Cursor> cursors)
+        {
+            using (var writer = new StringWriter())
+            {
+                Cursor.WriteCursors(writer, cursors);
+                return writer.ToString();
+            }
         }
     }
 }

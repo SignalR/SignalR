@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public event Action<ISubscriber, string> EventKeyRemoved;
 
-        public Func<string> GetCursor { get; set; }
+        public Action<TextWriter> WriteCursor { get; set; }
 
         public string Identity
         {
@@ -163,11 +163,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        public Task<PersistentResponse> Receive(string messageId, CancellationToken cancel, int maxMessages)
-        {
-            return _bus.Receive<PersistentResponse>(this, messageId, cancel, maxMessages, GetResponse);
-        }
-
         public IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state)
         {
             var receiveContext = new ReceiveContext(this, callback, state);
@@ -191,20 +186,20 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             // Do a single sweep through the results to process commands and extract values
             ProcessResults(result);
 
-            Debug.Assert(GetCursor != null, "Unable to resolve the cursor since the method is null");
+            Debug.Assert(WriteCursor != null, "Unable to resolve the cursor since the method is null");
 
-            // Resolve the cursor
-            string id = GetCursor();
+            var response = new PersistentResponse(ExcludeMessage, WriteCursor);
+            response.Terminal = result.Terminal;
 
-            var response = new PersistentResponse(ExcludeMessage)
+            if (!result.Terminal)
             {
-                MessageId = id,
-                Messages = result.Messages,
-                Disconnect = _disconnected,
-                Aborted = _aborted,
-                TotalCount = result.TotalCount,
-            };
-
+                // Only set these properties if the message isn't terminal
+                response.Messages = result.Messages;
+                response.Disconnect = _disconnected;
+                response.Aborted = _aborted;
+                response.TotalCount = result.TotalCount;
+            }
+            
             PopulateResponseState(response);
 
             _counters.ConnectionMessagesReceivedTotal.IncrementBy(result.TotalCount);
@@ -335,6 +330,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             public Task<bool> InvokeCallback(MessageResult result)
             {
                 var response = _connection.GetResponse(result);
+
                 return _callback(response, _callbackState);
             }
         }

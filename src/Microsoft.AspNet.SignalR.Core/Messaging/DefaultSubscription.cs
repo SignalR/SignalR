@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -115,9 +116,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public override string GetCursor()
+        public override void WriteCursor(TextWriter textWriter)
         {
-            return Cursor.MakeCursor(_cursors);
+            Cursor.WriteCursors(textWriter, _cursors);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
