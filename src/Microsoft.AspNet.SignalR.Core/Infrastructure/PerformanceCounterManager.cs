@@ -283,10 +283,19 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     }
                 }
 
-                counter = counter ?? _noOpCounter;
+                try
+                {
+                    counter = counter ?? _noOpCounter;
 
-                // Initialize the counter sample
-                counter.NextSample();
+                    // Initialize the counter sample
+                    counter.NextSample();
+                }
+                catch (InvalidOperationException)
+                {
+                    // The counter may not exists since it may be a new counter
+                    // handle that case and just fallback to the noop counter
+                    counter = _noOpCounter;
+                }
 
                 property.SetValue(this, counter, null);
             }
