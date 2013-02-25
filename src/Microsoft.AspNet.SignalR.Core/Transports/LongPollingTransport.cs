@@ -301,7 +301,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // Set the disposable
                 disposer.Set(subscription);
 
-                postReceive().Catch((ex, state) => OnPostReceiveError(ex, state), messageContext);
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                postReceive().Catch((ex, state) => OnError(ex, state), messageContext);
 
                 return requestLifeTimeTcs.Task;
             }
@@ -319,29 +320,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 response.LongPollDelay = LongPollDelay;
             }
-        }
-
-        private static void OnPostReceiveError(Exception ex, object state)
-        {
-            var context = (MessageContext)state;
-
-            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Failed post receive for {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
-
-            context.Lifetime.Complete(ex);
-
-            context.Transport._counters.ErrorsAllTotal.Increment();
-            context.Transport._counters.ErrorsAllPerSec.Increment();
-        }
-
-        private static void OnSendError(AggregateException ex, object state)
-        {
-            var context = (MessageContext)state;
-
-            context.Transport.IncrementErrors(ex);
-
-            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Failed Send for {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
-
-            context.Lifetime.Complete(ex);
         }
 
         private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
@@ -366,7 +344,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                     return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
-                               .Catch((ex, s) => OnSendError(ex, s), context)
+                               .Catch((ex, s) => OnError(ex, s), context)
                                .Then(() =>
                                {
                                    requestLifetime.Complete();
@@ -376,7 +354,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                return task.Catch((ex, s) => OnSendError(ex, s), context)
+                return task.Catch((ex, s) => OnError(ex, s), context)
                            .Then(() =>
                            {
                                requestLifetime.Complete();
@@ -391,8 +369,22 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Send the response and return false
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
-                       .Catch((ex, s) => OnSendError(ex, s), context)
+                       .Catch((ex, s) => OnError(ex, s), context)
                        .Then(() => TaskAsyncHelper.False);
+        }
+
+        private static void OnError(AggregateException ex, object state)
+        {
+            var context = (MessageContext)state;
+
+            context.Transport.IncrementErrors(ex);
+
+            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Error on connection {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
+
+            context.Lifetime.Complete(ex);
+
+            context.Transport._counters.ErrorsAllTotal.Increment();
+            context.Transport._counters.ErrorsAllPerSec.Increment();
         }
 
         private class MessageContext
