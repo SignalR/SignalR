@@ -340,8 +340,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                     return context.Transport.OnDisconnect()
                                             .Then(() => TaskAsyncHelper.False);
                 }
-
-                return TaskAsyncHelper.False;
             }
             
             if (response.Terminal)

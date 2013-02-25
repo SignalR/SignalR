@@ -135,6 +135,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private void WriteMessages(TextWriter writer, JsonTextWriter jsonWriter)
         {
+            if (Messages == null)
+            {
+                return;
+            }
+
             // If the writer is a binary writer then write to the underlying writer directly
             var binaryWriter = writer as IBinaryWriter;
 

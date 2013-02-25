@@ -197,12 +197,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 OutputWriter.Flush();
-                return Context.Response.End()
-                                       .Catch(IncrementErrors)
-                                       .Catch(ex =>
-                                       {
-                                           Trace.TraceEvent(TraceEventType.Error, 0, "Failed EndAsync() for {0} with: {1}", ConnectionId, ex.GetBaseException());
-                                       });
+                return Context.Response.End();
             },
             value);
         }
@@ -338,6 +333,17 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Transport._counters.ErrorsAllPerSec.Increment();
         }
 
+        private static void OnSendError(AggregateException ex, object state)
+        {
+            var context = (MessageContext)state;
+
+            context.Transport.IncrementErrors(ex);
+
+            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Failed Send for {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
+
+            context.Lifetime.Complete(ex);
+        }
+
         private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
         {
             var context = (MessageContext)state;
@@ -358,7 +364,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // If the response wasn't sent, send it before ending the request
                 if (!context.ResponseSent)
                 {
+                    // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                     return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
+                               .Catch((ex, s) => OnSendError(ex, s), context)
                                .Then(() =>
                                {
                                    requestLifetime.Complete();
@@ -367,19 +375,23 @@ namespace Microsoft.AspNet.SignalR.Transports
                                });
                 }
 
-                return task.Then(() =>
-                {
-                    requestLifetime.Complete();
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                return task.Catch((ex, s) => OnSendError(ex, s), context)
+                           .Then(() =>
+                           {
+                               requestLifetime.Complete();
 
-                    return TaskAsyncHelper.False;
-                });
+                               return TaskAsyncHelper.False;
+                           });
             }
 
             // Mark the response as sent
             context.ResponseSent = true;
 
             // Send the response and return false
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
+                       .Catch((ex, s) => OnSendError(ex, s), context)
                        .Then(() => TaskAsyncHelper.False);
         }
 
