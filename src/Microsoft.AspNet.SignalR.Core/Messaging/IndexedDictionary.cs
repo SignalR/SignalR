@@ -55,5 +55,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
             return node.Value.Key;
         }
+
+        public void Clear()
+        {
+            _list.Clear();
+            _lookup.Clear();
+        }
     }
 }

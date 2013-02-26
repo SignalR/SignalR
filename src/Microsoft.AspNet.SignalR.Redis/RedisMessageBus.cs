@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
@@ -15,37 +15,28 @@ namespace Microsoft.AspNet.SignalR.Redis
     {
         private readonly int _db;
         private readonly string[] _keys;
+        private readonly Func<RedisConnection> _connectionFactory;
+
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
         private Task _connectTask;
+        private int _state;
 
-        public RedisMessageBus(string server, int port, string password, int db, IEnumerable<string> keys, IDependencyResolver resolver)
+        public RedisMessageBus(string server, int port, string password, int db, IList<string> keys, IDependencyResolver resolver)
+            : this(GetConnectionFactory(server, port, password), db, keys, resolver)
+        {
+
+        }
+
+        public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, IList<string> keys, IDependencyResolver resolver)
             : base(resolver)
         {
+            _connectionFactory = connectionFactory;
             _db = db;
             _keys = keys.ToArray();
 
-            _connection = new RedisConnection(host: server, port: port, password: password);
-
-            _connection.Closed += OnConnectionClosed;
-            _connection.Error += OnConnectionError;
-
-            // Start the connection
-            _connectTask = _connection.Open().Then(() =>
-            {
-                // Create a subscription channel in redis
-                _channel = _connection.GetOpenSubscriberChannel();
-
-                // Subscribe to the registered connections
-                _channel.Subscribe(_keys, OnMessage);
-
-                // Dirty hack but it seems like subscribe returns before the actual
-                // subscription is properly setup in some cases
-                while (_channel.SubscriptionCount == 0)
-                {
-                    Thread.Sleep(500);
-                }
-            });
+            ReconnectDelay = TimeSpan.FromSeconds(2);
+            ConnectWithRetry();
         }
 
         protected override int StreamCount
@@ -55,6 +46,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                 return _keys.Length;
             }
         }
+
+        public TimeSpan ReconnectDelay { get; set; }
 
         protected override Task Send(IList<Message> messages)
         {
@@ -77,12 +70,21 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionClosed(object sender, EventArgs e)
         {
-            // Should we auto reconnect?
+            Interlocked.Exchange(ref _state, State.Disposed);
+
+            Trace.TraceInformation("OnConnectionClosed()");
         }
 
-        private void OnConnectionError(object sender, BookSleeve.ErrorEventArgs e)
+        private void OnConnectionError(object sender, ErrorEventArgs e)
         {
-            // How do we bubble errors?
+            Trace.TraceEvent(TraceEventType.Error, 0, "OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
+
+            if(Interlocked.CompareExchange(ref _state, 
+                                          State.Closed,
+                                          State.Connected) == State.Connected)
+            {
+                ConnectWithRetry();
+            }
         }
 
         private void OnMessage(string key, byte[] data)
@@ -110,6 +112,110 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
 
             base.Dispose(disposing);
+        }
+
+        private void ConnectWithRetry()
+        {
+            if (Interlocked.CompareExchange(ref _state,
+                                            State.Connecting,
+                                            State.Connected) == State.Connecting)
+            {
+                return;
+            }
+
+            var taskCompletionSource = new TaskCompletionSource<object>();
+
+            // Setup the new incomplete connect task
+            _connectTask = taskCompletionSource.Task;
+
+            ConnectWithRetry(taskCompletionSource);
+        }
+
+        private void ConnectWithRetry(TaskCompletionSource<object> taskCompletionSource)
+        {
+            Task connectTask = ConnectToRedis();
+
+            connectTask.ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    TaskAsyncHelper.Delay(ReconnectDelay)
+                                   .Then(tcs => ConnectWithRetry(tcs), taskCompletionSource);
+                }
+                else
+                {
+                    Interlocked.Exchange(ref _state, State.Connected);
+
+                    // Set the result
+                    taskCompletionSource.SetResult(null);
+                }
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        private Task ConnectToRedis()
+        {
+            if (_connection != null)
+            {
+                _connection.Closed -= OnConnectionClosed;
+                _connection.Error -= OnConnectionError;
+                _connection.Dispose();
+                _connection = null;
+            }
+
+            // Create a new connection to redis with the factory
+            RedisConnection connection = _connectionFactory();
+
+            connection.Closed += OnConnectionClosed;
+            connection.Error += OnConnectionError;
+
+            try
+            {
+                Trace.TraceInformation("Connecting...");
+
+                // Start the connection
+                return connection.Open().Then(() =>
+                {
+                    Trace.TraceInformation("Connection opened");
+
+                    // Create a subscription channel in redis
+                    RedisSubscriberConnection channel = connection.GetOpenSubscriberChannel();
+
+                    // Subscribe to the registered connections
+                    channel.Subscribe(_keys, OnMessage);
+
+                    // Dirty hack but it seems like subscribe returns before the actual
+                    // subscription is properly setup in some cases
+                    while (channel.SubscriptionCount == 0)
+                    {
+                        Thread.Sleep(500);
+                    }
+
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Subscribed to events " + String.Join(",", _keys));
+
+                    _channel = channel;
+                    _connection = connection;
+                });
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceEvent(TraceEventType.Error, 0, "Error connecting to redis - " + ex.GetBaseException());
+
+                return TaskAsyncHelper.FromError(ex);
+            }
+        }
+
+        private static Func<RedisConnection> GetConnectionFactory(string server, int port, string password)
+        {
+            return () => new RedisConnection(server, port: port, password: password);
+        }
+
+        private static class State
+        {
+            public const int Closed = 0;
+            public const int Connecting = 1;
+            public const int Connected = 2;
+            public const int Disposed = 3;
         }
     }
 }

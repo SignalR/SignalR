@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="password">The redis server password.</param>
         /// <param name="eventKeys">The event keys.</param>
         /// <returns>The dependency resolver</returns>
-        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, IEnumerable<string> eventKeys)
+        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, IList<string> eventKeys)
         {
             return UseRedis(resolver, server, port, password, db: 0, eventKeys: eventKeys);
         }
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="db">The database to use</param>
         /// <param name="eventKeys">The event keys.</param> 
         /// <returns></returns>
-        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, int db, IEnumerable<string> eventKeys)
+        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, int db, IList<string> eventKeys)
         {
             var bus = new Lazy<RedisMessageBus>(() => new RedisMessageBus(server, port, password, db, eventKeys, resolver));
             resolver.Register(typeof(IMessageBus), () => bus.Value);

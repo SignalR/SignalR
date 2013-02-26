@@ -120,6 +120,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter MessageBusMessagesReceivedPerSec { get; private set; }
 
         /// <summary>
+        /// Gets the performance counter representing the number of messages received by the scaleout message bus per second.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Message Bus Messages Received/Sec", Description = "The number of messages received by the scaleout message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        public IPerformanceCounter ScaleoutMessageBusMessagesReceivedPerSec { get; private set; }
+
+
+        /// <summary>
         /// Gets the performance counter representing the total number of messages published to the message bus since the application was started.
         /// </summary>
         [PerformanceCounter(Name = "Messages Bus Messages Published Total", Description = "The total number of messages published to the message bus since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]

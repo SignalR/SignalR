@@ -112,6 +112,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
         {
+            Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
+
             Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
 
             // Create a local dictionary for this payload
@@ -141,9 +143,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Publish only after we've setup the mapping fully
             if (!stream.TryAdd(id, mapping))
             {
-                Trace.TraceEvent(TraceEventType.Error, 0, Resources.Error_DuplicatePayloadsForStream, streamId);
+                Trace.TraceEvent(TraceEventType.Verbose, 0, Resources.Error_DuplicatePayloadsForStream, streamId);
 
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePayloadsForStream, streamId));
+                stream.Clear();
+
+                stream.TryAdd(id, mapping);
             }
 
             // Schedule after we're done
