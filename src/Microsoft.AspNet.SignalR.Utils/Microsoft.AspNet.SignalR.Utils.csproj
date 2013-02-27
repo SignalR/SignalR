@@ -77,9 +77,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Properties\Microsoft.AspNet.SignalR.Utils.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
