@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -561,7 +561,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("1.0.0");
+                _assemblyVersion = new Version("1.1.0");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
