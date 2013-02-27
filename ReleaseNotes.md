@@ -29,7 +29,7 @@ RouteTable.Routes.MapHubs(config);
   cannot spoof groups anymore.
 
 
-### Bugs
+### Bugs Fixed
 
 * Send nosniff header for all SignalR responses ([#1450](https://github.com/SignalR/SignalR/issues/1450))
 * Hub state and args are placed into a dictionary directly from user input from the URL ([#1449](https://github.com/SignalR/SignalR/issues/1449))
@@ -104,7 +104,7 @@ RouteTable.Routes.MapHubs(config);
 * Moved several types into different namespaces. ([524e606e7f](https://github.com/SignalR/SignalR/commit/524e606e7f9f18e8a7b40d62d590c904a94eb30e))
 * MapHubs and MapConnection no longer take route parameters. They are just prefixes. ([b7b1371a2a](https://github.com/SignalR/SignalR/commit/b7b1371a2aa0d002ff33138bb0d20115c7f49da6))
 
-### Bugs
+### Bugs Fixed
 
 * Validate that connection IDs are in correct format in PersistentConnection on all requests. ([#1298](https://github.com/SignalR/SignalR/issues/1298))
 * Remove "Async" from all member names. ([#1276](https://github.com/SignalR/SignalR/issues/1276))
