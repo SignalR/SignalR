@@ -8,8 +8,8 @@
         <!-- Change this to set the build quality of the project. Use values like "alpha", "beta", "rc1", "rtm", etc. -->
         <!-- These values are used in SemVer, so make sure to always increase these alphabetically. -->
         <BuildQuality>beta1</BuildQuality>
-        <ScaleoutBuildQuality>-rc3</ScaleoutBuildQuality>
-        <KatanaDevelopmentBuildQuality>-alpha</KatanaDevelopmentBuildQuality>
+        <ScaleoutBuildQuality>rc3</ScaleoutBuildQuality>
+        <KatanaDevelopmentBuildQuality>alpha</KatanaDevelopmentBuildQuality>
         
         <!-- Katana versions -->
         <KatanaDevelopmentVersion>0.20</KatanaDevelopmentVersion>
