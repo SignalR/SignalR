@@ -34,13 +34,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
-    <BuildDate>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</BuildDate>
-    <Revision Condition="$(BUILD_NUMBER) != ''">$(BUILD_NUMBER)</Revision>
-    <Revision Condition="$(BUILD_NUMBER) == ''">0</Revision>
     <PrereleaseTagWithSeparator Condition="$(PRERELEASE) != '' And $(BuildQuality) != ''">-$(BuildQuality)-$([System.DateTime]::Now.ToString("yyMMdd"))</PrereleaseTagWithSeparator>
-    <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
-    <FileVersion>$(MajorVersion).$(MinorVersion).$(BuildDate).$(Revision)</FileVersion>
+    <AssemblyVersion>$(MajorVersion).$(MinorVersion).0</AssemblyVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
   </PropertyGroup>
 
@@ -101,11 +96,7 @@
   <ItemGroup>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
-      <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
-    </RegexTransform>
-    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
-      <Find>AssemblyFileVersion\("\d+\.\d+\.\d+\.\d+"\)</Find>
-      <ReplaceWith>AssemblyFileVersion("$(FileVersion)")</ReplaceWith>
+      <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
@@ -113,7 +104,7 @@
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Connection.cs">
       <Find>_assemblyVersion = new Version\("\d+\.\d+\.\d+"\)</Find>
-      <ReplaceWith>_assemblyVersion = new Version("$(Version)")</ReplaceWith>
+      <ReplaceWith>_assemblyVersion = new Version("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.core.js">
       <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
