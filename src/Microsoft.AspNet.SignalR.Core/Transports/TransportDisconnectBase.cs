@@ -252,6 +252,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (Interlocked.Exchange(ref _timedOut, 1) == 0)
             {
                 Trace.TraceInformation("Timeout(" + ConnectionId + ")");
+
+                End();
             }
         }
 
