@@ -1,5 +1,28 @@
 # SignalR Release Notes
 
+# 1.0.1
+
+### Bugs Fixed
+
+* Connection Id not read properly when additional query string parameters are added ([#1556](https://github.com/SignalR/SignalR/issues/1556))
+* WebSocket leaks if Close throws an exception ([#1554](https://github.com/SignalR/SignalR/issues/1554))
+* CancellationTokenSource has been disposed ([#1549](https://github.com/SignalR/SignalR/issues/1549))
+* Regression: State doesn't work when accessed as dictionary without casting ([#1545](https://github.com/SignalR/SignalR/issues/1545))
+* Don't catch exceptions thrown from user-defined OnReceived handlers on the JS client ([#1530](https://github.com/SignalR/SignalR/issues/1530))
+* Calling connection.stop() with the serverSentEvent transport on Opera raises a TypeError. ([#1519](https://github.com/SignalR/SignalR/issues/1519))
+* Doc summary for BuildRejoiningGroups is wrong ([#1505](https://github.com/SignalR/SignalR/issues/1505))
+* When converting JRaw to concrete type use default serialization settings that container a max depth ([#1484](https://github.com/SignalR/SignalR/issues/1484))
+* AV in ForeverTransport<ProcessMessages> under stress ([#1479](https://github.com/SignalR/SignalR/issues/1479))
+* JS client version property is incorrect ([#1476](https://github.com/SignalR/SignalR/issues/1476))
+* Throw the "Not a websocket request" exception synchronously ([#1440](https://github.com/SignalR/SignalR/issues/1440))
+* JS client with jQuery 1.9.0 raises connection error for all sends on persistent connection API ([#1437](https://github.com/SignalR/SignalR/issues/1437))
+* Groups.Add.Wait fails, http.sys logs shows "Connection_Dropped" with no apparent reason. ([#1435](https://github.com/SignalR/SignalR/issues/1435))
+* .NET client OnError is raised when calling connection.Stop and using WebSocket transport ([#1397](https://github.com/SignalR/SignalR/issues/1397))
+* Fuzz test the cursor parsing logic. ([#1307](https://github.com/SignalR/SignalR/issues/1307))
+* Improve the error message "Incompatible protocol version". ([#1176](https://github.com/SignalR/SignalR/issues/1176))
+* PerformanceCounterCategory.Exists hangs ([#1158](https://github.com/SignalR/SignalR/issues/1158))
+* SignalR .NET Client HubConnection looping between Reconnecting and Connected ([#1121](https://github.com/SignalR/SignalR/issues/1121))
+
 # 1.0
 
 ### Breaking Changes
