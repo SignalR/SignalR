@@ -9,6 +9,10 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if !UTILS
+using Microsoft.AspNet.SignalR.Tracing;
+#endif
+
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     /// <summary>
@@ -26,9 +30,30 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private volatile bool _initialized;
         private object _initLocker = new object();
 
+#if !UTILS
+        private readonly TraceSource _trace;
+
+        public PerformanceCounterManager(DefaultDependencyResolver resolver)
+            : this(resolver.Resolve<ITraceManager>())
+        {
+
+        }
+
         /// <summary>
         /// Creates a new instance.
         /// </summary>
+        public PerformanceCounterManager(ITraceManager traceManager)
+            : this()
+        {
+            if (traceManager == null)
+            {
+                throw new ArgumentNullException("traceManager");
+            }
+
+            _trace = traceManager["SignalR.PerformanceCounterManager"];
+        }
+#endif
+
         public PerformanceCounterManager()
         {
             InitNoOpCounters();
@@ -273,9 +298,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 counter = counter ?? _noOpCounter;
 
-                // Initialize the counter sample
-                counter.NextSample();
-
                 property.SetValue(this, counter, null);
             }
         }
@@ -295,20 +317,48 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     .SingleOrDefault();
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This file is shared")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Counters are disposed later")]
-        private static IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
+        private IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
         {
             // See http://msdn.microsoft.com/en-us/library/356cx381.aspx for the list of exceptions
             // and when they are thrown. 
             try
             {
                 var counter = new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false);
+
+                // Initialize the counter sample
+                counter.NextSample();
+
                 return new PerformanceCounterWrapper(counter);
             }
+#if UTILS
             catch (InvalidOperationException) { return null; }
             catch (UnauthorizedAccessException) { return null; }
             catch (Win32Exception) { return null; }
             catch (PlatformNotSupportedException) { return null; }
+#else
+            catch (InvalidOperationException ex)
+            {
+                _trace.TraceEvent(TraceEventType.Error, 0, "Performance counter failed to load: " + ex.GetBaseException());
+                return null;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _trace.TraceEvent(TraceEventType.Error, 0, "Performance counter failed to load: " + ex.GetBaseException());
+                return null;
+            }
+            catch (Win32Exception ex)
+            {
+                _trace.TraceEvent(TraceEventType.Error, 0, "Performance counter failed to load: " + ex.GetBaseException());
+                return null;
+            }
+            catch (PlatformNotSupportedException ex)
+            {
+                _trace.TraceEvent(TraceEventType.Error, 0, "Performance counter failed to load: " + ex.GetBaseException());
+                return null;
+            }
+#endif
         }
     }
 }
