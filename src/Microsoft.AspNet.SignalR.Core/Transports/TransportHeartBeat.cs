@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Don't bother disposing the registration here since the token source
                 // gets disposed after the request has ended
-                EndConnection(old, disposeRegistration: false);
+                old.Connection.End();
 
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
@@ -119,13 +119,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
-
-            var context = new TransportHeartBeatContext(this, newMetadata);
-
-            // Register for disconnect cancellation
-
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            newMetadata.Registration = connection.CancellationToken.SafeRegister(state => OnConnectionEnded(state), context);
 
             return isNewConnection;
         }
@@ -231,30 +224,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private static void OnConnectionEnded(object state)
-        {
-            var context = (TransportHeartBeatContext)state;
-            var metadata = (ConnectionMetadata)context.State;
-
-            context.Heartbeat.Trace.TraceInformation("OnConnectionEnded({0})", metadata.Connection.ConnectionId);
-
-            // Release the request
-            metadata.Connection.ReleaseRequest();
-
-            if (metadata.Registration != null)
-            {
-                metadata.Registration.Dispose();
-            }
-        }
-
         private void CheckTimeoutAndKeepAlive(ConnectionMetadata metadata)
         {
             if (RaiseTimeout(metadata))
             {
                 // If we're past the expiration time then just timeout the connection
                 metadata.Connection.Timeout();
-
-                EndConnection(metadata);
             }
             else
             {
@@ -359,7 +334,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     ConnectionMetadata metadata;
                     if (_connections.TryGetValue(pair.Key, out metadata))
                     {
-                        EndConnection(metadata);
+                        metadata.Connection.End();
                     }
                 }
             }
@@ -370,36 +345,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             Dispose(true);
         }
 
-        private static void EndConnection(ConnectionMetadata metadata, bool disposeRegistration = true)
-        {
-            if (disposeRegistration)
-            {
-                // Dispose of the registration
-                if (metadata.Registration != null)
-                {
-                    metadata.Registration.Dispose();
-                }
-            }
-
-            // End the connection
-            metadata.Connection.End();
-        }
-
         private static void OnKeepAliveError(AggregateException ex, object state)
         {
             ((TraceSource)state).TraceEvent(TraceEventType.Error, 0, "Failed to send keep alive: " + ex.GetBaseException());
-        }
-
-        private class TransportHeartBeatContext
-        {
-            public TransportHeartBeatContext(TransportHeartbeat transportHeartbeat, ConnectionMetadata newMetadata)
-            {
-                Heartbeat = transportHeartbeat;
-                State = newMetadata;
-            }
-
-            public TransportHeartbeat Heartbeat { get; set; }
-            public object State { get; private set; }
         }
 
         private class ConnectionMetadata
@@ -419,9 +367,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // The initial connection time of the connection
             public DateTime Initial { get; set; }
-
-            // The cancellation token registration
-            public IDisposable Registration { get; set; }
         }
     }
 }

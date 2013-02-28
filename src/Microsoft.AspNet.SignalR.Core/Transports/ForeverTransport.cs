@@ -257,9 +257,19 @@ namespace Microsoft.AspNet.SignalR.Transports
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, RequestLifetime lifetime)
         {
-            IDisposable subscription = null;
             var disposer = new Disposer();
-            var messageContext = new MessageContext(disposer, lifetime, this);
+            
+            if (BeforeCancellationTokenCallbackRegistered != null)
+            {
+                BeforeCancellationTokenCallbackRegistered();
+            }
+
+            var cancelContext = new ForeverTransportContext(this, disposer);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            IDisposable registration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
+
+            var messageContext = new MessageContext(registration, lifetime, this);
 
             if (BeforeReceive != null)
             {
@@ -269,10 +279,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             try
             {
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                subscription = connection.Receive(LastMessageId,
-                                                  (response, state) => OnMessageReceived(response, state),
-                                                  MaxMessages,
-                                                  messageContext);
+                IDisposable subscription = connection.Receive(LastMessageId,
+                                                              (response, state) => OnMessageReceived(response, state),
+                                                               MaxMessages,
+                                                               messageContext);
+
+
+                disposer.Set(subscription);
             }
             catch (Exception ex)
             {
@@ -294,18 +307,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             postReceive().Catch((ex, state) => OnPostReceiveError(ex, state), errorContext)
                          .ContinueWith(InitializeTcs);
-
-            if (BeforeCancellationTokenCallbackRegistered != null)
-            {
-                BeforeCancellationTokenCallbackRegistered();
-            }
-
-            var cancelContext = new ForeverTransportContext(this, subscription);
-
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            IDisposable registration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
-
-            disposer.Set(registration);
         }
 
         private static void Cancel(object state)
@@ -411,11 +412,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class MessageContext
         {
-            public Disposer Registration;
+            public IDisposable Registration;
             public RequestLifetime Lifetime;
             public ForeverTransport Transport;
 
-            public MessageContext(Disposer registration, RequestLifetime lifetime, ForeverTransport transport)
+            public MessageContext(IDisposable registration, RequestLifetime lifetime, ForeverTransport transport)
             {
                 Registration = registration;
                 Lifetime = lifetime;
@@ -457,6 +458,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _transport.CompleteRequest();
 
                 _transport.Trace.TraceInformation("EndRequest(" + _transport.ConnectionId + ")");
+
+                _transport.Dispose();
 
                 if (_transport.AfterRequestEnd != null)
                 {

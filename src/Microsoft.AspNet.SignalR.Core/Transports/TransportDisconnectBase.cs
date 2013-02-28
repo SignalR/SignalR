@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
+        private IDisposable _connectionEndRegistration;
 
         private readonly Action<AggregateException> _disconnectError;
         private readonly Action _incrementDisconnectCounter;
@@ -269,13 +270,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     _connectionEndTokenSource.Cancel();
                 }
-
-                if (_connectionEndTokenSource != null)
-                {
-                    _connectionEndTokenSource.Dispose();
-                }
-
-                _hostRegistration.Dispose();
             }
         }
 
@@ -286,6 +280,22 @@ namespace Microsoft.AspNet.SignalR.Transports
                 Trace.TraceInformation("ReleaseRequest(" + ConnectionId + ")");
 
                 ReleaseRequest();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _connectionEndTokenSource.Dispose();
+                _connectionEndRegistration.Dispose();
+                _hostRegistration.Dispose();
             }
         }
 
@@ -339,6 +349,17 @@ namespace Microsoft.AspNet.SignalR.Transports
                 ((SafeCancellationTokenSource)state).Cancel();
             },
             _connectionEndTokenSource);
+
+            // When the connection ends release the request
+            _connectionEndRegistration = CancellationToken.SafeRegister(state =>
+            {
+                var transport = (TransportDisconnectBase)state;
+
+                transport.ReleaseRequest();
+
+                transport.Trace.TraceInformation("ConnectionEnded({0})", transport.ConnectionId);
+
+            }, this);
         }
 
         private void OnDisconnectError(AggregateException ex)
@@ -349,6 +370,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private void OnDisconnectComplete()
         {
             _counters.ConnectionsDisconnected.Increment();
-        }        
+        }
     }
 }

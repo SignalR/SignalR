@@ -89,6 +89,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         [Fact]
         public void AvoidDeadlockIfCancellationTokenTriggeredBeforeSubscribing()
         {
+            var response = new Mock<IResponse>();
+            response.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
@@ -97,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
-            var hostContext = new HostContext(request.Object, null);
+            var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
@@ -146,6 +148,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         [Fact]
         public void ReceiveThrowingReturnsFaultedTask()
         {
+            var response = new Mock<IResponse>();
+            response.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
@@ -154,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
-            var hostContext = new HostContext(request.Object, null);
+            var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
@@ -205,6 +209,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         [Fact]
         public void ReceiveDisconnectBeforeCancellationSetup()
         {
+            var response = new Mock<IResponse>();
+            response.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
@@ -213,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
-            var hostContext = new HostContext(request.Object, null);
+            var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
@@ -267,6 +273,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
         public void RunWithPostReceive(Func<Task> postReceive)
         {
+            var response = new Mock<IResponse>();
+            response.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
@@ -275,7 +283,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
-            var hostContext = new HostContext(request.Object, null);
+            var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
@@ -327,6 +335,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
         public void EnqueAsyncWriteAndEndRequest(Func<Task> writeAsync)
         {
+            var response = new Mock<IResponse>();
+            response.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
@@ -335,7 +345,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonNetSerializer();
-            var hostContext = new HostContext(request.Object, null);
+            var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));

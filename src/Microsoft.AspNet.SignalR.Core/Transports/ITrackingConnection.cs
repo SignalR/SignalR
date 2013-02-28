@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     /// <summary>
     /// Represents a connection that can be tracked by an <see cref="ITransportHeartbeat"/>.
     /// </summary>
-    public interface ITrackingConnection
+    public interface ITrackingConnection : IDisposable
     {
         /// <summary>
         /// Gets the id of the connection.

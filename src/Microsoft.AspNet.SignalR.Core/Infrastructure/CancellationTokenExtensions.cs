@@ -11,25 +11,15 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             var callbackWrapper = new CancellationCallbackWrapper(callback, state);
 
-            try
-            {
-                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                CancellationTokenRegistration registration = cancellationToken.Register(s => Cancel(s),
-                                                                                        callbackWrapper,
-                                                                                        useSynchronizationContext: false);
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            CancellationTokenRegistration registration = cancellationToken.Register(s => Cancel(s),
+                                                                                    callbackWrapper,
+                                                                                    useSynchronizationContext: false);
 
-                var disposeCancellationState = new DiposeCancellationState(callbackWrapper, registration);
+            var disposeCancellationState = new DiposeCancellationState(callbackWrapper, registration);
 
-                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                return new DisposableAction(s => Dispose(s), disposeCancellationState);
-            }
-            catch (ObjectDisposedException)
-            {
-                callbackWrapper.TryInvoke();
-            }
-
-            // Noop
-            return DisposableAction.Empty;
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return new DisposableAction(s => Dispose(s), disposeCancellationState);
         }
 
         private static void Cancel(object state)
@@ -58,15 +48,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 // This normally waits until the callback is finished invoked but we don't care
                 if (_callbackWrapper.TrySetInvoked())
                 {
-                    try
-                    {
-                        _registration.Dispose();
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        // Bug #1549, .NET 4.0 has a bug where this throws if the CTS
-                        // has been disposed
-                    }
+                    // Bug #1549, .NET 4.0 has a bug where this throws if the CTS
+                    _registration.Dispose();
                 }
             }
         }

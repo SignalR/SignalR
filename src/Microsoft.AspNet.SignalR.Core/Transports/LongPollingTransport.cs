@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 var requestLifeTimeTcs = new TaskCompletionSource<object>();
 
-                var requestLifetime = new RequestLifetime(registration, requestLifeTimeTcs);
+                var requestLifetime = new RequestLifetime(this, registration, requestLifeTimeTcs);
 
                 var messageContext = new MessageContext(this, requestLifetime);
 
@@ -404,9 +404,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             private readonly TaskCompletionSource<object> _requestLifeTimeTcs;
             private readonly IDisposable _registration;
+            private readonly LongPollingTransport _transport;
 
-            public RequestLifetime(IDisposable registration, TaskCompletionSource<object> requestLifeTimeTcs)
+            public RequestLifetime(LongPollingTransport transport, IDisposable registration, TaskCompletionSource<object> requestLifeTimeTcs)
             {
+                _transport = transport;
                 _registration = registration;
                 _requestLifeTimeTcs = requestLifeTimeTcs;
             }
@@ -430,6 +432,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Dispose of the cancellation token subscription
                 _registration.Dispose();
+
+                _transport.Dispose();
             }
         }
     }
