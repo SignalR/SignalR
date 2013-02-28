@@ -73,46 +73,37 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override bool AddEvent(string eventKey, Topic topic)
         {
-            lock (_cursors)
+            // O(n), but small n and it's not common
+            var index = _cursors.FindIndex(c => c.Key == eventKey);
+            if (index == -1)
             {
-                // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == eventKey);
-                if (index == -1)
-                {
-                    _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
+                _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
 
-                    _cursorTopics.Add(topic);
+                _cursorTopics.Add(topic);
 
-                    return true;
-                }
-
-                return false;
+                return true;
             }
+
+            return false;
         }
 
         public override void RemoveEvent(string eventKey)
         {
-            lock (_cursors)
+            var index = _cursors.FindIndex(c => c.Key == eventKey);
+            if (index != -1)
             {
-                var index = _cursors.FindIndex(c => c.Key == eventKey);
-                if (index != -1)
-                {
-                    _cursors.RemoveAt(index);
-                    _cursorTopics.RemoveAt(index);
-                }
+                _cursors.RemoveAt(index);
+                _cursorTopics.RemoveAt(index);
             }
         }
 
         public override void SetEventTopic(string eventKey, Topic topic)
         {
-            lock (_cursors)
+            // O(n), but small n and it's not common
+            var index = _cursors.FindIndex(c => c.Key == eventKey);
+            if (index != -1)
             {
-                // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == eventKey);
-                if (index != -1)
-                {
-                    _cursorTopics[index] = topic;
-                }
+                _cursorTopics[index] = topic;
             }
         }
 
@@ -126,53 +117,44 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             totalCount = 0;
 
-            lock (_cursors)
+            var cursors = new ulong[_cursors.Count];
+            for (int i = 0; i < _cursors.Count; i++)
             {
-                var cursors = new ulong[_cursors.Count];
-                for (int i = 0; i < _cursors.Count; i++)
+                MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
+                cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
+
+                if (storeResult.Messages.Count > 0)
                 {
-                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
-                    cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
-
-                    if (storeResult.Messages.Count > 0)
-                    {
-                        items.Add(storeResult.Messages);
-                        totalCount += storeResult.Messages.Count;
-                    }
+                    items.Add(storeResult.Messages);
+                    totalCount += storeResult.Messages.Count;
                 }
-
-                // Return the state as a list of cursors
-                state = cursors;
             }
+
+            // Return the state as a list of cursors
+            state = cursors;
         }
 
         protected override void BeforeInvoke(object state)
         {
             // Update the list of cursors before invoking anything
-            lock (_cursors)
+            var nextCursors = (ulong[])state;
+            for (int i = 0; i < _cursors.Count; i++)
             {
-                var nextCursors = (ulong[])state;
-                for (int i = 0; i < _cursors.Count; i++)
-                {
-                    _cursors[i].Id = nextCursors[i];
-                }
+                _cursors[i].Id = nextCursors[i];
             }
         }
 
         private bool UpdateCursor(string key, ulong id)
         {
-            lock (_cursors)
+            // O(n), but small n and it's not common
+            var index = _cursors.FindIndex(c => c.Key == key);
+            if (index != -1)
             {
-                // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
-                if (index != -1)
-                {
-                    _cursors[index].Id = id;
-                    return true;
-                }
-
-                return false;
+                _cursors[index].Id = id;
+                return true;
             }
+
+            return false;
         }
 
         private List<Cursor> GetCursorsFromEventKeys(IList<string> eventKeys, TopicLookup topics)
