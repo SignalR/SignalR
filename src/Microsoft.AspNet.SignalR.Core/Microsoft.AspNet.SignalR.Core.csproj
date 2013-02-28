@@ -239,6 +239,7 @@
     <Compile Include="Hubs\IJavaScriptProxyGenerator.cs" />
     <Compile Include="Messaging\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transports\HttpRequestLifeTime.cs" />
     <Compile Include="Transports\TransportManager.cs" />
     <Compile Include="Infrastructure\ExceptionsExtensions.cs" />
     <Compile Include="Transports\WebSocketTransport.cs" />

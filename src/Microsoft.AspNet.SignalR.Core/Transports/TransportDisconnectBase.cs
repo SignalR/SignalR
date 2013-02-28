@@ -26,7 +26,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private int _ended;
-        private int _requestReleased;
+
+        internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
@@ -41,6 +42,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly Action<AggregateException> _disconnectError;
         private readonly Action _incrementDisconnectCounter;
         private readonly Action<AggregateException> _incrementErrors;
+
+        internal HttpRequestLifeTime _requestLifeTime;
 
         protected TransportDisconnectBase(HostContext context, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
@@ -106,12 +109,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected TaskCompletionSource<object> Completed
-        {
-            get;
-            private set;
-        }
-
         internal TaskQueue WriteQueue
         {
             get;
@@ -130,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 // If the CTS is tripped or the request has ended then the connection isn't alive
-                return !(CancellationToken.IsCancellationRequested || _requestReleased == 1);
+                return !(CancellationToken.IsCancellationRequested || (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted));
             }
         }
 
@@ -275,16 +272,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        void ITrackingConnection.ReleaseRequest()
-        {
-            if (Interlocked.Exchange(ref _requestReleased, 1) == 0)
-            {
-                Trace.TraceInformation("ReleaseRequest(" + ConnectionId + ")");
-
-                ReleaseRequest();
-            }
-        }
-
         public void Dispose()
         {
             Dispose(true);
@@ -299,24 +286,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _connectionEndRegistration.Dispose();
                 _hostRegistration.Dispose();
             }
-        }
-
-        protected virtual void ReleaseRequest()
-        {
-        }
-
-        public void CompleteRequest()
-        {
-            // REVIEW: We can get rid of this when we clean up the Interleave code.
-            if (Completed != null)
-            {
-                Trace.TraceEvent(TraceEventType.Verbose, 0, "CompleteRequest(" + ConnectionId + ")");
-
-                Completed.TrySetResult(null);
-            }
-
-            // Mark the request as released
-            Interlocked.Exchange(ref _requestReleased, 1);
         }
 
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
@@ -339,7 +308,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _hostShutdownToken = _context.HostShutdownToken();
 
-            Completed = new TaskCompletionSource<object>();
+            _requestLifeTime = new HttpRequestLifeTime(WriteQueue, Trace, ConnectionId);
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();
@@ -355,13 +324,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             // When the connection ends release the request
             _connectionEndRegistration = CancellationToken.SafeRegister(state =>
             {
-                var transport = (TransportDisconnectBase)state;
-
-                transport.ReleaseRequest();
-
-                transport.Trace.TraceInformation("ConnectionEnded({0})", transport.ConnectionId);
-
-            }, this);
+                ((HttpRequestLifeTime)state).Complete();
+            },
+            _requestLifeTime);
         }
 
         private void OnDisconnectError(AggregateException ex)

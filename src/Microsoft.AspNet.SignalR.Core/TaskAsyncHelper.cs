@@ -224,30 +224,6 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
-        /// <summary>
-        /// Passes a task returning function into another task returning function so that
-        /// it can decide when it starts and returns a task that completes when all are finished
-        /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Interleave<T>(Func<T, Func<Task>, Task> before, Func<Task> after, T arg, TaskCompletionSource<object> tcs)
-        {
-            var tasks = new[] {
-                            tcs.Task,
-                            before(arg, ()=> {
-                                // Run the after task
-                                Task task = after();
-
-                                // Mark the tcs as done when it completes
-                                task.ContinueWith(tcs);
-
-                                // Return the task we kicked off
-                                return task;
-                            })
-                        };
-
-            return tasks.Return();
-        }
-
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Return(this Task[] tasks)
         {
