@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (response.Aborted)
                 {
                     // If this was a clean disconnect raise the event.
-                    return context.Transport.OnDisconnect()
+                    return context.Transport.Abort()
                                             .Then(() => TaskAsyncHelper.False);
                 }
             }
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (MessageContext)state;
 
-            context.Transport.IncrementErrors(ex);
+            context.Transport.IncrementErrors();
 
             context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Error on connection {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
 

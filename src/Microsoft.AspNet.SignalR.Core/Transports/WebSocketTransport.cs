@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // HeartBeat clean it up.  This is to maintain consistency across the transports.
             if (clean)
             {
-                OnDisconnect();
+                Abort();
             }
 
             _isAlive = false;

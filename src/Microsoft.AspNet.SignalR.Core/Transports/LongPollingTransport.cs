@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private Task ProcessReceiveRequest(ITransportConnection connection)
         {
             Func<Task> initialize = null;
-            
+
             bool newConnection = Heartbeat.AddConnection(this);
 
             if (IsConnectRequest)
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
         {
             var disposer = new Disposer();
-            
+
             var cancelContext = new LongPollingTransportContext(this, disposer);
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
         {
             var context = (MessageContext)state;
-            
+
             response.TimedOut = context.Transport.IsTimedOut;
 
             Task task = TaskAsyncHelper.Empty;
@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (response.Aborted)
             {
                 // If this was a clean disconnect then raise the event
-                task = context.Transport.OnDisconnect();
+                task = context.Transport.Abort();
             }
 
             if (response.Terminal)
@@ -280,11 +280,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 return task.Then(() =>
-                           {
-                               context.Lifetime.Complete();
+                {
+                    context.Lifetime.Complete();
 
-                               return TaskAsyncHelper.False;
-                           });
+                    return TaskAsyncHelper.False;
+                });
             }
 
             // Mark the response as sent
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
                        .Then(() => TaskAsyncHelper.False);
         }
-        
+
         private static Task PerformSend(object state)
         {
             var context = (LongPollingTransportContext)state;
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (MessageContext)state;
 
-            context.Transport.IncrementErrors(ex);
+            context.Transport.IncrementErrors();
 
             context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Error on connection {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
 

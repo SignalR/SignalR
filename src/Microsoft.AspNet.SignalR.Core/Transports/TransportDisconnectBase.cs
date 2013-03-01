@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -22,7 +21,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private TraceSource _trace;
 
-        private int _isDisconnected;
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private int _ended;
@@ -38,10 +36,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
         private IDisposable _connectionEndRegistration;
-
-        private readonly Action<AggregateException> _disconnectError;
-        private readonly Action _incrementDisconnectCounter;
-        private readonly Action<AggregateException> _incrementErrors;
 
         internal HttpRequestLifeTime _requestLifeTime;
 
@@ -75,10 +69,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             WriteQueue = new TaskQueue();
 
             _trace = traceManager["SignalR.Transports." + GetType().Name];
-
-            _disconnectError = OnDisconnectError;
-            _incrementDisconnectCounter = OnDisconnectComplete;
-            _incrementErrors = IncrementErrorCounters;
         }
 
         protected TraceSource Trace
@@ -193,20 +183,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Request.Url; }
         }
 
-        protected Action<AggregateException> IncrementErrors
-        {
-            get
-            {
-                return _incrementErrors;
-            }
-        }
-
         protected virtual TextWriter CreateResponseWriter()
         {
             return new BufferTextWriter(Context.Response);
         }
 
-        private void IncrementErrorCounters(AggregateException exception)
+        protected void IncrementErrors()
         {
             _counters.ErrorsTransportTotal.Increment();
             _counters.ErrorsTransportPerSec.Increment();
@@ -216,10 +198,13 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Disconnect()
         {
-            return OnDisconnect().Then(() => Connection.Close(ConnectionId));
+            // Abort the queue the disconnect command
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return Abort().Then(transport => transport.Connection.Close(transport.ConnectionId), this);
         }
 
-        public Task OnDisconnect()
+        public Task Abort()
         {
             Trace.TraceInformation("OnDisconnect(" + ConnectionId + ")");
 
@@ -228,20 +213,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             Heartbeat.RemoveConnection(this);
 
-            if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
-            {
-                // End the connection
-                End();
+            // End the connection
+            End();
 
-                var disconnected = Disconnected; // copy before invoking event to avoid race
-                if (disconnected != null)
-                {
-                    return disconnected().Catch(_disconnectError)
-                                         .Then(_incrementDisconnectCounter);
-                }
-            }
+            var disconnected = Disconnected ?? _emptyTaskFunc;
 
-            return TaskAsyncHelper.Empty;
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return disconnected().Catch((ex, state) => OnDisconnectError(ex, state), Trace)
+                                 .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
         }
 
         public void Timeout()
@@ -329,14 +308,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             _requestLifeTime);
         }
 
-        private void OnDisconnectError(AggregateException ex)
+        private static void OnDisconnectError(AggregateException ex, object state)
         {
-            Trace.TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
-        }
-
-        private void OnDisconnectComplete()
-        {
-            _counters.ConnectionsDisconnected.Increment();
+            ((TraceSource)state).TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
         }
     }
 }
