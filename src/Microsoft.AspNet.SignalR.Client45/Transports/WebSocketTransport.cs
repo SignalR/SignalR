@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private CancellationToken _disconnectToken;
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
+        private ManualResetEventSlim _abortEventSlim;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -91,9 +91,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
         }
 
-        public void Abort(IConnection connection)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
-            Close();
+            lock (this)
+            {
+                _abortEventSlim = new ManualResetEventSlim();
+
+                CloseAsync();
+            }
+
+            _abortEventSlim.Wait(timeout);
         }
 
         public Task Send(IConnection connection, string data)
@@ -135,6 +142,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
+            if (_abortEventSlim != null)
+            {
+                _abortEventSlim.Set();
+                return;
+            }
+
             DoReconnect();
         }
 
@@ -172,6 +185,28 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo.Connection.OnError(Error);
         }
 
+        public void LostConnection(IConnection connection)
+        {
+            Abort(connection, Connection.DefaultAbortTimeout);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_abortEventSlim != null)
+                {
+                    _abortEventSlim.Dispose();
+                }
+            }
+        }
+
         private class WebSocketConnectionInfo
         {
             public IConnection Connection { get; private set; }
@@ -182,11 +217,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 Connection = connection;
                 Data = data;
             }
-        }
-
-        public void LostConnection(IConnection connection)
-        {
-            Abort(connection);
         }
     }
 }

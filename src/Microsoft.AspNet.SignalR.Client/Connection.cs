@@ -23,6 +23,8 @@ namespace Microsoft.AspNet.SignalR.Client
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
+        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
+
         private static Version _assemblyVersion;
 
         private IClientTransport _transport;
@@ -145,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 _keepAliveData = value;
             }
         }
- 
+
         /// <summary>
         /// Gets or sets the cookies associated with the connection.
         /// </summary>
@@ -246,6 +248,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="httpClient">The http client</param>
         /// <returns>A task that represents when the connection has started.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is disposed on close")]
         public Task Start(IHttpClient httpClient)
         {
             // Pick the best transport supported by the client
@@ -294,7 +297,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 if (negotiationResponse.KeepAliveTimeout != null)
                 {
                     _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
-               }
+                }
 
                 var data = OnSending();
                 StartTransport(data).ContinueWith(negotiateTcs);
@@ -339,10 +342,10 @@ namespace Microsoft.AspNet.SignalR.Client
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 if(_keepAliveData != null)
+                                 if (_keepAliveData != null)
                                  {
-                                    // Start the monitor to check for server activity
-                                    _monitor.Start();
+                                     // Start the monitor to check for server activity
+                                     _monitor.Start();
                                  }
                              });
         }
@@ -386,15 +389,32 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// </summary>
-        public virtual void Stop()
+        public void Stop()
+        {
+            Stop(DefaultAbortTimeout);
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
+        /// <param name="timeout">The timeout</param>
+        /// </summary>
+        public void Stop(TimeSpan timeout)
         {
             lock (_stateLock)
             {
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
-                    _transport.Abort(this);
+                    _transport.Abort(this, timeout);
+
                     Disconnect();
+
+                    _disconnectCts.Dispose();
+
+                    if (_transport != null)
+                    {
+                        _transport.Dispose();
+                    }
                 }
             }
         }
@@ -412,7 +432,6 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
-                    _disconnectCts.Dispose();
                     _monitor.Dispose();
 
                     State = ConnectionState.Disconnected;

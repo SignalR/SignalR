@@ -3,9 +3,9 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
 
                         // Skip reconnect attempt for aborted requests
-                        if (!isRequestAborted && retry)
+                        if (!isRequestAborted && retry && AbortResetEvent == null)
                         {
                             Reconnect(connection, data, disconnectToken);
                         }
@@ -202,6 +202,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         requestDisposer.Dispose();
                         esCancellationRegistration.Dispose();
                         response.Close();
+
+                        if (AbortResetEvent != null)
+                        {
+                            AbortResetEvent.Set();
+                        }
                     };
 
                     _eventSource.Start();

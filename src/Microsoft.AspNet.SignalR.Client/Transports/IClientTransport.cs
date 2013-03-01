@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public interface IClientTransport
+    public interface IClientTransport : IDisposable
     {
         string Name { get; }
         bool SupportsKeepAlive { get; }
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         Task<NegotiationResponse> Negotiate(IConnection connection);
         Task Start(IConnection connection, string data, CancellationToken disconnectToken);
         Task Send(IConnection connection, string data);
-        void Abort(IConnection connection);
+        void Abort(IConnection connection, TimeSpan timeout);
 
         void LostConnection(IConnection connection);
     }

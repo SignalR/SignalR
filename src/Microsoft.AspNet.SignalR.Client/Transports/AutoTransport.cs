@@ -143,17 +143,34 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return _transport.Send(connection, data);
         }
 
-        public void Abort(IConnection connection)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (_transport != null)
             {
-                _transport.Abort(connection);
+                _transport.Abort(connection, timeout);
             }
         }
 
         public void LostConnection(IConnection connection)
         {
             _transport.LostConnection(connection);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_transport != null)
+                {
+                    _transport.Dispose();
+                }
+            }
         }
     }
 }

@@ -146,7 +146,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 finally
                 {
-                    if (disconnectedReceived)
+                    if (AbortResetEvent != null)
+                    {
+                        AbortResetEvent.Set();
+                    }
+                    else if (disconnectedReceived)
                     {
                         connection.Disconnect();
                     }
@@ -212,6 +216,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             }
                         }
                     }
+
                     requestDisposer.Dispose();
                 }
             });

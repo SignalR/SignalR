@@ -2,13 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -36,6 +34,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return _transport;
             }
         }
+
+        protected ManualResetEvent AbortResetEvent { get; private set; }
 
         /// <summary>
         /// Indicates whether or not the transport supports keep alive
@@ -101,29 +101,31 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
-        public void Abort(IConnection connection)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
             }
 
-            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
-                                                                  _sendQueryString,
-                                                                  _transport,
-                                                                  Uri.EscapeDataString(connection.ConnectionToken),
-                                                                  null);
+            lock (this)
+            {
+                if (AbortResetEvent == null)
+                {
+                    AbortResetEvent = new ManualResetEvent(initialState: false);
 
-            try
-            {
-                // Attempt to perform a clean disconnect, but only wait 2 seconds
-                _httpClient.Post(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
+                    string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
+                                                                          _sendQueryString,
+                                                                          _transport,
+                                                                          Uri.EscapeDataString(connection.ConnectionToken),
+                                                                          null);
+
+                    // Attempt to perform a clean disconnect, but only wait 2 seconds
+                    _httpClient.Post(url, connection.PrepareRequest);
+                }
             }
-            catch (Exception ex)
-            {
-                // Swallow any exceptions, but log them
-                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
-            }
+
+            AbortResetEvent.WaitOne(timeout);
         }
 
         protected string GetReceiveQueryString(IConnection connection, string data)
@@ -132,5 +134,22 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public abstract void LostConnection(IConnection connection);
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (AbortResetEvent != null)
+                {
+                    AbortResetEvent.Dispose();
+                }
+            }
+        }
     }
 }
