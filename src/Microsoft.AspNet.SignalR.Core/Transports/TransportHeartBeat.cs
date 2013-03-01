@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             _connections.AddOrUpdate(connection.ConnectionId, newMetadata, (key, old) =>
             {
-                Trace.TraceInformation("Connection {0} exists. Closing previous connection.", old.Connection.ConnectionId);
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "Connection {0} exists. Closing previous connection.", old.Connection.ConnectionId);
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Interlocked.Exchange(ref _running, 1) == 1)
             {
-                Trace.TraceInformation("Timer handler took longer than current interval");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "Timer handler took longer than current interval");
                 return;
             }
 

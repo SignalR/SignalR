@@ -331,8 +331,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.IncrementErrors();
 
-            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Error on connection {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
-
             context.Lifetime.Complete(ex);
 
             context.Transport._counters.ErrorsAllTotal.Increment();
