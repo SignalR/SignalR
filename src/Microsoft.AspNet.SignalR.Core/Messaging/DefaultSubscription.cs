@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             _stringMinifier = stringMinifier;
 
-            if (cursor == null)
+            if (String.IsNullOrEmpty(cursor))
             {
                 _cursors = GetCursorsFromEventKeys(EventKeys, topics);
             }
