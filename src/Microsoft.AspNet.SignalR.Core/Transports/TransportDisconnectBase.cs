@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Abort()
         {
-            Trace.TraceInformation("OnDisconnect(" + ConnectionId + ")");
+            Trace.TraceInformation("Abort(" + ConnectionId + ")");
 
             // When a connection is aborted (graceful disconnect) we send a command to it
             // telling to to disconnect. At that moment, we raise the disconnect event and
