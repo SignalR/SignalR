@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private IClientTransport _transport;
 
         // Propagates notification that connection should be stopped.
-        private SafeCancellationTokenSource _disconnectCts;
+        private CancellationTokenSource _disconnectCts;
 
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IClientTransport transport)
         {
-            _disconnectCts = new SafeCancellationTokenSource();
+            _disconnectCts = new CancellationTokenSource();
 
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
