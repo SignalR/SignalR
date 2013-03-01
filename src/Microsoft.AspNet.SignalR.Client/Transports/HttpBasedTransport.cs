@@ -120,8 +120,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                                                           Uri.EscapeDataString(connection.ConnectionToken),
                                                                           null);
 
-                    // Attempt to perform a clean disconnect, but only wait 2 seconds
-                    _httpClient.Post(url, connection.PrepareRequest);
+                    _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
+                    {
+                        // If there's an error making an http request set the reset event
+                        ((ManualResetEvent)state).Set();
+                    }, 
+                    AbortResetEvent);
                 }
             }
 
