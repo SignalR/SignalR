@@ -182,35 +182,23 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Heartbeat.AddConnection(this);
 
-            Func<Task> afterReceive = () =>
-            {
-                var series = new Func<object, Task>[] 
-                { 
-                    state => ((Func<Task>)state ?? _emptyTaskFunc).Invoke(),
-                    state => InitializeResponse((ITransportConnection)state),
-                    state => ((Func<Task>)state).Invoke()
-                };
-
-                return TaskAsyncHelper.Series(series, new object[] { TransportConnected, connection, initialize });
+            var series = new Func<object, Task>[] 
+            { 
+                state => ((Func<Task>)state ?? _emptyTaskFunc).Invoke(),
+                state => InitializeResponse((ITransportConnection)state),
+                state => ((Func<Task>)state).Invoke()
             };
 
-            return ProcessMessages(connection, afterReceive);
-        }
+            var states = new object[] { TransportConnected, connection, initialize };
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The object is disposed otherwise")]
-        private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
-        {
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            var lifetime = new RequestLifetime(this, _requestLifeTime);
+            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
 
-            ProcessMessages(connection, initialize, lifetime);
-
-            return _requestLifeTime.Task;
+            return ProcessMessages(connection, fullInit);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The object is disposed otherwise")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
-        private void ProcessMessages(ITransportConnection connection, Func<Task> initialize, RequestLifetime lifetime)
+        private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
         {
             var disposer = new Disposer();
 
@@ -224,7 +212,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             IDisposable registration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
 
-            var messageContext = new MessageContext(registration, lifetime, this);
+            var lifetime = new RequestLifetime(this, _requestLifeTime);
+            var messageContext = new MessageContext(this, lifetime, registration);
 
             if (BeforeReceive != null)
             {
@@ -247,21 +236,24 @@ namespace Microsoft.AspNet.SignalR.Transports
                     AfterReceive();
                 }
 
-                var errorContext = new ForeverTransportContext(this, lifetime);
-
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Catch((ex, state) => OnInitializeError(ex, state), errorContext)
+                initialize().Catch((ex, state) => OnError(ex, state), messageContext)
                              .ContinueWith(InitializeTcs);
+            }
+            catch (OperationCanceledException ex)
+            {
+                InitializeTcs.TrySetCanceled();
+
+                lifetime.Complete(ex);
             }
             catch (Exception ex)
             {
-                // Set the tcs so that the task queue isn't waiting forever
                 InitializeTcs.TrySetResult(null);
 
                 lifetime.Complete(ex);
-
-                return;
             }
+
+            return _requestLifeTime.Task;
         }
 
         private static void Cancel(object state)
@@ -307,8 +299,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return context.Transport.Send(response).Then(() => TaskAsyncHelper.True)
-                                                   .Catch((ex, s) => OnSendError(ex, s), context.Transport);
+            return context.Transport.Send(response)
+                                    .Then(() => TaskAsyncHelper.True);
         }
 
         private static void OnDisconnectMessage(MessageContext context)
@@ -322,32 +314,29 @@ namespace Microsoft.AspNet.SignalR.Transports
         private static Task PerformSend(object state)
         {
             var context = (ForeverTransportContext)state;
+            
+            if (!context.Transport.IsAlive)
+            {
+                return TaskAsyncHelper.Empty;
+            }
 
             context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
 
             context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
             context.Transport.OutputWriter.Flush();
 
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return context.Transport.Context.Response.End().Catch((ex, s) => OnSendError(ex, s), context.Transport);
+            return context.Transport.Context.Response.End();
         }
 
-        private static void OnSendError(AggregateException ex, object state)
+        private static void OnError(AggregateException ex, object state)
         {
-            var transport = (ForeverTransport)state;
+            var context = (MessageContext)state;
 
-            transport.IncrementErrors(ex);
+            context.Transport.IncrementErrors(ex);
 
-            transport.Trace.TraceEvent(TraceEventType.Error, 0, "Send failed for {0} with: {1}", transport.ConnectionId, ex.GetBaseException());
-        }
+            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Error on connection {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
 
-        private static void OnInitializeError(AggregateException ex, object state)
-        {
-            var context = (ForeverTransportContext)state;
-
-            context.Transport.Trace.TraceEvent(TraceEventType.Error, 0, "Failed post receive for {0} with: {1}", context.Transport.ConnectionId, ex.GetBaseException());
-
-            ((RequestLifetime)context.State).Complete(ex);
+            context.Lifetime.Complete(ex);
 
             context.Transport._counters.ErrorsAllTotal.Increment();
             context.Transport._counters.ErrorsAllPerSec.Increment();
@@ -367,11 +356,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class MessageContext
         {
-            public IDisposable Registration;
-            public RequestLifetime Lifetime;
             public ForeverTransport Transport;
+            public RequestLifetime Lifetime;
+            public IDisposable Registration;
 
-            public MessageContext(IDisposable registration, RequestLifetime lifetime, ForeverTransport transport)
+            public MessageContext(ForeverTransport transport, RequestLifetime lifetime, IDisposable registration)
             {
                 Registration = registration;
                 Lifetime = lifetime;

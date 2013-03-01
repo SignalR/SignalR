@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     // We're going to raise connect multiple times if we're falling back
                     // _counters.ConnectionsConnected.Increment();
                 }
-                else if(IsReconnectRequest)
+                else if (IsReconnectRequest)
                 {
                     initialize = Reconnected ?? _emptyTaskFunc;
                 }
@@ -168,27 +168,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Send(object value)
         {
-            return EnqueueOperation(state =>
-            {
-                Context.Response.ContentType = IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
+            var context = new LongPollingTransportContext(this, value);
 
-                if (IsJsonp)
-                {
-                    OutputWriter.Write(JsonpCallback);
-                    OutputWriter.Write("(");
-                }
-
-                _jsonSerializer.Serialize(state, OutputWriter);
-
-                if (IsJsonp)
-                {
-                    OutputWriter.Write(");");
-                }
-
-                OutputWriter.Flush();
-                return Context.Response.End();
-            },
-            value);
+            return EnqueueOperation(state => PerformSend(state), context);
         }
 
         private Task ProcessSendRequest()
@@ -225,19 +207,17 @@ namespace Microsoft.AspNet.SignalR.Transports
         private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
         {
             var disposer = new Disposer();
+            
+            var cancelContext = new LongPollingTransportContext(this, disposer);
 
-            IDisposable registration = ConnectionEndToken.SafeRegister(state =>
-            {
-                ((IDisposable)state).Dispose();
-            },
-            disposer);
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            IDisposable registration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
 
-            var requestLifetime = new RequestLifetime(this, registration, _requestLifeTime);
+            var lifeTime = new RequestLifetime(this, _requestLifeTime, registration);
+            var messageContext = new MessageContext(this, lifeTime);
 
             try
-            {                
-                var messageContext = new MessageContext(this, requestLifetime);
-
+            {
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 IDisposable subscription = connection.Receive(MessageId,
                                                               (response, state) => OnMessageReceived(response, state),
@@ -252,17 +232,25 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
-                requestLifetime.Complete(ex);
+                lifeTime.Complete(ex);
             }
 
             return _requestLifeTime.Task;
         }
 
+        private static void Cancel(object state)
+        {
+            var context = (LongPollingTransportContext)state;
+
+            context.Transport.Trace.TraceEvent(TraceEventType.Verbose, 0, "Cancel(" + context.Transport.ConnectionId + ")");
+
+            ((IDisposable)context.State).Dispose();
+        }
+
         private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
         {
             var context = (MessageContext)state;
-            var requestLifetime = (RequestLifetime)context.Lifetime;
-
+            
             response.TimedOut = context.Transport.IsTimedOut;
 
             Task task = TaskAsyncHelper.Empty;
@@ -280,20 +268,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                     return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
-                               .Catch((ex, s) => OnError(ex, s), context)
                                .Then(() =>
                                {
-                                   requestLifetime.Complete();
+                                   context.Lifetime.Complete();
 
                                    return TaskAsyncHelper.False;
                                });
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                return task.Catch((ex, s) => OnError(ex, s), context)
-                           .Then(() =>
+                return task.Then(() =>
                            {
-                               requestLifetime.Complete();
+                               context.Lifetime.Complete();
 
                                return TaskAsyncHelper.False;
                            });
@@ -305,8 +291,36 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Send the response and return false
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
-                       .Catch((ex, s) => OnError(ex, s), context)
                        .Then(() => TaskAsyncHelper.False);
+        }
+        
+        private static Task PerformSend(object state)
+        {
+            var context = (LongPollingTransportContext)state;
+
+            if (!context.Transport.IsAlive)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
+
+            if (context.Transport.IsJsonp)
+            {
+                context.Transport.OutputWriter.Write(context.Transport.JsonpCallback);
+                context.Transport.OutputWriter.Write("(");
+            }
+
+            context.Transport._jsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+
+            if (context.Transport.IsJsonp)
+            {
+                context.Transport.OutputWriter.Write(");");
+            }
+
+            context.Transport.OutputWriter.Flush();
+
+            return context.Transport.Context.Response.End();
         }
 
         private static void OnError(AggregateException ex, object state)
@@ -331,6 +345,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        private class LongPollingTransportContext
+        {
+            public object State;
+            public LongPollingTransport Transport;
+
+            public LongPollingTransportContext(LongPollingTransport transport, object state)
+            {
+                State = state;
+                Transport = transport;
+            }
+        }
+
         private class MessageContext
         {
             public LongPollingTransport Transport;
@@ -347,10 +373,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         private class RequestLifetime
         {
             private readonly HttpRequestLifeTime _requestLifeTime;
-            private readonly IDisposable _registration;
             private readonly LongPollingTransport _transport;
+            private readonly IDisposable _registration;
 
-            public RequestLifetime(LongPollingTransport transport, IDisposable registration, HttpRequestLifeTime requestLifeTime)
+            public RequestLifetime(LongPollingTransport transport, HttpRequestLifeTime requestLifeTime, IDisposable registration)
             {
                 _transport = transport;
                 _registration = registration;
@@ -369,7 +395,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Dispose of the cancellation token subscription
                 _registration.Dispose();
-                
+
                 // Dispose any state on the transport
                 _transport.Dispose();
             }
