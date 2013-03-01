@@ -110,23 +110,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 InitializePersistentState();
 
-                Func<Task> initialize = null;
-
-                if (IsConnectRequest)
-                {
-                    // REVIEW: Raising connect multiple times ok?
-                    initialize = Connected ?? _emptyTaskFunc;
-
-                    // TODO: Re-enable this
-                    // We're going to raise connect multiple times if we're falling back
-                    // _counters.ConnectionsConnected.Increment();
-                }
-                else
-                {
-                    initialize = Reconnected ?? _emptyTaskFunc;
-                }
-
-                return ProcessReceiveRequest(connection, initialize);
+                return ProcessReceiveRequest(connection);
             }
         }
 
@@ -178,18 +162,36 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
-        private Task ProcessReceiveRequest(ITransportConnection connection, Func<Task> initialize)
+        private Task ProcessReceiveRequest(ITransportConnection connection)
         {
-            Heartbeat.AddConnection(this);
+            Func<Task> initialize = null;
+
+            bool newConnection = Heartbeat.AddConnection(this);
+
+            if (IsConnectRequest)
+            {
+                if (newConnection)
+                {
+                    initialize = Connected;
+
+                    _counters.ConnectionsConnected.Increment();
+                }
+            }
+            else
+            {
+                initialize = Reconnected;
+            }
 
             var series = new Func<object, Task>[] 
             { 
-                state => ((Func<Task>)state ?? _emptyTaskFunc).Invoke(),
+                state => ((Func<Task>)state).Invoke(),
                 state => InitializeResponse((ITransportConnection)state),
                 state => ((Func<Task>)state).Invoke()
             };
 
-            var states = new object[] { TransportConnected, connection, initialize };
+            var states = new object[] { TransportConnected ?? _emptyTaskFunc, 
+                                        connection, 
+                                        initialize ?? _emptyTaskFunc };
 
             Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
 
@@ -238,7 +240,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 initialize().Catch((ex, state) => OnError(ex, state), messageContext)
-                             .ContinueWith(InitializeTcs);
+                            .ContinueWith(InitializeTcs);
             }
             catch (OperationCanceledException ex)
             {
@@ -314,7 +316,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private static Task PerformSend(object state)
         {
             var context = (ForeverTransportContext)state;
-            
+
             if (!context.Transport.IsAlive)
             {
                 return TaskAsyncHelper.Empty;

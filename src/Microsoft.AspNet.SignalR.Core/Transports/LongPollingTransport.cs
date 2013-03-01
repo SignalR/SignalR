@@ -138,22 +138,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 InitializePersistentState();
 
-                Func<Task> initialize = _emptyTaskFunc;
-
-                if (IsConnectRequest)
-                {
-                    initialize = Connected ?? _emptyTaskFunc;
-
-                    // TODO: Re-enable this
-                    // We're going to raise connect multiple times if we're falling back
-                    // _counters.ConnectionsConnected.Increment();
-                }
-                else if (IsReconnectRequest)
-                {
-                    initialize = Reconnected ?? _emptyTaskFunc;
-                }
-
-                return ProcessReceiveRequest(connection, initialize);
+                return ProcessReceiveRequest(connection);
             }
         }
 
@@ -185,17 +170,34 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessReceiveRequest(ITransportConnection connection, Func<Task> initialize)
+        private Task ProcessReceiveRequest(ITransportConnection connection)
         {
-            Heartbeat.AddConnection(this);
+            Func<Task> initialize = null;
+            
+            bool newConnection = Heartbeat.AddConnection(this);
+
+            if (IsConnectRequest)
+            {
+                if (newConnection)
+                {
+                    initialize = Connected;
+
+                    _counters.ConnectionsConnected.Increment();
+                }
+            }
+            else if (IsReconnectRequest)
+            {
+                initialize = Reconnected;
+            }
 
             var series = new Func<object, Task>[] 
             { 
-                state => ((Func<Task>)state ?? _emptyTaskFunc).Invoke(),
+                state => ((Func<Task>)state).Invoke(),
                 state => ((Func<Task>)state).Invoke()
             };
 
-            var states = new object[] { TransportConnected, initialize };
+            var states = new object[] { TransportConnected ?? _emptyTaskFunc, 
+                                        initialize ?? _emptyTaskFunc };
 
             Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
 
