@@ -1,7 +1,19 @@
 ﻿(function ($, window) {
     var QUnitTest = QUnit.test,
         QUnitModule = QUnit.module,
+        functionalFlag = "Functional",
+        unitFlag = "Unit",
+        buildFlag = function (flag) {
+            return " (" + flag + ")";
+        },
         runModule = true;
+
+    QUnit.isSet = function (actual, message) {
+        return QUnit.notEqual(typeof (actual), "undefined", message);
+    };
+    QUnit.isNotSet = function (actual, message) {
+        return QUnit.equal(typeof (actual), "undefined", message);
+    };    
 
     QUnit.asyncTimeoutTest = function (name, timeout, test) {
         /// <summary>Runs an async test with a specified timeout.</summary>
@@ -22,6 +34,9 @@
         ///     }&#10;
         /// </param>
         if (runModule) {
+            // Append the functional flag to the end of the name
+            name += buildFlag(functionalFlag);
+
             QUnit.asyncTest(name, function () {
                 var timeoutId,
                     testCleanup,
@@ -66,6 +81,16 @@
                             if (!hasFinished) {
                                 QUnit.throws(block, expected, message);
                             }
+                        },
+                        isSet: function (actual, message) {
+                            if (!hasFinished) {
+                                QUnit.isSet(actual, message);
+                            }
+                        },
+                        isNotSet: function (actual, message) {
+                            if (!hasFinished) {
+                                QUnit.isNotSet(actual, message);
+                            }
                         }
                     };
 
@@ -83,7 +108,7 @@
                     end();
                 }, timeout);
 
-                testCleanup = test(end, assert) || $.noop;
+                testCleanup = test(end, assert, name) || $.noop;
 
                 if (!$.isFunction(testCleanup)) {
                     throw new Error("Return value of test must be falsey or a function");
@@ -101,6 +126,13 @@
     // Overwriting the original test so we can first check if we want to run the test
     QUnit.test = function () {
         if (runModule) {
+            // Append Unit to the end of the name argument only if it wasn't already marked as functional.
+            // The QUnit test suite utilizes the generic test method for async tests so a name may already
+            // be tagged.
+            if (arguments[0].indexOf(buildFlag(functionalFlag)) < 0) {
+                arguments[0] += buildFlag(unitFlag);
+            }
+
             QUnitTest.apply(this, arguments);
         }
     }

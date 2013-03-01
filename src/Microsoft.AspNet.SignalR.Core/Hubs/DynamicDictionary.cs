@@ -1,11 +1,13 @@
-﻿using System.Collections;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    internal class DynamicDictionary : DynamicObject, IDictionary<string, object>
+    public class DynamicDictionary : DynamicObject, IDictionary<string, object>
     {
         private readonly IDictionary<string, object> _obj;
 

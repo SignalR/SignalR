@@ -22,11 +22,6 @@
         groupAddedCalled = true;
     };
 
-    demo.client.errorInCallback = function () {
-        var o = null;
-        o.doIt();
-    };
-
     demo.client.clientMethod = function () {
         throw new "This should never called because it's mispelled on the server side";
     };
@@ -34,8 +29,6 @@
     $.connection.hub.logging = true;
 
     $.connection.hub.start({ transport: activeTransport }, function () {
-
-        demo.server.doSomethingAndCallError();
 
         demo.server.getValue().done(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');

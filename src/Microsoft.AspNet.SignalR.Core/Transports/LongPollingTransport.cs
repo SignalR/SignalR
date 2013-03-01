@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -199,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                        .Catch(IncrementErrorCounters)
                                        .Catch(ex =>
                                        {
-                                           Trace.TraceInformation("Failed EndAsync() for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                                           Trace.TraceEvent(TraceEventType.Error, 0, "Failed EndAsync() for {0} with: {1}", ConnectionId, ex.GetBaseException());
                                        });
             });
         }

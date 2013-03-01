@@ -2,12 +2,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
-    internal class AckHandler : IAckHandler, IDisposable
+    public class AckHandler : IAckHandler, IDisposable
     {
         private readonly ConcurrentDictionary<string, AckInfo> _acks = new ConcurrentDictionary<string, AckInfo>();
 
@@ -18,12 +19,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private Timer _timer;
 
         public AckHandler()
-            : this(completeAcksOnTimeout: true, 
-                   ackThreshold: TimeSpan.FromSeconds(5),
+            : this(completeAcksOnTimeout: true,
+                   ackThreshold: TimeSpan.FromSeconds(30),
                    ackInterval: TimeSpan.FromSeconds(5))
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Acks", Justification = "Ack is a well known term")]
         public AckHandler(bool completeAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval)
         {
             if (completeAcksOnTimeout)

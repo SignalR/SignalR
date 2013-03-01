@@ -178,6 +178,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid cursor..
+        /// </summary>
+        internal static string Error_InvalidCursorFormat {
+            get {
+                return ResourceManager.GetString("Error_InvalidCursorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The supplied frameId is in the incorrect format..
         /// </summary>
         internal static string Error_InvalidForeverFrameId {

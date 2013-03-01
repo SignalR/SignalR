@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 host.Start<BasicAuthApplication>();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -132,8 +132,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
+                HubConnection connection2 = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("MyItemsHub");
                 var hub1 = connection2.CreateHubProxy("MyItemsHub");
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
                 connection.Start(host.Transport).Wait();
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<object>();
 
                 var hub = connection.CreateHubProxy("demo");
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<object>();
 
                 var hub = connection.CreateHubProxy("demo");
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("echoHub");
 
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("echoHub");
                 var tcs = new TaskCompletionSource<string>();
@@ -460,7 +460,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -487,7 +487,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/foo", config);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false);
+                var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrl" } });
 
 
                 var hub = connection.CreateHubProxy("demo");
@@ -518,7 +518,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrlAspNet" } });
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -547,7 +547,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -591,7 +591,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -635,7 +635,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 string callback = @"!!!|\CallMeBack,,,!!!";
 
@@ -663,7 +663,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
 
                 try
                 {
@@ -689,7 +689,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 int max = 10;
 
                 var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var proxy = connection.CreateHubProxy("MultGroupHub");
 
                 proxy.On<User>("onRoomJoin", user =>
@@ -731,7 +731,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
                 var countDownAfterReconnect = new CountDownRange<int>(Enumerable.Range(max, max));
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var proxy = connection.CreateHubProxy("MultGroupHub");
 
                 proxy.On<User>("onRoomJoin", u =>
@@ -837,7 +837,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url, "a=b");
+                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=CustomQueryStringRaw");
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 
@@ -862,6 +862,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
                 var qs = new Dictionary<string, string>();
                 qs["a"] = "b";
+                qs["test"] = "CustomQueryString";
                 var connection = new Client.Hubs.HubConnection(host.Url, qs);
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
@@ -1016,8 +1017,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1051,8 +1052,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1089,8 +1090,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1124,8 +1125,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = new Client.Hubs.HubConnection(host.Url);
-                var connection2 = new Client.Hubs.HubConnection(host.Url);
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
 
                 var wh1 = new ManualResetEventSlim(initialState: false);
                 var wh2 = new ManualResetEventSlim(initialState: false);
@@ -1271,7 +1272,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(enableAutoRejoiningGroups: true);
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                HubConnection connection = CreateHubConnection(host);
                 var wh = new ManualResetEventSlim();
 
                 var hub = connection.CreateHubProxy("groupChat");

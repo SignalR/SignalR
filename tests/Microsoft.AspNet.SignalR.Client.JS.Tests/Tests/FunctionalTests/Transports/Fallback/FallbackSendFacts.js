@@ -1,7 +1,7 @@
 ﻿QUnit.module("Fallback Facts");
 
-QUnit.asyncTimeoutTest("Default transports fall back and are able to send data.", 5000, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
+QUnit.asyncTimeoutTest("Default transports fall back and are able to send data.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(testName),
         proxies = connection.createHubProxies(),
         demo = proxies.demo;
 
@@ -12,7 +12,7 @@ QUnit.asyncTimeoutTest("Default transports fall back and are able to send data."
             end();
         });
     }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
+        assert.ok(false, "Failed to initiate SignalR connection");
         end();
     });
 

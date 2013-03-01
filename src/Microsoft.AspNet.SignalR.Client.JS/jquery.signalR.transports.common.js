@@ -63,6 +63,8 @@
                 url = baseUrl + connection.appRelativeUrl + "/ping",
                 deferral = $.Deferred();
 
+            url = this.addQs(url, connection);
+
             $.ajax({
                 url: url,
                 global: false,
@@ -87,19 +89,28 @@
         },
 
         addQs: function (url, connection) {
+            var appender = url.indexOf("?") !== -1 ? "&" : "?",
+                firstChar;
+            
             if (!connection.qs) {
                 return url;
             }
 
             if (typeof (connection.qs) === "object") {
-                return url + "&" + $.param(connection.qs);
+                return url + appender + $.param(connection.qs);
             }
 
             if (typeof (connection.qs) === "string") {
-                return url + "&" + connection.qs;
+                firstChar = connection.qs.charAt(0);
+
+                if (firstChar === "?" || firstChar === "&") {
+                    appender = "";
+                }
+
+                return url + appender + connection.qs;
             }
 
-            return url + "&" + window.encodeURIComponent(connection.qs.toString());
+            throw new Error("Connections query string property must be either a string or object.");
         },
 
         getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
@@ -166,8 +177,7 @@
                     }
                 },
                 error: function (errData, textStatus) {
-                    if (textStatus === "abort" ||
-                        (textStatus === "parsererror" && connection.ajaxDataType === "jsonp")) {
+                    if (textStatus === "abort" || textStatus === "parsererror") {
                         // The parsererror happens for sends that don't return any data, and hence
                         // don't write the jsonp callback to the response. This is harder to fix on the server
                         // so just hack around it on the client for now.
@@ -231,13 +241,7 @@
 
                 if (data.Messages) {
                     $.each(data.Messages, function () {
-                        try {
-                            $connection.triggerHandler(events.onReceived, [this]);
-                        }
-                        catch (e) {
-                            connection.log("Error raising received " + e);
-                            $(connection).triggerHandler(events.onError, [e]);
-                        }
+                        $connection.triggerHandler(events.onReceived, [this]);
                     });
                 }
 
@@ -287,7 +291,7 @@
                 $(connection).unbind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
 
                 // Clear all the keep alive data
-                keepAliveData = {};
+                connection.keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive");
             }
         },

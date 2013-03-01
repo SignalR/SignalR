@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -60,17 +62,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void SymmetricWithNoCursors()
-        {
-            var manyCursors = new List<Cursor>();
-
-            var serialized = Cursor.MakeCursor(manyCursors);
-            var deserializedCursors = Cursor.GetCursors(serialized);
-
-            Assert.Equal(0, deserializedCursors.Length);
-        }
-
-        [Fact]
         public void SymmetricWithKeyMap()
         {
             var inverseDict = new Dictionary<string, string>();
@@ -118,7 +109,36 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void GetCursorsRemovesDuplicates()
+        public void GetCursorsAllowsEmptyKey()
+        {
+            var serializedCursors = @",A";
+            var deserializedCursors = Cursor.GetCursors(serializedCursors);
+
+            Assert.Equal(1, deserializedCursors.Length);
+            Assert.Equal("", deserializedCursors[0].Key);
+            Assert.Equal(10UL, deserializedCursors[0].Id);
+        }
+
+        [Fact]
+        public void CursorWithInvalidSurrogatePair()
+        {
+            var surrogatePair = "\U0001F4A9";
+            var cursorChars = new[] { surrogatePair[0], surrogatePair[1], surrogatePair[0], ',', 'A' };
+            var serializedCursor = new StringBuilder().Append(cursorChars).ToString();
+            var cursors = Cursor.GetCursors(serializedCursor);
+
+            Assert.Equal(1, cursors.Length);
+            Assert.Equal(3, cursors[0].Key.Length);
+            Assert.Equal(10UL, cursors[0].Id);
+
+            cursorChars = new[] { surrogatePair[0], surrogatePair[1], surrogatePair[0], ',', surrogatePair[1], 'A' };
+            serializedCursor = new StringBuilder().Append(cursorChars).ToString();
+
+            Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));
+        }
+
+        [Fact]
+        public void GetCursorsThrowsGivenDuplicates()
         {
             // The serialized cursors were generated with the following code:
             //var cursors = new[]
@@ -140,17 +160,76 @@ namespace Microsoft.AspNet.SignalR.Tests
             var serializedCursors = @"\\foo\|1\,4\,\\\|\\\\\\\,,A|\\foo\|1\,4\,\\\|\\\\\\\,,0|\\foo\|1\,4\,\\\|\\\\\\\,,FFFFFFFFFFFFFFFF|,0|,0|"
                                   + @"only non dup,0|,64|ΣιγναλΡ,FFFFFFFFFFFFFFFF|ΣιγναλΡ,FFFFFFFFFFFFFFFF|ΣιγναλΡ,0|\\foo\|1\,4\,\\\|\\\\\\\,,0";
 
-            var distinctSignals = new[]
-            {
-                @"\foo|1,4,\|\\\,",
-                "",
-                "only non dup",
-                "\u03A3\u03B9\u03B3\u03BD\u03B1\u03BB\u03A1",
-            };
-            var deserializedCursors = Cursor.GetCursors(serializedCursors);
+            Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursors));
+        }
 
-            Assert.Equal(distinctSignals.Length, deserializedCursors.Length);
-            Assert.True(deserializedCursors.All(c => distinctSignals.Contains(c.Key)));
+        [Theory]
+        [InlineData(@"|")]
+        [InlineData(@"A|A2|")]
+        [InlineData(@"||")]
+        [InlineData(@"||,")]
+        [InlineData(@"|,|")]
+        [InlineData(@",||")]
+        [InlineData(@",,|")]
+        [InlineData(@",|,")]
+        [InlineData(@",,|")]
+        [InlineData(@"A|")]
+        [InlineData(@"A||")]
+        [InlineData(@"A||,")]
+        [InlineData(@"A|,|")]
+        [InlineData(@"A,||")]
+        [InlineData(@"A,,|")]
+        [InlineData(@"A,|,")]
+        [InlineData(@"A,,|")]
+        [InlineData(@"A|A2")]
+        [InlineData(@"A|A")]
+        [InlineData(@"A|A2,")]
+        [InlineData(@"A|A2|")]
+        [InlineData(@"")]
+        [InlineData(@",|,")]
+        [InlineData(@"test")]
+        [InlineData(@"test,")]
+        [InlineData(@"test,A|")]
+        [InlineData(@"test,A|,")]
+        [InlineData(@"test,,,,,,,,,,,,")]
+        [InlineData(@"test,test2,,,,test3,A")]
+        [InlineData(@"test,test2,test,A")]
+        [InlineData(@"test,A|")]
+        [InlineData(@"test,A|random text")]
+        [InlineData(@"test,A|test,B")]
+        [InlineData(@",A|,B")]
+        [InlineData(@"\test,A")]
+        public void FuzzedCursors(string serializedCursor)
+        {
+            Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));
+        }
+
+        [Theory]
+        [InlineData(@"A,|")]
+        [InlineData(@"A,|,")]
+        [InlineData(@"test,")]
+        [InlineData(@"test,A|test2")]
+        [InlineData(@"test,A|test2,")]
+        [InlineData(@"test,A|test")]
+        [InlineData(@"test,A|test,")]
+        [InlineData(@"test,A|test,|")]
+        public void CursorsWithoutIds(string serializedCursor)
+        {
+            Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));
+        }
+
+        [Theory]
+        [InlineData(@"A,|")]
+        [InlineData(@"test,\10")]
+        [InlineData(@"test,G")]
+        [InlineData(@"test,123ABCQDE")]
+        [InlineData(@"test,123ABC\u03A3DE")]
+        [InlineData(@"test,123ABC\,DE")]
+        [InlineData(@"test,123ABC\\DE")]
+        [InlineData(@"test,123ABC\|DE")]
+        public void CursorWithInvalidCharactersInIds(string serializedCursor)
+        {
+            Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));
         }
     }
 }

@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
-            RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend");
+            RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend", new ConnectionConfiguration { EnableCrossDomain = true });
             RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect");
             RouteTable.Routes.MapConnection<MyGroupConnection>("groups", "groups");
             RouteTable.Routes.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", "rejoin-groups");
@@ -60,6 +60,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<SyncErrorConnection>("sync-error", "sync-error");
             RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
             RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
+            RouteTable.Routes.MapConnection<FallbackToLongPollingConnection>("fall-back", "/fall-back");
 
             // End point to hit to verify the webserver is up
             RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));

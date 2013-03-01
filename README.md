@@ -27,8 +27,6 @@ See the [contribution  guidelines](https://github.com/SignalR/SignalR/blob/maste
 
 ```
 git clone git@github.com:SignalR/SignalR.git (or https if you use https)
-git submodule init (you only need to do this once)
-git submodule update
 ```
 
 ### Windows

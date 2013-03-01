@@ -26,27 +26,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, byte[] buffer, int maxMessageSize, CancellationToken disconnectToken)
         {
             var arraySegment = new ArraySegment<byte>(buffer);
-            WebSocketReceiveResult receiveResult = null;
 
-            try
-            {
-                receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
-            }
-            catch (Exception)
-            {
-                // If the websocket is aborted while we're reading then just rethrow
-                // an operaton cancelled exception so the caller can handle it
-                // appropriately
-                if (webSocket.State == WebSocketState.Aborted)
-                {
-                    throw new OperationCanceledException();
-                }
-                else
-                {
-                    // Otherwise rethrow the original exception
-                    throw;
-                }
-            }
+            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
 
             // special-case close messages since they might not have the EOF flag set
             if (receiveResult.MessageType == WebSocketMessageType.Close)

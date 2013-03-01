@@ -1,6 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Owin;
@@ -9,10 +15,56 @@ using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public class ConnectionFacts
     {
         public class Start : HostedTest
         {
+            [Fact]
+            public void ConnectionCanStartWithAuthenicatedUserAndQueryString()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        Func<AppFunc, AppFunc> middleware = (next) =>
+                        {
+                            return env =>
+                            {
+                                if (((string)env["owin.RequestQueryString"]).IndexOf("access_token") == -1)
+                                {
+                                    return next(env);
+                                }
+
+                                var user = new CustomPrincipal
+                                {
+                                    Name = "Bob",
+                                    IsAuthenticated = true,
+                                    Roles = new[] { "User" }
+                                };
+
+                                env["server.User"] = user;
+
+                                return next(env);
+                            };
+                        };
+
+                        app.Use(middleware);
+                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", new ConnectionConfiguration());
+
+                    });
+
+                    var connection = new Connection("http://foo/authenticatedConnection", "access_token=1234");
+
+                    connection.Start(host).Wait();
+
+                    Assert.Equal(connection.State, ConnectionState.Connected);
+
+                    connection.Stop();
+                }
+            }
+
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
@@ -24,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/ErrorsAreFun");
+                    var connection = CreateConnection(host.Url + "/ErrorsAreFun");
 
                     // Expecting 404
                     var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
@@ -48,20 +100,37 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 }
             }
 
-            [Theory]
-            [InlineData(HostType.Memory, TransportType.Auto)]
-            // [InlineData(HostType.IISExpress, TransportType.Auto)]
-            public void FallbackToLongPollingWorks(HostType hostType, TransportType transportType)
+            [Fact]
+            public void FallbackToLongPollingIIS()
             {
-                using (var host = CreateHost(hostType, transportType))
+                using (ITestHost host = new IISExpressTestHost())
                 {
                     host.Initialize();
 
-                    var connection = new Client.Connection(host.Url + "/fall-back");
+                    var connection = CreateConnection(host.Url + "/fall-back");
+                    var tcs = new TaskCompletionSource<object>();
 
-                    connection.Start(host.Transport).Wait();
+                    connection.StateChanged += change =>
+                    {
+                        if (change.NewState == ConnectionState.Reconnecting)
+                        {
+                            tcs.TrySetException(new Exception("The connection should not be reconnecting"));
+                        }
+                    };
+
+                    var client = new DefaultHttpClient();
+                    var transports = new IClientTransport[]  {
+                        new ServerSentEventsTransport(client) { ConnectionTimeout = TimeSpan.Zero },
+                        new LongPollingTransport(client)
+                    };
+
+                    var transport = new AutoTransport(client, transports);
+
+                    connection.Start(transport).Wait();
 
                     Assert.Equal(connection.Transport.Name, "longPolling");
+
+                    Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
 
                     connection.Stop();
                 }
@@ -146,6 +215,31 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void StoppingDoesntRaiseErrorEvent(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+                    var connection = CreateHubConnection(host);
+
+                    var tcs = new TaskCompletionSource<object>();
+                    connection.Error += ex =>
+                    {
+                        tcs.TrySetException(ex);
+                    };
+
+                    connection.Start(host.Transport).Wait();
+
+                    connection.Stop();
+
+                    tcs.Task.Wait(TimeSpan.FromSeconds(5));
+                }
+            }
+
+            [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
@@ -156,7 +250,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize();
-                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var connection = CreateHubConnection(host);
                     int timesStopped = 0;
 
                     connection.Closed += () =>
@@ -190,7 +284,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(disconnectTimeout: 6);
-                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var connection = CreateHubConnection(host);
                     var reconnectWh = new ManualResetEventSlim();
                     var disconnectWh = new ManualResetEventSlim();
 
@@ -228,7 +322,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     connectionTimeout: 2,
                                     disconnectTimeout: 6);
 
-                    var connection = new Client.Hubs.HubConnection(host.Url);
+                    var connection = CreateHubConnection(host);
                     var reconnectingWh = new ManualResetEventSlim();
                     var reconnectedWh = new ManualResetEventSlim();
 
@@ -257,6 +351,91 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.Stop();
                 }
             }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    var errorsCaught = 0;
+                    var wh = new ManualResetEventSlim();
+                    Exception thrown = new Exception(),
+                              caught = null;
+
+                    host.Initialize();
+
+                    var connection = new Connection(host.Url + "/multisend");
+
+                    connection.Received += _ =>
+                    {
+                        throw thrown;
+                    };
+
+                    connection.Error += e =>
+                    {
+                        caught = e;
+                        if (Interlocked.Increment(ref errorsCaught) == 2)
+                        {
+                            wh.Set();
+                        }
+                    };
+
+                    connection.Start(host.Transport).Wait();
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.Equal(thrown, caught);
+                }
+            }
+
+            [Fact]
+            public void ConnectionErrorCapturesExceptionsThrownWhenReceivingResponseFromSend()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        app.MapConnection<TransportResponse>("/transport-response");
+                    });
+
+                    var transports = new List<IClientTransport>()
+                    {
+                        new ServerSentEventsTransport(host),
+                        new LongPollingTransport(host)
+                    };
+
+                    foreach (var transport in transports)
+                    {
+                        Debug.WriteLine("Transport: {0}", (object)transport.Name);
+
+                        var wh = new ManualResetEventSlim();
+                        Exception thrown = new Exception(),
+                                  caught = null;
+
+                        var connection = new Connection("http://foo/transport-response");
+
+                        connection.Received += data =>
+                        {
+                            throw thrown;
+                        };
+
+                        connection.Error += e =>
+                        {
+                            caught = e;
+                            wh.Set();
+                        };
+
+                        connection.Start(transport).Wait();
+                        connection.Send("");
+
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.IsType(typeof(AggregateException), caught);
+                        Assert.Equal(thrown, caught.InnerException);
+                    }
+                }
+            }
         }
 
         private class MyConnection : PersistentConnection
@@ -272,6 +451,49 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Send(connectionId, "MyConnection2");
+            }
+        }
+
+        private class TransportResponse : PersistentConnection
+        {
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Transport.Send(new object());
+            }
+        }
+
+        private class CustomPrincipal : IIdentity, IPrincipal
+        {
+            public string AuthenticationType
+            {
+                get { return "Forms"; }
+            }
+
+            public bool IsAuthenticated { get; set; }
+
+            public string Name { get; set; }
+            public string[] Roles { get; set; }
+
+            public IIdentity Identity
+            {
+                get { return this; }
+            }
+
+            public bool IsInRole(string role)
+            {
+                return Roles != null && Roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        public class MyAuthenticatedConnection : PersistentConnection
+        {
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Task.Run(() =>
+                {
+                    GlobalHost.ConnectionManager.GetConnectionContext<MyAuthenticatedConnection>()
+                        .Connection.Send(connectionId, data);
+                });
             }
         }
     }

@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         }
 
         // Gracefully closes the connection
-        public void Close()
+        public virtual void Close()
         {
             CloseAsync();
         }
@@ -195,7 +195,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
             catch (OperationCanceledException ex)
             {
-                if (!ex.CancellationToken.IsCancellationRequested)
+                // ex.CancellationToken never has the token that was actually cancelled
+                if (!disconnectToken.IsCancellationRequested)
                 {
                     Error = ex;
                     OnError();
@@ -215,8 +216,14 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 try
                 {
-                    Close();
-                    OnClose(cleanClose);
+                    try
+                    {
+                        Close();
+                    }
+                    finally
+                    {
+                        OnClose(cleanClose);
+                    }
                 }
                 finally
                 {

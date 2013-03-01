@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     try
                     {
                         string url = GetUrl(protectedData, connection);
-                        var response = await MakeRequest(host, url);
+                        var response = await host.Get(url);
                         reader = new EventSourceStreamReader(response.GetResponseStream());
 
                         reader.Message = sseEvent =>
@@ -105,11 +105,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
               .Append(Uri.EscapeDataString(groupsToken));
 
             return sb.ToString();
-        }
-
-        private static async Task<Client.Http.IResponse> MakeRequest(MemoryHost host, string url)
-        {
-            return await host.ProcessRequest(url, r => { }, new Dictionary<string, string>());
         }
 
         public class MyConnection : PersistentConnection

@@ -124,7 +124,7 @@
     <value>The connection has not been established.</value>
   </data>
   <data name="Error_IncompatibleProtocolVersion" xml:space="preserve">
-    <value>Incompatible protocol version.</value>
+    <value>You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.</value>
   </data>
   <data name="Error_ProxiesCannotBeAddedConnectionStarted" xml:space="preserve">
     <value>A HubProxy cannot be added after the connection has been started.</value>

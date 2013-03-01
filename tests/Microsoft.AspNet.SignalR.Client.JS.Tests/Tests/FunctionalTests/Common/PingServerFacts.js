@@ -1,61 +1,85 @@
-﻿QUnit.module("Ping Server Facts - Long Polling", testUtilities.longPollingEnabled);
+﻿QUnit.module("Transports Common - Ping Server Facts");
 
-QUnit.asyncTimeoutTest("Long Polling transport can initiate Ping Server.", 5000, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
-        testPingServer = function () {
-            $.signalR.transports._logic.pingServer(connection, "longPolling").done(function() {
-                // Successful ping
-                assert.ok(true, "Successful ping with Long Polling");
-                end();
-            }).fail(function () {
-                assert.ok(false, "Failed to ping server with Long Polling");
-                end();
-            });            
+testUtilities.runWithAllTransports(function (transport) {
+    QUnit.asyncTimeoutTest(transport + " transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(testName),
+            testPingServer = function () {
+                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                    // Successful ping
+                    assert.ok(true, "Successful ping with " + transport);
+                    end();
+                }).fail(function () {
+                    assert.ok(false, "Failed to ping server with " + transport);
+                    end();
+                });
+            };
+
+        // Starting/Stopping a connection to have it instantiated with all the appropriate variables
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            connection.stop();
+            testPingServer();
+        }).fail(function (reason) {
+            assert.ok(false, "Failed to initiate SignalR connection");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
         };
-
-    // Starting/Stopping a connection to have it instantiated with all the appropriate variables
-    connection.start({ transport: "longPolling" }).done(function () {
-        assert.ok(true, "Connected");
-        connection.stop();
-        testPingServer();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
-        end();
     });
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
-});
+    QUnit.asyncTimeoutTest(transport + " transport calls Ping Server with custom query string in url", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(testName),
+            expectedQs = window.encodeURIComponent(testName),
+            savedAjax = $.ajax,
+            testPingServer = function () {
+                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                    // Successful ping
+                    assert.ok(true, "Successful ping with " + transport);
+                }).fail(function () {
+                    assert.ok(false, "Failed to ping server with " + transport);
+                    end();
+                });
+            };
 
-QUnit.module("Ping Server Facts - Server Sent Events", testUtilities.serverSentEventsEnabled);
+        // Verify that the query string parameter was set
+        assert.ok(connection.qs.indexOf(expectedQs) >= 0, "Query string contains the test name prior to ping server.");
 
-QUnit.asyncTimeoutTest("Server Sent Events transport can initiate Ping Server.", 5000, function (end, assert) {
-    var connection = testUtilities.createHubConnection(),
-        testPingServer = function () {
-            $.signalR.transports._logic.pingServer(connection, "serverSentEvents").done(function () {
-                // Successful ping
-                assert.ok(true, "Successful ping with Server Sent Events");
-                end();
-            }).fail(function () {
-                assert.ok(false, "Failed to ping server with Server Sent Events");
-                end();
-            });
+        // For long polling this ajax request will execute before testPingServer because longPolling
+        // utilizes the pingServer method.
+        $.ajax = function (url, settings) {
+            if (!settings) {
+                settings = url;
+                url = settings.url;
+            }
+
+            // Check if it's the ping request;
+            if (url.indexOf("/ping") >= 0) {
+                // Verify that the query string parameter on the connection is passed via the ajax request
+                assert.ok(url.indexOf(expectedQs) >= 0, "Query string parameters were passed in ping server");
+                // Let the ajax request finish out
+                setTimeout(end, 0);
+            }
+
+            // Persist the request through to the original ajax request
+            savedAjax.call(this, url, settings);
         };
 
-    // Starting/Stopping a connection to have it instantiated with all the appropriate variables
-    connection.start({ transport: "serverSentEvents" }).done(function () {
-        assert.ok(true, "Connected");
-        connection.stop();
-        testPingServer();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate signalr connection");
-        end();
-    });
+        // Starting/Stopping a connection to have it instantiated with all the appropriate variables
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            connection.stop();
+            testPingServer();
+        }).fail(function (reason) {
+            assert.ok(false, "Failed to initiate SignalR connection");
+            end();
+        });
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
+        return function () {
+            $.ajax = savedAjax;
+            connection.stop();
+        };
+    });
 });

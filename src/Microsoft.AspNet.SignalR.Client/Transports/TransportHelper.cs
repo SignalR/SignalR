@@ -33,13 +33,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #else
             string negotiateUrl = connection.Url + "negotiate";
 #endif
-
+            negotiateUrl += AppendCustomQueryString(connection, negotiateUrl);
 
             return httpClient.Get(negotiateUrl, connection.PrepareRequest).Then(response =>
             {
                 string raw = response.ReadAsString();
 
-                if (raw == null)
+                if (String.IsNullOrEmpty(raw))
                 {
                     throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                 }
@@ -80,14 +80,51 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (!String.IsNullOrEmpty(customQuery))
             {
-                qsBuilder.Append("&")
-                         .Append(customQuery);
+                qsBuilder.Append("&").Append(customQuery);
             }
 
 #if SILVERLIGHT || WINDOWS_PHONE
             qsBuilder.Append("&").Append(GetNoCacheUrlParam());
 #endif
             return qsBuilder.ToString();
+        }
+
+        public static string AppendCustomQueryString(IConnection connection, string baseUrl)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (baseUrl == null)
+            {
+                baseUrl = "";
+            }
+
+            string appender = "",
+                   customQuery = connection.QueryString,
+                   qs = "";            
+
+            if (!String.IsNullOrEmpty(customQuery))
+            {
+                char firstChar = customQuery[0];
+
+                // If the custom query string already starts with an ampersand or question mark
+                // then we dont have to use any appender, it can be empty.
+                if (firstChar != '?' && firstChar != '&')
+                {
+                    appender = "?";
+
+                    if (baseUrl.Contains(appender))
+                    {
+                        appender = "&";
+                    }
+                }
+
+                qs += appender + customQuery;
+            }
+
+            return qs;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]

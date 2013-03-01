@@ -24,7 +24,11 @@ namespace Microsoft.AspNet.SignalR.Json
             // A non generic implementation of ToObject<T> on JToken
             using (var jsonReader = new StringReader(_value))
             {
-                var serializer = new JsonSerializer();
+                var settings = new JsonSerializerSettings
+                {
+                    MaxDepth = 20
+                };
+                var serializer = JsonSerializer.Create(settings);
                 return serializer.Deserialize(jsonReader, type);
             }
         }

@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
             {
-                return TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_NotWebSocketRequest));
+                throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
             }
 
             var options = new Dictionary<string, object>();

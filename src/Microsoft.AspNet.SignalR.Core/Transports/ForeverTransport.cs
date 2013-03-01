@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action AfterReceive;
         internal Action BeforeCancellationTokenCallbackRegistered;
         internal Action BeforeReceive;
-        internal Action AfterRequestEnd;
+        internal Action<Exception> AfterRequestEnd;
 
         protected override void InitializePersistentState()
         {
@@ -254,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     return;
                 }
 
-                Trace.TraceInformation("DrainWrites(" + ConnectionId + ")");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "DrainWrites(" + ConnectionId + ")");
 
                 // Drain the task queue for pending write operations so we don't end the request and then try to write
                 // to a corrupted request object.
@@ -277,7 +278,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 if (AfterRequestEnd != null)
                 {
-                    AfterRequestEnd();
+                    AfterRequestEnd(ex);
                 }
             };
 
@@ -293,7 +294,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private void ProcessMessages(ITransportConnection connection, Func<Task> postReceive, Action<Exception> endRequest)
         {
             IDisposable subscription = null;
-            IDisposable registration = null;
+            var disposer = new Disposer();
 
             if (BeforeReceive != null)
             {
@@ -312,7 +313,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                         // Send the response before removing any connection data
                         return Send(response).Then(() =>
                         {
-                            registration.Dispose();
+                            disposer.Dispose();
 
                             // Remove connection without triggering disconnect
                             Heartbeat.RemoveConnection(this);
@@ -326,12 +327,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                              response.Aborted ||
                              ConnectionEndToken.IsCancellationRequested)
                     {
-                        // If this is null it's because the cancellation token tripped
-                        // before we setup the registration at all.
-                        if (registration != null)
-                        {
-                            registration.Dispose();
-                        }
+                        disposer.Dispose();
 
                         if (response.Aborted)
                         {
@@ -349,7 +345,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                              .Catch(IncrementErrorCounters)
                                              .Catch(ex =>
                                              {
-                                                 Trace.TraceInformation("Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                                                 Trace.TraceEvent(TraceEventType.Error, 0, "Send failed for {0} with: {1}", ConnectionId, ex.GetBaseException());
                                              });
                     }
                 },
@@ -374,7 +370,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                          .Catch(ex => endRequest(ex))
                          .Catch(ex =>
                          {
-                             Trace.TraceInformation("Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
+                             Trace.TraceEvent(TraceEventType.Error, 0, "Failed post receive for {0} with: {1}", ConnectionId, ex.GetBaseException());
                          })
                          .ContinueWith(InitializeTcs);
 
@@ -384,13 +380,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // This has to be done last incase it runs synchronously.
-            registration = ConnectionEndToken.SafeRegister(state =>
+            IDisposable registration = ConnectionEndToken.SafeRegister(state =>
             {
-                Trace.TraceInformation("Cancel(" + ConnectionId + ")");
+                Trace.TraceEvent(TraceEventType.Verbose, 0, "Cancel(" + ConnectionId + ")");
 
                 state.Dispose();
             },
             subscription);
+
+            disposer.Set(registration);
         }
     }
 }

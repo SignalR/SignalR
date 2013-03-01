@@ -196,6 +196,52 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             RunWithPostReceive(() => TaskAsyncHelper.Empty);
         }
 
+        [Fact]
+        public void ReceiveDisconnectBeforeCancellationSetup()
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            var counters = new Mock<IPerformanceCounterManager>();
+            var heartBeat = new Mock<ITransportHeartbeat>();
+            var json = new JsonNetSerializer();
+            var hostContext = new HostContext(request.Object, null);
+            var transportConnection = new Mock<ITransportConnection>();
+            var traceManager = new Mock<ITraceManager>();
+            traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
+
+            transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
+                                                     It.IsAny<Func<PersistentResponse, Task<bool>>>(),
+                                                     It.IsAny<int>())).Callback<string, Func<PersistentResponse, Task<bool>>, int>((id, cb, max) =>
+                                                     {
+                                                         cb(new PersistentResponse() { Disconnect = true });
+                                                     })
+                                                     .Returns(DisposableAction.Empty);
+
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            {
+                CallBase = true
+            };
+
+            transport.Setup(m => m.Send(It.IsAny<PersistentResponse>())).Returns(TaskAsyncHelper.Empty);
+
+            bool ended = false;
+
+            transport.Object.AfterRequestEnd = (ex) =>
+            {
+                Assert.Null(ex);
+                ended = true;
+            };
+
+            // Act
+            transport.Object.ProcessRequest(transportConnection.Object);
+
+            // Assert
+            Assert.True(ended);
+        }
+
         public void RunWithPostReceive(Func<Task> postReceive)
         {
             var request = new Mock<IRequest>();
@@ -294,7 +340,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
             transport.Object.EnqueueOperation(writeAsync);
 
-            transport.Object.AfterRequestEnd = () =>
+            transport.Object.AfterRequestEnd = (ex) =>
             {
                 // Trip the cancellation token
                 tcs.TrySetResult(transport.Object.WriteQueue.IsDrained);

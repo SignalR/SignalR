@@ -100,17 +100,21 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (oldMetadata != null)
             {
-                Trace.TraceInformation("Connection exists. Closing previous connection. Old=({0}, {1}) New=({2})", oldMetadata.Connection.IsAlive, oldMetadata.Connection.Url, connection.Url);
+                Trace.TraceInformation("Connection {0} exists. Closing previous connection.", oldMetadata.Connection.ConnectionId);
 
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
-                EndConnection(oldMetadata);
+
+                // Don't bother disposing the registration here since the token source
+                // gets disposed after the request has ended
+                EndConnection(oldMetadata, disposeRegistration: false);
+
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
             }
             else
             {
-                Trace.TraceInformation("Connection is New=({0}).", connection.Url);
+                Trace.TraceInformation("Connection {0} is New.", connection.ConnectionId);
             }
 
             lock (_counterLock)
@@ -211,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     }
                     else
                     {
-                        Trace.TraceInformation(metadata.Connection.ConnectionId + " is dead");
+                        Trace.TraceEvent(TraceEventType.Verbose, 0, metadata.Connection.ConnectionId + " is dead");
 
                         // Check if we need to disconnect this connection
                         CheckDisconnect(metadata);
@@ -220,7 +224,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("SignalR error during transport heart beat on background thread: {0}", ex);
+                Trace.TraceEvent(TraceEventType.Error, 0, "SignalR error during transport heart beat on background thread: {0}", ex);
             }
             finally
             {
@@ -257,12 +261,12 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // of us handling timeout's or disconnects gracefully
                 if (RaiseKeepAlive(metadata))
                 {
-                    Trace.TraceInformation("KeepAlive(" + metadata.Connection.ConnectionId + ")");
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
                     metadata.Connection.KeepAlive()
                                        .Catch(ex =>
                                        {
-                                           Trace.TraceInformation("Failed to send keep alive: " + ex.GetBaseException());
+                                           Trace.TraceEvent(TraceEventType.Error, 0, "Failed to send keep alive: " + ex.GetBaseException());
                                        });
                 }
 
@@ -287,7 +291,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             catch (Exception ex)
             {
                 // Swallow exceptions that might happen during disconnect
-                Trace.TraceInformation("Raising Disconnect failed: {0}", ex);
+                Trace.TraceEvent(TraceEventType.Error, 0, "Raising Disconnect failed: {0}", ex);
             }
         }
 
@@ -367,16 +371,19 @@ namespace Microsoft.AspNet.SignalR.Transports
             Dispose(true);
         }
 
-        private static void EndConnection(ConnectionMetadata metadata)
+        private static void EndConnection(ConnectionMetadata metadata, bool disposeRegistration = true)
         {
+            if (disposeRegistration)
+            {
+                // Dispose of the registration
+                if (metadata.Registration != null)
+                {
+                    metadata.Registration.Dispose();
+                }
+            }
+
             // End the connection
             metadata.Connection.End();
-
-            // Dispose of the registration
-            if (metadata.Registration != null)
-            {
-                metadata.Registration.Dispose();
-            }
         }
 
         private class ConnectionMetadata

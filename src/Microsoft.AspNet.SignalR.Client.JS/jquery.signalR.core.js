@@ -1,6 +1,6 @@
-﻿/*global window:false */
+/*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v1.0.0
+ * ASP.NET SignalR JavaScript Library v1.0.1
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -85,7 +85,11 @@
 
                 connection.reconnecting(function () {
                     var connection = this;
-                    stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+
+                    // Guard against state changing in a previous user defined even handler
+                    if (connection.state === signalR.connectionState.reconnecting) {
+                        stopReconnectingTimeout = window.setTimeout(function () { onReconnectTimeout(connection); }, connection.disconnectTimeout);
+                    }
                 });
 
                 connection.stateChanged(function (data) {
@@ -228,7 +232,7 @@
 
         reconnectDelay: 2000,
 
-        disconnectTimeout: 40000, // This should be set by the server in response to the negotiate request (40s default)
+        disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -382,6 +386,9 @@
             };
 
             var url = connection.url + "/negotiate";
+
+            url = signalR.transports._logic.addQs(url, connection);
+
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
                 url: url,
@@ -428,8 +435,8 @@
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.2") {
-                        $(connection).triggerHandler(events.onError, "SignalR: Incompatible protocol version.");
-                        deferred.reject("SignalR: Incompatible protocol version.");
+                        $(connection).triggerHandler(events.onError, "You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + ".");
+                        deferred.reject("You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + ".");
                         return;
                     }
 

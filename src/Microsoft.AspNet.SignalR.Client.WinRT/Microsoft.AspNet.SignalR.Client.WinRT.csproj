@@ -259,7 +259,7 @@
       <Link>Resources.resx</Link>
     </EmbeddedResource>
   </ItemGroup>
-  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' ">
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' Or '$(VisualStudioVersion)' == '10.0'">
     <VisualStudioVersion>11.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
