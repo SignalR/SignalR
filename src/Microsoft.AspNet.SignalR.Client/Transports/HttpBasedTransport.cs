@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
@@ -120,6 +121,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                                                           Uri.EscapeDataString(connection.ConnectionToken),
                                                                           null);
 
+                    url += TransportHelper.AppendCustomQueryString(connection, url);
+
                     _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
@@ -129,7 +132,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
             }
 
-            AbortResetEvent.WaitOne(timeout);
+            if (!AbortResetEvent.WaitOne(timeout))
+            {
+                Debug.WriteLine("WS: Abort never fired (" + connection.ConnectionId + ")");
+            }
         }
 
         protected string GetReceiveQueryString(IConnection connection, string data)

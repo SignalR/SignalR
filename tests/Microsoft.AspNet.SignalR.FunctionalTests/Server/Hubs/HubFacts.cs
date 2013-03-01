@@ -147,8 +147,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
                 });
 
-                connection.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(2));
 

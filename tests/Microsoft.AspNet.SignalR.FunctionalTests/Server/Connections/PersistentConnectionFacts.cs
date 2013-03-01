@@ -431,8 +431,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection1.Received += data => wh1.Set();
                     connection2.Received += data => wh2.Set();
 
-                    connection1.Start(host.Transport).Wait();
-                    connection2.Start(host.Transport).Wait();
+                    connection1.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
 
                     connection1.SendWithTimeout("test");
 
@@ -490,8 +490,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                     };
 
-                    connection.Start(host.Transport).Wait();
-                    connection2.Start(host.Transport).Wait();
+                    connection.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
 
                     Thread.Sleep(TimeSpan.FromSeconds(2));
 

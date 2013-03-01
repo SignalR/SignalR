@@ -100,7 +100,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 CloseAsync();
             }
 
-            _abortEventSlim.Wait(timeout);
+            if (!_abortEventSlim.Wait(timeout))
+            {
+                Debug.WriteLine("WS: Abort never fired (" + _connectionInfo.Connection.ConnectionId + ")");
+            }
         }
 
         public Task Send(IConnection connection, string data)

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
-        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
+        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(5);
 
         private static Version _assemblyVersion;
 
@@ -400,21 +401,28 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public void Stop(TimeSpan timeout)
         {
+            bool abort = false;
+
             lock (_stateLock)
             {
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
-                    _transport.Abort(this, timeout);
+                    abort = true;
+                }
+            }
 
-                    Disconnect();
+            if (abort)
+            {
+                _transport.Abort(this, timeout);
 
-                    _disconnectCts.Dispose();
+                Disconnect();
 
-                    if (_transport != null)
-                    {
-                        _transport.Dispose();
-                    }
+                _disconnectCts.Dispose();
+
+                if (_transport != null)
+                {
+                    _transport.Dispose();
                 }
             }
         }

@@ -261,12 +261,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     for (int i = 0; i < 5; i++)
                     {
-                        connection.Start(host.Transport).Wait();
+                        connection.Start(host.TransportFactory()).Wait();
                         connection.Stop();
                     }
                     for (int i = 0; i < 10; i++)
                     {
-                        connection.Start(host.Transport);
+                        connection.Start(host.TransportFactory());
                         connection.Stop();
                     }
                     Assert.Equal(15, timesStopped);
