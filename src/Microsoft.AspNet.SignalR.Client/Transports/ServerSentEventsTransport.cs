@@ -89,11 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
-#if NET35
-            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "SSE: GET {0}", (object)url));
-#else
-            Debug.WriteLine("SSE: GET {0}", (object)url);
-#endif
+            connection.Trace.WriteLine("SSE: GET {0}", url);
 
             HttpClient.Get(url, req =>
             {
@@ -127,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var response = task.Result;
                     Stream stream = response.GetResponseStream();
 
-                    var eventSource = new EventSourceStreamReader(stream);
+                    var eventSource = new EventSourceStreamReader(connection, stream);
 
                     bool retry = true;
 

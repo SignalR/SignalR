@@ -1,8 +1,8 @@
 ﻿using System;
-using Microsoft.AspNet.SignalR.Hubs;
+using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Owin;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
@@ -27,6 +27,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public IClientTransport Transport { get; set; }
 
         public Func<IClientTransport> TransportFactory { get; set; }
+
+        public TextWriter ClientTraceOutput { get; set; }
 
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
@@ -83,6 +85,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public void Dispose()
         {
             _host.Dispose();
+
+            if (ClientTraceOutput != null)
+            {
+                ClientTraceOutput.Dispose();
+            }
         }
 
         public void Shutdown()

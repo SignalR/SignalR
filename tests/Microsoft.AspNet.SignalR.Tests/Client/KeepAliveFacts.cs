@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
@@ -7,7 +9,7 @@ using Xunit;
 namespace Microsoft.AspNet.SignalR.Tests
 {
     public class KeepAliveFacts
-    {  
+    {
         /// <summary>
         /// Test to check if the user is warned of a potential connection loss
         /// </summary>
@@ -19,12 +21,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             var monitor = new HeartbeatMonitor(connection.Object);
 
             // Setting the values such that a warning is thrown almost instantly and a timeout doesn't occur
-            var keepAliveData = new KeepAliveData (                
-                lastKeepAlive : DateTime.UtcNow,
-                timeoutWarning : TimeSpan.FromSeconds(1),
-                timeout : TimeSpan.FromSeconds(20),
-                checkInterval : TimeSpan.FromSeconds(2)
+            var keepAliveData = new KeepAliveData(
+                lastKeepAlive: DateTime.UtcNow,
+                timeoutWarning: TimeSpan.FromSeconds(1),
+                timeout: TimeSpan.FromSeconds(20),
+                checkInterval: TimeSpan.FromSeconds(2)
             );
+
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
 
@@ -49,13 +53,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             var transport = new Mock<IClientTransport>();
 
             // Setting the values such that a timeout happens almost instantly
-            var keepAliveData = new KeepAliveData ( 
-                lastKeepAlive : DateTime.UtcNow,
-                timeoutWarning : TimeSpan.FromSeconds(10),
-                timeout : TimeSpan.FromSeconds(1),
-                checkInterval : TimeSpan.FromSeconds(2)
+            var keepAliveData = new KeepAliveData(
+                lastKeepAlive: DateTime.UtcNow,
+                timeoutWarning: TimeSpan.FromSeconds(10),
+                timeout: TimeSpan.FromSeconds(1),
+                checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);
@@ -82,12 +87,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             // Setting the values such that a timeout or timeout warning isn't issued
             var keepAliveData = new KeepAliveData(
-                lastKeepAlive : DateTime.UtcNow,
-                timeoutWarning : TimeSpan.FromSeconds(5),                
-                timeout : TimeSpan.FromSeconds(10),
-                checkInterval : TimeSpan.FromSeconds(2)
+                lastKeepAlive: DateTime.UtcNow,
+                timeoutWarning: TimeSpan.FromSeconds(5),
+                timeout: TimeSpan.FromSeconds(10),
+                checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);
@@ -98,6 +104,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Assert
             Assert.False(monitor.TimedOut);
             Assert.False(monitor.HasBeenWarned);
-        } 
+        }
+
+        private class DummyTextWriter : TextWriter
+        {
+            public override Encoding Encoding
+            {
+                get { return Encoding.UTF8; }
+            }
+        }
     }
 }

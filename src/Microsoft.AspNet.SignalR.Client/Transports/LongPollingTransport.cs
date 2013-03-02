@@ -97,11 +97,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             url += GetReceiveQueryString(connection, data);
 
-#if NET35
-            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP: {0}", (object)url));
-#else
-            Debug.WriteLine("LP: {0}", (object)url);
-#endif
+            connection.Trace.WriteLine("LP: {0}", url);
 
             HttpClient.Post(url, req => 
             {
@@ -133,11 +129,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
-#if NET35
-                        Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
-#else
-                        Debug.WriteLine("LP Receive: {0}", (object)raw);
-#endif
+                        connection.Trace.WriteLine("LP Receive: {0}", raw);
+
                         TransportHelper.ProcessResponse(connection, 
                                                         raw, 
                                                         out shouldRaiseReconnect, 

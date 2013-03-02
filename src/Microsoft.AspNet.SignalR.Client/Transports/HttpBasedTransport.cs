@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (!AbortResetEvent.WaitOne(timeout))
             {
-                Debug.WriteLine("Abort never fired (" + connection.ConnectionId + ")");
+                connection.Trace.WriteLine("Abort never fired (" + connection.ConnectionId + ")");
             }
         }
 

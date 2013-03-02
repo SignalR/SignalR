@@ -24,13 +24,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             ITestHost host = null;
 
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            string clientDebugPath = Path.Combine(logBasePath, testName + ".client.debug.log");
+            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
             string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
-
-            var clientDebugTraceListener = new TextWriterTraceListener(clientDebugPath);
-
-            Debug.Listeners.Clear();
-            Debug.Listeners.Add(clientDebugTraceListener);
 
             // Enable system new logging to this path
             _systemNetLogging = SystemNetLogging.Enable(clientNetworkPath);
@@ -57,6 +52,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     break;
             }
 
+            var writer = new StreamWriter(clientTracePath);
+            writer.AutoFlush = true;
+            host.ClientTraceOutput = writer;
+
             return host;
         }
 
@@ -64,14 +63,18 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
-            return new HubConnection(host.Url, query);
+            var connection = new HubConnection(host.Url, query);
+            connection.Trace = host.ClientTraceOutput;
+            return connection;
         }
 
-        protected Client.Connection CreateConnection(string url)
+        protected Client.Connection CreateConnection(ITestHost host, string path)
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
-            return new Client.Connection(url, query);
+            var connection = new Client.Connection(host.Url + path, query);
+            connection.Trace = host.ClientTraceOutput;
+            return connection;
         }
 
         private string GetTestName()
@@ -134,9 +137,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 _systemNetLogging.Dispose();
             }
-
-            Debug.Close();
-            Debug.Listeners.Clear();
         }
 
         private static class SystemNetLogging

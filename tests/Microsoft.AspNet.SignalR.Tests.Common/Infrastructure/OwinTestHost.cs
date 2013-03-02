@@ -1,7 +1,7 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.Owin.Hosting;
-using Owin;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
@@ -30,6 +30,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         }
 
         public Func<IClientTransport> TransportFactory
+        {
+            get;
+            set;
+        }
+
+        public TextWriter ClientTraceOutput
         {
             get;
             set;
@@ -83,6 +89,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             if (_server != null)
             {
                 _server.Dispose();
+            }
+
+            if (ClientTraceOutput != null)
+            {
+                ClientTraceOutput.Dispose();
             }
         }
     }

@@ -101,16 +101,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     // Make sure we observe the exception
-                    var ex = task.Exception;
-                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
-#endif
-#if NET35
-                    Debug.WriteLine(System.String.Format(CultureInfo.InvariantCulture, "Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name));
-#else
-                    Debug.WriteLine("Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name);
-#endif
+                    var ex = task.Exception.GetBaseException();
+
+                    connection.Trace.WriteLine("Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;

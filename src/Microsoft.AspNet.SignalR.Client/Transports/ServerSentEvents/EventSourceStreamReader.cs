@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private int _reading;
         private Action _setOpened;
+        private readonly IConnection _connection;
 
         /// <summary>
         /// Invoked when the connection is open.
@@ -43,9 +44,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// <summary>
         /// Initializes a new instance of the <see cref="EventSourceStreamReader"/> class.
         /// </summary>
+        /// <param name="connection">The connection associated with this event source</param>
         /// <param name="stream">The stream to read event source payloads from.</param>
-        public EventSourceStreamReader(Stream stream)
+        public EventSourceStreamReader(IConnection connection, Stream stream)
         {
+            _connection = connection;
             _stream = stream;
             _buffer = new ChunkBuffer();
         }
@@ -67,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             {
                 _setOpened = () =>
                 {
-                    Debug.WriteLine("EventSourceReader: Connection Opened");
+                    _connection.Trace.WriteLine("EventSourceReader: Connection Opened");
                     OnOpened();
                 };
 
@@ -196,7 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                         continue;
                     }
 
-                    Debug.WriteLine("SSE READ: " + sseEvent);
+                    _connection.Trace.WriteLine("SSE READ: " + sseEvent);
 
                     OnMessage(sseEvent);
                 }
@@ -209,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
             if (previousState != State.Stopped)
             {
-                Debug.WriteLine("EventSourceReader: Connection Closed");
+                _connection.Trace.WriteLine("EventSourceReader: Connection Closed");
                 if (Closed != null)
                 {
                     if (exception != null)

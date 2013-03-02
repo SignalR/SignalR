@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
                 host.Initialize(keepAlive: null);
-                var connection = CreateConnection(host.Url + "/my-reconnect");
+                var connection = CreateConnection(host, "/my-reconnect");
 
                 ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        
+
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
@@ -52,8 +52,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
                 host.Initialize(keepAlive: null);
-                var connection = CreateConnection(host.Url + "/my-reconnect");
-                
+                var connection = CreateConnection(host, "/my-reconnect");
+
                 ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
 
                 connection.Reconnected += () =>
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
                 host.Initialize(keepAlive: null);
-                var connection = CreateConnection(host.Url + "/my-reconnect");
+                var connection = CreateConnection(host, "/my-reconnect");
 
                 ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
 

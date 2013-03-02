@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
-            Debug.WriteLine("WS: " + builder.Uri);
+            _connectionInfo.Connection.Trace.WriteLine("WS: " + builder.Uri);
 
             var webSocket = new ClientWebSocket();
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
@@ -102,7 +101,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (!_abortEventSlim.Wait(timeout))
             {
-                Debug.WriteLine("WS: Abort never fired (" + _connectionInfo.Connection.ConnectionId + ")");
+                _connectionInfo.Connection.Trace.WriteLine("WS: Abort never fired (" + _connectionInfo.Connection.ConnectionId + ")");
             }
         }
 
@@ -113,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnMessage(string message)
         {
-            Debug.WriteLine("WS Receive: " + message);
+            _connectionInfo.Connection.Trace.WriteLine("WS Receive: " + message);
 
             bool timedOut;
             bool disconnected;
@@ -183,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnError()
         {
-            Debug.WriteLine("OnError({0}, {1})", _connectionInfo.Connection.ConnectionId, Error);
+            _connectionInfo.Connection.Trace.WriteLine("OnError({0}, {1})", _connectionInfo.Connection.ConnectionId, Error);
 
             _connectionInfo.Connection.OnError(Error);
         }

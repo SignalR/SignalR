@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -28,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
+        TextWriter Trace { get; set; }
 
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop();

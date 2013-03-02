@@ -1,7 +1,7 @@
-﻿﻿using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
-using System;
+﻿﻿using System;
 using System.IO;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
@@ -48,6 +48,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public Func<IClientTransport> TransportFactory { get; set; }
 
+        public TextWriter ClientTraceOutput { get; set; }
+
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
@@ -69,6 +71,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public void Dispose()
         {
             Shutdown();
+
+            if (ClientTraceOutput != null)
+            {
+                ClientTraceOutput.Dispose();
+            }
         }
 
         public void Shutdown()

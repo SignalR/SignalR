@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/ErrorsAreFun");
+                    var connection = CreateConnection(host, "/ErrorsAreFun");
 
                     // Expecting 404
                     var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/fall-back");
+                    var connection = CreateConnection(host, "/fall-back");
                     var tcs = new TaskCompletionSource<object>();
 
                     connection.StateChanged += change =>

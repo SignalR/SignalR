@@ -2,11 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -45,6 +48,8 @@ namespace Microsoft.AspNet.SignalR.Client
         private KeepAliveData _keepAliveData;
 
         private Task _connectTask;
+
+        private TextWriter _traceWriter;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -134,6 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
+            Trace = new DebugTextWriter();
         }
 
         /// <summary>
@@ -148,6 +154,23 @@ namespace Microsoft.AspNet.SignalR.Client
             set
             {
                 _keepAliveData = value;
+            }
+        }
+
+        public TextWriter Trace
+        {
+            get
+            {
+                return _traceWriter;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                _traceWriter = value;
             }
         }
 
@@ -289,7 +312,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
-            
+
             transport.Negotiate(this).Then(negotiationResponse =>
             {
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
@@ -644,6 +667,35 @@ namespace Microsoft.AspNet.SignalR.Client
 
             // Disposing this return value will cancel the operation if it has not already been invoked.
             return new DisposableAction(() => cancellableInvoker.Invoke());
+        }
+
+        /// <summary>
+        /// Default text writer
+        /// </summary>
+        private class DebugTextWriter : TextWriter
+        {
+            public DebugTextWriter()
+                : base(CultureInfo.InvariantCulture)
+            {
+            }
+
+            public override void WriteLine(string value)
+            {
+                Debug.WriteLine(value);
+            }
+
+#if NETFX_CORE
+            public override void Write(char value)
+            {
+                // This is wrong we don't call it
+                Debug.WriteLine(value);
+            }
+#endif
+
+            public override Encoding Encoding
+            {
+                get { return Encoding.UTF8; }
+            }
         }
     }
 }
