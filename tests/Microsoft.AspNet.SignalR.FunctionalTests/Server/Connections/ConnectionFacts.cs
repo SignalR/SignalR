@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void FallbackToLongPollingIIS()
             {
-                using (ITestHost host = new IISExpressTestHost("FallbackToLongPollingIIS"))
+                using (ITestHost host = CreateHost(HostType.IISExpress, TransportType.Auto))
                 {
                     host.Initialize();
 
@@ -275,9 +275,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
+            //[InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            //[InlineData(HostType.IISExpress, TransportType.Websockets)]
             //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
             {

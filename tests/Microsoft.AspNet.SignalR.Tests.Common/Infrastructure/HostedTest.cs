@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
             var connection = new HubConnection(host.Url, query);
-            connection.Trace = host.ClientTraceOutput;
+            connection.Trace = host.ClientTraceOutput ?? connection.Trace;
             return connection;
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
             var connection = new Client.Connection(host.Url + path, query);
-            connection.Trace = host.ClientTraceOutput;
+            connection.Trace = host.ClientTraceOutput ?? connection.Trace;
             return connection;
         }
 
