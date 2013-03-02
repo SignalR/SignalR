@@ -155,7 +155,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
                 return new DisposableAction(() =>
                 {
+                    listener.Flush();
                     _logging.Value.Sources.ForEach(s => s.Listeners.Remove(listener));
+                    listener.Close();
                 });
             }
 
