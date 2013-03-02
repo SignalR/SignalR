@@ -139,6 +139,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnClose(bool clean)
         {
+            _connectionInfo.Connection.Trace.WriteLine("OnClose({0}, {1})", _connectionInfo.Connection.ConnectionId, clean);
+
             if (_disconnectToken.IsCancellationRequested)
             {
                 return;
