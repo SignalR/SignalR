@@ -32,8 +32,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
             string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
 
-            // Enable system new logging to this path
-            _systemNetLogging = SystemNetLogging.Enable(clientNetworkPath);
+            if (hostType != HostType.Memory)
+            {
+                // Enable system new logging to this path
+                _systemNetLogging = SystemNetLogging.Enable(clientNetworkPath);
+            }
 
             switch (hostType)
             {
