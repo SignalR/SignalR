@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
-            string testName = GetTestName() + "." + transportType;
+            string testName = GetTestName() + "." + hostType + "." + transportType;
             ITestHost host = null;
 
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         private string GetName(MethodBase m)
         {
-            return m.DeclaringType.FullName.Substring(m.DeclaringType.Namespace.Length).TrimStart('.') + "." + m.Name;
+            return m.DeclaringType.FullName.Substring(m.DeclaringType.Namespace.Length).TrimStart('.', '+') + "." + m.Name;
         }
 
         protected IClientTransport CreateTransport(TransportType transportType)

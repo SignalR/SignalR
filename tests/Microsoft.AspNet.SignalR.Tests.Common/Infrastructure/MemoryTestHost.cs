@@ -85,11 +85,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public void Dispose()
         {
             _host.Dispose();
-
-            if (ClientTraceOutput != null)
-            {
-                ClientTraceOutput.Dispose();
-            }
         }
 
         public void Shutdown()

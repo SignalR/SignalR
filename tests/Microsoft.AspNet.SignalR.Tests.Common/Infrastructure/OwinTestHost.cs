@@ -90,11 +90,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 _server.Dispose();
             }
-
-            if (ClientTraceOutput != null)
-            {
-                ClientTraceOutput.Dispose();
-            }
         }
     }
 }
