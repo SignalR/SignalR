@@ -129,14 +129,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         ((ManualResetEvent)state).Set();
                     }, 
                     AbortResetEvent);
-
-                    Debug.WriteLine("LP: " + url);
                 }
             }
 
             if (!AbortResetEvent.WaitOne(timeout))
             {
-                Debug.WriteLine("LP: Abort never fired (" + connection.ConnectionId + ")");
+                Debug.WriteLine("Abort never fired (" + connection.ConnectionId + ")");
             }
         }
 

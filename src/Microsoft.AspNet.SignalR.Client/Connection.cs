@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
-        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(5);
+        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(10);
 
         private static Version _assemblyVersion;
 
@@ -443,6 +443,13 @@ namespace Microsoft.AspNet.SignalR.Client
                     _monitor.Dispose();
 
                     State = ConnectionState.Disconnected;
+
+                    // Clear the state for this connection
+                    ConnectionId = null;
+                    ConnectionToken = null;
+                    GroupsToken = null;
+                    MessageId = null;
+                    _transport = null;
 
                     // TODO: Do we want to trigger Closed if we are connecting?
                     if (Closed != null)
