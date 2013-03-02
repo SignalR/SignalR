@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void FallbackToLongPollingIIS()
             {
-                using (ITestHost host = new IISExpressTestHost())
+                using (ITestHost host = new IISExpressTestHost("FallbackToLongPollingIIS"))
                 {
                     host.Initialize();
 

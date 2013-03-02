@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     {
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
-            string testName = GetTestName();
+            string testName = GetTestName() + "." + transportType;
             ITestHost host = null;
 
             switch (hostType)
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     let anyFactsAttributes = m.GetCustomAttributes(typeof(FactAttribute), true).Length > 0
                     let anyTheories = m.GetCustomAttributes(typeof(TheoryAttribute), true).Length > 0
                     where anyFactsAttributes || anyTheories
-                    select m.Name).First();
+                    select m.DeclaringType.Name + "." + m.Name).First();
         }
 
         protected IClientTransport CreateTransport(TransportType transportType)
