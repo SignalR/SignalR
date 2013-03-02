@@ -10,15 +10,21 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private readonly SiteManager _siteManager;
         private readonly string _path;
         private readonly string _webConfigPath;
+        private readonly string _logFileName;
 
         private static readonly Lazy<string> _webConfigTemplate = new Lazy<string>(() => GetConfig());
 
         public IISExpressTestHost()
-            : this(Path.Combine(Directory.GetCurrentDirectory(), ".."))
+            : this("all")
         {
         }
 
-        public IISExpressTestHost(string path)
+        public IISExpressTestHost(string logFileName)
+            : this(Path.Combine(Directory.GetCurrentDirectory(), ".."), logFileName)
+        {
+        }
+
+        public IISExpressTestHost(string path, string logFileName)
         {
             // The path to the site is the test path.
             // We treat the test output path just like a site. This makes it super
@@ -31,6 +37,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
             // Create the site manager
             _siteManager = new SiteManager(_path);
+
+            // Trace file name
+            _logFileName = logFileName;
         }
 
         public string Url { get; private set; }
@@ -51,7 +60,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                            keepAlive,
                                            connectionTimeout,
                                            disconnectTimeout,
-                                           enableAutoRejoiningGroups);
+                                           enableAutoRejoiningGroups,
+                                           _logFileName);
 
             File.WriteAllText(_webConfigPath, content);
         }

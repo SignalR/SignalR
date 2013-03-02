@@ -15,12 +15,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     {
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
+            string testName = GetTestName();
             ITestHost host = null;
 
             switch (hostType)
             {
                 case HostType.IISExpress:
-                    host = new IISExpressTestHost();
+                    host = new IISExpressTestHost(testName);
                     host.TransportFactory = () => CreateTransport(transportType);
                     host.Transport = host.TransportFactory();
                     break;
