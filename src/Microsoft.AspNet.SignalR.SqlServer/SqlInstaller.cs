@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -10,17 +11,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal class SqlInstaller
     {
-        private const int SchemaVersion = 2;
+        private readonly int SchemaVersion = 1;
         private const string SchemaTableName = "[dbo].[SignalR_Schema]";
-        private const string CheckSchemaTableExistsSql = "SELECT OBJECT_ID(@TableName)";
-        private const string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaTableName;
-        private const string CreateSchemaTableSql = "CREATE TABLE " + SchemaTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
-        private const string InsertSchemaTableSql = "INSERT INTO " + SchemaTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
-        private const string UpdateSchemaTableSql = "UPDATE " + SchemaTableName + " SET [SchemaVersion] = @SchemaVersion";
+        private readonly string CheckSchemaTableExistsSql = "SELECT OBJECT_ID(@TableName)";
+        private readonly string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaTableName;
+        private readonly string CreateSchemaTableSql = "CREATE TABLE " + SchemaTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
+        private readonly string InsertSchemaTableSql = "INSERT INTO " + SchemaTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
+        private readonly string UpdateSchemaTableSql = "UPDATE " + SchemaTableName + " SET [SchemaVersion] = @SchemaVersion";
 
         private readonly string _connectionString;
         private readonly string _messagesTableNamePrefix;
         private readonly int _tableCount;
+        private readonly TraceSource _trace;
 
         private string _exstingTablesSql = "SELECT [name] FROM [sys].[objects] WHERE [name] LIKE('{0}%')";
         private string _dropTableSql = "DROP TABLE {0}";
@@ -31,13 +33,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                                   )";
         private readonly Lazy<object> _initDummy;
 
-        public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount)
+        public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _messagesTableNamePrefix = tableNamePrefix;
             _tableCount = tableCount;
             _exstingTablesSql = String.Format(CultureInfo.InvariantCulture, _exstingTablesSql, _messagesTableNamePrefix);
             _initDummy = new Lazy<object>(Install);
+            _trace = traceSource;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Need dummy variable to call _initDummy.Value.")]

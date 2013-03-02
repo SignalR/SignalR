@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -15,14 +16,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
+        private readonly TraceSource _trace;
 
         private string _insertSql = "INSERT INTO {0} (Payload, InsertedOn) VALUES (@Payload, GETDATE())";
 
-        public SqlSender(string connectionString, string tableName)
+        public SqlSender(string connectionString, string tableName, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _insertSql = String.Format(CultureInfo.CurrentCulture, _insertSql, _tableName);
+            _trace = traceSource;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]

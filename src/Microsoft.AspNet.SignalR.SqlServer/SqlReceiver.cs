@@ -2,12 +2,13 @@
 
 using System;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
@@ -20,25 +21,27 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly Func<string, ulong, Message[], Task> _onReceive;
         private readonly TaskQueue _receiveQueue = new TaskQueue();
         private readonly Lazy<object> _sqlDepedencyLazyInit;
+        private readonly TraceSource _trace;
 
-        private string _selectSql = "SELECT PayloadId, Payload FROM {0} WHERE PayloadId > @PayloadId";
-        private string _maxIdSql = "SELECT MAX(PayloadId) FROM {0}";
+        private string _selectSql = "SELECT [PayloadId], [Payload] FROM {0} WHERE [PayloadId] > @PayloadId";
+        private string _maxIdSql = "SELECT MAX([PayloadId]) FROM {0}";
         private bool _sqlDependencyInitialized;
         private long _lastPayloadId = 0;
         private int _retryCount = 5;
         private int _retryDelay = 250;
 
-        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, Message[], Task> onReceive)
+        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, Message[], Task> onReceive, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _onReceive = onReceive;
             _sqlDepedencyLazyInit = new Lazy<object>(InitSqlDependency);
+            _trace = traceSource;
 
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, _tableName);
 
-            GetStartingId();
+            InitializeLastPayloadId();
             ThreadPool.QueueUserWorkItem(Receive);
         }
 
@@ -59,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
-        private void GetStartingId()
+        private void InitializeLastPayloadId()
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -111,6 +114,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             // Executing the query is required to set up the dependency
             connection.Open();
+            // BUG: We need to process the result here as it could contain messages!
             command.ExecuteReader();
             connection.Close();
         }
@@ -126,30 +130,30 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private bool CheckForMessages()
         {
-            var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            var command = BuildQueryCommand(connection);
-            var reader = command.ExecuteReader();
-            
-            if (!reader.HasRows)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                connection.Close();
-                return false;
+                connection.Open();
+                var command = BuildQueryCommand(connection);
+                var reader = command.ExecuteReader();
+
+                if (!reader.HasRows)
+                {
+                    return false;
+                }
+
+                while (reader.Read())
+                {
+                    var id = reader.GetInt64(0);
+                    var messages = JsonConvert.DeserializeObject<Message[]>(reader.GetString(1));
+
+                    _lastPayloadId = id;
+
+                    // Queue to send to the underlying message bus
+                    _receiveQueue.Enqueue(() => _onReceive(_streamId, (ulong)id, messages));
+                }
+
+                return true;
             }
-
-            while (reader.Read())
-            {
-                var id = reader.GetInt64(0);
-                var messages = JsonConvert.DeserializeObject<Message[]>(reader.GetString(1));
-
-                _lastPayloadId = id;
-
-                // Queue to send to the underlying message bus
-                _receiveQueue.Enqueue(() => _onReceive(_streamId, (ulong)id, messages));
-            }
-
-            connection.Close();
-            return true;
         }
 
         private object InitSqlDependency()
