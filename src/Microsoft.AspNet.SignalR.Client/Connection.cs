@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
     public class Connection : IConnection
     {
-        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(10);
+        internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
 
         private static Version _assemblyVersion;
 
@@ -401,28 +401,21 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public void Stop(TimeSpan timeout)
         {
-            bool abort = false;
-
             lock (_stateLock)
             {
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
-                    abort = true;
-                }
-            }
+                    _transport.Abort(this, timeout);
 
-            if (abort)
-            {
-                _transport.Abort(this, timeout);
+                    Disconnect();
 
-                Disconnect();
+                    _disconnectCts.Dispose();
 
-                _disconnectCts.Dispose();
-
-                if (_transport != null)
-                {
-                    _transport.Dispose();
+                    if (_transport != null)
+                    {
+                        _transport.Dispose();
+                    }
                 }
             }
         }
