@@ -426,12 +426,20 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// <param name="timeout">The timeout</param>
         /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(TimeSpan timeout)
         {
             // Wait for the connection to connect
             if (_connectTask != null)
             {
-                _connectTask.Wait(timeout);
+                try
+                {
+                    _connectTask.Wait(timeout);
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine("Error: {0}", ex.GetBaseException());
+                }
             }
 
             lock (_stateLock)
