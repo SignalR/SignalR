@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             }
-            ).Then(response => (IResponse)new HttpWebResponseWrapper(req, response));
+            ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             },
-            postData).Then(response => (IResponse)new HttpWebResponseWrapper(req, response));
+            postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
     }
 }

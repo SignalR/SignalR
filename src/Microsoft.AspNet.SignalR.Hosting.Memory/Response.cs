@@ -125,34 +125,23 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                try
+                byte[] underlyingBuffer = _currentStream.GetBuffer();
+
+                int canRead = (int)_currentStream.Length - _readPos;
+
+                if (canRead == 0)
                 {
-                    byte[] underlyingBuffer = _currentStream.GetBuffer();
-
-                    int canRead = (int)_currentStream.Length - _readPos;
-
-                    if (canRead == 0)
-                    {
-                        // Consider trimming the buffer after consuming up to _readPos
-                        return 0;
-                    }
-
-                    int read = Math.Min(count, canRead);
-
-                    Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
-
-                    _readPos += read;
-
-                    return read;
-                }
-                catch (OperationCanceledException)
-                {
+                    // Consider trimming the buffer after consuming up to _readPos
                     return 0;
                 }
-                catch (ObjectDisposedException)
-                {
-                    return 0;
-                }
+
+                int read = Math.Min(count, canRead);
+
+                Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
+
+                _readPos += read;
+
+                return read;
             }
 
             public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)

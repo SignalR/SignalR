@@ -36,11 +36,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         public Action<Exception> Closed { get; set; }
 
         /// <summary>
-        /// Invoked when the reader enters the Stopped state whether or not it was previously in the Processing state.
-        /// </summary>
-        public Action Disabled { get; set; }
-
-        /// <summary>
         /// Invoked when there's a message if received in the stream.
         /// </summary>
         public Action<SseEvent> Message { get; set; }
@@ -87,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// <summary>
         /// Closes the connection and the underlying stream.
         /// </summary>
-        public void Close()
+        private void Close()
         {
             Close(exception: null);
         }
@@ -136,15 +131,25 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void ReadAsync(Task<int> readTask)
         {
-            readTask.Catch(ex => Close(ex))
-                    .Then(read =>
+            readTask.ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Close(task.Exception);
+                }
+                else if (task.IsCanceled)
+                {
+                    Close(new OperationCanceledException());
+                }
+                else
+                {
+                    if (TryProcessRead(task.Result))
                     {
-                        if (TryProcessRead(read))
-                        {
-                            Process();
-                        }
-                    })
-                    .Catch();
+                        Process();
+                    }
+                }
+            }, 
+            TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private bool TryProcessRead(int read)
@@ -202,7 +207,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         {
             var previousState = Interlocked.Exchange(ref _reading, State.Stopped);
 
-            if (previousState == State.Processing)
+            if (previousState != State.Stopped)
             {
                 Debug.WriteLine("EventSourceReader: Connection Closed");
                 if (Closed != null)
@@ -220,11 +225,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     // Release the buffer
                     _readBuffer = null;
                 }
-            }
-
-            if (previousState != State.Stopped && Disabled != null)
-            {
-                Disabled();
             }
         }
 

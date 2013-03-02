@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void LostConnection(IConnection connection)
         {
-            Abort(connection, Connection.DefaultAbortTimeout);
+            Close();
         }
 
         public void Dispose()

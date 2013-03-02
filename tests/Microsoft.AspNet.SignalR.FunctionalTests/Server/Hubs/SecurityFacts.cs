@@ -82,11 +82,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                 Assert.Equal("STUFFF", connectionTcs.Task.Result);
                 Assert.False(spyTcs.Task.Wait(TimeSpan.FromSeconds(5)));
 
-                if (reader != null)
-                {
-                    reader.Close();
-                }
-
                 connection.Stop();
             }
         }
