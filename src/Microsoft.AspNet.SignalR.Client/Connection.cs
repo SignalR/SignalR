@@ -44,6 +44,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private KeepAliveData _keepAliveData;
 
+        private Task _connectTask;
+
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
@@ -263,17 +265,19 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IClientTransport transport)
         {
+            _connectTask = TaskAsyncHelper.Empty;
             _disconnectCts = new CancellationTokenSource();
 
             if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
-                return TaskAsyncHelper.Empty;
+                return _connectTask;
             }
 
             _monitor = new HeartbeatMonitor(this);
             _transport = transport;
 
-            return Negotiate(transport);
+            _connectTask = Negotiate(transport);
+            return _connectTask;
         }
 
         protected virtual string OnSending()
@@ -285,7 +289,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private Task Negotiate(IClientTransport transport)
         {
             var negotiateTcs = new TaskCompletionSource<object>();
-
+            
             transport.Negotiate(this).Then(negotiationResponse =>
             {
                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
@@ -401,6 +405,12 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public void Stop(TimeSpan timeout)
         {
+            // Wait for the connection to connect
+            if (_connectTask != null)
+            {
+                _connectTask.Wait(timeout);
+            }
+
             lock (_stateLock)
             {
                 // Do nothing if the connection is offline
