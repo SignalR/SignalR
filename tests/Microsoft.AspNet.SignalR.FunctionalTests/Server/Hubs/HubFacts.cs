@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                var connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -340,12 +340,13 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
                 var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
 
-                connection.Start(host.Transport).Wait();
+                connection.Start(host.TransportFactory()).Wait();
 
-                connection.Start(host.Transport).Wait();
+                connection.Start(host.TransportFactory()).Wait();
 
                 var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
 
@@ -838,6 +839,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=CustomQueryStringRaw");
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 
@@ -852,8 +854,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        // [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        // [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void CustomQueryString(HostType hostType, TransportType transportType)
         {
@@ -864,6 +866,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 qs["a"] = "b";
                 qs["test"] = "CustomQueryString";
                 var connection = new Client.Hubs.HubConnection(host.Url, qs);
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 
