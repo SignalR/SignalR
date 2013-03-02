@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
         {
             try
             {
-                var myHost = new IISExpressTestHost(HostLocation[0].ToString());
+                var myHost = new IISExpressTestHost(HostLocation[0].ToString(), "js");
 
                 myHost.Initialize(keepAlive: -1, // default
                                   connectionTimeout: 110,
