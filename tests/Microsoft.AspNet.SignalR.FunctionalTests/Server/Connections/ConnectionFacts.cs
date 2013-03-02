@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void FallbackToLongPollingIIS()
             {
-                using (ITestHost host = CreateHost(HostType.IISExpress, TransportType.Auto))
+                using (ITestHost host = CreateHost(HostType.IISExpress))
                 {
                     host.Initialize();
 
@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     host.Initialize();
 
-                    var connection = new Connection(host.Url + "/multisend");
+                    var connection = CreateConnection(host, "/multisend");
 
                     connection.Received += _ =>
                     {

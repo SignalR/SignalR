@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Tracing;
 using Owin;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
@@ -10,10 +12,21 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     public class MemoryTestHost : ITestHost
     {
         private readonly MemoryHost _host;
+        private readonly TextWriterTraceListener _listener;
+        private ITraceManager _traceManager;
 
-        public MemoryTestHost(MemoryHost host)
+        private static string[] _traceSources = new[] {
+            "SignalR.Transports.WebSocketTransport",
+            "SignalR.Transports.ServerSentEventsTransport",
+            "SignalR.Transports.ForeverFrameTransport",
+            "SignalR.Transports.LongPollingTransport",
+            "SignalR.Transports.TransportHeartBeat"
+        };
+
+        public MemoryTestHost(MemoryHost host, string logPath)
         {
             _host = host;
+            _listener = new TextWriterTraceListener(logPath + ".transports.log");
         }
 
         public string Url
@@ -36,6 +49,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                bool enableAutoRejoiningGroups)
         {
             var dr = new DefaultDependencyResolver();
+            _traceManager = dr.Resolve<ITraceManager>();
+            _traceManager.Switch.Level = SourceLevels.Information;
+
+            foreach (var sourceName in _traceSources)
+            {
+                TraceSource source = _traceManager[sourceName];
+                source.Listeners.Add(_listener);
+            }
 
             _host.Configure(app =>
             {
@@ -84,6 +105,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public void Dispose()
         {
+            foreach (var sourceName in _traceSources)
+            {
+                _traceManager[sourceName].Listeners.Remove(_listener);
+            }
+
+            _listener.Dispose();
+
             _host.Dispose();
         }
 

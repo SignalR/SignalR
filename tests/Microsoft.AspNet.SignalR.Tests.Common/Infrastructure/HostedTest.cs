@@ -17,6 +17,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     public abstract class HostedTest : IDisposable
     {
         private IDisposable _systemNetLogging;
+        
+        protected ITestHost CreateHost(HostType hostType)
+        {
+            return CreateHost(hostType, TransportType.Auto);
+        }
 
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
@@ -39,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     break;
                 case HostType.Memory:
                     var mh = new MemoryHost();
-                    host = new MemoryTestHost(mh);
+                    host = new MemoryTestHost(mh, Path.Combine(logBasePath, testName));
                     host.TransportFactory = () => CreateTransport(transportType, mh);
                     host.Transport = host.TransportFactory();
                     break;
