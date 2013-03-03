@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     public abstract class HostedTest : IDisposable
     {
         private IDisposable _systemNetLogging;
+        private TextWriterTraceListener _traceListener;
         
         protected ITestHost CreateHost(HostType hostType)
         {
@@ -31,6 +32,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
             string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
             string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
+            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
+
+            _traceListener = new TextWriterTraceListener(testTracePath);
+            Trace.Listeners.Add(_traceListener);
+            Trace.AutoFlush = true;
 
             if (hostType != HostType.Memory)
             {
@@ -144,6 +150,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             if (_systemNetLogging != null)
             {
                 _systemNetLogging.Dispose();
+            }
+
+            if (_traceListener != null)
+            {
+                _traceListener.Close();
+                Trace.Listeners.Remove(_traceListener);
             }
         }
 

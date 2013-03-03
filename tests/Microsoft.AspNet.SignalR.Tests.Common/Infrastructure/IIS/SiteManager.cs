@@ -92,10 +92,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             const int delay = 250;
 
             int attempt = retryAttempts;
+            string pingUrl = PingUrl + "?pid=" + _iisExpressProcess.Id;
 
             while (true)
             {
-                var request = HttpWebRequest.Create(PingUrl);
+                var request = HttpWebRequest.Create(pingUrl);
                 try
                 {
                     var response = (HttpWebResponse)request.GetResponse();
@@ -125,7 +126,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private bool KillRunningIIsExpress()
         {
             try
-            {                
+            {
                 KillProcess(_debuggerProcess);
 
                 if (_etw != null)
@@ -145,26 +146,22 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         {
             if (_iisExpressProcess != null)
             {
-                if (!KillRunningIIsExpress())
-                {
-                    Debug.WriteLine("Failed to kill running iis express instance ({0})", _iisExpressProcess.Id);
-                }
+                KillRunningIIsExpress();
             }
             else
             {
                 int iisExpressPid;
                 if (TryGetRunningIIsExpress(out iisExpressPid))
                 {
-                    if (!KillProcess(iisExpressPid))
-                    {
-                        Debug.WriteLine("Failed to kill iis express instance ({0})", iisExpressPid);
-                    }
+                    KillProcess(iisExpressPid);
                 }
             }
 
             EnsureIISExpressCompressionDirectory();
             Process iisExpressProcess = CreateIISExpressProcess();
             iisExpressProcess.Start();
+
+            Trace.TraceInformation("Created new iis express instance. PID {0}", iisExpressProcess.Id);
 
             _iisExpressProcess = iisExpressProcess;
         }
@@ -241,22 +238,38 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 return false;
             }
 
+            int id = process.Id;
+            string name = process.ProcessName;
+
+            bool killed = false;
+
             try
             {
                 process.Kill();
 
                 process.WaitForExit();
 
-                return GetProcess(process.Id) == null;
+                killed = GetProcess(process.Id) == null;
             }
             catch (Win32Exception)
             {
-                return false;
+                killed = false;
             }
             catch (InvalidOperationException)
             {
-                return false;
+                killed = false;
             }
+
+            if (killed)
+            {
+                Trace.TraceInformation("Killed {0} PID {1}.", name, id);
+            }
+            else
+            {
+                Trace.TraceInformation("Failed to kill {0} PID {1}.", name, id);
+            }
+
+            return killed;
         }
 
         private static Process GetProcess(int pid)
