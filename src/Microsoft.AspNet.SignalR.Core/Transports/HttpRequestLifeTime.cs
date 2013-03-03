@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 {
     internal class HttpRequestLifeTime
     {
-        private readonly TaskCompletionSource<object> _lifeTimetcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _lifetimeTcs = new TaskCompletionSource<object>();
         private readonly TaskQueue _writeQueue;
         private readonly TraceSource _trace;
         private readonly string _connectionId;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return _lifeTimetcs.Task;
+                return _lifetimeTcs.Task;
             }
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _trace.TraceEvent(TraceEventType.Verbose, 0, "DrainWrites(" + _connectionId + ")");
 
-            var context = new DrainContext(_lifeTimetcs, error);
+            var context = new DrainContext(_lifetimeTcs, error);
 
             // Drain the task queue for pending write operations so we don't end the request and then try to write
             // to a corrupted request object.
@@ -59,12 +59,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class DrainContext
         {
-            private readonly TaskCompletionSource<object> _lifeTimetcs;
+            private readonly TaskCompletionSource<object> _lifetimeTcs;
             private readonly Exception _error;
 
             public DrainContext(TaskCompletionSource<object> lifeTimetcs, Exception error)
             {
-                _lifeTimetcs = lifeTimetcs;
+                _lifetimeTcs = lifeTimetcs;
                 _error = error;
             }
 
@@ -72,11 +72,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_error != null)
                 {
-                    _lifeTimetcs.TrySetUnwrappedException(_error);
+                    _lifetimeTcs.TrySetUnwrappedException(_error);
                 }
                 else
                 {
-                    _lifeTimetcs.TrySetResult(null);
+                    _lifetimeTcs.TrySetResult(null);
                 }
             }
         }
