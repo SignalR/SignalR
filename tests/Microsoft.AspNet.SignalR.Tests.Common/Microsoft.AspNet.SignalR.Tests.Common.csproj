@@ -133,6 +133,7 @@
     <Compile Include="Infrastructure\MemoryTestHost.cs" />
     <Compile Include="Infrastructure\OwinTestHost.cs" />
     <Compile Include="Infrastructure\RequestItemsResponse.cs" />
+    <Compile Include="Infrastructure\SystemNetLogging.cs" />
     <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Owin\BasicAuthApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

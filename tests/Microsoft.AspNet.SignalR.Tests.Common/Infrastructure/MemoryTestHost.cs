@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -27,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             _host = host;
             _listener = new TextWriterTraceListener(logPath + ".transports.log");
+            Disposables = new List<IDisposable>();
         }
 
         public string Url
@@ -42,6 +44,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public Func<IClientTransport> TransportFactory { get; set; }
 
         public TextWriter ClientTraceOutput { get; set; }
+
+        public IList<IDisposable> Disposables
+        {
+            get;
+            private set;
+        }
 
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
@@ -113,6 +121,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _listener.Dispose();
 
             _host.Dispose();
+
+            foreach (var d in Disposables)
+            {
+                d.Dispose();
+            }
         }
 
         public void Shutdown()

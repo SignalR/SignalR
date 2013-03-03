@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
 
@@ -16,9 +18,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
     public abstract class HostedTest : IDisposable
     {
-        private IDisposable _systemNetLogging;
-        private TextWriterTraceListener _traceListener;
-        
+        private static long _id;
+
         protected ITestHost CreateHost(HostType hostType)
         {
             return CreateHost(hostType, TransportType.Auto);
@@ -26,23 +27,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
-            string testName = GetTestName() + "." + hostType + "." + transportType;
+            string testName = GetTestName() + "." + hostType + "." + transportType + "." + Interlocked.Increment(ref _id);
             ITestHost host = null;
 
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
             string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
-            string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
-            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
-
-            _traceListener = new TextWriterTraceListener(testTracePath);
-            Trace.Listeners.Add(_traceListener);
-            Trace.AutoFlush = true;
-
-            if (hostType != HostType.Memory)
-            {
-                // Enable system new logging to this path
-                _systemNetLogging = SystemNetLogging.Enable(clientNetworkPath);
-            }
 
             switch (hostType)
             {
@@ -69,6 +58,20 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             var writer = new StreamWriter(clientTracePath);
             writer.AutoFlush = true;
             host.ClientTraceOutput = writer;
+
+            string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
+            host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
+
+            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
+            var traceListener = new TextWriterTraceListener(testTracePath);
+            Trace.Listeners.Add(traceListener);
+            Trace.AutoFlush = true;
+
+            host.Disposables.Add(new DisposableAction(() =>
+            {
+                traceListener.Close();
+                Trace.Listeners.Remove(traceListener);
+            }));
 
             return host;
         }
@@ -146,70 +149,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public virtual void Dispose()
         {
             Dispose(true);
-
-            if (_systemNetLogging != null)
-            {
-                _systemNetLogging.Dispose();
-            }
-
-            if (_traceListener != null)
-            {
-                _traceListener.Close();
-                Trace.Listeners.Remove(_traceListener);
-            }
-        }
-
-        private static class SystemNetLogging
-        {
-            private static readonly Lazy<Logging> _logging = new Lazy<Logging>(() => new Logging());
-
-            public static IDisposable Enable(string path)
-            {
-                var listener = new TextWriterTraceListener(path);
-                _logging.Value.Sources.ForEach(s => s.Listeners.Add(listener));
-
-                return new DisposableAction(() =>
-                {
-                    listener.Flush();
-                    _logging.Value.Sources.ForEach(s => s.Listeners.Remove(listener));
-                    listener.Close();
-                });
-            }
-
-            private class Logging
-            {
-                private readonly Type _loggingType;
-
-                public List<TraceSource> Sources = new List<TraceSource>();
-
-                public Logging()
-                {
-                    _loggingType = Type.GetType("System.Net.Logging, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
-
-                    if (_loggingType == null)
-                    {
-                        return;
-                    }
-
-                    var webProperty = _loggingType.GetProperty("Web", BindingFlags.NonPublic | BindingFlags.Static);
-                    if (webProperty != null)
-                    {
-                        Sources.Add((TraceSource)webProperty.GetValue(null));
-                    }
-
-                    var socketsProperty = _loggingType.GetProperty("Sockets", BindingFlags.NonPublic | BindingFlags.Static);
-                    if (socketsProperty != null)
-                    {
-                        Sources.Add((TraceSource)socketsProperty.GetValue(null));
-                    }
-
-                    var webSocketsProperty = _loggingType.GetProperty("WebSockets", BindingFlags.NonPublic | BindingFlags.Static);
-                    if (webSocketsProperty != null)
-                    {
-                        Sources.Add((TraceSource)webSocketsProperty.GetValue(null));
-                    }
-                }
-            }
         }
     }
 }

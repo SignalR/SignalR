@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.Owin.Hosting;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public OwinTestHost()
         {
             Url = "http://localhost:" + _random.Next(8000, 9000);
+            Disposables = new List<IDisposable>();
         }
 
         public string Url
@@ -39,6 +41,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             get;
             set;
+        }
+
+        public IList<IDisposable> Disposables
+        {
+            get;
+            private set;
         }
 
         public void Start<TApplication>()
@@ -89,6 +97,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             if (_server != null)
             {
                 _server.Dispose();
+            }
+
+            foreach (var d in Disposables)
+            {
+                d.Dispose();
             }
         }
     }
