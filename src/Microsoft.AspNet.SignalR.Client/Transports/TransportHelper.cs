@@ -183,8 +183,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                         catch (Exception ex)
                         {
-                            connection.Trace.WriteLine("Failed to process message: {0}", ex);
-
                             connection.OnError(ex);
                         }
                     }
@@ -194,8 +192,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
             catch (Exception ex)
             {
-                connection.Trace.WriteLine("Failed to response: {0}", ex);
-
                 connection.OnError(ex);
             }
         }
