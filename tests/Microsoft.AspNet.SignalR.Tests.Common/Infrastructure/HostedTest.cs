@@ -100,13 +100,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             SetHostData(host, query);
             var connection = new HubConnection(host.Url, query);
             connection.Trace = host.ClientTraceOutput ?? connection.Trace;
-
-            host.Disposables.Add(new DisposableAction(() =>
-            {
-                // If the test fails, stop the connection when we dispose the host
-                connection.Stop();
-            }));
-
             return connection;
         }
 
@@ -117,13 +110,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
             connection.Trace = host.ClientTraceOutput ?? connection.Trace;
-
-            host.Disposables.Add(new DisposableAction(() =>
-            {
-                // If the test fails, stop the connection when we dispose the host
-                connection.Stop();
-            }));
-
             return connection;
         }
 
