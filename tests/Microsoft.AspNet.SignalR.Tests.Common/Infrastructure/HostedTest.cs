@@ -59,8 +59,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             writer.AutoFlush = true;
             host.ClientTraceOutput = writer;
 
-            string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
-            host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
+            if (hostType != HostType.Memory)
+            {
+                string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
+                host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
+            }
 
             string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
             var traceListener = new TextWriterTraceListener(testTracePath);
