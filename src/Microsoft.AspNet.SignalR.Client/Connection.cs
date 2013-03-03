@@ -390,6 +390,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 // If we're in the expected old state then change state and return true
                 if (_state == oldState)
                 {
+                    Trace.WriteLine("ChangeState({0}, {1}, {2})", ConnectionId ?? "New connection", oldState, newState);
+
                     State = newState;
                     return true;
                 }
@@ -429,6 +431,8 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(TimeSpan timeout)
         {
+            Trace.WriteLine("Stop({0})", ConnectionId);
+
             // Wait for the connection to connect
             if (_connectTask != null)
             {
@@ -472,11 +476,15 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
+                    Trace.WriteLine("Disconnect({0})", ConnectionId);
+
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _monitor.Dispose();
 
                     State = ConnectionState.Disconnected;
+
+                    Trace.WriteLine("Closed({0})", ConnectionId);
 
                     // Clear the state for this connection
                     ConnectionId = null;
@@ -541,6 +549,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnError(Exception error)
         {
+            Trace.WriteLine("OnError({0})", error);
+
             if (Error != null)
             {
                 Error(error);
@@ -576,6 +586,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnConnectionSlow()
         {
+            Trace.WriteLine("OnConnectionSlow({0})", ConnectionId);
+
             if (ConnectionSlow != null)
             {
                 ConnectionSlow();

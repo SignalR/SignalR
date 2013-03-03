@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             return connection;
         }
 
-        private string GetTestName()
+        protected string GetTestName()
         {
             var stackTrace = new StackTrace();
             return (from f in stackTrace.GetFrames()

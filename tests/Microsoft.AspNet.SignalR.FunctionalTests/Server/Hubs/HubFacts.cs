@@ -838,7 +838,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=CustomQueryStringRaw");
+                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=" + GetTestName());
                 connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
@@ -864,7 +864,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
                 var qs = new Dictionary<string, string>();
                 qs["a"] = "b";
-                qs["test"] = "CustomQueryString";
+                qs["test"] = GetTestName();
                 var connection = new Client.Hubs.HubConnection(host.Url, qs);
                 connection.Trace = host.ClientTraceOutput;
 

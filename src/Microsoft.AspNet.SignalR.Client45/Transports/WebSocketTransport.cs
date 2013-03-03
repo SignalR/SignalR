@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnClose(bool clean)
         {
-            _connectionInfo.Connection.Trace.WriteLine("OnClose({0}, {1})", _connectionInfo.Connection.ConnectionId, clean);
+            _connectionInfo.Connection.Trace.WriteLine("WS: OnClose({0}, {1})", _connectionInfo.Connection.ConnectionId, clean);
 
             if (_disconnectToken.IsCancellationRequested)
             {
@@ -184,8 +184,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnError()
         {
-            _connectionInfo.Connection.Trace.WriteLine("OnError({0}, {1})", _connectionInfo.Connection.ConnectionId, Error);
-
             _connectionInfo.Connection.OnError(Error);
         }
 
