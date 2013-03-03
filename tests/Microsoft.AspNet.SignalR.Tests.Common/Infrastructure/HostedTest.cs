@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 Trace.TraceError("Unobserved task exception: " + args.Exception.GetBaseException());
 
-                Assert.False(true, "Unobserved task exception");
+                args.SetObserved();
             };
 
             TaskScheduler.UnobservedTaskException += handler;
