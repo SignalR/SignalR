@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             _serverManager = new ServerManager(_appHostConfigPath);
         }
 
-        public string GetSiteUrl()
+        public string GetSiteUrl(IDictionary<string, string> extraData)
         {
             Site site = _serverManager.Sites[TestSiteName];
 
@@ -49,6 +50,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
 
             EnsureNewIISExpressProcess();
+
+            extraData["pid"] = _iisExpressProcess.Id.ToString();
 
             Attach();
 

@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         IList<IDisposable> Disposables { get; }
 
+        IDictionary<string, string> ExtraData { get; }
+
         Func<IClientTransport> TransportFactory { get; set; }
 
         void Initialize(int? keepAlive = -1,

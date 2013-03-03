@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _host = host;
             _listener = new TextWriterTraceListener(logPath + ".transports.log");
             Disposables = new List<IDisposable>();
+            ExtraData = new Dictionary<string, string>();
         }
 
         public string Url
@@ -44,6 +45,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public Func<IClientTransport> TransportFactory { get; set; }
 
         public TextWriter ClientTraceOutput { get; set; }
+
+        public IDictionary<string, string> ExtraData { get; private set; }
 
         public IList<IDisposable> Disposables
         {

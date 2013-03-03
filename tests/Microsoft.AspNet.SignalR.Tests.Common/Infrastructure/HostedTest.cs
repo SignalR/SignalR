@@ -83,6 +83,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
+            SetHostData(host, query);
             var connection = new HubConnection(host.Url, query);
             connection.Trace = host.ClientTraceOutput ?? connection.Trace;
             return connection;
@@ -92,6 +93,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
+            SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
             connection.Trace = host.ClientTraceOutput ?? connection.Trace;
             return connection;
@@ -106,6 +108,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     let anyTheories = m.GetCustomAttributes(typeof(TheoryAttribute), true).Length > 0
                     where anyFactsAttributes || anyTheories
                     select GetName(m)).First();
+        }
+
+        private void SetHostData(ITestHost host, Dictionary<string, string> query)
+        {
+            foreach (var item in host.ExtraData)
+            {
+                query[item.Key] = item.Value;
+            }
         }
 
         private string GetName(MethodBase m)

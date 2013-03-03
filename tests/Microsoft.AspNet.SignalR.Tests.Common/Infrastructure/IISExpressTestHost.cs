@@ -43,6 +43,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _logFileName = logFileName;
 
             Disposables = new List<IDisposable>();
+
+            ExtraData = new Dictionary<string, string>();
         }
 
         public string Url { get; private set; }
@@ -52,6 +54,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public Func<IClientTransport> TransportFactory { get; set; }
 
         public TextWriter ClientTraceOutput { get; set; }
+
+        public IDictionary<string, string> ExtraData { get; private set; }
         
         public IList<IDisposable> Disposables
         {
@@ -64,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                int? disconnectTimeout,
                                bool enableAutoRejoiningGroups)
         {
-            Url = _siteManager.GetSiteUrl();
+            Url = _siteManager.GetSiteUrl(ExtraData);
 
             // Use a configuration file to specify values
             string content = String.Format(_webConfigTemplate.Value,

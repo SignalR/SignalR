@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             Url = "http://localhost:" + _random.Next(8000, 9000);
             Disposables = new List<IDisposable>();
+            ExtraData = new Dictionary<string, string>();
         }
 
         public string Url
@@ -49,6 +50,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             private set;
         }
 
+        public IDictionary<string, string> ExtraData
+        {
+            get;
+            private set;
+        }
+
         public void Start<TApplication>()
         {
             Initialize();
@@ -59,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         }
 
         public void Initialize(int? keepAlive = -1, int? connectionTimeout = 110, int? disconnectTimeout = 30, bool enableAutoRejoiningGroups = false)
-        {            
+        {
             //_resolver = new DefaultDependencyResolver();
 
             //var configurationManager = _resolver.Resolve<IConfigurationManager>();
