@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly TraceSource _trace;
 
         // TODO: Investigate SQL locking options
-        private string _insertSql = "INSERT INTO [dbo].[{0}] (Payload, InsertedOn) VALUES (@Payload, GETDATE())";
+        private string _insertSql = "INSERT INTO [" + SqlMessageBus.SchemaName + "].[{0}] (Payload, InsertedOn) VALUES (@Payload, GETDATE())";
 
         public SqlSender(string connectionString, string tableName, TraceSource traceSource)
         {

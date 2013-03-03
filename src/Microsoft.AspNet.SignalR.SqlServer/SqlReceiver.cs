@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly TraceSource _trace;
 
         // TODO: Investigate SQL locking options
-        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [dbo].[{0}] WHERE [PayloadId] > @PayloadId";
-        private string _maxIdSql = "SELECT MAX([PayloadId]) FROM [dbo].[{0}]";
+        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [" + SqlMessageBus.SchemaName + "].[{0}] WHERE [PayloadId] > @PayloadId";
+        private string _maxIdSql = "SELECT MAX([PayloadId]) FROM [" + SqlMessageBus.SchemaName + "].[{0}]";
         private bool _sqlDependencyInitialized;
         private long _lastPayloadId = 0;
         private int _retryCount = 5;

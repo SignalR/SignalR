@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     public class SqlMessageBus : ScaleoutMessageBus
     {
+        internal const string SchemaName = "SignalR";
         private readonly string _tableName = "SignalR_Messages";
         private readonly int _tableCount;
         private readonly SqlInstaller _installer;
