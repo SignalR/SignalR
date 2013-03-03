@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     select GetName(m)).First();
         }
 
-        private void SetHostData(ITestHost host, Dictionary<string, string> query)
+        protected void SetHostData(ITestHost host, Dictionary<string, string> query)
         {
             foreach (var item in host.ExtraData)
             {

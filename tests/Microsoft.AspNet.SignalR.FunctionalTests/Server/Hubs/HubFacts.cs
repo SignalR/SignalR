@@ -519,7 +519,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrlAspNet" } });
+                var query = new Dictionary<string, string> { { "test", GetTestName() } };
+                SetHostData(host, query);
+
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
 
