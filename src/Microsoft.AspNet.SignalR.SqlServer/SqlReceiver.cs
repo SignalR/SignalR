@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly Lazy<object> _sqlDepedencyLazyInit;
         private readonly TraceSource _trace;
 
+        // TODO: Investigate SQL locking options
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [dbo].[{0}] WHERE [PayloadId] > @PayloadId";
         private string _maxIdSql = "SELECT MAX([PayloadId]) FROM [dbo].[{0}]";
         private bool _sqlDependencyInitialized;
@@ -87,6 +88,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // We found messages so start the loop again
                     _trace.TraceVerbose("Messages received, reset retry counter to 0");
                     i = 1;
+                    // TODO: Should we skip the delay in the case we actually got messages?
                 }
                 else
                 {
@@ -127,6 +129,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         }
                         else
                         {
+                            // If the e.Info value here is 'Invalid', ensure the query SQL meets the requirements
+                            // discussed at http://www.codeproject.com/Articles/144344/Query-Notification-using-SqlDependency-and-SqlCach#heading0003
                             _trace.TraceError("SQL notification subscription error: {0}", e.Info);
 
                             // TODO: Do we need to more paticular about the type of error here?
