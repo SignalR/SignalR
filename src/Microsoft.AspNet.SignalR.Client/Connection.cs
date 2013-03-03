@@ -449,6 +449,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
+                    string connectionId = ConnectionId;
+
                     Trace.WriteLine("Stop({0})", ConnectionId);
 
                     _transport.Abort(this, timeout);
@@ -459,7 +461,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
                     if (_transport != null)
                     {
+                        Trace.WriteLine("Transport.Dispose({0})", connectionId);
+
                         _transport.Dispose();
+                        _transport = null;
                     }
                 }
             }
@@ -490,8 +495,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     ConnectionId = null;
                     ConnectionToken = null;
                     GroupsToken = null;
-                    MessageId = null;
-                    _transport = null;
+                    MessageId = null;                    
 
                     // TODO: Do we want to trigger Closed if we are connecting?
                     if (Closed != null)

@@ -94,9 +94,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             lock (this)
             {
-                _abortEventSlim = new ManualResetEventSlim();
+                if (_abortEventSlim == null)
+                {
+                    _abortEventSlim = new ManualResetEventSlim();
 
-                CloseAsync();
+                    CloseAsync();
+                }
             }
 
             if (!_abortEventSlim.Wait(timeout))
@@ -112,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnMessage(string message)
         {
-            _connectionInfo.Connection.Trace.WriteLine("WS Receive: " + message);
+            _connectionInfo.Connection.Trace.WriteLine("WS: OnMessage({0}, {1})", _connectionInfo.Connection.ConnectionId, message);
 
             bool timedOut;
             bool disconnected;

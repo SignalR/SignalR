@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
-                        connection.Trace.WriteLine("LP Receive: {0}", raw);
+                        connection.Trace.WriteLine("LP: OnMessage({0}, {1})", connection.ConnectionId, raw);
 
                         TransportHelper.ProcessResponse(connection, 
                                                         raw, 

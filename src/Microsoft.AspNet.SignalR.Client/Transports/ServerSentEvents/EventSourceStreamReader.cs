@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             {
                 _setOpened = () =>
                 {
-                    _connection.Trace.WriteLine("EventSourceReader: Connection Opened");
+                    _connection.Trace.WriteLine("EventSourceReader: Connection Opened {0}", _connection.ConnectionId);
                     OnOpened();
                 };
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                         continue;
                     }
 
-                    _connection.Trace.WriteLine("SSE READ: " + sseEvent);
+                    _connection.Trace.WriteLine("SSE: OnMessage({0}, {1})", _connection.ConnectionId, sseEvent);
 
                     OnMessage(sseEvent);
                 }
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
             if (previousState != State.Stopped)
             {
-                _connection.Trace.WriteLine("EventSourceReader: Connection Closed");
+                _connection.Trace.WriteLine("EventSourceReader: Connection Closed {0}", _connection.ConnectionId);
                 if (Closed != null)
                 {
                     if (exception != null)
