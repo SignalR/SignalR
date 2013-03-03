@@ -225,8 +225,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             iisExpressProcess.StartInfo.CreateNoWindow = true;
             iisExpressProcess.StartInfo.UseShellExecute = false;
             iisExpressProcess.EnableRaisingEvents = true;
+            iisExpressProcess.Exited += OnIISExpressExit;
 
             return iisExpressProcess;
+        }
+
+        private void OnIISExpressExit(object sender, EventArgs e)
+        {
+            Trace.TraceInformation("IISExpress exited");
         }
 
         private static bool KillProcess(int pid)
