@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -31,7 +32,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             ITestHost host = null;
 
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
 
             switch (hostType)
             {
@@ -55,6 +55,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     break;
             }
 
+            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
             var writer = new StreamWriter(clientTracePath);
             writer.AutoFlush = true;
             host.ClientTraceOutput = writer;
@@ -74,6 +75,19 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 traceListener.Close();
                 Trace.Listeners.Remove(traceListener);
+            }));
+
+            EventHandler<UnobservedTaskExceptionEventArgs> handler = (sender, args) =>
+            {
+                Trace.TraceError("Unobserved task exception: " + args.Exception.GetBaseException());
+
+                Assert.False(true, "Unobserved task exception");
+            };
+
+            TaskScheduler.UnobservedTaskException += handler;
+            host.Disposables.Add(new DisposableAction(() =>
+            {
+                TaskScheduler.UnobservedTaskException -= handler;
             }));
 
             return host;
