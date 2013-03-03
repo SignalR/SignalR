@@ -431,8 +431,6 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(TimeSpan timeout)
         {
-            Trace.WriteLine("Stop({0})", ConnectionId);
-
             // Wait for the connection to connect
             if (_connectTask != null)
             {
@@ -451,6 +449,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
+                    Trace.WriteLine("Stop({0})", ConnectionId);
+
                     _transport.Abort(this, timeout);
 
                     Disconnect();

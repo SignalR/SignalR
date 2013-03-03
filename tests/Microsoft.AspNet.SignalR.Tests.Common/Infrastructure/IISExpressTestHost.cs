@@ -1,5 +1,6 @@
 ﻿﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
@@ -83,6 +84,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public void Dispose()
         {
+            Trace.TraceInformation("IISExpressTestHost.Dispose()");
+
             Shutdown();
 
             foreach (var d in Disposables)
@@ -93,6 +96,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public void Shutdown()
         {
+            Trace.TraceInformation("IISExpressTestHost.Shutdown()");
+
             _siteManager.StopSite();
         }
 
