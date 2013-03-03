@@ -102,7 +102,7 @@
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\demohub\DemoHub.cs">
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
-    <Compile Include="App_Start\RegisterHubs.cs" />
+    <Compile Include="App_Start\InitializeIISHost.cs" />
     <Compile Include="App_Start\TestEndPoint.cs" />
     <Compile Include="Build\StartIISTask.cs" />
     <Compile Include="Connections\AddGroupOnConnectedConnection.cs" />
