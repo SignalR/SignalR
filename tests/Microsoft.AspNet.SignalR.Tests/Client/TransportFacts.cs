@@ -88,6 +88,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                                          It.IsAny<IDictionary<string, string>>()))
                       .Returns(TaskAsyncHelper.FromResult(response.Object));
 
+            connection.Setup(c => c.ConnectionId).Returns("someid");
+            connection.Setup(c => c.Trace).Returns(new StringWriter());
             connection.SetupGet(c => c.Url).Returns("");
             connection.SetupGet(c => c.QueryString).Returns("");
             connection.SetupGet(c => c.ConnectionToken).Returns("");
