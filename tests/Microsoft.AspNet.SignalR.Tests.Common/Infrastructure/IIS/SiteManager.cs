@@ -242,6 +242,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             string name = process.ProcessName;
 
             bool killed = false;
+            Exception exception = null;
 
             try
             {
@@ -251,13 +252,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
                 killed = GetProcess(process.Id) == null;
             }
-            catch (Win32Exception)
+            catch (Win32Exception ex)
             {
                 killed = false;
+                exception = ex;
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
                 killed = false;
+                exception = ex;
             }
 
             if (killed)
@@ -266,7 +269,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             }
             else
             {
-                Trace.TraceInformation("Failed to kill {0} PID {1}.", name, id);
+                Trace.TraceError("Failed to kill {0} PID {1}. {2}", name, id, exception);
             }
 
             return killed;
