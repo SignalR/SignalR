@@ -58,7 +58,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             bool timedOut, disconnected;
             var ex = new Exception();
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
-            connection.Setup(c => c.Trace).Returns(new DummyTextWriter());
             connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
             connection.Setup(c => c.OnError(ex));
             connection.Setup(c => c.UpdateLastKeepAlive());
@@ -115,14 +114,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             response.VerifyAll();
             httpClient.VerifyAll();
             connection.VerifyAll();
-        }
-
-        private class DummyTextWriter : TextWriter
-        {
-            public override Encoding Encoding
-            {
-                get { return Encoding.UTF8; }
-            }
         }
     }
 }
