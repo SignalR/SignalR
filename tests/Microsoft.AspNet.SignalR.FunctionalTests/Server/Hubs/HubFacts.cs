@@ -339,7 +339,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+                var query = new Dictionary<string, string>();
+                SetHostData(host, query);
+                query["test"] = GetTestName();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
                 connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
