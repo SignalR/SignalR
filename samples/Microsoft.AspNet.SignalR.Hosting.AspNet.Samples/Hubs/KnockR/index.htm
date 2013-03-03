@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>KnockR</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <script src="../../Scripts/jquery-1.8.2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/knockout-2.2.1.debug.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.signalR.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.signalR.knockout.js" type="text/javascript"></script>
+    <script src="../../signalr/hubs" type="text/javascript"></script>
+    <script src="KnockR.js" type="text/javascript"></script>
+</head>
+<body>
+    <form data-bind="submit: addItem">
+        New item:
+        <input data-bind='value: itemToAdd, valueUpdate: "afterkeydown"' />
+        <button type="submit" data-bind="enable: itemToAdd().length > 0">Add</button>
+        <p>Your items:</p>
+        <select multiple="multiple" width="50" data-bind="options: items"> </select>
+    </form>
+    <script>
+        var SimpleListModel = function (items) {
+            this.items = ko.observableArray(items);
+            this.itemToAdd = ko.observable("");
+            this.addItem = function () {
+                if (this.itemToAdd() != "") {
+                    this.items.push(this.itemToAdd()); // Adds the item. Writing to the "items" observableArray causes any associated UI to update.
+                    this.itemToAdd(""); // Clears the text box, because it's bound to the "itemToAdd" observable
+                }
+            }.bind(this);  // Ensure that "this" is always this view model
+        };
+
+        var list = new SimpleListModel(["Alpha", "Beta", "Gamma"]);
+
+        ko.applyBindings(list);
+    </script>
+</body>
+</html>

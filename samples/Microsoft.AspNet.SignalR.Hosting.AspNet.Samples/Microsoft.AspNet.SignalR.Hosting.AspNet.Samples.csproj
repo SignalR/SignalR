@@ -152,6 +152,8 @@
     <Content Include="Hubs\Chat\Chat.js" />
     <Content Include="Hubs\Chat\index.htm" />
     <Content Include="Hubs\DrawingPad\Default.aspx" />
+    <Content Include="Hubs\KnockR\index.htm" />
+    <Content Include="Hubs\KnockR\KnockR.js" />
     <Content Include="Hubs\MouseTracking\Default.aspx" />
     <Content Include="Hubs\MouseTracking\images\wand.png" />
     <Content Include="Hubs\MouseTracking\MouseTracking.css" />
@@ -185,6 +187,7 @@
     <Content Include="Scripts\jquery.mobile-1.2.0.js" />
     <Content Include="Scripts\jquery.mobile-1.2.0.min.js" />
     <Content Include="Scripts\json2.min.js" />
+    <Content Include="Scripts\knockout-2.2.1.debug.js" />
     <Content Include="Scripts\signalr.samples.js" />
     <Content Include="Scripts\jquery.cookie.js" />
     <Content Include="Scripts\jquery.easing.1.3.js" />
@@ -194,6 +197,7 @@
     <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
+    <Content Include="Scripts\jquery.signalR.knockout.js" />
     <Content Include="Streaming\Default.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -267,6 +271,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
+    <Compile Include="Hubs\KnockR\KnockR.cs" />
     <Compile Include="Hubs\MouseTracking\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -322,6 +327,10 @@
       <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
       <Name>Microsoft.AspNet.SignalR.Redis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Knockout\Microsoft.AspNet.SignalR.Knockout.csproj">
+      <Project>{1d192665-576a-4f4c-86fd-0b38e74fe797}</Project>
+      <Name>Microsoft.AspNet.SignalR.Knockout</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
       <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
       <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
@@ -372,6 +381,7 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
+    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Knockout.JS\bin\jquery.signalR.knockout.js" DestinationFiles="Scripts\jquery.signalR.knockout.js" />
     <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
     <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
   </Target>
