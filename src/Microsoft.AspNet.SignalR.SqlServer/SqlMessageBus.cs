@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlInstaller _installer;
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
+        private readonly TraceSource _trace;
 
         public SqlMessageBus(string connectionString, int tableCount, IDependencyResolver dependencyResolver)
             : this(connectionString, tableCount, null, null, null, dependencyResolver)
@@ -31,13 +33,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             _tableCount = tableCount;
+            _trace = dependencyResolver.Resolve<ITraceManager>()["SignalR." + GetType().Name];
 
-            _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName, tableCount, Trace);
+            _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName, tableCount, _trace);
             _installer.EnsureInstalled();
 
-            // TODO: Create a sender & receiver per tableCount
-            _sender = sqlSender ?? new SqlSender(connectionString, _tableName, Trace);
-            _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived, Trace);
+            // TODO: Support tableCount
+            _sender = sqlSender ?? new SqlSender(connectionString, _tableName, _trace);
+            _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived, _trace);
         }
 
         protected override int StreamCount
@@ -50,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            // TODO: Lookup sender from list based on streamIndex
+            // TODO: Support streamIndex/tableCount
             return _sender.Send(messages);
         }
 
