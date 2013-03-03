@@ -93,6 +93,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               {
                                   string raw = response.ReadAsString();
 
+                                  connection.Trace.WriteLine("OnMessage({0}, {1})", connection.ConnectionId, raw);
+
                                   if (!String.IsNullOrEmpty(raw))
                                   {
                                       connection.OnReceived(JObject.Parse(raw));
