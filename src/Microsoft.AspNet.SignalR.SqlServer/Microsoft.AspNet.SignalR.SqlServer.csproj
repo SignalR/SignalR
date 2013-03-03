@@ -43,6 +43,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -67,6 +68,7 @@
     <Compile Include="SqlCommandExtensions.cs" />
     <Compile Include="SqlInstaller.cs" />
     <Compile Include="SqlMessageBus.cs" />
+    <Compile Include="SqlPayload.cs" />
     <Compile Include="SqlReceiver.cs" />
     <Compile Include="SqlSender.cs" />
   </ItemGroup>

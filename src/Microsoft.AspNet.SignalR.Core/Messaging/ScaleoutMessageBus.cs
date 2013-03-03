@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
@@ -19,10 +20,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
+        private readonly TraceSource _trace;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
+            _trace = resolver.Resolve<ITraceManager>()["SignalR." + typeof(ScaleoutMessageBus).Name];
         }
 
         protected virtual int StreamCount
@@ -114,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 
-            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
+            _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
 
             // Create a local dictionary for this payload
             var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
@@ -143,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Publish only after we've setup the mapping fully
             if (!stream.TryAdd(id, mapping))
             {
-                Trace.TraceEvent(TraceEventType.Verbose, 0, Resources.Error_DuplicatePayloadsForStream, streamId);
+                _trace.TraceEvent(TraceEventType.Verbose, 0, Resources.Error_DuplicatePayloadsForStream, streamId);
 
                 stream.Clear();
 

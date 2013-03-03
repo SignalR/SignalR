@@ -25,10 +25,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly TraceSource _trace;
 
         private string _exstingTablesSql = "SELECT [name] FROM [sys].[objects] WHERE [name] LIKE('{0}%')";
-        private string _dropTableSql = "DROP TABLE {0}";
-        private string _createMessagesTableSql = @"CREATE TABLE {0} (
+        private string _dropTableSql = "DROP TABLE [dbo].[{0}]";
+        private string _createMessagesTableSql = @"CREATE TABLE [dbo].[{0}] (
                                                       [PayloadId] BIGINT NOT NULL PRIMARY KEY IDENTITY,
-                                                      [Payload] NVARCHAR(MAX) NOT NULL,
+                                                      [Payload] VARBINARY(MAX) NOT NULL,
                                                       [InsertedOn] DATETIME NOT NULL
                                                   )";
         private readonly Lazy<object> _initDummy;

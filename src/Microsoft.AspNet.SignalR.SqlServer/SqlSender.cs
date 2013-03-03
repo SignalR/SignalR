@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _tableName;
         private readonly TraceSource _trace;
 
-        private string _insertSql = "INSERT INTO {0} (Payload, InsertedOn) VALUES (@Payload, GETDATE())";
+        private string _insertSql = "INSERT INTO [dbo].[{0}] (Payload, InsertedOn) VALUES (@Payload, GETDATE())";
 
         public SqlSender(string connectionString, string tableName, TraceSource traceSource)
         {
@@ -37,24 +37,30 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             SqlConnection connection = null;
+            SqlCommand cmd = null;
             try
             {
                 connection = new SqlConnection(_connectionString);
-                connection.Open();
-                using (var cmd = new SqlCommand(_insertSql, connection))
-                {
-                    cmd.Parameters.AddWithValue("Payload", JsonConvert.SerializeObject(messages));
+                cmd = new SqlCommand(_insertSql, connection);
+                var payload = cmd.Parameters.Add("Payload", SqlDbType.VarBinary);
+                payload.SqlValue = new SqlBinary(SqlPayload.ToBytes(messages));
 
-                    return cmd.ExecuteNonQueryAsync()
-                        .Then(() => connection.Close()) // close the connection if successful
-                        .Catch(ex => connection.Close()); // close the connection if it explodes
-                }
+                _trace.TraceVerbose("Saving payload of {0} messages(s) to SQL server", messages.Count);
+
+                connection.Open();
+                return cmd.ExecuteNonQueryAsync()
+                    .Then(c => c.Dispose(), connection) // close the connection if successful
+                    .Catch(_ => connection.Dispose()); // close the connection if it explodes
             }
             catch (SqlException)
             {
+                if (cmd != null)
+                {
+                    cmd.Dispose();
+                }
                 if (connection != null && connection.State != ConnectionState.Closed)
                 {
-                    connection.Close();
+                    connection.Dispose();
                 }
                 throw;
             }

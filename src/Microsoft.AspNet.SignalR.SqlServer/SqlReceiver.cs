@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Globalization;
@@ -9,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
@@ -18,20 +18,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly string _tableName;
         private readonly string _streamId = "0";
-        private readonly Func<string, ulong, Message[], Task> _onReceive;
+        private readonly Func<string, ulong, IList<Message>, Task> _onReceive;
         private readonly TaskQueue _receiveQueue = new TaskQueue();
         private readonly Lazy<object> _sqlDepedencyLazyInit;
         private readonly TraceSource _trace;
 
-        private string _selectSql = "SELECT [PayloadId], [Payload] FROM {0} WHERE [PayloadId] > @PayloadId";
-        private string _maxIdSql = "SELECT MAX([PayloadId]) FROM {0}";
+        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [dbo].[{0}] WHERE [PayloadId] > @PayloadId";
+        private string _maxIdSql = "SELECT MAX([PayloadId]) FROM [dbo].[{0}]";
         private bool _sqlDependencyInitialized;
         private long _lastPayloadId = 0;
         private int _retryCount = 5;
         private int _retryDelay = 250;
-        private SqlDependency _sqlDependency;
+        private SqlCommand _receiveCommand;
 
-        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, Message[], Task> onReceive, TraceSource traceSource)
+        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
@@ -78,45 +78,48 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private void Receive(object state)
         {
-            for (var i = 0; i <= _retryCount; i++)
+            for (var i = 1; i <= _retryCount; i++)
             {
-                _trace.TraceEvent(TraceEventType.Verbose, 0, "Checking for new messages, try {0} of {1}", i, _retryCount);
+                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i, _retryCount);
                 // Look for new messages until we find some or retry expires
                 if (CheckForMessages())
                 {
                     // We found messages so start the loop again
-                    _trace.TraceEvent(TraceEventType.Verbose, 0, "Messages received, reset retry counter to 0");
-                    i = 0;
+                    _trace.TraceVerbose("Messages received, reset retry counter to 0");
+                    i = 1;
                 }
                 else
                 {
-                    _trace.TraceEvent(TraceEventType.Verbose, 0, "No messages received");
+                    _trace.TraceVerbose("No messages received");
                 }
 
-                _trace.TraceEvent(TraceEventType.Verbose, 0, "Waiting {0}ms before checking for messages again", _retryDelay);
-                Thread.Sleep(_retryDelay);
+                if (i < _retryCount)
+                {
+                    _trace.TraceVerbose("Waiting {0}ms before checking for messages again", _retryDelay);
+                    Thread.Sleep(_retryDelay);
+                }
             }
 
             // No messages found so set up query notification to callback when messages are available
-            _trace.TraceEvent(TraceEventType.Verbose, 0, "Message checking max retries reached ({0})", _retryCount);
+            _trace.TraceVerbose("Message checking max retries reached ({0})", _retryCount);
             SetupQueryNotification();
         }
 
         private void SetupQueryNotification()
         {
-            _trace.TraceEvent(TraceEventType.Verbose, 0, "Setting up SQL notification");
+            _trace.TraceVerbose("Setting up SQL notification");
             
             var dummy = _sqlDepedencyLazyInit.Value;
             using (var connection = new SqlConnection(_connectionString))
             {
-                var command = BuildQueryCommand(connection);
+                UpdateQueryCommand(connection);
 
-                _sqlDependency = new SqlDependency(command);
-                _sqlDependency.OnChange += (sender, e) =>
+                var sqlDependency = new SqlDependency(_receiveCommand);
+                sqlDependency.OnChange += (sender, e) =>
                     {
                         _trace.TraceInformation("SqlDependency.OnChanged fired: {0}", e.Info);
-
-                        _sqlDependency = null;
+                        
+                        _receiveCommand.Notification = null;
 
                         if (e.Type == SqlNotificationType.Change)
                         {
@@ -124,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         }
                         else
                         {
-                            _trace.TraceEvent(TraceEventType.Error, 0, "SQL notification subscription error: {0}", e.Info);
+                            _trace.TraceError("SQL notification subscription error: {0}", e.Info);
 
                             // TODO: Do we need to more paticular about the type of error here?
                             Receive(null);
@@ -133,17 +136,22 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 // Executing the query is required to set up the dependency
                 connection.Open();
-                ProcessReader(command.ExecuteReader());
+                ProcessReader(_receiveCommand.ExecuteReader());
+                _trace.TraceVerbose("SQL notification set up");
             }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
-        private SqlCommand BuildQueryCommand(SqlConnection connection)
+        private void UpdateQueryCommand(SqlConnection connection)
         {
-            var command = connection.CreateCommand();
-            command.CommandText = _selectSql;
-            command.Parameters.AddWithValue("PayloadId", _lastPayloadId);
-            return command;
+            if (_receiveCommand == null)
+            {
+                _receiveCommand = connection.CreateCommand();
+                _receiveCommand.CommandText = _selectSql;
+            }
+            _receiveCommand.Connection = connection;
+            _receiveCommand.Parameters.Clear();
+            _receiveCommand.Parameters.AddWithValue("PayloadId", _lastPayloadId);
         }
 
         private bool CheckForMessages()
@@ -151,8 +159,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                var command = BuildQueryCommand(connection);
-                return ProcessReader(command.ExecuteReader()) > 0;
+                UpdateQueryCommand(connection);
+                return ProcessReader(_receiveCommand.ExecuteReader()) > 0;
             }
         }
 
@@ -169,34 +177,35 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 payloadCount++;
                 var id = reader.GetInt64(0);
-                var messages = JsonConvert.DeserializeObject<Message[]>(reader.GetString(1));
-                messageCount += messages.Length;
+                var payload = SqlPayload.FromBytes(reader.GetSqlBinary(1).Value);
+
+                messageCount += payload.Messages.Count;
 
                 if (id != _lastPayloadId + 1)
                 {
-                    _trace.TraceEvent(TraceEventType.Error, 0, "Missed messages from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
+                    _trace.TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
                 }
 
                 if (id < _lastPayloadId)
                 {
-                    _trace.TraceEvent(TraceEventType.Information, 0, "Duplicate messages or identity column reset from SQL Server. Last payload ID {0}, this payload ID {1}", _lastPayloadId, id);
+                    _trace.TraceInformation("Duplicate message(s) or identity column reset from SQL Server. Last payload ID {0}, this payload ID {1}", _lastPayloadId, id);
                 }
 
                 _lastPayloadId = id;
 
-                // Queue to send to the underlying message bus
-                _receiveQueue.Enqueue(() => _onReceive(_streamId, (ulong)id, messages));
+                _trace.TraceVerbose("Payload {0} containing {1} message(s) queued for receive to local message bus", id, payload.Messages.Count);
 
-                _trace.TraceEvent(TraceEventType.Verbose, 0, "Payload {0} containing {1} message(s) queued for receive to local message bus", id, messages.Length);
+                // Queue to send to the underlying message bus
+                _receiveQueue.Enqueue(() => _onReceive(_streamId, (ulong)id, payload.Messages));
             }
 
-            _trace.TraceEvent(TraceEventType.Verbose, 0, "{0} payloads processed, {1} messages received", payloadCount, messageCount);
+            _trace.TraceVerbose("{0} payloads processed, {1} message(s) received", payloadCount, messageCount);
             return payloadCount;
         }
 
         private object InitSqlDependency()
         {
-            _trace.TraceEvent(TraceEventType.Verbose, 0, "Starting SQL notification listener");
+            _trace.TraceVerbose("Starting SQL notification listener");
 
             var perm = new SqlClientPermission(PermissionState.Unrestricted);
             perm.Demand();
@@ -204,7 +213,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             SqlDependency.Start(_connectionString);
             
             _sqlDependencyInitialized = true;
-            _trace.TraceEvent(TraceEventType.Verbose, 0, "SQL notification listener started");
+            _trace.TraceVerbose("SQL notification listener started");
             return new object();
         }
     }
