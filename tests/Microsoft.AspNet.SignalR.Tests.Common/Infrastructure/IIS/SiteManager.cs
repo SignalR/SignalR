@@ -98,6 +98,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         public void StopSite()
         {
+            if (_iisExpressProcess == null)
+            {
+                return;
+            }
+
             string gcUrl = GCUrl + "?pid=" + _iisExpressProcess.Id;
             MakeHttpRequest(gcUrl);
             KillRunningIIsExpress();
