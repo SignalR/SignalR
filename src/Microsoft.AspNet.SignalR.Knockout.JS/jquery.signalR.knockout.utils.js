@@ -23,7 +23,10 @@
         },
 
         koUpdate: function (x, newValue) {
-            return x(newValue);
+            // TODO: We shouldn't have to make this check. Look into why we do.
+            if (window.ko.isWriteableObservable(x)) {
+                return x(newValue);
+            }
         },
 
         identity: function (x) {

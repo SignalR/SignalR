@@ -24,7 +24,10 @@
         },
 
         koUpdate: function (x, newValue) {
-            return x(newValue);
+            // TODO: We shouldn't have to make this check. Look into why we do.
+            if (window.ko.isWriteableObservable(x)) {
+                return x(newValue);
+            }
         },
 
         identity: function (x) {
@@ -240,6 +243,9 @@
                     modelPeek = merge(modelPeek, diff.value, diffTag);
                 }
 
+                // Ideally I will only update if diff._updated, but I'm reverting this
+                // change since I don't notify the merge function to rebuild after
+                // "GetKnockoutState" which doesn't include _updated.
                 if (builder.update) {
                     builder.update(model, modelPeek);
                 } else {
@@ -287,6 +293,15 @@
         ko = window.ko,
         savedCreateHubProxy = $.hubConnection.prototype.createHubProxy,
         defaultBuilders = [{
+            name: "koReadOnlyObservable",
+            diffable: true,
+            match: function (object) {
+                return ko.isObservable(object) && !ko.isWriteableObservable(object);
+            },
+            peek: utils.koPeek,
+            create: utils.identity,
+            update: utils.identity
+        }, {
             name: "koObservableArray",
             diffable: true,
             match: function (object) {

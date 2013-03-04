@@ -158,6 +158,9 @@
                     modelPeek = merge(modelPeek, diff.value, diffTag);
                 }
 
+                // Ideally I will only update if diff._updated, but I'm reverting this
+                // change since I don't notify the merge function to rebuild after
+                // "GetKnockoutState" which doesn't include _updated.
                 if (builder.update) {
                     builder.update(model, modelPeek);
                 } else {

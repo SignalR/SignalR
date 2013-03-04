@@ -11,6 +11,15 @@
         ko = window.ko,
         savedCreateHubProxy = $.hubConnection.prototype.createHubProxy,
         defaultBuilders = [{
+            name: "koReadOnlyObservable",
+            diffable: true,
+            match: function (object) {
+                return ko.isObservable(object) && !ko.isWriteableObservable(object);
+            },
+            peek: utils.koPeek,
+            create: utils.identity,
+            update: utils.identity
+        }, {
             name: "koObservableArray",
             diffable: true,
             match: function (object) {
