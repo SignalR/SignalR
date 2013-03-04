@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 using System;
+using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Stress.Connections;
@@ -7,13 +8,15 @@ using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
+    [Export("ConnectionRun", typeof(IRun))]
     public class ConnectionRun : RunBase
     {
         private readonly IPersistentConnectionContext _context;
         private readonly ITransportConnection _transportConnection;
 
-        public ConnectionRun(int connections, int senders, string payload)
-            : base(connections, senders, payload)
+        [ImportingConstructor]
+        public ConnectionRun(RunData runData)
+            : base(runData)
         {
             var connectionManager = new ConnectionManager(Resolver);
             _context = connectionManager.GetConnectionContext<StressConnection>();

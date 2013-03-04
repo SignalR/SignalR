@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
@@ -11,14 +12,16 @@ using Owin;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
+    [Export("MemoryHostRun", typeof(IRun))]
     public class MemoryHostRun : RunBase
     {
         private readonly MemoryHost _host = new MemoryHost();
 
-        public MemoryHostRun(int connections, int senders, string payload, string transport)
-            : base(connections, senders, payload)
+        [ImportingConstructor]
+        public MemoryHostRun(RunData runData)
+            : base(runData)
         {
-            Transport = transport;
+            Transport = runData.Transport;
         }
 
         public string Transport { get; private set; }

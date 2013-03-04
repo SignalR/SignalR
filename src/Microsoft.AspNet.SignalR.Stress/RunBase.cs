@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
@@ -11,15 +12,15 @@ namespace Microsoft.AspNet.SignalR.Stress
         private readonly CountdownEvent _countDown;
         private readonly List<IDisposable> _receivers = new List<IDisposable>();
 
-        public RunBase(int connections, int senders, string payload)
+        public RunBase(RunData runData)
         {
-            Connections = connections;
-            Senders = senders;
-            Payload = payload;
+            Connections = runData.Connections;
+            Senders = runData.Senders;
+            Payload = runData.Payload;
             Resolver = new DefaultDependencyResolver();
             CancellationTokenSource = new CancellationTokenSource();
 
-            _countDown = new CountdownEvent(senders);
+            _countDown = new CountdownEvent(runData.Senders);
         }
 
         public int Connections { get; private set; }
@@ -36,6 +37,8 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public virtual void Run()
         {
+            Initialize();
+
             for (int i = 0; i < Connections; i++)
             {
                 IDisposable receiver = CreateReceiver(i);

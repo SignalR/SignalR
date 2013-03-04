@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
+    [Export("MessageBusRun", typeof(IRun))]
     public class MessageBusRun : RunBase
     {
         private const int MessageBufferSize = 10;
         private readonly MessageBus _bus;
 
-        public MessageBusRun(int connections, int senders, string payload)
-            : base(connections, senders, payload)
+        [ImportingConstructor]
+        public MessageBusRun(RunData runData)
+            : base(runData)
         {
             _bus = new MessageBus(Resolver);
         }
