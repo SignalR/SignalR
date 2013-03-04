@@ -306,10 +306,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, arg1);
@@ -325,10 +323,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, arg1, arg2);
@@ -344,10 +340,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, arg1);
@@ -364,10 +358,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, arg1, arg2);
@@ -442,10 +434,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor);
@@ -482,10 +472,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, task.Result);
@@ -501,10 +489,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, task.Result);
@@ -521,10 +507,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError<TResult>(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled<TResult>();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, task, arg1).FastUnwrap();
@@ -544,13 +528,9 @@ namespace Microsoft.AspNet.SignalR
                 switch (task.Status)
                 {
                     case TaskStatus.Faulted:
-                        next(state);
-                        return FromError(task.Exception);
-
                     case TaskStatus.Canceled:
                         next(state);
-                        return Canceled();
-
+                        return task;
                     case TaskStatus.RanToCompletion:
                         return FromMethod(next, state);
 
@@ -570,10 +550,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor);
