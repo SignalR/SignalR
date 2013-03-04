@@ -182,7 +182,10 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public JsonSerializer JsonSerializer
         {
-            get { return _jsonSerializer; }
+            get
+            {
+                return _jsonSerializer;
+            }
             set
             {
                 if (value == null)
@@ -515,7 +518,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     ConnectionId = null;
                     ConnectionToken = null;
                     GroupsToken = null;
-                    MessageId = null;                    
+                    MessageId = null;
 
                     // TODO: Do we want to trigger Closed if we are connecting?
                     if (Closed != null)
@@ -554,7 +557,7 @@ namespace Microsoft.AspNet.SignalR.Client
         public Task Send(object value)
         {
             return Send(this.JsonSerializeObject(value));
-        }        
+        }
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
