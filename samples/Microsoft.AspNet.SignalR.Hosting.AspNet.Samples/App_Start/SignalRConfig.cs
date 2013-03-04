@@ -7,6 +7,12 @@ namespace Microsoft.AspNet.SignalR.Samples
 {
     public static class SignalRConfig
     {
+        private static object _initialListHubState = new
+        {
+            itemToAdd = new Observable<string>("Your the first here! Add something."),
+            items = new ObservableArray<string>(new[] {"New", "List", "Values" })
+        };
+            
         public static void ConfigureSignalR(IDependencyResolver dependencyResolver, IHubPipeline hubPipeline)
         {
             // Uncomment the following line to enable scale-out using SQL Server
@@ -15,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Samples
             // Uncomment the following line to enable scale-out using Redis 
             // dependencyResolver.UseRedis("127.0.0.1", 6379, "", new[] { "SignalRSamples" }); 
 
-            dependencyResolver.ActivateKnockoutHub<ListHub>();
+            dependencyResolver.ActivateKnockoutHub<ListHub>(_initialListHubState);
 
             hubPipeline.AddModule(new SamplePipelineModule());
         }

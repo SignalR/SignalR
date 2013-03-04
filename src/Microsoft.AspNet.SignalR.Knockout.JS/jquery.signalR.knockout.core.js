@@ -164,8 +164,18 @@
         diffTools = new $.signalR.knockout.diffTools(builders);
 
         function attach() {
+            function isConnected() {
+                return proxy.connection.state === $.signalR.connectionState.connected;
+            }
+
+            function getFullState() {
+                if (isConnected()) {
+                    proxy.invoke("GetKnockoutState");
+                }
+            }
+
             function updateServer(diff) {
-                if (proxy.connection.state === $.signalR.connectionState.connected) {
+                if (isConnected()) {
                     proxy.invoke("OnKnockoutUpdate", diff);
                     return true;
                 }
@@ -183,6 +193,9 @@
                 diffTools.merge(model, diff);
                 opts.disableSubscriptions = false;
             });
+
+            proxy.connection.stateChanged(getFullState);
+            getFullState();
 
             subscribe(model, diffTools, updateServer, opts);
         }

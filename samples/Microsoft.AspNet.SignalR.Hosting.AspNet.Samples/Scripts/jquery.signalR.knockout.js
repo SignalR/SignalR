@@ -240,7 +240,7 @@
                     modelPeek = merge(modelPeek, diff.value, diffTag);
                 }
 
-                if (diff._updated && builder.update) {
+                if (builder.update) {
                     builder.update(model, modelPeek);
                 } else {
                     $.extend(model, builder.create(modelPeek));
@@ -440,8 +440,18 @@
         diffTools = new $.signalR.knockout.diffTools(builders);
 
         function attach() {
+            function isConnected() {
+                return proxy.connection.state === $.signalR.connectionState.connected;
+            }
+
+            function getFullState() {
+                if (isConnected()) {
+                    proxy.invoke("GetKnockoutState");
+                }
+            }
+
             function updateServer(diff) {
-                if (proxy.connection.state === $.signalR.connectionState.connected) {
+                if (isConnected()) {
                     proxy.invoke("OnKnockoutUpdate", diff);
                     return true;
                 }
@@ -459,6 +469,9 @@
                 diffTools.merge(model, diff);
                 opts.disableSubscriptions = false;
             });
+
+            proxy.connection.stateChanged(getFullState);
+            getFullState();
 
             subscribe(model, diffTools, updateServer, opts);
         }

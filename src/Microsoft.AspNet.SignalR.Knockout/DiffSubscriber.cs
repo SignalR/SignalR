@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,20 +10,30 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Knockout
 {
-    public class DiffSubscriber : ISubscriber
+    public class DiffSubscriber : ISubscriber, IDisposable
     {
         private const int _maxMessages = 10;
         private readonly string _signal;
         private readonly IMessageBus _bus;
         private readonly IJsonSerializer _serailizer;
+        private readonly IDisposable _subscriptionDisposer;
 
-        public DiffSubscriber(IMessageBus bus, IJsonSerializer serializer, string signal)
+        public DiffSubscriber(IMessageBus bus,
+                              IJsonSerializer serializer,
+                              string signal,
+                              Func<string, JRaw, Task> diffHandler,
+                              Func<Message, Task> commandHandler)
         {
             _bus = bus;
             _serailizer = serializer;
             _signal = signal;
             EventKeys = new[] { signal };
             Identity = "Knockout DiffSubscriber: " + Guid.NewGuid();
+            _subscriptionDisposer = _bus.Subscribe(this,
+                                                   null,
+                                                   ProcessResults(diffHandler, commandHandler),
+                                                   _maxMessages,
+                                                   null);
         }
 
         public IList<string> EventKeys { get; private set; }
@@ -36,35 +48,49 @@ namespace Microsoft.AspNet.SignalR.Knockout
 
         public Subscription Subscription { get; set; }
 
-        public IDisposable Start(Func<string, JRaw, Task> callback)
-        {
-            return _bus.Subscribe(this,
-                                  null,
-                                  ProcessResults(callback),
-                                  _maxMessages,
-                                  null);
-        }
-
         // But who will think of the Func allocations!?
-        private Func<MessageResult, object, Task<bool>> ProcessResults(Func<string, JRaw, Task> callback)
+        private Func<MessageResult, object, Task<bool>> ProcessResults(Func<string, JRaw, Task> diffHandler,
+                                                                       Func<Message, Task> commandHandler)
         {
             return (messageResult, subscribeState) =>
             {
                 var processTask = TaskAsyncHelper.Empty;
 
-                messageResult.Messages.Enumerate<object>(message => !message.IsCommand, (s, m) =>
+                messageResult.Messages.Enumerate<object>(message => true, (s, m) =>
                 {
                     processTask = processTask.ContinueWith((finishedTask, messageState) =>
                     {
                         // Continue even if faulted
                         var message = (Message)messageState;
-                        var diff = _serailizer.Parse<JRaw>(message.Value, message.Encoding);
-                        return callback(message.Source, diff).Catch();
+
+                        if (!message.IsCommand)
+                        {
+                            var diff = _serailizer.Parse<JRaw>(message.Value, message.Encoding);
+                            return diffHandler(message.Source, diff).Catch();
+                        }
+                        else
+                        {
+                            return commandHandler(message).Catch();
+                        }
+
                     }, m).FastUnwrap();
                 }, null);
 
                 return processTask.ContinueWith(pt => true);
             };
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _subscriptionDisposer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

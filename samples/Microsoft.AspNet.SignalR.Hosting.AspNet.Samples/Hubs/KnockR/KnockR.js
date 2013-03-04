@@ -6,6 +6,7 @@
 (function () {
     $.connection.listHub.observable();
 
+    delete $.connection.transports.webSockets;
     $.connection.hub.logging = true;
     $.connection.hub.start({ transport: activeTransport, jsonp: isJsonp });
 })();

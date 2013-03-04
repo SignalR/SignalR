@@ -158,7 +158,7 @@
                     modelPeek = merge(modelPeek, diff.value, diffTag);
                 }
 
-                if (diff._updated && builder.update) {
+                if (builder.update) {
                     builder.update(model, modelPeek);
                 } else {
                     $.extend(model, builder.create(modelPeek));

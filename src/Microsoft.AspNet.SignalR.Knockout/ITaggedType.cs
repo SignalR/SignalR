@@ -2,7 +2,9 @@
 
 namespace Microsoft.AspNet.SignalR.Knockout
 {
-    public abstract class KnockoutHub : Hub
+    public interface ITaggedType<T>
     {
+        string _tag { get; }
+        T value { get; }
     }
 }

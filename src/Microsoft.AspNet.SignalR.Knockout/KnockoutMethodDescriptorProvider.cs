@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,24 +14,39 @@ namespace Microsoft.AspNet.SignalR.Knockout
 {
     public class KnockoutMethodDescriptorProvider : IMethodDescriptorProvider
     {
-        private const string _methodName = "OnKnockoutUpdate";
+        private readonly IList<MethodDescriptorBuilder> _builders;
 
-        private readonly ConcurrentDictionary<HubDescriptor, MethodDescriptor> _methods;
-        private readonly IList<ParameterDescriptor> _parameters = new[]
-        {
-            new ParameterDescriptor
-            {
-                Name = "diff",
-                ParameterType = typeof(JRaw)
-            }
-        };
+        private readonly ConcurrentDictionary<HubDescriptor, IDictionary<string,  MethodDescriptor>> _methods;
 
         private readonly IMessageBus _bus;
         private readonly IJsonSerializer _serializer;
 
         public KnockoutMethodDescriptorProvider(IMessageBus bus, IJsonSerializer serializer)
         {
-            _methods = new ConcurrentDictionary<HubDescriptor, MethodDescriptor>();
+            _builders = new List<MethodDescriptorBuilder>()
+            {
+                new MethodDescriptorBuilder()
+                {
+                    Name = "OnKnockoutUpdate",
+                    Parameters =  new[]
+                    {
+                        new ParameterDescriptor
+                        {
+                            Name = "diff",
+                            ParameterType = typeof(JRaw)
+                        }
+                    },
+                    InvokerBuilder = BuildOnKnockoutUpdateInvoker
+                },
+                new MethodDescriptorBuilder()
+                {
+                    Name = "GetKnockoutState",
+                    Parameters =  new ParameterDescriptor[0],
+                    InvokerBuilder = BuildGetKnockoutStateInvoker
+                }
+            };
+
+            _methods = new ConcurrentDictionary<HubDescriptor, IDictionary<string, MethodDescriptor>>();
 
             _bus = bus;
             _serializer = serializer;
@@ -42,11 +59,16 @@ namespace Microsoft.AspNet.SignalR.Knockout
             return Enumerable.Empty<MethodDescriptor>();
         }
 
-        public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, IList<IJsonValue> parameters)
+        public bool TryGetMethod(HubDescriptor hub,
+                                 string method,
+                                 out MethodDescriptor descriptor,
+                                 IList<IJsonValue> parameters)
         {
-            if (method == _methodName)
+            IDictionary<string, MethodDescriptor> descriptors = _methods.GetOrAdd(hub, CreateMethodDescriptors);
+
+            if (descriptors != null)
             {
-                descriptor = _methods.GetOrAdd(hub, CreateOnKnockoutUpdateMethodDescriptor);
+                descriptor = descriptors[method];
             }
             else
             {
@@ -56,38 +78,72 @@ namespace Microsoft.AspNet.SignalR.Knockout
             return descriptor != null;
         }
 
-        private MethodDescriptor CreateOnKnockoutUpdateMethodDescriptor(HubDescriptor hub)
+        private IDictionary<string, MethodDescriptor> CreateMethodDescriptors(HubDescriptor hub)
         {
             if (typeof(KnockoutHub).IsAssignableFrom(hub.HubType))
             {
-                return new MethodDescriptor
-                {
-                    ReturnType = typeof(Task),
-                    Name = _methodName,
-                    NameSpecified = false,
-                    Invoker = OnKnockoutUpdateInvoker(hub.Name),
-                    Hub = hub,
-                    Attributes = Enumerable.Empty<Attribute>(),
-                    Parameters = _parameters
-                };
+                return _builders.Select(b => b.CreateMethodDescriptor(hub)).ToDictionary(d => d.Name);
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
 
-        private Func<IHub, object[], object> OnKnockoutUpdateInvoker(string hubName)
+        private Func<IHub, object[], object> BuildOnKnockoutUpdateInvoker(string hubName)
         {
-            return (hub, param) =>
+            var signal = DependencyResolverExtensions.KoSignalPrefix + hubName;
+
+            return (hub, args) =>
             {
-                var diff = (JRaw)param[0];
+                var diff = (JRaw)args[0];
                 var sourceId = hub.Context.ConnectionId;
 
                 return _bus.Publish(new Message()
                 {
                     Source = sourceId,
-                    Key = DependencyResolverExtensions.KoSignalPrefix + hubName,
+                    Key = signal,
                     Value = _serializer.GetMessageBuffer(diff)
                 });
             };
+        }
+
+        private Func<IHub, object[], object> BuildGetKnockoutStateInvoker(string hubName)
+        {
+            var signal = DependencyResolverExtensions.KoSignalPrefix + hubName;
+
+            return (hub, args) =>
+            {
+                var sourceId = hub.Context.ConnectionId;
+
+                return _bus.Publish(new Message()
+                {
+                    Source = sourceId,
+                    Key = signal,
+                    CommandId = DependencyResolverExtensions.GetStateCommand
+                });
+            };
+        }
+
+        private class MethodDescriptorBuilder
+        {
+            public string Name;
+            public IList<ParameterDescriptor> Parameters;
+            public Func<string, Func<IHub, object[], object>> InvokerBuilder;
+
+            public MethodDescriptor CreateMethodDescriptor(HubDescriptor hub)
+            {
+                return new MethodDescriptor
+                {
+                    ReturnType = typeof(Task),
+                    Name = Name,
+                    NameSpecified = false,
+                    Invoker = InvokerBuilder(hub.Name),
+                    Hub = hub,
+                    Attributes = Enumerable.Empty<Attribute>(),
+                    Parameters = Parameters
+                };
+            }
         }
     }
 }

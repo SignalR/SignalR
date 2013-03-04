@@ -50,9 +50,13 @@
     </Compile>
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="DiffSubscriber.cs" />
+    <Compile Include="JsonMerger.cs" />
     <Compile Include="KnockoutHub.cs" />
     <Compile Include="KnockoutMethodDescriptorProvider.cs" />
+    <Compile Include="Observable.cs" />
+    <Compile Include="ObservableArray.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ITaggedType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
