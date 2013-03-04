@@ -667,7 +667,14 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod(Func<Task> func)
         {
-            return FromMethod<Task>(() => func()).FastUnwrap();
+            try
+            {
+                return func();
+            }
+            catch(Exception ex)
+            {
+                return FromError(ex);
+            }
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
