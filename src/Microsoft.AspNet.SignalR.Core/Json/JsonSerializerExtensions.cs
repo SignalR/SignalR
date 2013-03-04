@@ -73,5 +73,33 @@ namespace Microsoft.AspNet.SignalR.Json
                 return writer.ToString();
             }
         }
+
+        /// <summary>
+        /// Serializes the specified object to a JSON <see cref="ArraySegment{T}"/> of bytes for publishing to an <see cref="Messaging.IMessageBus"/>.
+        /// </summary>
+        /// <param name="serializer">The serializer</param>
+        /// <param name="value">The object to serailize.</param>
+        /// <returns>A JSON <see cref="ArraySegment{T}"/> of bytes representation of the object.</returns>
+        public static ArraySegment<byte> GetMessageBuffer(this IJsonSerializer serializer, object value)
+        {
+            using (var stream = new MemoryStream(128))
+            {
+                var bufferWriter = new BufferTextWriter((buffer, state) =>
+                {
+                    ((MemoryStream)state).Write(buffer.Array, buffer.Offset, buffer.Count);
+                },
+                stream,
+                reuseBuffers: true,
+                bufferSize: 1024);
+
+                using (bufferWriter)
+                {
+                    serializer.Serialize(value, bufferWriter);
+                    bufferWriter.Flush();
+
+                    return new ArraySegment<byte>(stream.ToArray());
+                }
+            }
+        }
     }
 }

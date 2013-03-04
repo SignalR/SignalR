@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             var command = value as Command;
 
-            ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
+            ArraySegment<byte> messageBuffer = _serializer.GetMessageBuffer(value);
 
             var message = new Message(_connectionId, key, messageBuffer);
 
@@ -139,28 +139,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
 
             return message;
-        }
-
-        private ArraySegment<byte> GetMessageBuffer(object value)
-        {            
-            using (var stream = new MemoryStream(128))
-            {
-                var bufferWriter = new BufferTextWriter((buffer, state) =>
-                {
-                    ((MemoryStream)state).Write(buffer.Array, buffer.Offset, buffer.Count);
-                },
-                stream,
-                reuseBuffers: true,
-                bufferSize: 1024);
-
-                using (bufferWriter)
-                {
-                    _serializer.Serialize(value, bufferWriter);
-                    bufferWriter.Flush();
-
-                    return new ArraySegment<byte>(stream.ToArray());
-                }
-            }
         }
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state)

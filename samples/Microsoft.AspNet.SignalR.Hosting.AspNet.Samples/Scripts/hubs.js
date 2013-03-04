@@ -312,11 +312,6 @@
         proxies.listHub = this.createHubProxy('listHub'); 
         proxies.listHub.client = { };
         proxies.listHub.server = {
-            onKnockoutUpdate: function (state) {
-            /// <summary>Calls the OnKnockoutUpdate method on the server-side ListHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"state\" type=\"Object\">Server side type is System.Object</param>
-                return proxies.listHub.invoke.apply(proxies.listHub, $.merge(["OnKnockoutUpdate"], $.makeArray(arguments)));
-             }
         };
 
         proxies.mouseTracking = this.createHubProxy('mouseTracking'); 

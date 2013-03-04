@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Knockout;
+using Microsoft.AspNet.SignalR.Samples.Hubs.KnockR;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
@@ -12,6 +14,8 @@ namespace Microsoft.AspNet.SignalR.Samples
 
             // Uncomment the following line to enable scale-out using Redis 
             // dependencyResolver.UseRedis("127.0.0.1", 6379, "", new[] { "SignalRSamples" }); 
+
+            dependencyResolver.ActivateKnockoutHub<ListHub>();
 
             hubPipeline.AddModule(new SamplePipelineModule());
         }
