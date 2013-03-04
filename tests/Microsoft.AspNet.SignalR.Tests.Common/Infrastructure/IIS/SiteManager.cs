@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
         private const int TestSitePort = 1337;
         private static string TestSiteUrl = String.Format("http://localhost:{0}", TestSitePort);
         private static string PingUrl = TestSiteUrl + "/ping";
+        private static string GCUrl = TestSiteUrl + "/gc";
 
         public SiteManager(string path)
         {
@@ -91,15 +92,24 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         private void PingServerUrl()
         {
-            const int retryAttempts = 5;
-            const int delay = 250;
-
-            int attempt = retryAttempts;
             string pingUrl = PingUrl + "?pid=" + _iisExpressProcess.Id;
+            MakeHttpRequest(pingUrl);
+        }
+
+        public void StopSite()
+        {
+            string gcUrl = GCUrl + "?pid=" + _iisExpressProcess.Id;
+            MakeHttpRequest(gcUrl);
+            KillRunningIIsExpress();
+        }
+
+        private void MakeHttpRequest(string url, int delay = 250, int retryAttempts = 5)
+        {
+            int attempt = retryAttempts;
 
             while (true)
             {
-                var request = HttpWebRequest.Create(pingUrl);
+                var request = HttpWebRequest.Create(url);
                 try
                 {
                     var response = (HttpWebResponse)request.GetResponse();
@@ -119,11 +129,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 attempt--;
                 Thread.Sleep(delay);
             }
-        }
-
-        public void StopSite()
-        {
-            KillRunningIIsExpress();
         }
 
         private bool KillRunningIIsExpress()

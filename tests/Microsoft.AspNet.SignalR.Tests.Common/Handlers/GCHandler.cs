@@ -1,9 +1,10 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using System.Web.Routing;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests
 {
-    public class TestEndPoint : IRouteHandler, IHttpHandler
+    public class GCHandler : IRouteHandler, IHttpHandler
     {
         public IHttpHandler GetHttpHandler(RequestContext requestContext)
         {
@@ -20,7 +21,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 
         public void ProcessRequest(HttpContext context)
         {
-            context.Response.Write("Pong");
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

@@ -1,9 +1,10 @@
 using System;
 using System.Configuration;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
 
 [assembly: PreApplicationStartMethod(typeof(Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS.InitializeIISHost), "Start")]
 
@@ -62,8 +63,22 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
             RouteTable.Routes.MapConnection<FallbackToLongPollingConnection>("fall-back", "/fall-back");
 
-            // End point to hit to verify the webserver is up
-            RouteTable.Routes.Add("test-endpoint", new Route("ping", new TestEndPoint()));
+
+            RouteTable.Routes.Add("ping", new Route("ping", new PingHandler()));
+            RouteTable.Routes.Add("gc", new Route("gc", new GCHandler()));
+
+            string logFileName = Path.Combine(HttpRuntime.AppDomainAppPath, ConfigurationManager.AppSettings["logFileName"] + ".server.trace.log");
+            Trace.Listeners.Add(new TextWriterTraceListener(logFileName));
+            Trace.AutoFlush = true;
+
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        }
+
+        private static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Trace.TraceError("Unobserved task exception: " + e.Exception.GetBaseException());
+
+            e.SetObserved();
         }
     }
 }
