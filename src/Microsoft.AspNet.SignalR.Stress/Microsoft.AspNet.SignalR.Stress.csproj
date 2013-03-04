@@ -70,18 +70,20 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="ConnectionRun.cs" />
+    <Compile Include="Performance\ConnectionRun.cs" />
     <Compile Include="Connections\StressConnection.cs" />
-    <Compile Include="EmptyProtectedData.cs" />
+    <Compile Include="Performance\EmptyProtectedData.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\HubWithGroups.cs" />
     <Compile Include="Infrastructure\Utility.cs" />
-    <Compile Include="MemoryHostRun.cs" />
-    <Compile Include="MessageBusRun.cs" />
+    <Compile Include="IRun.cs" />
+    <Compile Include="Performance\MemoryHostRun.cs" />
+    <Compile Include="Performance\MessageBusRun.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StressRuns.cs" />
-    <Compile Include="Subscriber.cs" />
+    <Compile Include="RunBase.cs" />
+    <Compile Include="Stress\StressRuns.cs" />
+    <Compile Include="Performance\Subscriber.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">

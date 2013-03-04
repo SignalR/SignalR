@@ -10,11 +10,13 @@ namespace Microsoft.AspNet.SignalR.Stress
     {
         static void Main(string[] args)
         {
-            IDisposable run = CreateRun(args);
+            IRun run = CreateRun(args);
             long memory = 0;
 
             using (run)
             {
+                run.Run();
+
                 memory = GC.GetTotalMemory(forceFullCollection: false);
 
                 Console.WriteLine("Before GC {0}", Utility.FormatBytes(memory));
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             Console.ReadKey();
         }
 
-        private static IDisposable CreateRun(string[] args)
+        private static IRun CreateRun(string[] args)
         {
             // TODO: Parse arguments
 
@@ -42,18 +44,19 @@ namespace Microsoft.AspNet.SignalR.Stress
             int senders = 1;
             string payload = GetPayload();
 
-            // return MessageBusRun.Run(connections, senders, payload);
-            // return ConnectionRun.LongRunningSubscriptionRun(connections, senders, payload);
-            // return ConnectionRun.ReceiveLoopRun(connections, senders, payload);
-            return MemoryHostRun.Run(connections, senders, payload, "serverSentEvents");
-            // return StressRuns.RunConnectDisconnect(connections);
-            // return StressRuns.ManyUniqueGroups(concurrency: 4);
-            //return StressRuns.BrodcastFromServer();
+            return new MessageBusRun(connections, senders, payload);
+            // return new ConnectionRun(connections, senders, payload);
+            // return new MemoryHostRun(connections, senders, payload, "serverSentEvents");
         }
 
         private static string GetPayload(int n = 32)
         {
             return new string('a', n);
+        }
+
+        private class StressArgs
+        {
+            
         }
     }
 }
