@@ -239,8 +239,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Catch((ex, state) => OnError(ex, state), messageContext)
-                            .ContinueWith(InitializeTcs);
+                initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
+                            .Catch((ex, state) => OnError(ex, state), messageContext); 
             }
             catch (OperationCanceledException ex)
             {
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             catch (Exception ex)
             {
-                InitializeTcs.TrySetResult(null);
+                InitializeTcs.TrySetCanceled();
 
                 lifetime.Complete(ex);
             }
@@ -336,10 +336,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.IncrementErrors();
 
-            context.Lifetime.Complete(ex);
+            // Cancel any pending writes in the queue
+            context.Transport.InitializeTcs.TrySetCanceled();
 
-            context.Transport._counters.ErrorsAllTotal.Increment();
-            context.Transport._counters.ErrorsAllPerSec.Increment();
+            // Complete the http request
+            context.Lifetime.Complete(ex);
         }
 
         private class ForeverTransportContext
