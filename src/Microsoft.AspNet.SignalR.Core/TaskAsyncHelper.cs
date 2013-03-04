@@ -237,10 +237,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor);
