@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.SignalR
                     return Canceled();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1).FastUnwrap();
+                    return FromMethod(successor, arg1);
 
                 default:
                     return GenericDelegates<object, Task, T1, object>.ThenWithArgs(task, successor, arg1)
@@ -370,7 +370,7 @@ namespace Microsoft.AspNet.SignalR
                     return Canceled();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1, arg2).FastUnwrap();
+                    return FromMethod(successor, arg1, arg2);
 
                 default:
                     return GenericDelegates<object, Task, T1, T2>.ThenWithArgs(task, successor, arg1, arg2)
@@ -507,7 +507,7 @@ namespace Microsoft.AspNet.SignalR
                     return Canceled();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task.Result).FastUnwrap();
+                    return FromMethod(successor, task.Result);
 
                 default:
                     return TaskRunners<TResult, Task>.RunTask(task, t => successor(t.Result))
@@ -671,7 +671,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 return func();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return FromError(ex);
             }
@@ -688,6 +688,34 @@ namespace Microsoft.AspNet.SignalR
             catch (Exception ex)
             {
                 return FromError<TResult>(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task FromMethod<T1>(Func<T1, Task> func, T1 arg)
+        {
+            try
+            {
+                return func(arg);
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task FromMethod<T1, T2>(Func<T1, T2, Task> func, T1 arg1, T2 arg2)
+        {
+            try
+            {
+                return func(arg1, arg2);
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
             }
         }
 
