@@ -332,9 +332,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Transport.IncrementErrors();
 
             context.Lifetime.Complete(ex);
-
-            context.Transport._counters.ErrorsAllTotal.Increment();
-            context.Transport._counters.ErrorsAllPerSec.Increment();
         }
 
         private static void AddTransportData(PersistentResponse response)
