@@ -33,18 +33,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> this[ulong key]
+        public LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> GetMapping(ulong key)
         {
-            get
+            LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> value;
+            if (_lookup.TryGetValue(key, out value))
             {
-                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> value;
-                if (_lookup.TryGetValue(key, out value))
-                {
-                    return value;
-                }
-
-                return null;
+                return value;
             }
+
+            return null;
         }
 
         private static ulong GetKey(LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node)

@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // If there's no node for this cursor id it's likely because we've
                     // had an app domain restart and the cursor position is now invalid.
-                    if (mapping[cursor.Id] == null)
+                    if (mapping.GetMapping(cursor.Id) == null)
                     {
                         // Set it to the first id in this mapping
                         cursor.Id = stream.Value.MinKey;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 cursors.Add(cursor);
 
                 // Try to find a local mapping for this payload
-                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping[cursor.Id];
+                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping.GetMapping(cursor.Id);
 
                 // Skip this node only if this isn't a new cursor
                 if (node != null && consumed)
