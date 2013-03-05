@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private int _reading;
         private Action _setOpened;
+        private readonly IConnection _connection;
 
         /// <summary>
         /// Invoked when the connection is open.
@@ -36,11 +37,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         public Action<Exception> Closed { get; set; }
 
         /// <summary>
-        /// Invoked when the reader enters the Stopped state whether or not it was previously in the Processing state.
-        /// </summary>
-        public Action Disabled { get; set; }
-
-        /// <summary>
         /// Invoked when there's a message if received in the stream.
         /// </summary>
         public Action<SseEvent> Message { get; set; }
@@ -48,9 +44,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// <summary>
         /// Initializes a new instance of the <see cref="EventSourceStreamReader"/> class.
         /// </summary>
+        /// <param name="connection">The connection associated with this event source</param>
         /// <param name="stream">The stream to read event source payloads from.</param>
-        public EventSourceStreamReader(Stream stream)
+        public EventSourceStreamReader(IConnection connection, Stream stream)
         {
+            _connection = connection;
             _stream = stream;
             _buffer = new ChunkBuffer();
         }
@@ -72,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             {
                 _setOpened = () =>
                 {
-                    Debug.WriteLine("EventSourceReader: Connection Opened");
+                    _connection.Trace.WriteLine("EventSourceReader: Connection Opened {0}", _connection.ConnectionId);
                     OnOpened();
                 };
 
@@ -87,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// <summary>
         /// Closes the connection and the underlying stream.
         /// </summary>
-        public void Close()
+        private void Close()
         {
             Close(exception: null);
         }
@@ -136,15 +134,25 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void ReadAsync(Task<int> readTask)
         {
-            readTask.Catch(ex => Close(ex))
-                    .Then(read =>
+            readTask.ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Close(task.Exception);
+                }
+                else if (task.IsCanceled)
+                {
+                    Close(new OperationCanceledException());
+                }
+                else
+                {
+                    if (TryProcessRead(task.Result))
                     {
-                        if (TryProcessRead(read))
-                        {
-                            Process();
-                        }
-                    })
-                    .Catch();
+                        Process();
+                    }
+                }
+            }, 
+            TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private bool TryProcessRead(int read)
@@ -191,7 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                         continue;
                     }
 
-                    Debug.WriteLine("SSE READ: " + sseEvent);
+                    _connection.Trace.WriteLine("SSE: OnMessage({0}, {1})", _connection.ConnectionId, sseEvent);
 
                     OnMessage(sseEvent);
                 }
@@ -202,9 +210,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         {
             var previousState = Interlocked.Exchange(ref _reading, State.Stopped);
 
-            if (previousState == State.Processing)
+            if (previousState != State.Stopped)
             {
-                Debug.WriteLine("EventSourceReader: Connection Closed");
+                _connection.Trace.WriteLine("EventSourceReader: Connection Closed {0}", _connection.ConnectionId);
                 if (Closed != null)
                 {
                     if (exception != null)
@@ -220,11 +228,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                     // Release the buffer
                     _readBuffer = null;
                 }
-            }
-
-            if (previousState != State.Stopped && Disabled != null)
-            {
-                Disabled();
             }
         }
 

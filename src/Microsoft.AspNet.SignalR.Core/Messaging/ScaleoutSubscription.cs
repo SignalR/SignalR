@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -12,17 +13,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams;
+        private readonly ConcurrentDictionary<string, IndexedDictionary> _streams;
+        
         private List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
-                                    IEnumerable<string> eventKeys,
+                                    IList<string> eventKeys,
                                     string cursor,
-                                    ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> streamMappings,
-                                    Func<MessageResult, Task<bool>> callback,
+                                    ConcurrentDictionary<string, IndexedDictionary> streamMappings,
+                                    Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
-                                    IPerformanceCounterManager counters)
-            : base(identity, eventKeys, callback, maxMessages, counters)
+                                    IPerformanceCounterManager counters,
+                                    object state)
+            : base(identity, eventKeys, callback, maxMessages, counters, state)
         {
             if (streamMappings == null)
             {
@@ -46,9 +49,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _cursors = new List<Cursor>(cursors);
         }
 
-        public override string GetCursor()
+        public override void WriteCursor(TextWriter textWriter)
         {
-            return Cursor.MakeCursor(_cursors);
+            Cursor.WriteCursors(textWriter, _cursors);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The list needs to be populated")]
@@ -62,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             foreach (var stream in _streams)
             {
                 // Get the mapping for this stream
-                IndexedDictionary<ulong, ScaleoutMapping> mapping = stream.Value;
+                IndexedDictionary mapping = stream.Value;
 
                 // See if we have a cursor for this key
                 Cursor cursor = null;
@@ -78,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // If there's no node for this cursor id it's likely because we've
                     // had an app domain restart and the cursor position is now invalid.
-                    if (mapping[cursor.Id] == null)
+                    if (mapping.GetMapping(cursor.Id) == null)
                     {
                         // Set it to the first id in this mapping
                         cursor.Id = stream.Value.MinKey;
@@ -99,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 cursors.Add(cursor);
 
                 // Try to find a local mapping for this payload
-                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping[cursor.Id];
+                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping.GetMapping(cursor.Id);
 
                 // Skip this node only if this isn't a new cursor
                 if (node != null && consumed)
@@ -108,34 +111,29 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     node = node.Next;
                 }
 
-                while (node != null)
+                // Stop if we got more than max messages
+                while (totalCount < MaxMessages && node != null)
                 {
                     KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
 
-                    // Stop if we got more than max messages
-                    if (totalCount >= MaxMessages)
-                    {
-                        break;
-                    }
-
                     // It should be ok to lock here since groups aren't modified that often
-                    lock (EventKeys)
-                    {
-                        // For each of the event keys we care about, extract all of the messages
-                        // from the payload
-                        foreach (var eventKey in EventKeys)
-                        {
-                            LocalEventKeyInfo info;
-                            if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
-                            {
-                                int maxMessages = Math.Min(info.Count, MaxMessages);
-                                MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
 
-                                if (storeResult.Messages.Count > 0)
-                                {
-                                    items.Add(storeResult.Messages);
-                                    totalCount += storeResult.Messages.Count;
-                                }
+                    // For each of the event keys we care about, extract all of the messages
+                    // from the payload
+                    for (var i = 0; i < EventKeys.Count; ++i)
+                    {
+                        string eventKey = EventKeys[i];
+ 
+                        LocalEventKeyInfo info;
+                        if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
+                        {
+                            int maxMessages = Math.Min(info.Count, MaxMessages);
+                            MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
+
+                            if (storeResult.Messages.Count > 0)
+                            {
+                                items.Add(storeResult.Messages);
+                                totalCount += storeResult.Messages.Count;
                             }
                         }
                     }
@@ -156,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private ulong GetCursorId(string key)
         {
-            IndexedDictionary<ulong, ScaleoutMapping> mapping;
+            IndexedDictionary mapping;
             if (_streams.TryGetValue(key, out mapping))
             {
                 return mapping.MaxKey;

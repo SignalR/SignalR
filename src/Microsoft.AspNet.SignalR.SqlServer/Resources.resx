@@ -120,4 +120,7 @@
   <data name="Error_SignalRSQLScaleOutNewerThanCurrentVersion" xml:space="preserve">
     <value>SignalR SQL scale out schema is newer than the currently executing version.</value>
   </data>
+  <data name="Error_TableCountMustBeOne" xml:space="preserve">
+    <value>Unsupported value for parameter 'tableCount'. Must be 1.</value>
+  </data>
 </root>

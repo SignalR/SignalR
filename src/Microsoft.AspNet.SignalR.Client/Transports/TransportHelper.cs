@@ -137,6 +137,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
+            connection.UpdateLastKeepAlive();
+
             timedOut = false;
             disconnected = false;
 
@@ -181,12 +183,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                         catch (Exception ex)
                         {
-#if NET35
-                            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
-#else
-                            Debug.WriteLine("Failed to process message: {0}", ex);
-#endif
-
                             connection.OnError(ex);
                         }
                     }
@@ -196,14 +192,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
             catch (Exception ex)
             {
-#if NET35
-                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
-#else
-                Debug.WriteLine("Failed to response: {0}", ex);
-#endif
                 connection.OnError(ex);
             }
         }
+
 
         private static void UpdateGroups(IConnection connection, JToken groupsToken)
         {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -58,6 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
             connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
             connection.Setup(c => c.OnError(ex));
+            connection.Setup(c => c.UpdateLastKeepAlive());
 
             // PersistentResponse
             TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);
@@ -84,6 +87,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                                          It.IsAny<IDictionary<string, string>>()))
                       .Returns(TaskAsyncHelper.FromResult(response.Object));
 
+            connection.Setup(c => c.ConnectionId).Returns("someid");
+            connection.Setup(c => c.Trace).Returns(new StringWriter());
             connection.SetupGet(c => c.Url).Returns("");
             connection.SetupGet(c => c.QueryString).Returns("");
             connection.SetupGet(c => c.ConnectionToken).Returns("");

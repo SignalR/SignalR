@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public TimeSpan ConnectDelay { get; set; }
 
+
         public LongPollingTransport()
             : this(new DefaultHttpClient())
         {
@@ -41,6 +42,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             ReconnectDelay = TimeSpan.FromSeconds(5);
             ErrorDelay = TimeSpan.FromSeconds(2);
             ConnectDelay = TimeSpan.FromSeconds(2);
+        }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public override bool SupportsKeepAlive
+        {
+            get
+            {
+                return false;
+            }
         }
 
         protected override void OnStart(IConnection connection,
@@ -85,11 +97,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             url += GetReceiveQueryString(connection, data);
 
-#if NET35
-            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP: {0}", (object)url));
-#else
-            Debug.WriteLine("LP: {0}", (object)url);
-#endif
+            connection.Trace.WriteLine("LP: {0}", url);
 
             HttpClient.Post(url, req => 
             {
@@ -121,11 +129,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         // Get the response
                         var raw = task.Result.ReadAsString();
 
-#if NET35
-                        Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "LP Receive: {0}", (object)raw));
-#else
-                        Debug.WriteLine("LP Receive: {0}", (object)raw);
-#endif
+                        connection.Trace.WriteLine("LP: OnMessage({0}, {1})", connection.ConnectionId, raw);
+
                         TransportHelper.ProcessResponse(connection, 
                                                         raw, 
                                                         out shouldRaiseReconnect, 
@@ -134,7 +139,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 finally
                 {
-                    if (disconnectedReceived)
+                    if (AbortResetEvent != null)
+                    {
+                        AbortResetEvent.Set();
+                    }
+                    else if (disconnectedReceived)
                     {
                         connection.Disconnect();
                     }
@@ -200,16 +209,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             }
                         }
                     }
+
                     requestDisposer.Dispose();
                 }
             });
 
-            var requestCancellationRegistration = disconnectToken.SafeRegister(req =>
+            var requestCancellationRegistration = disconnectToken.SafeRegister(state =>
             {
-                if (req != null)
+                if (state != null)
                 {
                     // This will no-op if the request is already finished.
-                    req.Abort();
+                   ((IRequest)state).Abort();
                 }
 
                 // Prevent the connection state from switching to the reconnected state.
@@ -258,6 +268,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.OnReconnected();
             }
+        }
+
+        public override void LostConnection(IConnection connection)
+        {
+            
         }
     }
 }

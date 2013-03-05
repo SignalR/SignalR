@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     bus.SendMany(firstMessages);
 
-                    subscription = bus.Subscribe(subscriber, null, result =>
+                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
                         if (!result.Terminal)
                         {
@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                             Assert.Equal(2, ms.Count);
                             Assert.Equal("key", ms[0].Key);
-                            Assert.Equal("x", ms[0].Value);
+                            Assert.Equal("x", ms[0].GetString());
                             Assert.Equal("key", ms[1].Key);
-                            Assert.Equal("y", ms[1].Value);
+                            Assert.Equal("y", ms[1].GetString());
 
                             wh.Set();
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                         return TaskAsyncHelper.False;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.SendMany(new[] { new Message("test1", "key", "x"), 
                                      new Message("test1", "key", "y") });
@@ -97,17 +97,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", result =>
+                    subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
-                            int n = Int32.Parse(m.Value);
+                            int n = Int32.Parse(m.GetString());
                             Assert.True(cd.Mark(n));
                         }
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.SendMany(new[] { new Message("test", "key", "5") });
 
@@ -138,20 +138,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, null, result =>
+                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
                         if (!result.Terminal)
                         {
                             var messages = result.GetMessages().ToList();
                             Assert.Equal(1, messages.Count);
-                            Assert.Equal("connected", messages[0].Value);
+                            Assert.Equal("connected", messages[0].GetString());
                             wh.Set();
 
                         }
 
                         return TaskAsyncHelper.True;
 
-                    }, 10);
+                    }, 10, null);
 
                     bus.SendMany(new[] { new Message("test", "key", "connected") });
 

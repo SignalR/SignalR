@@ -22,7 +22,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="cursor"></param>
         /// <param name="callback"></param>
         /// <param name="maxMessages"></param>
+        /// <param name="state"></param>
         /// <returns></returns>
-        IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, Task<bool>> callback, int maxMessages);
+        IDisposable Subscribe(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int maxMessages, object state);
     }
 }

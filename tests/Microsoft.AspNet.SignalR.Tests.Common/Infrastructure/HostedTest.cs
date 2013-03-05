@@ -1,11 +1,18 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
 
@@ -13,20 +20,30 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
     public abstract class HostedTest : IDisposable
     {
+        private static long _id;
+
+        protected ITestHost CreateHost(HostType hostType)
+        {
+            return CreateHost(hostType, TransportType.Auto);
+        }
+
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
+            string testName = GetTestName() + "." + hostType + "." + transportType + "." + Interlocked.Increment(ref _id);
             ITestHost host = null;
+
+            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
 
             switch (hostType)
             {
                 case HostType.IISExpress:
-                    host = new IISExpressTestHost();
+                    host = new IISExpressTestHost(testName);
                     host.TransportFactory = () => CreateTransport(transportType);
                     host.Transport = host.TransportFactory();
                     break;
                 case HostType.Memory:
                     var mh = new MemoryHost();
-                    host = new MemoryTestHost(mh);
+                    host = new MemoryTestHost(mh, Path.Combine(logBasePath, testName));
                     host.TransportFactory = () => CreateTransport(transportType, mh);
                     host.Transport = host.TransportFactory();
                     break;
@@ -39,24 +56,94 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     break;
             }
 
+            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
+            var writer = new StreamWriter(clientTracePath);
+            writer.AutoFlush = true;
+            host.ClientTraceOutput = writer;
+
+            if (hostType != HostType.Memory)
+            {
+                string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
+                host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
+
+                string httpSysTracePath = Path.Combine(logBasePath, testName + ".httpSys");
+                IDisposable httpSysTracing = StartHttpSysTracing(httpSysTracePath);
+
+                // If tracing is enabled then turn it off on host dispose
+                if (httpSysTracing != null)
+                {
+                    host.Disposables.Add(httpSysTracing);
+                }
+            }
+
+            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
+            var traceListener = new TextWriterTraceListener(testTracePath);
+            Trace.Listeners.Add(traceListener);
+            Trace.AutoFlush = true;
+
+            host.Disposables.Add(new DisposableAction(() =>
+            {
+                traceListener.Close();
+                Trace.Listeners.Remove(traceListener);
+            }));
+
+            EventHandler<UnobservedTaskExceptionEventArgs> handler = (sender, args) =>
+            {
+                Trace.TraceError("Unobserved task exception: " + args.Exception.GetBaseException());
+
+                args.SetObserved();
+            };
+
+            TaskScheduler.UnobservedTaskException += handler;
+            host.Disposables.Add(new DisposableAction(() =>
+            {
+                TaskScheduler.UnobservedTaskException -= handler;
+            }));
+
             return host;
+        }
+
+        private IDisposable StartHttpSysTracing(string path)
+        {
+            var httpSysLoggingEnabledValue = ConfigurationManager.AppSettings["httpSysLoggingEnabled"];
+            bool httpSysLoggingEnabled;
+
+            if (!Boolean.TryParse(httpSysLoggingEnabledValue, out httpSysLoggingEnabled) ||
+                !httpSysLoggingEnabled)
+            {
+                return null;
+            }
+
+            var etw = new HttpSysEtwWrapper(path);
+            if (etw.StartLogging())
+            {
+                return etw;
+            }
+
+            return null;
         }
 
         protected HubConnection CreateHubConnection(ITestHost host)
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
-            return new HubConnection(host.Url, query);
+            SetHostData(host, query);
+            var connection = new HubConnection(host.Url, query);
+            connection.Trace = host.ClientTraceOutput ?? connection.Trace;
+            return connection;
         }
 
-        protected Client.Connection CreateConnection(string url)
+        protected Client.Connection CreateConnection(ITestHost host, string path)
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
-            return new Client.Connection(url, query);
+            SetHostData(host, query);
+            var connection = new Client.Connection(host.Url + path, query);
+            connection.Trace = host.ClientTraceOutput ?? connection.Trace;
+            return connection;
         }
 
-        private string GetTestName()
+        protected string GetTestName()
         {
             var stackTrace = new StackTrace();
             return (from f in stackTrace.GetFrames()
@@ -64,7 +151,20 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     let anyFactsAttributes = m.GetCustomAttributes(typeof(FactAttribute), true).Length > 0
                     let anyTheories = m.GetCustomAttributes(typeof(TheoryAttribute), true).Length > 0
                     where anyFactsAttributes || anyTheories
-                    select m.Name).First();
+                    select GetName(m)).First();
+        }
+
+        protected void SetHostData(ITestHost host, Dictionary<string, string> query)
+        {
+            foreach (var item in host.ExtraData)
+            {
+                query[item.Key] = item.Value;
+            }
+        }
+
+        private string GetName(MethodBase m)
+        {
+            return m.DeclaringType.FullName.Substring(m.DeclaringType.Namespace.Length).TrimStart('.', '+') + "." + m.Name;
         }
 
         protected IClientTransport CreateTransport(TransportType transportType)

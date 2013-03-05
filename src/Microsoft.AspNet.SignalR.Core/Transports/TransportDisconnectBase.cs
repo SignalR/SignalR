@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -22,11 +21,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private TraceSource _trace;
 
-        private int _isDisconnected;
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private int _ended;
-        private int _requestReleased;
+
+        internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
@@ -36,6 +35,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
         private IDisposable _hostRegistration;
+        private IDisposable _connectionEndRegistration;
+
+        internal HttpRequestLifeTime _requestLifeTime;
 
         protected TransportDisconnectBase(HostContext context, ITransportHeartbeat heartbeat, IPerformanceCounterManager performanceCounterManager, ITraceManager traceManager)
         {
@@ -89,18 +91,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_outputWriter == null)
                 {
-                    _outputWriter = new StreamWriter(Context.Response.AsStream(), new UTF8Encoding());
+                    _outputWriter = CreateResponseWriter();
                     _outputWriter.NewLine = "\n";
                 }
 
                 return _outputWriter;
             }
-        }
-
-        protected TaskCompletionSource<object> Completed
-        {
-            get;
-            private set;
         }
 
         internal TaskQueue WriteQueue
@@ -121,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 // If the CTS is tripped or the request has ended then the connection isn't alive
-                return !(CancellationToken.IsCancellationRequested || _requestReleased == 1);
+                return !(CancellationToken.IsCancellationRequested || (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted));
             }
         }
 
@@ -187,7 +183,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Request.Url; }
         }
 
-        protected void IncrementErrorCounters(Exception exception)
+        protected virtual TextWriter CreateResponseWriter()
+        {
+            return new BufferTextWriter(Context.Response);
+        }
+
+        protected void IncrementErrors()
         {
             _counters.ErrorsTransportTotal.Increment();
             _counters.ErrorsTransportPerSec.Increment();
@@ -197,35 +198,29 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Disconnect()
         {
-            return OnDisconnect().Then(() => Connection.Close(ConnectionId));
+            // Abort the queue the disconnect command
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return Abort().Then(transport => transport.Connection.Close(transport.ConnectionId), this);
         }
 
-        public Task OnDisconnect()
+        public Task Abort()
         {
-            Trace.TraceInformation("OnDisconnect(" + ConnectionId + ")");
+            Trace.TraceInformation("Abort(" + ConnectionId + ")");
 
             // When a connection is aborted (graceful disconnect) we send a command to it
             // telling to to disconnect. At that moment, we raise the disconnect event and
             // remove this connection from the heartbeat so we don't end up raising it for the same connection.
             Heartbeat.RemoveConnection(this);
 
-            if (Interlocked.Exchange(ref _isDisconnected, 1) == 0)
-            {
-                // End the connection
-                End();
+            // End the connection
+            End();
 
-                var disconnected = Disconnected; // copy before invoking event to avoid race
-                if (disconnected != null)
-                {
-                    return disconnected().Catch(ex =>
-                    {
-                        Trace.TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
-                    })
-                    .Then(() => _counters.ConnectionsDisconnected.Increment());
-                }
-            }
+            var disconnected = Disconnected ?? _emptyTaskFunc;
 
-            return TaskAsyncHelper.Empty;
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return disconnected().Catch((ex, state) => OnDisconnectError(ex, state), Trace)
+                                 .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
         }
 
         public void Timeout()
@@ -233,6 +228,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (Interlocked.Exchange(ref _timedOut, 1) == 0)
             {
                 Trace.TraceInformation("Timeout(" + ConnectionId + ")");
+
+                End();
             }
         }
 
@@ -251,45 +248,31 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     _connectionEndTokenSource.Cancel();
                 }
+            }
+        }
 
-                if (_connectionEndTokenSource != null)
-                {
-                    _connectionEndTokenSource.Dispose();
-                }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _connectionEndTokenSource.Dispose();
+                _connectionEndRegistration.Dispose();
                 _hostRegistration.Dispose();
             }
         }
 
-        void ITrackingConnection.ReleaseRequest()
-        {
-            if (Interlocked.Exchange(ref _requestReleased, 1) == 0)
-            {
-                Trace.TraceInformation("ReleaseRequest(" + ConnectionId + ")");
-
-                ReleaseRequest();
-            }
-        }
-
-        protected virtual void ReleaseRequest()
-        {
-        }
-
-        public void CompleteRequest()
-        {
-            // REVIEW: We can get rid of this when we clean up the Interleave code.
-            if (Completed != null)
-            {
-                Trace.TraceEvent(TraceEventType.Verbose, 0, "CompleteRequest(" + ConnectionId + ")");
-
-                Completed.TrySetResult(null);
-            }
-
-            // Mark the request as released
-            Interlocked.Exchange(ref _requestReleased, 1);
-        }
-
         protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
+        {
+            return EnqueueOperation(state => ((Func<Task>)state).Invoke(), writeAsync);
+        }
+
+        protected virtual internal Task EnqueueOperation(Func<object, Task> writeAsync, object state)
         {
             if (!IsAlive)
             {
@@ -297,14 +280,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Only enqueue new writes if the connection is alive
-            return WriteQueue.Enqueue(writeAsync);
+            return WriteQueue.Enqueue(writeAsync, state);
         }
 
         protected virtual void InitializePersistentState()
         {
             _hostShutdownToken = _context.HostShutdownToken();
 
-            Completed = new TaskCompletionSource<object>();
+            _requestLifeTime = new HttpRequestLifeTime(WriteQueue, Trace, ConnectionId);
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();
@@ -313,9 +296,21 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Handle the shutdown token's callback so we can end our token if it trips
             _hostRegistration = _hostShutdownToken.SafeRegister(state =>
             {
-                state.Cancel();
+                ((SafeCancellationTokenSource)state).Cancel();
             },
             _connectionEndTokenSource);
+
+            // When the connection ends release the request
+            _connectionEndRegistration = CancellationToken.SafeRegister(state =>
+            {
+                ((HttpRequestLifeTime)state).Complete();
+            },
+            _requestLifeTime);
+        }
+
+        private static void OnDisconnectError(AggregateException ex, object state)
+        {
+            ((TraceSource)state).TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
         }
     }
 }

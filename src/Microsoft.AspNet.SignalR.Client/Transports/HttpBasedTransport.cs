@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -36,6 +35,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return _transport;
             }
         }
+
+        protected ManualResetEvent AbortResetEvent { get; private set; }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public abstract bool SupportsKeepAlive { get; }
 
         protected IHttpClient HttpClient
         {
@@ -72,10 +78,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             string url = connection.Url + "send";
             string customQueryString = String.IsNullOrEmpty(connection.QueryString) ? String.Empty : "&" + connection.QueryString;
 
-            url += String.Format(CultureInfo.InvariantCulture, 
-                                _sendQueryString, 
-                                _transport, 
-                                Uri.EscapeDataString(connection.ConnectionToken), 
+            url += String.Format(CultureInfo.InvariantCulture,
+                                _sendQueryString,
+                                _transport,
+                                Uri.EscapeDataString(connection.ConnectionToken),
                                 customQueryString);
 
             var postData = new Dictionary<string, string> {
@@ -87,6 +93,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               {
                                   string raw = response.ReadAsString();
 
+                                  connection.Trace.WriteLine("OnMessage({0}, {1})", connection.ConnectionId, raw);
+
                                   if (!String.IsNullOrEmpty(raw))
                                   {
                                       connection.OnReceived(JObject.Parse(raw));
@@ -96,28 +104,39 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
-        public void Abort(IConnection connection)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
             }
 
-            string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture, 
-                                                                  _sendQueryString, 
-                                                                  _transport, 
-                                                                  Uri.EscapeDataString(connection.ConnectionToken), 
-                                                                  null);
+            lock (this)
+            {
+                if (AbortResetEvent == null)
+                {
+                    AbortResetEvent = new ManualResetEvent(initialState: false);
 
-            try
-            {
-                // Attempt to perform a clean disconnect, but only wait 2 seconds
-                _httpClient.Post(url, connection.PrepareRequest).Wait(TimeSpan.FromSeconds(2));
+                    string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
+                                                                          _sendQueryString,
+                                                                          _transport,
+                                                                          Uri.EscapeDataString(connection.ConnectionToken),
+                                                                          null);
+
+                    url += TransportHelper.AppendCustomQueryString(connection, url);
+
+                    _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
+                    {
+                        // If there's an error making an http request set the reset event
+                        ((ManualResetEvent)state).Set();
+                    }, 
+                    AbortResetEvent);
+                }
             }
-            catch (Exception ex)
+
+            if (!AbortResetEvent.WaitOne(timeout))
             {
-                // Swallow any exceptions, but log them
-                Debug.WriteLine("Clean disconnect failed. " + ex.Unwrap().Message);
+                connection.Trace.WriteLine("Abort never fired (" + connection.ConnectionId + ")");
             }
         }
 
@@ -126,5 +145,23 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return TransportHelper.GetReceiveQueryString(connection, data, _transport);
         }
 
+        public abstract void LostConnection(IConnection connection);
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (AbortResetEvent != null)
+                {
+                    AbortResetEvent.Dispose();
+                }
+            }
+        }
     }
 }

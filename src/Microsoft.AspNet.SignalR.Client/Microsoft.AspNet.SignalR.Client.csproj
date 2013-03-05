@@ -61,14 +61,12 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
       <Link>Infrastructure\ExceptionsExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
-      <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
+    <Compile Include="HeartBeatMonitor.cs" />
     <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
@@ -81,6 +79,7 @@
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="KeepAliveData.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />
@@ -126,7 +125,8 @@
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir).nuget\NuGet.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="!HasTrailingSlash('$(SolutionDir)')" />
+  <Import Project="$(SolutionDir).nuget\NuGet.targets" Condition="HasTrailingSlash('$(SolutionDir)')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

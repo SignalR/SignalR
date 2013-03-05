@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Newtonsoft.Json;
@@ -15,32 +16,25 @@ namespace Microsoft.AspNet.SignalR.Transports
     /// </summary>
     public sealed class PersistentResponse : IJsonWritable
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="PersistentResponse"/>.
-        /// </summary>
+        private readonly Func<Message, bool> _exclude;
+        private readonly Action<TextWriter> _writeCursor;
+
         public PersistentResponse()
-            : this(m => false)
+            : this(message => true, writer => { })
         {
+
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="PersistentResponse"/>.
         /// </summary>
         /// <param name="exclude">A filter that determines whether messages should be written to the client.</param>
-        public PersistentResponse(Func<Message, bool> exclude)
+        /// <param name="writeCursor">The cursor writer.</param>
+        public PersistentResponse(Func<Message, bool> exclude, Action<TextWriter> writeCursor)
         {
-            ExcludeFilter = exclude;
+            _exclude = exclude;
+            _writeCursor = writeCursor;
         }
-
-        /// <summary>
-        /// A filter that determines whether messages should be written to the client.
-        /// </summary>
-        public Func<Message, bool> ExcludeFilter { get; private set; }
-
-        /// <summary>
-        /// The id of the last message in the connection received.
-        /// </summary>
-        public string MessageId { get; set; }
 
         /// <summary>
         /// The list of messages to be sent to the receiving connection.
@@ -48,6 +42,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "This is an optimization and this type is only used for serialization.")]
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This type is only used for serialization")]
         public IList<ArraySegment<Message>> Messages { get; set; }
+
+        public bool Terminal { get; set; }
 
         /// <summary>
         /// The total count of the messages sent the receiving connection.
@@ -86,11 +82,23 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <param name="writer">The <see cref="System.IO.TextWriter"/> that receives the JSON serialization.</param>
         void IJsonWritable.WriteJson(TextWriter writer)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException("writer");
+            }
+
             var jsonWriter = new JsonTextWriter(writer);
             jsonWriter.WriteStartObject();
 
-            jsonWriter.WritePropertyName("C");
-            jsonWriter.WriteValue(MessageId);
+            // REVIEW: Is this 100% correct?
+            writer.Write('"');
+            writer.Write("C");
+            writer.Write('"');
+            writer.Write(':');
+            writer.Write('"');
+            _writeCursor(writer);
+            writer.Write('"');
+            writer.Write(',');
 
             if (Disconnect)
             {
@@ -103,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 jsonWriter.WritePropertyName("T");
                 jsonWriter.WriteValue(1);
             }
-            
+
             if (GroupsToken != null)
             {
                 jsonWriter.WritePropertyName("G");
@@ -119,11 +127,54 @@ namespace Microsoft.AspNet.SignalR.Transports
             jsonWriter.WritePropertyName("M");
             jsonWriter.WriteStartArray();
 
-            Messages.Enumerate(m => !m.IsCommand && !ExcludeFilter(m),
-                               m => jsonWriter.WriteRawValue(m.Value));
+            WriteMessages(writer, jsonWriter);
 
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
+        }
+
+        private void WriteMessages(TextWriter writer, JsonTextWriter jsonWriter)
+        {
+            if (Messages == null)
+            {
+                return;
+            }
+
+            // If the writer is a binary writer then write to the underlying writer directly
+            var binaryWriter = writer as IBinaryWriter;
+
+            bool first = true;
+
+            for (int i = 0; i < Messages.Count; i++)
+            {
+                ArraySegment<Message> segment = Messages[i];
+                for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
+                {
+                    Message message = segment.Array[j];
+
+                    if (!message.IsCommand && !_exclude(message))
+                    {
+                        if (binaryWriter != null)
+                        {
+                            if (!first)
+                            {
+                                // We need to write the array separator manually
+                                writer.Write(',');
+                            }
+
+                            // If we can write binary then just write it
+                            binaryWriter.Write(message.Value);
+
+                            first = false;
+                        }
+                        else
+                        {
+                            // Write the raw JSON value
+                            jsonWriter.WriteRawValue(message.GetString());
+                        }
+                    }
+                }
+            }
         }
     }
 }

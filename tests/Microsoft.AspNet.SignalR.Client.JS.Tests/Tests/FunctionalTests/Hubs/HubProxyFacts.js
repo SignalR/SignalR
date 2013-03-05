@@ -23,63 +23,63 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
     });
 });
 
-if (!window.document.commandLineTest) {
-    // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
-    testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
-        QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in invocation callbacks.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createHubConnection(testName),
-                demo = connection.createHubProxies().demo,
-                onerror = window.onerror;
+QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
 
-            window.onerror = function (errorMessage) {
-                assert.ok(errorMessage.match(/overload error/));
-                end();
-                return true;
-            }
+// Replacing window.onerror will not capture uncaught errors originating from inside an iframe
+testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
+    QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in invocation callbacks.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(testName),
+            demo = connection.createHubProxies().demo,
+            onerror = window.onerror;
 
-            connection.start({ transport: transport }).done(function () {
-                demo.server.overload().done(function () {
-                    throw new Error("overload error");
-                });
-            }).fail(function (reason) {
-                assert.ok(false, "Failed to initiate SignalR connection");
-                end();
+        window.onerror = function (errorMessage) {
+            assert.ok(errorMessage.match(/overload error/));
+            end();
+            return true;
+        }
+
+        connection.start({ transport: transport }).done(function () {
+            demo.server.overload().done(function () {
+                throw new Error("overload error");
             });
-
-            // Cleanup
-            return function () {
-                window.onerror = onerror;
-                connection.stop();
-            };
+        }).fail(function (reason) {
+            assert.ok(false, "Failed to initiate SignalR connection");
+            end();
         });
 
-        QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in client hub methods.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createHubConnection(testName),
-                demo = connection.createHubProxies().demo,
-                onerror = window.onerror;
-
-            window.onerror = function (errorMessage) {
-                assert.ok(errorMessage.match(/error in callback/));
-                end();
-                return true;
-            }
-
-            demo.client.errorInCallback = function () {
-                throw new Error("error in callback");
-            }
-
-            connection.start({ transport: transport }).done(function () {
-                demo.server.doSomethingAndCallError();
-            }).fail(function (reason) {
-                assert.ok(false, "Failed to initiate SignalR connection");
-                end();
-            });
-
-            // Cleanup
-            return function () {
-                window.onerror = onerror;
-                connection.stop();
-            };
-        });
+        // Cleanup
+        return function () {
+            window.onerror = onerror;
+            connection.stop();
+        };
     });
-}
+
+    QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in client hub methods.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(testName),
+            demo = connection.createHubProxies().demo,
+            onerror = window.onerror;
+
+        window.onerror = function (errorMessage) {
+            assert.ok(errorMessage.match(/error in callback/));
+            end();
+            return true;
+        }
+
+        demo.client.errorInCallback = function () {
+            throw new Error("error in callback");
+        }
+
+        connection.start({ transport: transport }).done(function () {
+            demo.server.doSomethingAndCallError();
+        }).fail(function (reason) {
+            assert.ok(false, "Failed to initiate SignalR connection");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            window.onerror = onerror;
+            connection.stop();
+        };
+    });
+});

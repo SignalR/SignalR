@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var wh = new ManualResetEventSlim();
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/protected");
+                    var connection = CreateConnection(host, "/protected");
 
                     Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var wh = new ManualResetEventSlim();
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/add-group");
+                    var connection = CreateConnection(host, "/add-group");
                     connection.Received += data =>
                     {
                         Assert.Equal("hey", data);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/multisend");
+                    var connection = CreateConnection(host, "/multisend");
                     var results = new List<string>();
                     connection.Received += data =>
                     {
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/multisend");
+                    var connection = CreateConnection(host, "/multisend");
                     var results = new List<string>();
                     connection.Received += data =>
                     {
@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/my-reconnect");
+                    var connection = CreateConnection(host, "/my-reconnect");
                     connection.Start(host.Transport).Wait();
 
                     host.Shutdown();
@@ -331,7 +331,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/groups");
+                    var connection = CreateConnection(host, "/groups");
                     var list = new List<string>();
                     connection.Received += data =>
                     {
@@ -375,7 +375,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                                     disconnectTimeout: 6,
                                     connectionTimeout: 2);
 
-                    var connection = CreateConnection(host.Url + "/rejoin-groups");
+                    var connection = CreateConnection(host, "/rejoin-groups");
 
                     var list = new List<string>();
                     connection.Received += data =>
@@ -422,8 +422,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection1 = CreateConnection(host.Url + "/filter");
-                    var connection2 = CreateConnection(host.Url + "/filter");
+                    var connection1 = CreateConnection(host, "/filter");
+                    var connection2 = CreateConnection(host, "/filter");
 
                     var wh1 = new ManualResetEventSlim(initialState: false);
                     var wh2 = new ManualResetEventSlim(initialState: false);
@@ -431,8 +431,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection1.Received += data => wh1.Set();
                     connection2.Received += data => wh2.Set();
 
-                    connection1.Start(host.Transport).Wait();
-                    connection2.Start(host.Transport).Wait();
+                    connection1.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
 
                     connection1.SendWithTimeout("test");
 
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/sync-error");
+                    var connection = CreateConnection(host, "/sync-error");
 
                     connection.Start(host.Transport).Wait();
 
@@ -477,8 +477,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/items");
-                    var connection2 = CreateConnection(host.Url + "/items");
+                    var connection = CreateConnection(host, "/items");
+                    var connection2 = CreateConnection(host, "/items");
 
                     var results = new List<RequestItemsResponse>();
                     connection2.Received += data =>
@@ -490,8 +490,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                     };
 
-                    connection.Start(host.Transport).Wait();
-                    connection2.Start(host.Transport).Wait();
+                    connection.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
 
                     Thread.Sleep(TimeSpan.FromSeconds(2));
 

@@ -102,8 +102,9 @@
     <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\demohub\DemoHub.cs">
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
-    <Compile Include="App_Start\RegisterHubs.cs" />
-    <Compile Include="App_Start\TestEndPoint.cs" />
+    <Compile Include="App_Start\InitializeIISHost.cs" />
+    <Compile Include="Handlers\GCHandler.cs" />
+    <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />
     <Compile Include="Connections\AddGroupOnConnectedConnection.cs" />
     <Compile Include="Connections\ConnectionThatUsesItems.cs" />
@@ -126,12 +127,14 @@
     <Compile Include="Infrastructure\EmptyProtectedData.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />
     <Compile Include="Infrastructure\HostType.cs" />
+    <Compile Include="Infrastructure\HttpSysEtwWrapper.cs" />
     <Compile Include="Infrastructure\IISExpressTestHost.cs" />
     <Compile Include="Infrastructure\IIS\SiteManager.cs" />
     <Compile Include="Infrastructure\ITestHost.cs" />
     <Compile Include="Infrastructure\MemoryTestHost.cs" />
     <Compile Include="Infrastructure\OwinTestHost.cs" />
     <Compile Include="Infrastructure\RequestItemsResponse.cs" />
+    <Compile Include="Infrastructure\SystemNetLogging.cs" />
     <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Owin\BasicAuthApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

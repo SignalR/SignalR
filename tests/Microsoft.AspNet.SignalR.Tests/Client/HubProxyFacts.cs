@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -27,6 +28,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             connection.Setup(m => m.Send(It.IsAny<string>()))
                       .Returns(TaskAsyncHelper.Empty);
+
+            connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
 
             var hubProxy = new HubProxy(connection.Object, "foo");
 
@@ -55,6 +58,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             connection.Setup(m => m.Send(It.IsAny<string>()))
                       .Returns(TaskAsyncHelper.Empty);
 
+            connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
+
             var hubProxy = new HubProxy(connection.Object, "foo");
 
             hubProxy.Invoke("Anything").Wait();
@@ -80,6 +85,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             connection.Setup(m => m.Send(It.IsAny<string>()))
                       .Returns(TaskAsyncHelper.Empty);
 
+            connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
+
             var hubProxy = new HubProxy(connection.Object, "foo");
 
             var result = hubProxy.Invoke<object>("Anything").Result;
@@ -91,6 +98,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void InvokeEventRaisesEvent()
         {
             var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
+
             var hubProxy = new HubProxy(connection.Object, "foo");
             bool eventRaised = false;
 
@@ -107,6 +116,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void InvokeEventRaisesEventWithData()
         {
             var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
+
             var hubProxy = new HubProxy(connection.Object, "foo");
             bool eventRaised = false;
 

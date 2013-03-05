@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
@@ -8,6 +10,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         string Url { get; }
 
         IClientTransport Transport { get; set; }
+
+        TextWriter ClientTraceOutput { get; set; }
+
+        IList<IDisposable> Disposables { get; }
+
+        IDictionary<string, string> ExtraData { get; }
 
         Func<IClientTransport> TransportFactory { get; set; }
 

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private CancellationToken _disconnectToken;
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
+        private ManualResetEventSlim _abortEventSlim;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -28,7 +27,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _client = client;
             _disconnectToken = CancellationToken.None;
-
             ReconnectDelay = TimeSpan.FromSeconds(2);
         }
 
@@ -36,6 +34,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// The time to wait after a connection drops to try reconnecting.
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the transport supports keep alive
+        /// </summary>
+        public bool SupportsKeepAlive
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         /// <summary>
         /// The name of the transport.
@@ -72,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
-            Debug.WriteLine("WS: " + builder.Uri);
+            _connectionInfo.Connection.Trace.WriteLine("WS: " + builder.Uri);
 
             var webSocket = new ClientWebSocket();
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
@@ -81,9 +90,22 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
         }
 
-        public void Abort(IConnection connection)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
-            Close();
+            lock (this)
+            {
+                if (_abortEventSlim == null)
+                {
+                    _abortEventSlim = new ManualResetEventSlim();
+
+                    CloseAsync();
+                }
+            }
+
+            if (!_abortEventSlim.Wait(timeout))
+            {
+                _connectionInfo.Connection.Trace.WriteLine("WS: Abort never fired (" + _connectionInfo.Connection.ConnectionId + ")");
+            }
         }
 
         public Task Send(IConnection connection, string data)
@@ -93,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnMessage(string message)
         {
-            Debug.WriteLine("WS Receive: " + message);
+            _connectionInfo.Connection.Trace.WriteLine("WS: OnMessage({0}, {1})", _connectionInfo.Connection.ConnectionId, message);
 
             bool timedOut;
             bool disconnected;
@@ -120,8 +142,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnClose(bool clean)
         {
+            _connectionInfo.Connection.Trace.WriteLine("WS: OnClose({0}, {1})", _connectionInfo.Connection.ConnectionId, clean);
+
             if (_disconnectToken.IsCancellationRequested)
             {
+                return;
+            }
+
+            if (_abortEventSlim != null)
+            {
+                _abortEventSlim.Set();
                 return;
             }
 
@@ -157,9 +187,32 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnError()
         {
-            Debug.WriteLine("OnError({0}, {1})", _connectionInfo.Connection.ConnectionId, Error);
-
             _connectionInfo.Connection.OnError(Error);
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            _connectionInfo.Connection.Trace.WriteLine("WS: LostConnection({0})", _connectionInfo.Connection.ConnectionId);
+
+            Close();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_abortEventSlim != null)
+                {
+                    _abortEventSlim.Dispose();
+                    _abortEventSlim = null;
+                }
+            }
         }
 
         private class WebSocketConnectionInfo

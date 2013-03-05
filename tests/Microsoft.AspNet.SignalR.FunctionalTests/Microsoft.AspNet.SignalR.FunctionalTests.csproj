@@ -73,6 +73,7 @@
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
     <Compile Include="Client\HubProxyFacts.cs" />
+    <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="config\applicationhost.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

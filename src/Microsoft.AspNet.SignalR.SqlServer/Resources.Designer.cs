@@ -68,5 +68,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer {
                 return ResourceManager.GetString("Error_SignalRSQLScaleOutNewerThanCurrentVersion", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported value for parameter &apos;tableCount&apos;. Must be 1..
+        /// </summary>
+        internal static string Error_TableCountMustBeOne {
+            get {
+                return ResourceManager.GetString("Error_TableCountMustBeOne", resourceCulture);
+            }
+        }
     }
 }

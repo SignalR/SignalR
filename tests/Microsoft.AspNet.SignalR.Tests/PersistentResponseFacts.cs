@@ -15,9 +15,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var writer = new StringWriter();
-            var response = new PersistentResponse(m => m.Key == "key2");
+            var response = new PersistentResponse(m => m.Key == "key2", w =>
+            {
+                w.Write("Baz");
+            });
             response.Messages = new List<ArraySegment<Message>>();
-            response.MessageId = "Baz";
             response.Messages.Add(new ArraySegment<Message>(new[] { new Message("1", "key", "value1"), 
                                                                     new Message("1", "key2", "value2") }, 0, 2));
 
@@ -33,9 +35,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var writer = new StringWriter();
-            var response = new PersistentResponse(m => false);
+            var response = new PersistentResponse(m => false, w =>
+            {
+                w.Write("Baz");
+            });
             response.Messages = new List<ArraySegment<Message>>();
-            response.MessageId = "Baz";
             response.Messages.Add(new ArraySegment<Message>(new[] { new Message("1", "key", "value1") { CommandId = "something"}, 
                                                                     new Message("1", "key2", "value2") }, 0, 2));
 
@@ -51,9 +55,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var writer = new StringWriter();
-            var response = new PersistentResponse(m => m.Key == "key2");
+            var response = new PersistentResponse(m => m.Key == "key2", w =>
+            {
+                w.Write("Baz");
+            });
             response.Messages = new List<ArraySegment<Message>>();
-            response.MessageId = "Baz";
             response.Messages.Add(new ArraySegment<Message>(new[] { new Message("1", "key", "value1"), 
                                                                     new Message("1", "key2", "value2") }, 0, 2));
 
@@ -69,9 +75,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var writer = new StringWriter();
-            var response = new PersistentResponse(m => m.Key == "key2");
+            var response = new PersistentResponse(m => m.Key == "key2", w =>
+            {
+                w.Write("Baz");
+            });
             response.Messages = new List<ArraySegment<Message>>();
-            response.MessageId = "Baz";
             response.Messages.Add(new ArraySegment<Message>(new[] { new Message("1", "key", "value1"), 
                                                                     new Message("1", "key2", "value2") }, 0, 2));
 

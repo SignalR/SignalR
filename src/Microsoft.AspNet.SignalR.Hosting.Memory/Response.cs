@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
@@ -99,6 +100,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 _flush();
             }
 
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                Flush();
+                return TaskAsyncHelper.Empty;
+            }
+
             public override long Length
             {
                 get { throw new NotImplementedException(); }
@@ -118,34 +125,23 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                try
+                byte[] underlyingBuffer = _currentStream.GetBuffer();
+
+                int canRead = (int)_currentStream.Length - _readPos;
+
+                if (canRead == 0)
                 {
-                    byte[] underlyingBuffer = _currentStream.GetBuffer();
-
-                    int canRead = (int)_currentStream.Length - _readPos;
-
-                    if (canRead == 0)
-                    {
-                        // Consider trimming the buffer after consuming up to _readPos
-                        return 0;
-                    }
-
-                    int read = Math.Min(count, canRead);
-
-                    Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
-
-                    _readPos += read;
-
-                    return read;
-                }
-                catch (OperationCanceledException)
-                {
+                    // Consider trimming the buffer after consuming up to _readPos
                     return 0;
                 }
-                catch (ObjectDisposedException)
-                {
-                    return 0;
-                }
+
+                int read = Math.Min(count, canRead);
+
+                Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
+
+                _readPos += read;
+
+                return read;
             }
 
             public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
@@ -155,8 +151,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 var closeDisposer = new Disposer();
                 var abortDisposer = new Disposer();
 
-                IDisposable closeRegistration = CancellationToken.SafeRegister(asyncResult =>
+                IDisposable closeRegistration = CancellationToken.SafeRegister(cancelState =>
                 {
+                    var asyncResult = (AsyncResult<int>)cancelState;
                     lock (_completedLock)
                     {
                         if (!asyncResult.IsCompleted)
@@ -170,8 +167,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
                 closeDisposer.Set(closeRegistration);
 
-                IDisposable abortRegistration = _abortToken.SafeRegister(asyncResult =>
+                IDisposable abortRegistration = _abortToken.SafeRegister(cancelState =>
                 {
+                    var asyncResult = (AsyncResult<int>)cancelState;
                     lock (_completedLock)
                     {
                         if (!asyncResult.IsCompleted)

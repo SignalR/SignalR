@@ -40,69 +40,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return bus.Publish(message);
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's disposed in an async manner.")]
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
-        internal static Task<T> Receive<T>(this IMessageBus bus,
-                                           ISubscriber subscriber,
-                                           string cursor,
-                                           CancellationToken cancel,
-                                           int maxMessages,
-                                           Func<MessageResult, T> map) where T : class
-        {
-            var tcs = new TaskCompletionSource<T>();
-            IDisposable subscription = null;
-
-            var disposer = new Disposer();
-            int resultSet = 0;
-            var result = default(T);
-            IDisposable registration = null;
-
-            registration = cancel.SafeRegister(state =>
-            {
-                state.Dispose();
-            },
-            disposer);
-
-            try
-            {
-                subscription = bus.Subscribe(subscriber, cursor, messageResult =>
-                {
-                    // Mark the flag as set so we only set the result once
-                    if (Interlocked.Exchange(ref resultSet, 1) == 0)
-                    {
-                        result = map(messageResult);
-                    }
-
-                    if (messageResult.Terminal)
-                    {
-                        Interlocked.CompareExchange(ref result, map(messageResult), null);
-
-                        // Set the result
-                        tcs.TrySetResult(result);
-
-                        // Dispose of the cancellation token subscription
-                        registration.Dispose();
-                    }
-
-                    return TaskAsyncHelper.False;
-                },
-                maxMessages);
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetUnwrappedException(ex);
-
-                registration.Dispose();
-
-                return tcs.Task;
-            }
-
-            // Set the disposable
-            disposer.Set(subscription);
-
-            return tcs.Task;
-        }
-
         public static void Enumerate(this IList<ArraySegment<Message>> messages, Action<Message> onMessage)
         {
             if (messages == null)
@@ -115,10 +52,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("onMessage");
             }
 
-            Enumerate(messages, message => true, onMessage);
+            Enumerate<object>(messages, message => true, (state, message) => onMessage(message), state: null);
         }
 
-        public static void Enumerate(this IList<ArraySegment<Message>> messages, Func<Message, bool> filter, Action<Message> onMessage)
+        public static void Enumerate<T>(this IList<ArraySegment<Message>> messages, Func<Message, bool> filter, Action<T, Message> onMessage, T state)
         {
             if (messages == null)
             {
@@ -144,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     if (filter(message))
                     {
-                        onMessage(message);
+                        onMessage(state, message);
                     }
                 }
             }

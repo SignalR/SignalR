@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     {
                         string url = GetUrl(protectedData, connection);
                         var response = await host.Get(url);
-                        reader = new EventSourceStreamReader(response.GetResponseStream());
+                        reader = new EventSourceStreamReader(connection, response.GetResponseStream());
 
                         reader.Message = sseEvent =>
                         {
@@ -81,11 +81,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                 Assert.True(connectionTcs.Task.Wait(TimeSpan.FromSeconds(5)));
                 Assert.Equal("STUFFF", connectionTcs.Task.Result);
                 Assert.False(spyTcs.Task.Wait(TimeSpan.FromSeconds(5)));
-
-                if (reader != null)
-                {
-                    reader.Close();
-                }
 
                 connection.Stop();
             }

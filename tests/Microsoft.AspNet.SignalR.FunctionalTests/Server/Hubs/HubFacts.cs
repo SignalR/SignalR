@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url);
+                var connection = CreateHubConnection(host);
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -147,8 +147,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
                 });
 
-                connection.Start(host.Transport).Wait();
-                connection2.Start(host.Transport).Wait();
+                connection.Start(host.TransportFactory()).Wait();
+                connection2.Start(host.TransportFactory()).Wait();
 
                 Thread.Sleep(TimeSpan.FromSeconds(2));
 
@@ -339,13 +339,17 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false);
+                var query = new Dictionary<string, string>();
+                SetHostData(host, query);
+                query["test"] = GetTestName();
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
 
-                connection.Start(host.Transport).Wait();
+                connection.Start(host.TransportFactory()).Wait();
 
-                connection.Start(host.Transport).Wait();
+                connection.Start(host.TransportFactory()).Wait();
 
                 var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
 
@@ -518,7 +522,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrlAspNet" } });
+                var query = new Dictionary<string, string> { { "test", GetTestName() } };
+                SetHostData(host, query);
+
+                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -837,7 +845,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=CustomQueryStringRaw");
+                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=" + GetTestName());
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 
@@ -862,8 +871,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
                 var qs = new Dictionary<string, string>();
                 qs["a"] = "b";
-                qs["test"] = "CustomQueryString";
+                qs["test"] = GetTestName();
                 var connection = new Client.Hubs.HubConnection(host.Url, qs);
+                connection.Trace = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 

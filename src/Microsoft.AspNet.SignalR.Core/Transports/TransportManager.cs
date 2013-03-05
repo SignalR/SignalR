@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// Initializes a new instance of <see cref="TransportManager"/> class.
         /// </summary>
         /// <param name="resolver">The default <see cref="IDependencyResolver"/>.</param>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Those are factory methods")]
         public TransportManager(IDependencyResolver resolver)
         {
             if (resolver == null)

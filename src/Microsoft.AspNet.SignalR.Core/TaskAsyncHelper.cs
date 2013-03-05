@@ -93,9 +93,18 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Series(params Func<Task>[] tasks)
+        public static Task Series(Func<object, Task>[] tasks, object[] state)
         {
-            return tasks.Aggregate<Func<Task>, Task>(TaskAsyncHelper.Empty, (prev, next) => prev.Then(next));
+            Task prev = TaskAsyncHelper.Empty;
+            Task finalTask = TaskAsyncHelper.Empty;
+
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                prev = finalTask;
+                finalTask = prev.Then(tasks[i], state[i]);
+            }
+
+            return finalTask;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -131,8 +140,9 @@ namespace Microsoft.AspNet.SignalR
                 });
         }
 #endif
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state) where TTask : Task
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
             {
@@ -143,10 +153,17 @@ namespace Microsoft.AspNet.SignalR
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
 #endif
-                    handler(ex);
+                    handler(ex, state);
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
             return task;
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
+        {
+            return task.Catch((ex, state) => ((Action<AggregateException>)state).Invoke(ex),
+                              handler);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -183,7 +200,8 @@ namespace Microsoft.AspNet.SignalR
                 {
                     tcs.TrySetResult(null);
                 }
-            });
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -206,30 +224,6 @@ namespace Microsoft.AspNet.SignalR
             });
         }
 
-        /// <summary>
-        /// Passes a task returning function into another task returning function so that
-        /// it can decide when it starts and returns a task that completes when all are finished
-        /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Interleave<T>(Func<T, Func<Task>, Task> before, Func<Task> after, T arg, TaskCompletionSource<object> tcs)
-        {
-            var tasks = new[] {
-                            tcs.Task,
-                            before(arg, ()=> {
-                                // Run the after task
-                                Task task = after();
-
-                                // Mark the tcs as done when it completes
-                                task.ContinueWith(tcs);
-
-                                // Return the task we kicked off
-                                return task;
-                            })
-                        };
-
-            return tasks.Return();
-        }
-
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Return(this Task[] tasks)
         {
@@ -243,10 +237,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor);
@@ -312,10 +304,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, arg1);
@@ -331,10 +321,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, arg1, arg2);
@@ -350,13 +338,11 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1).FastUnwrap();
+                    return FromMethod(successor, arg1);
 
                 default:
                     return GenericDelegates<object, Task, T1, object>.ThenWithArgs(task, successor, arg1)
@@ -370,13 +356,11 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, arg1, arg2).FastUnwrap();
+                    return FromMethod(successor, arg1, arg2);
 
                 default:
                     return GenericDelegates<object, Task, T1, T2>.ThenWithArgs(task, successor, arg1, arg2)
@@ -396,7 +380,7 @@ namespace Microsoft.AspNet.SignalR
                     return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task.Result).FastUnwrap();
+                    return FromMethod(successor, task.Result);
 
                 default:
                     return TaskRunners<T, Task<TResult>>.RunTask(task, t => successor(t.Result))
@@ -448,10 +432,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor);
@@ -474,7 +456,7 @@ namespace Microsoft.AspNet.SignalR
                     return Canceled<TResult>();
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor).FastUnwrap();
+                    return FromMethod(successor);
 
                 default:
                     return TaskRunners<object, Task<TResult>>.RunTask(task, successor)
@@ -488,10 +470,8 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor, task.Result);
@@ -507,13 +487,11 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task.Result).FastUnwrap();
+                    return FromMethod(successor, task.Result);
 
                 default:
                     return TaskRunners<TResult, Task>.RunTask(task, t => successor(t.Result))
@@ -527,13 +505,11 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError<TResult>(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled<TResult>();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
-                    return FromMethod(successor, task, arg1).FastUnwrap();
+                    return FromMethod(successor, task, arg1);
 
                 default:
                     return GenericDelegates<TResult, Task<TResult>, T1, object>.ThenWithArgs(task, successor, arg1)
@@ -543,25 +519,21 @@ namespace Microsoft.AspNet.SignalR
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller")]
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Finally(this Task task, Action next)
+        public static Task Finally(this Task task, Action<object> next, object state)
         {
             try
             {
                 switch (task.Status)
                 {
                     case TaskStatus.Faulted:
-                        next();
-                        return FromError(task.Exception);
-
                     case TaskStatus.Canceled:
-                        next();
-                        return Canceled();
-
+                        next(state);
+                        return task;
                     case TaskStatus.RanToCompletion:
-                        return FromMethod(next);
+                        return FromMethod(next, state);
 
                     default:
-                        return RunTaskSynchronously(task, next, onlyOnSuccess: false);
+                        return RunTaskSynchronously(task, next, state, onlyOnSuccess: false);
                 }
             }
             catch (Exception ex)
@@ -576,16 +548,14 @@ namespace Microsoft.AspNet.SignalR
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
-                    return FromError(task.Exception);
-
                 case TaskStatus.Canceled:
-                    return Canceled();
+                    return task;
 
                 case TaskStatus.RanToCompletion:
                     return FromMethod(successor);
 
                 default:
-                    return RunTaskSynchronously(task, successor);
+                    return RunTaskSynchronously(task, state => ((Action)state).Invoke(), successor);
             }
         }
 
@@ -622,35 +592,6 @@ namespace Microsoft.AspNet.SignalR
             },
             TaskContinuationOptions.ExecuteSynchronously);
 #endif
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task AllSucceeded(this Task[] tasks, Action continuation)
-        {
-            return AllSucceeded(tasks, _ => continuation());
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task AllSucceeded(this Task[] tasks, Action<Task[]> continuation)
-        {
-            return Task.Factory.ContinueWhenAll(tasks, _ =>
-            {
-                var cancelledTask = tasks.FirstOrDefault(task => task.IsCanceled);
-                if (cancelledTask != null)
-                {
-                    throw new TaskCanceledException();
-                }
-
-                var allExceptions =
-                    tasks.Where(task => task.IsFaulted).SelectMany(task => task.Exception.InnerExceptions).ToList();
-
-                if (allExceptions.Count > 0)
-                {
-                    throw new AggregateException(allExceptions);
-                }
-
-                continuation(tasks);
-            });
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -702,7 +643,28 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task FromMethod(Func<Task> func)
         {
-            return FromMethod<Task>(() => func()).FastUnwrap();
+            try
+            {
+                return func();
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task<TResult> FromMethod<TResult>(Func<Task<TResult>> func)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception ex)
+            {
+                return FromError<TResult>(ex);
+            }
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -721,11 +683,67 @@ namespace Microsoft.AspNet.SignalR
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task FromMethod<T1>(Func<T1, Task> func, T1 arg)
+        {
+            try
+            {
+                return func(arg);
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task FromMethod<T1, T2>(Func<T1, T2, Task> func, T1 arg1, T2 arg2)
+        {
+            try
+            {
+                return func(arg1, arg2);
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task<TResult> FromMethod<T1, TResult>(Func<T1, Task<TResult>> func, T1 arg)
+        {
+            try
+            {
+                return func(arg);
+            }
+            catch (Exception ex)
+            {
+                return FromError<TResult>(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task<TResult> FromMethod<T1, TResult>(Func<T1, TResult> func, T1 arg)
         {
             try
             {
                 return FromResult<TResult>(func(arg));
+            }
+            catch (Exception ex)
+            {
+                return FromError<TResult>(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task<TResult> FromMethod<T1, T2, TResult>(Func<T1, T2, Task<TResult>> func, T1 arg1, T2 arg2)
+        {
+            try
+            {
+                return func(arg1, arg2);
             }
             catch (Exception ex)
             {
@@ -846,9 +864,9 @@ namespace Microsoft.AspNet.SignalR
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        private static Task RunTaskSynchronously(Task task, Action next, bool onlyOnSuccess = true)
+        private static Task RunTaskSynchronously(Task task, Action<object> next, object state, bool onlyOnSuccess = true)
         {
-            var tcs = new TaskCompletionSource<object>(); 
+            var tcs = new TaskCompletionSource<object>();
             task.ContinueWith(t =>
             {
                 try
@@ -857,7 +875,7 @@ namespace Microsoft.AspNet.SignalR
                     {
                         if (!onlyOnSuccess)
                         {
-                            next();
+                            next(state);
                         }
 
                         tcs.SetUnwrappedException(t.Exception);
@@ -866,14 +884,14 @@ namespace Microsoft.AspNet.SignalR
                     {
                         if (!onlyOnSuccess)
                         {
-                            next();
+                            next(state);
                         }
 
                         tcs.SetCanceled();
                     }
                     else
                     {
-                        next();
+                        next(state);
                         tcs.SetResult(null);
                     }
                 }

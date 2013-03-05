@@ -2,19 +2,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     public interface ISubscriber
     {
-        IEnumerable<string> EventKeys { get; }
+        IList<string> EventKeys { get; }
 
-        Func<string> GetCursor { get; set; }
+        Action<TextWriter> WriteCursor { get; set; }
 
         string Identity { get; }
 
-        event Action<string> EventKeyAdded;
+        event Action<ISubscriber, string> EventKeyAdded;
 
-        event Action<string> EventKeyRemoved;
+        event Action<ISubscriber, string> EventKeyRemoved;
+
+        Subscription Subscription { get; set; }
     }
 }

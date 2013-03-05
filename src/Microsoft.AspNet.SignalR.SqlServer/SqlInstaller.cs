@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -11,32 +12,38 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     internal class SqlInstaller
     {
         private const int SchemaVersion = 1;
-        private const string SchemaTableName = "[dbo].[SignalR_Schema]";
-        private const string CheckSchemaTableExistsSql = "SELECT OBJECT_ID(@TableName)";
-        private const string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaTableName;
-        private const string CreateSchemaTableSql = "CREATE TABLE " + SchemaTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
-        private const string InsertSchemaTableSql = "INSERT INTO " + SchemaTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
-        private const string UpdateSchemaTableSql = "UPDATE " + SchemaTableName + " SET [SchemaVersion] = @SchemaVersion";
+        private const string SchemaTableName = "SignalR_Schema";
+        private const string SchemaFullTableName = "[" + SqlMessageBus.SchemaName + "].[" + SchemaTableName + "]";
+        private const string CheckDatabaseSchemaSql = "SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '" + SqlMessageBus.SchemaName + "'";
+        private const string CreateDatabaseSchemaSql = "CREATE SCHEMA [" + SqlMessageBus.SchemaName + "]";
+        private const string CheckSchemaTableExistsSql = "SELECT [object_id] FROM [sys].[tables] WHERE [name] = @TableName AND [schema_id] = @SchemaId";
+        private const string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaFullTableName;
+        private const string CreateSchemaTableSql = "CREATE TABLE " + SchemaFullTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
+        private const string InsertSchemaTableSql = "INSERT INTO " + SchemaFullTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
+        private const string UpdateSchemaTableSql = "UPDATE " + SchemaFullTableName + " SET [SchemaVersion] = @SchemaVersion";
 
         private readonly string _connectionString;
         private readonly string _messagesTableNamePrefix;
         private readonly int _tableCount;
+        private readonly TraceSource _trace;
 
         private string _exstingTablesSql = "SELECT [name] FROM [sys].[objects] WHERE [name] LIKE('{0}%')";
-        private string _dropTableSql = "DROP TABLE {0}";
-        private string _createMessagesTableSql = @"CREATE TABLE {0} (
+        private string _dropTableSql = "DROP TABLE [" + SqlMessageBus.SchemaName + "].[{0}]";
+        private string _createMessagesTableSql = "CREATE TABLE [" + SqlMessageBus.SchemaName + @"].[{0}] (
                                                       [PayloadId] BIGINT NOT NULL PRIMARY KEY IDENTITY,
-	                                                  [Payload] NVARCHAR(MAX) NOT NULL
+                                                      [Payload] VARBINARY(MAX) NOT NULL,
+                                                      [InsertedOn] DATETIME NOT NULL
                                                   )";
         private readonly Lazy<object> _initDummy;
 
-        public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount)
+        public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _messagesTableNamePrefix = tableNamePrefix;
             _tableCount = tableCount;
             _exstingTablesSql = String.Format(CultureInfo.InvariantCulture, _exstingTablesSql, _messagesTableNamePrefix);
             _initDummy = new Lazy<object>(Install);
+            _trace = traceSource;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Need dummy variable to call _initDummy.Value.")]
@@ -45,19 +52,47 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var dummy = _initDummy.Value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification="Query doesn't come from user code")]
         private object Install()
         {
+            _trace.TraceInformation("Start installing SignalR SQL tables");
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
+                int? dbSchemaId;
                 var schemaTableExists = false;
                 var schemaRowExists = false;
                 object objectId = null;
 
+                // Check for database schema
+                using (var cmd = new SqlCommand(CheckDatabaseSchemaSql, connection))
+                {
+                    dbSchemaId = (int?)cmd.ExecuteScalar();
+                }
+
+                if (!dbSchemaId.HasValue)
+                {
+                    // Create the database schema
+                    using (var cmd = new SqlCommand(CreateDatabaseSchemaSql, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Get the database schema ID
+                    using (var cmd = new SqlCommand(CheckDatabaseSchemaSql, connection))
+                    {
+                        dbSchemaId = (int?)cmd.ExecuteScalar();
+                    }
+
+                    Debug.Assert(dbSchemaId.HasValue, "This shouldn't happen");
+                }
+
                 using (var cmd = new SqlCommand(CheckSchemaTableExistsSql, connection))
                 {
                     cmd.Parameters.AddWithValue("TableName", SchemaTableName);
+                    cmd.Parameters.AddWithValue("SchemaId", dbSchemaId.Value);
                     objectId = cmd.ExecuteScalar();
                 }
 
@@ -70,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         schemaVersion = cmd.ExecuteScalar();
                     }
-
+                    
                     if (schemaVersion == null || schemaVersion == DBNull.Value || (int)schemaVersion < SchemaVersion)
                     {
                         // No schema row or older schema, just continue and we'll update it
@@ -90,7 +125,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
 
                 }
-
 
                 if (!schemaTableExists)
                 {
