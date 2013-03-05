@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             using (var ms = new MemoryStream())
-            using (var binaryWriter = new BinaryWriter(ms))
-            {   
+            {
+                var binaryWriter = new BinaryWriter(ms);
                 binaryWriter.Write(messages.Count);
                 
                 for (int i = 0; i < messages.Count; i++)
@@ -35,8 +35,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public static SqlPayload FromBytes(byte[] data)
         {
             using (var stream = new MemoryStream(data))
-            using (var binaryReader = new BinaryReader(stream))
             {
+                var binaryReader = new BinaryReader(stream);
                 int count = binaryReader.ReadInt32();
 
                 var payload = new SqlPayload { Messages = new List<Message>() };

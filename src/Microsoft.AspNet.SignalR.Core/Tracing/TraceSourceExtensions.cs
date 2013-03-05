@@ -6,34 +6,36 @@ namespace System.Diagnostics
 {
     public static class TraceSourceExtensions
     {
-        public static void TraceVerbose(this TraceSource traceSource, string message)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "msg")]
+        public static void TraceVerbose(this TraceSource traceSource, string msg)
         {
-            Trace(traceSource, TraceEventType.Verbose, message);
+            Trace(traceSource, TraceEventType.Verbose, msg);
         }
 
-        public static void TraceVerbose(this TraceSource traceSource, string message, params object[] args)
+        public static void TraceVerbose(this TraceSource traceSource, string format, params object[] args)
         {
-            Trace(traceSource, TraceEventType.Verbose, message, args);
+            Trace(traceSource, TraceEventType.Verbose, format, args);
         }
 
-        public static void TraceError(this TraceSource traceSource, string message)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "msg")]
+        public static void TraceError(this TraceSource traceSource, string msg)
         {
-            Trace(traceSource, TraceEventType.Error, message);
+            Trace(traceSource, TraceEventType.Error, msg);
         }
 
-        public static void TraceError(this TraceSource traceSource, string message, params object[] args)
+        public static void TraceError(this TraceSource traceSource, string format, params object[] args)
         {
-            Trace(traceSource, TraceEventType.Error, message, args);
+            Trace(traceSource, TraceEventType.Error, format, args);
         }
 
-        private static void Trace(TraceSource traceSource, TraceEventType eventType, string message)
+        private static void Trace(TraceSource traceSource, TraceEventType eventType, string msg)
         {
-            traceSource.TraceEvent(eventType, 0, message);
+            traceSource.TraceEvent(eventType, 0, msg);
         }
 
-        private static void Trace(TraceSource traceSource, TraceEventType eventType, string message, params object[] args)
+        private static void Trace(TraceSource traceSource, TraceEventType eventType, string format, params object[] args)
         {
-            traceSource.TraceEvent(eventType, 0, message, args);
+            traceSource.TraceEvent(eventType, 0, format, args);
         }
     }
 }

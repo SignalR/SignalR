@@ -52,8 +52,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var dummy = _initDummy.Value;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification="Query doesn't come from user code")]
         private object Install()
         {
+            _trace.TraceInformation("Start installing SignalR SQL tables");
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -83,10 +86,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         dbSchemaId = (int?)cmd.ExecuteScalar();
                     }
 
-                    if (!dbSchemaId.HasValue)
-                    {
-                        throw new Exception("Not sure what happened here :S");
-                    }
+                    Debug.Assert(dbSchemaId.HasValue, "This shouldn't happen");
                 }
 
                 using (var cmd = new SqlCommand(CheckSchemaTableExistsSql, connection))

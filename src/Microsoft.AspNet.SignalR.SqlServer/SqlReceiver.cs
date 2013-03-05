@@ -107,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             SetupQueryNotification();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification="Dummy value returned from lazy init routine.")]
         private void SetupQueryNotification()
         {
             _trace.TraceVerbose("Setting up SQL notification");
