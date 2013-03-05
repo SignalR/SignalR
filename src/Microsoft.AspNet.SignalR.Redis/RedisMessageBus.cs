@@ -80,6 +80,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             Trace.TraceEvent(TraceEventType.Error, 0, "OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
 
+            // Change the state to closed and retry connecting
             if (Interlocked.CompareExchange(ref _state,
                                           State.Closed,
                                           State.Connected) == State.Connected)
@@ -117,10 +118,12 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void ConnectWithRetry()
         {
+            // Attempt to change to connecting
             if (Interlocked.CompareExchange(ref _state,
                                             State.Connecting,
                                             State.Connected) == State.Connecting)
             {
+                // Already connected so bail
                 return;
             }
 
