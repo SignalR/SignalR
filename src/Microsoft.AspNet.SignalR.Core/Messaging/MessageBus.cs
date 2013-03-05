@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             _broker = new MessageBroker(Counters)
             {
-                Trace = Trace
+                Trace = _trace
             };
 
             // The default message store size
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topics = new TopicLookup();
         }
 
-        protected TraceSource Trace
+        protected virtual TraceSource Trace
         {
             get
             {

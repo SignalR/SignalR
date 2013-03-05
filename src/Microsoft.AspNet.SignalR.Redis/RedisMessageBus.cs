@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification="Reviewed")]
         public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, IList<string> keys, IDependencyResolver resolver)
             : base(resolver)
         {

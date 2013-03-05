@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private long _lastPayloadId = 0;
         private int _retryCount = 5;
         private int _retryDelay = 250;
+        private int _retryErrorDelay = 5000;
         private SqlCommand _receiveCommand;
 
         public SqlReceiver(string connectionString, string tableName, Func<string, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
@@ -82,13 +83,30 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             for (var i = 1; i <= _retryCount; i++)
             {
                 _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i, _retryCount);
+                
                 // Look for new messages until we find some or retry expires
-                if (CheckForMessages())
+                bool foundMessages = false;
+                try
+                {
+                    foundMessages = CheckForMessages();
+                }
+                catch (SqlException ex)
+                {
+                    _trace.TraceError("SQL error: {0}", ex);
+                    _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
+                    Thread.Sleep(_retryErrorDelay);
+
+                    // Push to a new thread as this is recursive
+                    ThreadPool.QueueUserWorkItem(Receive);
+                    return;
+                }
+
+                if (foundMessages)
                 {
                     // We found messages so start the loop again
                     _trace.TraceVerbose("Messages received, reset retry counter to 0");
                     i = 1;
-                    // TODO: Should we skip the delay in the case we actually got messages?
+                    continue;
                 }
                 else
                 {
@@ -98,13 +116,26 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 if (i < _retryCount)
                 {
                     _trace.TraceVerbose("Waiting {0}ms before checking for messages again", _retryDelay);
-                    Thread.Sleep(_retryDelay);
+                    if (_retryDelay > 0)
+                    {
+                        Thread.Sleep(_retryDelay);
+                    }
                 }
             }
 
             // No messages found so set up query notification to callback when messages are available
             _trace.TraceVerbose("Message checking max retries reached ({0})", _retryCount);
             SetupQueryNotification();
+        }
+
+        private bool CheckForMessages()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                UpdateQueryCommand(connection);
+                connection.Open();
+                return ProcessReader(_receiveCommand.ExecuteReader()) > 0;
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification="Dummy value returned from lazy init routine.")]
@@ -134,15 +165,29 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             // discussed at http://www.codeproject.com/Articles/144344/Query-Notification-using-SqlDependency-and-SqlCach#heading0003
                             _trace.TraceError("SQL notification subscription error: {0}", e.Info);
 
-                            // TODO: Do we need to more paticular about the type of error here?
+                            // TODO: Do we need to be more paticular about the type of error here?
+                            Thread.Sleep(_retryErrorDelay);
                             Receive(null);
                         }
                     };
 
-                // Executing the query is required to set up the dependency
-                connection.Open();
-                ProcessReader(_receiveCommand.ExecuteReader());
-                _trace.TraceVerbose("SQL notification set up");
+                try
+                {
+                    connection.Open();
+                    // Executing the query is required to set up the dependency
+                    ProcessReader(_receiveCommand.ExecuteReader());
+
+                    _trace.TraceVerbose("SQL notification set up");
+                }
+                catch (SqlException ex)
+                {
+                    _trace.TraceError("SQL error: {0}", ex);
+                    _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
+                    Thread.Sleep(_retryErrorDelay);
+
+                    // Push to a new thread as this is potentially recursive
+                    ThreadPool.QueueUserWorkItem(Receive);
+                }
             }
         }
 
@@ -157,16 +202,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receiveCommand.Connection = connection;
             _receiveCommand.Parameters.Clear();
             _receiveCommand.Parameters.AddWithValue("PayloadId", _lastPayloadId);
-        }
-
-        private bool CheckForMessages()
-        {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-                UpdateQueryCommand(connection);
-                return ProcessReader(_receiveCommand.ExecuteReader()) > 0;
-            }
         }
 
         private int ProcessReader(SqlDataReader reader)
@@ -188,6 +223,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 if (id != _lastPayloadId + 1)
                 {
+                    // TODO: This is not necessarily an error, identity columns can result in gaps in the sequence
                     _trace.TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
                 }
 

@@ -25,7 +25,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
-            _trace = resolver.Resolve<ITraceManager>()["SignalR." + typeof(ScaleoutMessageBus).Name];
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
+        }
+
+        protected override TraceSource Trace
+        {
+            get
+            {
+                return _trace;
+            }
         }
 
         protected virtual int StreamCount
@@ -117,7 +126,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 
-            _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
+            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
 
             // Create a local dictionary for this payload
             var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
@@ -146,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Publish only after we've setup the mapping fully
             if (!stream.TryAdd(id, mapping))
             {
-                _trace.TraceEvent(TraceEventType.Verbose, 0, Resources.Error_DuplicatePayloadsForStream, streamId);
+                Trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamId);
 
                 stream.Clear();
 

@@ -11,16 +11,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal class SqlInstaller
     {
-        private readonly int SchemaVersion = 1;
+        private const int SchemaVersion = 1;
         private const string SchemaTableName = "SignalR_Schema";
         private const string SchemaFullTableName = "[" + SqlMessageBus.SchemaName + "].[" + SchemaTableName + "]";
-        private readonly string CheckDatabaseSchemaSql = "SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '" + SqlMessageBus.SchemaName + "'";
-        private readonly string CreateDatabaseSchemaSql = "CREATE SCHEMA [" + SqlMessageBus.SchemaName + "]";
-        private readonly string CheckSchemaTableExistsSql = "SELECT [object_id] FROM [sys].[tables] WHERE [name] = @TableName AND [schema_id] = @SchemaId";
-        private readonly string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaFullTableName;
-        private readonly string CreateSchemaTableSql = "CREATE TABLE "+ SchemaFullTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
-        private readonly string InsertSchemaTableSql = "INSERT INTO " + SchemaFullTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
-        private readonly string UpdateSchemaTableSql = "UPDATE " + SchemaFullTableName + " SET [SchemaVersion] = @SchemaVersion";
+        private const string CheckDatabaseSchemaSql = "SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '" + SqlMessageBus.SchemaName + "'";
+        private const string CreateDatabaseSchemaSql = "CREATE SCHEMA [" + SqlMessageBus.SchemaName + "]";
+        private const string CheckSchemaTableExistsSql = "SELECT [object_id] FROM [sys].[tables] WHERE [name] = @TableName AND [schema_id] = @SchemaId";
+        private const string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaFullTableName;
+        private const string CreateSchemaTableSql = "CREATE TABLE " + SchemaFullTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
+        private const string InsertSchemaTableSql = "INSERT INTO " + SchemaFullTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
+        private const string UpdateSchemaTableSql = "UPDATE " + SchemaFullTableName + " SET [SchemaVersion] = @SchemaVersion";
 
         private readonly string _connectionString;
         private readonly string _messagesTableNamePrefix;

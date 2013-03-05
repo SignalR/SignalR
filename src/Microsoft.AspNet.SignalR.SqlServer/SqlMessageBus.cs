@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     public class SqlMessageBus : ScaleoutMessageBus
     {
         internal const string SchemaName = "SignalR";
-        private readonly string _tableName = "SignalR_Messages";
+        private const string _tableName = "SignalR_Messages";
         private readonly int _tableCount;
         private readonly SqlInstaller _installer;
         private readonly SqlSender _sender;
@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification="Review")]
         internal SqlMessageBus(string connectionString, int tableCount, SqlInstaller sqlInstaller, SqlSender sqlSender, SqlReceiver sqlReceiver, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
@@ -34,14 +35,23 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             _tableCount = tableCount;
-            _trace = dependencyResolver.Resolve<ITraceManager>()["SignalR." + GetType().Name];
+            var traceManager = dependencyResolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
-            _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName, tableCount, _trace);
+            _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName, tableCount, Trace);
             _installer.EnsureInstalled();
 
             // TODO: Support tableCount
-            _sender = sqlSender ?? new SqlSender(connectionString, _tableName, _trace);
-            _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived, _trace);
+            _sender = sqlSender ?? new SqlSender(connectionString, _tableName, Trace);
+            _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived, Trace);
+        }
+
+        protected override TraceSource Trace
+        {
+            get
+            {
+                return _trace;
+            }
         }
 
         protected override int StreamCount
