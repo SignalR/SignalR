@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
@@ -13,10 +12,6 @@ namespace Microsoft.AspNet.SignalR.Owin
     {
         private readonly ConnectionConfiguration _configuration;
         private readonly PersistentConnection _connection;
-
-        private static bool _supportWebSockets;
-        private static bool _supportWebSocketsInitialized;
-        private static object _supportWebSocketsLock = new object();
 
         public CallHandler(ConnectionConfiguration configuration, PersistentConnection connection)
         {
@@ -58,12 +53,8 @@ namespace Microsoft.AspNet.SignalR.Owin
             // Add the nosniff header for all responses to prevent IE from trying to sniff mime type from contents
             serverResponse.ResponseHeaders.SetHeader("X-Content-Type-Options", "nosniff");
 
-            hostContext.Items[HostConstants.SupportsWebSockets] = LazyInitializer.EnsureInitialized(
-                ref _supportWebSockets,
-                ref _supportWebSocketsInitialized,
-                ref _supportWebSocketsLock,
-                () => environment.SupportsWebSockets());
-
+            // REVIEW: Performance
+            hostContext.Items[HostConstants.SupportsWebSockets] = environment.SupportsWebSockets();
             hostContext.Items[HostConstants.ShutdownToken] = environment.GetShutdownToken();
             hostContext.Items[HostConstants.DebugMode] = environment.GetIsDebugEnabled();
 
