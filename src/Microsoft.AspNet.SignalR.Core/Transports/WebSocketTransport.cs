@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private readonly Action<string> _message;
         private readonly Action<bool> _closed;
+        private readonly Action<Exception> _error;
 
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
@@ -40,6 +42,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             _context = context;
             _message = OnMessage;
             _closed = OnClosed;
+            _error = OnError;
         }
 
         public override bool IsAlive
@@ -78,6 +81,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _socket = socket;
                 socket.OnClose = _closed;
                 socket.OnMessage = _message;
+                socket.OnError = _error;
 
                 return ProcessRequestCore(connection);
             });
@@ -134,6 +138,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             _isAlive = false;
+        }
+
+        private void OnError(Exception error)
+        {
+            Trace.TraceError("OnError({0}, {1})", ConnectionId, error);
         }
 
         private class WebSocketTransportContext
