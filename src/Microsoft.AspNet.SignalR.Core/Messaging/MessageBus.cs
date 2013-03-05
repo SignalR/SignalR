@@ -195,12 +195,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Don't mark topics as active when publishing
             Topic topic = GetTopic(message.Key);
 
-            ulong id = topic.Store.Add(message);
-
-            Counters.MessageBusMessagesPublishedTotal.Increment();
-            Counters.MessageBusMessagesPublishedPerSec.Increment();
-
-            return id;
+            return topic.Store.Add(message);
         }
 
         /// <summary>
