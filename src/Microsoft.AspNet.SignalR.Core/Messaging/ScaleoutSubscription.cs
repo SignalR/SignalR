@@ -124,8 +124,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // For each of the event keys we care about, extract all of the messages
                     // from the payload
-                    foreach (var eventKey in EventKeys)
+                    for (var i = 0; i < EventKeys.Count; ++i)
                     {
+                        string eventKey = EventKeys[i];
+ 
                         LocalEventKeyInfo info;
                         if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
                         {

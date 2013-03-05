@@ -173,6 +173,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override Task Publish(Message message)
         {
+            Counters.MessageBusMessagesPublishedTotal.Increment();
+            Counters.MessageBusMessagesPublishedPerSec.Increment();
+
             // TODO: Buffer messages here and make it configurable
             return Send(new[] { message });
         }

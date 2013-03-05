@@ -42,9 +42,9 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public override void Dispose()
         {
-            base.Dispose();
-
             _bus.Dispose();
+
+            base.Dispose();
         }
     }
 }
