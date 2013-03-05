@@ -13,13 +13,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams;
+        private readonly ConcurrentDictionary<string, IndexedDictionary> _streams;
+        
         private List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
                                     string cursor,
-                                    ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> streamMappings,
+                                    ConcurrentDictionary<string, IndexedDictionary> streamMappings,
                                     Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
                                     IPerformanceCounterManager counters,
@@ -64,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             foreach (var stream in _streams)
             {
                 // Get the mapping for this stream
-                IndexedDictionary<ulong, ScaleoutMapping> mapping = stream.Value;
+                IndexedDictionary mapping = stream.Value;
 
                 // See if we have a cursor for this key
                 Cursor cursor = null;
@@ -110,15 +111,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     node = node.Next;
                 }
 
-                while (node != null)
+                // Stop if we got more than max messages
+                while (totalCount < MaxMessages && node != null)
                 {
                     KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
-
-                    // Stop if we got more than max messages
-                    if (totalCount >= MaxMessages)
-                    {
-                        break;
-                    }
 
                     // It should be ok to lock here since groups aren't modified that often
 
@@ -158,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private ulong GetCursorId(string key)
         {
-            IndexedDictionary<ulong, ScaleoutMapping> mapping;
+            IndexedDictionary mapping;
             if (_streams.TryGetValue(key, out mapping))
             {
                 return mapping.MaxKey;

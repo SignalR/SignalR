@@ -7,17 +7,17 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     // TODO: This structure grows infinitely so we need to bound it
-    public class IndexedDictionary<TKey, TValue>
+    public class IndexedDictionary
     {
-        private readonly ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _lookup = new ConcurrentDictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
-        private readonly LinkedList<KeyValuePair<TKey, TValue>> _list = new LinkedList<KeyValuePair<TKey, TValue>>();
+        private readonly ConcurrentDictionary<ulong, LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>>> _lookup = new ConcurrentDictionary<ulong, LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>>>();
+        private readonly LinkedList<KeyValuePair<ulong, ScaleoutMapping>> _list = new LinkedList<KeyValuePair<ulong, ScaleoutMapping>>();
 
-        public bool TryAdd(TKey key, TValue value)
+        public bool TryAdd(ulong key, ScaleoutMapping value)
         {
-            return _lookup.TryAdd(key, _list.AddLast(new KeyValuePair<TKey, TValue>(key, value)));
+            return _lookup.TryAdd(key, _list.AddLast(new KeyValuePair<ulong, ScaleoutMapping>(key, value)));
         }
 
-        public TKey MinKey
+        public ulong MinKey
         {
             get
             {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public TKey MaxKey
+        public ulong MaxKey
         {
             get
             {
@@ -33,11 +33,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public LinkedListNode<KeyValuePair<TKey, TValue>> this[TKey key]
+        public LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> this[ulong key]
         {
             get
             {
-                LinkedListNode<KeyValuePair<TKey, TValue>> value;
+                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> value;
                 if (_lookup.TryGetValue(key, out value))
                 {
                     return value;
@@ -47,11 +47,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private static TKey GetKey(LinkedListNode<KeyValuePair<TKey, TValue>> node)
+        private static ulong GetKey(LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node)
         {
             if (node == null)
             {
-                return default(TKey);
+                return default(ulong);
             }
             return node.Value.Key;
         }

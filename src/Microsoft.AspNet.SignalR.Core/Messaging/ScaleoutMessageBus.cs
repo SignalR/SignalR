@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
-        private readonly ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>> _streams = new ConcurrentDictionary<string, IndexedDictionary<ulong, ScaleoutMapping>>();
+        private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var mapping = new ScaleoutMapping(dictionary);
 
             // Get the stream for this payload
-            var stream = _streams.GetOrAdd(streamId, _ => new IndexedDictionary<ulong, ScaleoutMapping>());
+            var stream = _streams.GetOrAdd(streamId, _ => new IndexedDictionary());
 
             // Publish only after we've setup the mapping fully
             if (!stream.TryAdd(id, mapping))
