@@ -476,6 +476,9 @@ namespace Microsoft.AspNet.SignalR.Client
 
                     Trace.WriteLine("Stop({0})", ConnectionId);
 
+                    // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
+                    _monitor.Dispose();
+
                     _transport.Abort(this, timeout);
 
                     Disconnect();

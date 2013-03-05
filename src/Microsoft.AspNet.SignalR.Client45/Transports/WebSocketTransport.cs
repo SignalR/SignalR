@@ -192,6 +192,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void LostConnection(IConnection connection)
         {
+            _connectionInfo.Connection.Trace.WriteLine("WS: LostConnection({0})", _connectionInfo.Connection.ConnectionId);
+
             Close();
         }
 
@@ -208,6 +210,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (_abortEventSlim != null)
                 {
                     _abortEventSlim.Dispose();
+                    _abortEventSlim = null;
                 }
             }
         }
