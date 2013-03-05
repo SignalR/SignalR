@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
         private Process _iisExpressProcess;
         private Process _debuggerProcess;
-        private HttpSysEtwWrapper _etw;
 
         private static readonly string IISExpressPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                                                                      "IIS Express",
@@ -56,26 +55,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             Attach();
 
-            SetupEtw();
-
             PingServerUrl();
 
             return TestSiteUrl;
-        }
-
-        private void SetupEtw()
-        {
-            var httpSysLoggingEnabledValue = ConfigurationManager.AppSettings["httpSysLoggingEnabled"];
-            bool httpSysLoggingEnabled;
-
-            if (!Boolean.TryParse(httpSysLoggingEnabledValue, out httpSysLoggingEnabled) ||
-                !httpSysLoggingEnabled)
-            {
-                return;
-            }
-
-            _etw = new HttpSysEtwWrapper(@"..\httptrace");
-            _etw.StartLogging();
         }
 
         private void Attach()
@@ -141,12 +123,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             try
             {
                 KillProcess(_debuggerProcess);
-
-                if (_etw != null)
-                {
-                    _etw.Dispose();
-                }
-
                 return KillProcess(_iisExpressProcess);
             }
             finally

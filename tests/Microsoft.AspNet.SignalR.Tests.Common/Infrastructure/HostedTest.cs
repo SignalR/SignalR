@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -64,6 +65,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
                 host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
+
+                string httpSysTracePath = Path.Combine(logBasePath, testName + ".httpSys");
+                IDisposable httpSysTracing = StartHttpSysTracing(httpSysTracePath);
+
+                // If tracing is enabled then turn it off on host dispose
+                if (httpSysTracing != null)
+                {
+                    host.Disposables.Add(httpSysTracing);
+                }
             }
 
             string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
@@ -91,6 +101,26 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             }));
 
             return host;
+        }
+
+        private IDisposable StartHttpSysTracing(string path)
+        {
+            var httpSysLoggingEnabledValue = ConfigurationManager.AppSettings["httpSysLoggingEnabled"];
+            bool httpSysLoggingEnabled;
+
+            if (!Boolean.TryParse(httpSysLoggingEnabledValue, out httpSysLoggingEnabled) ||
+                !httpSysLoggingEnabled)
+            {
+                return null;
+            }
+
+            var etw = new HttpSysEtwWrapper(path);
+            if (etw.StartLogging())
+            {
+                return etw;
+            }
+
+            return null;
         }
 
         protected HubConnection CreateHubConnection(ITestHost host)

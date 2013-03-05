@@ -12,14 +12,33 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             _filePath = filePath;
         }
 
-        public void StartLogging()
+        public bool StartLogging()
         {
-            Process.Start("logman", "start httptrace -p Microsoft-Windows-HttpService 0xFFFF -o " + _filePath + ".etl -ets");
+            var psi = new ProcessStartInfo
+            {
+                FileName = "logman",
+                Arguments = "start httptrace -p Microsoft-Windows-HttpService 0xFFFF -o " + _filePath + ".etl -ets",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            process.WaitForExit();
+            return process.ExitCode == 0;
         }
 
         public void Dispose()
         {
-            Process.Start("logman", "stop httptrace -ets");
+            var psi = new ProcessStartInfo
+            {
+                FileName = "logman",
+                Arguments = "stop httptrace -ets",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            process.WaitForExit();
         }
     }
 }
