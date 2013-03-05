@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             Trace.TraceEvent(TraceEventType.Error, 0, "OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
 
-            if(Interlocked.CompareExchange(ref _state, 
+            if (Interlocked.CompareExchange(ref _state,
                                           State.Closed,
                                           State.Connected) == State.Connected)
             {
@@ -153,6 +154,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             TaskContinuationOptions.ExecuteSynchronously);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are caught")]
         private Task ConnectToRedis()
         {
             if (_connection != null)
