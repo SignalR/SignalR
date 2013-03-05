@@ -121,23 +121,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
 
                     // It should be ok to lock here since groups aren't modified that often
-                    lock (EventKeys)
-                    {
-                        // For each of the event keys we care about, extract all of the messages
-                        // from the payload
-                        foreach (var eventKey in EventKeys)
-                        {
-                            LocalEventKeyInfo info;
-                            if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
-                            {
-                                int maxMessages = Math.Min(info.Count, MaxMessages);
-                                MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
 
-                                if (storeResult.Messages.Count > 0)
-                                {
-                                    items.Add(storeResult.Messages);
-                                    totalCount += storeResult.Messages.Count;
-                                }
+                    // For each of the event keys we care about, extract all of the messages
+                    // from the payload
+                    foreach (var eventKey in EventKeys)
+                    {
+                        LocalEventKeyInfo info;
+                        if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
+                        {
+                            int maxMessages = Math.Min(info.Count, MaxMessages);
+                            MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
+
+                            if (storeResult.Messages.Count > 0)
+                            {
+                                items.Add(storeResult.Messages);
+                                totalCount += storeResult.Messages.Count;
                             }
                         }
                     }

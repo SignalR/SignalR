@@ -12,7 +12,7 @@ using Owin;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
-    [Export("MemoryHostRun", typeof(IRun))]
+    [Export("MemoryHost", typeof(IRun))]
     public class MemoryHostRun : RunBase
     {
         private readonly MemoryHost _host = new MemoryHost();

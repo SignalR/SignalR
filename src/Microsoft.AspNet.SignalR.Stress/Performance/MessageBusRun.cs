@@ -7,7 +7,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
-    [Export("MessageBusRun", typeof(IRun))]
+    [Export("MessageBus", typeof(IRun))]
     public class MessageBusRun : RunBase
     {
         private const int MessageBufferSize = 10;
@@ -17,7 +17,12 @@ namespace Microsoft.AspNet.SignalR.Stress
         public MessageBusRun(RunData runData)
             : base(runData)
         {
-            _bus = new MessageBus(Resolver);
+            _bus = CreateMessageBus();
+        }
+
+        protected virtual MessageBus CreateMessageBus()
+        {
+            return new MessageBus(Resolver);
         }
 
         protected override IDisposable CreateReceiver(int connectionIndex)

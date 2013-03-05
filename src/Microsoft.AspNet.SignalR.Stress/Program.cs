@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             [CommandLineParameter(Command = "?", Name = "Help", Default = false, Description = "Show Help", IsHelp = true)]
             public bool Help { get; set; }
 
-            [CommandLineParameter(Command = "Run", Required = false, Default = "MemoryHostRun", Description = "Run is: { \"ConnectionRun\", \"MessageBusRun\", \"MemoryHostRun\"}]")]
+            [CommandLineParameter(Command = "Run", Required = false, Default = "MemoryHost", Description = "The type of run to perform")]
             public string RunName { get; set; }
 
             [CommandLineParameter(Command = "Connections", Required = false, Default = 5000, Description = "Number of connections. Default: 5000")]

@@ -83,6 +83,7 @@
     <Compile Include="IRun.cs" />
     <Compile Include="Performance\MemoryHostRun.cs" />
     <Compile Include="Performance\MessageBusRun.cs" />
+    <Compile Include="Performance\RedisMessageBusRun.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunBase.cs" />
@@ -106,6 +107,10 @@
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
       <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
       <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj">
+      <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
+      <Name>Microsoft.AspNet.SignalR.Redis</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
