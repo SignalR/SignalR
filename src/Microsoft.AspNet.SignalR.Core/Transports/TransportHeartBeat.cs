@@ -328,6 +328,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                     _timer.Dispose();
                 }
 
+                Trace.TraceInformation("Dispose(). Closing all connections");
+
                 // Kill all connections
                 foreach (var pair in _connections)
                 {

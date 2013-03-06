@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             var dr = new DefaultDependencyResolver();
             _traceManager = dr.Resolve<ITraceManager>();
-            _traceManager.Switch.Level = SourceLevels.Information;
+            _traceManager.Switch.Level = SourceLevels.Verbose;
 
             foreach (var sourceName in _traceSources)
             {
@@ -116,14 +116,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         public void Dispose()
         {
+            _host.Dispose();
+
             foreach (var sourceName in _traceSources)
             {
                 _traceManager[sourceName].Listeners.Remove(_listener);
             }
 
             _listener.Dispose();
-
-            _host.Dispose();
 
             foreach (var d in Disposables)
             {
