@@ -73,9 +73,12 @@
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="Client\TransportFacts.cs" />
     <Compile Include="ConfigurationManagerFacts.cs" />
+    <Compile Include="Core\ConnectionExtensionsFacts.cs" />
+    <Compile Include="Core\GroupManagerFacts.cs" />
     <Compile Include="Core\Hubs\Extensions\HubManagerExtensionsFacts.cs" />
     <Compile Include="Core\Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Core\Hubs\Extensions\MethodExtensionsFacts.cs" />
+    <Compile Include="Core\Hubs\HubConnectionContextFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
