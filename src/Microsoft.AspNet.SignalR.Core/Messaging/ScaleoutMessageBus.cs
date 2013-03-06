@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
+        private TaskCompletionSource<object> _connectTcs = new TaskCompletionSource<object>();
+        private readonly object _lockObj = new object();
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
@@ -42,6 +44,48 @@ namespace Microsoft.AspNet.SignalR.Messaging
             get
             {
                 return 1;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected void Connect()
+        {
+            lock (_connectTcs)
+            {
+                _connectTcs.TrySetResult(null);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected void Disconnect()
+        {
+            Disconnect(exception: null);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        protected void Disconnect(Exception exception)
+        {
+            if (exception != null)
+            {
+                _connectTcs.TrySetUnwrappedException(exception);
+            }
+            else
+            {
+                lock (_lockObj)
+                {
+                    // Create a new tcs 
+                    _connectTcs = new TaskCompletionSource<object>();
+                }
             }
         }
 
@@ -177,7 +221,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
             // TODO: Buffer messages here and make it configurable
-            return Send(new[] { message });
+            lock (_lockObj)
+            {
+                return _connectTcs.Task.Then(bus => bus.Send(new[] { message }), this);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]

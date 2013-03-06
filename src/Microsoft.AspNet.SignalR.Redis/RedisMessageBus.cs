@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
-        private Task _connectTask;
         private int _state;
 
         public RedisMessageBus(string server, int port, string password, int db, IList<string> keys, IDependencyResolver resolver)
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification="Reviewed")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, IList<string> keys, IDependencyResolver resolver)
             : base(resolver)
         {
@@ -50,11 +49,6 @@ namespace Microsoft.AspNet.SignalR.Redis
         }
 
         public TimeSpan ReconnectDelay { get; set; }
-
-        protected override Task Send(IList<Message> messages)
-        {
-            return _connectTask.Then(msgs => base.Send(msgs), messages);
-        }
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
@@ -83,9 +77,13 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             // Change the state to closed and retry connecting
             if (Interlocked.CompareExchange(ref _state,
-                                          State.Closed,
-                                          State.Connected) == State.Connected)
+                                            State.Closed,
+                                            State.Connected) == State.Connected)
             {
+                // Tell the base class the connection died so it'll queue failed sends.
+                Disconnect();
+
+                // Retry until the connection reconnects
                 ConnectWithRetry();
             }
         }
@@ -128,16 +126,6 @@ namespace Microsoft.AspNet.SignalR.Redis
                 return;
             }
 
-            var taskCompletionSource = new TaskCompletionSource<object>();
-
-            // Setup the new incomplete connect task
-            _connectTask = taskCompletionSource.Task;
-
-            ConnectWithRetry(taskCompletionSource);
-        }
-
-        private void ConnectWithRetry(TaskCompletionSource<object> taskCompletionSource)
-        {
             Task connectTask = ConnectToRedis();
 
             connectTask.ContinueWith(task =>
@@ -145,14 +133,13 @@ namespace Microsoft.AspNet.SignalR.Redis
                 if (task.IsFaulted)
                 {
                     TaskAsyncHelper.Delay(ReconnectDelay)
-                                   .Then(tcs => ConnectWithRetry(tcs), taskCompletionSource);
+                                   .Then(bus => bus.ConnectWithRetry(), this);
                 }
                 else
                 {
                     Interlocked.Exchange(ref _state, State.Connected);
 
-                    // Set the result
-                    taskCompletionSource.SetResult(null);
+                    Connect();
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
