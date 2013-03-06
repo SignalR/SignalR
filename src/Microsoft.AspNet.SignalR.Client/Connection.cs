@@ -334,56 +334,25 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is flowed back to the caller via the tcs.")]
         private Task Negotiate(IClientTransport transport)
         {
-            var negotiateTcs = new TaskCompletionSource<object>();
+            return transport.Negotiate(this)
+                            .Then(negotiationResponse =>
+                            {
+                                VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
-            transport.Negotiate(this).Then(negotiationResponse =>
-            {
-                VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
+                                ConnectionId = negotiationResponse.ConnectionId;
+                                ConnectionToken = negotiationResponse.ConnectionToken;
+                                _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
 
-                ConnectionId = negotiationResponse.ConnectionId;
-                ConnectionToken = negotiationResponse.ConnectionToken;
-                _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
+                                // If we have a keep alive
+                                if (negotiationResponse.KeepAliveTimeout != null)
+                                {
+                                    _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+                                }
 
-                // If we have a keep alive
-                if (negotiationResponse.KeepAliveTimeout != null)
-                {
-                    _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
-                }
-
-                var data = OnSending();
-                StartTransport(data).ContinueWith(negotiateTcs);
-            })
-            .ContinueWithNotComplete(negotiateTcs);
-
-            var tcs = new TaskCompletionSource<object>();
-            negotiateTcs.Task.ContinueWith(task =>
-            {
-                try
-                {
-                    // If there's any errors starting then Stop the connection                
-                    if (task.IsFaulted)
-                    {
-                        Disconnect();
-                        tcs.SetException(task.Exception.Unwrap());
-                    }
-                    else if (task.IsCanceled)
-                    {
-                        Disconnect();
-                        tcs.SetCanceled();
-                    }
-                    else
-                    {
-                        tcs.SetResult(null);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    tcs.SetException(ex);
-                }
-            },
-            TaskContinuationOptions.ExecuteSynchronously);
-
-            return tcs.Task;
+                                var data = OnSending();
+                                return StartTransport(data);
+                            })
+                            .ContinueWithNotComplete(() => Disconnect());
         }
 
         private Task StartTransport(string data)

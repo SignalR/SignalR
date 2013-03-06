@@ -110,18 +110,7 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
-            if (task != null && task.Status != TaskStatus.RanToCompletion)
-            {
-                task.ContinueWith(innerTask =>
-                {
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
-                    // observe Exception
-                    var ex = innerTask.Exception;
-                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
-#endif
-                }, TaskContinuationOptions.OnlyOnFaulted);
-            }
-            return task;
+            return Catch(task, ex => { });
         }
 
 #if PERFCOUNTERS
@@ -146,17 +135,37 @@ namespace Microsoft.AspNet.SignalR
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
             {
-                task.ContinueWith(innerTask =>
+                if (task.Status == TaskStatus.Faulted)
                 {
-                    var ex = innerTask.Exception;
-                    // observe Exception
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
-                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
-#endif
-                    handler(ex, state);
-                }, TaskContinuationOptions.OnlyOnFaulted);
+                    ExecuteOnFaulted(handler, state, task.Exception);
+                }
+                else
+                {
+                    AttachFaultedContinuation<TTask>(task, handler, state);
+                }
             }
+
             return task;
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state) where TTask : Task
+        {
+            task.ContinueWith(innerTask =>
+            {
+                ExecuteOnFaulted(handler, state, innerTask.Exception);
+            },
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception)
+        {
+            // observe Exception
+#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
+            Trace.TraceError("SignalR exception thrown by Task: {0}", exception);
+#endif
+            handler(exception, state);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -164,6 +173,32 @@ namespace Microsoft.AspNet.SignalR
         {
             return task.Catch((ex, state) => ((Action<AggregateException>)state).Invoke(ex),
                               handler);
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task ContinueWithNotComplete(this Task task, Action action)
+        {
+            if (task.IsCanceled)
+            {
+                action();
+            }
+            else if (task.IsFaulted)
+            {
+                action();
+            }
+            else
+            {
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        action();
+                    }
+                },
+                TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
+            }
+
+            return task;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
