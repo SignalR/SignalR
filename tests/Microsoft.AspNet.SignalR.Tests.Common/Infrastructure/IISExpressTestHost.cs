@@ -69,8 +69,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                int? disconnectTimeout,
                                bool enableAutoRejoiningGroups)
         {
-            Url = _siteManager.GetSiteUrl(ExtraData);
-
             // Use a configuration file to specify values
             string content = String.Format(_webConfigTemplate.Value,
                                            keepAlive,
@@ -80,6 +78,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                                            _logFileName);
 
             File.WriteAllText(_webConfigPath, content);
+
+            Url = _siteManager.GetSiteUrl(ExtraData);
         }
 
         public void Dispose()
