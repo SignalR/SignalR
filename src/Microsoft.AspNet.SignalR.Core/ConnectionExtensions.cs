@@ -26,8 +26,13 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId), 
-                                                value, 
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException("connectionId");
+            }
+
+            var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId),
+                                                value,
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return connection.Send(message);
