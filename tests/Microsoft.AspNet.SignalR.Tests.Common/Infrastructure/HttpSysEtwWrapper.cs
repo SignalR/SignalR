@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 {
@@ -39,6 +40,17 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
             var process = Process.Start(psi);
             process.WaitForExit();
+
+            // Convert the file to xml
+            psi = new ProcessStartInfo
+            {
+                FileName = "tracerpt.exe",
+                Arguments = _filePath + ".etl -of XML -o " + _filePath + ".xml",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            Process.Start(psi).WaitForExit();
         }
     }
 }
