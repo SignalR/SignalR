@@ -195,23 +195,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 try
                 {
-                    try
-                    {
-                        Close();
-                    }
-                    finally
-                    {
-                        OnClose(cleanClose);
-                    }
+                    Close();
                 }
                 finally
                 {
-                    // call Dispose if it exists
-                    IDisposable disposable = this as IDisposable;
-                    if (disposable != null)
-                    {
-                        disposable.Dispose();
-                    }
+                    OnClose(cleanClose);
                 }
             }
         }
