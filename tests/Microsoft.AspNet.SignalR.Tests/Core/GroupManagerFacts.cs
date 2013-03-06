@@ -30,15 +30,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                 new Mock<IProtectedData>().Object);
 
             var grpManager = new GroupManager(connection, "foo");
-
-            try
-            {
-                grpManager.Send(null, new object());
-            }
-            catch (Exception ex)
-            {
-                Assert.IsType(typeof(ArgumentNullException), ex);
-            }
+            
+            Assert.Throws<ArgumentNullException>(() => grpManager.Send(null, new object()));
         }
     }
 }

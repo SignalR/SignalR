@@ -10,30 +10,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Core.Hubs
         public void GroupThrowsNullExceptionWhenGroupNameIsNull()
         {
             var hubConContext = new HubConnectionContext();
-
-            try
-            {
-                hubConContext.Group(null);
-            }
-            catch (Exception ex)
-            {
-                Assert.IsType(typeof(ArgumentNullException), ex);
-            }
+            Assert.Throws<ArgumentNullException>(() => hubConContext.Group(null));
         }
 
         [Fact]
         public void ClientThrowsNullExceptionWhenClientIdIsNull()
         {
             var hubConContext = new HubConnectionContext();
-
-            try
-            {
-                hubConContext.Client(null);
-            }
-            catch (Exception ex)
-            {
-                Assert.IsType(typeof(ArgumentNullException), ex);
-            }
+            Assert.Throws<ArgumentNullException>(() => hubConContext.Client(null));
         }
     }
 }
