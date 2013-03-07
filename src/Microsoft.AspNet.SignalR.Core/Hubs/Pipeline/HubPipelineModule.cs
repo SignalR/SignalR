@@ -45,11 +45,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="negotiate">A function that passes through the response.</param>
         /// <returns>A wrapped function that invokes a negotiate.</returns>
-        public virtual Func<HostContext, Dictionary<string, object>, Task> BuildNegotiate(Func<HostContext, Dictionary<string, object>, Task> negotiate)
+        public virtual Func<Dictionary<string, object>, Dictionary<string, object>> BuildNegotiate(Func<Dictionary<string, object>, Dictionary<string, object>> negotiate)
         {
-            return (context, response) =>
+            return (response) =>
             {
-                return negotiate(context, response).OrEmpty();
+                return negotiate(response);
             };
         }
 

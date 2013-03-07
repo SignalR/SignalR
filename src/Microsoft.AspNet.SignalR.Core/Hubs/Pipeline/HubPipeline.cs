@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return Pipeline.Invoke(context);
         }
 
-        public Task Negotiate(HostContext context, Dictionary<string, object> response)
+        public Dictionary<string, object> Negotiate(Dictionary<string, object> response)
         {
-            return Pipeline.Negotiate(context, response);
+            return Pipeline.Negotiate(response);
         }
 
         public Task Connect(IHub hub)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private class ComposedPipeline
         {
             public Func<IHubIncomingInvokerContext, Task<object>> Invoke;
-            public Func<HostContext, Dictionary<string, object>, Task> Negotiate;
+            public Func<Dictionary<string, object>, Dictionary<string, object>> Negotiate;
             public Func<IHub, Task> Connect;
             public Func<IHub, Task> Reconnect;
             public Func<IHub, Task> Disconnect;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 // This wouldn't look nearly as gnarly if C# had better type inference, but now we don't need the ComposedModule or PassThroughModule.
                 Invoke = Compose<Func<IHubIncomingInvokerContext, Task<object>>>(modules, (m, f) => m.BuildIncoming(f))(HubDispatcher.Incoming);
-                Negotiate = Compose<Func<HostContext, Dictionary<string, object>, Task>>(modules, (m, f) => m.BuildNegotiate(f))(PersistentConnection.Negotiate);
+                Negotiate = Compose<Func<Dictionary<string, object>, Dictionary<string, object>>>(modules, (m, f) => m.BuildNegotiate(f))(x => x);
                 Connect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildConnect(f))(HubDispatcher.Connect);
                 Reconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildReconnect(f))(HubDispatcher.Reconnect);
                 Disconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
