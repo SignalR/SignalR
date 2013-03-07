@@ -673,7 +673,8 @@
                             return;
                         }
                         
-                        $(connection).triggerHandler(events.onNegotiated, res);
+                    // Copy the res settings, this is so users cannot modify the settings
+                    $(connection).triggerHandler(events.onNegotiated, $.extend({}, res));
 
                         keepAliveData = connection.keepAliveData;
                         connection.appRelativeUrl = res.Url;
