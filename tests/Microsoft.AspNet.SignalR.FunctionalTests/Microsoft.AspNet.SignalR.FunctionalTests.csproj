@@ -72,6 +72,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
+    <Compile Include="Client\ConnectionEventFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
