@@ -1,6 +1,9 @@
 ﻿QUnit.module("Hub Group Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
+    // Reduce chance of conflicts with multiple simultaneous tests
+    var randomGroup = window.Math.random().toString();
+
     QUnit.asyncTimeoutTest(transport + ": Hub can send and receive messages from groups.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(testName),
             groupChat = connection.createHubProxies().groupChat;
@@ -13,10 +16,10 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
 
-            groupChat.server.join("group++1").done(function () {
+            groupChat.server.join(randomGroup).done(function () {
                 assert.ok(true, "Successful call to join group");
 
-                groupChat.server.send("group++1", "hello");
+                groupChat.server.send(randomGroup, "hello");
             });
         }).fail(function (reason) {
             assert.ok(false, "Failed to initiate SignalR connection");
@@ -53,7 +56,7 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.ok(true, "Successfuly raised reconnected event ");
 
             readyToEnd = true;
-            groupChat.server.send("group++1", "hello").done(function () {
+            groupChat.server.send(randomGroup, "hello").done(function () {
                 assert.ok(true, "Successful send to group");
             });
         });
@@ -61,11 +64,11 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
 
-            groupChat.server.join("group++1").done(function () {
+            groupChat.server.join(randomGroup).done(function () {
                 assert.ok(true, "Successful call to join group");
 
                 // We must get a value back from the server in order to instantiate our message ID so longPolling is able to reconnect.
-                groupChat.server.send("group++1", "TryToReconnect");
+                groupChat.server.send(randomGroup, "TryToReconnect");
             });
 
         }).fail(function (reason) {
