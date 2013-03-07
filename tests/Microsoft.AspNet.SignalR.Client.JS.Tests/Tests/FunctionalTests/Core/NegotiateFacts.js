@@ -114,6 +114,55 @@
                 connection.stop();
             };
         });
+        
+        QUnit.asyncTimeoutTest(transport + " transport's negotiate triggers onNegotiated event.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", testName);
+
+            connection.negotiated(function (settings) {
+                assert.ok(true, "Negotiated event was called.");
+                assert.isSet(settings, "Negotiate response settings object was passed.");
+                assert.isSet(settings.ConnectionToken, "ConnectionToken exists on negotiate settings object.");
+                assert.isSet(settings.Url, "Url exists on negotiate settings object.");
+                assert.isSet(settings.ProtocolVersion, "ProtocolVersion exists on negotiate settings object.");
+                assert.isSet(settings.DisconnectTimeout, "DisconnectTimeout exists on negotiate settings object.");
+                assert.isSet(settings.TryWebSockets, "TryWebSockets exists on negotiate settings object.");
+                assert.isSet(settings.KeepAliveTimeout, "KeepAliveTimeout exists on negotiate settings object.");
+
+                end();
+            });
+
+            connection.start({ transport: transport }).fail(function () {
+                assert.ok(false, "Failed to initiate SignalR connection.");
+                end();
+            });
+
+            return function () {
+                connection.stop();
+            };
+        });
+
+        QUnit.asyncTimeoutTest(transport + " transport's onNegotiated event allows modification of settings.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", testName);
+
+            connection.negotiated(function (settings) {
+                settings.ConnectionId = "Foo";
+            });
+
+            // Using the starting event because this occurs prior to any transports starting, therefore we can end execution.
+            connection.starting(function () {
+                assert.equal(connection.id, "Foo", "Connection ID was successfully modified to 'Foo'");
+                end();
+            });
+
+            connection.start({ transport: transport }).fail(function () {
+                assert.ok(false, "Failed to initiate SignalR connection.");
+                end();
+            });
+
+            return function () {
+                connection.stop();
+            };
+        });
 
         QUnit.asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connection = testUtilities.createConnection("signalr", end, assert, testName, false),
