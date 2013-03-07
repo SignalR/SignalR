@@ -198,6 +198,9 @@
   <data name="Error_StateExceededMaximumLength" xml:space="preserve">
     <value>State has exceeded the maximum length of 4096 bytes.</value>
   </data>
+  <data name="Error_TaskQueueFull" xml:space="preserve">
+    <value>The queue is full.</value>
+  </data>
   <data name="Error_UnableToAddModulePiplineAlreadyInvoked" xml:space="preserve">
     <value>Unable to add module. The HubPipeline has already been invoked.</value>
   </data>

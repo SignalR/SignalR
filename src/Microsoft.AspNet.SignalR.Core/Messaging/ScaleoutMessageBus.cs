@@ -21,14 +21,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
-        private TaskCompletionSource<object> _connectTcs = new TaskCompletionSource<object>();
-        private readonly object _lockObj = new object();
+        private readonly TaskQueueWrapper _queue;
+
+        private const int DefaultQueueSize = 1000;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
+            : this(resolver, queueSize: DefaultQueueSize)
+        {
+        }
+
+        protected ScaleoutMessageBus(IDependencyResolver resolver, int queueSize)
             : base(resolver)
         {
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
+            _queue = new TaskQueueWrapper(queueSize);
         }
 
         protected override TraceSource Trace
@@ -53,10 +60,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns></returns>
         protected void Connect()
         {
-            lock (_connectTcs)
-            {
-                _connectTcs.TrySetResult(null);
-            }
+            _queue.Open();
         }
 
         /// <summary>
@@ -77,15 +81,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             if (exception != null)
             {
-                _connectTcs.TrySetUnwrappedException(exception);
+                // Close the queue means that all further sends will fail
+                _queue.Close(exception);
             }
             else
             {
-                lock (_lockObj)
-                {
-                    // Create a new tcs 
-                    _connectTcs = new TaskCompletionSource<object>();
-                }
+                // Initialize the queue
+                _queue.Initialize();
             }
         }
 
@@ -221,16 +223,72 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
             // TODO: Buffer messages here and make it configurable
-            lock (_lockObj)
-            {
-                return _connectTcs.Task.Then(bus => bus.Send(new[] { message }), this);
-            }
+            return _queue.Enqueue(state => Send(new[] { (Message)state }), message);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
             return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streams, callback, messageBufferSize, Counters, state);
+        }
+
+        private class TaskQueueWrapper
+        {
+            private TaskCompletionSource<object> _taskCompletionSource;
+            private TaskQueue _sendQueue;
+
+            private readonly int _size;
+
+            private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
+
+            public TaskQueueWrapper(int size)
+            {
+                _size = size;
+
+                InitializeCore();
+            }
+
+            public void Open()
+            {
+                lock (this)
+                {
+                    _taskCompletionSource.TrySetResult(null);
+                }
+            }
+
+            public Task Enqueue(Func<object, Task> taskFunc, object state)
+            {
+                lock (this)
+                {
+                    // If Enqueue returns null it means the queue is full
+                    return _sendQueue.Enqueue(taskFunc, state) ?? _queueFullTask;
+                }
+            }
+
+            public void Initialize()
+            {
+                lock (this)
+                {
+                    // Create a new tcs and queue
+                    InitializeCore();
+                }
+            }
+
+            public void Close(Exception error)
+            {
+                lock (this)
+                {
+                    InitializeCore();
+
+                    _taskCompletionSource.TrySetException(error);
+                }
+            }
+
+            private void InitializeCore()
+            {
+                _taskCompletionSource = new TaskCompletionSource<object>();
+                _sendQueue = new TaskQueue(_taskCompletionSource.Task, _size);
+            }
         }
     }
 }
