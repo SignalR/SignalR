@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
 using System.Threading;
 using CmdLine;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
@@ -13,47 +14,71 @@ namespace Microsoft.AspNet.SignalR.Stress
     {
         static void Main(string[] args)
         {
-            IRun run = CreateRun();
+            var run = CreateRun();
             long memory = 0;
 
             using (run)
             {
                 run.Run();
+                Console.WriteLine("Warming up: " + run.Warmup);
+                Thread.Sleep(run.Warmup * 1000);
+
+                Console.WriteLine("Test started: " + run.Duration);
+                run.Sample();
+                Thread.Sleep(run.Duration * 1000);
+                run.Sample();
+                Console.WriteLine("Test finished");
 
                 memory = GC.GetTotalMemory(forceFullCollection: false);
 
                 Console.WriteLine("Before GC {0}", Utility.FormatBytes(memory));
-                Console.ReadKey();
 
                 memory = GC.GetTotalMemory(forceFullCollection: true);
 
                 Console.WriteLine("After GC and before dispose {0}", Utility.FormatBytes(memory));
-                Console.ReadKey();
+                run.Record();
             }
 
             memory = GC.GetTotalMemory(forceFullCollection: true);
 
             Console.WriteLine("After GC and dispose {0}", Utility.FormatBytes(memory));
-            Console.ReadKey();
         }
 
-        private static IRun CreateRun()
+        private static StressArguments ParseArguments()
+        {
+            StressArguments args = null;
+            try
+            {
+                args = CommandLine.Parse<StressArguments>();
+            }
+            catch (CommandLineException e)
+            {
+                Console.WriteLine(e.ArgumentHelp.Message);
+                Console.WriteLine(e.ArgumentHelp.GetHelpText(Console.BufferWidth));
+                Environment.Exit(1);
+            }
+            return args;
+        }
+
+        private static RunBase CreateRun()
         {
             ThreadPool.SetMinThreads(32, 32);
 
-            var args = CommandLine.Parse<StressArguments>();
+            var args = ParseArguments();
 
             var compositionContainer = new CompositionContainer(new AssemblyCatalog(typeof(Program).Assembly));
 
             compositionContainer.ComposeExportedValue(new RunData
             {
+                Warmup = args.Warmup,
+                Duration = args.Duration,
                 Connections = args.Connections,
                 Payload = GetPayload(args.PayloadSize),
                 Senders = args.Senders,
                 Transport = args.Transport
             });
 
-            return compositionContainer.GetExportedValue<IRun>(args.RunName);
+            return (RunBase)compositionContainer.GetExportedValue<IRun>(args.RunName);
         }
 
         private static string GetPayload(int n = 32)
@@ -67,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             [CommandLineParameter(Command = "?", Name = "Help", Default = false, Description = "Show Help", IsHelp = true)]
             public bool Help { get; set; }
 
-            [CommandLineParameter(Command = "Run", Required = false, Default = "MemoryHost", Description = "The type of run to perform")]
+            [CommandLineParameter(Command = "Run", Required = false, Default = "MemoryHost", Description = "The type of run to perform (MemoryHost, MessageBus, ConnectionRun, RedisMessageBus). Default: MemoryHost")]
             public string RunName { get; set; }
 
             [CommandLineParameter(Command = "Connections", Required = false, Default = 5000, Description = "Number of connections. Default: 5000")]

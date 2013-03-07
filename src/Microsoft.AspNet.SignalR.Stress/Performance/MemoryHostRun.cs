@@ -26,10 +26,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public string Transport { get; private set; }
 
-        public override void Initialize()
-        {
-        }
-
         public override void Run()
         {
             _host.Configure(app =>
