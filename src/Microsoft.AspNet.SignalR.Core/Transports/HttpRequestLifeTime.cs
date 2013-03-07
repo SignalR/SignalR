@@ -36,14 +36,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _trace.TraceEvent(TraceEventType.Verbose, 0, "DrainWrites(" + _connectionId + ")");
 
-            var context = new DrainContext(_lifetimeTcs, error);
+            var context = new LifetimeContext(_lifetimeTcs, error);
 
             // Drain the task queue for pending write operations so we don't end the request and then try to write
             // to a corrupted request object.
             _writeQueue.Drain().Catch().Finally(state =>
             {
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                ((DrainContext)state).Complete();
+                ((LifetimeContext)state).Complete();
             },
             context);
 
@@ -57,12 +57,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private class DrainContext
+        private class LifetimeContext
         {
             private readonly TaskCompletionSource<object> _lifetimeTcs;
             private readonly Exception _error;
 
-            public DrainContext(TaskCompletionSource<object> lifeTimetcs, Exception error)
+            public LifetimeContext(TaskCompletionSource<object> lifeTimetcs, Exception error)
             {
                 _lifetimeTcs = lifeTimetcs;
                 _error = error;
