@@ -80,16 +80,18 @@
             };
         });
 
-        QUnit.asyncTimeoutTest(transport + " transport's onNegotiated event allows modification of settings.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", testName);
+        QUnit.asyncTimeoutTest(transport + " transport's onNegotiated event does not allow permanent modification of settings.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", testName),
+                originalConnectionId;
 
             connection.negotiated(function (settings) {
+                originalConnectionId = settings.ConnectionId;
                 settings.ConnectionId = "Foo";
             });
 
             // Using the starting event because this occurs prior to any transports starting, therefore we can end execution.
             connection.starting(function () {
-                assert.equal(connection.id, "Foo", "Connection ID was successfully modified to 'Foo'");
+                assert.equal(connection.id, originalConnectionId, "Connection ID was unsuccessfully modified and maintained its original value (" + originalConnectionId + ")");
                 end();
             });
 
