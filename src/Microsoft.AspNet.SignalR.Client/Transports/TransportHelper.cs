@@ -35,17 +35,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
             negotiateUrl += AppendCustomQueryString(connection, negotiateUrl);
 
-            return httpClient.Get(negotiateUrl, connection.PrepareRequest).Then(response =>
-            {
-                string raw = response.ReadAsString();
+            return httpClient.Get(negotiateUrl, connection.PrepareRequest)
+                            .Then(response => response.ReadAsString())
+                            .Then(raw =>
+                            {
+                                if (String.IsNullOrEmpty(raw))
+                                {
+                                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
+                                }
 
-                if (String.IsNullOrEmpty(raw))
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
-                }
-
-                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
-            });
+                                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
+                            });
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             string appender = "",
                    customQuery = connection.QueryString,
-                   qs = "";            
+                   qs = "";
 
             if (!String.IsNullOrEmpty(customQuery))
             {

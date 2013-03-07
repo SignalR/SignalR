@@ -16,19 +16,22 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             _stream = stream;
         }
 
-        public string ReadAsString()
-        {
-            return new StreamReader(_stream).ReadToEnd();
-        }
-
-        public Stream GetResponseStream()
+        public Stream GetStream()
         {
             return _stream;
         }
 
-        public void Close()
+        protected virtual void Dispose(bool disposing)
         {
-            _stream.Close();
+            if (disposing)
+            {
+                _stream.Close();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

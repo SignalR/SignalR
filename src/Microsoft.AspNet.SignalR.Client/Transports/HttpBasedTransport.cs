@@ -89,10 +89,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             return _httpClient.Post(url, connection.PrepareRequest, postData)
-                              .Then(response =>
+                              .Then(response => response.ReadAsString())
+                              .Then(raw =>
                               {
-                                  string raw = response.ReadAsString();
-
                                   connection.Trace.WriteLine("OnMessage({0}, {1})", connection.ConnectionId, raw);
 
                                   if (!String.IsNullOrEmpty(raw))

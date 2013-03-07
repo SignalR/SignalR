@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             connection.Trace.WriteLine("LP: {0}", url);
 
-            HttpClient.Post(url, req => 
+            HttpClient.Post(url, req =>
             {
                 request = req;
                 connection.PrepareRequest(request);
@@ -127,14 +127,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
 
                         // Get the response
-                        var raw = task.Result.ReadAsString();
+                        task.Result.ReadAsString().Then(raw =>
+                        {
 
-                        connection.Trace.WriteLine("LP: OnMessage({0}, {1})", connection.ConnectionId, raw);
+                            connection.Trace.WriteLine("LP: OnMessage({0}, {1})", connection.ConnectionId, raw);
 
-                        TransportHelper.ProcessResponse(connection, 
-                                                        raw, 
-                                                        out shouldRaiseReconnect, 
-                                                        out disconnectedReceived);
+                            TransportHelper.ProcessResponse(connection,
+                                                            raw,
+                                                            out shouldRaiseReconnect,
+                                                            out disconnectedReceived);
+                        });
                     }
                 }
                 finally
@@ -219,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (state != null)
                 {
                     // This will no-op if the request is already finished.
-                   ((IRequest)state).Abort();
+                    ((IRequest)state).Abort();
                 }
 
                 // Prevent the connection state from switching to the reconnected state.
@@ -272,7 +274,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
-            
+
         }
     }
 }

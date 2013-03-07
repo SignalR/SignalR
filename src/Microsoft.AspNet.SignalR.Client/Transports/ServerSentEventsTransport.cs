@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 else
                 {
                     var response = task.Result;
-                    Stream stream = response.GetResponseStream();
+                    Stream stream = response.GetStream();
 
                     var eventSource = new EventSourceStreamReader(connection, stream);
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                         requestDisposer.Dispose();
                         esCancellationRegistration.Dispose();
-                        response.Close();
+                        response.Dispose();
 
                         if (AbortResetEvent != null)
                         {
