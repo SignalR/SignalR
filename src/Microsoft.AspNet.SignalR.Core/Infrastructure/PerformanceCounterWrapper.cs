@@ -13,6 +13,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _counter = counter;
         }
 
+        public string CounterName
+        {
+            get
+            {
+                return _counter.CounterName;
+            }
+        }
+
         public long RawValue
         {
             get { return _counter.RawValue; }
@@ -44,9 +52,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _counter.RemoveInstance();
         }
 
-        public void NextSample()
+        public CounterSample NextSample()
         {
-            _counter.NextSample();
+            return _counter.NextSample();
         }
     }
 }

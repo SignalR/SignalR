@@ -38,7 +38,13 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(PerfRun)'=='True'">
+      <DefineConstants>$(DefineConstants);PERFRUN</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement" Condition="'$(PerfRun)'=='True'">
+      <HintPath>..\..\lib\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+    </Reference>
     <Reference Include="CmdLine">
       <HintPath>..\..\packages\CmdLine.1.0.7.509\lib\net40-Client\CmdLine.dll</HintPath>
     </Reference>
@@ -116,6 +122,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="TPlan.Perf.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
