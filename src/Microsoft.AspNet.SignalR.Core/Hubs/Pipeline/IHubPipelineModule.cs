@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -31,6 +32,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="send">A function that invokes a client-side hub method.</param>
         /// <returns>A wrapped function that invokes a client-side hub method.</returns>
         Func<IHubOutgoingInvokerContext, Task> BuildOutgoing(Func<IHubOutgoingInvokerContext, Task> send);
+
+        /// <summary>
+        /// Wraps a function that is called when a client negotiates with the server.
+        /// By default, this results in a proper negotiate response being returned to the client.
+        /// </summary>
+        /// <param name="negotiate">A function that passes through the response.</param>
+        /// <returns>A wrapped function that invokes a negotiate.</returns>
+        Func<HostContext, Dictionary<string, object>, Task> BuildNegotiate(Func<HostContext, Dictionary<string, object>, Task> negotiate);
 
         /// <summary>
         /// Wraps a function that is called when a client connects to the <see cref="HubDispatcher"/> for each
