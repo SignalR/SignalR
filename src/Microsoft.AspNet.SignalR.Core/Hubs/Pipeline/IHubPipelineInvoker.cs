@@ -31,8 +31,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// a proper negotiate response being returned to the client.
         /// </summary>
         /// <param name="response">The negotiated response for the user.</param>
-        /// <param name="context">The host context for the negotiate.</param>
-        Task Negotiate(HostContext context, Dictionary<string, object> response);
+        Dictionary<string, object> Negotiate(Dictionary<string, object> response);
 
         /// <summary>
         /// To be called when a client connects to the <see cref="HubDispatcher"/> for each <see cref="IHub"/> the client

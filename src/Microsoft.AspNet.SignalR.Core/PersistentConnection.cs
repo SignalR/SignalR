@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
-using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -35,7 +34,6 @@ namespace Microsoft.AspNet.SignalR
         private ITransportManager _transportManager;
         private bool _initialized;
         private IServerCommandHandler _serverMessageHandler;
-        private IHubPipelineInvoker _pipelineInvoker;
 
         public virtual void Initialize(IDependencyResolver resolver)
         {
@@ -60,7 +58,6 @@ namespace Microsoft.AspNet.SignalR
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
             _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
-            _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
 
             _initialized = true;
         }
@@ -474,10 +471,26 @@ namespace Microsoft.AspNet.SignalR
             return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
-        private Task ProcessNegotiationRequest(HostContext context)
+        protected Task ProcessNegotiationRequest(HostContext context)
         {
-            var response = new Dictionary<string, object>();
+            var response = BuildNegotiateResponse(context);
 
+            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
+            {
+                return ProcessJsonpRequest(context, response);
+            }
+
+            context.Response.ContentType = JsonUtility.JsonMimeType;
+            return context.Response.End(JsonSerializer.Stringify(response));
+        }
+
+        protected virtual Dictionary<string, object> BuildNegotiateResponse(HostContext context)
+        {
+            return BuildNegotiateResponse(context, new Dictionary<string, object>());
+        }
+
+        protected Dictionary<string, object> BuildNegotiateResponse(HostContext context, Dictionary<string, object> response)
+        {
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
             var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
@@ -493,18 +506,7 @@ namespace Microsoft.AspNet.SignalR
             response["ProtocolVersion"] = _protocolResolver.Resolve(context.Request).ToString();
             response["TransportConnectTimeout"] = _configurationManager.TransportConnectTimeout.TotalSeconds;
 
-            return _pipelineInvoker.Negotiate(context, response);
-        }
-
-        internal static Task Negotiate(HostContext context, Dictionary<string, object> response)
-        {
-            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
-            {
-                return ProcessJsonpRequest(context, response);
-            }
-
-            context.Response.ContentType = JsonUtility.JsonMimeType;
-            return context.Response.End(JsonSerializer.Stringify(response));
+            return response;
         }
 
         private static string GetUserIdentity(HostContext context)
@@ -516,7 +518,7 @@ namespace Microsoft.AspNet.SignalR
             return String.Empty;
         }
 
-        private static Task ProcessJsonpRequest(HostContext context, object payload)
+        private Task ProcessJsonpRequest(HostContext context, object payload)
         {
             context.Response.ContentType = JsonUtility.JavaScriptMimeType;
             var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));

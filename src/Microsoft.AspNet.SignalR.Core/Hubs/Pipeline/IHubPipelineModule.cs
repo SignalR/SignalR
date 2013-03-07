@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="negotiate">A function that passes through the response.</param>
         /// <returns>A wrapped function that invokes a negotiate.</returns>
-        Func<HostContext, Dictionary<string, object>, Task> BuildNegotiate(Func<HostContext, Dictionary<string, object>, Task> negotiate);
+        Func<Dictionary<string, object>, Dictionary<string, object>> BuildNegotiate(Func<Dictionary<string, object>, Dictionary<string, object>> negotiate);
 
         /// <summary>
         /// Wraps a function that is called when a client connects to the <see cref="HubDispatcher"/> for each
