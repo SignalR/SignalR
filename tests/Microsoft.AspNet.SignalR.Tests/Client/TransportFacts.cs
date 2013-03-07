@@ -10,6 +10,7 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Extensions;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -80,40 +81,51 @@ namespace Microsoft.AspNet.SignalR.Tests
             var httpClient = new Mock<IHttpClient>(MockBehavior.Strict);
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
 
-            response.Setup(r => r.ReadAsString()).Returns("{}");
-
-            httpClient.Setup(h => h.Post(It.IsAny<string>(),
-                                         It.IsAny<Action<Client.Http.IRequest>>(),
-                                         It.IsAny<IDictionary<string, string>>()))
-                      .Returns(TaskAsyncHelper.FromResult(response.Object));
-
-            connection.Setup(c => c.ConnectionId).Returns("someid");
-            connection.Setup(c => c.Trace).Returns(new StringWriter());
-            connection.SetupGet(c => c.Url).Returns("");
-            connection.SetupGet(c => c.QueryString).Returns("");
-            connection.SetupGet(c => c.ConnectionToken).Returns("");
-            connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
-            connection.Setup(c => c.OnError(It.IsAny<AggregateException>())).Callback<Exception>(e =>
+            using (var mockStream = new MemoryStream())
             {
-                Assert.Equal(ex, e.InnerException);
-                wh.Set();
-            });
+                using (var sw = new StreamWriter(mockStream, Encoding.UTF8))
+                {
+                    sw.WriteLine("{}");
+                    sw.Flush();
 
-            var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
-            {
-                CallBase = true
-            };
+                    mockStream.Position = 0;
 
-            var sendTask = httpBasedTransport.Object.Send(connection.Object, "");
+                    response.Setup(r => r.GetStream()).Returns(mockStream);
 
-            Assert.True(sendTask.IsFaulted);
-            Assert.IsType(typeof(AggregateException), sendTask.Exception);
-            Assert.Equal(ex, sendTask.Exception.InnerException);
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(1)));
+                    httpClient.Setup(h => h.Post(It.IsAny<string>(),
+                                                 It.IsAny<Action<Client.Http.IRequest>>(),
+                                                 It.IsAny<IDictionary<string, string>>()))
+                              .Returns(TaskAsyncHelper.FromResult(response.Object));
 
-            response.VerifyAll();
-            httpClient.VerifyAll();
-            connection.VerifyAll();
+                    connection.Setup(c => c.ConnectionId).Returns("someid");
+                    connection.Setup(c => c.Trace).Returns(new StringWriter());
+                    connection.SetupGet(c => c.Url).Returns("");
+                    connection.SetupGet(c => c.QueryString).Returns("");
+                    connection.SetupGet(c => c.ConnectionToken).Returns("");
+                    connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
+                    connection.Setup(c => c.OnError(It.IsAny<AggregateException>())).Callback<Exception>(e =>
+                    {
+                        Assert.Equal(ex, e.InnerException);
+                        wh.Set();
+                    });
+
+                    var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
+                    {
+                        CallBase = true
+                    };
+
+                    var sendTask = httpBasedTransport.Object.Send(connection.Object, "");
+
+                    Assert.True(sendTask.IsFaulted);
+                    Assert.IsType(typeof(AggregateException), sendTask.Exception);
+                    Assert.Equal(ex, sendTask.Exception.InnerException);
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(1)));
+
+                    response.VerifyAll();
+                    httpClient.VerifyAll();
+                    connection.VerifyAll();
+                }
+            }
         }
     }
 }
