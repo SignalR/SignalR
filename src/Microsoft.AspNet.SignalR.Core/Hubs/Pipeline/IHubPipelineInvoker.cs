@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -24,6 +25,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="context">A description of the client-side hub method invocation.</param>
         Task Send(IHubOutgoingInvokerContext context);
+
+        /// <summary>
+        /// To be called when a client negotiates with the server.  By default, this results in 
+        /// a proper negotiate response being returned to the client.
+        /// </summary>
+        /// <param name="response">The negotiated response for the user.</param>
+        /// <param name="context">The host context for the negotiate.</param>
+        Task Negotiate(HostContext context, Dictionary<string, object> response);
 
         /// <summary>
         /// To be called when a client connects to the <see cref="HubDispatcher"/> for each <see cref="IHub"/> the client

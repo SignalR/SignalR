@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -35,6 +36,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
 
                 return TaskAsyncHelper.FromResult<object>(null);
+            };
+        }
+
+        /// <summary>
+        /// Wraps a function that is called when a client negotiates with the server.
+        /// By default, this results in a proper negotiate response being returned to the client.
+        /// </summary>
+        /// <param name="negotiate">A function that passes through the response.</param>
+        /// <returns>A wrapped function that invokes a negotiate.</returns>
+        public virtual Func<HostContext, Dictionary<string, object>, Task> BuildNegotiate(Func<HostContext, Dictionary<string, object>, Task> negotiate)
+        {
+            return (context, response) =>
+            {
+                return negotiate(context, response).OrEmpty();
             };
         }
 
