@@ -2,7 +2,7 @@
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             testPingServer = function () {
                 $.signalR.transports._logic.pingServer(connection, transport).done(function () {
                     // Successful ping
@@ -19,9 +19,6 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.ok(true, "Connected");
             connection.stop();
             testPingServer();
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup
@@ -31,7 +28,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport calls Ping Server with custom query string in url", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             expectedQs = window.encodeURIComponent(testName),
             savedAjax = $.ajax,
             testPingServer = function () {
@@ -73,9 +70,6 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
             $.ajax = ajaxReplacement;
             testPingServer();
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         return function () {

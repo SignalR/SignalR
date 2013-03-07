@@ -5,7 +5,7 @@ testUtilities.runWithAllTransports(function (transport) {
     var randomGroup = window.Math.random().toString();
 
     QUnit.asyncTimeoutTest(transport + ": Hub can send and receive messages from groups.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             groupChat = connection.createHubProxies().groupChat;
 
         groupChat.client.send = function (value) {
@@ -21,9 +21,6 @@ testUtilities.runWithAllTransports(function (transport) {
 
                 groupChat.server.send(randomGroup, "hello");
             });
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup
@@ -33,7 +30,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + ": Hub Rejoin Group after reconnect.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             groupChat = connection.createHubProxies().groupChat,
             readyToEnd = false;
 
@@ -71,9 +68,6 @@ testUtilities.runWithAllTransports(function (transport) {
                 groupChat.server.send(randomGroup, "TryToReconnect");
             });
 
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup

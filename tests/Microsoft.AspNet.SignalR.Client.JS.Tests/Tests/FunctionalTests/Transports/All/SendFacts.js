@@ -2,7 +2,7 @@
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can send ", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo;
 
         // Must subscribe to at least one method on client
@@ -13,9 +13,6 @@ testUtilities.runWithAllTransports(function (transport) {
                 assert.equal(val, 6, "Successful return value from server via send");
                 end();
             });
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup

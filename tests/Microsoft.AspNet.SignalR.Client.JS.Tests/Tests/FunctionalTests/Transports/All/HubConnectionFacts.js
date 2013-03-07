@@ -2,13 +2,10 @@
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport an connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName);
+        var connection = testUtilities.createHubConnection(end, assert, testName);
 
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
-            end();
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
             end();
         });
 
@@ -18,8 +15,8 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + ": connection.id and connection.token have new value after stop and start.", testUtilities.defaultTestTimeout * 2, function (end, assert) {
-        var connection = testUtilities.createHubConnection(),
+    QUnit.asyncTimeoutTest(transport + ": connection.id and connection.token have new value after stop and start.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             echoHub = connection.createHubProxies().echoHub,
             run,
             oldConnectionID,
@@ -37,9 +34,6 @@ testUtilities.runWithAllTransports(function (transport) {
                 echoHub.server.echoCallback(echo).done(function () {
                     assert.ok(true, "Successfuly called server method");
                 });
-            }).fail(function (reason) {
-                assert.ok(false, "Failed to initiate signalr connection");
-                end();
             });
 
             return deferred.promise();

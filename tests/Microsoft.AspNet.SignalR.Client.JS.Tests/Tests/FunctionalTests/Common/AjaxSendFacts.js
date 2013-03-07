@@ -2,7 +2,7 @@
 
 testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvents"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo;
 
         // Must subscribe to at least one method on client
@@ -30,9 +30,6 @@ testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvent
             };
 
             $.signalR.transports._logic.ajaxSend(connection, JSON.stringify(data));
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup

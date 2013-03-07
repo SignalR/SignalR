@@ -5,6 +5,17 @@
         rfcWebSockets = !!window.WebSocket,
         iosVersion;
 
+    function wrapConnectionStart(connection, end, assert) {
+        var savedConnectionStart = connection.start;
+
+        connection.start = function () {
+            return savedConnectionStart.apply(connection, arguments).fail(function (reason) {
+                assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
+                end();
+            });
+        }
+    }
+
     if (ios && rfcWebSockets) {
         iosVersion = navigator.userAgent.match(/OS (\d+)/);
         if (iosVersion && iosVersion.length === 2) {
@@ -54,7 +65,7 @@
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function (testName) {
+        createHubConnection: function (end, assert, testName) {
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
@@ -65,10 +76,11 @@
             }
 
             connection.logging = true;
+            wrapConnectionStart(connection, end, assert);
 
             return connection;
         },
-        createConnection: function (url, testName) {
+        createConnection: function (url, end, assert, testName) {
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
@@ -79,6 +91,7 @@
             }
 
             connection.logging = true;
+            wrapConnectionStart(connection, end, assert);
 
             return connection;
         }

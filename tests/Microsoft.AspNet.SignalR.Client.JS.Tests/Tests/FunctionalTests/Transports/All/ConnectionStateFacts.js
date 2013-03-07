@@ -2,7 +2,7 @@
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo;
 
         // Need to have at least one client function in order to be subscribed to a hub
@@ -23,9 +23,6 @@ testUtilities.runWithAllTransports(function (transport) {
             });
 
             $.network.disconnect();
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");
@@ -39,7 +36,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
 
     QUnit.asyncTimeoutTest(transport + " transport connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
             statesSet = {};
 
@@ -66,9 +63,6 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connection.start({ transport: transport }).done(function () {
             $.network.disconnect();
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup
@@ -79,7 +73,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport Manually restarted client maintains consistent state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
             activeTransport = { transport: transport };
 
@@ -108,9 +102,6 @@ testUtilities.runWithAllTransports(function (transport) {
                     });
 
                     $.network.disconnect();
-                }).fail(function (reason) {
-                    assert.ok(false, "Failed to initiate SignalR connection");
-                    end();
                 });
 
                 assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");

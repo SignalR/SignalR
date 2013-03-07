@@ -33,7 +33,7 @@
 
     testUtilities.runWithAllTransports(function (transport) {
         QUnit.asyncTimeoutTest(transport + " transport negotiate passes query string variables for hub connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createHubConnection(testName),
+            var connection = testUtilities.createHubConnection(end, assert, testName),
                 // Need to ensure that we have a reference to the savedAjax method so we can then reset it in end()
                 savedAjax = negotiateTester(connection, transport, end, assert, testName);
 
@@ -44,7 +44,7 @@
         });
 
         QUnit.asyncTimeoutTest(transport + " transport negotiate passes query string variables for persistent connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", testName),
+            var connection = testUtilities.createConnection("signalr", end, assert, testName),
                 // Need to ensure that we have a reference to the savedAjax method so we can then reset it in end()
                 savedAjax = negotiateTester(connection, transport, end, assert, testName);
 

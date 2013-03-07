@@ -3,7 +3,7 @@
 // All transports will run successfully once #1442 is completed.  At that point we will be able to change this to runWithAllTransports
 testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport unable to create invalid hub", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection($.noop, { ok: $.noop }, testName),
             badHub = connection.createHubProxy('SomeHubThatDoesntExist');
 
         badHub.on("foo", function () { });
@@ -28,7 +28,7 @@ QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in invocation callbacks.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
             onerror = window.onerror;
 
@@ -42,9 +42,6 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
             demo.server.overload().done(function () {
                 throw new Error("overload error");
             });
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup
@@ -55,7 +52,7 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
     });
 
     QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in client hub methods.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
             onerror = window.onerror;
 
@@ -71,9 +68,6 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
 
         connection.start({ transport: transport }).done(function () {
             demo.server.doSomethingAndCallError();
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup

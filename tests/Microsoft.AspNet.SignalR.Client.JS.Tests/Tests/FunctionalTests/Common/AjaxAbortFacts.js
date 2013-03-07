@@ -2,8 +2,8 @@
 
 testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvents"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection1 = testUtilities.createHubConnection(testName),
-            connection2 = testUtilities.createHubConnection(testName),
+        var connection1 = testUtilities.createHubConnection(end, assert, testName),
+            connection2 = testUtilities.createHubConnection(end, assert, testName),
             statushub1 = connection1.createHubProxies().StatusHub,
             statushub2 = connection2.createHubProxies().StatusHub,
             transportInitializer = { transport: transport };
@@ -20,13 +20,7 @@ testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvent
         connection1.start(transportInitializer).done(function () {
             connection2.start(transportInitializer).done(function () {
                 $.signalR.transports._logic.ajaxAbort(connection1);
-            }).fail(function (reason) {
-                assert.ok(false, "Failed to initiate SignalR connection2");
-                end();
             });
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection1");
-            end();
         });
 
         // Cleanup

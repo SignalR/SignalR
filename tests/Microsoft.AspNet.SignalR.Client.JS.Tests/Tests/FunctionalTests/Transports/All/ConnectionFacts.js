@@ -3,7 +3,7 @@
 testUtilities.runWithAllTransports(function (transport) {
    
     QUnit.asyncTimeoutTest(transport + " transport can send and receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("multisend", testName),
+        var connection = testUtilities.createConnection("multisend", end, assert, testName),
             values = [];
 
         connection.received(function (data) {
@@ -25,9 +25,6 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connection.start({ transport: transport }).done(function () {
             connection.send("test");
-        }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
         });
 
         // Cleanup
@@ -37,7 +34,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport can receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("multisend", testName),
+        var connection = testUtilities.createConnection("multisend", end, assert, testName),
             values = [];
 
         connection.received(function (data) {
@@ -50,10 +47,7 @@ testUtilities.runWithAllTransports(function (transport) {
             }
         });
 
-        connection.start({ transport: transport }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
-        });
+        connection.start({ transport: transport });
 
         // Cleanup
         return function () {
@@ -67,7 +61,7 @@ QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport does not capture exceptions thrown in onReceived.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("multisend", testName),
+        var connection = testUtilities.createConnection("multisend", end, assert, testName),
             onerror = window.onerror;
 
         window.onerror = function (errorMessage) {
@@ -80,10 +74,7 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
             throw new Error("onReceived error");
         });
 
-        connection.start({ transport: transport }).fail(function (reason) {
-            assert.ok(false, "Failed to initiate SignalR connection");
-            end();
-        });
+        connection.start({ transport: transport });
 
         // Cleanup
         return function () {

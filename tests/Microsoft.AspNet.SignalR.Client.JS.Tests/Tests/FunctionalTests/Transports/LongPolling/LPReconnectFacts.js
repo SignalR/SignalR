@@ -1,7 +1,7 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
+    var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -22,9 +22,6 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
@@ -35,7 +32,7 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
 });
 
 QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
+    var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -56,9 +53,6 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
@@ -69,7 +63,7 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
 });
 
 QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
+    var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -88,9 +82,6 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
@@ -101,7 +92,7 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
 });
 
 QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
+    var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -120,9 +111,6 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
@@ -133,7 +121,7 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
 });
 
 QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
+    var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo,
         // Trigger disconnect timeout after X second of trying to reconnect.  This has to be a unique value because
         // we'll be using it to check if we've triggered the disconnect timeout.
@@ -176,9 +164,6 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
 
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
