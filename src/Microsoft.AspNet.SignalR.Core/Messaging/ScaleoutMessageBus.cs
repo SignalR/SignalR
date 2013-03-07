@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -22,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
         private readonly TaskQueueWrapper _queue;
+        private readonly TaskQueue _receiveQueue;
 
         private const int DefaultQueueSize = 1000;
 
@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
             _queue = new TaskQueueWrapper(queueSize);
+            _receiveQueue = new TaskQueue();
         }
 
         protected override TraceSource Trace
@@ -166,9 +167,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="id">id of the payload within that stream</param>
         /// <param name="messages">List of messages associated</param>
         /// <returns></returns>
+        protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
+        {
+            return _receiveQueue.Enqueue(() => OnReceivedCore(streamId, id, messages));
+        }
+
+        
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
+        private Task OnReceivedCore(string streamId, ulong id, IList<Message> messages)
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 

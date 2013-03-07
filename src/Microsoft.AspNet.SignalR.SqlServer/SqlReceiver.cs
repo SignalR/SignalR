@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
@@ -19,7 +18,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _tableName;
         private readonly string _streamId = "0";
         private readonly Func<string, ulong, IList<Message>, Task> _onReceive;
-        private readonly TaskQueue _receiveQueue = new TaskQueue();
         private readonly Lazy<object> _sqlDepedencyLazyInit;
         private readonly TraceSource _trace;
 
@@ -237,7 +235,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 _trace.TraceVerbose("Payload {0} containing {1} message(s) queued for receive to local message bus", id, payload.Messages.Count);
 
                 // Queue to send to the underlying message bus
-                _receiveQueue.Enqueue(() => _onReceive(_streamId, (ulong)id, payload.Messages));
+                _onReceive(_streamId, (ulong)id, payload.Messages);
             }
 
             _trace.TraceVerbose("{0} payloads processed, {1} message(s) received", payloadCount, messageCount);
