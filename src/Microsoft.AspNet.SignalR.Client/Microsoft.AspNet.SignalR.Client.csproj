@@ -67,6 +67,7 @@
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="HeartBeatMonitor.cs" />
+    <Compile Include="Http\IResponseExtensions.cs" />
     <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="Hubs\HubConnection.cs" />

@@ -85,6 +85,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponse.cs">
       <Link>Http\IResponse.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
+      <Link>Http\IResponseExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubConnection.cs">
       <Link>Hubs\HubConnection.cs</Link>
     </Compile>

@@ -98,6 +98,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
       <Link>HeartBeatMonitor.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
+      <Link>Http\IResponseExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>
     </Compile>
