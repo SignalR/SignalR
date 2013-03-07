@@ -425,21 +425,21 @@ namespace Microsoft.AspNet.SignalR
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
-            var payload = new Dictionary<string, object>();
+            var response = new Dictionary<string, object>();
 
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
             var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
             string connectionToken = connectionId + ':' + GetUserIdentity(context);
 
-            payload["Url"] = context.Request.Url.LocalPath.Replace("/negotiate", "");
-            payload["ConnectionToken"] = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken);
-            payload["ConnectionId"] = connectionId;
-            payload["KeepAliveTimeout"] = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null;
-            payload["DisconnectTimeout"] = _configurationManager.DisconnectTimeout.TotalSeconds;
-            payload["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets();
-            payload["WebSocketServerUrl"] = context.WebSocketServerUrl();
-            payload["ProtocolVersion"] = "1.2";
+            response["Url"] = context.Request.Url.LocalPath.Replace("/negotiate", "");
+            response["ConnectionToken"] = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken);
+            response["ConnectionId"] = connectionId;
+            response["KeepAliveTimeout"] = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null;
+            response["DisconnectTimeout"] = _configurationManager.DisconnectTimeout.TotalSeconds;
+            response["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets();
+            response["WebSocketServerUrl"] = context.WebSocketServerUrl();
+            response["ProtocolVersion"] = "1.2";
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
             {
