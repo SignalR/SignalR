@@ -473,22 +473,22 @@ namespace Microsoft.AspNet.SignalR
 
         private Task ProcessNegotiationRequest(HostContext context)
         {
-            var payload = new Dictionary<string, object>();
+            var response = new Dictionary<string, object>();
 
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
             var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
             string connectionToken = connectionId + ':' + GetUserIdentity(context);
 
-            payload["Url"] = context.Request.Url.LocalPath.Replace("/negotiate", "");
-            payload["ConnectionToken"] = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken);
-            payload["ConnectionId"] = connectionId;
-            payload["KeepAliveTimeout"] = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null;
-            payload["DisconnectTimeout"] = _configurationManager.DisconnectTimeout.TotalSeconds;
-            payload["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets();
-            payload["WebSocketServerUrl"] = context.WebSocketServerUrl();
-            payload["ProtocolVersion"] = _protocolResolver.Resolve(context.Request).ToString();
-            payload["TransportConnectTimeout"] = _configurationManager.TransportConnectTimeout.TotalSeconds;
+            response["Url"] = context.Request.Url.LocalPath.Replace("/negotiate", "");
+            response["ConnectionToken"] = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken);
+            response["ConnectionId"] = connectionId;
+            response["KeepAliveTimeout"] = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null;
+            response["DisconnectTimeout"] = _configurationManager.DisconnectTimeout.TotalSeconds;
+            response["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets();
+            response["WebSocketServerUrl"] = context.WebSocketServerUrl();
+            response["ProtocolVersion"] = _protocolResolver.Resolve(context.Request).ToString();
+            response["TransportConnectTimeout"] = _configurationManager.TransportConnectTimeout.TotalSeconds;
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
             {
