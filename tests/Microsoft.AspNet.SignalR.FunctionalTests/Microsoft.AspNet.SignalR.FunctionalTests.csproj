@@ -80,6 +80,7 @@
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="Server\Hubs\HubPipelineFacts.cs" />
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
   </ItemGroup>
   <ItemGroup>
