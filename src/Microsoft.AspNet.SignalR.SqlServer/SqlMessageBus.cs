@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     public class SqlMessageBus : ScaleoutMessageBus
     {
         internal const string SchemaName = "SignalR";
-        private const string _tableName = "SignalR_Messages";
+        private const string _tableName = "Messages";
         private readonly int _tableCount;
         private readonly SqlInstaller _installer;
         private readonly SqlSender _sender;
@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (tableCount != 1)
             {
+                // TODO: Support tableCount
                 throw new ArgumentException(Resources.Error_TableCountMustBeOne, "tableCount");
             }
 
@@ -41,7 +42,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _installer = sqlInstaller ?? new SqlInstaller(connectionString, _tableName, tableCount, Trace);
             _installer.EnsureInstalled();
 
-            // TODO: Support tableCount
             _sender = sqlSender ?? new SqlSender(connectionString, _tableName, Trace);
             _receiver = sqlReceiver ?? new SqlReceiver(connectionString, _tableName, OnReceived, Trace);
         }

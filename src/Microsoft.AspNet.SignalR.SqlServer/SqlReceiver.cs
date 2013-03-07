@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public SqlReceiver(string connectionString, string tableName, Func<string, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
         {
             _connectionString = connectionString;
-            _tableName = tableName;
+            _tableName = tableName + "_1";
             _onReceive = onReceive;
             _sqlDepedencyLazyInit = new Lazy<object>(InitSqlDependency);
             _trace = traceSource;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         else
                         {
                             // If the e.Info value here is 'Invalid', ensure the query SQL meets the requirements
-                            // discussed at http://www.codeproject.com/Articles/144344/Query-Notification-using-SqlDependency-and-SqlCach#heading0003
+                            // for query notifications at http://msdn.microsoft.com/en-US/library/ms181122.aspx
                             _trace.TraceError("SQL notification subscription error: {0}", e.Info);
 
                             // TODO: Do we need to be more paticular about the type of error here?

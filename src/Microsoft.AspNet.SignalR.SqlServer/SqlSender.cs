@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public SqlSender(string connectionString, string tableName, TraceSource traceSource)
         {
             _connectionString = connectionString;
-            _tableName = tableName;
+            _tableName = tableName + "_1";
             _insertSql = String.Format(CultureInfo.CurrentCulture, _insertSql, _tableName);
             _trace = traceSource;
         }

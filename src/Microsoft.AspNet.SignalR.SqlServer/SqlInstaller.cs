@@ -1,39 +1,23 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal class SqlInstaller
     {
         private const int SchemaVersion = 1;
-        private const string SchemaTableName = "SignalR_Schema";
-        private const string SchemaFullTableName = "[" + SqlMessageBus.SchemaName + "].[" + SchemaTableName + "]";
-        private const string CheckDatabaseSchemaSql = "SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '" + SqlMessageBus.SchemaName + "'";
-        private const string CreateDatabaseSchemaSql = "CREATE SCHEMA [" + SqlMessageBus.SchemaName + "]";
-        private const string CheckSchemaTableExistsSql = "SELECT [object_id] FROM [sys].[tables] WHERE [name] = @TableName AND [schema_id] = @SchemaId";
-        private const string CheckSchemaTableVersionSql = "SELECT [SchemaVersion] FROM " + SchemaFullTableName;
-        private const string CreateSchemaTableSql = "CREATE TABLE " + SchemaFullTableName + " ( [SchemaVersion] int NOT NULL PRIMARY KEY )";
-        private const string InsertSchemaTableSql = "INSERT INTO " + SchemaFullTableName + " ([SchemaVersion]) VALUES (@SchemaVersion)";
-        private const string UpdateSchemaTableSql = "UPDATE " + SchemaFullTableName + " SET [SchemaVersion] = @SchemaVersion";
+        private const string SchemaTableName = "Schema";
 
         private readonly string _connectionString;
         private readonly string _messagesTableNamePrefix;
         private readonly int _tableCount;
         private readonly TraceSource _trace;
 
-        private string _exstingTablesSql = "SELECT [name] FROM [sys].[objects] WHERE [name] LIKE('{0}%')";
-        private string _dropTableSql = "DROP TABLE [" + SqlMessageBus.SchemaName + "].[{0}]";
-        private string _createMessagesTableSql = "CREATE TABLE [" + SqlMessageBus.SchemaName + @"].[{0}] (
-                                                      [PayloadId] BIGINT NOT NULL PRIMARY KEY IDENTITY,
-                                                      [Payload] VARBINARY(MAX) NOT NULL,
-                                                      [InsertedOn] DATETIME NOT NULL
-                                                  )";
         private readonly Lazy<object> _initDummy;
 
         public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount, TraceSource traceSource)
@@ -41,7 +25,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _connectionString = connectionString;
             _messagesTableNamePrefix = tableNamePrefix;
             _tableCount = tableCount;
-            _exstingTablesSql = String.Format(CultureInfo.InvariantCulture, _exstingTablesSql, _messagesTableNamePrefix);
             _initDummy = new Lazy<object>(Install);
             _trace = traceSource;
         }
@@ -55,141 +38,34 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification="Query doesn't come from user code")]
         private object Install()
         {
-            _trace.TraceInformation("Start installing SignalR SQL tables");
+            _trace.TraceInformation("Start installing SignalR SQL objects");
+
+            string script;
+            using (var resourceStream = typeof(SqlInstaller).Assembly.GetManifestResourceStream("Microsoft.AspNet.SignalR.SqlServer.install.sql"))
+            {
+                var reader = new StreamReader(resourceStream);
+                script = reader.ReadToEnd();
+            }
+
+            script = script.Replace("SET @SCHEMA_NAME = 'SignalR';", "SET @SCHEMA_NAME = '" + SqlMessageBus.SchemaName + "';");
+            script = script.Replace("SET @SCHEMA_TABLE_NAME = 'Schema';", "SET @SCHEMA_TABLE_NAME = '" + SchemaTableName + "';");
+            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 1;", "SET @TARGET_SCHEMA_VERSION = " + SchemaVersion + ";");
+            script = script.Replace("SET @MESSAGE_TABLE_COUNT = 3;", "SET @MESSAGE_TABLE_COUNT = " + _tableCount + ";");
+            script = script.Replace("SET @MESSAGE_TABLE_NAME = 'Messages';", "SET @MESSAGE_TABLE_NAME = '" + _messagesTableNamePrefix + "';");
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                connection.Open();
-
-                int? dbSchemaId;
-                var schemaTableExists = false;
-                var schemaRowExists = false;
-                object objectId = null;
-
-                // Check for database schema
-                using (var cmd = new SqlCommand(CheckDatabaseSchemaSql, connection))
+                using (var command = connection.CreateCommand())
                 {
-                    dbSchemaId = (int?)cmd.ExecuteScalar();
-                }
-
-                if (!dbSchemaId.HasValue)
-                {
-                    // Create the database schema
-                    using (var cmd = new SqlCommand(CreateDatabaseSchemaSql, connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    // Get the database schema ID
-                    using (var cmd = new SqlCommand(CheckDatabaseSchemaSql, connection))
-                    {
-                        dbSchemaId = (int?)cmd.ExecuteScalar();
-                    }
-
-                    Debug.Assert(dbSchemaId.HasValue, "This shouldn't happen");
-                }
-
-                using (var cmd = new SqlCommand(CheckSchemaTableExistsSql, connection))
-                {
-                    cmd.Parameters.AddWithValue("TableName", SchemaTableName);
-                    cmd.Parameters.AddWithValue("SchemaId", dbSchemaId.Value);
-                    objectId = cmd.ExecuteScalar();
-                }
-
-                if (objectId != null && objectId != DBNull.Value)
-                {
-                    // Schema table already exists, check schema version
-                    schemaTableExists = true;
-                    object schemaVersion = null;
-                    using (var cmd = new SqlCommand(CheckSchemaTableVersionSql, connection))
-                    {
-                        schemaVersion = cmd.ExecuteScalar();
-                    }
-                    
-                    if (schemaVersion == null || schemaVersion == DBNull.Value || (int)schemaVersion < SchemaVersion)
-                    {
-                        // No schema row or older schema, just continue and we'll update it
-                        schemaRowExists = !(schemaVersion == null || schemaVersion == DBNull.Value);
-                    }
-                    else if ((int)schemaVersion == SchemaVersion)
-                    {
-                        // Schema up to date!
-                        // Ensure all messages tables are created
-                        EnsureMessagesTables(connection);
-                        return new object();
-                    }
-                    else if ((int)schemaVersion > SchemaVersion)
-                    {
-                        // Schema is newer than we expect, not good
-                        throw new InvalidOperationException(Resources.Error_SignalRSQLScaleOutNewerThanCurrentVersion);
-                    }
-
-                }
-
-                if (!schemaTableExists)
-                {
-                    // Create schema table
-                    using (var cmd = new SqlCommand(CreateSchemaTableSql, connection))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                // Ensure all messages tables are created
-                EnsureMessagesTables(connection);
-
-                // Update or Insert the schema row
-                using (var cmd = new SqlCommand(schemaRowExists ? UpdateSchemaTableSql : InsertSchemaTableSql, connection))
-                {
-                    cmd.Parameters.AddWithValue("SchemaVersion", SchemaVersion);
-                    cmd.ExecuteNonQuery();
+                    command.CommandText = script;
+                    connection.Open();
+                    command.ExecuteNonQuery();
                 }
             }
+
+            _trace.TraceInformation("SignalR SQL objects installed");
 
             return new object();
-        }
-
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
-        private void EnsureMessagesTables(SqlConnection connection)
-        {
-            var existingTables = new List<string>();
-
-            using (var cmd = new SqlCommand(_exstingTablesSql, connection))
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    existingTables.Add(reader.GetString(0));
-                }
-            }
-
-            if (existingTables.Count == _tableCount)
-            {
-                // We have the right number of tables
-                return;
-            }
-
-            // Drop the existing tables
-            foreach (var table in existingTables)
-            {
-                var dropTableSql = String.Format(CultureInfo.CurrentCulture, _dropTableSql, table);
-                using (var cmd = new SqlCommand(dropTableSql, connection))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
-            // Create messages tables
-            for (var i = 0; i < _tableCount; i++)
-            {
-                var createTableSql = _tableCount == 1
-                    ? String.Format(CultureInfo.CurrentCulture, _createMessagesTableSql, _messagesTableNamePrefix)
-                    : String.Format(CultureInfo.CurrentCulture, _createMessagesTableSql, _messagesTableNamePrefix + "_" + i.ToString(CultureInfo.InvariantCulture));
-                using (var cmd = new SqlCommand(createTableSql, connection))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
         }
     }
 }
