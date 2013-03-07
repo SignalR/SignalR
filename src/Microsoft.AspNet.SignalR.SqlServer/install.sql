@@ -26,8 +26,17 @@ BEGIN TRANSACTION;
 -- Create the DB schema if it doesn't exist
 IF NOT EXISTS(SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = @SCHEMA_NAME)
 	BEGIN
-		EXEC(N'CREATE SCHEMA [' + @SCHEMA_NAME + '];');		
-		PRINT 'Created database schema [' + @SCHEMA_NAME  + ']';
+		BEGIN TRY
+			EXEC(N'CREATE SCHEMA [' + @SCHEMA_NAME + '];');
+			PRINT 'Created database schema [' + @SCHEMA_NAME  + ']';
+		END TRY
+		BEGIN CATCH
+			IF ERROR_NUMBER() = 2759
+				-- If it's an object already exists error then ignore
+				PRINT 'Database schema [' + @SCHEMA_NAME + '] already exists'
+			ELSE
+				THROW;
+		END CATCH;
 	END
 ELSE
 	PRINT 'Database schema [' + @SCHEMA_NAME  + '] already exists';
@@ -87,8 +96,10 @@ IF @CURRENT_SCHEMA_VERSION IS NULL OR @CURRENT_SCHEMA_VERSION <= @TARGET_SCHEMA_
 				
 				IF @CURRENT_SCHEMA_VERSION IS NULL
 					BEGIN
+						DECLARE @insert_dml nvarchar(1000);
 						SET @CURRENT_SCHEMA_VERSION = 1;
-						EXEC('INSERT INTO [' + @SCHEMA_NAME  + '].[' + @SCHEMA_TABLE_NAME + '] ([SchemaVersion]) VALUES(@CURRENT_SCHEMA_VERSION)');
+						SET @insert_dml = 'INSERT INTO [' + @SCHEMA_NAME  + '].[' + @SCHEMA_TABLE_NAME + '] ([SchemaVersion]) VALUES(' + CONVERT(nvarchar, @CURRENT_SCHEMA_VERSION) + ')';
+						EXEC(@insert_dml);
 					END
 				
 				PRINT 'Schema version 1 installed';
