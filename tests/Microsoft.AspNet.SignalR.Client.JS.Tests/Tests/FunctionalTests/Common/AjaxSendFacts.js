@@ -9,14 +9,16 @@ testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvent
         demo.client.foo = function () { };
 
         connection.received(function (result) {
-            if (result.R === 6) {
-                assert.ok(true, "Result successfully received from server via ajaxSend");
-            }
-            else {
-                assert.ok(false, "Invalid result returned from server via ajaxSend");
-            }
+            if (result.I === "1") {
+                if (result.R === 6) {
+                    assert.ok(true, "Result successfully received from server via ajaxSend");
+                }
+                else {
+                    assert.ok(false, "Invalid result returned from server via ajaxSend");
+                }
 
-            end();
+                end();
+            }
         });
 
         connection.start({ transport: transport }).done(function () {

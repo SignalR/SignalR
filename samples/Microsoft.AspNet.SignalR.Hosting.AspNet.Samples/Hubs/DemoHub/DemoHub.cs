@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
 
         public void DoSomethingAndCallError()
         {
-            Clients.All.errorInCallback();
+            Clients.Caller.errorInCallback();
         }
 
         public Task DynamicTask()
