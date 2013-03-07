@@ -57,6 +57,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void OnReceived(JToken data);
         void OnError(Exception ex);
+        void OnNegotiated(string rawSettings);
         void OnReconnecting();
         void OnReconnected();
         void OnConnectionSlow();
