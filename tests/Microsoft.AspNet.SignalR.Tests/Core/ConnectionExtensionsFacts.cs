@@ -28,8 +28,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                                ackInterval: TimeSpan.Zero),
                                 counters,
                                 new Mock<IProtectedData>().Object);
-            
-            Assert.Throws<ArgumentNullException>(() => connection.Send(null, new object()));
+
+            Assert.Throws<ArgumentException>(() => connection.Send(null, new object()));
         }
     }
 }

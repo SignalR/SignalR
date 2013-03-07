@@ -26,9 +26,9 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            if (connectionId == null)
+            if (string.IsNullOrEmpty(connectionId))
             {
-                throw new ArgumentNullException("connectionId");
+                throw new ArgumentException("Argument cannot be null or empty", "connectionId");
             }
 
             var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId),
@@ -52,8 +52,8 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            var message = new ConnectionMessage(connection.DefaultSignal, 
-                                                value, 
+            var message = new ConnectionMessage(connection.DefaultSignal,
+                                                value,
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return connection.Send(message);

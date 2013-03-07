@@ -40,14 +40,14 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>A task that represents when send is complete.</returns>
         public Task Send(string groupName, object value, params string[] excludeConnectionIds)
         {
-            if (groupName == null)
+            if (string.IsNullOrEmpty(groupName))
             {
-                throw new ArgumentNullException("groupName");
+                throw new ArgumentException("Argument cannot be null or empty", "groupName");
             }
 
             var qualifiedName = CreateQualifiedName(groupName);
-            var message = new ConnectionMessage(qualifiedName, 
-                                                value, 
+            var message = new ConnectionMessage(qualifiedName,
+                                                value,
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return _connection.Send(message);
