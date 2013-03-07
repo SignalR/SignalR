@@ -49,7 +49,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // For long polling this ajax request will execute before testPingServer because longPolling
         // utilizes the pingServer method.
-        $.ajax = function (url, settings) {
+        function ajaxReplacement(url, settings) {
             if (!settings) {
                 settings = url;
                 url = settings.url;
@@ -71,6 +71,7 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
             connection.stop();
+            $.ajax = ajaxReplacement;
             testPingServer();
         }).fail(function (reason) {
             assert.ok(false, "Failed to initiate SignalR connection");
