@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR
         {
             if (string.IsNullOrEmpty(groupName))
             {
-                throw new ArgumentException("Argument cannot be null or empty", "groupName");
+                throw new ArgumentException((Resources.Error_ArgumentNullOrEmpty), "groupName");
             }
 
             var qualifiedName = CreateQualifiedName(groupName);

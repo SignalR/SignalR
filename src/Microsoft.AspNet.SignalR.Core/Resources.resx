@@ -123,6 +123,9 @@
   <data name="DynamicComment_ServerSideTypeIs" xml:space="preserve">
     <value>            /// &lt;param name=\"{0}\" type=\"{1}\"&gt;Server side type is {2}&lt;/param&gt;</value>
   </data>
+  <data name="Error_ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>
   <data name="Error_BufferSizeOutOfRange" xml:space="preserve">
     <value>The buffer size '{0}' is out of range.</value>
   </data>

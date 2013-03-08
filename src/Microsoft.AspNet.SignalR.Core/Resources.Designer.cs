@@ -79,6 +79,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty.
+        /// </summary>
+        internal static string Error_ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("Error_ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The buffer size &apos;{0}&apos; is out of range..
         /// </summary>
         internal static string Error_BufferSizeOutOfRange {
