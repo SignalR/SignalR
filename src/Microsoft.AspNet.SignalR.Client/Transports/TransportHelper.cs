@@ -44,6 +44,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                 }
 
+                connection.OnNegotiated(raw);
+
                 return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
             });
         }
