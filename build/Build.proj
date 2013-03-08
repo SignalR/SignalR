@@ -241,7 +241,6 @@
     <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
              Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll /noshadow"
              Condition="'$(OS)' == 'Windows_NT'"/>
-    
   </Target>
 
   <Target Name="CodeCoverage" DependsOnTargets="PrepareCodeCoverage; BuildNetUnitTests; BuildNetFunctionalTests">
@@ -250,5 +249,4 @@
              Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ArtifactsDir)\Microsoft.AspNet.SignalR.OpenCover.xunit"
              Condition="'$(OS)' == 'Windows_NT'"/>
   </Target>
-
 </Project>
