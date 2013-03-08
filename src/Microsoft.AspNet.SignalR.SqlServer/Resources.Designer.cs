@@ -70,11 +70,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unsupported value for parameter &apos;tableCount&apos;. Must be 1..
+        ///   Looks up a localized string similar to The streamIndex value {0} is higher than the maximum configured index {1}.
         /// </summary>
-        internal static string Error_TableCountMustBeOne {
+        internal static string Error_StreamIndexOutOfRange {
             get {
-                return ResourceManager.GetString("Error_TableCountMustBeOne", resourceCulture);
+                return ResourceManager.GetString("Error_StreamIndexOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported value for parameter &apos;tableCount&apos;. The value must be greater than 1..
+        /// </summary>
+        internal static string Error_TableCountOutOfRange {
+            get {
+                return ResourceManager.GetString("Error_TableCountOutOfRange", resourceCulture);
             }
         }
     }

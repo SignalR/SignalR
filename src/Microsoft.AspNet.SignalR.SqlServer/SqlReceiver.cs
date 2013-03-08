@@ -12,7 +12,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlReceiver: IDisposable
+    internal class SqlReceiver : IDisposable
     {
         private readonly string _connectionString;
         private readonly string _tableName;
@@ -20,21 +20,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly Func<string, ulong, IList<Message>, Task> _onReceive;
         private readonly Lazy<object> _sqlDepedencyLazyInit;
         private readonly TraceSource _trace;
+        private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200 };
+        private readonly int _retryErrorDelay = 5000;
 
         // TODO: Investigate SQL locking options
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [" + SqlMessageBus.SchemaName + "].[{0}] WHERE [PayloadId] > @PayloadId";
         private string _maxIdSql = "SELECT MAX([PayloadId]) FROM [" + SqlMessageBus.SchemaName + "].[{0}]";
         private bool _sqlDependencyInitialized;
         private long _lastPayloadId = 0;
-        private int _retryCount = 5;
-        private int _retryDelay = 250;
-        private int _retryErrorDelay = 5000;
         private SqlCommand _receiveCommand;
 
         public SqlReceiver(string connectionString, string tableName, Func<string, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
         {
             _connectionString = connectionString;
-            _tableName = tableName + "_1";
+            _tableName = tableName;
             _onReceive = onReceive;
             _sqlDepedencyLazyInit = new Lazy<object>(InitSqlDependency);
             _trace = traceSource;
@@ -78,10 +77,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private void Receive(object state)
         {
-            for (var i = 1; i <= _retryCount; i++)
+            for (var i = 0; i <= _retryDelays.Length; i++)
             {
-                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i, _retryCount);
-                
+                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i, _retryDelays.Length);
+
                 // Look for new messages until we find some or retry expires
                 bool foundMessages = false;
                 try
@@ -92,6 +91,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 {
                     _trace.TraceError("SQL error: {0}", ex);
                     _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
+
                     Thread.Sleep(_retryErrorDelay);
 
                     // Push to a new thread as this is recursive
@@ -103,7 +103,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 {
                     // We found messages so start the loop again
                     _trace.TraceVerbose("Messages received, reset retry counter to 0");
-                    i = 1;
+
+                    i = 0;
                     continue;
                 }
                 else
@@ -111,18 +112,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _trace.TraceVerbose("No messages received");
                 }
 
-                if (i < _retryCount)
+                var retryDelay = _retryDelays[i];
+                if (retryDelay > 0)
                 {
-                    _trace.TraceVerbose("Waiting {0}ms before checking for messages again", _retryDelay);
-                    if (_retryDelay > 0)
-                    {
-                        Thread.Sleep(_retryDelay);
-                    }
+                    _trace.TraceVerbose("Waiting {0}ms before checking for messages again", retryDelay);
+
+                    Thread.Sleep(retryDelay);
                 }
             }
 
             // No messages found so set up query notification to callback when messages are available
-            _trace.TraceVerbose("Message checking max retries reached ({0})", _retryCount);
+            _trace.TraceVerbose("Message checking max retries reached");
+
             SetupQueryNotification();
         }
 
@@ -136,11 +137,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification="Dummy value returned from lazy init routine.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Dummy value returned from lazy init routine.")]
         private void SetupQueryNotification()
         {
             _trace.TraceVerbose("Setting up SQL notification");
-            
+
             var dummy = _sqlDepedencyLazyInit.Value;
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -150,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 sqlDependency.OnChange += (sender, e) =>
                     {
                         _trace.TraceInformation("SqlDependency.OnChanged fired: {0}", e.Info);
-                        
+
                         _receiveCommand.Notification = null;
 
                         if (e.Type == SqlNotificationType.Change)
@@ -208,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 return 0;
             }
-            
+
             var payloadCount = 0;
             var messageCount = 0;
             while (reader.Read())
@@ -232,10 +233,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 _lastPayloadId = id;
 
-                _trace.TraceVerbose("Payload {0} containing {1} message(s) queued for receive to local message bus", id, payload.Messages.Count);
-
-                // Queue to send to the underlying message bus
+                // Pass to the underlying message bus
                 _onReceive(_streamId, (ulong)id, payload.Messages);
+
+                _trace.TraceVerbose("Payload {0} containing {1} message(s) received", id, payload.Messages.Count);
             }
 
             _trace.TraceVerbose("{0} payloads processed, {1} message(s) received", payloadCount, messageCount);
@@ -250,7 +251,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             perm.Demand();
 
             SqlDependency.Start(_connectionString);
-            
+
             _sqlDependencyInitialized = true;
             _trace.TraceVerbose("SQL notification listener started");
             return new object();

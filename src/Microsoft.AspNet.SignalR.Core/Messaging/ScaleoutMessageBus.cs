@@ -134,7 +134,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 IGrouping<string, Message> group = enumerator.Current;
 
                 // Get the channel index we're going to use for this message
-                int index = _sipHashBasedComparer.GetHashCode(group.Key) % StreamCount;
+                int index = (int)((uint)_sipHashBasedComparer.GetHashCode(group.Key) % StreamCount);
+
+                Debug.Assert(index >= 0, "Hash function resulted in an index < 0.");
 
                 Task sendTask = Send(index, group.ToArray()).Catch();
 
