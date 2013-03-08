@@ -30,6 +30,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             _buffer.Append(Encoding.UTF8.GetString(buffer, 0, length));
         }
 
+        public void Add(ArraySegment<byte> buffer)
+        {
+            _buffer.Append(Encoding.UTF8.GetString(buffer.Array, buffer.Offset, buffer.Count));
+        }
+
         public string ReadLine()
         {
             // Lock while reading so that we can make safe assuptions about the buffer indicies
