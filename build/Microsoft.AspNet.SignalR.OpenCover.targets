@@ -11,11 +11,11 @@
   <UsingTask TaskName="ReportGenerator" AssemblyFile="@(ReportGeneratorMsBuild)" />
 
   <Target Name="OpenCover">
-    <Copy SourceFiles="$(SolutionDir)build\Microsoft.AspNet.SignalR.OpenCover.xunit" DestinationFolder="$(ArtifactsDir)" />
     <OpenCover ToolPath="@(OpenCoverConsole->'%(RelativeDir)')"
                ToolExe="@(OpenCoverConsole->'%(Filename)%(Extension)')"
                Target="@(XunitConsoleRunner)"
-               TargetArgs="$(ArtifactsDir)\Microsoft.AspNet.SignalR.OpenCover.xunit /silent"
+               TargetArgs="$(XunitArgs) /silent"
+               TargetWorkingDir="$(ArtifactsDir)"
                MergeByHash="True"
                Filter="+[Microsoft.AspNet.SignalR*]*
                        -[Microsoft.AspNet.SignalR.Tests*]*

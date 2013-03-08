@@ -138,12 +138,21 @@
   <Target Name="BuildCmd" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
   </Target>
 
-  <Target Name="RunUnitTests" DependsOnTargets="CreateOutputDir">
+  <Target Name="BuildNetUnitTests" DependsOnTargets="CreateOutputDir">
     <MSBuild Projects="%(UnitTestProjects.Identity)"
              Targets="Build"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);"
              Condition=" '$(OS)' == 'Windows_NT'"/>
+  </Target>
 
+  <Target Name="BuildNetFunctionalTests" DependsOnTargets="CreateOutputDir">
+    <MSBuild Projects="%(FunctionalTestProjects.Identity)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition=" '$(OS)' == 'Windows_NT'"/>
+  </Target>
+
+  <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
     <MSBuild Projects="%(JsTestProjects.Identity)"
          Targets="pipelinePreDeployCopyAllFilesToOneFolder"
          Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);_PackageTempDir=$(JSTestsPath);AutoParameterizationWebConfigConnectionStrings=false;MSBuildCommunityTasksPath=$(MSBuildCommunityTasksPath)"
@@ -168,12 +177,7 @@
     <OnError ExecuteTargets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
 
-  <Target Name="RunFunctionalTests" DependsOnTargets="CreateOutputDir">
-    <MSBuild Projects="%(FunctionalTestProjects.Identity)"
-             Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
-             Condition=" '$(OS)' == 'Windows_NT'"/>
-
+  <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">
     <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml"
            Verbose="true" />
@@ -222,16 +226,28 @@
   <!-- Required to restore solution-level packages -->
   <Import Project="$(ProjectRoot)\.nuget\nuget.targets" />
 
-  <Target Name="CodeCoverage">
+  <Target Name="PrepareCodeCoverage">
     <!-- Restore solution-level packages -->
     <Exec Command='$(NuGetCommand) install "$([System.IO.Path]::Combine($(NuGetToolsPath), "packages.config"))" -source "$(PackageSources)" -o "$(PackagesDir)"' />
+  </Target>
 
-    <MSBuild Projects="%(UnitTestProjects.Identity);%(FunctionalTestProjects.Identity)"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
-             Condition="'$(OS)' == 'Windows_NT'"/>
-
+  <Target Name="UnitCodeCoverage" DependsOnTargets="PrepareCodeCoverage; BuildNetUnitTests">
     <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll /noshadow"
+             Condition="'$(OS)' == 'Windows_NT'"/>
+  </Target>
+
+  <Target Name="FunctionalCodeCoverage" DependsOnTargets="PrepareCodeCoverage; BuildNetFunctionalTests">
+    <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
+             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll /noshadow"
+             Condition="'$(OS)' == 'Windows_NT'"/>
+    
+  </Target>
+
+  <Target Name="CodeCoverage" DependsOnTargets="PrepareCodeCoverage; BuildNetUnitTests; BuildNetFunctionalTests">
+    <Copy SourceFiles="$(ProjectRoot)\build\Microsoft.AspNet.SignalR.OpenCover.xunit" DestinationFolder="$(ArtifactsDir)" />
+    <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
+             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ArtifactsDir)\Microsoft.AspNet.SignalR.OpenCover.xunit"
              Condition="'$(OS)' == 'Windows_NT'"/>
   </Target>
 
