@@ -423,32 +423,41 @@ namespace Microsoft.AspNet.SignalR
             return context.Response.End(JsonSerializer.Stringify(payload));
         }
 
-        private Task ProcessNegotiationRequest(HostContext context)
+        protected Task ProcessNegotiationRequest(HostContext context)
+        {
+            var response = BuildNegotiateResponse(context);
+
+            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
+            {
+                return ProcessJsonpRequest(context, response);
+            }
+
+            context.Response.ContentType = JsonUtility.JsonMimeType;
+            return context.Response.End(JsonSerializer.Stringify(response));
+        }
+
+        protected virtual Dictionary<string, object> BuildNegotiateResponse(HostContext context)
+        {
+            return BuildNegotiateResponse(context, new Dictionary<string, object>());
+        }
+
+        protected Dictionary<string, object> BuildNegotiateResponse(HostContext context, Dictionary<string, object> response)
         {
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
             var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
             string connectionToken = connectionId + ':' + GetUserIdentity(context);
 
-            var payload = new
-            {
-                Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
-                ConnectionToken = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken),
-                ConnectionId = connectionId,
-                KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
-                DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
-                TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
-                WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.2"
-            };
+            response["Url"] = context.Request.Url.LocalPath.Replace("/negotiate", "");
+            response["ConnectionToken"] = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken);
+            response["ConnectionId"] = connectionId;
+            response["KeepAliveTimeout"] = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null;
+            response["DisconnectTimeout"] = _configurationManager.DisconnectTimeout.TotalSeconds;
+            response["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets();
+            response["WebSocketServerUrl"] = context.WebSocketServerUrl();
+            response["ProtocolVersion"] = "1.2";
 
-            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
-            {
-                return ProcessJsonpRequest(context, payload);
-            }
-
-            context.Response.ContentType = JsonUtility.JsonMimeType;
-            return context.Response.End(JsonSerializer.Stringify(payload));
+            return response;
         }
 
         private static string GetUserIdentity(HostContext context)
