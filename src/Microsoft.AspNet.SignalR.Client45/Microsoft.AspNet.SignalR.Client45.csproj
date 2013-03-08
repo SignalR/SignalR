@@ -124,6 +124,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\AsyncStreamReader.cs">
+      <Link>Transports\AsyncStreamReader.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
     </Compile>
