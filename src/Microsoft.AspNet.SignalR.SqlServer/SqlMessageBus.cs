@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlSender _sender;
         private readonly TraceSource _trace;
         private readonly ReadOnlyCollection<SqlReceiver> _receivers;
+
+        [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Buffering has not been implemented yet")]
         private readonly int _queueSize;
 
         public const int DefaultQueueSize = 1000;
