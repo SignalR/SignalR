@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.SignalR.Redis
 {
     public class RedisMessageBus : ScaleoutMessageBus
     {
+        private const int DefaultBufferSize = 1000;
+
         private readonly int _db;
         private readonly string[] _keys;
         private readonly Func<RedisConnection> _connectionFactory;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
+        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, IList<string> keys, IDependencyResolver resolver)
             : base(resolver)
         {
@@ -80,8 +82,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                                             State.Closed,
                                             State.Connected) == State.Connected)
             {
-                // Tell the base class the connection died so it'll queue failed sends.
-                Reset();
+                // Start buffering any sends that they are preserved
+                Buffer(DefaultBufferSize);
 
                 // Retry until the connection reconnects
                 ConnectWithRetry();

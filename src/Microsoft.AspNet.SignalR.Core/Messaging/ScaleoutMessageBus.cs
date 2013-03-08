@@ -23,19 +23,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly TaskQueueWrapper _sendQueue;
         private readonly TaskQueue _receiveQueue;
 
-        public const int DefaultQueueSize = 1000;
-
         protected ScaleoutMessageBus(IDependencyResolver resolver)
-            : this(resolver, queueSize: DefaultQueueSize)
-        {
-        }
-
-        protected ScaleoutMessageBus(IDependencyResolver resolver, int queueSize)
             : base(resolver)
         {
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _sendQueue = new TaskQueueWrapper(_trace, queueSize);
+            _sendQueue = new TaskQueueWrapper(_trace);
             _receiveQueue = new TaskQueue();
         }
 
@@ -56,28 +49,30 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         /// <summary>
-        /// 
+        /// Opens the queue for sending messages
         /// </summary>
-        /// <returns></returns>
         protected void Open()
         {
             _sendQueue.Open();
         }
 
         /// <summary>
-        /// 
+        /// Closes the queue for sendnig messages making all sends fail asynchornously.
         /// </summary>
-        /// <param name="exception"></param>
-        /// <returns></returns>
+        /// <param name="exception">The error that occurred.</param>
         protected void Close(Exception exception)
         {
             // Close the queue means that all further sends will fail
             _sendQueue.Close(exception);
         }
 
-        protected void Reset()
+        /// <summary>
+        /// Queues up to the specified size before failing.
+        /// </summary>
+        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
+        protected void Buffer(int size)
         {
-            _sendQueue.Initialize();
+            _sendQueue.Buffer(size);
         }
 
         /// <summary>
@@ -234,15 +229,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             private TaskCompletionSource<object> _taskCompletionSource;
             private TaskQueue _sendQueue;
 
-            private readonly int _size;
             private readonly TraceSource _trace;
 
             private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
 
-            public TaskQueueWrapper(TraceSource trace, int size)
+            public TaskQueueWrapper(TraceSource trace)
             {
                 _trace = trace;
-                _size = size;
 
                 InitializeCore();
             }
@@ -264,12 +257,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            public void Initialize()
+            public void Buffer(int size)
             {
                 lock (this)
                 {
-                    // Create a new tcs and queue
-                    InitializeCore();
+                    InitializeCore(size);
                 }
             }
 
@@ -283,10 +275,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This method should never throw")]
-            private void InitializeCore()
+            private void InitializeCore(int? size = null)
             {
+                DrainQueue();
 
+                _taskCompletionSource = new TaskCompletionSource<object>();
+
+                if (size != null)
+                {
+                    _sendQueue = new TaskQueue(_taskCompletionSource.Task, size.Value);
+                }
+                else
+                {
+                    _sendQueue = new TaskQueue(_taskCompletionSource.Task);
+                }
+            }
+
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This method should never throw")]
+            private void DrainQueue()
+            {
                 if (_sendQueue != null)
                 {
                     try
@@ -299,9 +306,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         _trace.TraceError("Draining failed: " + ex.GetBaseException());
                     }
                 }
-
-                _taskCompletionSource = new TaskCompletionSource<object>();
-                _sendQueue = new TaskQueue(_taskCompletionSource.Task, _size);
             }
         }
     }
