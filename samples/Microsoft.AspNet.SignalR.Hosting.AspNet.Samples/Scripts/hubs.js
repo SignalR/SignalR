@@ -18,7 +18,9 @@
         throw new Error("SignalR: SignalR is not loaded. Please ensure jquery.signalR-x.js is referenced before ~/signalr/hubs.");
     }
 
-    var signalR = $.signalR;
+    var signalR = $.signalR,
+        hubProxies,
+        proxyName;
 
     function makeProxyCallback(hub, callback) {
         return function () {
@@ -440,6 +442,13 @@
     };
 
     signalR.hub = $.hubConnection("/signalr", { useDefaultPath: false });
-    $.extend(signalR, signalR.hub.createHubProxies());
 
+    hubProxies = signalR.hub.createHubProxies();
+
+    for (proxyName in hubProxies) {
+        if (proxyName in signalR) {
+            throw new Error("SignalR: " + proxyName + " already exists in $.connection making " + proxyName + " an invalid hub name.");
+        }
+        signalR[proxyName] = hubProxies[proxyName];
+    }
 }(window.jQuery, window));
