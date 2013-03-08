@@ -25,6 +25,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlSender _sender;
         private readonly TraceSource _trace;
         private readonly ReadOnlyCollection<SqlReceiver> _receivers;
+        private readonly int _queueSize;
+
+        public const int DefaultQueueSize = 1000;
 
         /// <summary>
         /// Creates a new instance of the SqlMessageBus class.
@@ -41,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Review")]
         internal SqlMessageBus(string connectionString, int tableCount, int queueSize, SqlInstaller sqlInstaller, SqlSender sqlSender, IDependencyResolver dependencyResolver)
-            : base(dependencyResolver, queueSize)
+            : base(dependencyResolver)
         {
             if (String.IsNullOrWhiteSpace(connectionString))
             {
@@ -59,6 +62,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             _tableCount = tableCount;
+            _queueSize = queueSize;
             var traceManager = dependencyResolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
