@@ -68,6 +68,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
             catch (SqlException)
             {
+                // TODO: Call into base to start buffering here and kick off BG thread
+                //       to start pinging SQL server to detect when it comes back online
+
                 if (cmd != null)
                 {
                     cmd.Dispose();

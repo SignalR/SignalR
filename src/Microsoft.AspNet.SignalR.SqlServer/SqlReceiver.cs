@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private void Receive(object state)
         {
-            for (var i = 0; i <= _retryDelays.Length; i++)
+            for (var i = 0; i <= _retryDelays.Length - 1; i++)
             {
                 _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i, _retryDelays.Length);
 
@@ -89,6 +89,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (SqlException ex)
                 {
+                    // TODO: Call into base to start buffering here and kick off BG thread
+                    //       to start pinging SQL server to detect when it comes back online
+
                     _trace.TraceError("SQL error: {0}", ex);
                     _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
 
@@ -180,6 +183,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (SqlException ex)
                 {
+                    // TODO: Call into base to start buffering here and kick off BG thread
+                    //       to start pinging SQL server to detect when it comes back online
+
                     _trace.TraceError("SQL error: {0}", ex);
                     _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
                     Thread.Sleep(_retryErrorDelay);
@@ -226,7 +232,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _trace.TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
                 }
 
-                if (id < _lastPayloadId)
+                if (id <= _lastPayloadId)
                 {
                     _trace.TraceInformation("Duplicate message(s) or identity column reset from SQL Server. Last payload ID {0}, this payload ID {1}", _lastPayloadId, id);
                 }

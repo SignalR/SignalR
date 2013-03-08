@@ -13,6 +13,9 @@ using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
+    /// <summary>
+    /// Uses SQL Server tables to scale-out SignalR applications in web farms.
+    /// </summary>
     public class SqlMessageBus : ScaleoutMessageBus
     {
         internal const string SchemaName = "SignalR";
@@ -23,19 +26,36 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly TraceSource _trace;
         private readonly ReadOnlyCollection<SqlReceiver> _receivers;
 
-        public SqlMessageBus(string connectionString, int tableCount, IDependencyResolver dependencyResolver)
-            : this(connectionString, tableCount, null, null, dependencyResolver)
+        /// <summary>
+        /// Creates a new instance of the SqlMessageBus class.
+        /// </summary>
+        /// <param name="connectionString">The SQL Server connection string.</param>
+        /// <param name="tableCount">The number of tables to use as "message tables".</param>
+        /// <param name="queueSize">The max number of outgoing messages to queue in case SQL server goes offline.</param>
+        /// <param name="dependencyResolver">The dependency resolver.</param>
+        public SqlMessageBus(string connectionString, int tableCount, int queueSize, IDependencyResolver dependencyResolver)
+            : this(connectionString, tableCount, queueSize, null, null, dependencyResolver)
         {
 
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Review")]
-        internal SqlMessageBus(string connectionString, int tableCount, SqlInstaller sqlInstaller, SqlSender sqlSender, IDependencyResolver dependencyResolver)
-            : base(dependencyResolver)
+        internal SqlMessageBus(string connectionString, int tableCount, int queueSize, SqlInstaller sqlInstaller, SqlSender sqlSender, IDependencyResolver dependencyResolver)
+            : base(dependencyResolver, queueSize)
         {
+            if (String.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentNullException("connectionString");
+            }
+
             if (tableCount < 1)
             {
-                throw new ArgumentOutOfRangeException("tableCount", Resources.Error_TableCountOutOfRange);
+                throw new ArgumentOutOfRangeException("tableCount", String.Format(CultureInfo.InvariantCulture, Resources.Error_ValueMustBeGreaterThan1, "tableCount"));
+            }
+
+            if (queueSize < 1)
+            {
+                throw new ArgumentOutOfRangeException("queueSize", String.Format(CultureInfo.InvariantCulture, Resources.Error_ValueMustBeGreaterThan1, "queueSize"));
             }
 
             _tableCount = tableCount;

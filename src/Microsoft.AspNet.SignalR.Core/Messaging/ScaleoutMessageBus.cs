@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly TaskQueueWrapper _sendQueue;
         private readonly TaskQueue _receiveQueue;
 
-        private const int DefaultQueueSize = 1000;
+        public const int DefaultQueueSize = 1000;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : this(resolver, queueSize: DefaultQueueSize)
