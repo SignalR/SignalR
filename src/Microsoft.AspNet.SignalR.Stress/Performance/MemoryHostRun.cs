@@ -26,7 +26,11 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public string Transport { get; private set; }
 
-        public override void Run()
+        public override void InitializePerformanceCounters()
+        {
+        }
+
+        public override void Initialize()
         {
             _host.Configure(app =>
             {
@@ -40,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             });
 
-            base.Run();
+            base.Initialize();
         }
 
         public override void Dispose()
