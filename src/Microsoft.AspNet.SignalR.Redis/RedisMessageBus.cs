@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                                             State.Connected) == State.Connected)
             {
                 // Tell the base class the connection died so it'll queue failed sends.
-                Disconnect();
+                Reset();
 
                 // Retry until the connection reconnects
                 ConnectWithRetry();
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 {
                     Interlocked.Exchange(ref _state, State.Connected);
 
-                    Connect();
+                    Open();
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);

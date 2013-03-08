@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
-        private readonly TaskQueueWrapper _queue;
+        private readonly TaskQueueWrapper _sendQueue;
         private readonly TaskQueue _receiveQueue;
 
         private const int DefaultQueueSize = 1000;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _queue = new TaskQueueWrapper(queueSize);
+            _sendQueue = new TaskQueueWrapper(_trace, queueSize);
             _receiveQueue = new TaskQueue();
         }
 
@@ -59,18 +59,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// 
         /// </summary>
         /// <returns></returns>
-        protected void Connect()
+        protected void Open()
         {
-            _queue.Open();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        protected void Disconnect()
-        {
-            Disconnect(exception: null);
+            _sendQueue.Open();
         }
 
         /// <summary>
@@ -78,18 +69,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         /// <param name="exception"></param>
         /// <returns></returns>
-        protected void Disconnect(Exception exception)
+        protected void Close(Exception exception)
         {
-            if (exception != null)
-            {
-                // Close the queue means that all further sends will fail
-                _queue.Close(exception);
-            }
-            else
-            {
-                // Initialize the queue
-                _queue.Initialize();
-            }
+            // Close the queue means that all further sends will fail
+            _sendQueue.Close(exception);
+        }
+
+        protected void Reset()
+        {
+            _sendQueue.Initialize();
         }
 
         /// <summary>
@@ -174,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _receiveQueue.Enqueue(() => OnReceivedCore(streamId, id, messages));
         }
 
-        
+
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         private Task OnReceivedCore(string streamId, ulong id, IList<Message> messages)
@@ -232,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
             // TODO: Buffer messages here and make it configurable
-            return _queue.Enqueue(state => Send(new[] { (Message)state }), message);
+            return _sendQueue.Enqueue(state => Send(new[] { (Message)state }), message);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
@@ -247,11 +235,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             private TaskQueue _sendQueue;
 
             private readonly int _size;
+            private readonly TraceSource _trace;
 
             private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
 
-            public TaskQueueWrapper(int size)
+            public TaskQueueWrapper(TraceSource trace, int size)
             {
+                _trace = trace;
                 _size = size;
 
                 InitializeCore();
@@ -293,8 +283,23 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This method should never throw")]
             private void InitializeCore()
             {
+
+                if (_sendQueue != null)
+                {
+                    try
+                    {
+                        // Attempt to drain the queue before creating the new one
+                        _sendQueue.Drain().Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        _trace.TraceError("Draining failed: " + ex.GetBaseException());
+                    }
+                }
+
                 _taskCompletionSource = new TaskCompletionSource<object>();
                 _sendQueue = new TaskQueue(_taskCompletionSource.Task, _size);
             }
