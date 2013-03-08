@@ -218,4 +218,21 @@
              Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)" />
   </Target>
+
+  <!-- Required to restore solution-level packages -->
+  <Import Project="$(ProjectRoot)\.nuget\nuget.targets" />
+
+  <Target Name="CodeCoverage">
+    <!-- Restore solution-level packages -->
+    <Exec Command='$(NuGetCommand) install "$([System.IO.Path]::Combine($(NuGetToolsPath), "packages.config"))" -source "$(PackageSources)" -o "$(PackagesDir)"' />
+
+    <MSBuild Projects="%(UnitTestProjects.Identity);%(FunctionalTestProjects.Identity)"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition="'$(OS)' == 'Windows_NT'"/>
+
+    <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition="'$(OS)' == 'Windows_NT'"/>
+  </Target>
+
 </Project>
