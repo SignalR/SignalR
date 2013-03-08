@@ -1,3 +1,5 @@
+-- Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 DECLARE @SCHEMA_NAME nvarchar(32),
 		@SCHEMA_ID int,
 		@SCHEMA_TABLE_NAME nvarchar(100),

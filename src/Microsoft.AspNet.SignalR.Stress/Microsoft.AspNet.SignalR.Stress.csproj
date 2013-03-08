@@ -84,6 +84,7 @@
     <Compile Include="Performance\MemoryHostRun.cs" />
     <Compile Include="Performance\MessageBusRun.cs" />
     <Compile Include="Performance\RedisMessageBusRun.cs" />
+    <Compile Include="Performance\SqlMessageBusRun.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunBase.cs" />
@@ -111,6 +112,10 @@
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj">
       <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
       <Name>Microsoft.AspNet.SignalR.Redis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj">
+      <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
+      <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
