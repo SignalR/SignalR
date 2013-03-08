@@ -39,7 +39,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(PerfRun)'=='True'">
-      <DefineConstants>$(DefineConstants);PERFRUN</DefineConstants>
+    <DefineConstants>$(DefineConstants);PERFRUN</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement" Condition="'$(PerfRun)'=='True'">

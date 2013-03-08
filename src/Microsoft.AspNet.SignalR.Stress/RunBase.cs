@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
@@ -13,9 +14,8 @@ namespace Microsoft.AspNet.SignalR.Stress
     {
         private readonly CountdownEvent _countDown;
         private readonly List<IDisposable> _receivers = new List<IDisposable>();
-        private readonly IPerformanceCounter[] _counters;
-        private Dictionary<IPerformanceCounter, CounterSample[]> _samples;
-        private int _sampleCount = 0;
+        private IPerformanceCounter[] _counters;
+        private Dictionary<IPerformanceCounter, List<CounterSample>> _samples;
 
         public RunBase(RunData runData)
         {
@@ -28,18 +28,6 @@ namespace Microsoft.AspNet.SignalR.Stress
             CancellationTokenSource = new CancellationTokenSource();
 
             _countDown = new CountdownEvent(runData.Senders);
-
-            // Initialize performance counters for this run
-            Utility.InitializePerformanceCounters(Resolver, CancellationTokenSource.Token);
-            _counters = GetPerformanceCounters(Resolver.Resolve<IPerformanceCounterManager>());
-            if (_counters != null)
-            {
-                _samples = new Dictionary<IPerformanceCounter, CounterSample[]>(_counters.Length);
-                for (int i = 0; i < _counters.Length; i++)
-                {
-                    _samples[_counters[i]] = new CounterSample[2];
-                }
-            }
         }
 
         public int Duration { get; private set; }
@@ -50,8 +38,28 @@ namespace Microsoft.AspNet.SignalR.Stress
         public IDependencyResolver Resolver { get; private set; }
         public CancellationTokenSource CancellationTokenSource { get; private set; }
 
+        public virtual void InitializePerformanceCounters()
+        {
+            // Initialize performance counters for this run
+            Utility.InitializePerformanceCounters(Resolver, CancellationTokenSource.Token);
+        }
+
+        public virtual void Initialize()
+        {
+            InitializePerformanceCounters();
+
+            _counters = GetPerformanceCounters(Resolver.Resolve<IPerformanceCounterManager>());
+            _samples = new Dictionary<IPerformanceCounter, List<CounterSample>>(_counters.Length);
+            for (int i = 0; i < _counters.Length; i++)
+            {
+                _samples[_counters[i]] = new List<CounterSample>();
+            }
+        }
+
         public virtual void Run()
         {
+            Initialize();
+
             for (int i = 0; i < Connections; i++)
             {
                 IDisposable receiver = CreateReceiver(i);
@@ -69,35 +77,41 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public virtual void Sample()
         {
-            if (_sampleCount >= 2)
+            for (int i = 0; i < _counters.Length; i++)
             {
-                throw new InvalidOperationException();
-            }
-
-            if ((_counters != null) && (_samples != null))
-            {
-                for (int i = 0; i < _counters.Length; i++)
-                {
-                    var counter = _counters[i];
-                    _samples[counter][_sampleCount] = counter.NextSample();
-                }
-                _sampleCount++;
+                var counter = _counters[i];
+                _samples[counter].Add(counter.NextSample());
             }
         }
 
         public virtual void Record()
         {
-            if (_counters != null)
+            foreach (var item in _samples)
             {
-                foreach (var item in _samples)
+                var key = String.Format("Stress-{0};{1}", GetType().Name, item.Key.CounterName);
+                var samplesList = item.Value;
+
+                long[] values = new long[samplesList.Count - 1];
+                for (int i = 0; i < samplesList.Count - 1; i++)
                 {
-                    var key = String.Format("Stress-{0};{1}", GetType().Name, item.Key.CounterName);
-                    var value = (ulong)Math.Round(CounterSample.Calculate(item.Value[0], item.Value[1]));
+                    values[i] = (long)Math.Round(CounterSample.Calculate(samplesList[i], samplesList[i + 1]));
 #if PERFRUN
-                    Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark(value, key);
+                    Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)values[i], key);
 #endif
-                    Console.WriteLine("{0}={1}", key, value);
                 }
+                Array.Sort(values);
+                double median = values[values.Length / 2];
+                if (values.Length % 2 == 0)
+                {
+                    median = median + values[(values.Length / 2) - 1] / 2;
+                }
+
+                var average = values.Average();
+                var sumOfSquaresDiffs = values.Select(v => (v - average) * (v - average)).Sum();
+                var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
+                Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
+                Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
+                Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
             }
         }
 

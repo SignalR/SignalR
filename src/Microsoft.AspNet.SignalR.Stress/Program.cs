@@ -12,9 +12,11 @@ namespace Microsoft.AspNet.SignalR.Stress
 {
     class Program
     {
+        private static readonly int _sampleRateMilliseconds = 500;
+
         static void Main(string[] args)
         {
-            var run = CreateRun();
+            IRun run = CreateRun();
             long memory = 0;
 
             using (run)
@@ -24,9 +26,14 @@ namespace Microsoft.AspNet.SignalR.Stress
                 Thread.Sleep(run.Warmup * 1000);
 
                 Console.WriteLine("Test started: " + run.Duration);
-                run.Sample();
-                Thread.Sleep(run.Duration * 1000);
-                run.Sample();
+                var endTime = TimeSpan.FromSeconds(run.Duration);
+                var timer = Stopwatch.StartNew();
+                do
+                {
+                    run.Sample();
+                    Thread.Sleep(_sampleRateMilliseconds);
+                }
+                while (timer.Elapsed < endTime);
                 Console.WriteLine("Test finished");
 
                 memory = GC.GetTotalMemory(forceFullCollection: false);
@@ -60,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             return args;
         }
 
-        private static RunBase CreateRun()
+        private static IRun CreateRun()
         {
             ThreadPool.SetMinThreads(32, 32);
 
@@ -78,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 Transport = args.Transport
             });
 
-            return (RunBase)compositionContainer.GetExportedValue<IRun>(args.RunName);
+            return compositionContainer.GetExportedValue<IRun>(args.RunName);
         }
 
         private static string GetPayload(int n = 32)
