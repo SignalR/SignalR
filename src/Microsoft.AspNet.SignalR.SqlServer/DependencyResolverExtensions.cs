@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString, int tableCount)
         {
-            return UseSqlServer(resolver, connectionString, 1, SqlMessageBus.DefaultQueueSize);
+            return UseSqlServer(resolver, connectionString, tableCount, SqlMessageBus.DefaultQueueSize);
         }
 
         /// <summary>
