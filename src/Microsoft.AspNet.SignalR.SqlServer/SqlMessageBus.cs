@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     .ToList()
             );
 
-            Connect();
+            Open();
         }
 
         protected override TraceSource Trace
