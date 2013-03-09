@@ -19,6 +19,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly ReadOnlyCollection<string> _insertSql;
         private readonly TraceSource _trace;
+        private readonly string _insertDml =
+            //"SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;" +
+            "BEGIN TRANSACTION;" +
+            "DECLARE @" +
+            "INSERT INTO [{0}].[{1}_{2}] (Payload, InsertedOn) VALUES (@Payload, GETDATE());" +
+            "";
 
         public SqlSender(string connectionString, string tablePrefix, int tableCount, TraceSource traceSource)
         {
@@ -27,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 Enumerable.Range(1, tableCount)
                     .Select(tableNumber =>
                         String.Format(CultureInfo.InvariantCulture,
-                            "INSERT INTO [{0}].[{1}_{2}] (Payload, InsertedOn) VALUES (@Payload, GETDATE())",
+                            _insertDml,
                             SqlMessageBus.SchemaName,
                             tablePrefix,
                             tableNumber))
