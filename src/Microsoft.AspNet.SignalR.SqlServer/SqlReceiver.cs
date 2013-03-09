@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.Permissions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -18,15 +17,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _tableName;
         private readonly string _streamId = "0";
         private readonly Func<string, ulong, IList<Message>, Task> _onReceive;
-        private readonly Lazy<object> _sqlDepedencyLazyInit;
         private readonly TraceSource _trace;
-        private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200 };
+        private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
         private readonly int _retryErrorDelay = 5000;
+        private readonly bool _queryNotificationsSupported;
 
-        // TODO: Investigate SQL locking options
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [" + SqlMessageBus.SchemaName + "].[{0}] WHERE [PayloadId] > @PayloadId";
-        private string _maxIdSql = "SELECT MAX([PayloadId]) FROM [" + SqlMessageBus.SchemaName + "].[{0}]";
-        private bool _sqlDependencyInitialized;
+        private string _maxIdSql = "SELECT COALESCE(MAX([PayloadId]), 0) FROM [" + SqlMessageBus.SchemaName + "].[{0}]";
         private long _lastPayloadId = 0;
         private SqlCommand _receiveCommand;
 
@@ -35,12 +32,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _connectionString = connectionString;
             _tableName = tableName;
             _onReceive = onReceive;
-            _sqlDepedencyLazyInit = new Lazy<object>(InitSqlDependency);
             _trace = traceSource;
 
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, _tableName);
 
+            _queryNotificationsSupported = InitializeSqlDependency();
             InitializeLastPayloadId();
             ThreadPool.QueueUserWorkItem(Receive);
         }
@@ -54,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (disposing)
             {
-                if (_sqlDependencyInitialized)
+                if (_queryNotificationsSupported)
                 {
                     SqlDependency.Stop(_connectionString);
                 }
@@ -70,16 +67,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 using (var cmd = new SqlCommand(_maxIdSql, connection))
                 {
                     var maxId = cmd.ExecuteScalar();
-                    _lastPayloadId = maxId != null && maxId != DBNull.Value ? (long)maxId : _lastPayloadId;
+                    _lastPayloadId = (long)maxId;
                 }
             }
         }
 
         private void Receive(object state)
         {
-            for (var i = 0; i <= _retryDelays.Length - 1; i++)
+            for (var i = 0; i < _retryDelays.Length; i++)
             {
-                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i, _retryDelays.Length);
+                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i + 1, _retryDelays.Length);
 
                 // Look for new messages until we find some or retry expires
                 bool foundMessages = false;
@@ -107,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // We found messages so start the loop again
                     _trace.TraceVerbose("Messages received, reset retry counter to 0");
 
-                    i = 0;
+                    i = -1; // loop will increment this to 0
                     continue;
                 }
                 else
@@ -121,6 +118,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _trace.TraceVerbose("Waiting {0}ms before checking for messages again", retryDelay);
 
                     Thread.Sleep(retryDelay);
+                }
+
+                if (i == _retryDelays.Length - 1 && !_queryNotificationsSupported)
+                {
+                    // Just keep looping on the last retry delay as query notifications aren't supported
+                    i = _retryDelays.Length - 2;  // loop will increment this to Length - 1
                 }
             }
 
@@ -143,9 +146,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Dummy value returned from lazy init routine.")]
         private void SetupQueryNotification()
         {
+            Debug.Assert(_queryNotificationsSupported, "The SQL notification listener has not been initialized or is not supported.");
+
             _trace.TraceVerbose("Setting up SQL notification");
 
-            var dummy = _sqlDepedencyLazyInit.Value;
             using (var connection = new SqlConnection(_connectionString))
             {
                 UpdateQueryCommand(connection);
@@ -249,18 +253,25 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return payloadCount;
         }
 
-        private object InitSqlDependency()
+        private bool InitializeSqlDependency()
         {
             _trace.TraceVerbose("Starting SQL notification listener");
 
-            var perm = new SqlClientPermission(PermissionState.Unrestricted);
-            perm.Demand();
+            bool result = false;
 
-            SqlDependency.Start(_connectionString);
+            try
+            {
+                SqlDependency.Start(_connectionString);
+                result = true;
 
-            _sqlDependencyInitialized = true;
-            _trace.TraceVerbose("SQL notification listener started");
-            return new object();
+                _trace.TraceVerbose("SQL notification listener started");
+            }
+            catch (InvalidOperationException)
+            {
+                _trace.TraceInformation("SQL Service Broker is disabled, disabling query notifications");
+            }
+            
+            return result;
         }
     }
 }
