@@ -78,6 +78,7 @@
     <Compile Include="Core\Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Core\Hubs\Extensions\MethodExtensionsFacts.cs" />
     <Compile Include="Core\Hubs\HubConnectionContextFacts.cs" />
+    <Compile Include="Core\Hubs\HubContextFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
