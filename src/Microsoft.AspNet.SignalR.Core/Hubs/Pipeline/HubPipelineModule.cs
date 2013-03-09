@@ -66,12 +66,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <param name="negotiate">A function that passes through the response.</param>
         /// <returns>A wrapped function that invokes a negotiate.</returns>
-        public virtual Func<Dictionary<string, object>, Dictionary<string, object>> BuildNegotiate(Func<Dictionary<string, object>, Dictionary<string, object>> negotiate)
+        public virtual Action<Dictionary<string, object>> BuildNegotiate(Action<Dictionary<string, object>> negotiate)
         {
-            return (response) =>
-            {
-                return negotiate(response);
-            };
+            return negotiate;
         }
 
         /// <summary>
@@ -201,7 +198,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return true;
         }
-        
+
         /// <summary>
         /// This method is called before the connect components of any modules added later to the <see cref="IHubPipeline"/> are
         /// executed. If this returns false, then those later-added modules and the <see cref="IHub.OnConnected"/> method will

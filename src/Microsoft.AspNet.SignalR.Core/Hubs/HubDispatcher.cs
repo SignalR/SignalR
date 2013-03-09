@@ -257,11 +257,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return base.ProcessRequest(context);
         }
 
-        protected override Dictionary<string, object> BuildNegotiateResponse(HostContext context)
+        protected override void BuildNegotiateResponse(HostContext context, Dictionary<string, object> response)
         {
-            var response = _pipelineInvoker.Negotiate(new Dictionary<string, object>());
+            _pipelineInvoker.Negotiate(response);
 
-            return base.BuildNegotiateResponse(context, response);
+            base.BuildNegotiateResponse(context, response);
         }
 
         internal static Task Connect(IHub hub)

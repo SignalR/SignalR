@@ -55,14 +55,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                 _key = key;
                 _valueForKey = valueForKey;
             }
-
-            public override Func<Dictionary<string, object>, Dictionary<string, object>> BuildNegotiate(Func<Dictionary<string, object>, Dictionary<string, object>> negotiate)
+            public override Action<Dictionary<string, object>> BuildNegotiate(Action<Dictionary<string, object>> negotiate)
             {
                 return (response) =>
                 {
                     response[_key] = _valueForKey;
 
-                    return negotiate(response);
+                    negotiate(response);
                 };
             }
         }
