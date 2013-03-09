@@ -23,17 +23,22 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public SqlSender(string connectionString, string tablePrefix, int tableCount, TraceSource traceSource)
         {
             _connectionString = connectionString;
-            _insertSql = new ReadOnlyCollection<string>(
+            _insertSql = BuildInsertStrings(tablePrefix, tableCount);
+            _trace = traceSource;
+        }
+
+        private ReadOnlyCollection<string> BuildInsertStrings(string tablePrefix, int tableCount)
+        {
+            var insertDml = GetType().Assembly.StringResource("Microsoft.AspNet.SignalR.SqlServer.send.sql");
+            
+            return new ReadOnlyCollection<string>(
                 Enumerable.Range(1, tableCount)
                     .Select(tableNumber =>
-                        String.Format(CultureInfo.InvariantCulture,
-                            "INSERT INTO [{0}].[{1}_{2}] (Payload, InsertedOn) VALUES (@Payload, GETDATE())",
-                            SqlMessageBus.SchemaName,
-                            tablePrefix,
-                            tableNumber))
+                        insertDml.Replace("[SignalR]", String.Format(CultureInfo.InvariantCulture, "[{0}]", SqlMessageBus.SchemaName))
+                                 .Replace("[Messages_1", String.Format(CultureInfo.InvariantCulture, "[{0}_{1}", tablePrefix, tableNumber))
+                    )
                     .ToList()
             );
-            _trace = traceSource;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
@@ -56,15 +61,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var sql = _insertSql[streamIndex];
                 connection = new SqlConnection(_connectionString);
                 cmd = new SqlCommand(sql, connection);
-                var payload = cmd.Parameters.Add("Payload", SqlDbType.VarBinary);
-                payload.SqlValue = new SqlBinary(SqlPayload.ToBytes(messages));
+                cmd.Parameters.Add(new SqlParameter("Payload", SqlDbType.VarBinary)
+                {
+                    SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
+                });
 
                 _trace.TraceVerbose("Saving payload of {0} messages(s) to stream {1} in SQL server", messages.Count, streamIndex);
 
                 connection.Open();
                 return cmd.ExecuteNonQueryAsync()
                           .Then(c => c.Dispose(), connection) // close the connection if successful
-                          .Catch(_ => connection.Dispose()); // close the connection if it explodes
+                          .Catch((_, c) => ((SqlConnection)c).Dispose(), connection); // close the connection if it explodes
             }
             catch (SqlException)
             {
