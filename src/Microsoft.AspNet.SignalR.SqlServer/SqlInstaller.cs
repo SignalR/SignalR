@@ -40,12 +40,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             _trace.TraceInformation("Start installing SignalR SQL objects");
 
-            string script;
-            using (var resourceStream = typeof(SqlInstaller).Assembly.GetManifestResourceStream("Microsoft.AspNet.SignalR.SqlServer.install.sql"))
-            {
-                var reader = new StreamReader(resourceStream);
-                script = reader.ReadToEnd();
-            }
+            var script = GetType().Assembly.StringResource("Microsoft.AspNet.SignalR.SqlServer.install.sql");
 
             script = script.Replace("SET @SCHEMA_NAME = 'SignalR';", "SET @SCHEMA_NAME = '" + SqlMessageBus.SchemaName + "';");
             script = script.Replace("SET @SCHEMA_TABLE_NAME = 'Schema';", "SET @SCHEMA_TABLE_NAME = '" + SchemaTableName + "';");

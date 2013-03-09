@@ -5,27 +5,28 @@ DECLARE @SCHEMA_NAME nvarchar(32),
 		@TARGET_SCHEMA_VERSION int,
 		@MESSAGE_TABLE_NAME nvarchar(100),
 		@MESSAGE_TABLE_COUNT int,
-        @ID_TABLE_DDL nvarchar(1000),
-        @CREATE_MESSAGE_TABLE_DDL nvarchar(1000);
+        @CREATE_MESSAGE_TABLE_DDL nvarchar(1000),
+		@CREATE_MESSAGE_ID_TABLE_DDL nvarchar(1000);
 
 SET @SCHEMA_NAME = 'SignalR'; -- replaced from C#
 SET @SCHEMA_TABLE_NAME = 'Schema'; -- replaced from C#
 SET @TARGET_SCHEMA_VERSION = 1; -- replaced from C#
 SET @MESSAGE_TABLE_COUNT = 3; -- replaced from C#
 SET @MESSAGE_TABLE_NAME = 'Messages'; -- replaced from C#
-SET @ID_TABLE_DDL =
-N'CREATE TABLE [' + @SCHEMA_NAME + N'].[PayloadId] (
-    [PayloadId] [bigint] NOT NULL,
-	PRIMARY KEY CLUSTERED ([PayloadId] ASC)
-);'
 SET @CREATE_MESSAGE_TABLE_DDL =
 N'CREATE TABLE [' + @SCHEMA_NAME + N'].[@TableName](
     [PayloadId] [bigint] NOT NULL,
 	[Payload] [varbinary](max) NOT NULL,
 	[InsertedOn] [datetime] NOT NULL,
 	PRIMARY KEY CLUSTERED ([PayloadId] ASC)
-);
-CREATE TRIGGER [' + @SCHEMA_NAME + N'].[Trim_@TableName]
+);'
+SET @CREATE_MESSAGE_ID_TABLE_DDL =
+N'CREATE TABLE [' + @SCHEMA_NAME + N'].[@TableName] (
+    [PayloadId] [bigint] NOT NULL,
+	PRIMARY KEY CLUSTERED ([PayloadId] ASC)
+);';
+
+/*CREATE TRIGGER [' + @SCHEMA_NAME + N'].[@TableName_Trim]
    ON [' + @SCHEMA_NAME + N'].[@TableName]
    AFTER INSERT
 AS
@@ -69,7 +70,7 @@ BEGIN
 					WHERE [PayloadId] BETWEEN @StartPayloadId AND @EndPayloadId;
 			    END
 	    END
-END';
+END';*/
 
 PRINT 'Installing SignalR SQL objects';
 
@@ -135,23 +136,14 @@ IF @CURRENT_SCHEMA_VERSION IS NULL OR @CURRENT_SCHEMA_VERSION <= @TARGET_SCHEMA_
 				-- Install version 1
 				PRINT 'Installing schema version 1';
 				
-                IF NOT EXISTS(SELECT [object_id]
-							  FROM [sys].[tables]
-							  WHERE [name] = 'PayloadId'
-							    AND [schema_id] = @SCHEMA_ID)
-                    BEGIN
-                        EXEC(@ID_TABLE_DDL);
-                        PRINT 'Created payload ID table [' + @SCHEMA_NAME + '].[PayloadId]';
-                    END
-                ELSE
-                    PRINT 'Payload ID table [' + @SCHEMA_NAME + '].[PayloadId] alread exists';
-
                 DECLARE @counter int;
 				SET @counter = 1;
 				WHILE @counter <= @MESSAGE_TABLE_COUNT
 					BEGIN
 						DECLARE @table_name nvarchar(100);
 						DECLARE @ddl nvarchar(max);
+						
+						-- Create the message table
 						SET @table_name = @MESSAGE_TABLE_NAME + '_' + CONVERT(nvarchar, @counter);
 						SET @ddl = REPLACE(@CREATE_MESSAGE_TABLE_DDL, '@TableName', @table_name);
 						
@@ -165,6 +157,21 @@ IF @CURRENT_SCHEMA_VERSION IS NULL OR @CURRENT_SCHEMA_VERSION <= @TARGET_SCHEMA_
 							END
 						ELSE
 							PRINT 'Mesage table [' + @SCHEMA_NAME + '].[' + @table_name + '] already exists';
+
+						-- Create the id table
+						SET @table_name = @table_name + '_Id';
+						SET @ddl = REPLACE(@CREATE_MESSAGE_ID_TABLE_DDL, '@TableName', @table_name);
+
+						IF NOT EXISTS(SELECT [object_id]
+									  FROM [sys].[tables]
+									  WHERE [name] = @table_name
+										AND [schema_id] = @SCHEMA_ID)
+							BEGIN
+								EXEC(@ddl);
+								PRINT 'Created message ID table [' + @SCHEMA_NAME + '].[PayloadId]';
+							END
+						ELSE
+							PRINT 'Message ID table [' + @SCHEMA_NAME + '].[' + @table_name + '] alread exists';
 
 						SET @counter = @counter + 1;
 					END
@@ -195,6 +202,6 @@ ELSE -- @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 	BEGIN
 		-- Configured SqlMessageBus is lower version than current DB schema, just bail out
 		ROLLBACK TRANSACTION;
-		RAISERROR(N'SignalR database current schema version %d is newer than the configured SqlMessageBus schema version %d. Please update to the latest Microsoft.AspNet.SignalR.SqlServer package.', 11, 1,
+		RAISERROR(N'SignalR database current schema version %d is newer than the configured SqlMessageBus schema version %d. Please update to the latest Microsoft.AspNet.SignalR.SqlServer NuGet package.', 11, 1,
 			@CURRENT_SCHEMA_VERSION, @TARGET_SCHEMA_VERSION);
 	END
