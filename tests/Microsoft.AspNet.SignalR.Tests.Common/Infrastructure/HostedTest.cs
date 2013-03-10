@@ -56,9 +56,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     break;
             }
 
-            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
-            var writer = new StreamWriter(clientTracePath);
-            writer.AutoFlush = true;
+            var writer = CreateClientTraceWriter(testName);
             host.ClientTraceOutput = writer;
 
             if (hostType != HostType.Memory)
@@ -103,6 +101,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             return host;
         }
 
+        private static StreamWriter CreateClientTraceWriter(string testName)
+        {
+            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
+            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
+            var writer = new StreamWriter(clientTracePath);
+            writer.AutoFlush = true;
+            return writer;
+        }
+
         private IDisposable StartHttpSysTracing(string path)
         {
             var httpSysLoggingEnabledValue = ConfigurationManager.AppSettings["httpSysLoggingEnabled"];
@@ -121,6 +128,16 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             }
 
             return null;
+        }
+
+        protected HubConnection CreateHubConnection(string url)
+        {
+            string testName = GetTestName();
+            var query = new Dictionary<string, string>();
+            query["test"] = testName;
+            var connection = new HubConnection(url, query);
+            connection.Trace = CreateClientTraceWriter(testName);
+            return connection;
         }
 
         protected HubConnection CreateHubConnection(ITestHost host)
