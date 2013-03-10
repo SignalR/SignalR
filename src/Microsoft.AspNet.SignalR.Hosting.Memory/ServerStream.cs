@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
@@ -45,7 +47,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public override void Flush()
         {
+            throw new NotImplementedException();
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
             _flush();
+            return TaskAsyncHelper.Empty;
         }
 
         public override void Close()
