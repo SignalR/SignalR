@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public Task End()
         {
-            return Flush();
+            return TaskAsyncHelper.Empty;
         }
 
         public IDictionary<string, string[]> ResponseHeaders
