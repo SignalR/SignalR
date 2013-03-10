@@ -93,8 +93,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
                 // If we're at the end of the stream or we've read some data then return it
                 ar.SetAsCompleted(read, completedSynchronously);
-
-                return read;
             });
 
             return ar;
@@ -138,6 +136,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
                 Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
 
+                // Mark these bytes as consumed
+                _reader.Consume(read);
+
                 _readPos += read;
 
                 return read;
@@ -150,42 +151,43 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 _ms.Write(buffer.Array, buffer.Offset, buffer.Count);
 
-                _reader.NotifyRead(buffer.Count);
+                _reader.Add(buffer.Count);
             }
         }
 
         private void OnClose()
         {
             // Pretend like there's an extra byte to be read from the buffer to force a read
-            _reader.NotifyRead(1);
+            _reader.Add(1);
         }
 
         private class Reader
         {
             private int _bytesRemaining;
-            private readonly Queue<Func<bool, int>> _pendingReadCallbacks = new Queue<Func<bool, int>>();
+            private readonly Queue<Action<bool>> _pendingReadCallbacks = new Queue<Action<bool>>();
+            private readonly object _lockObj = new object();
 
-            public void NotifyRead(int count)
+            public void Add(int count)
             {
-                Interlocked.Add(ref _bytesRemaining, count);
-
-                lock (_pendingReadCallbacks)
+                lock (_lockObj)
                 {
+                    _bytesRemaining += count;
+
                     if (_pendingReadCallbacks.Count > 0)
                     {
                         // Trigger any pending callbacks
-                        Func<bool, int> callback = _pendingReadCallbacks.Dequeue();
+                        Action<bool> callback = _pendingReadCallbacks.Dequeue();
 
                         TryExecuteRead(callback, completedSynchronously: false);
                     }
                 }
             }
 
-            public void Read(Func<bool, int> callback)
+            public void Read(Action<bool> callback)
             {
-                if (!TryExecuteRead(callback, completedSynchronously: true))
+                lock (_lockObj)
                 {
-                    lock (_pendingReadCallbacks)
+                    if (!TryExecuteRead(callback, completedSynchronously: true))
                     {
                         // Enqueue the pending callback
                         _pendingReadCallbacks.Enqueue(callback);
@@ -193,15 +195,21 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 }
             }
 
-            private bool TryExecuteRead(Func<bool, int> callback, bool completedSynchronously)
+            public void Consume(int read)
+            {
+                lock (_lockObj)
+                {
+                    // Decrement the number of bytes consumed
+                    _bytesRemaining -= read;
+                }
+            }
+
+            private bool TryExecuteRead(Action<bool> callback, bool completedSynchronously)
             {
                 if (_bytesRemaining > 0)
                 {
                     // Trigger the read callback
-                    int consumed = callback(completedSynchronously);
-
-                    // Decrement the number of bytes consumed
-                    Interlocked.Add(ref _bytesRemaining, -consumed);
+                    callback(completedSynchronously);
 
                     return true;
                 }
