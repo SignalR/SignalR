@@ -150,9 +150,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             lock (_streamLock)
             {
                 _ms.Write(buffer.Array, buffer.Offset, buffer.Count);
-
-                _reader.Add(buffer.Count);
             }
+
+            _reader.Add(buffer.Count);
         }
 
         private void OnClose()
