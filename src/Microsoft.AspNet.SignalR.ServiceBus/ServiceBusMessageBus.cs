@@ -26,6 +26,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .ToArray();
 
             _subscription = _connection.Subscribe(_topics, OnMessage);
+
+            Open();
         }
 
         protected override int StreamCount
@@ -53,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     IList<Message> internalMessages = ServiceBusMessage.FromStream(message.GetBody<Stream>());
 
-                    OnReceived(topicName, (ulong)message.SequenceNumber, internalMessages);
+                    OnReceived(topicName, (ulong)message.EnqueuedSequenceNumber, internalMessages);
                 }
             }
         }
