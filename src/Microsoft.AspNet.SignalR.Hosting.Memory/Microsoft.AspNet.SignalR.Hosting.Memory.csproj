@@ -78,11 +78,15 @@
       <Link>Infrastructure\OwinConstants.cs</Link>
     </Compile>
     <Compile Include="AsyncResult.cs" />
+    <Compile Include="ClientStream.cs" />
+    <Compile Include="INetworkObserver.cs" />
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
     <Compile Include="MemoryHost.cs" />
+    <Compile Include="NetworkObservable.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">

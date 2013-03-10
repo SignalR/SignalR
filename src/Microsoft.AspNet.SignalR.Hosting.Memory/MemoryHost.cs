@@ -129,9 +129,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             // Run the client function to initialize the request
             prepareRequest(new Request(env, clientTokenSource.Cancel));
 
-            Response response = null;
-            response = new Response(disableWrites, () => tcs.TrySetResult(response), clientTokenSource.Token);
-            env[OwinConstants.ResponseBody] = response.GetResponseStream();
+            // Setup the fake network
+            var networkObservable = new NetworkObservable(disableWrites);
+            var response = new Response(networkObservable);
+            var stream = new ServerStream(networkObservable, () => tcs.TrySetResult(response));
+            clientTokenSource.Token.Register(networkObservable.Cancel);
+
+            env[OwinConstants.ResponseBody] = stream;
             env[OwinConstants.ResponseHeaders] = new Dictionary<string, string[]>();
 
             _appFunc(env).ContinueWith(task =>
@@ -155,7 +159,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     tcs.TrySetResult(response);
                 }
 
-                response.Close();
+                // Close the server stream when the request has ended
+                stream.Close();
                 clientTokenSource.Dispose();
             });
 

@@ -135,10 +135,17 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     {
         // Field set when operation completes
         TResult m_result = default(TResult);
+        IDisposable registration = null;
 
-        public AsyncResult(AsyncCallback asyncCallback, Object state) :
+        public AsyncResult(AsyncCallback asyncCallback, Object state, CancellationToken token) :
             base(asyncCallback, state)
         {
+            registration = token.Register(Cancel);
+        }
+
+        private void Cancel()
+        {
+            SetAsCompleted(new OperationCanceledException(), completedSynchronously: false);
         }
 
         public void SetAsCompleted(TResult result,
@@ -155,6 +162,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         public new TResult EndInvoke()
         {
             base.EndInvoke(); // Wait until operation has completed 
+            
+            if (registration != null)
+            {
+                registration.Dispose();
+            }
+
             return m_result; // Return the result (if above didn't throw)
         }
     }
