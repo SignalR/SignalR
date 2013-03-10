@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
-    public class ServerStream : Stream
+    internal class ServerStream : Stream
     {
         private readonly NetworkObservable _networkObservable;
         private readonly Action _flush;

@@ -5,10 +5,11 @@ using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
-    public class ClientStream : Stream
+    internal class ClientStream : Stream
     {
         private int _readPos;
 
+        private readonly object _streamLock = new object();
         private readonly MemoryStream _ms = new MemoryStream();
         private readonly CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
         private readonly Reader _reader = new Reader();
@@ -121,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         private int ReadBuffer(byte[] buffer, int offset, int count)
         {
-            lock (_ms)
+            lock (_streamLock)
             {
                 byte[] underlyingBuffer = _ms.GetBuffer();
 
@@ -145,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         private void OnWrite(ArraySegment<byte> buffer)
         {
-            lock (_ms)
+            lock (_streamLock)
             {
                 _ms.Write(buffer.Array, buffer.Offset, buffer.Count);
 
