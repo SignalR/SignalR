@@ -15,16 +15,17 @@ namespace Microsoft.AspNet.SignalR.Stress
     [Export("MemoryHost", typeof(IRun))]
     public class MemoryHostRun : RunBase
     {
-        private readonly MemoryHost _host = new MemoryHost();
-
         [ImportingConstructor]
         public MemoryHostRun(RunData runData)
             : base(runData)
         {
             Transport = runData.Transport;
+            Host = new MemoryHost();
         }
 
         public string Transport { get; private set; }
+
+        protected MemoryHost Host { get; private set; }
 
         public override void InitializePerformanceCounters()
         {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public override void Initialize()
         {
-            _host.Configure(app =>
+            Host.Configure(app =>
             {
                 var config = new ConnectionConfiguration
                 {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             base.Dispose();
 
-            _host.Dispose();
+            Host.Dispose();
         }
 
         protected override IDisposable CreateReceiver(int connectionIndex)
@@ -62,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     LongPollingLoop((string)state);
-                }, 
+                },
                 connectionId);
             }
             else
@@ -81,18 +82,18 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private Task ProcessRequest(string connectionToken)
         {
-            return _host.Get("http://foo/echo/connect?transport=" + Transport + "&connectionToken=" + connectionToken, disableWrites: true);
+            return Host.Get("http://foo/echo/connect?transport=" + Transport + "&connectionToken=" + connectionToken, disableWrites: true);
         }
 
         private Task ProcessSendRequest(string connectionToken, string data)
         {
             var postData = new Dictionary<string, string> { { "data", data } };
-            return _host.Post("http://foo/echo/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
+            return Host.Post("http://foo/echo/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
         }
 
         private Task Abort(string connectionToken)
         {
-            return _host.Post("http://foo/echo/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
+            return Host.Post("http://foo/echo/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
         }
 
         private void LongPollingLoop(string connectionId)

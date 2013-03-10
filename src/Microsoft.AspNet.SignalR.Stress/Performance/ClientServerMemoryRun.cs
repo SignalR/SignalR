@@ -1,0 +1,38 @@
+﻿using System;
+using System.ComponentModel.Composition;
+using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
+
+namespace Microsoft.AspNet.SignalR.Stress.Performance
+{
+    [Export("ClientServerMemory", typeof(IRun))]
+    public class ClientServerMemoryRun : MemoryHostRun
+    {
+        private readonly Client.Connection[] _connections;
+
+        [ImportingConstructor]
+        public ClientServerMemoryRun(RunData runData)
+            : base(runData)
+        {
+            _connections = new Connection[runData.Connections];
+            for (int i = 0; i < runData.Connections; i++)
+            {
+                _connections[i] = new Connection("http://memoryhost/echo");
+            }
+        }
+
+        protected override IDisposable CreateReceiver(int connectionIndex)
+        {
+            Connection connection = _connections[connectionIndex];
+
+            connection.Start(Host).Wait();
+
+            return Microsoft.AspNet.SignalR.Infrastructure.DisposableAction.Empty;
+        }
+
+        protected override Task Send(int senderIndex)
+        {
+            return _connections[senderIndex].Send(Payload);
+        }
+    }
+}
