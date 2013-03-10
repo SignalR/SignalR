@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
         private readonly string _connectionString;
+
+        private readonly ConcurrentDictionary<string, TopicClient> _clients = new ConcurrentDictionary<string, TopicClient>();
 
         public ServiceBusConnection(string connectionString)
         {
@@ -42,24 +45,27 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             var subscriptions = new List<Subscription>();
 
-            foreach (var topicPath in topicNames)
+            foreach (var topicName in topicNames)
             {
-                if (!_namespaceManager.TopicExists(topicPath))
+                if (!_namespaceManager.TopicExists(topicName))
                 {
-                    _namespaceManager.CreateTopic(topicPath);
+                    _namespaceManager.CreateTopic(topicName);
                 }
+
+                // Create a client for this topic
+                _clients.TryAdd(topicName, TopicClient.CreateFromConnectionString(_connectionString, topicName));
 
                 // Create a random subscription
                 string subscriptionName = Guid.NewGuid().ToString();
-                _namespaceManager.CreateSubscription(topicPath, subscriptionName);
+                _namespaceManager.CreateSubscription(topicName, subscriptionName);
 
                 // Create a receiver to get messages
-                string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicPath, subscriptionName);
+                string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath);
 
-                subscriptions.Add(new Subscription(topicPath, subscriptionName, receiver));
+                subscriptions.Add(new Subscription(topicName, subscriptionName, receiver));
 
-                PumpMessages(topicPath, receiver, handler);
+                PumpMessages(topicName, receiver, handler);
             }
 
             return new DisposableAction(() =>
@@ -69,20 +75,31 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     subscription.Receiver.Close();
 
                     _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+
+                    TopicClient client;
+                    if (_clients.TryRemove(subscription.TopicPath, out client))
+                    {
+                        client.Close();
+                    }
                 }
             });
         }
 
         public Task Publish(string topicName, Stream stream)
         {
-            // REVIEW: Do we need to keep track of these and clean this up on Dispose?
-            var client = TopicClient.CreateFromConnectionString(_connectionString, topicName);
-            var message = new BrokeredMessage(stream, ownsStream: true)
+            TopicClient client;
+            if (_clients.TryGetValue(topicName, out client))
             {
-                TimeToLive = MessageTtl
-            };
+                var message = new BrokeredMessage(stream, ownsStream: true)
+                {
+                    TimeToLive = MessageTtl
+                };
 
-            return client.SendAsync(message);
+                return client.SendAsync(message);
+            }
+
+            // REVIEW: Should this return a faulted task?
+            return TaskAsyncHelper.Empty;
         }
 
         protected virtual void Dispose(bool disposing)
