@@ -8,12 +8,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     internal class ServerStream : Stream
     {
         private readonly NetworkObservable _networkObservable;
-        private readonly Action _flush;
 
-        public ServerStream(NetworkObservable networkObservable, Action flush)
+        public ServerStream(NetworkObservable networkObservable)
         {
             _networkObservable = networkObservable;
-            _flush = flush;
         }
 
         public override bool CanRead
@@ -52,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            _flush();
+            _networkObservable.Flush();
             return TaskAsyncHelper.Empty;
         }
 

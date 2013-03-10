@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     {
         private readonly ClientStream _stream;
 
-        public Response(NetworkObservable networkObservable)
+        public Response(ClientStream stream)
         {
-            _stream = new ClientStream(networkObservable);
+            _stream = stream;
         }
 
         public string ReadAsString()

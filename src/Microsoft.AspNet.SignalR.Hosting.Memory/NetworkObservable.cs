@@ -11,11 +11,21 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             _disableWrites = disableWrites;
         }
 
+        public Action OnFlush { get; set; }
+
         public Action<ArraySegment<byte>> OnWrite { get; set; }
  
         public Action OnClose { get; set; }
         
         public Action OnCancel { get; set; }
+
+        public void Flush()
+        {
+            if (OnFlush != null)
+            {
+                OnFlush();
+            }
+        }
 
         public void Write(byte[] buffer, int offset, int count)
         {

@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
     internal class ClientStream : Stream
     {
-        private int _readPos;
+        private int _position;
 
         private readonly object _streamLock = new object();
         private readonly MemoryStream _ms = new MemoryStream();
@@ -124,22 +124,22 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 byte[] underlyingBuffer = _ms.GetBuffer();
 
-                int canRead = (int)_ms.Length - _readPos;
+                int canRead = (int)_ms.Length - _position;
 
                 if (canRead == 0)
                 {
-                    // REVIEW: Consider trimming the buffer after consuming up to _readPos
+                    // REVIEW: Consider trimming the buffer after consuming up to _position
                     return 0;
                 }
 
                 int read = Math.Min(count, canRead);
 
-                Array.Copy(underlyingBuffer, _readPos, buffer, offset, read);
+                Array.Copy(underlyingBuffer, _position, buffer, offset, read);
 
                 // Mark these bytes as consumed
                 _reader.Consume(read);
 
-                _readPos += read;
+                _position += read;
 
                 return read;
             }
