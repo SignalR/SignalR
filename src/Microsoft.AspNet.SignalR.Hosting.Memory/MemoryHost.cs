@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
 
             var tcs = new TaskCompletionSource<IClientResponse>();
-            var clientTokenSource = new CancellationTokenSource();
+            var clientTokenSource = new SafeCancellationTokenSource();
 
             var env = new Dictionary<string, object>();
 
