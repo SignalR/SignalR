@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Microsoft.AspNet.SignalR.Client;
+﻿using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using Xunit;
 using Xunit.Extensions;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -83,11 +81,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var mockStream = new MemoryStream())
             {
-                using (var sw = new StreamWriter(mockStream, Encoding.UTF8))
+                using (var sw = new StreamWriter(mockStream))
                 {
-                    sw.WriteLine("{}");
+                    sw.Write("{}");
                     sw.Flush();
-
                     mockStream.Position = 0;
 
                     response.Setup(r => r.GetStream()).Returns(mockStream);
@@ -114,12 +111,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                         CallBase = true
                     };
 
-                    var sendTask = httpBasedTransport.Object.Send(connection.Object, "");
-
-                    Assert.True(sendTask.IsFaulted);
-                    Assert.IsType(typeof(AggregateException), sendTask.Exception);
-                    Assert.Equal(ex, sendTask.Exception.InnerException);
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(1)));
+                    httpBasedTransport.Object.Send(connection.Object, "").ContinueWith(sendTask =>
+                    {
+                        Assert.True(sendTask.IsFaulted);
+                        Assert.IsType(typeof(AggregateException), sendTask.Exception);
+                        Assert.Equal(ex, sendTask.Exception.InnerException);
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(1)));
+                    }).Wait();
 
                     response.VerifyAll();
                     httpClient.VerifyAll();
