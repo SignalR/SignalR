@@ -151,20 +151,7 @@
         },
 
         reconnect: function (connection) {
-            var that = this;
-
-            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
-                connection._.reconnectTimeout = window.setTimeout(function () {
-                    that.stop(connection);
-
-                    if (transportLogic.ensureReconnectingState(connection)) {
-                        connection.log("EventSource reconnecting");
-                        that.start(connection);
-                    }
-
-                    transportLogic.clearReconnectTimeout(connection);
-                }, connection.reconnectDelay);
-            }
+            transportLogic.reconnect(connection, this.name);
         },
 
         lostConnection: function (connection) {
@@ -176,6 +163,7 @@
         },
 
         stop: function (connection) {
+            // Don't trigger a reconnect after stopping
             transportLogic.clearReconnectTimeout(connection);
 
             if (connection && connection.eventSource) {

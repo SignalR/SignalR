@@ -187,10 +187,10 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // Cleanup
         return function () {
+            $.network.connect();
             for (var i = 0; i < numConnections; i++) {
                 connections[i].stop();
             }
-            $.network.connect();
         };
     });
 });

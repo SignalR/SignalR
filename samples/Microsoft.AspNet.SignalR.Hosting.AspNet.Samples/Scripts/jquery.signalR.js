@@ -970,6 +970,27 @@
             }
         },
 
+        reconnect: function (connection, transportName) {
+            var transport = signalR.transports[transportName],
+                that = this;
+
+            // We should only set a reconnectTimeout if we are currently connected
+            // and a reconnectTimeout isn't already set.
+            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
+                connection._.reconnectTimeout = window.setTimeout(function () {
+                    transport.stop(connection);
+
+                    if (that.ensureReconnectingState(connection)) {
+                        connection.log(transportName + " reconnecting");
+                        transport.start(connection);
+                    }
+
+                    // Delete the reconnectTimeout so a new one can be created later if needed.
+                    delete connection._.reconnectTimeout;
+                }, connection.reconnectDelay);
+            }
+        },
+
         foreverFrame: {
             count: 0,
             connections: {}
@@ -1086,20 +1107,7 @@
         },
 
         reconnect: function (connection) {
-            var that = this;
-
-            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
-                connection._.reconnectTimeout = window.setTimeout(function () {
-                    that.stop(connection);
-
-                    if (transportLogic.ensureReconnectingState(connection)) {
-                        connection.log("Websocket reconnecting");
-                        that.start(connection);
-                    }
-
-                    transportLogic.clearReconnectTimeout(connection);
-                }, connection.reconnectDelay);
-            }
+            transportLogic.reconnect(connection, this.name);
         },
 
         lostConnection: function (connection) {
@@ -1108,6 +1116,7 @@
         },
 
         stop: function (connection) {
+            // Don't trigger a reconnect after stopping
             transportLogic.clearReconnectTimeout(connection);
 
             if (connection.socket !== null) {
@@ -1276,20 +1285,7 @@
         },
 
         reconnect: function (connection) {
-            var that = this;
-
-            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
-                connection._.reconnectTimeout = window.setTimeout(function () {
-                    that.stop(connection);
-
-                    if (transportLogic.ensureReconnectingState(connection)) {
-                        connection.log("EventSource reconnecting");
-                        that.start(connection);
-                    }
-
-                    transportLogic.clearReconnectTimeout(connection);
-                }, connection.reconnectDelay);
-            }
+            transportLogic.reconnect(connection, this.name);
         },
 
         lostConnection: function (connection) {
@@ -1301,6 +1297,7 @@
         },
 
         stop: function (connection) {
+            // Don't trigger a reconnect after stopping
             transportLogic.clearReconnectTimeout(connection);
 
             if (connection && connection.eventSource) {
