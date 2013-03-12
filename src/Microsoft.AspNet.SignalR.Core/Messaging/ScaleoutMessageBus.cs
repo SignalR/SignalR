@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
-        private readonly TaskQueueWrapper _sendQueue;
+        private readonly Lazy<TaskQueueWrapper[]> _sendQueues;
         private readonly TaskQueue _receiveQueue;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
@@ -28,7 +28,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _sendQueue = new TaskQueueWrapper(_trace);
+            _sendQueues = new Lazy<TaskQueueWrapper[]>(() =>
+            {
+                var queue = new TaskQueueWrapper[StreamCount];
+                for (int i = 0; i < queue.Length; i++)
+                {
+                    queue[i] = new TaskQueueWrapper(_trace);
+                }
+
+                return queue;
+            });
+
             _receiveQueue = new TaskQueue();
         }
 
@@ -40,6 +50,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
+        /// <summary>
+        /// The number of streams can't change for the lifetime of this instance.
+        /// </summary>
         protected virtual int StreamCount
         {
             get
@@ -48,22 +61,65 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        /// <summary>
-        /// Opens the queue for sending messages
-        /// </summary>
-        protected void Open()
+        private TaskQueueWrapper[] SendQueues
         {
-            _sendQueue.Open();
+            get
+            {
+                return _sendQueues.Value;
+            }
         }
 
         /// <summary>
-        /// Closes the queue for sendnig messages making all sends fail asynchornously.
+        /// Opens all queues for sending messages.
+        /// </summary>
+        protected void Open()
+        {
+            for (int i = 0; i < StreamCount; i++)
+            {
+                SendQueues[i].Open();
+            }
+        }
+
+        /// <summary>
+        /// Opens the specified queue for sending messages.
+        /// <param name="streamIndex">The index of the stream to open.</param>
+        /// </summary>
+        protected void Open(int streamIndex)
+        {
+            SendQueues[streamIndex].Open();
+        }
+
+        /// <summary>
+        /// Closes all queues for sending messages making all sends fail asynchronously.
         /// </summary>
         /// <param name="exception">The error that occurred.</param>
         protected void Close(Exception exception)
         {
+            for (int i = 0; i < StreamCount; i++)
+            {
+                SendQueues[i].Close(exception);
+            }
+        }
+
+        /// <summary>
+        /// Closes the specified queue for sending messages making all sends fail asynchronously.
+        /// </summary>
+        /// <param name="streamIndex">The index of the stream to close.</param>
+        /// <param name="exception">The error that occurred.</param>
+        protected void Close(int streamIndex, Exception exception)
+        {
             // Close the queue means that all further sends will fail
-            _sendQueue.Close(exception);
+            SendQueues[streamIndex].Close(exception);
+        }
+
+        /// <summary>
+        /// Buffers the specified queue up to the specified size before failing.
+        /// </summary>
+        /// <param name="streamIndex">The index of the stream to buffer.</param>
+        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
+        protected void Buffer(int streamIndex, int size)
+        {
+            SendQueues[streamIndex].Buffer(size);
         }
 
         /// <summary>
@@ -72,7 +128,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
         protected void Buffer(int size)
         {
-            _sendQueue.Buffer(size);
+            for (int i = 0; i < StreamCount; i++)
+            {
+                SendQueues[i].Buffer(size);
+            }
         }
 
         /// <summary>
@@ -85,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // If we're only using a single stream then just send
             if (StreamCount == 1)
             {
-                return Send(0, messages);
+                return SendQueues[0].Enqueue((state) => Send(0, (IList<Message>)state), messages);
             }
 
             var taskCompletionSource = new TaskCompletionSource<object>();
@@ -121,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Debug.Assert(index >= 0, "Hash function resulted in an index < 0.");
 
-                Task sendTask = Send(index, group.ToArray()).Catch();
+                Task sendTask = SendQueues[index].Enqueue(state => Send(index, group.ToArray()), null).Catch();
 
                 if (sendTask.IsCompleted)
                 {
@@ -215,7 +274,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
             // TODO: Buffer messages here and make it configurable
-            return _sendQueue.Enqueue(state => Send(new[] { (Message)state }), message);
+            return Send(new[] { message });
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
