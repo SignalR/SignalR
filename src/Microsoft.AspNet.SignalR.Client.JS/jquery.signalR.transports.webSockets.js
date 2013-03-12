@@ -16,10 +16,6 @@
 
         supportsKeepAlive: true,
 
-        attemptingReconnect: false,
-
-        currentSocketID: 0,
-
         send: function (connection, data) {
             connection.socket.send(data);
         },
@@ -48,14 +44,11 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
-                connection.socket.ID = ++that.currentSocketID;
                 connection.socket.onopen = function () {
                     opened = true;
                     connection.log("Websocket opened");
 
-                    if (that.attemptingReconnect) {
-                        that.attemptingReconnect = false;
-                    }
+                    transportLogic.clearReconnectTimeout(connection);
 
                     if (onSuccess) {
                         onSuccess();
@@ -70,7 +63,7 @@
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
-                    if (this.ID === that.currentSocketID) {
+                    if (this === connection.socket) {
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
@@ -115,20 +108,16 @@
         reconnect: function (connection) {
             var that = this;
 
-            if (connection.state !== signalR.connectionState.disconnected) {
-                if (!that.attemptingReconnect) {
-                    that.attemptingReconnect = true;
-                }
-
-                window.setTimeout(function () {
-                    if (that.attemptingReconnect) {
-                        that.stop(connection);
-                    }
+            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
+                connection._.reconnectTimeout = window.setTimeout(function () {
+                    that.stop(connection);
 
                     if (transportLogic.ensureReconnectingState(connection)) {
                         connection.log("Websocket reconnecting");
                         that.start(connection);
                     }
+
+                    transportLogic.clearReconnectTimeout(connection);
                 }, connection.reconnectDelay);
             }
         },
@@ -139,6 +128,8 @@
         },
 
         stop: function (connection) {
+            transportLogic.clearReconnectTimeout(connection);
+
             if (connection.socket !== null) {
                 connection.log("Closing the Websocket");
                 connection.socket.close();

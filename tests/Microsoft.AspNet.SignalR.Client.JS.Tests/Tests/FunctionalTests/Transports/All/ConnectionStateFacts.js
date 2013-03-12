@@ -114,4 +114,83 @@ testUtilities.runWithAllTransports(function (transport) {
             $.network.connect();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport supports multiple simultaneous reconnecting connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var numConnections = 2,
+            connections = [],
+            i;
+
+        function verifyState(stateName) {
+            var valid = 0,
+                expectedState = $.signalR.connectionState[stateName],
+                i;
+
+            for (i = 0; i < numConnections; i++) {
+                if (connections[i].state === expectedState) {
+                    valid++;
+                } else {
+                    assert.ok(false, "Connection " + i + " is in state " + connections[i].state + ", but is expected to be in state " + expectedState);
+                }
+            }
+            assert.equal(valid, numConnections, valid + " connections of " + numConnections + " in " + stateName + " state.");
+            if (valid !== numConnections) {
+                end();
+            }
+        }
+
+        function createPromise(eventName) {
+            var deferreds = [],
+                promises = [];
+
+            $.each(connections, function (key, connection) {
+                deferreds[key] = $.Deferred(); 
+                promises[key] = deferreds[key].promise();
+                connection[eventName](function () {
+                    deferreds[key].resolve();
+                });
+            });
+
+            return $.when.apply($, promises);
+        }
+
+        for (i = 0; i < numConnections; i++) {
+            connections[i] = testUtilities.createHubConnection(end, assert, testName + " (connection " + i + ")");
+        }
+
+        $.when.apply($,
+            $.map(connections, function (connection) {
+                return connection.start({ transport: transport });
+            })
+        ).pipe(function () {
+            var promise = createPromise("reconnecting");
+            verifyState("connected");
+
+            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
+            if (transport === "longPolling") {
+                $.each(connections, function (_, connection) {
+                    connection.messageId = connection.messageId || "Fake message ID";
+                });
+            }
+
+            $.network.disconnect();
+            return promise;
+        }).pipe(function () {
+            var promise = createPromise("reconnected");
+            verifyState("reconnecting");
+            $.network.connect();
+            return promise;
+        }).done(function () {
+            verifyState("connected");
+            end();
+        });
+
+
+        // Cleanup
+        return function () {
+            for (var i = 0; i < numConnections; i++) {
+                connections[i].stop();
+            }
+            $.network.connect();
+        };
+    });
 });
