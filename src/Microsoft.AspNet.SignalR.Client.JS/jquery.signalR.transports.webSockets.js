@@ -48,10 +48,7 @@
                     opened = true;
                     connection.log("Websocket opened");
 
-                    if (connection.reconnectTimeout) {
-                        window.clearTimeout(connection.reconnectTimeout);
-                        delete connection.reconnectTimeout;
-                    }
+                    transportLogic.clearReconnectTimeout(connection);
 
                     if (onSuccess) {
                         onSuccess();
@@ -111,14 +108,16 @@
         reconnect: function (connection) {
             var that = this;
 
-            if (connection.state !== signalR.connectionState.disconnected) {
-                connection.reconnectTimeout = window.setTimeout(function () {
+            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
+                connection._.reconnectTimeout = window.setTimeout(function () {
                     that.stop(connection);
 
                     if (transportLogic.ensureReconnectingState(connection)) {
                         connection.log("Websocket reconnecting");
                         that.start(connection);
                     }
+
+                    transportLogic.clearReconnectTimeout(connection);
                 }, connection.reconnectDelay);
             }
         },
@@ -129,6 +128,8 @@
         },
 
         stop: function (connection) {
+            transportLogic.clearReconnectTimeout(connection);
+
             if (connection.socket !== null) {
                 connection.log("Closing the Websocket");
                 connection.socket.close();
